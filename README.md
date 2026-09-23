@@ -34,7 +34,6 @@
 | [go/Kratos框架.md](go/Kratos框架.md) | 集成 ent/validate、注册发现与容器化、服务间鉴权与元数据传递、json→protobuf |
 | [go/Eino框架.md](go/Eino框架.md) | 字节 Eino 大模型应用框架 |
 | [go/语言优势与生态.md](go/语言优势与生态.md) | 设计哲学、与 Java/C++/Python 对比、云原生生态、就业前景客观判断 |
-| [go/code/](go/code/) | 并发控制示例代码（可直接 `go run`） |
 
 ### 数据结构与算法
 
@@ -69,6 +68,31 @@
 | [mysql/数据迁移与分表.md](mysql/数据迁移与分表.md) | 迁移三类手段、binlog+GTID 不停服切换、分表后非分片键的路由方案 |
 | [redis/缓存与分布式锁.md](redis/缓存与分布式锁.md) | 缓存雪崩、淘汰策略、分布式锁、热 key、发布订阅、选型、本地缓存 vs Redis、内存不足、缓存污染 |
 
+### 数据存储
+
+| 文件 | 知识点 |
+|---|---|
+| [datastore/ElasticSearch.md](datastore/ElasticSearch.md) | 倒排索引与字段类型全表、分片分配与恢复、写入 4 步与搜索流程、文本分析三件套、DSL 查询与深分页、Go/Java 客户端 |
+| [datastore/MongoDB.md](datastore/MongoDB.md) | 文档模型与 MySQL 对照、内嵌 vs 引用建模、索引体系（复合/数组/TTL/地理）、explain、副本集与类 Raft 选举、Go/Java 客户端 |
+
+### 中间件
+
+| 文件 | 知识点 |
+|---|---|
+| [middleware/Nacos.md](middleware/Nacos.md) | 注册中心 + 配置中心双角色、命名空间/分组/实例、Distro 与 JRaft、部署与鉴权、Go/Java 配置与注册发现示例 |
+| [middleware/RocketMQ.md](middleware/RocketMQ.md) | 四角色架构、顺序/延迟/事务消息原理、可靠性（刷盘×复制四组合、重试与死信）、Java 客户端为主 + Go 客户端 |
+| [middleware/Nats.md](middleware/Nats.md) | Core NATS 与 JetStream 语义对比、Queue Group、Request-Reply、集群与 Leaf Node、Go/Java 客户端（结合项目实际用法） |
+| [middleware/Redis.md](middleware/Redis.md) | 五大数据结构与底层实现、RDB/AOF、主从/哨兵/Cluster、过期与淘汰、Go/Java 客户端与分布式锁实现 |
+| [middleware/xxl-job.md](middleware/xxl-job.md) | 调度中心与执行器解耦、路由与阻塞策略、分片广播、部署、Go 客户端为主 + Java 官方实现对照 |
+| [middleware/消息队列选型.md](middleware/消息队列选型.md) | MQ 的五大使用场景、Kafka/RabbitMQ/RocketMQ/Pulsar 横向对比与选型、事务消息三种方案、延迟队列四种实现 |
+
+### 可观测性
+
+| 文件 | 知识点 |
+|---|---|
+| [observability/Skywalking.md](observability/Skywalking.md) | 业务痛点与 UI 六大面板、Agent/OAP/Storage/UI 架构、javaAgent 与轻量级队列内核原理、多语言探针、Go/Java 接入两条路线对比 |
+| [observability/Jaeger.md](observability/Jaeger.md) | Trace/Span 概念、与 OpenTelemetry 的协作、部署与采样策略、Go/Java 接入、与 SkyWalking 的分工（结合 photography-server 实际架构） |
+
 ### 网络
 
 | 文件 | 知识点 |
@@ -94,6 +118,12 @@
 |---|---|
 | [git/命令与场景.md](git/命令与场景.md) | 提交/拉取/合并/暂存命令、远程仓库操作、回滚三种 reset 模式对照、reset vs revert、reflog 救回、pull vs fetch、merge vs rebase |
 
+### PHP
+
+| 文件 | 知识点 |
+|---|---|
+| [php/PHP-FPM对接步骤.md](php/PHP-FPM对接步骤.md) | Dockerfile 与基础镜像、run.sh 前台启动原理、Skywalking 环境变量与业务日志上报、shm 共享内存调整、K8s 优雅停机 |
+
 ### 安全
 
 | 文件 | 知识点 |
@@ -113,14 +143,16 @@
 | 文件 | 知识点 |
 |---|---|
 | [interview/面试策略.md](interview/面试策略.md) | 数据结构备考、评价自身优势、如何介绍项目 |
-| [interview/素材清单.md](interview/素材清单.md) | 全部素材来源与逐集清单、处理状态 |
+| [interview/素材清单.md](interview/素材清单.md) | 视频素材来源与链接清单 |
 
 ---
 
 ## 说明
 
 - 命名约定：**英文技术目录 + 中文文件名**，每个文件聚焦一个知识点；根目录只保留本索引。
-- 内容来源分两类：
-  1. **面试真题整理**（Go / 数据库 / 网络 / 系统 / 分布式方向）：逐题包含**题目来源、考察意图、参考答案、面试官追问方向**；素材来源与逐集清单见 [interview/素材清单.md](interview/素材清单.md)。
-  2. **个人学习笔记**（算法 / Java / GC / 安全 / Git 等）：以知识体系为主线组织，侧重对比表与选型结论。
-- 涉及代码的题目均已**实际编译运行验证**（见 `go/code/`）。
+- 内容来源分三类：
+  1. **面试真题整理**（Go / 数据库 / 网络 / 系统 / 分布式方向）：逐题包含**题目来源、考察意图、参考答案、面试官追问方向**；素材来源见 [interview/素材清单.md](interview/素材清单.md)。
+  2. **个人学习笔记**（算法 / Java / GC / 安全 / Git / PHP 等）：以知识体系为主线组织，侧重对比表与选型结论。
+  3. **中间件与组件手册**（数据存储 / 中间件 / 可观测性）：采用「介绍 + 使用方法」结构，**使用示例同时给出 Go 与 Java 两个版本**。
+- 文中配图已**全部本地化**到各自目录的 `images/` 下（用相对路径引用，不依赖外部图床）。
+- 涉及代码的题目均在本地**实际编译运行验证**过。
