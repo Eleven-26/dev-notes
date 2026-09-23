@@ -71,6 +71,7 @@ skywalking.logging_mq_length = ${SKYWALKING_LOGGING_MQ_LEN}
 启动的方式如下代码所示：
 
 ```bash
+
 /usr/local/sbin/php-fpm -R -F
 ```
 
@@ -85,6 +86,7 @@ skywalking.logging_mq_length = ${SKYWALKING_LOGGING_MQ_LEN}
 如下代码所示：
 
 ```bash
+
 #!/bin/sh
 if [ $runtimemode = "prod" ];then
   env="prod"
@@ -130,6 +132,7 @@ sed -i "s#ENV_PASS#$ENV_PASS#g" /etc/nginx/conf.d/rental.conf
 在星洲上增加 **GROUP_NAME**、**SERVICE_NAME、SKYWALKING_SERVER_ADDR** 环境变量，标准变量如下代码所示：
 
 ```bash
+
 GROUP_NAME=租赁组
 SERVICE_NAME=债权中心
 SKYWALKING_SERVER_ADDR=172.16.68.108:11800
@@ -166,8 +169,6 @@ if (function_exists('skywalking_logging_report')) {
     skywalking_logging_report($string, "INFO");
 }
 ```
-
-日志上报原理：[skywalking php 日志上报方案](https://doc.in.myspacex.cn/pages/viewpage.action?pageId=34058072)
 
 > 日志与链路共用 shm 消息队列，单条日志超过 `SKYWALKING_LOGGING_MQ_MSG_LEN`（最大 32KB）会被丢弃，业务侧打印大对象前建议先裁剪。
 
@@ -211,27 +212,3 @@ shm_size = (SKYWALKING_MQ_MSG_LEN * 1024) + (SKYWALKING_LOGGING_MQ_MSG_LEN * 102
 - name: cache-volume
   mountPath: /dev/shm
 ```
-
-![fig-04.png](images/fig-04.png)
-
-## 六、重启你的应用
-
-完成以上步骤以后，在[星舟](https://starship.mypaas.com.cn/ops/center/application/39fb9168-bcd2-689a-6ab1-9ab361a6c6ba)平台上重新发布你的应用。
-
-![fig-05.png](images/fig-05.png)
-
-## 七、访问接口
-
-选取你的应用中任意的接口，进行少量的访问测试，目的是让 Skywalking 能够收集您应用的访问日志，并进行注册和上报追踪信息。
-
-## 八、验证是否成功接入
-
-访问 Skywalking 测试环境地址 [http://skywalking.test.myspacex.cn/](http://skywalking.test.myspacex.cn/)。选择顶部菜单栏的**拓朴图**选项卡左侧下拉框，选择对应的组，查看右框的 **All services** 的下拉框，是否发现你的应用。
-
-如果发现新的应用接入，表示接入成功！！如下图所示：
-
-![fig-06.png](images/fig-06.png)
-
-## 九、自定义链路信息与日志
-
-可参考[全局方法](https://doc.in.myspacex.cn/pages/viewpage.action?pageId=34064787)

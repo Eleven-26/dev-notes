@@ -66,6 +66,7 @@
 | [mysql/事务与日志.md](mysql/事务与日志.md) | ACID 与隔离级别、读未提交场景、落盘流程、redo/binlog、主从延迟 |
 | [mysql/并发控制与MVCC.md](mysql/并发控制与MVCC.md) | 乐观锁 vs 悲观锁的原理/实现/选型、MVCC 特点、InnoDB 的隐藏列+undo 版本链+Read View、RC 与 RR 差异、主节点选举归属 |
 | [mysql/数据迁移与分表.md](mysql/数据迁移与分表.md) | 迁移三类手段、binlog+GTID 不停服切换、分表后非分片键的路由方案 |
+| [redis/命令与使用.md](redis/命令与使用.md) | 五大数据结构与底层实现、RDB/AOF、主从/哨兵/Cluster、过期与淘汰、Go/Java 客户端与分布式锁实现 |
 | [redis/缓存与分布式锁.md](redis/缓存与分布式锁.md) | 缓存雪崩、淘汰策略、分布式锁、热 key、发布订阅、选型、本地缓存 vs Redis、内存不足、缓存污染 |
 
 ### 数据存储
@@ -80,7 +81,6 @@
 | 文件 | 知识点 |
 |---|---|
 | [middleware/Nacos.md](middleware/Nacos.md) | 注册中心 + 配置中心双角色、命名空间/分组/实例、Distro 与 JRaft、部署与鉴权、Go/Java 配置与注册发现示例 |
-| [middleware/Redis.md](middleware/Redis.md) | 五大数据结构与底层实现、RDB/AOF、主从/哨兵/Cluster、过期与淘汰、Go/Java 客户端与分布式锁实现 |
 | [middleware/xxl-job.md](middleware/xxl-job.md) | 调度中心与执行器解耦、路由与阻塞策略、分片广播、部署、Go 客户端为主 + Java 官方实现对照 |
 | [middleware/消息队列选型.md](middleware/消息队列选型.md) | MQ 的五大使用场景、四款 MQ 横向对比与选型决策、分册导航、事务消息三种方案、延迟队列四种实现 |
 | [middleware/Kafka.md](middleware/Kafka.md) | 分区与 ISR、acks/幂等/事务、消费者组重平衡与两个超时参数、KRaft 去 ZK、Go 三客户端取舍 + Java 原生/Spring Kafka |
