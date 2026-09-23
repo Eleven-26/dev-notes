@@ -80,11 +80,13 @@
 | 文件 | 知识点 |
 |---|---|
 | [middleware/Nacos.md](middleware/Nacos.md) | 注册中心 + 配置中心双角色、命名空间/分组/实例、Distro 与 JRaft、部署与鉴权、Go/Java 配置与注册发现示例 |
-| [middleware/RocketMQ.md](middleware/RocketMQ.md) | 四角色架构、顺序/延迟/事务消息原理、可靠性（刷盘×复制四组合、重试与死信）、Java 客户端为主 + Go 客户端 |
-| [middleware/Nats.md](middleware/Nats.md) | Core NATS 与 JetStream 语义对比、Queue Group、Request-Reply、集群与 Leaf Node、Go/Java 客户端（结合项目实际用法） |
 | [middleware/Redis.md](middleware/Redis.md) | 五大数据结构与底层实现、RDB/AOF、主从/哨兵/Cluster、过期与淘汰、Go/Java 客户端与分布式锁实现 |
 | [middleware/xxl-job.md](middleware/xxl-job.md) | 调度中心与执行器解耦、路由与阻塞策略、分片广播、部署、Go 客户端为主 + Java 官方实现对照 |
-| [middleware/消息队列选型.md](middleware/消息队列选型.md) | MQ 的五大使用场景、Kafka/RabbitMQ/RocketMQ/Pulsar 横向对比与选型、事务消息三种方案、延迟队列四种实现 |
+| [middleware/消息队列选型.md](middleware/消息队列选型.md) | MQ 的五大使用场景、四款 MQ 横向对比与选型决策、分册导航、事务消息三种方案、延迟队列四种实现 |
+| [middleware/Kafka.md](middleware/Kafka.md) | 分区与 ISR、acks/幂等/事务、消费者组重平衡与两个超时参数、KRaft 去 ZK、Go 三客户端取舍 + Java 原生/Spring Kafka |
+| [middleware/RabbitMQ.md](middleware/RabbitMQ.md) | 四种交换机路由模型、Publisher Confirm 与手动 ack、DLX 与两种延迟队列、Quorum 队列、Go/Java 客户端 |
+| [middleware/RocketMQ.md](middleware/RocketMQ.md) | 四角色架构、顺序/延迟/事务消息原理、可靠性（刷盘×复制四组合、重试与死信）、Java 客户端为主 + Go 客户端 |
+| [middleware/Nats.md](middleware/Nats.md) | Core NATS 与 JetStream 语义对比、Queue Group、Request-Reply、集群与 Leaf Node、Go/Java 客户端（结合项目实际用法） |
 
 ### 可观测性
 
