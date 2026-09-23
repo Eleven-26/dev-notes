@@ -36,6 +36,28 @@
 | [go/语言优势与生态.md](go/语言优势与生态.md) | 设计哲学、与 Java/C++/Python 对比、云原生生态、就业前景客观判断 |
 | [go/code/](go/code/) | 并发控制示例代码（可直接 `go run`） |
 
+### 数据结构与算法
+
+| 文件 | 知识点 |
+|---|---|
+| [algorithms/数据结构.md](algorithms/数据结构.md) | 逻辑结构 vs 物理结构、八大基础结构的特性/优缺点/应用场景、选型对照表 |
+| [algorithms/复杂度与算法对比.md](algorithms/复杂度与算法对比.md) | 时间复杂度与大 O 表示法、查找算法与结构对照表、10 种排序算法对比与选型 |
+| [algorithms/压缩与淘汰算法.md](algorithms/压缩与淘汰算法.md) | Snappy / LZW 原理与选型、LRU 实现与缓存污染、LRU-K/2Q/LFU 变体、Redis 近似 LRU |
+
+### Java
+
+| 文件 | 知识点 |
+|---|---|
+| [java/类加载机制.md](java/类加载机制.md) | 四层类加载器、双亲委派「先委托后自己加载」流程与优点、打破双亲委派的场景 |
+| [java/JVM与垃圾回收.md](java/JVM与垃圾回收.md) | 对象生命周期、可达性分析与 GC Roots、四种 GC 算法、三色标记与漏标修复、GC 分类与调优命令、栈帧结构与动态链接 |
+| [java/Stream流实战.md](java/Stream流实战.md) | 取列/flatMap、List 转 Map、groupingBy 分组、BigDecimal 累加、多字段排序、按字段去重、7 个常见坑 |
+
+### GC
+
+| 文件 | 知识点 |
+|---|---|
+| [gc/GC基础算法.md](gc/GC基础算法.md) | 性能评价四标准、标记-清除/引用计数/标记-压缩/复制/保守式/分代/增量式/RC Immix 的过程与优缺点、算法选型总表、与 Java GC 的映射（含 46 张本地化配图，见 `gc/images/`） |
+
 ### 数据库
 
 | 文件 | 知识点 |
@@ -43,6 +65,7 @@
 | [mysql/查询与架构.md](mysql/查询与架构.md) | 查询一条数据的完整链路、软件架构分层、JOIN 的用法与取舍、timestamp 与 datetime 选择 |
 | [mysql/索引与优化.md](mysql/索引与优化.md) | 索引分类与回表、索引失效、慢查询优化与排查、分页优化 |
 | [mysql/事务与日志.md](mysql/事务与日志.md) | ACID 与隔离级别、读未提交场景、落盘流程、redo/binlog、主从延迟 |
+| [mysql/并发控制与MVCC.md](mysql/并发控制与MVCC.md) | 乐观锁 vs 悲观锁的原理/实现/选型、MVCC 特点、InnoDB 的隐藏列+undo 版本链+Read View、RC 与 RR 差异、主节点选举归属 |
 | [mysql/数据迁移与分表.md](mysql/数据迁移与分表.md) | 迁移三类手段、binlog+GTID 不停服切换、分表后非分片键的路由方案 |
 | [redis/缓存与分布式锁.md](redis/缓存与分布式锁.md) | 缓存雪崩、淘汰策略、分布式锁、热 key、发布订阅、选型、本地缓存 vs Redis、内存不足、缓存污染 |
 
@@ -61,8 +84,21 @@
 | [linux/进程与线程.md](linux/进程与线程.md) | 进程概念与状态、线程三种实现方式、进程与线程的区别 |
 | [linux/常用命令.md](linux/常用命令.md) | 查端口占用、看网络连接、递归建目录、日志关键词统计 |
 | [docker/Docker.md](docker/Docker.md) | 进入运行中的容器、构建镜像、多阶段构建、容器生成原理与 namespace/cgroup、与 VM 对比 |
+| [docker/命令速查.md](docker/命令速查.md) | 镜像/容器/网络/清理/Compose 命令与 `docker run` 参数速查、exec vs attach、高频组合场景 |
 | [docker/CI-CD.md](docker/CI-CD.md) | GitLab Runner、Docker-outside-of-Docker、构建与部署两阶段 |
 | [docker/K8s与镜像优化.md](docker/K8s与镜像优化.md) | Docker 开启 IPv6、镜像源加速、Helm 核心概念与常用命令 |
+
+### 版本控制
+
+| 文件 | 知识点 |
+|---|---|
+| [git/命令与场景.md](git/命令与场景.md) | 提交/拉取/合并/暂存命令、远程仓库操作、回滚三种 reset 模式对照、reset vs revert、reflog 救回、pull vs fetch、merge vs rebase |
+
+### 安全
+
+| 文件 | 知识点 |
+|---|---|
+| [security/加密算法与应用.md](security/加密算法与应用.md) | 对称/非对称/散列算法、摘要与签名、数字证书与 PKI、SSL/HTTPS、现代工程实践 |
 
 ### 分布式与系统设计
 
@@ -79,20 +115,12 @@
 | [interview/面试策略.md](interview/面试策略.md) | 数据结构备考、评价自身优势、如何介绍项目 |
 | [interview/素材清单.md](interview/素材清单.md) | 全部素材来源与逐集清单、处理状态 |
 
-### 其他
-
-| 文件 | 知识点 |
-|---|---|
-| [java/java语法.md](java/java语法.md) | Java 语法 |
-| [数据结构.md](数据结构.md) | 数据结构 |
-| [数据结构和算法比较.md](数据结构和算法比较.md) | 数据结构与算法比较 |
-| [常见加密算法及应用.md](常见加密算法及应用.md) | 常见加密算法及应用 |
-
 ---
 
 ## 说明
 
-- 上述 Go / 数据库 / 网络 / 系统方向的内容，整理自大厂 Go 后端面试真题视频，
-  逐题包含**题目来源、考察意图、参考答案、面试官追问方向**。
+- 命名约定：**英文技术目录 + 中文文件名**，每个文件聚焦一个知识点；根目录只保留本索引。
+- 内容来源分两类：
+  1. **面试真题整理**（Go / 数据库 / 网络 / 系统 / 分布式方向）：逐题包含**题目来源、考察意图、参考答案、面试官追问方向**；素材来源与逐集清单见 [interview/素材清单.md](interview/素材清单.md)。
+  2. **个人学习笔记**（算法 / Java / GC / 安全 / Git 等）：以知识体系为主线组织，侧重对比表与选型结论。
 - 涉及代码的题目均已**实际编译运行验证**（见 `go/code/`）。
-- 素材来源与逐集清单见 [interview/素材清单.md](interview/素材清单.md)。
