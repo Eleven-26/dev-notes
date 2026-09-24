@@ -124,7 +124,7 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [php/PHP-FPM对接步骤.md](php/PHP-FPM对接步骤.md) | Dockerfile 与基础镜像、run.sh 前台启动原理、Skywalking 环境变量与业务日志上报、shm 共享内存调整、K8s 优雅停机 |
+| [php/PHP-FPM对接步骤.md](php/PHP-FPM对接步骤.md) | 数据上报链路原理、接入前检查清单、Dockerfile 与 php.ini 占位符、run.sh 前台启动、星洲环境变量、业务日志两种上报方式、shm 容量计算、优雅停机、验证与常见问题速查 |
 
 ### 安全
 

@@ -316,7 +316,7 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 4. **RSHUTDOWN（请求关闭）**：脚本结束，PHP 调用每个扩展的模块请求关闭方法（RSHUTDOWN），执行相关的 gc 操作，并把本次请求的链路数据交给上报逻辑。
 5. **MSHUTDOWN（模块关闭）**：如果要关闭对应的 SAPI（这里是 fpm），PHP 调用每个扩展关闭函数（MSHUTDOWN），并最终关闭自己的内存核心。
 
-与 Java 的差异要点：PHP 扩展只能在扩展能 hook 到的层面工作（内置函数、curl/PDO/redis 等扩展，以及配合 SDK 对框架层做适配），**无法像 javaagent 那样全量字节码增强**；且 php-fpm 是多进程模型，多 worker 之间靠共享内存通信，因此 `/dev/shm` 的容量与挂载方式必须一起考虑（见 [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md) 第五节）。
+与 Java 的差异要点：PHP 扩展只能在扩展能 hook 到的层面工作（内置函数、curl/PDO/redis 等扩展，以及配合 SDK 对框架层做适配），**无法像 javaagent 那样全量字节码增强**；且 php-fpm 是多进程模型，多 worker 之间靠共享内存通信，因此 `/dev/shm` 的容量与挂载方式必须一起考虑（见 [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md) 的「按需调整 /dev/shm 共享内存」一节）。
 
 ### 4.3 Node.js
 
