@@ -61,13 +61,13 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [mysql/查询与架构.md](mysql/查询与架构.md) | 查询一条数据的完整链路、软件架构分层、JOIN 的用法与取舍、timestamp 与 datetime 选择；Go 与 Java 两套落地（预编译、拆 JOIN、读写分离） |
-| [mysql/索引与优化.md](mysql/索引与优化.md) | 索引分类与回表、索引失效、慢查询优化与排查、分页优化 |
-| [mysql/事务与日志.md](mysql/事务与日志.md) | ACID 与隔离级别、读未提交场景、落盘流程、redo/binlog、主从延迟；Go 事务（小事务/保存点/重试/读己之写）与 Spring 事务落地 |
-| [mysql/并发控制与MVCC.md](mysql/并发控制与MVCC.md) | 乐观锁 vs 悲观锁的原理/实现/选型、MVCC 特点、InnoDB 的隐藏列+undo 版本链+Read View、RC 与 RR 差异、主节点选举归属；Go 三种写冲突控制写法 + JPA 乐观/悲观锁与幂等 |
-| [mysql/数据迁移与分表.md](mysql/数据迁移与分表.md) | 迁移三类手段、binlog+GTID 不停服切换、分表后非分片键的路由方案；Go 路由/基因法/双写校验 + Java ShardingSphere-JDBC |
-| [redis/命令与使用.md](redis/命令与使用.md) | 五大数据结构与底层实现、RDB/AOF、主从/哨兵/Cluster、过期与淘汰、Go/Java 客户端与分布式锁实现 |
-| [redis/缓存与分布式锁.md](redis/缓存与分布式锁.md) | 缓存雪崩、淘汰策略、分布式锁、热 key、发布订阅、选型、本地缓存 vs Redis、内存不足、缓存污染 |
+| [mysql/查询与架构.md](datastore/mysql/查询与架构.md) | 查询一条数据的完整链路、软件架构分层、JOIN 的用法与取舍、timestamp 与 datetime 选择；Go 与 Java 两套落地（预编译、拆 JOIN、读写分离） |
+| [mysql/索引与优化.md](datastore/mysql/索引与优化.md) | 索引分类与回表、索引失效、慢查询优化与排查、分页优化 |
+| [mysql/事务与日志.md](datastore/mysql/事务与日志.md) | ACID 与隔离级别、读未提交场景、落盘流程、redo/binlog、主从延迟；Go 事务（小事务/保存点/重试/读己之写）与 Spring 事务落地 |
+| [mysql/并发控制与MVCC.md](datastore/mysql/并发控制与MVCC.md) | 乐观锁 vs 悲观锁的原理/实现/选型、MVCC 特点、InnoDB 的隐藏列+undo 版本链+Read View、RC 与 RR 差异、主节点选举归属；Go 三种写冲突控制写法 + JPA 乐观/悲观锁与幂等 |
+| [mysql/数据迁移与分表.md](datastore/mysql/数据迁移与分表.md) | 迁移三类手段、binlog+GTID 不停服切换、分表后非分片键的路由方案；Go 路由/基因法/双写校验 + Java ShardingSphere-JDBC |
+| [redis/命令与使用.md](middleware/redis/命令与使用.md) | 五大数据结构与底层实现、RDB/AOF、主从/哨兵/Cluster、过期与淘汰、Go/Java 客户端与分布式锁实现 |
+| [redis/缓存与分布式锁.md](middleware/redis/缓存与分布式锁.md) | 缓存雪崩、淘汰策略、分布式锁、热 key、发布订阅、选型、本地缓存 vs Redis、内存不足、缓存污染 |
 
 ### 数据存储
 
@@ -92,8 +92,8 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [observability/Skywalking.md](observability/Skywalking.md) | 业务痛点与 UI 六大面板、Agent/OAP/Storage/UI 架构、javaAgent 与轻量级队列内核原理、多语言探针、Go/Java 接入两条路线对比 |
-| [observability/Jaeger.md](observability/Jaeger.md) | Trace/Span 概念、与 OpenTelemetry 的协作、部署与采样策略、Go/Java 接入、与 SkyWalking 的分工（结合 photography-server 实际架构） |
+| [observability/Skywalking.md](middleware/observability/Skywalking.md) | 业务痛点与 UI 六大面板、Agent/OAP/Storage/UI 架构、javaAgent 与轻量级队列内核原理、多语言探针、Go/Java 接入两条路线对比 |
+| [observability/Jaeger.md](middleware/observability/Jaeger.md) | Trace/Span 概念、与 OpenTelemetry 的协作、部署与采样策略、Go/Java 接入、与 SkyWalking 的分工（结合 photography-server 实际架构） |
 
 ### 网络
 

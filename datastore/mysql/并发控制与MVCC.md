@@ -160,7 +160,7 @@ InnoDB 的 MVCC 由三样东西协作实现：
 | **ZooKeeper / etcd** | 基于 ZAB / Raft，提供现成的选举原语（临时顺序节点、租约） |
 | **Bully / 令牌环** | 简单但可用性差，多见于早期系统 |
 
-> 📖 **详细内容见** [distributed/一致性与Raft.md](../distributed/一致性与Raft.md)（Raft 角色转换与选主详细流程）。
+> 📖 **详细内容见** [distributed/一致性与Raft.md](../../distributed/一致性与Raft.md)（Raft 角色转换与选主详细流程）。
 
 ---
 
@@ -401,7 +401,7 @@ func LockWaitBudget(ctx context.Context, db *sql.DB, budget time.Duration) error
 
 > 与乐观锁的选型回到正文 1.3 的表：**读多写少 → 乐观；写密集且要强一致 → 悲观**，
 > 而**能用条件更新解决的，就不要引入版本号列或显式行锁**。
-> 跨服务/跨库的"锁"只能靠 Redis 分布式锁，实现与坑见 [../redis/缓存与分布式锁.md](../redis/缓存与分布式锁.md)。
+> 跨服务/跨库的"锁"只能靠 Redis 分布式锁，实现与坑见 [../redis/缓存与分布式锁.md](../../middleware/redis/缓存与分布式锁.md)。
 
 ### 4. 唯一索引兜底：正文那句「不要只盯乐观/悲观两种」
 

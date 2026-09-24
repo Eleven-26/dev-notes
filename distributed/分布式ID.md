@@ -2,7 +2,7 @@
 
 > 分库分表后主键怎么生成：UUID / 数据库自增 / 号段 / Redis INCR / 雪花算法等方案全景对比，雪花的位结构、时钟回拨与 workerId 分配，以及 Go（bwmarrin/snowflake、sonyflake）与 Java（Hutool、MyBatis-Plus、手写）的落地代码
 >
-> 内容整理自个人学习笔记。分表后的路由方案见 [../mysql/数据迁移与分表.md](../mysql/数据迁移与分表.md)。
+> 内容整理自个人学习笔记。分表后的路由方案见 [../mysql/数据迁移与分表.md](../datastore/mysql/数据迁移与分表.md)。
 
 ---
 
@@ -10,7 +10,7 @@
 
 > **分布式 ID 生成器 = 多节点 / 多库同时写入时，仍能产出全局唯一且趋势递增主键的基础组件。**
 
-单机时代 `AUTO_INCREMENT` 够用，一旦**分库分表**（路由方案见 [../mysql/数据迁移与分表.md](../mysql/数据迁移与分表.md)）就失效了：
+单机时代 `AUTO_INCREMENT` 够用，一旦**分库分表**（路由方案见 [../mysql/数据迁移与分表.md](../datastore/mysql/数据迁移与分表.md)）就失效了：
 
 | 问题 | 说明 |
 |---|---|

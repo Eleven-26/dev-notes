@@ -2,7 +2,7 @@
 
 > 用的是**已内置 skywalking PHP 扩展的自研基础镜像**，所以接入本身不写业务代码，只有三步：换基础镜像 → 启动脚本改前台 → 平台注入环境变量。日志上报与 `/dev/shm` 容量属于按需调优。
 >
-> Skywalking 本体原理、UI 面板、Java/Go 接入见 [../observability/Skywalking.md](../observability/Skywalking.md)。
+> Skywalking 本体原理、UI 面板、Java/Go 接入见 [../observability/Skywalking.md](../middleware/observability/Skywalking.md)。
 
 ## 〇、先看数据是怎么跑出去的
 
@@ -270,7 +270,7 @@ K8s 删除 Pod 时的时序：先给容器 PID 1 发 `STOPSIGNAL`（Dockerfile �
 2. **写 `exec` 就好**。`exec /usr/local/sbin/php-fpm -R -F` 让 php-fpm 直接接管 PID 1，信号直达；不想改脚本也可以引入 `tini`/`dumb-init` 作为 init，顺带负责僵尸进程回收。
 3. **grace period 要大于 in-flight 时间**。php-fpm 收到 SIGTERM 后走 graceful stop：master 停止接新连接，等 worker 处理完当前请求再退出，上限受 `www.conf` 的 `request_terminate_timeout` 约束（本模板已把 20s 调成 60s）。这段时间也是链路数据上报的最后窗口，因此 **`terminationGracePeriodSeconds` 必须大于 `request_terminate_timeout`**，否则 worker 还在跑就被 SIGKILL。
 
-这与 Java agent 靠 ShutdownHook flush 队列是同一个道理（见 [../observability/Skywalking.md](../observability/Skywalking.md) 第四节）：任何 `kill -9` 都等于放弃最后一批数据。
+这与 Java agent 靠 ShutdownHook flush 队列是同一个道理（见 [../observability/Skywalking.md](../middleware/observability/Skywalking.md) 第四节）：任何 `kill -9` 都等于放弃最后一批数据。
 
 ## 八、验证接入是否生效
 

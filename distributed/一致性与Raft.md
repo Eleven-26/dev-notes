@@ -607,7 +607,7 @@ func DeleteIfMatches(ctx context.Context, key, owner string) (bool, error) {
 > 所以**linearizable 读**才需要额外一轮确认，把"已提交"升级成"已应用到我的视图"。
 > 租约与续租的写法（`Grant` / `KeepAlive` / 为什么必须单条 stream）已在
 > [应用层协议.md 使用一 `leasedemo`](../network/应用层协议.md) 与
-> [redis/缓存与分布式锁.md](../redis/缓存与分布式锁.md) 里给全，本篇不重复。
+> [redis/缓存与分布式锁.md](../middleware/redis/缓存与分布式锁.md) 里给全，本篇不重复。
 
 ### 4. 选举：把"强领导者"用成应用层的单写者
 

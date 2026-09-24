@@ -112,7 +112,7 @@ Trace 面板回答「这一次请求到底发生了什么」，界面分三栏�
 
 ### 2.5 日志
 
-日志面板解决「日志在业务组手里、链路在 APM 里，两边对不上」的问题，做法是把日志**按 Trace 上下文上报到同一套存储**（Java 侧由 log4j/logback 的 toolkit 上报，PHP 侧见 [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md) 的 `skywalking_logging_report`）。
+日志面板解决「日志在业务组手里、链路在 APM 里，两边对不上」的问题，做法是把日志**按 Trace 上下文上报到同一套存储**（Java 侧由 log4j/logback 的 toolkit 上报，PHP 侧见 [../php/PHP-FPM对接步骤.md](../../php/PHP-FPM对接步骤.md) 的 `skywalking_logging_report`）。
 
 查询条件：**Service / 实例** 限定服务与实例；**Trace ID** 是最常用的入口（先从 Trace 面板拿到 traceId，粘贴回日志面板，直接捞出这一次请求的所有日志）；**内容关键词 / 内容不包含关键词** 做正反向过滤；**标签** 按上报时打的 tag 过滤（日志级别、业务标记等）。结果表字段为 `当前服务 / 当前实例 / 时间 / 内容类型 / 标记 / 内容 / 追溯 ID`，**追溯 ID 即 Trace ID**，点进去可回到对应链路。标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**。
 
@@ -298,7 +298,7 @@ Dubbo 插件的生命周期可拆成四个阶段，理解它就能理解所有 J
 1. **插件发现（JVM 启动期）**：agent 扫描 `plugins/` 与 `bootstrap-plugins/` 下的 jar，解析各自的 `skywalking-plugin.def`，构建 `PluginFinder`。插件除了「要增强哪些类」，还会声明 **witness 类**（Dubbo 插件的 witness 类是 Dubbo 自身的核心类，如 `org.apache.dubbo.rpc.Invoker`）：**只有宿主应用真的加载了这些类，插件才被认为生效**，避免增强一个根本没用的框架、平白增加启动开销。
 2. **类增强（类加载期）**：Dubbo 的协议类/调用入口类被加载时 `PluginFinder` 匹配命中，ByteBuddy 在目标方法前后织入拦截器。拦截点分两侧——**Consumer 侧**（发起调用的一方）与 **Provider 侧**（被调用的一方）。
 3. **运行期拦截**：Consumer 发起调用前创建 **Exit span**，并通过 Dubbo 的隐式参数（attachment）把上下文以 `sw8` 头的形式带出去；Provider 收到请求后读取 attachment 创建 **Entry span**，从而用同一个 `traceId` 把「服务 A → 服务 B」两个 segment 串起来，拓扑图的边也是这样产生的；调用抛异常时走 `handleMethodException`，把 span 标记为 error 并记录异常堆栈。
-4. **停止与 flush（JVM 退出期）**：agent 启动时注册了 ShutdownHook，JVM 退出时触发 AgentService 停止——先停消费者线程并 **flush 队列中还未发送的数据**，再关闭 gRPC 通道。**这也意味着 `kill -9` 会导致最后一批链路数据丢失**，优雅停机对可观测性同样重要（PHP 侧的相关讨论见 [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md)）。
+4. **停止与 flush（JVM 退出期）**：agent 启动时注册了 ShutdownHook，JVM 退出时触发 AgentService 停止——先停消费者线程并 **flush 队列中还未发送的数据**，再关闭 gRPC 通道。**这也意味着 `kill -9` 会导致最后一批链路数据丢失**，优雅停机对可观测性同样重要（PHP 侧的相关讨论见 [../php/PHP-FPM对接步骤.md](../../php/PHP-FPM对接步骤.md)）。
 
 ### 4.2 PHP 体系
 
@@ -312,11 +312,11 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 
 1. **MINIT（模块初始化）**：PHP 随服务器启动，通过 php-fpm（SAPI）与 Nginx 相连；加载每个扩展的代码并调用其模块初始化方法（MINIT），分配资源、注册资源处理器（**常驻进程**，只执行一次）。
 2. **RINIT（请求初始化）**：PHP 等待 SAPI 请求要处理的请求，每个请求都会执行 RINIT，相当于重新调用每个扩展的模块请求初始化函数（每个请求执行一次）。
-3. **PHP 脚本执行**：业务代码运行，扩展在此阶段采集 span 与日志，写入由 shm 共享内存实现的消息队列（对接细节见 [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md)）。
+3. **PHP 脚本执行**：业务代码运行，扩展在此阶段采集 span 与日志，写入由 shm 共享内存实现的消息队列（对接细节见 [../php/PHP-FPM对接步骤.md](../../php/PHP-FPM对接步骤.md)）。
 4. **RSHUTDOWN（请求关闭）**：脚本结束，PHP 调用每个扩展的模块请求关闭方法（RSHUTDOWN），执行相关的 gc 操作，并把本次请求的链路数据交给上报逻辑。
 5. **MSHUTDOWN（模块关闭）**：如果要关闭对应的 SAPI（这里是 fpm），PHP 调用每个扩展关闭函数（MSHUTDOWN），并最终关闭自己的内存核心。
 
-与 Java 的差异要点：PHP 扩展只能在扩展能 hook 到的层面工作（内置函数、curl/PDO/redis 等扩展，以及配合 SDK 对框架层做适配），**无法像 javaagent 那样全量字节码增强**；且 php-fpm 是多进程模型，多 worker 之间靠共享内存通信，因此 `/dev/shm` 的容量与挂载方式必须一起考虑（见 [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md) 的「按需调整 /dev/shm 共享内存」一节）。
+与 Java 的差异要点：PHP 扩展只能在扩展能 hook 到的层面工作（内置函数、curl/PDO/redis 等扩展，以及配合 SDK 对框架层做适配），**无法像 javaagent 那样全量字节码增强**；且 php-fpm 是多进程模型，多 worker 之间靠共享内存通信，因此 `/dev/shm` 的容量与挂载方式必须一起考虑（见 [../php/PHP-FPM对接步骤.md](../../php/PHP-FPM对接步骤.md) 的「按需调整 /dev/shm 共享内存」一节）。
 
 ### 4.3 Node.js
 
