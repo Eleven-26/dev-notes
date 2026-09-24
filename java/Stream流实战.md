@@ -228,3 +228,9 @@ public static List<User> removeDuplicatesByNameAndPhone(List<User> userList) {
 | **在流中修改源集合** | 可能抛 `ConcurrentModificationException` | 先收集结果，再操作原集合 |
 | **`parallelStream()` 滥用** | 小数据量反而更慢，且共享可变状态时不安全 | 数据量大且无共享状态时再用 |
 | **空集合 `.get(0)`** | 返回 null 或越界 | 用 `findFirst().orElse(null)`、`Optional` 兜底 |
+
+## 关联
+
+- [../数据存储/mysql/JOIN与反范式.md](../数据存储/mysql/JOIN与反范式.md) — `groupingBy` 就是「应用层归并」的 Java 写法
+- [JVM与垃圾回收.md](JVM与垃圾回收.md) — 流式处理里的临时对象与 GC
+- [运行时数据区与栈帧.md](运行时数据区与栈帧.md) — lambda 与虚方法分派
