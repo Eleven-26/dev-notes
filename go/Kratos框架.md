@@ -26,12 +26,14 @@
 ent 自带代码生成命令，先装插件（装到 `$GOPATH/bin`），生成 ent 目录后整体挪到 data 层；`schema/` 里定义**字段、表关系（edge）、索引**三样东西。
 
 ```bash
+
 go install entgo.io/ent/cmd/ent@latest
 ent new User                 # 生成 ent/，内含 schema/ 与 generate.go
 mv ent internal/data/ent
 ```
 
 ```go
+
 // internal/data/ent/schema/user.go
 type User struct{ ent.Schema }
 
@@ -53,6 +55,7 @@ func (User) Indexes() []ent.Index { return []ent.Index{index.Fields("name").Uniq
 **表结构可以自动建/改，但数据库本身必须先存在。** 链路是 `sql.Open` 拿 driver → 包成 ent client → `client.Schema.Create` 建表，这个 client 作为 provider 交给 wire 注入。
 
 ```go
+
 // internal/data/data.go
 var ProviderSet = wire.NewSet(NewDB, NewData, NewUserRepo)
 
@@ -81,6 +84,7 @@ func wireApp(*conf.Server, *conf.Data, log.Logger) (*kratos.App, func(), error) 
 按实体取到表的操作对象：插入是 `Create().SetXxx().Save()`，查询走 `Query().Where(...)`；跨多表强一致用 `r.data.db.Tx(ctx)`，闭包内改用 `tx.User.Create()`。
 
 ```go
+
 func (r *userRepo) Create(ctx context.Context, u *biz.User) (*biz.User, error) {
 	po, err := r.data.db.User.Create().SetName(u.Name).SetAge(u.Age).Save(ctx) // 插入并保存
 	if err != nil {
@@ -107,6 +111,7 @@ func (r *userRepo) Create(ctx context.Context, u *biz.User) (*biz.User, error) {
 ### 一、规则写在 proto 里，而不是写在 service 里
 
 ```proto
+
 import "validate/validate.proto";
 
 message CreatePaymentRequest {
@@ -126,6 +131,7 @@ message CreatePaymentRequest {
 光写 proto 不生效，规则要在编译期变成 Go 代码：
 
 ```bash
+
 go install github.com/envoyproxy/protoc-gen-validate@latest
 
 protoc --proto_path=. --proto_path=./third_party \
@@ -141,6 +147,7 @@ protoc --proto_path=. --proto_path=./third_party \
 生成的 `Validate()` 不会自己生效，必须在服务端中间件里引用，两侧缺一不可：
 
 ```go
+
 // internal/server/http.go
 var ServerOpts = []http.ServerOption{
 	http.Middleware(recovery.Recovery(), validate.Validator()),
@@ -159,6 +166,7 @@ var GrpcServerOpts = []grpc.ServerOption{
 故意把必填的 `node_file_url` 从请求里删掉再发一次，返回 **400**，字段路径直接出现在报错里：
 
 ```
+
 HTTP/1.1 400 Bad Request
 {"code":400,"reason":"VALIDATOR","message":"node_file_url: value length must be at least 1 runes"}
 ```
@@ -185,6 +193,7 @@ HTTP/1.1 400 Bad Request
 **注册（服务端）**：构造 etcd 客户端 → 包成注册中心 → 在 `kratos.New` 时用 `kratos.Registrar` 挂上，启动后 Kratos 自动把本机地址写入 etcd。**发现（调用方）**：同样引 etcd contrib 包构造 `registry.Discovery`，客户端 endpoint 写 `discovery:///服务名`。
 
 ```go
+
 // internal/registry/etcd.go：clientv3 客户端包一层就是 etcd 注册中心（同时实现 Registrar 与 Discovery）
 client, err := clientv3.New(clientv3.Config{Endpoints: cfg.Etcd.Endpoints})
 r := etcd.New(client)
@@ -215,6 +224,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, r registry.Regi
 把"要不要注册中心"收敛成一个**可空的 `registry.Discovery`**：初始化时判断部署形态，容器化就置空，否则连 etcd；连接服务时按它是否为空切换 endpoint。
 
 ```go
+
 type Discovery struct {
 	reg registry.Discovery // nil 表示容器化部署，直接走服务名
 }
@@ -278,6 +288,7 @@ func (d *Discovery) ConnectService(ctx context.Context, name string, port int) (
 **客户端附加**（token 来自配置文件），**服务端取出比对**：
 
 ```go
+
 // 客户端：把 token 放进 client 上下文，metadata.Client() 会把它带出去
 ctx = metadata.AppendToClientContext(ctx, metadataTokenKey, uc.token)
 reply, err := uc.paymentCli.CreatePayment(ctx, req)
@@ -297,6 +308,7 @@ if md.Get(metadataTokenKey) != uc.token {
 **微信支付回调是 HTTP 打进来的，渠道方不会带我们的 token，必须放行**；其余请求无 token 一律拒绝：
 
 ```go
+
 const (
 	metadataTokenKey = "x-md-global-token"
 	healthCheckOp    = "/grpc.health.v1.Health/Watch" // 健康检查走流式，详见 Q5
@@ -329,6 +341,7 @@ func tokenAuth(expect string) middleware.Middleware {
 不走代码调用时（curl / 网关 / 其他语言服务），必须在 header 里按**同样的前缀和格式**手工写，否则 metadata 中间件提不出来：
 
 ```bash
+
 curl -X POST http://payment.service:8001/api.payment.v1.PaymentService/CreatePayment \
   -H 'Content-Type: application/json' -H 'x-md-global-token: <与支付服务配置一致的 token>' \
   -d '{"order_no":"20260101"}'
@@ -365,6 +378,7 @@ curl -X POST http://payment.service:8001/api.payment.v1.PaymentService/CreatePay
 判断"是不是健康检查请求"，是就直接放行；**只有非心跳请求才走鉴权逻辑**：
 
 ```go
+
 const healthCheckOp = "/grpc.health.v1.Health/Watch" // 健康检查是 server-streaming
 
 func tokenAuth(expect string, logger log.Logger) middleware.Middleware {
@@ -404,6 +418,7 @@ func tokenAuth(expect string, logger log.Logger) middleware.Middleware {
 ### 一、写法：取 transport → 断言 → 拿 request
 
 ```go
+
 import (
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/transport"
@@ -433,6 +448,7 @@ func (s *PaymentService) PayNotify(ctx context.Context, req *v1.PayNotifyRequest
 回调参数**用 message 也能取到**，但**微信支付 Go SDK 的回调解析接口要求传入 `*http.Request`**：
 
 ```go
+
 // 微信支付 SDK 的契约（示意）：必须拿到原始请求
 // ParseNotifyRequest(ctx context.Context, request *http.Request, content any) (*notify.Request, error)
 //   内部做两件事：① 验签，判断参数有没有被篡改；② 用平台证书 / APIv3 密钥解密回调密文，得到明文结果
@@ -470,6 +486,7 @@ func (s *PaymentService) PayNotify(ctx context.Context, req *v1.PayNotifyRequest
 | 支付宝 | 买家信息等 | `AlipayPayInfo` |
 
 ```proto
+
 import "google/protobuf/any.proto";
 
 message PayRequest {
@@ -485,6 +502,7 @@ message WechatJSAPIPayInfo { string open_id = 1; }
 用 protojson 规范传 JSON 时，`Any` 必须带 **`@type`**，值 = **命名空间（package）+ message 名**：
 
 ```json
+
 {
   "order_no": "202601010001",
   "channel": "WX_JSAPI",
@@ -505,6 +523,7 @@ Kratos 的 HTTP transport 对 `proto.Message` 用的就是 **protojson**，所�
 **取值**——按渠道把 Any 还原成具体 message；**返回**——返回值同样是 Any，protojson 序列化时会**自动补 `@type`**，调用方据此判断按哪个类型解析。gRPC 侧 `Any` 是二进制（type_url + value），不需要也不该手写 `@type`。
 
 ```go
+
 // 取出 Any 里的具体类型
 var detail v1.WechatJSAPIPayInfo
 if err := req.GetPayInfo().UnmarshalTo(&detail); err != nil {

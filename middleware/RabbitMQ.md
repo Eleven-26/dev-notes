@@ -76,6 +76,7 @@ RabbitMQ 是基于 **AMQP 0-9-1** 协议的开源消息代理，由 **Erlang** �
 | **AMQP 事务**（`txSelect`/`txCommit`/`txRollback`） | 显式事务包裹发布操作，提交后才生效 | ⚠️ **极差**（每条消息同步等待，吞吐量断崖式下降） | 几乎不用，除非特殊场景 |
 
 ```java
+
 channel.confirmSelect();  // 开启 Confirm
 channel.basicPublish("ex", "rk", MessageProperties.PERSISTENT_TEXT_PLAIN, body);
 channel.waitForConfirmsOrDie(5000);   // 同步等待（简单但慢）；异步用 addConfirmListener + SortedSet 缓存未确认消息
@@ -135,6 +136,7 @@ channel.waitForConfirmsOrDie(5000);   // 同步等待（简单但慢）；异步
 声明时通过队列参数指定死信目标：
 
 ```java
+
 Map<String, Object> args = new HashMap<>();
 args.put("x-dead-letter-exchange", "dlx.exchange");       // 死信交换机
 args.put("x-dead-letter-routing-key", "dlx.routing");      // 可选：改写路由键
@@ -166,6 +168,7 @@ channel.queueDeclare("biz.queue", true, false, false, args);
 | 适用 | 延迟粒度少、体量小 | 需要任意延迟、可接受插件依赖 |
 
 ```bash
+
 # 安装延迟插件（Docker 方式见第七节）
 rabbitmq-plugins enable rabbitmq_delayed_message_exchange
 ```
@@ -192,6 +195,7 @@ rabbitmq-plugins enable rabbitmq_delayed_message_exchange
 ## 七、部署（Docker Compose）
 
 ```yaml
+
 # docker-compose.yml —— 生产需在此基础上加固
 services:
   rabbitmq:
@@ -216,6 +220,7 @@ volumes:
 ```
 
 ```bash
+
 docker compose up -d
 # 管理台：http://localhost:15672   默认账号 guest/guest
 # ⚠️ guest 仅允许从 localhost 登录，生产必须新建用户并授予 vhost 权限：
@@ -244,6 +249,7 @@ docker exec rabbitmq rabbitmqctl delete_user guest
 ### 8.1 声明（交换机 / 队列 / 绑定）
 
 ```go
+
 package mq
 
 import (
@@ -319,6 +325,7 @@ func NewConn(uri string) (*Conn, error) {
 ### 8.2 发布（含持久化消息 + Confirm）
 
 ```go
+
 func (c *Conn) Publish(ctx context.Context, body []byte) error {
 	// 开启 Confirm 模式：Broker 确认后才认为发送成功
 	if err := c.ch.Confirm(false); err != nil {
@@ -357,6 +364,7 @@ func (c *Conn) Publish(ctx context.Context, body []byte) error {
 ### 8.3 消费（Qos 预取 + 手动 ack + 优雅关闭）
 
 ```go
+
 func (c *Conn) Consume(ctx context.Context, handler func(body []byte) error) error {
 	// ⭐ 预取限流：每个消费者未 ack 的消息不超过 30 条，公平分发 + 防内存爆
 	if err := c.ch.Qos(
@@ -407,6 +415,7 @@ func (c *Conn) Consume(ctx context.Context, handler func(body []byte) error) err
 ### 9.1 原生 amqp-client
 
 ```xml
+
 <dependency>
   <groupId>com.rabbitmq</groupId>
   <artifactId>amqp-client</artifactId>
@@ -415,6 +424,7 @@ func (c *Conn) Consume(ctx context.Context, handler func(body []byte) error) err
 ```
 
 ```java
+
 public class NativeDemo {
     public static void main(String[] args) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -456,6 +466,7 @@ public class NativeDemo {
 ### 9.2 Spring AMQP / Spring Boot
 
 ```xml
+
 <dependency>
   <groupId>org.springframework.boot</groupId>
   <artifactId>spring-boot-starter-amqp</artifactId>
@@ -463,6 +474,7 @@ public class NativeDemo {
 ```
 
 ```yaml
+
 # application.yml
 spring:
   rabbitmq:
@@ -482,6 +494,7 @@ spring:
 ```
 
 ```java
+
 // 片段：发送（自动序列化对象；交换机/队列/绑定在下方 @RabbitListener 中用 @QueueBinding 声明）
 @Service
 public class OrderProducer {
@@ -499,6 +512,7 @@ public class OrderProducer {
 ```
 
 ```java
+
 // 片段：消费 —— 注解声明交换机和队列（无需上面的 @Bean），手动 ack
 @Component
 public class OrderConsumer {

@@ -56,6 +56,7 @@
 #### ② 数据库自增（单点 + 步长法）
 
 ```sql
+
 -- id_gen: id BIGINT AUTO_INCREMENT PRIMARY KEY + stub CHAR(1) UNIQUE
 REPLACE INTO id_gen (stub) VALUES ('a');  -- REPLACE 保证表里始终只有一行
 SELECT LAST_INSERT_ID();                  -- 拿到本次分配的 ID
@@ -68,6 +69,7 @@ SELECT LAST_INSERT_ID();                  -- 拿到本次分配的 ID
 思路：**一次从 DB 取一段（如 1~1000）缓存在本机内存，用完再取**，把 DB 压力降低 `step` 倍。
 
 ```sql
+
 CREATE TABLE leaf_alloc (
   biz_tag     VARCHAR(128) NOT NULL PRIMARY KEY COMMENT '业务标识，如 order',
   max_id      BIGINT NOT NULL DEFAULT 1 COMMENT '已分配到的最大号',
@@ -85,6 +87,7 @@ SELECT max_id, step FROM leaf_alloc WHERE biz_tag = 'order';
 #### ④ Redis INCR / INCRBY
 
 ```bash
+
 INCR   global:order:id        # 每次取一个：一次网络往返换一个号
 INCRBY global:order:id 1000   # 一次取 1000：退化为"号段模式"，本地分配
 ```
@@ -112,6 +115,7 @@ Twitter 开源，**纯内存位运算、不依赖任何中间件**，详见第�
 标准 Snowflake 是 **64 位 Long**（最高位固定为 0 保证正数）：
 
 ```
+
  0        1                          11       12                        63
  ├──┬────────────────────────────┬─────────┬────────────────────────────┤
  │0 │      41 bit 时间戳(ms)      │ 10 bit  │       12 bit 序列号        │
@@ -162,12 +166,14 @@ Twitter 开源，**纯内存位运算、不依赖任何中间件**，详见第�
 JS `Number` 是 IEEE 754 双精度，**精确整数范围仅 `±(2^53-1)`**（`9007199254740991`）；而雪花 ID 是 64 位、常见值约 `1.7e18`，**远超 2^53** → `JSON.parse` 后低位被舍入，末尾变 0，两个不同 ID 可能变成同一个。
 
 ```java
+
 // Jackson：单个字段（全局则用 SimpleModule 注册 ToStringSerializer：Long.class / Long.TYPE）
 @JsonSerialize(using = ToStringSerializer.class)
 private Long orderId;
 ```
 
 ```go
+
 // Go：struct tag 序列化为字符串
 type Order struct {
     ID int64 `json:"id,string"`
@@ -201,6 +207,7 @@ type Order struct {
 安装：`go get github.com/bwmarrin/snowflake`
 
 ```go
+
 // ① 创建节点：workerId ∈ [0,1023]，必须全局唯一（起始时间戳可改 snowflake.Epoch）
 node, err := snowflake.NewNode(1)
 if err != nil {
@@ -218,6 +225,7 @@ fmt.Println(time.UnixMilli(id.Time()), snowflake.Decompose(id)) // 生成时刻 
 安装：`go get github.com/sony/sonyflake`
 
 ```go
+
 sf := sonyflake.NewSonyflake(sonyflake.Settings{
 	StartTime:      time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 	MachineID:      func() (uint16, error) { return 3, nil }, // 必须全局唯一
@@ -241,6 +249,7 @@ fmt.Println(id, sonyflake.Decompose(id)) // map[id:.. time:.. sequence:.. machin
 ### 5.3 可运行的封装示例（workerId 配置 + 时钟回拨兜底）
 
 ```go
+
 package main
 
 import (
@@ -350,6 +359,7 @@ func main() {
 ### 6.1 Hutool `Snowflake`
 
 ```xml
+
 <dependency>
   <groupId>cn.hutool</groupId>
   <artifactId>hutool-all</artifactId>
@@ -358,6 +368,7 @@ func main() {
 ```
 
 ```java
+
 // workerId(0~31) + datacenterId(0~31)，合计 1024 种组合
 Snowflake snowflake = IdUtil.getSnowflake(1, 1); // cn.hutool.core.lang.Snowflake
 long   id    = snowflake.nextId();     // 1735689600000000001
@@ -368,6 +379,7 @@ String idStr = snowflake.nextIdStr();  // 直接给字符串，前端不会精�
 ### 6.2 MyBatis-Plus `IdWorker` / `@TableId(type = IdType.ASSIGN_ID)`
 
 ```xml
+
 <dependency>
   <groupId>com.baomidou</groupId>
   <artifactId>mybatis-plus-boot-starter</artifactId>
@@ -376,6 +388,7 @@ String idStr = snowflake.nextIdStr();  // 直接给字符串，前端不会精�
 ```
 
 ```java
+
 public class Order {
     @TableId(type = IdType.ASSIGN_ID)  // ⭐ 插入前就有 ID，无需等数据库回写
     private Long id;
@@ -386,6 +399,7 @@ String s = IdWorker.getIdStr();  // 字符串形式
 ```
 
 ```yaml
+
 mybatis-plus:
   global-config:
     worker-id: 1          # ⚠️ 多实例必须显式配置，否则靠 MAC+进程号哈希，可能碰撞
@@ -399,6 +413,7 @@ mybatis-plus:
 ### 6.3 手写雪花（关键位运算片段）
 
 ```java
+
 public final class SnowflakeIdWorker {
     private static final long START_STAMP     = 1704067200000L;        // 2024-01-01
     private static final long SEQ_BITS        = 12L;

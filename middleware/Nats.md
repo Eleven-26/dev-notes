@@ -86,6 +86,7 @@ Core NATS 与 JetStream 是同一个连接上的两种用法，这是理解 NATS
 ## 五、部署
 
 ```yaml
+
 # docker-compose.yml
 services:
   nats:
@@ -106,6 +107,7 @@ services:
 ```
 
 ```conf
+
 # nats.conf：令牌鉴权 + JetStream
 port: 4222
 http_port: 8222
@@ -142,6 +144,7 @@ photography-server 用的是 `github.com/nats-io/nats.go v1.53.1`。
 ### 6.1 连接与重连选项
 
 ```go
+
 nc, err := nats.Connect("nats://127.0.0.1:4222",
 	nats.MaxReconnects(10),            // -1 表示无限重连
 	nats.ReconnectWait(2*time.Second), // 两次重连之间的等待
@@ -160,6 +163,7 @@ defer nc.Drain() // 优雅关闭，见 6.6
 ### 6.2 发布 / 订阅
 
 ```go
+
 // 发布：Core NATS 即发即忘，不等待任何确认
 _ = nc.Publish("photography.order.created", []byte(`{"id":1}`))
 _ = nc.Flush() // 需要确认「已写入 socket」时调用，Publish 本身只写客户端缓冲
@@ -179,6 +183,7 @@ defer sub.Unsubscribe()
 ### 6.3 队列组（Queue Group）
 
 ```go
+
 // 同一队列组内的多个实例竞争消费：一条消息只被其中一个处理
 sub, err := nc.QueueSubscribe("order.status.change", "notify-workers",
 	func(m *nats.Msg) { log.Printf("[worker] %s", string(m.Data)) })
@@ -189,6 +194,7 @@ sub, err := nc.QueueSubscribe("order.status.change", "notify-workers",
 ### 6.4 Request-Reply
 
 ```go
+
 // 响应方
 _, err := nc.Subscribe("svc.echo", func(m *nats.Msg) {
 	// m.Reply 是请求方自动生成的收件箱 Subject，必须向它回写
@@ -206,6 +212,7 @@ log.Printf("reply=%s", string(reply.Data))
 ### 6.5 JetStream：持久化、ACK 与两种消费模式
 
 ```go
+
 js, err := nc.JetStream() // 服务端未开 -js 时会报错
 if err != nil {
 	return err
@@ -268,6 +275,7 @@ _, err = js.PublishMsg(&nats.Msg{
 ### 6.7 贴近项目的完整初始化示例
 
 ```go
+
 package infrastructure
 
 import (
@@ -342,6 +350,7 @@ func traceMsg(ctx context.Context, subject string, data []byte) *nats.Msg {
 ## 七、使用二：Java ⭐
 
 ```xml
+
 <!-- Maven 依赖；仅在 NKey 鉴权时需要额外引入 net.i2p.crypto:eddsa:0.3.0 -->
 <dependency>
   <groupId>io.nats</groupId>
@@ -351,6 +360,7 @@ func traceMsg(ctx context.Context, subject string, data []byte) *nats.Msg {
 ```
 
 ```java
+
 import io.nats.client.*;
 import io.nats.client.api.*;
 import java.nio.charset.StandardCharsets;

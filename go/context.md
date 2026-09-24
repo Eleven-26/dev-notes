@@ -40,6 +40,7 @@
 这就是"级联取消"的实现基础。
 
 ```go
+
 // 根节点：main / init / 测试函数里用 Background
 // 占位节点：暂时不确定用什么、先占位用 TODO
 ctx := context.Background()
@@ -78,6 +79,7 @@ ctx := context.Background()
 ### 取值与取错
 
 ```go
+
 ctx, cancel := context.WithTimeout(parent, 3*time.Second)
 defer cancel()                 // 见 Q4：必须调用
 
@@ -90,6 +92,7 @@ err := ctx.Err()               // context.Canceled 或 context.DeadlineExceeded
 新版标准库补上了"为什么取消"这一块拼图：
 
 ```go
+
 ctx, cancel := context.WithCancelCause(parent)
 cancel(errors.New("下游返回 5xx，提前收工"))
 
@@ -103,6 +106,7 @@ err := context.Cause(ctx)      // 拿到自定义原因；无原因时退化为 
 ### 三行代码讲清 `WithValue`
 
 ```go
+
 type ctxKeyTraceID struct{}                    // 自定义 key 类型，见 Q4
 
 ctx = context.WithValue(ctx, ctxKeyTraceID{}, "trace-123")
@@ -135,6 +139,7 @@ v, ok := ctx.Value(ctxKeyTraceID{}).(string)   // 取值必须类型断言
 ### case 1：跨层传递请求域数据（WithValue）
 
 ```go
+
 func main() {
     ctx := context.WithValue(context.Background(), ctxKeyTraceID{}, "trace-123")
     handle(ctx)      // 主协程直接调用
@@ -154,6 +159,7 @@ func handle(ctx context.Context) {
 ### case 2：给单个请求设置超时（WithTimeout + 一次非阻塞检查 + 一次阻塞 select）
 
 ```go
+
 func handler(w http.ResponseWriter, r *http.Request) {
     ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
     defer cancel()
@@ -192,6 +198,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 ### case 3：一批任务一起收工（WithCancel + WaitGroup）
 
 ```go
+
 func main() {
     ctx, cancel := context.WithCancel(context.Background())
     var wg sync.WaitGroup
@@ -259,6 +266,7 @@ func work(ctx context.Context, id int) {
 ### ② `WithValue` 的 key 必须是自定义类型
 
 ```go
+
 type ctxKeyTraceID struct{}     // ✅ 未导出的空结构体：零内存占用、不会撞 key
 
 const traceIDKey = "trace_id"   // ❌ 内置 string 作 key，两个包用同名 key 直接互相覆盖
@@ -271,6 +279,7 @@ const traceIDKey = "trace_id"   // ❌ 内置 string 作 key，两个包用同�
 ### ③ 派生出 ctx 就必须 `cancel()`
 
 ```go
+
 ctx, cancel := context.WithTimeout(parent, 3*time.Second)
 defer cancel()                  // 必须
 ```
@@ -285,6 +294,7 @@ defer cancel()                  // 必须
 ### ④ 不要把 context 存进结构体字段
 
 ```go
+
 type Server struct {
     ctx context.Context   // ❌ 生命周期与结构体不匹配，超时/取消语义会被"固化"
 }
@@ -293,6 +303,7 @@ type Server struct {
 正确做法是**作为第一个参数显式传递，命名 `ctx`**：
 
 ```go
+
 func DoWork(ctx context.Context, req *Request) (*Response, error)   // ✅
 ```
 
@@ -303,6 +314,7 @@ func DoWork(ctx context.Context, req *Request) (*Response, error)   // ✅
 ### ⑤ 不要传 nil context
 
 ```go
+
 fn(nil)                        // ❌
 fn(context.TODO())             // ✅ 还没想好用什么
 fn(context.Background())       // ✅ 顶层入口用这个
@@ -330,6 +342,7 @@ fn(context.Background())       // ✅ 顶层入口用这个
 ### 与 `select` 配合：`ctx.Done()` 是"万能退出口"
 
 ```go
+
 for {
     select {
     case <-ctx.Done():
@@ -355,6 +368,7 @@ for {
 ### 与 `errgroup` 配合：并发聚合并共享取消
 
 ```go
+
 import "golang.org/x/sync/errgroup"
 
 func fetchAll(ctx context.Context, urls []string) error {
@@ -383,6 +397,7 @@ func fetchAll(ctx context.Context, urls []string) error {
 ### 常见组合模式：先到先用（First-Result Wins）
 
 ```go
+
 g, ctx := errgroup.WithContext(ctx)
 resultCh := make(chan Result, len(replicas))
 

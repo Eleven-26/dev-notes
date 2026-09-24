@@ -43,6 +43,7 @@
 - **AIO**：完成通知代表等待和拷贝都已完成，应用无需再调用一次 `read` 搬数据。
 
 ```c
+
 // 非阻塞 I/O 的本质：暂时不能读就立即返回，而不是内核替应用完成整个请求。
 ssize_t n = read(fd, buf, sizeof(buf));
 if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
@@ -96,6 +97,7 @@ if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 ### 3.3 epoll 的三个函数
 
 ```c
+
 int epfd = epoll_create1(EPOLL_CLOEXEC);          // 创建实例
 int rc = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev); // ADD / MOD / DEL
 int n = epoll_wait(epfd, events, maxevents, -1);  // 返回就绪事件
@@ -138,6 +140,7 @@ int n = epoll_wait(epfd, events, maxevents, -1);  // 返回就绪事件
 ET 必须持续读到 `EAGAIN/EWOULDBLOCK`：
 
 ```c
+
 for (;;) {
     ssize_t n = read(fd, buf, sizeof(buf));
     if (n > 0) { handle(buf, n); continue; }
@@ -199,6 +202,7 @@ G、M、P 的配合与调度细节见 [Go GMP 调度模型](../go/GMP调度.md)�
 ### 7.1 日常优先使用 net 包
 
 ```go
+
 ln, err := net.Listen("tcp", ":8080")
 if err != nil { log.Fatal(err) }
 for {
@@ -215,6 +219,7 @@ for {
 仅适用于 Linux。监听 fd 与 `Accept4` 返回的 fd 均设置非阻塞；ET 下 accept/read 都循环到 `EAGAIN`。
 
 ```go
+
 package main
 
 import (
@@ -299,6 +304,7 @@ func must(err error) { if err != nil { log.Fatal(err) } }
 ```
 
 ```bash
+
 go mod init epoll-demo
 go get golang.org/x/sys/unix
 go run .
@@ -326,6 +332,7 @@ go run .
 ### 8.2 完整可运行的 Selector Echo 服务
 
 ```java
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -400,6 +407,7 @@ public class NioEchoServer {
 ```
 
 ```bash
+
 javac NioEchoServer.java
 java NioEchoServer 8080
 ```
@@ -429,6 +437,7 @@ Netty 采用成熟的 Reactor/NIO，也可用 Linux native epoll transport，而
 每个 socket 占一个 fd；同时检查进程限制、服务管理器配置、系统总量和内存：
 
 ```bash
+
 ulimit -n
 cat /proc/$PID/limits
 sysctl fs.file-max
@@ -448,6 +457,7 @@ epoll 无法表示磁盘何时真正完成。文件 I/O 应使用线程池、AIO
 `CLOSE_WAIT` 表示对端已发 FIN，而本地应用尚未 close，通常是资源释放路径遗漏或 handler 阻塞。
 
 ```bash
+
 ss -antp state close-wait
 netstat -antp | grep CLOSE_WAIT
 lsof -p "$PID" -a -iTCP

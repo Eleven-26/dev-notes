@@ -94,6 +94,7 @@
 > ⚠️ 三个易错点：① `acks=all` 只保证「ISR 都收到」，**不保证落盘**（是否刷盘由 OS 决定）；② 幂等只防**同一生产者实例的重试重复**，防不了业务重复提交与消费重复；③ `acks=all` 必须配 `min.insync.replicas≥2`，否则 ISR 只剩 Leader 时也满足「all」，形同 `acks=1`。
 
 ```java
+
 // 生产端最稳组合（幂等 + 全 ISR 确认）
 props.put("acks", "all");
 props.put("enable.idempotence", true);   // 自动要求 acks=all 且 retries>0
@@ -182,6 +183,7 @@ props.put("max.in.flight.requests.per.connection", 5); // 开启幂等后可 >1 
 ### docker-compose.yml（KRaft 模式，单节点）
 
 ```yaml
+
 services:
   kafka:
     image: apache/kafka:3.9.0
@@ -245,6 +247,7 @@ volumes:
 ### 生产者
 
 ```go
+
 package main
 
 import (
@@ -280,6 +283,7 @@ func main() {
 ### 消费者（含消费者组 + 手动提交）
 
 ```go
+
 package main
 
 import (
@@ -332,6 +336,7 @@ func handle(m kafka.Message) error { // 业务幂等处理：先查去重表 / �
 ### 依赖坐标（Maven）
 
 ```xml
+
 <dependency>
   <groupId>org.apache.kafka</groupId>
   <artifactId>kafka-clients</artifactId>
@@ -347,6 +352,7 @@ func handle(m kafka.Message) error { // 业务幂等处理：先查去重表 / �
 ### 原生 Producer（send + 回调）
 
 ```java
+
 import org.apache.kafka.clients.producer.*;
 import java.util.Properties;
 
@@ -378,6 +384,7 @@ public class OrderProducerDemo {
 ### 原生 Consumer（poll 循环 + 手动提交）
 
 ```java
+
 import org.apache.kafka.clients.consumer.*;
 import java.time.Duration;
 import java.util.*;
@@ -415,6 +422,7 @@ public class OrderConsumerDemo {
 ### Spring Kafka：KafkaTemplate + @KafkaListener
 
 ```yaml
+
 spring:
   kafka:
     bootstrap-servers: 127.0.0.1:9092
@@ -433,6 +441,7 @@ spring:
 ```
 
 ```java
+
 // 生产：KafkaTemplate 异步发送 + 回调
 @Service
 public class OrderProducerService {
@@ -465,6 +474,7 @@ public class OrderConsumerService {
 并发消费由 `ConcurrentKafkaListenerContainerFactory#setConcurrency`（或 yaml 的 `listener.concurrency`）控制，**不要超过分区数**；手动提交则设 `ContainerProperties.AckMode.MANUAL_IMMEDIATE`，与下面的错误处理一起挂到监听容器。
 
 ```java
+
 // 错误处理 + 死信：重试 3 次仍失败则投递到 order-events.DLT
 var recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate,
         (rec, ex) -> new TopicPartition(rec.topic() + ".DLT", rec.partition()));
@@ -494,12 +504,14 @@ containerFactory.setCommonErrorHandler(errorHandler);                   // ⭐ �
 | 建议 | 尽量**一开始预估到位**；必须扩时接受顺序性损失，或改用「新 Topic 双写 + 逐步切换」 |
 
 ```bash
+
 kafka-topics.sh --bootstrap-server localhost:9092 --alter --topic order-events --partitions 6
 ```
 
 ### 消息积压排查 ⭐
 
 ```bash
+
 # ⭐ LAG = 未消费消息数，最核心的堆积指标
 kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group order-consumer-group
 # 输出：TOPIC / PARTITION / CURRENT-OFFSET / LOG-END-OFFSET / LAG / CONSUMER-ID / HOST / CLIENT-ID

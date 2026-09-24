@@ -24,6 +24,7 @@ Docker 本身**支持 IPv6，但默认不启用**。启用要三件事：
 ### 二、内核参数：先确认宿主机支持 IPv6
 
 ```bash
+
 cat /proc/sys/net/ipv6/conf/all/disable_ipv6   # 应该是 0
 # 如果是 1，说明内核层把 IPv6 关了，Docker 怎么配都没用
 sysctl -w net.ipv6.conf.all.disable_ipv6=0
@@ -35,6 +36,7 @@ sysctl -w net.ipv6.conf.all.disable_ipv6=0
 **如果这个文件不存在，就自己创建**（视频里强调的正是这一步）。
 
 ```json
+
 {
   "ipv6": true,
   "fixed-cidr-v6": "2001:db8:1::/64"
@@ -52,6 +54,7 @@ sysctl -w net.ipv6.conf.all.disable_ipv6=0
 ### 四、生效与验证
 
 ```bash
+
 systemctl daemon-reload     # 重新加载配置
 systemctl restart docker    # 重启 Docker（容器会重建，注意影响）
 
@@ -80,6 +83,7 @@ curl -g "http://[::1]:<port>/"
 自定义网络需要显式开启：
 
 ```bash
+
 # 创建带 IPv6 子网的自定义网络
 docker network create --ipv6 --subnet=fd00:1::/64 mynet6
 # 容器加入该网络，即可拿到 IPv6 地址
@@ -122,6 +126,7 @@ docker run -d --network=mynet6 --name nginx6 nginx
 #### 情况一：基础镜像有 `/etc/apt/sources.list`（Debian / Ubuntu 常见）
 
 ```dockerfile
+
 RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g; s@security.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tzdata \
@@ -137,6 +142,7 @@ RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g; s@security.debian.org@mirrors
 自然替换失败。先验证一下：
 
 ```bash
+
 # 交互式跑起来看一眼（用完即删）
 docker run --rm -it --name test <镜像名> ls -l /etc/apt/
 # 确认确实没有 sources.list / sources.list.d
@@ -145,6 +151,7 @@ docker run --rm -it --name test <镜像名> ls -l /etc/apt/
 **解法：文件不存在，就自己创建。**
 
 ```dockerfile
+
 # 目录 / 文件不存在就直接写进去，然后再装包
 RUN mkdir -p /etc/apt \
     && echo "deb https://mirrors.aliyun.com/debian bookworm main" > /etc/apt/sources.list \
@@ -172,6 +179,7 @@ RUN mkdir -p /etc/apt \
 | 能加速拉镜像吗 | — | ❌ 不能 |
 
 ```json
+
 // /etc/docker/daemon.json —— 这配的是 docker pull 的加速，和装包速度无关
 {
   "registry-mirrors": ["https://<你的加速地址>.mirror.aliyuncs.com"]
@@ -234,6 +242,7 @@ RUN mkdir -p /etc/apt \
 视频是**三节点 K8s 集群 + 本地 OCI Registry**，从 Registry 拉 Chart 部署：
 
 ```bash
+
 # 0. 安装 Helm（官方脚本）
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
@@ -250,6 +259,7 @@ helm install my-nginx oci://registry.example.com/charts/nginx \
 > 所以要**显式指定用 HTTP 方式**（`--plain-http`），否则拉取会失败。
 
 ```bash
+
 # 3. 看装出来什么了
 helm list
 kubectl get pod,deploy,svc
@@ -266,6 +276,7 @@ Chart 里有 `Deployment` 就有 Deployment，有 `Service` 就有 Service。
 ### 四、除了 install，还要会这几条
 
 ```bash
+
 helm repo add bitnami https://charts.bitnami.com/bitnami   # 加仓库
 helm repo update                                           # 更新索引
 helm search repo nginx                                     # 搜 Chart

@@ -100,6 +100,9 @@
 | 文件 | 知识点 |
 |---|---|
 | [network/TCP.md](network/TCP.md) | 报文结构、三次握手、滑动窗口、Nagle 算法与延迟确认 |
+| [network/DNS解析.md](network/DNS解析.md) | 域名层级与四类服务器、递归/迭代查询全流程、TTL 与缓存故障、记录类型与 CNAME 三个坑、DNS 轮询与 GSLB、劫持/HTTPDNS/DoH、Go net.Resolver 与 Java 用法 |
+| [network/HTTPS与TLS.md](network/HTTPS与TLS.md) | TLS 与 SSL 关系、TLS 1.2 两次往返握手、RSA vs ECDHE、证书验证与主密钥推导、1.3 的 1-RTT/0-RTT 与重放攻击、会话复用、SSLKEYLOGFILE 解密抓包 |
+| [network/IO多路复用.md](network/IO多路复用.md) | 五种 I/O 模型、同步/异步与阻塞/非阻塞之辨、select/poll/epoll 演进、LT vs ET、惊群与 Reactor、Go netpoller 与 Java NIO、fd 上限 |
 | [network/应用层协议.md](network/应用层协议.md) | DHCP 流程与续租、HTTP 与 gRPC 的区别 |
 | [network/数据序列化.md](network/数据序列化.md) | JSON 与 Protobuf 对比、Protobuf 使用注意事项 |
 
@@ -108,6 +111,8 @@
 | 文件 | 知识点 |
 |---|---|
 | [linux/进程与线程.md](linux/进程与线程.md) | 进程概念与状态、线程三种实现方式、进程与线程的区别 |
+| [linux/内存与文件系统.md](linux/内存与文件系统.md) | 虚拟内存与地址空间布局、分页/页表/TLB、缺页中断、伙伴系统与 Slab、Page Cache 与 free 的正确解读、kswapd 与 LRU 回收、ext4/XFS/Btrfs、inode 与软硬链接、write ≠ 落盘、Go MemStats vs RSS |
+| [linux/性能排查.md](linux/性能排查.md) | USE/RED 方法论与分层排查顺序、负载高但 CPU 低的成因、vmstat 速读、CPU 飙高套路与上下文切换、free 解读与 OOM Killer、内存泄漏判断、iostat 与磁盘/inode 满、连接状态分布、Go 服务排查 |
 | [linux/常用命令.md](linux/常用命令.md) | 查端口占用、看网络连接、递归建目录、日志关键词统计 |
 | [docker/Docker.md](docker/Docker.md) | 进入运行中的容器、构建镜像、多阶段构建、容器生成原理与 namespace/cgroup、与 VM 对比 |
 | [docker/命令速查.md](docker/命令速查.md) | 镜像/容器/网络/清理/Compose 命令与 `docker run` 参数速查、exec vs attach、高频组合场景 |
@@ -137,6 +142,9 @@
 | 文件 | 知识点 |
 |---|---|
 | [distributed/一致性与Raft.md](distributed/一致性与Raft.md) | 强/弱/最终一致性、CAP、Raft 角色转换与选举流程 |
+| [distributed/分布式事务.md](distributed/分布式事务.md) | XA/DTP 与 BASE、七种方案（2PC/3PC/TCC/Saga/本地消息表/事务消息/最大努力通知）对比与选型顺序、Seata AT 与 TCC 接入、Go dtm 四种模式 |
+| [distributed/分布式ID.md](distributed/分布式ID.md) | 三条硬要求、方案全景对比、雪花位结构与 workerId 分配、时钟回拨、前端 JS 精度丢失、Go(bwmarrin/sonyflake) 与 Java(Hutool/MyBatis-Plus) 落地 |
+| [distributed/限流降级熔断.md](distributed/限流降级熔断.md) | 四种限流算法与关键差异、Redis+Lua 分布式限流、熔断三态与 Half-Open、熔断与重试的相互作用、三类降级、sentinel-golang/gobreaker 与 Resilience4j |
 | [distributed/服务发现与负载均衡.md](distributed/服务发现与负载均衡.md) | etcd 租约注册、健康检查、客户端/服务端负载均衡、为什么用注册中心、注册中心选型 |
 | [distributed/系统设计.md](distributed/系统设计.md) | 直播弹幕、文件服务器选型、朋友圈设计、视频上传直传 vs 中转、微信海量存储、统计页加速 |
 
@@ -157,4 +165,5 @@
   2. **个人学习笔记**（算法 / Java / GC / 安全 / Git / PHP 等）：以知识体系为主线组织，侧重对比表与选型结论。
   3. **中间件与组件手册**（数据存储 / 中间件 / 可观测性）：采用「介绍 + 使用方法」结构，**使用示例同时给出 Go 与 Java 两个版本**。
 - 文中配图已**全部本地化**到各自目录的 `images/` 下（用相对路径引用，不依赖外部图床）。
+- 代码块格式约定：**开栏围栏（```bash / ```go 等）后空一行**再写内容，否则渲染时语言标记的三角形会与首行文字重叠。
 - 涉及代码的题目均在本地**实际编译运行验证**过。
