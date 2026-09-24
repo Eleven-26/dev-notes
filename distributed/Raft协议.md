@@ -1,113 +1,12 @@
-# 分布式一致性与 Raft
+# Raft 协议
 
-> 强/弱/最终一致性、CAP、Raft 角色转换与选举流程；文末三节「使用」分别给出
-> Go（etcd 客户端：一致性开关/Txn/选举/Watch）、Java（jetcd 与 ZooKeeper 概念对照）、三节点集群实验
+> Raft 的角色、任期与日志复制，以及选主流程的逐步拆解；含 etcd 客户端的 Txn / Election / Watch 落地与三节点实验。
 >
 > 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../interview/素材清单.md)。
 
 ---
 
-## Q1. 分布式一致性是什么？强一致性和弱一致性有什么区别？
-
-**来源**：`p=22` 百度 Go 实习一面 · 时长 10分53秒
-**考察意图**：一句话定义 + 两种一致性 + 落到 CAP 定理，并**能举出实际的系统做对比**。
-
-### 一句话定义
-
-> **分布式一致性 = 分布式系统下，节点之间数据的一致性。**
->
-> 具体说：一个有 3 个节点的集群，**如何保证这 3 个节点上的数据是一致的**——
-> 这就是分布式一致性要解决的问题。
-
-### 一、强一致性（以 etcd 为例）
-
-**写入过程**：
-
-```
-客户端写请求 → Leader 节点 → Leader 同步数据给所有 Follower
-    → 半数以上节点同步成功后，才认为"写成功"→ 才返回给客户端
-```
-
-**代价**：**写速度明显变慢**——必须等集群中**多数以上节点**确认成功才能返回。
-
-**结果特征（面试要讲这句）**：
-
-> 无论请求打到哪个节点，都会得到**相同的结果**——
-> **要么都有，要么都没有**。
-> 不可能出现"访问 1 号节点有、2 号节点没有、3 号节点有"这种情况。
-
-### 二、弱一致性（以 Redis Cluster 为例）
-
-**前提**：这里说的是 **Redis 集群**，不是"Redis 单实例 + 高可用"。
-
-**写入过程**：
-
-```
-客户端写请求 → 主节点写入成功 → 立即返回给客户端
-    → 后台异步进程再把数据同步到其他节点
-```
-
-**结果特征**：
-
-> 在"**写成功但还没同步完成**"这个时间窗口内，
-> 同一时刻的多个请求访问不同节点，**可能得到不一样的结果**——
-> 有的节点返回了最新数据，有的还没有。
-
-**这就是弱一致性：牺牲一致性，换取可用性和低延迟。**
-
-### 三、特殊情形：最终一致性（最常用的是消息队列）
-
-**背景**：跨实例的**分布式事务**复杂度高、性能慢。
-
-**做法**：
-1. 请求持续过来时，先**构建队列**，把请求放进队列；
-2. 由专门的进程**消费消息**，按顺序**逐个写入数据库**；
-3. 后续请求停止、消息全部消费完之后，**数据最终达成一致**。
-
-**典型载体**：Kafka 这类消息队列。
-> 注意：**分布式一致性里的"最终一致性"用得相对少**，通常出现在数据库或消息队列场景。
-
-### 四、CAP 定理（面试官大概率追问）
-
-**C（Consistency）一致性、A（Availability）可用性、P（Partition tolerance）分区容错性。**
-
-**关键前提**：
-> 只要是分布式系统，**P（分区容错性）就是必须保证的**——
-> 网络分区是客观存在的，不做分区容错，系统根本无法作为分布式系统运行。
-
-**所以真正的取舍发生在 C 和 A 之间**：
-
-| 系统 | 保证 | 牺牲 | 表现 |
-|---|---|---|---|
-| **etcd** | **C + P** | **A** | 数据在所有节点上一致；但**一个节点挂了，数据就写不进去**（可用性受损） |
-| **Redis Cluster** | **A + P** | **C** | 弱一致性；任一节点可写可读，但**可能读到不一致的数据** |
-| etcd 的全量复制 | 每个节点都保存**完整数据** | — | 一致性依赖全量同步 |
-| Redis 的分片复制 | 3 节点各存 **1/3 数据**，并各备份另外 2/3 | — | 分片 + 副本，是无中心的高可用 |
-
-### 五、⚠️ 一个很容易答错的地方：MySQL 的高可用 ≠ 集群
-
-| 架构 | 数据分布 | 本质 |
-|---|---|---|
-| **MySQL 单实例（+ 主从/双机热备）** | **数据都在一个节点上**，同时备份到另一个节点 | **高可用架构**，不是集群 |
-| **MySQL 集群模式** | 3 个节点各存 **1/3 数据**，并备份其他部分 | **真正的集群**（分区容错） |
-
-> **为什么这很重要**：我们说"MySQL 要做全量备份 / 增量备份"，
-> 是因为**通常用的是单实例或单实例+高可用模式**，数据集中在一个节点上，所以必须备份。
->
-> 而真正的集群模式下，**某个节点故障后，剩余节点能组织出全量数据**，
-> 新节点加入即可补齐数据——这是**分区容错性**的体现。
-
-### 面试建议（原视频强调的）
-
-> **可以背，但一定要有自己的理解，把理解加进去。**
-> 面试时按部就班地"背出来"，不如用自己的话讲一遍——**别让面试官觉得你在死记硬背**。
-
----
-
-
----
-
-## Q2. 介绍一下 Raft 协议
+## Q1. 介绍一下 Raft 协议
 
 **来源**：`p=23` 百度 Go 实习一面 · 时长 22分33秒
 **考察意图**：面试官会顺着**项目经历**里的分布式组件追问。原视频先给了一个**回答任何技术题的通用模板**，
@@ -249,10 +148,10 @@
 
 ---
 
-## Q3. Raft 的三种角色如何转换？选举的详细流程是怎样的？
+## Q2. Raft 的三种角色如何转换？选举的详细流程是怎样的？
 
 **来源**：`p=57`（携程云计算一面，节点状态转换，7分07秒）+ `p=58`（携程云计算一面，选主详细流程，12分06秒）
-**考察意图**：Q4 讲的是 Raft 的"是什么"，这两题问的是**"过程细节"**——
+**考察意图**：Q1 讲的是 Raft 的"是什么"，本题问的是**"过程细节"**——
 面试官会顺着"你项目里用了 etcd/强一致性"往下挖。
 
 ### 一、三种角色
@@ -371,160 +270,8 @@ Follower 收不到心跳（超时）  → 进入选举流程
 
 ---
 
-## 使用一：Go（etcd 客户端：把"一致性等级"变成一行代码）⭐
-
-> 校验说明：本节 5 个代码块同属包 `raftdemo`，依赖 `go.etcd.io/etcd/client/v3 v3.7.2`
-> （连带 `grpc v1.83.2`），`go build` + `go vet` + `gofmt` 通过。
-> ⚠️ **未做运行时验证**——本机没有 etcd 集群、Docker Desktop 未启动。
-> 也就是说：**API 形态由编译器保证（这部分可信），行为结论来自官方文档与正文原视频**。
-
-### 0. 先补一个正文没讲透、但一写代码就会撞上的点
-
-正文 Q2 说「**读可以通过 Follower 分担，写不行**」——这句话在 **etcd 上默认不成立**：
-
-| 读法 | etcd 默认？ | 要不要过 quorum | 能读到旧数据吗 | 谁在扛压力 |
-|---|---|---|---|---|
-| **linearizable 读**（默认） | ✅ | **要**（ReadIndex 一轮多数派确认） | **不能**（保证不过期） | **还是 Leader 为主** |
-| **serializable 读**（`WithSerializable()`） | ❌ 要显式开 | 不要 | **可能读到旧值** | 真正落到 Follower |
-
-> 所以准确的表述是：**etcd 想"读写分离"必须主动放弃强一致**。
-> 这一句话在面试里非常加分——它把正文 Q1 的 CAP 表格落成了**一个函数选项**：
-> **选 C 还是选 A，不是"选哪个数据库"的问题，而是"这一行传不传 option"的问题。**
-
-### 1. 客户端单例，以及"为什么这里不能用 `sync.OnceValue`"
-
-```go
-
-package raftdemo
-
-import (
-	"context"
-	"fmt"
-	"strings"
-	"sync"
-	"time"
-
-	clientv3 "go.etcd.io/etcd/client/v3"
-)
-
-var (
-	mu     sync.Mutex
-	client *clientv3.Client
-)
-
-// Client 是 etcd 客户端单例：clientv3.Client 内部是一条 gRPC 连接，
-// 自带多端点故障转移与重连，每次请求 New 会把建连/认证摊到每个请求上。
-//
-// 这里刻意**不用** sync.OnceValue：clientv3.New 可能失败，
-// OnceValue 会把第一次的错误永久缓存，之后再也拿不到客户端。
-func Client() (*clientv3.Client, error) {
-	mu.Lock()
-	defer mu.Unlock()
-	if client != nil {
-		return client, nil
-	}
-	c, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"127.0.0.1:2379", "127.0.0.1:2479", "127.0.0.1:2579"},
-		DialTimeout: 3 * time.Second,
-		// 生产还要配 Username/Password（RBAC）与 TLS。
-		// ⚠️ 开 Auth 前先确认用户已存在，否则客户端会拿不到权限、排查成本极高（见使用三的坑表）
-	})
-	if err != nil {
-		return nil, err
-	}
-	client = c
-	return client, nil
-}
-
-// ClusterView 打印每个节点自认的 leader 与 term。
-// 正文 Q3 说"任期像届一样单调递增"——这是**在生产上直接看到它**的方式：
-// 选一次主，term 就会涨（etcd 还会跳号，因为每轮选举都先自增）。
-func ClusterView(ctx context.Context) (string, error) {
-	c, err := Client()
-	if err != nil {
-		return "", err
-	}
-	var sb strings.Builder
-	for _, ep := range c.Endpoints() {
-		st, err := c.Status(ctx, ep)
-		if err != nil {
-			fmt.Fprintf(&sb, "%-20s DOWN   %v\n", ep, err)
-			continue
-		}
-		// leader==0 表示这个节点此刻认为"集群没有 Leader"——正文 Q2「存活不过半就停摆」的实物
-		fmt.Fprintf(&sb, "%-20s member=%d leader=%d term=%d index=%d v=%s dbsize=%d\n",
-			ep, st.Header.GetMemberId(), st.Leader, st.RaftTerm, st.RaftIndex, st.Version, st.DbSize)
-	}
-	return sb.String(), nil
-}
-
-```
-
-> **Endpoints 要写全三个节点，不要只写一个**：客户端的重连是"换一个端点重连"，
-> 只写一个地址等于把单点写进了配置——这与正文「etcd 保证 CP、牺牲 A」的取舍正好相反。
-
-### 2. 同一个 key 的两种读法（正文 Q1 的代码版）
-
-```go
-
-package raftdemo
-
-import (
-	"context"
-
-	clientv3 "go.etcd.io/etcd/client/v3"
-)
-
-// ReadLinearizable 是 etcd 的**默认**读：读之前要先向 Leader 确认"我的数据不过期"
-// （ReadIndex，一轮多数派往返），所以**慢**，而且**没有多数派就读不出来**。
-func ReadLinearizable(ctx context.Context, key string) (string, int64, error) {
-	c, err := Client()
-	if err != nil {
-		return "", 0, err
-	}
-	resp, err := c.Get(ctx, key)
-	if err != nil {
-		return "", 0, err
-	}
-	if len(resp.Kvs) == 0 {
-		return "", resp.Header.Revision, nil
-	}
-	return string(resp.Kvs[0].Value), resp.Header.Revision, nil
-}
-
-// ReadSerializable 走**本地读**：不经过 Leader、不占 quorum，
-// 能真正把读压力分摊到 Follower 上，代价是**可能读到旧值**。
-//
-// ★ 这两个函数就是正文 Q1「强一致 vs 弱一致」的实物版。
-//
-//	返回值里带上 Revision 是刻意的：**只有把版本号一路传下去，
-//	"读到旧数据"才可观测**；否则线上永远只能靠猜。
-func ReadSerializable(ctx context.Context, key string) (string, int64, error) {
-	c, err := Client()
-	if err != nil {
-		return "", 0, err
-	}
-	resp, err := c.Get(ctx, key, clientv3.WithSerializable())
-	if err != nil {
-		return "", 0, err
-	}
-	if len(resp.Kvs) == 0 {
-		return "", resp.Header.Revision, nil
-	}
-	return string(resp.Kvs[0].Value), resp.Header.Revision, nil
-}
-
-```
-
-**用法上的三条判断**：
-
-| 场景 | 选哪个 | 原因 |
-|---|---|---|
-| 抢锁、读配置后马上执行、"读己之写" | linearizable | 旧值会直接导致业务错误 |
-| 高频只读的列表/状态页、能容忍几十毫秒陈旧 | serializable | 省一轮 quorum 往返，Leader 压力显著下降 |
-| 缓存回填、限流计数 | 都行，但**要写明容忍度** | 拿不准就用默认，别为了性能偷偷改语义 |
-
-### 3. 写操作：一条 Txn 就是"多数派提交"的原子单位
+## 使用一：Go（etcd 客户端：Txn / Election / Watch）⭐
+### 1. 写操作：一条 Txn 就是"多数派提交"的原子单位
 
 ```go
 
@@ -541,7 +288,7 @@ import (
 // Compare(ModRevision(key), "=", 0) 的含义是"这个 key 从未存在过"。
 // 返回 false 表示别人已经注册了（走了 Else 分支）——**这个判断可信**，
 // 因为 Txn 的 If/Then/Else 是在 Leader 上作为**一条日志**提交的，
-// 只有多数派落盘后才返回（正文 Q2 流程二的 ①~⑤）。
+// 只有多数派落盘后才返回（正文 Q1 流程二的 ①~⑤）。
 //
 // leaseID 传 0 表示不挂租约（永久配置）；**服务实例注册必须挂租约**，
 // 否则进程崩溃后注册中心里会残留一个"活着"的脏实例。
@@ -603,13 +350,13 @@ func DeleteIfMatches(ctx context.Context, key, owner string) (bool, error) {
 ```
 
 > ⚠️ **etcd 的"写成功"只保证"日志被多数派接受并已提交"**，不保证"每个 Follower 都已 apply 到状态机"。
-> 这正是正文 Q1 那句"半数以上同步成功就返回"的准确含义——
+> 这正是正文 [一致性与CAP.md](一致性与CAP.md) 那句"半数以上同步成功就返回"的准确含义——
 > 所以**linearizable 读**才需要额外一轮确认，把"已提交"升级成"已应用到我的视图"。
 > 租约与续租的写法（`Grant` / `KeepAlive` / 为什么必须单条 stream）已在
-> [应用层协议.md 使用一 `leasedemo`](../network/应用层协议.md) 与
-> [redis/缓存与分布式锁.md](../middleware/redis/缓存与分布式锁.md) 里给全，本篇不重复。
+> [DHCP.md 使用一（租约状态机）](../network/DHCP.md) 与
+> [redis/缓存问题与方案.md](../middleware/redis/缓存问题与方案.md) 里给全，本篇不重复。
 
-### 4. 选举：把"强领导者"用成应用层的单写者
+### 2. 选举：把"强领导者"用成应用层的单写者
 
 ```go
 
@@ -623,13 +370,13 @@ import (
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
-// CampaignLeader 把正文 Q2「强领导者」变成应用层的**单写者**：
+// CampaignLeader 把正文 Q1「强领导者」变成应用层的**单写者**：
 // 定时任务/对账/清理这类"全局只想跑一份"的作业，应该用 etcd 选举，而不是自己写锁。
 //
 // 返回的 release 必须由调用方执行。**Resign 与"只 Close"的差别很大**：
 //   - Resign：主动放弃，key 立刻消失 → 下一个候选者**马上**上位；
 //   - 只 Close Session（或进程崩溃）：要等 lease 的 TTL（这里 15s）才切换 →
-//     这就是"Leader 挂了服务要卡十几秒"的根因，也就是正文 Q1 说的"写不进去"在应用层的形态。
+//     这就是"Leader 挂了服务要卡十几秒"的根因，也就是正文 [一致性与CAP.md](一致性与CAP.md) 说的"写不进去"在应用层的形态。
 func CampaignLeader(ctx context.Context, name, payload string) (release func(), err error) {
 	c, err := Client()
 	if err != nil {
@@ -681,10 +428,10 @@ func CurrentLeader(ctx context.Context, name string) (string, error) {
 ```
 
 > `NewSession` 已经帮你做了**租约 + 后台 KeepAlive**（拿到 session 后 `sess.Lease()` 就是 LeaseID，
-> 配合第 3 节的 `RegisterIfAbsent` 就是完整的服务注册）。
+> 配合第 1 节的 `RegisterIfAbsent` 就是完整的服务注册）。
 > 但**Session 一个只能服务一个租约**：想给多个 key 挂同一个 TTL，就显式 `Grant` 一次再复用 LeaseID。
 
-### 5. Watch：服务发现最容易丢事件的地方
+### 3. Watch：服务发现最容易丢事件的地方
 
 ```go
 
@@ -713,7 +460,7 @@ type ChangeFunc func(typ mvccpb.Event_EventType, kv, prevKV *mvccpb.KeyValue) er
 // ★ 两条必须记住的细节：
 //  1. 全量 Get 与建立 Watch 之间**有窗口**，所以必须用 WithRev(那次 Get 的 Revision+1) 起订，
 //     否则这中间发生的创建/删除会永久丢失——"实例早就下线了，注册中心还认为它在"就是这么来的。
-//     （正文 Q1 说的"最终一致"，缺了这一步就退化成"可能永远不一致"。）
+//     （正文 [一致性与CAP.md](一致性与CAP.md) 说的"最终一致"，缺了这一步就退化成"可能永远不一致"。）
 //  2. etcd 会周期性压缩历史版本（compact），订阅者掉线太久会收到 ErrCompacted；
 //     此时**没有增量可补**，只能重新全量拉。
 func WatchInstances(ctx context.Context, prefix string, onChange ChangeFunc) error {
@@ -767,11 +514,11 @@ func WatchInstances(ctx context.Context, prefix string, onChange ChangeFunc) err
 | 断网几分钟后永久失联、再无事件 | 起点被 compact，`wresp.Err()` 没处理 | 收到 `ErrCompacted` 就**重建整个流程** |
 | channel 关闭后循环静默退出 | `for range wch` 结束没上报 | 退出前返回 `ctx.Err()`（本函数就是这么写的），外层要**重连**而不是忽略 |
 
-### 6. 三句可以直接背的总结
+### 4. 三句可以直接背的总结
 
 1. **多数派决定可用性**：3 节点容 1 挂、5 节点容 2 挂；`n` 台能容忍 `floor((n-1)/2)` 台，
    **所以集群规模一定是奇数**——4 台和 3 台容错能力一样，却多花一台、还多一个通信对象。
-   > ⚠️ 顺带修正正文 Q1 CAP 表格里那句"一个节点挂了，数据就写不进去"：
+   > ⚠️ 顺带修正正文 [一致性与CAP.md](一致性与CAP.md) CAP 表格里那句"一个节点挂了，数据就写不进去"：
    > **3 节点集群挂 1 台仍然可写**（2/3 依旧过半）。写不进去发生在**挂 ≥ 半数**时。
    > 面试里把这句话说准，比背表格更能证明你真懂多数派。
 2. **一致性是开关，不是信仰**：同一个 etcd，`Get` 传不传 `WithSerializable()` 就是 C 与 A 的分界。
@@ -780,6 +527,7 @@ func WatchInstances(ctx context.Context, prefix string, onChange ChangeFunc) err
 
 ---
 
+## 使用二：Java（jetcd 与 ZooKeeper/Curator 对照）
 ## 使用二：Java（jetcd，以及与 ZooKeeper/Curator 的概念对照）
 
 > 校验说明：本节按 `jetcd 0.8.x` + `Curator 5.x` 的公开 API 书写，
@@ -838,7 +586,7 @@ public class EtcdReader {
 
     public EtcdReader(KV kv) { this.kv = kv; }
 
-    // 默认读 = linearizable = 强一致（正文 Q1 的 etcd 行为）
+    // 默认读 = linearizable = 强一致（正文 [一致性与CAP.md](一致性与CAP.md) 的 etcd 行为）
     public String getStrong(String key) throws Exception {
         GetResponse resp = kv.get(bs(key)).get(3, TimeUnit.SECONDS);
         return resp.getKvsList().isEmpty() ? null
@@ -894,7 +642,7 @@ public class ZkLeaderConfig {
 
     /**
      * 与 etcd 的 Campaign 等价的"全局单写者"。
-     * 注意两点（和正文 Q3 完全对应）：
+     * 注意两点（和正文 Q2 完全对应）：
      *   1. LeaderLatch 靠**临时顺序节点**实现，进程崩溃 → session 超时 → 节点消失 → 下一个上位；
      *      所以"切换要等一个 sessionTimeout"，不要指望它是 0 秒。
      *   2. 业务代码要**以 listener 的 stateChanged 为准**，不要缓存"我是 Leader"的判断，
@@ -923,11 +671,12 @@ public class ZkLeaderConfig {
 
 > **选型对照（一句话）**：ZK 是"为协调而生的通用库"（临时节点、ACL、多种 watch 语义），
 > etcd 是"用 Raft 重做了一遍、只给你 KV + Watch 的极简库"。
-> 正文 Q2 说的"Raft 的初衷是可理解性"，在**客户端 API 上同样成立**：
-> etcd 的接口更少，所以第 5 节那四类坑更容易在 review 中被看出来。
+> 正文 Q1 说的"Raft 的初衷是可理解性"，在**客户端 API 上同样成立**：
+> etcd 的接口更少，所以第 3 节那四类坑更容易在 review 中被看出来。
 
 ---
 
+## 使用三：三节点实验（把每条结论都跑一遍）
 ## 使用三：三节点实验（把正文每一条结论都跑一遍）
 
 > ⚠️ 校验说明：**本节命令未在本机实测**（Docker Desktop 未运行，且 etcd 集群需要 3 个容器）。
@@ -999,7 +748,7 @@ etcdctl get foo --consistency=s              # ⚠️ 该 flag 是否存在以 e
 
 | 现象 / 报错 | 根因 | 处置 |
 |---|---|---|
-| `etcdserver: no leader` / `Unavailable`，且 `endpoint status` 里 `leader=0` | **quorum 丢了**（正文 Q2 的硬性约束） | 先恢复节点数，不要在客户端加重试风暴；**这正是 etcd 牺牲 A 的体现** |
+| `etcdserver: no leader` / `Unavailable`，且 `endpoint status` 里 `leader=0` | **quorum 丢了**（正文 Q1 的硬性约束） | 先恢复节点数，不要在客户端加重试风暴；**这正是 etcd 牺牲 A 的体现** |
 | `etcdserver: mvcc: database space exceeded` | 存储超过 `--quota-backend-bytes`（默认 2MiB 配额很小，生产要显式给 8GiB） | `etcdctl compact <rev>` → `etcdctl defrag` → **`etcdctl alarm disarm`**（三条都要，顺序不能错） |
 | 写入越来越慢、`DB SIZE` 一直涨 | 没开自动压缩（`--auto-compaction-retention`），历史版本堆积 | 配自动压缩 + 定期 defrag；**defrag 要一个节点一个节点来**（它会阻塞该节点） |
 | watch 报 `ErrCompacted`，之后本地视图永久错乱 | 压缩掉了订阅起点，**却没有回退成全量重拉** | 使用一 §5 的写法：捕获 `ErrCompacted` → 丢弃缓存 → 重新 `Get`+`WithRev` |
@@ -1007,6 +756,13 @@ etcdctl get foo --consistency=s              # ⚠️ 该 flag 是否存在以 e
 > 面试时可以收一句：**"用 etcd 的难点从来不是理解 Raft，而是三件事——
 > 租约 TTL 与业务超时的关系、quorum 丢失时你的服务该降级还是该拒绝、
 > 以及 watch 断线后怎么把本地视图补齐。"**
-> 这三问分别对应正文的 Q1（可用性取舍）、Q2（多数派硬约束）、Q3（数据只能从 Leader 流向 Follower）。
+> 这三问分别对应正文的 [一致性与CAP.md](一致性与CAP.md)（可用性取舍）、Q1（多数派硬约束）、Q2（数据只能从 Leader 流向 Follower）。
 
 ---
+
+## 关联
+
+- [一致性与CAP.md](一致性与CAP.md) — 为什么要强一致，linearizable 读的由来
+- [服务发现与负载均衡.md](服务发现与负载均衡.md) — 租约注册与 Watch 的生产用法
+- [../middleware/Nacos.md](../middleware/Nacos.md) — 另一套一致性协议（Distro + JRaft）
+- [分布式ID.md](分布式ID.md) — 多节点下的单调与唯一

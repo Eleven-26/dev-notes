@@ -83,7 +83,7 @@ LDNS ──5──▶ 权威服务器  : "www.example.com 的 IP？"
 LDNS ──7──▶ 客户端     : 返回 IP，并把结果按 TTL 缓存
 ```
 
-5. 客户端拿到 IP 才开始建 TCP 连接（本篇不展开，见 [TCP.md](TCP.md)）；
+5. 客户端拿到 IP 才开始建 TCP 连接（本篇不展开，见 [TCP三次握手.md](TCP三次握手.md)）；
 6. ⚠️ **CNAME 会重启一轮**：第 6 步若返回 CNAME，LDNS 要**对别名再解析一次**，直到拿到 A/AAAA。
 
 ### TTL 与缓存（⚠️ 高频故障）

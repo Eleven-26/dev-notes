@@ -58,7 +58,7 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 - **路由单元**：客户端按 Topic 拉一份完整 `TopicRouteData`（队列列表 + 主从拓扑 + 读写权限位），NameServer 不做增量协议。Topic 路由数据量极小（一条 Topic 几百字节），**全量下发比增量协议简单得多**，代价只是缓存过期窗口（客户端周期性更新，周期见上节）。
 - **客户端本地缓存 + 重试时"投票"**：Producer 默认轮询队列；失败重试时按 `lastBrokerName` 避开刚挂的那台 Broker 重新选（同组内换队列而不是换 Broker），配合 `sendLatencyFaultEnable` 时还会把慢 Broker 记入故障掩码、一段时间内降权。路由指向已下线 Broker 时发送报错、下一次更新路由自愈——**错误容忍窗口换来了协议极简**。
 - **自动建 Topic 的钩子也藏在路由里**：`autoCreateTopicEnable=true` 时新 Topic 借用默认 Topic（`TBW102`）的路由模板下发，这解释了为什么没建过的 Topic 也能发出去，也是生产必须关掉它的原因。
-- ⭐ 回到本质：NameServer 能薄，是因为路由错误的代价**可以被重试消化**（选错队列就换一个）。但"谁是 Master"这类元数据错误会导致双写，不能重试消化——所以 DLedger 模式才把主选举交给 Raft（见第六节），两套机制回答的是同一个问题：**这份数据要不要强一致**。对照见 [一致性与Raft.md](../distributed/一致性与Raft.md)。
+- ⭐ 回到本质：NameServer 能薄，是因为路由错误的代价**可以被重试消化**（选错队列就换一个）。但"谁是 Master"这类元数据错误会导致双写，不能重试消化——所以 DLedger 模式才把主选举交给 Raft（见第六节），两套机制回答的是同一个问题：**这份数据要不要强一致**。对照见 [Raft协议.md](../distributed/Raft协议.md)。
 
 ### 存储设计：CommitLog / ConsumeQueue / IndexFile ⭐
 
@@ -564,7 +564,7 @@ func main() {
 
 - **异步复制的丢失窗口**：Master 写完即 ACK，Slave 追赶是后台流式复制——Master 磁盘报废这类"不可恢复故障"时，**已 ACK 但未同步**的尾部消息即丢失。同步复制（`SYNC_MASTER`）把 ACK 推迟到组内多数/Slave 落组成功，窗口归零，代价是 RT 受组内**最慢副本**牵制、Slave 落后时 Master 会限流拒绝写入（明确失败，不静默丢）。
 - **原生主从缺的不是复制，是"切换"**：4.x 原生主从 Master 挂掉后 Slave **只读、不会自动升主**，该组写能力直接中断（客户端的延迟故障规避只是绕开发送，不能恢复写）。要自动切换才上 DLedger 模式：把一组 Broker 组成 Raft 组，Master 故障自动选主。
-- **DLedger 的三笔代价**：① 每组必须 ≥3 节点（多数派）；② 提交需多数写成功，RT 与可用性绑定网络分区；③ 选主窗口内该组不可写。5.x 起也可用独立 NameServer 集群（`enableControllerInNamesrv`）承载主切换、保留原生复制模型——"自动切主"和"多数派写"其实是两件事，选型时分开评估。Raft 细节见 [一致性与Raft.md](../distributed/一致性与Raft.md)。
+- **DLedger 的三笔代价**：① 每组必须 ≥3 节点（多数派）；② 提交需多数写成功，RT 与可用性绑定网络分区；③ 选主窗口内该组不可写。5.x 起也可用独立 NameServer 集群（`enableControllerInNamesrv`）承载主切换、保留原生复制模型——"自动切主"和"多数派写"其实是两件事，选型时分开评估。Raft 细节见 [Raft协议.md](../distributed/Raft协议.md)。
 - 顺带回答"为什么半同步思路不常见"：RocketMQ 的 `SYNC_MASTER` 是"写组成功才 ACK"的整体语义，不像 MySQL 有"收到 ACK 即返回"的 after-sync 中间档——要"RT 低一点"只能靠减副本数或换异步，没有半档可调（以官方文档语义为准）。
 
 ### 消息重试与死信

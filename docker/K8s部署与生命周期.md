@@ -1,209 +1,12 @@
-# K8s 与镜像优化
+# K8s 部署与生命周期
 
-> Docker 启用 IPv6 联网、Dockerfile 里换国内镜像源、Helm 像 apt 一样管理 Kubernetes 应用
+> Helm 怎样像 apt 一样管理 K8s 应用、镜像与 K8s 相关的正确姿势、三探针与优雅关闭、滚动升级与回滚。
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../interview/素材清单.md)；本轮补充（镜像瘦身、构建缓存、imagePullPolicy 与 QoS、三探针与优雅关闭、滚动与回滚）参考《Docker 技术入门与实战》（第 3 版，杨保华 / 戴王剑 / 曹亚仑）。
+> 内容整理自大厂 Go 后端面试真题视频；本轮补充（imagePullPolicy 与 QoS、三探针与优雅关闭、滚动与回滚）参考《Docker 技术入门与实战》（第 3 版，杨保华 / 戴王剑 / 曹亚仑）。参考资料与原始素材见 [素材清单](../interview/素材清单.md)。
 
 ---
 
-## Q1. Docker 怎样启用 IPv6 联网访问？
-
-**来源**：`BV12qjA6aErF p=9` B站 Go 面试真题 · 时长 3分25秒
-**考察意图**：考的是**能不能自己动手把 Docker 的网络配置改对**——
-配置文件在哪、改哪几项、怎么让它生效、怎么验证。
-顺带考一个常见认知：**Docker 默认支持 IPv6，但默认是关着的。**
-
-### 一、结论先行
-
-Docker 本身**支持 IPv6，但默认不启用**。启用要三件事：
-
-1. **宿主机内核没禁用 IPv6**（前提条件）；
-2. 改 **Docker 守护进程配置 `daemon.json`**（视频的主体内容）；
-3. **重载 + 重启 Docker**，再验证容器确实拿到了 IPv6 地址。
-
-### 二、内核参数：先确认宿主机支持 IPv6
-
-```bash
-
-cat /proc/sys/net/ipv6/conf/all/disable_ipv6   # 应该是 0
-# 如果是 1，说明内核层把 IPv6 关了，Docker 怎么配都没用
-sysctl -w net.ipv6.conf.all.disable_ipv6=0
-```
-
-### 三、改 `daemon.json`（核心步骤）
-
-配置文件位置：**`/etc/docker/daemon.json`**。
-**如果这个文件不存在，就自己创建**（视频里强调的正是这一步）。
-
-```json
-
-{
-  "ipv6": true,
-  "fixed-cidr-v6": "2001:db8:1::/64"
-}
-```
-
-| 配置项 | 作用 |
-|---|---|
-| **`"ipv6": true`** | 打开 Docker 的 IPv6 联网能力 |
-| **`"fixed-cidr-v6"`** | 给 Docker 指定一个默认的 IPv6 网段，**容器才能动态分到 IPv6 地址** |
-
-> ⚠️ 生产上请把 `fixed-cidr-v6` 换成**自己实际拥有的 IPv6 网段**。
-> `2001:db8::/32` 是 RFC 3849 专门保留给文档示例的地址段，不能真的拿来用。
-
-### 四、生效与验证
-
-```bash
-
-systemctl daemon-reload     # 重新加载配置
-systemctl restart docker    # 重启 Docker（容器会重建，注意影响）
-
-docker start nginx
-
-# IPv4 回环
-curl http://127.0.0.1:<port>/
-
-# IPv6 回环（URL 里的 IPv6 地址必须用方括号包起来）
-curl -g "http://[::1]:<port>/"
-```
-
-用 `ifconfig` 看网卡，会同时看到 IPv4 地址和 IPv6 地址。直接用 IPv6 地址访问时：
-
-> **⚠️ 用链路本地地址（`fe80::/10` 开头）访问时，必须带上网卡作用域，
-> 也就是要指定网络接口**（如 `fe80::xxxx%eth0`），否则访问不通。
-> 视频里"访问不了 → 指定网络接口后就能访问"演示的就是这个点。
-> 浏览器访问同理：`http://[IPv6 地址]:端口/`。
-
-**反证**：把容器停掉（`docker stop nginx`）之后再访问就访问不到了——
-说明刚才访问到的确实是这个容器。
-
-### 五、补充：自定义网络与运行参数
-
-默认 `bridge` 网络靠 `daemon.json` 里的 `ipv6` + `fixed-cidr-v6` 就够了；
-自定义网络需要显式开启：
-
-```bash
-
-# 创建带 IPv6 子网的自定义网络
-docker network create --ipv6 --subnet=fd00:1::/64 mynet6
-# 容器加入该网络，即可拿到 IPv6 地址
-docker run -d --network=mynet6 --name nginx6 nginx
-```
-
-### 面试官会追问什么
-
-- **为什么 `fixed-cidr-v6` 是必须的？** → 不给 Docker 一个 IPv6 网段，
-  它就没法给容器分配地址，`"ipv6": true` 形同虚设。
-- **只开 IPv6 的容器怎么访问 IPv4 外网？** → 需要 **NAT64 / DNS64** 做协议与地址转换，
-  这类能力一般由网络侧统一提供，不是 Docker 自己能解决的。
-- **`daemon-reload` 和 `restart docker` 的区别？** → `daemon-reload` 只是让 systemd
-  重读 unit 文件；**改了 `daemon.json` 必须 `restart docker` 才生效**（重启会重建容器）。
-
----
-
-
----
-
-## Q2. Dockerfile 构建镜像时如何修改基础镜像的镜像源地址？
-
-**来源**：`BV12qjA6aErF p=10` B站 Go 面试真题 · 时长 5分18秒
-**考察意图**：这是一道**踩过坑才知道**的题。考两件事：
-① 你知不知道**构建镜像的环境和宿主机是隔离的**，宿主机配好的加速在构建时是无效的；
-② 遇到"基础镜像里压根没有 `sources.list`"这种情况，你会怎么处理。
-
-### 一、背景：境外能构建，搬回境内就构建不动
-
-视频里的场景很典型：要部署一个支付服务，Dockerfile 是微服务脚手架生成的模板，
-只需要改编译镜像、编译镜像版本、配置文件和 cmd。在**境外服务器**上构建一切正常，
-**搬到境内服务器**后卡住了——因为 Dockerfile 里有 `apt install` 这一步，
-走的还是**境外的软件源**。
-
-> 这和 Go 编译要设 `GOPROXY` 国内代理是**一模一样的逻辑**：
-> 容器内的网络环境，需要单独为容器内配置。
-
-### 二、两种改法
-
-#### 情况一：基础镜像有 `/etc/apt/sources.list`（Debian / Ubuntu 常见）
-
-```dockerfile
-
-RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g; s@security.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates tzdata \
-    && rm -rf /var/lib/apt/lists/*
-```
-
-用 `sed -i` 把文件里**每一行的源地址**替换成国内地址（**阿里云镜像源**是最常用的之一），
-替换后再 `apt-get update`，装包就正常了。
-
-#### 情况二：基础镜像里**根本没有这个文件**（视频遇到的坑）
-
-视频里用 `sed` 替换时才发现：**这个镜像的 `/etc/apt` 下面没有 `sources.list`**，
-自然替换失败。先验证一下：
-
-```bash
-
-# 交互式跑起来看一眼（用完即删）
-docker run --rm -it --name test <镜像名> ls -l /etc/apt/
-# 确认确实没有 sources.list / sources.list.d
-```
-
-**解法：文件不存在，就自己创建。**
-
-```dockerfile
-
-# 目录 / 文件不存在就直接写进去，然后再装包
-RUN mkdir -p /etc/apt \
-    && echo "deb https://mirrors.aliyun.com/debian bookworm main" > /etc/apt/sources.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates
-```
-
-> 改的位置是 **Dockerfile 里真正执行安装的那个阶段**——多阶段构建时
-> **不要改错到运行阶段**：运行阶段根本不需要 apt，改了既没用又白增镜像层。
-
-> 补充：新版 Debian（≥ 12）和 Ubuntu（≥ 24.04）用的是 deb822 格式，
-> 源文件在 `/etc/apt/sources.list.d/debian.sources` / `ubuntu.sources`；
-> CentOS / Rocky 则改 `/etc/yum.repos.d/*.repo` 里的 `baseurl`。
-
-### 三、⚠️ 面试重点：这和 `registry mirror` 完全是两回事
-
-很多人会把两者混为一谈，这里必须分清楚：
-
-| | **`registry-mirrors`（镜像加速）** | **换 apt / yum 源（本 Q）** |
-|---|---|---|
-| 配在哪 | **宿主机** `/etc/docker/daemon.json` | **镜像内部**（Dockerfile）的 `/etc/apt/sources.list` 等 |
-| 加速的是什么 | **`docker pull` 拉取镜像层** | **容器内 `apt-get install` 下载软件包** |
-| 生效时机 | 拉镜像时（守护进程层面） | 构建 / 运行容器时（容器内部） |
-| 能加速装包吗 | ❌ 不能 | — |
-| 能加速拉镜像吗 | — | ❌ 不能 |
-
-```json
-
-// /etc/docker/daemon.json —— 这配的是 docker pull 的加速，和装包速度无关
-{
-  "registry-mirrors": ["https://<你的加速地址>.mirror.aliyuncs.com"]
-}
-```
-
-一句话记：**mirror 管"拉镜像"，apt 源管"装软件"，两个加速要分别配。**
-
-### 面试官会追问什么
-
-- **为什么宿主机配了代理，构建镜像还是慢？** → **容器是相对独立的环境**，
-  宿主机的东西它不一定继承；构建时必须把它当成一台全新的虚拟机，
-  该配的加速要在 Dockerfile 里单独配。
-- **怎么确认镜像里到底有没有源文件？** → `docker run --rm -it <镜像> ls -l /etc/apt/`，
-  用完即删，不影响本地环境。
-- **换源之后镜像体积会不会变大？** → 顺手 **`rm -rf /var/lib/apt/lists/*`** 清掉包索引缓存，
-  并把多个 `RUN` 合并以减少镜像层数。
-
----
-
-
----
-
-## Q3. Helm 是什么？它怎样"像 apt 一样"管理 Kubernetes 应用？
+## Q1. Helm 是什么？它怎样"像 apt 一样"管理 Kubernetes 应用？
 
 **来源**：`BV12qjA6aErF p=11` B站 Go 面试真题 · 时长 3分17秒
 **考察意图**：考的是**K8s 的工程化能力**。会写 YAML 只是入门，面试官想确认你知不知道：
@@ -292,9 +95,9 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 | 痛点 | 手段 | 落在哪一层 |
 |---|---|---|
-| `docker pull` 拉镜像慢 | **`registry-mirrors` 镜像加速**（Q2 对比表左列） | 宿主机 **dockerd** |
-| 构建镜像时 `apt / yum` 装包慢 | **换国内软件源**（Q2） | **镜像内部** |
-| Chart / 镜像在公网拉不动，或要控版本 | **自建 OCI Registry + Helm**（Q3 实战） | **集群侧 / 制品库** |
+| `docker pull` 拉镜像慢 | **`registry-mirrors` 镜像加速**（[Docker网络与镜像源.md](Docker网络与镜像源.md) 对比表左列） | 宿主机 **dockerd** |
+| 构建镜像时 `apt / yum` 装包慢 | **换国内软件源**（[Docker网络与镜像源.md](Docker网络与镜像源.md)） | **镜像内部** |
+| Chart / 镜像在公网拉不动，或要控版本 | **自建 OCI Registry + Helm**（Q1 实战） | **集群侧 / 制品库** |
 
 > 串起来就是一条完整链路：**镜像从哪来（registry mirror）→ 构建时依赖从哪来（apt / yum 源）
 > → 应用制品怎么管（Helm + 私有 OCI Registry）**。
@@ -329,89 +132,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 ---
 
-## Q4. 镜像瘦身怎么做才有效？（Go / Java 各自的办法）⭐
-
-**考察意图**：区分"知道 alpine 小"和"知道**为什么**小、变小要付出什么"。
-主线：**能砍的依次是 编译期依赖 → 运行时库 → 无关系统文件**，每砍一刀都要说清"排障时怎么办"。
-
-### 一、Go：静态编译才有资格用最小基座
-
-```dockerfile
-
-FROM golang:1.24 AS build
-WORKDIR /src
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags "-s -w" -o /out/app ./cmd/app
-
-FROM scratch                       # 静态二进制可以什么都不带
-COPY --from=build /out/app /app
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-ENTRYPOINT ["/app"]
-```
-
-| 要点 | 为什么 |
-|---|---|
-| **`CGO_ENABLED=0`** | 只要引了 CGO，二进制就动态链接 **libc** → 运行时镜像必须有**同一个** libc；glibc 编的扔进 alpine（musl）会直接加载失败。这才是"`FROM scratch` 跑不起来"的根因 |
-| 什么时候**不能**关 CGO | 用到必须 CGO 的东西（`os/user` 的 cgo 路径、部分 SQLite 驱动、依赖 NSS 的行为）→ 要么保留 Debian slim 基座，要么改纯 Go 实现 |
-| `-ldflags "-s -w"` / `-trimpath` | 去符号表与 DWARF、去本机路径；代价是**二进制里的符号信息变差**，线上靠 pprof 与日志而不是靠符号（pprof 见 [Linux 性能排查](../linux/性能排查.md)） |
-| `scratch` 还欠什么 | 没 CA（调 HTTPS 报 unknown authority）、没时区文件、没 shell —— 这是"瘦身后半夜被叫起来"的两大经典原因 |
-
-### 二、Java：分层提取优先，jlink 是进阶
-
-| 手段 | 适用 | 代价 |
-|---|---|---|
-| **分层提取**（jar 按 依赖 / 快照依赖 / 资源 / 自身代码 拆层，Dockerfile 逐层 `COPY`） | 依赖基本不变、只有业务代码变 → 每次只重建最薄那层 | 需要支持分层打出的形态（Spring Boot 这类 `layertools`）；uber jar 享受不到 |
-| **jlink 自定义运行时** | 应用**模块化**、能列清依赖哪些 `java.*` 模块 | 反射/动态代理多的框架容易漏模块，**运行期才报错** → 必须完整跑集成测试 |
-| 换更小的 JDK 基座（slim / alpine 类） | 省掉一大部分体积（完整发行版里大量运行时用不到的文件） | JVM 在 musl 上有过兼容性问题，上生产前压测 |
-| AppCDS / AOT | 主要打**启动速度**（滚动发布、扩容冷启动） | 体积收益有限、构建流程变复杂 |
-
-### 三、基础镜像怎么选 ⭐
-
-| 基座 | 好处 | 代价（面试就考这个） |
-|---|---|---|
-| **`*-alpine`** | 很小，且有 `apk` 能进去装工具 | 用 **musl**：① CGO 编的二进制不兼容；② resolver 与 glibc 行为不同——K8s 里 `resolv.conf` 的 search 域很长、`options`（如 ndots）需要特殊处理时，**偶发解析变慢/首轮超时**多发生在 musl 上；③ 少数发行包只有 glibc 版 |
-| **`*-slim`**（Debian slim） | **glibc，兼容性最好**，已砍文档/locale | 还能 `apt-get`，所以还是会被装上东西 |
-| **distroless** | **没 shell、没包管理器** → 攻击面和"顺手装个东西"同时归零 | **`kubectl exec` 进不去**：要靠 `kubectl debug` 临时容器（挂同一进程 namespace 看 `/proc`）或 debug 变体 |
-| **`scratch`** | Go/静态二进制专用，最小 | CA、tzdata、DNS 全得自己拷 |
-
-> 默认选 **slim**；**先把"多阶段 + `.dockerignore` + 层顺序"三件免费的事做完**，这三件通常比换基座更划算。
-> "把不常变的放前面"省的是**两件事**：构建时间（层 digest 不变就命中缓存）与**分发时间**
-> （节点已有这些层 → 只拉薄层）。K8s 里后者直接决定 Pod 从 Pending 到 Running 的时间。
-> 瘦完的冒烟测试四项：**DNS 解析、HTTPS 出网、时区、`docker stop` 是不是 137**（信号处理）。
-
----
-
-## Q5. 构建缓存：CI 上为什么每次从零构建 ⭐
-
-层缓存存在**执行构建的那个 daemon/构建器本地**。CI 的 job 容器每次全新 → 本地缓存必为空。
-所以缓存只能搬到共享存储：
-
-| 做法 | 说明 | 注意 |
-|---|---|---|
-| **registry 缓存**（`--cache-from` 指向旧镜像层 / `--cache-to` 把缓存推回仓库） | 跨 Runner、跨机器都能复用 | 缓存 tag 与发布 tag 分开；缓存会一直长大，要配套清理 |
-| 固定复用同一台 Runner / 把构建器缓存目录挂出来 | 命中率高、不额外占仓库 | 机器坏了就全丢；并发 job 抢同一份缓存要限流 |
-| 依赖级缓存（包管理器 cache 目录复用） | 对"依赖层重建"最有效 | 并发写与容量要管 |
-
-> 参数名与"是否需要构建器把缓存元数据内联进镜像"这类开关，**以所用 BuildKit / buildx 版本文档为准**；
-> 面试把"CI 上缓存为什么会失效"讲对就够。
-
-**Go 依赖层缓存的唯一正确顺序**：先 `COPY go.mod go.sum ./` → `RUN go mod download` → 再 `COPY . .` → build。
-
-| 情况 | 结果 |
-|---|---|
-| 只改业务代码 | 前两层命中缓存，**构建时间几乎只剩编译** |
-| `go.mod` / `go.sum` 变了 | 依赖层起全部重建（这是**正确**的失效，别指望绕过） |
-| 上来就 `COPY . .` 再 `go mod download` | 每次提交缓存全废 —— **最常见的错误写法** |
-| Go 版本 / 构建 `ARG` 变了 | 链条从基础镜像就断，等于重来 |
-
-> ⚠️ 两点补充：别把 `GOMODCACHE` 带进**最终**镜像（用多阶段，缓存留在构建阶段）；
-> 私有仓库依赖的凭证要在**依赖层**就配好，否则缓存命中时看着正常、一失效就构建不出来。
-
----
-
-## Q6. K8s 侧与镜像相关的正确姿势 ⭐
+## Q2. K8s 侧与镜像相关的正确姿势 ⭐
 
 ### 一、`imagePullPolicy` 与"节点上镜像漂移" ⭐
 
@@ -434,7 +155,7 @@ ENTRYPOINT ["/app"]
 |---|---|
 | 私有仓库凭证 | `kubectl create secret docker-registry` + Pod 的 `imagePullSecrets`（容易漏，可配到 default ServiceAccount）；节点级凭证粒度太粗、换仓库要动节点；托管集群的免密组件要先确认**作用范围与失效策略**（跨账号/跨地域最容易踩） |
 | 拉取失败怎么分 | 事件里 `ErrImagePull`（鉴权/网络）还是 `ImagePullBackOff`（反复失败，多为 tag 不存在或限速）→ 再在节点上手工 `crictl pull` 区分"集群凭证问题"和"仓库/网络问题" |
-| 冷启动加速 | 镜像做小（Q4）+ 薄层增量（Q5）+ 仓库就近（同 VPC/私有仓库）+ **DaemonSet 提前把关键镜像拉一遍**；⚠️ **kubelet 会按磁盘阈值 GC 掉不用的镜像**，节点磁盘压太满就会"昨天还在、今天重拉" |
+| 冷启动加速 | 镜像做小（[镜像瘦身与构建缓存.md](镜像瘦身与构建缓存.md)）+ 薄层增量（[镜像瘦身与构建缓存.md](镜像瘦身与构建缓存.md)）+ 仓库就近（同 VPC/私有仓库）+ **DaemonSet 提前把关键镜像拉一遍**；⚠️ **kubelet 会按磁盘阈值 GC 掉不用的镜像**，节点磁盘压太满就会"昨天还在、今天重拉" |
 
 ### 三、`requests` / `limits` 与 QoS 三档 ⭐
 
@@ -446,7 +167,7 @@ ENTRYPOINT ["/app"]
 
 三条必讲推论：**内存没有"超用再回收"的中间态**，超 limit 直接 OOMKilled（CPU 才有 throttle）；
 不设 requests 会让调度器误判容量、把 Pod 塞到已满载节点然后再驱逐（"我的 Pod 无故重启"常是邻居造成的）；
-JVM/Go 要按 cgroup 算预算，见 [Docker.md Q9](Docker.md)。
+JVM/Go 要按 cgroup 算预算，见 [资源限制与运维.md](资源限制与运维.md)。
 
 ### 四、退出码与 OOMKilled 在 K8s 里怎么看
 
@@ -460,13 +181,13 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 | 看到什么 | 结论 |
 |---|---|
 | `Reason: OOMKilled` + `137` | 超了自己的 memory limit（**不是**节点没内存）：查泄漏或调 limit |
-| `Reason: Error` + `137`，事件里有 "failed liveness probe, will be restarted" | **探针误杀**（Q7），与内存无关 |
+| `Reason: Error` + `137`，事件里有 "failed liveness probe, will be restarted" | **探针误杀**（Q3），与内存无关 |
 | Exit `1` / panic 栈 | 应用自己退出：配置或依赖连不上就崩 |
 | Exit `126` / `127` | 镜像里命令不存在/不可执行 → 改镜像，不是改集群 |
 
 ---
 
-## Q7. 生命周期与优雅关闭：探针、`preStop` 与 SIGTERM ⭐
+## Q3. 生命周期与优雅关闭：探针、`preStop` 与 SIGTERM ⭐
 
 **考察意图**：这题最能看出"有没有真在生产发布过服务"。三探针各解决什么、误配的**具体后果**、
 以及"`preStop` 里 sleep 几秒"到底在服务什么。
@@ -523,7 +244,7 @@ db.Close()
 
 ---
 
-## Q8. 滚动升级与回滚：参数、PDB、有状态为什么特殊
+## Q4. 滚动升级与回滚：参数、PDB、有状态为什么特殊
 
 ### 一、`maxSurge` / `maxUnavailable` 与 PDB
 
@@ -559,7 +280,7 @@ db.Close()
 | 更新顺序有意义（先存储后计算、先 follower 后 leader） | `podManagementPolicy` + `partition` 控制节奏 |
 | RWO 的 PVC 不能双挂：旧 Pod 没真正终止，新 Pod 就 Pending | 保证旧 Pod 彻底终止；别用 Deployment 跑有状态（身份与卷要稳定，用 StatefulSet） |
 
-### 面试官会追问什么（Q4~Q8 横向）
+### 面试官会追问什么（发布与回滚横向）
 
 - **滚动发布怎么做到 0 报错？** → 把链路说全：**不可变镜像 → readiness 把关 → `maxUnavailable=0` + 资源余量
   → preStop/SIGTERM 排空 → `minReadySeconds` 观察**；少一环就漏错误。
@@ -569,7 +290,13 @@ db.Close()
   还是 CrashLoop（应用或配置问题）→ 再看 `maxUnavailable` 与探针是否太保守。
 - **HPA 和滚动发布会打架吗？** → 发布期 readiness 抖动使可服务副本数下降 → HPA 扩容，发布完又缩；
   还有 **HPA 会接管 replicas 初值**这个坑。
-- **镜像瘦了一个数量级，值不值？** → 值在**发布时长与冷启动**（拉取更快、kubelet 镜像 GC 触发得更少、
-  节点重启后恢复更快），不是"仓库省空间"；但要拿"能不能 exec 进去排障"这个代价换（distroless/scratch 尤其）。
+- **镜像变小对发布有什么影响？** → 见 [镜像瘦身与构建缓存.md](镜像瘦身与构建缓存.md) 的「面试官会追问什么」。
 
 ---
+
+## 关联
+
+- [镜像瘦身与构建缓存.md](镜像瘦身与构建缓存.md) — 发布时长与冷启动的镜像侧收益
+- [资源限制与运维.md](资源限制与运维.md) — Pod 的 requests/limits 与 QoS 分级
+- [容器原理.md](容器原理.md) — SIGTERM 为什么能直达业务进程
+- [CI-CD.md](CI-CD.md) — 声明式部署与回滚的流水线视角

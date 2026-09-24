@@ -115,7 +115,7 @@
 | 做法 | 收益 / 注意点 |
 |---|---|
 | 上下文只放**构建真正需要的文件**（必要时把上下文指到子目录，Dockerfile 用 `-f` 单独指定） | 少一次"把整个仓库打包发给 daemon" |
-| 配 **`.dockerignore`**（`.git`、构建产物、`node_modules`、日志、测试数据、`.env`） | 传输变小 **+ 缓存不再被无关文件打爆**。常被当成"只是慢一点"，实际它会让**每次提交缓存全废**（`COPY . .` 的 key 是所有被 include 文件的校验和，见 [Docker.md Q8](Docker.md)） |
+| 配 **`.dockerignore`**（`.git`、构建产物、`node_modules`、日志、测试数据、`.env`） | 传输变小 **+ 缓存不再被无关文件打爆**。常被当成"只是慢一点"，实际它会让**每次提交缓存全废**（`COPY . .` 的 key 是所有被 include 文件的校验和，见 [镜像构建与缓存.md](镜像构建与缓存.md)） |
 | **层缓存** vs **registry 缓存** | Runner 每次新容器 → **本地层缓存天然是空的**，这就是"CI 上为什么从零构建"；要复用只能把缓存搬到仓库（`cache-from` 拉旧层、构建完再推回），**缓存 tag 与发布 tag 分开管理** |
 
 具体参数名与语法**以所用构建器（BuildKit / 平台）文档为准**。
@@ -183,12 +183,12 @@
 > 讲清适用边界比站队重要。
 
 **密钥三条原则**：① **不进镜像**（`COPY . .` 带进去的 `.env`/私钥，`docker history` 与层里**永远都在**，
-后面 `RUN rm` 只是遮蔽，见 [Docker.md Q7](Docker.md)）；② **不进明文环境变量与日志**（`docker inspect`
+后面 `RUN rm` 只是遮蔽，见 [网络与存储.md](网络与存储.md)）；② **不进明文环境变量与日志**（`docker inspect`
 的 `.Config.Env`、`kubectl describe pod` 都能看到明文，要 `envFrom` + Secret 引用；流水线会 echo 出变量）；
 ③ **运行时注入 + 最小暴露**（挂载成文件 / 外部密钥服务按需拉取 / 用**流水线级变量作用域**而不是全局变量）。
 
 **回滚**：前提是镜像不可变 + 清单里记的是哪个 tag/digest → ①"改一行版本号再部署一次"；
-② K8s 里可 `rollout undo` 走 ReplicaSet 历史（见 [K8s 与镜像优化](K8s与镜像优化.md) Q8）；
+② K8s 里可 `rollout undo` 走 ReplicaSet 历史（见 [K8s部署与生命周期.md](K8s部署与生命周期.md) 的 Q4）；
 ③ ⭐ **回滚只回滚代码，不回滚数据**——所以要求"迁移向后兼容"（先加列后改逻辑，旧版本读得懂新 schema），
 否则回滚 = 故障延长。**面试官一定会追"那你们怎么保证兼容"**，这句要主动说出来。
 
@@ -202,7 +202,7 @@
 | 构建时间从 2 分钟变 8 分钟 | 缓存未命中：无 `.dockerignore`、基础镜像升版、`RUN` 顺序把不常变的放后面 | 看输出里 `CACHED` 停在第几层，从第一层非缓存处往上查 |
 | `COPY . .` 把 secrets / 测试数据 / 大文件带进镜像 | 上下文里有什么就拷什么，"本地能跑"≠"仓库里没有 `.env`" | `.dockerignore` + 构建后抽查镜像内容（`docker history`） |
 | 并发 job 共用工作目录，互相覆盖文件 | shell executor 或直接 build 到宿主同一目录时，两个 job 同时 `git checkout` 不同分支 | 每个 job 独立目录（容器化 executor 天然解决），或按 job ID 分目录 |
-| 部署"成功"但线上还是旧版本 | tag 可变（覆盖推 `latest`）+ 节点 `imagePullPolicy` 认为不用重拉 | 用 SHA tag（Q2）；K8s 侧的坑见 K8s 篇 Q6 |
+| 部署"成功"但线上还是旧版本 | tag 可变（覆盖推 `latest`）+ 节点 `imagePullPolicy` 认为不用重拉 | 用 SHA tag（见本文 Q2）；K8s 侧的坑见 [K8s部署与生命周期.md](K8s部署与生命周期.md) 的 Q2 |
 
 ---
 

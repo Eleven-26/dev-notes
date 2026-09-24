@@ -238,11 +238,11 @@ Elasticsearch 还支持在一个请求中批量写入多个文档，过程如图
 ④ merge：小段合成大段，顺带物理清除被标记删除的文档
 ```
 
-+ **translog 就是那个丢失窗口**。`index.translog.durability` 默认 `request`：每个写请求 fsync 一次 translog，节点掉电不丢已确认数据，代价是 fsync 次数 ∝ 写 QPS（顺序写也很吃磁盘能力）。高吞吐日志场景改成 `async`，按 `index.translog.sync_interval` 周期 fsync，用"最多丢一个同步间隔"换吞吐——这是**业务可容忍度决策**，必须写进设计文档，不能当成"嫌慢就改"的调优旋钮。（page cache / fsync 的底层代价见 [Linux 内存与文件系统](../linux/内存与文件系统.md)。）
++ **translog 就是那个丢失窗口**。`index.translog.durability` 默认 `request`：每个写请求 fsync 一次 translog，节点掉电不丢已确认数据，代价是 fsync 次数 ∝ 写 QPS（顺序写也很吃磁盘能力）。高吞吐日志场景改成 `async`，按 `index.translog.sync_interval` 周期 fsync，用"最多丢一个同步间隔"换吞吐——这是**业务可容忍度决策**，必须写进设计文档，不能当成"嫌慢就改"的调优旋钮。（page cache / fsync 的底层代价见 [Linux 文件系统与 I/O](../linux/文件系统与IO.md)。）
 + **"近实时(NRT)"的真实含义**：refresh 只是让新数据组成一个**段**并被新的 searcher 打开，段还在 page cache、translog 也没截断。所以「能搜到」≠「已落盘」，「返回 200」≠「能搜到」。需要写后立即可查用 `?refresh=wait_for`（等下一个刷新点，比 `true` 温和）；⚠️ 每次强制 refresh 都会造一个几乎空的段 → 段数暴涨 → merge 压力 → 搜索变慢。批量导数时把 `index.refresh_interval` 设 `-1`、副本设 0，写完再恢复。
 + **flush 不该手动频繁做**：flush = commit + 轮转 translog，频繁 flush 制造大量小段，只是把成本推给 merge。ES 按 translog 体积/时间自动触发，一般不需要人为干预。
 + **merge 的写放大**：合并 K 个段要把这 K 段的倒排与列式数据全部读出、重写成一个新段，累计写盘量远大于原始文档体积；这就是"批量导入 + 事后 force merge"比"边写边查"省资源的原因。merge 也解释了为什么删除/更新多之后搜索变慢（见下一小节）。
-+ 副本一致性：文档先写主分片再并行同步副本，两者都成功才返回——这套"确认语义 + 主分片任期"和 Raft 的多数派确认不是同一套东西（对比见 [一致性与 Raft](../distributed/一致性与Raft.md)），ES 默认是"全部 in-sync 副本"而不是多数派。
++ 副本一致性：文档先写主分片再并行同步副本，两者都成功才返回——这套"确认语义 + 主分片任期"和 Raft 的多数派确认不是同一套东西（对比见 [一致性与 Raft](../distributed/Raft协议.md)），ES 默认是"全部 in-sync 副本"而不是多数派。
 
 #### 删除与更新为什么贵：标记删除 + 追加
 
@@ -1008,50 +1008,50 @@ resp.hits().hits().forEach(h -> {
 
 ## 面试官会追问什么
 
-**Q1：为什么 `text` 字段不能排序和聚合？**
+### Q1. 为什么 `text` 字段不能排序和聚合？
 分词后倒排里存的是 term → 文档，方向是"词找文档"；排序聚合需要"文档找值"的正排结构（`doc_values`）。text 反转出来的是无序 term 集合而不是原值，语义上就不成立，所以 ES 在 mapping 层直接禁止。解法是 `fields` 子字段：`title` 做全文、`title.kw` 做聚合。
 
-**Q2：`term` 查 `text` 字段为什么查不到？**
+### Q2. `term` 查 `text` 字段为什么查不到？
 `text` 索引的是分词后的词项，`term` 不对查询串分词、拿整串去比对词典。"Elasticsearch 入门"在词典里以两个分词存在，整串这个 term 根本不存在，所以必然查不到。要么改用 `match`，要么这个字段本来就是 `keyword`。
 
-**Q3：写入返回 200 之后多久能搜到？为什么？**
+### Q3. 写入返回 200 之后多久能搜到？为什么？
 默认最迟约 1 秒（`index.refresh_interval`）。因为请求返回只保证数据进了 in-memory buffer 并写了 translog，refresh 才会把 buffer 变成一个可被 searcher 看到的段。⚠️ 关键点：可见性发生在 page cache 里的段，不是磁盘——所以"能搜到"不代表"宕机不丢"，不丢靠 translog。
 
-**Q4：那宕机到底会丢数据吗？**
+### Q4. 那宕机到底会丢数据吗？
 看 translog 的 fsync 策略。默认 `durability: request`，每个请求 fsync 一次 translog，已确认的写不丢；改成 `async` 后最多丢一个 `sync_interval` 内的数据，换来写入吞吐。这是"能接受丢多少"的业务决策，不是性能开关。
 
-**Q5：为什么更新很贵？删除之后空间会立刻释放吗？**
+### Q5. 为什么更新很贵？删除之后空间会立刻释放吗？
 删除只在段的 live-docs 位图上标记，更新等于"标记删除旧文档 + 追加新文档"，倒排和列式结构全部重做一遍。空间不会立刻释放，只有 merge 读到含死文档的段时才物理回收；副作用是删除比例高时搜索仍需扫描死文档，表现为"数据变少了查询变慢了"。
 
-**Q6：并发更新同一个文档怎么保证不写花？**
+### Q6. 并发更新同一个文档怎么保证不写花？
 `_seq_no` + `_primary_term` 做乐观并发：读时拿版本号，写时用 `if_seq_no`/`if_primary_term` 条件提交，不匹配返回 409。`_primary_term` 的作用是防止旧主分片残留的写在主切换后被错误接受。从 DB 单向同步则用 `version_type=external` + 单调业务版本丢弃乱序旧数据。
 
-**Q7：深分页为什么慢？给三个方案并说明怎么选。**
+### Q7. 深分页为什么慢？给三个方案并说明怎么选。
 `from + size` 时每个分片都要维护 from+size 大小的堆，协调节点归并 `分片数 × (from+size)` 条，前 from 条纯白算。选：后台列表能跳页且只看前几页 → from/size；无限下拉 → `search_after`（近乎零开销但不能跳页）；导出/一致性遍历 → PIT + `search_after`（scroll 是旧方案，段被钉住且不能跳页）。
 
-**Q8：`terms` 聚合的 doc_count 一定是准的吗？**
+### Q8. `terms` 聚合的 doc_count 一定是准的吗？
 不一定。各分片只回传本地 top size，协调节点汇总，某 term 可能全局高频但每个分片都进不了本地前 N，被静默丢掉。响应里的 `doc_count_error_upper_bound` 是误差上界，`sum_other_doc_count` 非 0 说明长尾被截。要精确遍历全部 bucket 用 `composite`（按 key 有序归并，因此没有这个误差）。
 
-**Q9：`cardinality` 能用来算钱吗？**
+### Q9. `cardinality` 能用来算钱吗？
 不能。它是 HyperLogLog 近似，内存固定，基数在 `precision_threshold` 内接近精确，超出后只保证数量级。对账/计费要精确去重：按天去重落库，或者 terms/composite 全遍历。另外 keyword 上的 `ignore_above` 会让超长值不进索引，近似值之外还漏值。
 
-**Q10：分片是不是越多越好？**
+### Q10. 分片是不是越多越好？
 不是。每个分片是独立 Lucene 索引，有与数据量无关的固定开销（词典、段元数据、global ordinals、translog、search 线程占用）；不带 routing 的查询要在每个分片各跑一次，延迟由最慢分片决定；cluster state 体积也随分片数增长，压主节点。分片数按数据量和目标延迟倒推，历史索引靠 shrink 收口。
 
-**Q11：主分片数建错了怎么办？shrink 和 split 有什么限制？**
+### Q11. 主分片数建错了怎么办？shrink 和 split 有什么限制？
 路由是 `hash(routing) % 主分片数`，改了旧数据就找不到，所以它是静态设置。三条路：`_reindex`（任意方向，代价是全量搬）；`_shrink`（目标必须整除源分片数，源要停写、分片需集中）；`_split`（目标必须是源的整数倍，同样停写，且不修正数据倾斜）。
 
-**Q12：集群 yellow 需要处理吗？red 呢？**
+### Q12. 集群 yellow 需要处理吗？red 呢？
 yellow 表示副本没分配上——数据读写都正常，但容错已降级，主分片所在节点再挂就变 red，所以是"要尽快查原因"而不是"立刻救火"。red 表示有主分片未分配，这部分数据完全不可用、查询 partial failure，必须处理。第一步统一是 `_cluster/allocation/explain`，最常见的根因是磁盘水位触顶。
 
-**Q13：查询突慢，你的排查顺序是什么？**
+### Q13. 查询突慢，你的排查顺序是什么？
 先看是不是集群层面的（线程池 rejected、pending tasks、GC、磁盘水位），再看是不是查询本身的（`profile: true` 看时间落在 query 还是 fetch、哪个子句/哪个分片最慢），最后看索引形态（段数是否爆炸 = refresh/merge 出问题；删除比例高；字段用错 text/keyword；聚合的 doc_count_error 与 cardinality 组合暴露长尾被砍）。slowlog 负责长期观测，profile 负责单条复现，两者不能互换。
 
-**Q14：force merge 什么时候能做、什么时候不能做？**
+### Q14. force merge 什么时候能做、什么时候不能做？
 只做"未来不再写"的索引（rollover 之后的历史索引），因为它把死文档物理清除、把段数压到很小，代价是大 IO 且期间不可写。⚠️ 还在写的索引做等于白做（新段立刻污染）；按时间范围过滤的日志索引压成 1 段反而失去"按段的 min/max 跳过整段"的能力，通常留若干段更合适。
 
 ## 延伸
 
-- 段落盘与 fsync、page cache 的底层机制：[Linux 内存与文件系统](../linux/内存与文件系统.md)
-- 副本确认语义与多数派共识的差别：[一致性与 Raft](../distributed/一致性与Raft.md)
+- 段落盘与 fsync、page cache 的底层机制：[Linux 文件系统与 I/O](../linux/文件系统与IO.md)、[Linux 内存管理](../linux/内存管理.md)
+- 副本确认语义与多数派共识的差别：[Raft 协议](../distributed/Raft协议.md)
 - 从 binlog/CDC 单向同步到 ES 的链路设计：[Kafka](../middleware/Kafka.md)
