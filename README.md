@@ -39,9 +39,9 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [algorithms/数据结构.md](algorithms/数据结构.md) | 逻辑结构 vs 物理结构、八大基础结构的特性/优缺点/应用场景、选型对照表 |
-| [algorithms/复杂度与算法对比.md](algorithms/复杂度与算法对比.md) | 时间复杂度与大 O 表示法、查找算法与结构对照表、10 种排序算法对比与选型 |
-| [algorithms/压缩与淘汰算法.md](algorithms/压缩与淘汰算法.md) | Snappy / LZW 原理与选型、LRU 实现与缓存污染、LRU-K/2Q/LFU 变体、Redis 近似 LRU |
+| [algorithms/数据结构.md](algorithms/数据结构.md) | 逻辑结构 vs 物理结构、八大基础结构特性与场景、跳表/Trie/布隆/并查集/一致性哈希、B+ 树与跳表的选型推导、结构×复杂度×隐藏代价总表 |
+| [algorithms/复杂度与算法对比.md](algorithms/复杂度与算法对比.md) | 大 O 与查找/排序对照表、摊还分析、递归树与主定理直觉、稳定性与额外空间、标准库为何各选不同、Top-K 四方案 |
+| [algorithms/压缩与淘汰算法.md](algorithms/压缩与淘汰算法.md) | Snappy/LZW 与 zstd/lz4 定位、块压缩 vs 流压缩、LRU 实现与两大缺陷、LFU/Clock/W-TinyLFU、WiredTiger 的组合 |
 
 ### Java
 
@@ -73,8 +73,8 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [datastore/ElasticSearch.md](datastore/ElasticSearch.md) | 倒排索引与字段类型全表、分片分配与恢复、写入 4 步与搜索流程、文本分析三件套、DSL 查询与深分页、Go/Java 客户端 |
-| [datastore/MongoDB.md](datastore/MongoDB.md) | 文档模型与 MySQL 对照、内嵌 vs 引用建模、索引体系（复合/数组/TTL/地理）、explain、副本集与类 Raft 选举、Go/Java 客户端 |
+| [datastore/ElasticSearch.md](datastore/ElasticSearch.md) | 倒排索引与字段类型、text vs keyword 与 mapping 代价、写入全链路与段生命周期、BM25 打分、聚合误差与深翻页四方案、分片规划与 ILM、事故清单、Go/Java 客户端 |
+| [datastore/MongoDB.md](datastore/MongoDB.md) | 文档建模模式与迁移、索引体系与 ESR 规则、explain 读法、聚合管道代价、分片与架构管理、副本集读写关注与因果一致性、事务边界、运维坑、Go/Java 客户端 |
 
 ### 中间件
 
@@ -85,7 +85,7 @@
 | [middleware/消息队列选型.md](middleware/消息队列选型.md) | MQ 的五大使用场景、四款 MQ 横向对比与选型决策、分册导航、事务消息三种方案、延迟队列四种实现 |
 | [middleware/Kafka.md](middleware/Kafka.md) | 分区与 ISR、acks/幂等/事务、消费者组重平衡与两个超时参数、KRaft 去 ZK、Go 三客户端取舍 + Java 原生/Spring Kafka |
 | [middleware/RabbitMQ.md](middleware/RabbitMQ.md) | 四种交换机路由模型、Publisher Confirm 与手动 ack、DLX 与两种延迟队列、Quorum 队列、Go/Java 客户端 |
-| [middleware/RocketMQ.md](middleware/RocketMQ.md) | 四角色架构、顺序/延迟/事务消息原理、可靠性（刷盘×复制四组合、重试与死信）、Java 客户端为主 + Go 客户端 |
+| [middleware/RocketMQ.md](middleware/RocketMQ.md) | 四角色与 NameServer 路由、CommitLog/ConsumeQueue 存储、长轮询与 rebalance、顺序/延迟/事务消息实现、可靠性（刷盘×复制、重试与死信）、DLedger、堆积 SOP、Java/Go 客户端 |
 | [middleware/Nats.md](middleware/Nats.md) | Core NATS 与 JetStream 语义对比、Queue Group、Request-Reply、集群与 Leaf Node、Go/Java 客户端（结合项目实际用法） |
 
 ### 可观测性
@@ -114,10 +114,10 @@
 | [linux/内存与文件系统.md](linux/内存与文件系统.md) | 虚拟内存与地址空间布局、分页/页表/TLB、缺页中断、伙伴系统与 Slab、Page Cache 与 free 的正确解读、kswapd 与 LRU 回收、ext4/XFS/Btrfs、inode 与软硬链接、write ≠ 落盘、Go MemStats vs RSS |
 | [linux/性能排查.md](linux/性能排查.md) | USE/RED 方法论与分层排查顺序、负载高但 CPU 低的成因、vmstat 速读、CPU 飙高套路与上下文切换、free 解读与 OOM Killer、内存泄漏判断、iostat 与磁盘/inode 满、连接状态分布、Go 服务排查 |
 | [linux/常用命令.md](linux/常用命令.md) | 查端口占用、看网络连接、递归建目录、日志关键词统计；Go/Java 双册：命令注入、超时杀进程树、退出码语义、纯 Go 复刻管道并与 shell 对拍（均本机实测） |
-| [docker/Docker.md](docker/Docker.md) | 进入运行中的容器、构建镜像、多阶段构建、容器生成原理与 namespace/cgroup、与 VM 对比 |
-| [docker/命令速查.md](docker/命令速查.md) | 镜像/容器/网络/清理/Compose 命令与 `docker run` 参数速查、exec vs attach、高频组合场景 |
-| [docker/CI-CD.md](docker/CI-CD.md) | GitLab Runner、Docker-outside-of-Docker、构建与部署两阶段 |
-| [docker/K8s与镜像优化.md](docker/K8s与镜像优化.md) | Docker 开启 IPv6、镜像源加速、Helm 核心概念与常用命令 |
+| [docker/Docker.md](docker/Docker.md) | 进入容器、构建镜像与多阶段、namespace/cgroup 与 PID 1 信号、网络与存储模型、构建缓存与 ENTRYPOINT/CMD、资源限制与 137、与 VM 对比 |
+| [docker/命令速查.md](docker/命令速查.md) | 镜像/容器/网络/清理/Compose 速查、inspect 取字段与退出码速判、prune 作用范围对照、exec vs run、镜像膨胀排查、context、buildx |
+| [docker/CI-CD.md](docker/CI-CD.md) | GitLab Runner 与 executor 选型、DooD 风险、镜像 tag 与缓存策略、声明式部署与回滚、流水线常见事故 |
+| [docker/K8s与镜像优化.md](docker/K8s与镜像优化.md) | Docker 开启 IPv6、镜像源加速、Helm 与 values 分层、镜像瘦身与构建缓存、imagePullPolicy 与 QoS、三探针与优雅关闭、滚动与回滚 |
 
 ### 版本控制
 
