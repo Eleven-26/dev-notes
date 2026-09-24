@@ -62,4 +62,4 @@ channel 就是这句话的载体，[channel实战模式.md](channel实战模式.
 - [channel原理与底层实现.md](channel原理与底层实现.md) — CSP 路线在本项目里的实现载体
 - [channel使用陷阱.md](channel使用陷阱.md) — 使用 channel 的代价与常见反模式
 - [并发同步原语.md](并发同步原语.md) — 共享内存路线的原语（Mutex / atomic / sync.Map）
-- [进程与线程.md](../../Linux/进程与线程.md) — 协程轻量化的量化对照
+- [进程与线程.md](../../linux/进程与线程.md) — 协程轻量化的量化对照

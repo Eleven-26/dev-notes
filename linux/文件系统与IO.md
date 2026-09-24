@@ -161,4 +161,4 @@ lsof | grep -i deleted    # 同上，全量扫
 
 - [内存管理.md](内存管理.md) — Page Cache 与脏页回写
 - [性能排查.md](性能排查.md) — iostat、inode 满、磁盘满的排查
-- [零拷贝.md](../Go/运行时/零拷贝.md) — mmap / sendfile 在同一套 I/O 栈上的位置
+- [零拷贝.md](../go/运行时/零拷贝.md) — mmap / sendfile 在同一套 I/O 栈上的位置

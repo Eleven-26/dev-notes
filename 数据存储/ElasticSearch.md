@@ -238,7 +238,7 @@ Elasticsearch 还支持在一个请求中批量写入多个文档，过程如图
 ④ merge：小段合成大段，顺带物理清除被标记删除的文档
 ```
 
-+ **translog 就是那个丢失窗口**。`index.translog.durability` 默认 `request`：每个写请求 fsync 一次 translog，节点掉电不丢已确认数据，代价是 fsync 次数 ∝ 写 QPS（顺序写也很吃磁盘能力）。高吞吐日志场景改成 `async`，按 `index.translog.sync_interval` 周期 fsync，用"最多丢一个同步间隔"换吞吐——这是**业务可容忍度决策**，必须写进设计文档，不能当成"嫌慢就改"的调优旋钮。（page cache / fsync 的底层代价见 [Linux 文件系统与 I/O](../Linux/文件系统与IO.md)。）
++ **translog 就是那个丢失窗口**。`index.translog.durability` 默认 `request`：每个写请求 fsync 一次 translog，节点掉电不丢已确认数据，代价是 fsync 次数 ∝ 写 QPS（顺序写也很吃磁盘能力）。高吞吐日志场景改成 `async`，按 `index.translog.sync_interval` 周期 fsync，用"最多丢一个同步间隔"换吞吐——这是**业务可容忍度决策**，必须写进设计文档，不能当成"嫌慢就改"的调优旋钮。（page cache / fsync 的底层代价见 [Linux 文件系统与 I/O](../linux/文件系统与IO.md)。）
 + **"近实时(NRT)"的真实含义**：refresh 只是让新数据组成一个**段**并被新的 searcher 打开，段还在 page cache、translog 也没截断。所以「能搜到」≠「已落盘」，「返回 200」≠「能搜到」。需要写后立即可查用 `?refresh=wait_for`（等下一个刷新点，比 `true` 温和）；⚠️ 每次强制 refresh 都会造一个几乎空的段 → 段数暴涨 → merge 压力 → 搜索变慢。批量导数时把 `index.refresh_interval` 设 `-1`、副本设 0，写完再恢复。
 + **flush 不该手动频繁做**：flush = commit + 轮转 translog，频繁 flush 制造大量小段，只是把成本推给 merge。ES 按 translog 体积/时间自动触发，一般不需要人为干预。
 + **merge 的写放大**：合并 K 个段要把这 K 段的倒排与列式数据全部读出、重写成一个新段，累计写盘量远大于原始文档体积；这就是"批量导入 + 事后 force merge"比"边写边查"省资源的原因。merge 也解释了为什么删除/更新多之后搜索变慢（见下一小节）。
@@ -1052,7 +1052,7 @@ yellow 表示副本没分配上——数据读写都正常，但容错已降级�
 
 ## 延伸
 
-- 段落盘与 fsync、page cache 的底层机制：[Linux 文件系统与 I/O](../Linux/文件系统与IO.md)、[Linux 内存管理](../Linux/内存管理.md)
+- 段落盘与 fsync、page cache 的底层机制：[Linux 文件系统与 I/O](../linux/文件系统与IO.md)、[Linux 内存管理](../linux/内存管理.md)
 - 副本确认语义与多数派共识的差别：[Raft 协议](../分布式/Raft协议.md)
 - 从 binlog/CDC 单向同步到 ES 的链路设计：[Kafka](../中间件/消息队列/Kafka.md)
 
@@ -1061,4 +1061,4 @@ yellow 表示副本没分配上——数据读写都正常，但容错已降级�
 - [MongoDB.md](MongoDB.md) — 另一类非关系型存储的选型与运维
 - [mysql/索引与优化.md](mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
 - [../中间件/消息队列/Kafka.md](../中间件/消息队列/Kafka.md) — binlog/CDC 到 ES 的同步链路
-- [../Linux/文件系统与IO.md](../Linux/文件系统与IO.md) — translog 的 fsync 与 page cache
+- [../linux/文件系统与IO.md](../linux/文件系统与IO.md) — translog 的 fsync 与 page cache

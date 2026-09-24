@@ -83,7 +83,7 @@ LDNS ──5──▶ 权威服务器  : "www.example.com 的 IP？"
 LDNS ──7──▶ 客户端     : 返回 IP，并把结果按 TTL 缓存
 ```
 
-5. 客户端拿到 IP 才开始建 TCP 连接（本篇不展开，见 [TCP三次握手.md](TCP/TCP三次握手.md)）；
+5. 客户端拿到 IP 才开始建 TCP 连接（本篇不展开，见 [TCP三次握手.md](tcp/TCP三次握手.md)）；
 6. ⚠️ **CNAME 会重启一轮**：第 6 步若返回 CNAME，LDNS 要**对别名再解析一次**，直到拿到 A/AAAA。
 
 ### TTL 与缓存（⚠️ 高频故障）
@@ -462,7 +462,7 @@ OkHttpClient client = new OkHttpClient.Builder()
 
 ## 关联
 
-- [TCP/TCP三次握手.md](TCP/TCP三次握手.md) — 拿到 IP 之后才建连
+- [tcp/TCP三次握手.md](tcp/TCP三次握手.md) — 拿到 IP 之后才建连
 - [HTTPS与TLS.md](HTTPS与TLS.md) — SNI 与证书校验里的域名
 - [HTTP与gRPC.md](HTTP与gRPC.md) — 连接复用与 DNS 缓存的关系
 - [../分布式/服务发现与负载均衡.md](../分布式/服务发现与负载均衡.md) — DNS 轮询 / GSLB 与服务发现的边界

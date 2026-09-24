@@ -2,7 +2,7 @@
 
 > 一句话说明本文件覆盖什么：从系统调用原理到 Go/Java 实践，讲清五种 I/O 模型、select/poll/epoll、LT/ET、Reactor 与高频面试题。
 >
-> 内容整理自个人学习笔记。Go 侧的网络模型与调度见 [GMP调度.md](../Go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../Go/运行时/零拷贝.md)。
+> 内容整理自个人学习笔记。Go 侧的网络模型与调度见 [GMP调度.md](../go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../go/运行时/零拷贝.md)。
 
 ---
 
@@ -192,7 +192,7 @@ Go runtime 的 netpoller 在 Linux 上使用 epoll：网络 I/O 暂不可完成�
 对应 M 不必等待；fd 就绪后 runtime 再把 goroutine 置为可运行。
 > ⭐ Go 中可写阻塞式 `Accept/Read/Write`，底层却由非阻塞 fd + 多路复用承接，这降低了并发编程心智负担。
 
-G、M、P 的配合与调度细节见 [Go GMP 调度模型](../Go/运行时/GMP调度.md)。
+G、M、P 的配合与调度细节见 [Go GMP 调度模型](../go/运行时/GMP调度.md)。
 ⚠️ 普通文件 I/O、部分系统调用和 cgo 可能真的阻塞线程，并非所有阻塞都由 netpoller 接管。
 
 ---
@@ -489,7 +489,7 @@ lsof -p "$PID" -a -iTCP
 
 ## 关联
 
-- [TCP/TCP滑动窗口.md](TCP/TCP滑动窗口.md) — 半开连接与事件循环
-- [../Go/并发/channel原理与底层实现.md](../Go/并发/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
-- [../Go/运行时/零拷贝.md](../Go/运行时/零拷贝.md) — 数据搬运的另一半成本
-- [../Linux/性能排查.md](../Linux/性能排查.md) — 连接状态分布与 fd 上限的排查
+- [tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) — 半开连接与事件循环
+- [../go/并发/channel原理与底层实现.md](../go/并发/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
+- [../go/运行时/零拷贝.md](../go/运行时/零拷贝.md) — 数据搬运的另一半成本
+- [../linux/性能排查.md](../linux/性能排查.md) — 连接状态分布与 fd 上限的排查

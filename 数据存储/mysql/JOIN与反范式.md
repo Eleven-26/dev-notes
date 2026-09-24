@@ -259,7 +259,7 @@ func usersByIDs(ctx context.Context, db *sql.DB, ids []int64) (map[int64]User, e
 ## 使用二：Java（`groupingBy` + 并发批查）
 ### 1. 拆 JOIN：`groupingBy` + 并发批查
 
-Q1 的「应用层拼接」在 Java 里就是 `Stream` 分组归并（更多写法见 [Stream流实战.md](../../Java/Stream流实战.md)）：
+Q1 的「应用层拼接」在 Java 里就是 `Stream` 分组归并（更多写法见 [Stream流实战.md](../../java/Stream流实战.md)）：
 
 ```java
 
@@ -417,4 +417,4 @@ docker exec -i mysql8 mysql -uroot -proot123456 -e "SHOW FULL PROCESSLIST;"
 - [查询链路.md](查询链路.md) — 优化器如何选驱动表与关联顺序
 - [索引与优化.md](索引与优化.md) — 关联字段上的索引设计
 - [软件架构.md](软件架构.md) — 读写分离与报表查询分流
-- [Stream流实战.md](../../Java/Stream流实战.md) — 应用层归并的 Java 写法
+- [Stream流实战.md](../../java/Stream流实战.md) — 应用层归并的 Java 写法

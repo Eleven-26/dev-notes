@@ -319,5 +319,5 @@ df -h /dev/shm
 ## 关联
 
 - [../可观测性/Skywalking.md](../可观测性/Skywalking.md) — 探针与上报链路的原理
-- [../容器/Docker/镜像构建与缓存.md](../容器/Docker/镜像构建与缓存.md) — 换基础镜像与自定义 `php.ini`
-- [../容器/K8s/K8s部署与生命周期.md](../容器/K8s/K8s部署与生命周期.md) — 优雅停机与 SIGTERM 排空
+- [../容器/docker/镜像构建与缓存.md](../容器/docker/镜像构建与缓存.md) — 换基础镜像与自定义 `php.ini`
+- [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — 优雅停机与 SIGTERM 排空

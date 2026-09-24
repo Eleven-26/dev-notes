@@ -15,7 +15,7 @@ HTTP 全程明文，链路上任何一台设备都能看到并改写内容。TLS
 
 ⚠️ **高频澄清：HTTPS 不是新协议**。分层是「应用层 HTTP / 安全层 TLS / 传输层 TCP / 网络层 IP」，TLS 是夹在中间的一层：**HTTPS = HTTP over TLS**，HTTP 报文原封不动塞进 TLS 记录层再交给 TCP（同理还有 gRPC over TLS、数据库连接加密）。
 
-握手的前提是 **TCP 三次握手已完成**（见 [TCP三次握手.md](TCP/TCP三次握手.md)）——TLS 的 RTT 是**叠加在 TCP 之上**的额外开销，这也是后面为什么要压缩握手往返。另外，HTTPS 默认**只认证服务器**（单向认证），要认证客户端必须上 **mTLS**（第八、九节）。
+握手的前提是 **TCP 三次握手已完成**（见 [TCP三次握手.md](tcp/TCP三次握手.md)）——TLS 的 RTT 是**叠加在 TCP 之上**的额外开销，这也是后面为什么要压缩握手往返。另外，HTTPS 默认**只认证服务器**（单向认证），要认证客户端必须上 **mTLS**（第八、九节）。
 
 ## 二、TLS 与 SSL 的关系
 SSL 由 Netscape 发明，**SSL 3.0（1996）是最后一版**，之后改名交给 IETF 标准化，这条线就是 TLS：
@@ -519,4 +519,4 @@ resolver 8.8.8.8 valid=300s;
 - [../安全/数字证书与PKI.md](../安全/数字证书与PKI.md) — 证书与信任链的基础概念（单一来源）
 - [../安全/加密算法.md](../安全/加密算法.md) — 握手协商的套件从哪来
 - [HTTP与gRPC.md](HTTP与gRPC.md) — h2 的事实前提是 TLS 与 ALPN
-- [TCP/TCP三次握手.md](TCP/TCP三次握手.md) — TLS 握手的 RTT 叠加在 TCP 之上
+- [tcp/TCP三次握手.md](tcp/TCP三次握手.md) — TLS 握手的 RTT 叠加在 TCP 之上

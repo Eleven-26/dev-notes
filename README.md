@@ -10,35 +10,35 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [运行时/内存分配器.md](Go/运行时/内存分配器.md) | mspan 字段、size class 67 等级、堆内存块元数据、mcache/mcentral/mheap 三级分配、两级索引映射、32 位地址优化 |
-| [运行时/程序启动流程.md](Go/运行时/程序启动流程.md) | _rt0 汇编入口、栈/分配器/调度器初始化、运行时检查、OS 信息初始化、启动全景图 |
-| [运行时/函数调用与栈.md](Go/运行时/函数调用与栈.md) | 函数调用过程、栈里包含哪些信息、栈扩容时旧栈指针怎么调整 |
-| [运行时/GMP调度.md](Go/运行时/GMP调度.md) | GMP 三元组、work stealing、协程上下文切换时机 |
-| [运行时/内存逃逸.md](Go/运行时/内存逃逸.md) | 定义、原因、分析工具、五类场景、三条判定规则、优点与代价 |
-| [运行时/零拷贝.md](Go/运行时/零拷贝.md) | 四次拷贝两次系统调用、mmap/sendfile/splice/MSG_ZEROCOPY、Go 里的自动优化 |
-| [并发/channel原理与底层实现.md](Go/并发/channel原理与底层实现.md) | hchan 字段、收发流程、并发安全来源、缓冲区「总是新鲜的」、select 的三轮检查与轮询顺序 |
-| [并发/channel使用陷阱.md](Go/并发/channel使用陷阱.md) | 能不能先判断阻塞再写入、最容易踩的 4 个点、死锁什么时候报（四条判据） |
-| [并发/channel实战模式.md](Go/并发/channel实战模式.md) | 通信 6 案例、项目里 4 种典型用法、多生产者 + 单消费者的两个同步点 |
-| [并发/共享内存与CSP.md](Go/并发/共享内存与CSP.md) | 「不要通过共享内存来通信」到底在说什么、两条路线的适用边界 |
-| [并发/并发同步原语.md](Go/并发/并发同步原语.md) | Mutex 语义与饥饿模式、排队上限、手动加锁 vs sync.Map、协程间通信五法、RWMutex 相容矩阵与写饥饿、sync.Once 与单例、分段锁 map |
-| [并发/并发控制实战.md](Go/并发/并发控制实战.md) | 打印升序数字、交替打印奇偶数、获取协程返回值（含可运行代码） |
-| [并发/协程泄漏与死锁.md](Go/并发/协程泄漏与死锁.md) | 泄漏四类成因与最小复现代码、pprof 排查、死锁四条件与检测手段 |
-| [并发/线程安全.md](Go/并发/线程安全.md) | 并发读写 map 的后果、线程安全定义、三类线程安全类型 |
-| [并发/限流器.md](Go/并发/限流器.md) | 令牌桶模型、Limit/Burst 参数、平滑生成与突发处理 |
-| [类型与语法/切片.md](Go/类型与语法/切片.md) | 底层结构、SliceHeader 三要素、append 扩容规则、预分配优化、母子切片共享与断链、子切片内存泄漏与 copy、切片传参陷阱 |
-| [类型与语法/map.md](Go/类型与语法/map.md) | 底层结构、哈希冲突、扩容两条件两方式、创建/访问/更新/疏散源码流程、key 类型限制 |
-| [类型与语法/defer.md](Go/类型与语法/defer.md) | 三个特性、三个应用场景、LIFO 执行顺序及源码原理 |
-| [类型与语法/for-range.md](Go/类型与语法/for-range.md) | 值变量是临时变量、哪些类型能通过指针改原始数据 |
-| [工程实践/context.md](Go/工程实践/context.md) | 四个派生函数、链路超时预算与级联取消、落地四个反模式 |
-| [工程实践/依赖注入.md](Go/工程实践/依赖注入.md) | 手动构造注入、wire 代码生成、dig/fx 反射方案对比、Kratos 实战 |
-| [工程实践/Kratos框架.md](Go/工程实践/Kratos框架.md) | 集成 ent/validate、注册发现与容器化、服务间鉴权与元数据传递、json→protobuf |
-| [工程实践/Eino框架.md](Go/工程实践/Eino框架.md) | 字节 Eino 大模型应用框架 |
-| [工程实践/国际化.md](Go/工程实践/国际化.md) | gotext 的 extract→翻译→generate 工作流与常见坑 |
-| [工程实践/编译与gcflags.md](Go/工程实践/编译与gcflags.md) | gcflags 的作用与使用时机、`-m`/`-N`/`-l`/`-S` 速查、如何查更多 flag |
-| [工程实践/调试与IDE配置.md](Go/工程实践/调试与IDE配置.md) | VSCode（gopls + dlv）开发运行环境配置、常用调试技巧 |
-| [算法题.md](Go/算法题.md) | 环形缓冲、斐波那契改迭代、堆构建与弹堆顶、TopK、TTL 缓存（代码实测可跑） |
-| [语言设计与对比.md](Go/语言设计与对比.md) | 设计哲学与核心特性、与 Java/C++/Python 对比、业务适配与局限、云原生生态被包场的原因 |
-| [就业面与技能要求.md](Go/就业面与技能要求.md) | 「Go 好就业」的客观拆解、从招聘 JD 反推要补的技能 |
+| [运行时/内存分配器.md](go/运行时/内存分配器.md) | mspan 字段、size class 67 等级、堆内存块元数据、mcache/mcentral/mheap 三级分配、两级索引映射、32 位地址优化 |
+| [运行时/程序启动流程.md](go/运行时/程序启动流程.md) | _rt0 汇编入口、栈/分配器/调度器初始化、运行时检查、OS 信息初始化、启动全景图 |
+| [运行时/函数调用与栈.md](go/运行时/函数调用与栈.md) | 函数调用过程、栈里包含哪些信息、栈扩容时旧栈指针怎么调整 |
+| [运行时/GMP调度.md](go/运行时/GMP调度.md) | GMP 三元组、work stealing、协程上下文切换时机 |
+| [运行时/内存逃逸.md](go/运行时/内存逃逸.md) | 定义、原因、分析工具、五类场景、三条判定规则、优点与代价 |
+| [运行时/零拷贝.md](go/运行时/零拷贝.md) | 四次拷贝两次系统调用、mmap/sendfile/splice/MSG_ZEROCOPY、Go 里的自动优化 |
+| [并发/channel原理与底层实现.md](go/并发/channel原理与底层实现.md) | hchan 字段、收发流程、并发安全来源、缓冲区「总是新鲜的」、select 的三轮检查与轮询顺序 |
+| [并发/channel使用陷阱.md](go/并发/channel使用陷阱.md) | 能不能先判断阻塞再写入、最容易踩的 4 个点、死锁什么时候报（四条判据） |
+| [并发/channel实战模式.md](go/并发/channel实战模式.md) | 通信 6 案例、项目里 4 种典型用法、多生产者 + 单消费者的两个同步点 |
+| [并发/共享内存与CSP.md](go/并发/共享内存与CSP.md) | 「不要通过共享内存来通信」到底在说什么、两条路线的适用边界 |
+| [并发/并发同步原语.md](go/并发/并发同步原语.md) | Mutex 语义与饥饿模式、排队上限、手动加锁 vs sync.Map、协程间通信五法、RWMutex 相容矩阵与写饥饿、sync.Once 与单例、分段锁 map |
+| [并发/并发控制实战.md](go/并发/并发控制实战.md) | 打印升序数字、交替打印奇偶数、获取协程返回值（含可运行代码） |
+| [并发/协程泄漏与死锁.md](go/并发/协程泄漏与死锁.md) | 泄漏四类成因与最小复现代码、pprof 排查、死锁四条件与检测手段 |
+| [并发/线程安全.md](go/并发/线程安全.md) | 并发读写 map 的后果、线程安全定义、三类线程安全类型 |
+| [并发/限流器.md](go/并发/限流器.md) | 令牌桶模型、Limit/Burst 参数、平滑生成与突发处理 |
+| [类型与语法/切片.md](go/类型与语法/切片.md) | 底层结构、SliceHeader 三要素、append 扩容规则、预分配优化、母子切片共享与断链、子切片内存泄漏与 copy、切片传参陷阱 |
+| [类型与语法/map.md](go/类型与语法/map.md) | 底层结构、哈希冲突、扩容两条件两方式、创建/访问/更新/疏散源码流程、key 类型限制 |
+| [类型与语法/defer.md](go/类型与语法/defer.md) | 三个特性、三个应用场景、LIFO 执行顺序及源码原理 |
+| [类型与语法/for-range.md](go/类型与语法/for-range.md) | 值变量是临时变量、哪些类型能通过指针改原始数据 |
+| [工程实践/context.md](go/工程实践/context.md) | 四个派生函数、链路超时预算与级联取消、落地四个反模式 |
+| [工程实践/依赖注入.md](go/工程实践/依赖注入.md) | 手动构造注入、wire 代码生成、dig/fx 反射方案对比、Kratos 实战 |
+| [工程实践/Kratos框架.md](go/工程实践/Kratos框架.md) | 集成 ent/validate、注册发现与容器化、服务间鉴权与元数据传递、json→protobuf |
+| [工程实践/Eino框架.md](go/工程实践/Eino框架.md) | 字节 Eino 大模型应用框架 |
+| [工程实践/国际化.md](go/工程实践/国际化.md) | gotext 的 extract→翻译→generate 工作流与常见坑 |
+| [工程实践/编译与gcflags.md](go/工程实践/编译与gcflags.md) | gcflags 的作用与使用时机、`-m`/`-N`/`-l`/`-S` 速查、如何查更多 flag |
+| [工程实践/调试与IDE配置.md](go/工程实践/调试与IDE配置.md) | VSCode（gopls + dlv）开发运行环境配置、常用调试技巧 |
+| [算法题.md](go/算法题.md) | 环形缓冲、斐波那契改迭代、堆构建与弹堆顶、TopK、TTL 缓存（代码实测可跑） |
+| [语言设计与对比.md](go/语言设计与对比.md) | 设计哲学与核心特性、与 Java/C++/Python 对比、业务适配与局限、云原生生态被包场的原因 |
+| [就业面与技能要求.md](go/就业面与技能要求.md) | 「Go 好就业」的客观拆解、从招聘 JD 反推要补的技能 |
 
 ### 算法
 
@@ -54,10 +54,10 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [JVM与垃圾回收.md](Java/JVM与垃圾回收.md) | 对象生命周期、可达性分析与 GC Roots、四种 GC 算法、三色标记与漏标修复、收集器分类与调优命令 |
-| [运行时数据区与栈帧.md](Java/运行时数据区与栈帧.md) | 栈帧五个组成部分、动态链接为什么是多态的实现基础、线程私有的运行时数据区 |
-| [类加载机制.md](Java/类加载机制.md) | 四层类加载器、双亲委派「先委托后自己加载」流程与优点、打破双亲委派的场景 |
-| [Stream流实战.md](Java/Stream流实战.md) | 取列/flatMap、List 转 Map、groupingBy 分组、BigDecimal 累加、多字段排序、按字段去重、7 个常见坑 |
+| [JVM与垃圾回收.md](java/JVM与垃圾回收.md) | 对象生命周期、可达性分析与 GC Roots、四种 GC 算法、三色标记与漏标修复、收集器分类与调优命令 |
+| [运行时数据区与栈帧.md](java/运行时数据区与栈帧.md) | 栈帧五个组成部分、动态链接为什么是多态的实现基础、线程私有的运行时数据区 |
+| [类加载机制.md](java/类加载机制.md) | 四层类加载器、双亲委派「先委托后自己加载」流程与优点、打破双亲委派的场景 |
+| [Stream流实战.md](java/Stream流实战.md) | 取列/flatMap、List 转 Map、groupingBy 分组、BigDecimal 累加、多字段排序、按字段去重、7 个常见坑 |
 
 ### 垃圾回收
 
@@ -111,10 +111,10 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [TCP/TCP滑动窗口.md](网络/TCP/TCP滑动窗口.md) | 窗口怎么滑、窗口的本质与吞吐上限、把窗口/保活落到 socket 选项上的 Go / Java 写法与对照实验 |
-| [TCP/TCP的Nagle与延迟确认.md](网络/TCP/TCP的Nagle与延迟确认.md) | Nagle 合并小包、延迟确认合并 ACK、两者同时开启的「互相伤害」与破解办法 |
-| [TCP/TCP报文结构.md](网络/TCP/TCP报文结构.md) | 连接的本质、首部字段、序列号与确认号演算、字节流没有边界的两种解法（Go 长度前缀 / Java Netty） |
-| [TCP/TCP三次握手.md](网络/TCP/TCP三次握手.md) | 三次握手逐步拆解、为什么必须三次、初始序号为什么必须随机 |
+| [tcp/TCP滑动窗口.md](网络/tcp/TCP滑动窗口.md) | 窗口怎么滑、窗口的本质与吞吐上限、把窗口/保活落到 socket 选项上的 Go / Java 写法与对照实验 |
+| [tcp/TCP的Nagle与延迟确认.md](网络/tcp/TCP的Nagle与延迟确认.md) | Nagle 合并小包、延迟确认合并 ACK、两者同时开启的「互相伤害」与破解办法 |
+| [tcp/TCP报文结构.md](网络/tcp/TCP报文结构.md) | 连接的本质、首部字段、序列号与确认号演算、字节流没有边界的两种解法（Go 长度前缀 / Java Netty） |
+| [tcp/TCP三次握手.md](网络/tcp/TCP三次握手.md) | 三次握手逐步拆解、为什么必须三次、初始序号为什么必须随机 |
 | [DNS解析.md](网络/DNS解析.md) | 域名层级与四类服务器、递归/迭代查询全流程、TTL 与缓存故障、记录类型与 CNAME 三个坑、DNS 轮询与 GSLB、劫持/HTTPDNS/DoH、Go net.Resolver 与 Java 用法 |
 | [HTTPS与TLS.md](网络/HTTPS与TLS.md) | TLS 与 SSL 关系、TLS 1.2 两次往返握手、RSA vs ECDHE、证书验证与主密钥推导、1.3 的 1-RTT/0-RTT 与重放攻击、会话复用、SSLKEYLOGFILE 解密抓包 |
 | [HTTP与gRPC.md](网络/HTTP与gRPC.md) | HTTP/2 的五点改进、gRPC 与 HTTP 的本质差别、连接池与 `httptrace` 复用观测、多路复用实测 |
@@ -126,25 +126,25 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [进程与线程.md](Linux/进程与线程.md) | 进程概念与状态、线程三种实现方式、进程与线程的区别；Go/Java 双册实测创建成本、超订与上下文切换、协程栈内存 |
-| [内存管理.md](Linux/内存管理.md) | 虚拟内存与地址空间布局、分页/页表/TLB、缺页中断、伙伴系统与 Slab、Page Cache 与 free 的正确解读、kswapd 与 LRU 回收、容器内 OOM |
-| [文件系统与IO.md](Linux/文件系统与IO.md) | ext4/XFS/Btrfs 差异、inode 与软硬链接、从 write 到落盘的完整 I/O 栈、inode 耗尽与空间未释放的排查 |
-| [性能排查.md](Linux/性能排查.md) | USE/RED 方法论与分层排查顺序、负载高但 CPU 低的成因、vmstat 速读、CPU 飙高套路、free 解读与 OOM Killer、iostat 与磁盘/inode 满、连接状态分布、Go/Java 服务排查 |
-| [常用命令.md](Linux/常用命令.md) | 查端口占用、看网络连接、递归建目录、日志关键词统计；Go/Java 双册：命令注入、超时杀进程树、退出码语义、纯 Go 复刻管道并与 shell 对拍 |
+| [进程与线程.md](linux/进程与线程.md) | 进程概念与状态、线程三种实现方式、进程与线程的区别；Go/Java 双册实测创建成本、超订与上下文切换、协程栈内存 |
+| [内存管理.md](linux/内存管理.md) | 虚拟内存与地址空间布局、分页/页表/TLB、缺页中断、伙伴系统与 Slab、Page Cache 与 free 的正确解读、kswapd 与 LRU 回收、容器内 OOM |
+| [文件系统与IO.md](linux/文件系统与IO.md) | ext4/XFS/Btrfs 差异、inode 与软硬链接、从 write 到落盘的完整 I/O 栈、inode 耗尽与空间未释放的排查 |
+| [性能排查.md](linux/性能排查.md) | USE/RED 方法论与分层排查顺序、负载高但 CPU 低的成因、vmstat 速读、CPU 飙高套路、free 解读与 OOM Killer、iostat 与磁盘/inode 满、连接状态分布、Go/Java 服务排查 |
+| [常用命令.md](linux/常用命令.md) | 查端口占用、看网络连接、递归建目录、日志关键词统计；Go/Java 双册：命令注入、超时杀进程树、退出码语义、纯 Go 复刻管道并与 shell 对拍 |
 
 ### 容器
 
 | 文件 | 知识点 |
 |---|---|
-| [Docker/容器原理.md](容器/Docker/容器原理.md) | 容器 = Namespace + cgroup + rootfs + 一个进程、与 VM 的本质差异、rootfs 为什么用 `pivot_root`、PID 1 的信号语义 |
-| [Docker/进入运行中的容器.md](容器/Docker/进入运行中的容器.md) | docker exec / attach / nsenter 的差别与生产用法、进不去容器时的排查顺序 |
-| [Docker/镜像构建与缓存.md](容器/Docker/镜像构建与缓存.md) | 多阶段构建解决什么、构建缓存何时失效、层顺序、ENTRYPOINT vs CMD、HEALTHCHECK ≠ K8s 探针 |
-| [Docker/网络与存储.md](容器/Docker/网络与存储.md) | 五类网络驱动与 `-p` 的 DNAT 本质、overlay2 合并视图与 copy-up、volume/bind/tmpfs 选型、日志驱动不轮转的坑 |
-| [Docker/Docker网络与镜像源.md](容器/Docker/Docker网络与镜像源.md) | 容器怎么拿到 IPv6 地址、Dockerfile 里换国内镜像源/软件源的完整改法 |
-| [Docker/资源限制与运维.md](容器/Docker/资源限制与运维.md) | 内存/CPU 限额怎么落地、137 的两种含义、runtime 感知 cgroup 的版本要求、常见故障定位表 |
-| [Docker/镜像瘦身与构建缓存.md](容器/Docker/镜像瘦身与构建缓存.md) | 镜像瘦身的有效手段（Go / Java）、CI 上为什么每次从零构建、缓存复用策略 |
-| [Docker/命令速查.md](容器/Docker/命令速查.md) | 镜像/容器/网络/清理/Compose 速查、inspect 取字段与退出码速判、prune 作用范围对照、exec vs run、镜像膨胀排查、context、buildx |
-| [K8s/K8s部署与生命周期.md](容器/K8s/K8s部署与生命周期.md) | Helm 与 values 分层、imagePullPolicy 与 QoS、三探针与优雅关闭、滚动升级与回滚、PDB 与有状态负载 |
+| [docker/容器原理.md](容器/docker/容器原理.md) | 容器 = Namespace + cgroup + rootfs + 一个进程、与 VM 的本质差异、rootfs 为什么用 `pivot_root`、PID 1 的信号语义 |
+| [docker/进入运行中的容器.md](容器/docker/进入运行中的容器.md) | docker exec / attach / nsenter 的差别与生产用法、进不去容器时的排查顺序 |
+| [docker/镜像构建与缓存.md](容器/docker/镜像构建与缓存.md) | 多阶段构建解决什么、构建缓存何时失效、层顺序、ENTRYPOINT vs CMD、HEALTHCHECK ≠ K8s 探针 |
+| [docker/网络与存储.md](容器/docker/网络与存储.md) | 五类网络驱动与 `-p` 的 DNAT 本质、overlay2 合并视图与 copy-up、volume/bind/tmpfs 选型、日志驱动不轮转的坑 |
+| [docker/Docker网络与镜像源.md](容器/docker/Docker网络与镜像源.md) | 容器怎么拿到 IPv6 地址、Dockerfile 里换国内镜像源/软件源的完整改法 |
+| [docker/资源限制与运维.md](容器/docker/资源限制与运维.md) | 内存/CPU 限额怎么落地、137 的两种含义、runtime 感知 cgroup 的版本要求、常见故障定位表 |
+| [docker/镜像瘦身与构建缓存.md](容器/docker/镜像瘦身与构建缓存.md) | 镜像瘦身的有效手段（Go / Java）、CI 上为什么每次从零构建、缓存复用策略 |
+| [docker/命令速查.md](容器/docker/命令速查.md) | 镜像/容器/网络/清理/Compose 速查、inspect 取字段与退出码速判、prune 作用范围对照、exec vs run、镜像膨胀排查、context、buildx |
+| [k8s/K8s部署与生命周期.md](容器/k8s/K8s部署与生命周期.md) | Helm 与 values 分层、imagePullPolicy 与 QoS、三探针与优雅关闭、滚动升级与回滚、PDB 与有状态负载 |
 | [CI-CD.md](容器/CI-CD.md) | GitLab Runner 与 executor 选型、DooD 风险、镜像 tag 与缓存策略、声明式部署与回滚、流水线常见事故 |
 
 ### 版本控制
@@ -157,7 +157,7 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [PHP-FPM对接步骤.md](PHP/PHP-FPM对接步骤.md) | 数据上报链路原理、接入前检查清单、Dockerfile 与 php.ini 占位符、run.sh 前台启动、环境变量注入、业务日志两种上报方式、shm 容量计算、优雅停机、验证与常见问题速查 |
+| [PHP-FPM对接步骤.md](php/PHP-FPM对接步骤.md) | 数据上报链路原理、接入前检查清单、Dockerfile 与 php.ini 占位符、run.sh 前台启动、环境变量注入、业务日志两种上报方式、shm 容量计算、优雅停机、验证与常见问题速查 |
 
 ### 安全
 
@@ -195,9 +195,14 @@
 
 ## 说明
 
-- **目录约定**：中文一级目录（分类性质：`数据存储`、`中间件`、`网络`、`容器`、`分布式`、`安全`、`版本控制`、`垃圾回收`、`面试`、`算法`）；
-  语言与技术专名保留原名（`Go`、`Java`、`PHP`、`Linux`、`MySQL`、`Redis`、`TCP`、`K8s`、`ElasticSearch`）。
-  一级目录下**同一知识点有多个文件时建二级目录收纳**（如 `数据存储/mysql/`、`Go/并发/`、`容器/Docker/`）。
+- **目录约定**：一级目录分两类——**分类性质用中文**（`数据存储`、`中间件`、`网络`、`容器`、`分布式`、`安全`、`版本控制`、`垃圾回收`、`面试`、`算法`、`可观测性`）；
+  涉及语言与技术的**用英文，且目录名一律小写**（`go`、`java`、`php`、`linux`；二级目录 `mysql`、`redis`、`docker`、`k8s`、`tcp`）。
+  一级目录下**同一知识点有多个文件时建二级目录收纳**（如 `数据存储/mysql/`、`go/并发/`、`容器/docker/`）。
+  文件名保持原有大小写（专名如 `Docker网络与镜像源.md`、`K8s部署与生命周期.md`、`TCP滑动窗口.md`）。
+  > ⚠️ **目录名必须全小写**：在 Windows / macOS 这类大小写不敏感的文件系统上，`core.ignorecase=true`
+  > 会让 git **静默忽略**大小写改名——工作区是 `Go/`，git 里仍是 `go/`，`git status` 干净无任何提示，
+  > 提交后 GitHub 上是小写，而链接写 `Go/…` 就会 404（本项目 2026-09-25 实际踩过）。
+  > **修改已提交路径的大小写必须走 `git mv` 两跳**（`git add` 对纯大小写改动同样无效），否则索引里的拼写不会变。
 - **每个文件聚焦一个知识点**；根目录只保留本索引。
 - 内容来源分三类，各自的组织方式不同：
   1. **面试真题整理**（Go / 数据库 / 网络 / 系统 / 分布式方向）：**一个文件一道题**（或一组强关联的题），逐题包含**题目来源、考察意图、参考答案、面试官追问方向**；素材来源见 [面试/素材清单.md](面试/素材清单.md)。

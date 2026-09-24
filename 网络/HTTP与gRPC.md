@@ -378,7 +378,7 @@ func main() {
 
 > ⚠️ 这个实验量的是**应用层并发**，没有真网络，所以绝对值不代表线上。
 > 想加上网络代价：`srv.Close()` 换成真实远端服务，或在 Linux 上用 `tc netem` 加延迟与丢包
-> （见 [TCP滑动窗口.md](TCP/TCP滑动窗口.md) 的「使用三」）——**HTTP/2 在丢包链路上的优势会缩水**，
+> （见 [TCP滑动窗口.md](tcp/TCP滑动窗口.md) 的「使用三」）——**HTTP/2 在丢包链路上的优势会缩水**，
 > 因为它的队头阻塞从"应用层"下移到了"TCP 层"，这正是 HTTP/3/QUIC 要解决的问题。
 
 ### 4. gRPC：机制与 HTTP/2 完全一致，代码只多一层生成
@@ -566,4 +566,4 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 - [DHCP.md](DHCP.md) — T1/T2 的租约形状与续租流程
 - [HTTPS与TLS.md](HTTPS与TLS.md) — h2 的事实前提：TLS 与 ALPN
 - [数据序列化.md](数据序列化.md) — gRPC 默认的 Protobuf 载荷
-- [context.md](../Go/工程实践/context.md) — 请求取消与超时在客户端侧的落点
+- [context.md](../go/工程实践/context.md) — 请求取消与超时在客户端侧的落点

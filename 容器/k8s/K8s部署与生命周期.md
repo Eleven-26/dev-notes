@@ -95,8 +95,8 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 | 痛点 | 手段 | 落在哪一层 |
 |---|---|---|
-| `docker pull` 拉镜像慢 | **`registry-mirrors` 镜像加速**（[Docker网络与镜像源.md](../Docker/Docker网络与镜像源.md) 对比表左列） | 宿主机 **dockerd** |
-| 构建镜像时 `apt / yum` 装包慢 | **换国内软件源**（[Docker网络与镜像源.md](../Docker/Docker网络与镜像源.md)） | **镜像内部** |
+| `docker pull` 拉镜像慢 | **`registry-mirrors` 镜像加速**（[Docker网络与镜像源.md](../docker/Docker网络与镜像源.md) 对比表左列） | 宿主机 **dockerd** |
+| 构建镜像时 `apt / yum` 装包慢 | **换国内软件源**（[Docker网络与镜像源.md](../docker/Docker网络与镜像源.md)） | **镜像内部** |
 | Chart / 镜像在公网拉不动，或要控版本 | **自建 OCI Registry + Helm**（Q1 实战） | **集群侧 / 制品库** |
 
 > 串起来就是一条完整链路：**镜像从哪来（registry mirror）→ 构建时依赖从哪来（apt / yum 源）
@@ -155,7 +155,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 |---|---|
 | 私有仓库凭证 | `kubectl create secret docker-registry` + Pod 的 `imagePullSecrets`（容易漏，可配到 default ServiceAccount）；节点级凭证粒度太粗、换仓库要动节点；托管集群的免密组件要先确认**作用范围与失效策略**（跨账号/跨地域最容易踩） |
 | 拉取失败怎么分 | 事件里 `ErrImagePull`（鉴权/网络）还是 `ImagePullBackOff`（反复失败，多为 tag 不存在或限速）→ 再在节点上手工 `crictl pull` 区分"集群凭证问题"和"仓库/网络问题" |
-| 冷启动加速 | 镜像做小（[镜像瘦身与构建缓存.md](../Docker/镜像瘦身与构建缓存.md)）+ 薄层增量（[镜像瘦身与构建缓存.md](../Docker/镜像瘦身与构建缓存.md)）+ 仓库就近（同 VPC/私有仓库）+ **DaemonSet 提前把关键镜像拉一遍**；⚠️ **kubelet 会按磁盘阈值 GC 掉不用的镜像**，节点磁盘压太满就会"昨天还在、今天重拉" |
+| 冷启动加速 | 镜像做小（[镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md)）+ 薄层增量（[镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md)）+ 仓库就近（同 VPC/私有仓库）+ **DaemonSet 提前把关键镜像拉一遍**；⚠️ **kubelet 会按磁盘阈值 GC 掉不用的镜像**，节点磁盘压太满就会"昨天还在、今天重拉" |
 
 ### 三、`requests` / `limits` 与 QoS 三档 ⭐
 
@@ -167,7 +167,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 三条必讲推论：**内存没有"超用再回收"的中间态**，超 limit 直接 OOMKilled（CPU 才有 throttle）；
 不设 requests 会让调度器误判容量、把 Pod 塞到已满载节点然后再驱逐（"我的 Pod 无故重启"常是邻居造成的）；
-JVM/Go 要按 cgroup 算预算，见 [资源限制与运维.md](../Docker/资源限制与运维.md)。
+JVM/Go 要按 cgroup 算预算，见 [资源限制与运维.md](../docker/资源限制与运维.md)。
 
 ### 四、退出码与 OOMKilled 在 K8s 里怎么看
 
@@ -290,13 +290,13 @@ db.Close()
   还是 CrashLoop（应用或配置问题）→ 再看 `maxUnavailable` 与探针是否太保守。
 - **HPA 和滚动发布会打架吗？** → 发布期 readiness 抖动使可服务副本数下降 → HPA 扩容，发布完又缩；
   还有 **HPA 会接管 replicas 初值**这个坑。
-- **镜像变小对发布有什么影响？** → 见 [镜像瘦身与构建缓存.md](../Docker/镜像瘦身与构建缓存.md) 的「面试官会追问什么」。
+- **镜像变小对发布有什么影响？** → 见 [镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) 的「面试官会追问什么」。
 
 ---
 
 ## 关联
 
-- [镜像瘦身与构建缓存.md](../Docker/镜像瘦身与构建缓存.md) — 发布时长与冷启动的镜像侧收益
-- [资源限制与运维.md](../Docker/资源限制与运维.md) — Pod 的 requests/limits 与 QoS 分级
-- [容器原理.md](../Docker/容器原理.md) — SIGTERM 为什么能直达业务进程
+- [镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) — 发布时长与冷启动的镜像侧收益
+- [资源限制与运维.md](../docker/资源限制与运维.md) — Pod 的 requests/limits 与 QoS 分级
+- [容器原理.md](../docker/容器原理.md) — SIGTERM 为什么能直达业务进程
 - [CI-CD.md](../CI-CD.md) — 声明式部署与回滚的流水线视角
