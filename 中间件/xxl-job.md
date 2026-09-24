@@ -62,7 +62,6 @@
 ## 3. 整体架构
 
 ```
-
 ┌────────────── 调度中心集群（xxl-job-admin ×N，:8080） ──────────────┐
 │ Web 控制台 │ 调度引擎 JobScheduleHelper │ 注册发现 JobRegistryHelper │
 │     ▼ 集群一致性唯一凭据：MySQL xxl_job_lock（SELECT ... FOR UPDATE）│
@@ -109,7 +108,6 @@
 `docker-compose.yml`（MySQL 首启自动导入建表数据，可直接用）：
 
 ```yaml
-
 services:
   mysql:
     image: mysql:8.0
@@ -151,7 +149,6 @@ services:
 ## 5. 使用一：Go ⭐
 
 ```bash
-
 go get github.com/xxl-job/xxl-job-executor-go
 ```
 
@@ -169,7 +166,6 @@ go get github.com/xxl-job/xxl-job-executor-go
 > ⚠️ Go 客户端**没有** `SetAddresses` / `SetAccessToken` / `SetRegistry` 这类 setter（那是部分博客的臆造或他语言写法），只有上面这些 `Option` 函数；也**不支持可插拔注册中心**，固定走 DB 注册表。
 
 ```go
-
 package main
 
 import (
@@ -239,7 +235,6 @@ func logHandler(req *xxl.LogReq) *xxl.LogRes {
 > ⚠️ 字段名就是 `BroadcastIndex` / `BroadcastTotal`（`int64`），语义等同 Java 的 `shardIndex` / `shardTotal`。大量博客写成 `param.ShardIndex`，那是**错的**，编译不过。
 
 ```go
-
 // shardingJobHandler：每个执行器实例只处理自己那一份数据（需 import "context" / "fmt" / "log"）
 // 典型场景：把千万级待处理行横向拆到 N 台机器并行跑
 func shardingJobHandler(ctx context.Context, param *xxl.RunReq) string {
@@ -287,7 +282,6 @@ Go 客户端**最容易踩的坑**：`Task.Run` 的逻辑是——**函数正常
 | 超时 | 不 panic；中心按 `executor_timeout` 判失败并调 `/kill` | cancel 掉 `ctx`，函数应尽快返回 |
 
 ```go
-
 // 用中间件把「返回以 ERROR: 开头的字符串」统一转成 panic，避免业务里到处 panic（需 import "strings"）
 func failFastMiddleware(next xxl.TaskFunc) xxl.TaskFunc {
 	return func(ctx context.Context, param *xxl.RunReq) string {
@@ -310,7 +304,6 @@ func failFastMiddleware(next xxl.TaskFunc) xxl.TaskFunc {
 ## 6. 使用二：Java（官方，对照）
 
 ```xml
-
 <!-- 调度中心与执行器共用核心包，版本须与 admin 镜像一致 -->
 <dependency>
   <groupId>com.xuxueli</groupId>
@@ -320,7 +313,6 @@ func failFastMiddleware(next xxl.TaskFunc) xxl.TaskFunc {
 ```
 
 ```properties
-
 # application.properties，key 名与官方 sample 一致
 xxl.job.admin.addresses=http://127.0.0.1:8080/xxl-job-admin
 xxl.job.accessToken=default_token
@@ -331,7 +323,6 @@ xxl.job.executor.logretentiondays=30
 ```
 
 ```java
-
 @Configuration // 另需 import XxlJobSpringExecutor / @Value / @Bean / @Configuration
 public class XxlJobConfig {
     @Value("${xxl.job.admin.addresses}")           private String adminAddresses;
@@ -356,7 +347,6 @@ public class XxlJobConfig {
 ```
 
 ```java
-
 @Component // 另需 import XxlJobHelper / XxlJob / @Component / java.util.List
 public class SampleXxlJob {
 

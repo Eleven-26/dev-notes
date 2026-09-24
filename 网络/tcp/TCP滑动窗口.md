@@ -97,7 +97,6 @@
 连接一旦进了连接池，再改选项就得重建连接——所以**所有选项都放在拨号这一步**。
 
 ```go
-
 package tcpdemo
 
 import (
@@ -201,7 +200,6 @@ func setup(tc *net.TCPConn, o Options) error {
 | **`CLOSE_WAIT` 堆积** | `ss -tn state close-wait` | 对端已发 FIN 而**我方代码没 `Close`**——99% 是漏了 defer Close 或 goroutine 卡在写 |
 
 ```bash
-
 # 一个能直接跑出"Nagle 合并小包"现象的观测组合
 sudo tcpdump -i lo -nn -s0 -tt 'tcp port 9000 and greater 60' &
 go run ./cmd/nagledemo -nodelay=false   # 每 5ms 写 1 字节，观察抓包里小包是否被攒成大包
@@ -216,7 +214,6 @@ go run ./cmd/nagledemo -nodelay=false   # 每 5ms 写 1 字节，观察抓包里
 ### 1. `Socket` / `SocketOption` 对照
 
 ```java
-
 package notes.tcp;
 
 import java.io.IOException;
@@ -266,7 +263,6 @@ public class Channels {
 ### 1. 服务端与客户端（Go）
 
 ```go
-
 package tcpdemo
 
 import (
@@ -337,7 +333,6 @@ func MeasureRoundTrip(addr string, noDelay bool, n int) (time.Duration, error) {
 ```
 
 ```bash
-
 # 观测三件套（Linux 机器上跑，Windows 用 WSL）
 sudo ss -tinp 'dst :9000'                      # 看 cwnd / rcv_space / retrans
 sudo nstat -az | egrep -i 'TcpExtTCPSlowStartRetrans|TcpExtTCPFastRetrans|TcpExtTCPRenoRecovery'
@@ -351,7 +346,6 @@ sudo ss -tn state close-wait                   # 实验结束若这里有残留 
 ### 2. 用 `tc` 制造丢包，看快速重传
 
 ```bash
-
 # 在 10% 丢包、100ms 延迟的链路上跑同一个实验，感受"窗口 = 吞吐上限"
 sudo tc qdisc add dev lo root netem loss 10% delay 100ms
 go run ./cmd/tcpbench -addr 127.0.0.1:9000 -nodelay=true

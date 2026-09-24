@@ -15,7 +15,6 @@
 MongoDB是基于JSON来描述数据的，所有的“数据行”都可以通过一个JSON格式的文档（document）来表示。
 
 ```javascript
-
 {
   "_id": ObjectId("66f1a2b3c4d5e6f7a8b9c0d1"),
   "name": "alice",
@@ -142,7 +141,6 @@ MongoDB通过副本集（replication set）来实现数据库的高可用，这�
 文档没有强制 schema，代价是**同一集合会长期共存多种形状的文档**。改字段之前先给文档打版本，迁移才有"做到哪了"的抓手：
 
 ```javascript
-
 // 条件里带版本 → 已迁移的文档天然被排除，脚本可中断可重放（幂等）
 db.users.updateOne({ _id: id, schemaVersion: { $lt: 2 } },
   { $rename: { phone: "contact.phone" }, $set: { schemaVersion: 2 },
@@ -168,7 +166,6 @@ db.users.updateOne({ _id: id, schemaVersion: { $lt: 2 } },
 - ⚠️ 每个索引都占内存与磁盘，并让写入多维护一棵树——只建真正被查询用到的索引。
 
 ```javascript
-
 db.users.createIndex({ age: 1 })   // 1 升序，-1 降序
 db.users.getIndexes()              // 查看索引
 db.users.dropIndex({ age: 1 })     // 删除索引
@@ -198,7 +195,6 @@ db.users.dropIndex({ age: 1 })     // 删除索引
 索引是一棵**按键整体排序**的 B 树。理解 ESR 只需要一句话：**范围条件之后，索引里剩下的字段就不再连续了**，因此既不能用来定界，也不能用来排序。拿 `orders` 举例：
 
 ```javascript
-
 // Q1：状态等值 + 时间倒序取前 20 条 → ✅ { status: 1, createdAt: -1 }
 //    E 定区间，S 就是区间内的自然顺序：反向扫到够 20 条就停，keysExamined ≈ 20，无 SORT
 db.orders.find({ status: "PAID", createdAt: { $lt: ISODate("2026-09-01") } })
@@ -219,7 +215,6 @@ db.orders.find({ status: "PAID", amount: { $gt: 100 } }).sort({ createdAt: -1 })
 要出现 `PROJECTION_COVERED`（`totalDocsExamined == 0`，完全不回表），两个前提同时成立：① filter、sort、projection 里出现的**每一个字段**都在这同一个索引里；② projection 显式 `_id: 0`——不写 projection 时 `_id` 默认返回，它就成了"必须覆盖但索引里没有"的字段，整个查询退化成 `FETCH` 回表。
 
 ```javascript
-
 db.users.createIndex({ city: 1, age: 1 })
 db.users.find({ city: "HZ" }, { city: 1, age: 1, _id: 0 })  // ✅ 覆盖
 db.users.find({ city: "HZ" }, { city: 1, age: 1 })          // ❌ 只差一个 _id，每条都回表
@@ -245,7 +240,6 @@ db.users.find({ city: "HZ" }, { city: 1, age: 1 })          // ❌ 只差一个 
 数组字段可建索引，即 **multikey index**：数组每个元素生成一个索引条目。
 
 ```javascript
-
 db.articles.createIndex({ tags: 1 })
 db.articles.find({ tags: "go" })    // 命中 multikey 索引
 ```
@@ -261,7 +255,6 @@ db.articles.find({ tags: "go" })    // 命中 multikey 索引
 | `2d` | `{ loc: "2d" }` | 平面坐标，legacy 用法，仅限小范围 |
 
 ```javascript
-
 db.places.createIndex({ loc: "2dsphere" })
 db.places.find({ loc: { $near: {
   $geometry: { type: "Point", coordinates: [120.15, 30.28] },
@@ -272,13 +265,11 @@ db.places.find({ loc: { $near: {
 
 ### 唯一索引
 ```javascript
-
 db.users.createIndex({ email: 1 }, { unique: true })
 ```
 ⚠️ **坑**：字段缺失会被视为 `null`，多个缺失该字段的文档会互相冲突。解法：`sparse`（只对存在该字段的文档建索引）或 `partialFilterExpression`（只对满足条件的文档建唯一约束，更灵活，推荐）：
 
 ```javascript
-
 db.users.createIndex({ email: 1 },
   { unique: true, partialFilterExpression: { email: { $exists: true } } })
 ```
@@ -288,7 +279,6 @@ db.users.createIndex({ email: 1 },
 TTL（Time To Live）索引让文档**到点自动过期删除**，非常适合会话、验证码、临时日志、缓存。
 
 ```javascript
-
 db.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 })
 db.tokens.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 }) // 字段值即删除时刻
 db.runCommand({ collMod: "sessions",                               // 改过期时间只能走 collMod
@@ -360,7 +350,6 @@ db.runCommand({ collMod: "sessions",                               // 改过期�
 
 ### 慢查询定位：profiler
 ```javascript
-
 // level: 0 关闭 / 1 只记超过阈值的 / 2 全记（2 明显拖慢，只短时排查）
 db.setProfilingLevel(1, { slowms: 100 })      // 阈值随命令/配置下发，不要用默认值上线
 db.getProfilingStatus()
@@ -380,7 +369,6 @@ db.killOp(<opid>)                             // ⚠️ 先确认不是长事务
 
 ### stage 顺序与管道优化器
 ```javascript
-
 // 反例：$unwind 在前、$match 在后 → 索引完全接不上，全集合先进管道再筛
 db.orders.aggregate([{ $unwind: "$items" }, { $match: { status: "PAID", "items.qty": { $gt: 5 } } },
                      { $group: { _id: "$items.sku", n: { $sum: 1 } } }])
@@ -396,7 +384,6 @@ db.orders.aggregate([
 
 ### `$lookup` 的代价：本质是嵌套循环
 ```javascript
-
 db.orders.aggregate([
   { $match: { createdAt: { $gte: ISODate("2026-09-01") } } },   // 先把驱动侧缩小
   { $lookup: { from: "users", localField: "uid", foreignField: "_id", as: "u" } },
@@ -420,7 +407,6 @@ db.orders.aggregate([
 
 ### 大集合上的聚合分页
 ```javascript
-
 // 一次拿到"第 3 页 + 总数"：总数与页数据共用同一个 $match
 db.orders.aggregate([
   { $match: { status: "PAID" } },
@@ -537,7 +523,6 @@ db.orders.aggregate([
 原理：会话记录写结果的 `operationTime`/`clusterTime`，随后的读把它作为 `afterClusterTime` 发给服务端 → 从节点**必须**把 oplog 应用过该时间点才返回（没追平就是等待，可能超时）。
 
 ```go
-
 // 同一个会话里把读写串起来，驱动自动带 clusterTime（readpref 来自 .../mongo/readpref）
 sess := client.StartSession()
 defer sess.EndSession()
@@ -612,7 +597,6 @@ chunk 从源分片搬到目标分片期间，这段区间的**所有权（owners
 
 ### 用法要点（Go）
 ```go
-
 // ⭐ 事务体必须可重放：闭包里不能有外部副作用
 // 下面是 v1 驱动的显式写法（Start/Commit/Abort）；驱动同时提供 WithTransaction 便捷方法，
 // 它内部就是"跑闭包 → 失败就重试"，方法名与签名随驱动大版本有差异，以驱动文档为准。
@@ -653,7 +637,6 @@ err := client.UseSession(ctx, func(sctx mongo.SessionContext) error {
 
 ### Go 客户端（go.mongodb.org/mongo-driver）
 ```bash
-
 go get go.mongodb.org/mongo-driver/mongo          # v1
 go get go.mongodb.org/mongo-driver/v2@latest      # v2（模块路径带 /v2）
 ```
@@ -663,7 +646,6 @@ go get go.mongodb.org/mongo-driver/v2@latest      # v2（模块路径带 /v2）
 需要导入 `go.mongodb.org/mongo-driver/mongo`、`.../bson`、`.../mongo/options`。
 
 ```go
-
 ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer cancel()
 opts := options.Client().ApplyURI("mongodb://localhost:27017").
@@ -681,7 +663,6 @@ coll := client.Database("demo").Collection("users")
 
 #### 插入
 ```go
-
 res, err := coll.InsertOne(ctx, bson.M{
 	"name": "alice", "age": 30, "tags": []string{"go", "db"}, "createdAt": time.Now(),
 })
@@ -697,7 +678,6 @@ _, err = coll.InsertMany(ctx, []interface{}{
 结构体字段用 bson tag 映射，如 `Name string \`bson:"name"\``。
 
 ```go
-
 var u User
 err = coll.FindOne(ctx, bson.M{"name": "alice"}).Decode(&u)
 if errors.Is(err, mongo.ErrNoDocuments) { log.Println("not found") }
@@ -723,7 +703,6 @@ if err := cur.Err(); err != nil { log.Fatal(err) } // ⚠️ 必须显式检查�
 
 #### 更新
 ```go
-
 res, err := coll.UpdateOne(ctx, bson.M{"name": "alice"}, bson.M{
 	"$set":  bson.M{"age": 31},
 	"$inc":  bson.M{"loginCount": 1}, // 原子自增
@@ -741,7 +720,6 @@ _, err = coll.UpdateMany(ctx, bson.M{"age": bson.M{"$lt": 30}}, bson.M{"$set": b
 
 #### 删除
 ```go
-
 res, err := coll.DeleteOne(ctx, bson.M{"name": "dave"})
 log.Println("deleted:", res.DeletedCount)
 res, err = coll.DeleteMany(ctx, bson.M{"age": bson.M{"$lt": 18}})
@@ -750,7 +728,6 @@ res, err = coll.DeleteMany(ctx, bson.M{"age": bson.M{"$lt": 18}})
 
 #### 聚合
 ```go
-
 pipeline := mongo.Pipeline{
 	{{Key: "$match", Value: bson.M{"age": bson.M{"$gte": 18}}}}, // 尽早过滤，最好命中索引
 	{{Key: "$group", Value: bson.D{
@@ -772,7 +749,6 @@ if err := cur.All(ctx, &stats); err != nil { log.Fatal(err) } // All 会自动�
 
 #### 创建索引
 ```go
-
 // 单键索引
 _, err = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
 	Keys: bson.D{{Key: "name", Value: 1}}, Options: options.Index().SetName("idx_name"),
@@ -797,7 +773,6 @@ names, _ := coll.Indexes().ListNames(ctx) // 数组/嵌套字段同理：bson.D{
 ### Java 客户端（org.mongodb:mongodb-driver-sync）
 Maven 坐标：`org.mongodb:mongodb-driver-sync:5.2.1`（Gradle 同坐标；驱动走 SLF4J 门面，需自行引入日志实现）。
 ```xml
-
 <dependency>
     <groupId>org.mongodb</groupId>
     <artifactId>mongodb-driver-sync</artifactId>
@@ -807,7 +782,6 @@ Maven 坐标：`org.mongodb:mongodb-driver-sync:5.2.1`（Gradle 同坐标；驱�
 
 #### 连接、CRUD 与聚合
 ```java
-
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import com.mongodb.client.result.*;
@@ -880,7 +854,6 @@ public class MongoDemo {
 
 #### Spring Data MongoDB 简述
 ```yaml
-
 spring:
   data:
     mongodb:
@@ -888,7 +861,6 @@ spring:
       auto-index-creation: true   # ⭐ 启动时按注解自动建索引
 ```
 ```java
-
 @Document(collection = "users")          // 不写则默认取类名小写
 public class User {
     @Id private String id;               // 映射 _id

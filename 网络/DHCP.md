@@ -93,7 +93,6 @@
 | **K8s ServiceAccount token** | 提前 20%~30% 刷新 | 重建 client | 请求 401 |
 
 ```go
-
 package leasedemo
 
 import (
@@ -246,7 +245,6 @@ func (l *Lease) snapshot() Renewal {
 	defer l.mu.Unlock()
 	return l.cur
 }
-
 ```
 
 > **为什么这套值得单独写一遍**：绝大多数"token 过期突然全线 401"「锁 TTL 到点被抢」的事故，
@@ -259,7 +257,6 @@ func (l *Lease) snapshot() Renewal {
 ### 1. 租约式刷新：同一个形状
 
 ```java
-
 package notes.appproto;
 
 import java.time.Duration;
@@ -327,7 +324,6 @@ public final class LeaseKeeper<T> implements AutoCloseable {
 ### 1. DHCP：看 DORA 与续租
 
 ```bash
-
 # 抓四个广播包：注意源地址全是 0.0.0.0、目的 255.255.255.255、端口 67/68
 sudo tcpdump -i eth0 -nn -e 'port 67 or port 68'
 
@@ -348,7 +344,6 @@ cat /var/lib/dhcpd/dhclient.*.leases   # 或 networkd：resolvectl status / netw
 | `interface "eth0";` + `uid`/`hw-address` | 正文「靠 MAC 作为唯一标识」 |
 
 ```bash
-
 # 快速验证"续租是单播、DORA 是广播"：只过滤单播的 DHCP 包，能抓到说明已进入 RENEWING
 sudo tcpdump -i eth0 -nn 'port 67 and not src 0.0.0.0'
 

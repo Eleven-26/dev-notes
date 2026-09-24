@@ -45,7 +45,6 @@
 视频是**三节点 K8s 集群 + 本地 OCI Registry**，从 Registry 拉 Chart 部署：
 
 ```bash
-
 # 0. 安装 Helm（官方脚本）
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
@@ -62,7 +61,6 @@ helm install my-nginx oci://registry.example.com/charts/nginx \
 > 所以要**显式指定用 HTTP 方式**（`--plain-http`），否则拉取会失败。
 
 ```bash
-
 # 3. 看装出来什么了
 helm list
 kubectl get pod,deploy,svc
@@ -79,7 +77,6 @@ Chart 里有 `Deployment` 就有 Deployment，有 `Service` 就有 Service。
 ### 四、除了 install，还要会这几条
 
 ```bash
-
 helm repo add bitnami https://charts.bitnami.com/bitnami   # 加仓库
 helm repo update                                           # 更新索引
 helm search repo nginx                                     # 搜 Chart
@@ -172,7 +169,6 @@ JVM/Go 要按 cgroup 算预算，见 [资源限制与运维.md](../docker/资源
 ### 四、退出码与 OOMKilled 在 K8s 里怎么看
 
 ```bash
-
 kubectl describe pod <pod>      # Last State: Terminated → Reason: OOMKilled / Error + Exit Code
 kubectl get events --sort-by=.lastTimestamp -n <ns>   # Killing / BackOff / Unhealthy / FailedScheduling
 kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
@@ -219,7 +215,6 @@ delete pod 之后两条路并行：
 ③ 等在途请求处理完（必须有上限）→ ④ 关资源（连接池、flush、消费者 offset）→ `exit 0`**。
 
 ```go
-
 // 收到 SIGTERM 后停止接收并等在途请求结束（等待上限必须小于 grace period）
 sigCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 defer stop()

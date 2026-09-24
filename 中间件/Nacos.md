@@ -53,7 +53,6 @@ Spring Cloud Alibaba 默认拼接 `DataId = ${spring.application.name}-${spring.
 ## 3. 整体架构
 
 ```
-
 ┌──────────────── Nacos Server 集群（节点对等，无主从） ─────────────────┐
 │  Nacos A  ◀────────── JRaft / Distro 数据同步 ──────────▶ Nacos B / C │
 │  :8848 HTTP+控制台   :9848 客户端 gRPC   :9849 服务端 gRPC   :7848 集群 │
@@ -82,7 +81,6 @@ Spring Cloud Alibaba 默认拼接 `DataId = ${spring.application.name}-${spring.
 | `cluster` 集群 | **必须 MySQL** | JRaft + Distro | 所有生产环境 |
 
 ```bash
-
 sh startup.sh -m standalone    # Linux/macOS；Windows 用 startup.cmd -m standalone
 docker run -d --name nacos -p 8848:8848 -p 9848:9848 -e MODE=standalone nacos/nacos-server:v2.3.2
 # 控制台 http://127.0.0.1:8848/nacos，默认 nacos / nacos
@@ -91,7 +89,6 @@ docker run -d --name nacos -p 8848:8848 -p 9848:9848 -e MODE=standalone nacos/na
 `docker-compose.yml`（MySQL 存储 + 开启鉴权，可直接用）：
 
 ```yaml
-
 services:
   mysql:
     image: mysql:8.0
@@ -134,7 +131,6 @@ services:
 ### 5.1 Java：nacos-client 原生用法
 
 ```xml
-
 <!-- com.alibaba.nacos:nacos-client:2.3.2 ，版本与服务端保持一致 -->
 <dependency>
   <groupId>com.alibaba.nacos</groupId><artifactId>nacos-client</artifactId>
@@ -143,7 +139,6 @@ services:
 ```
 
 ```java
-
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -184,7 +179,6 @@ public class NacosConfigDemo {
 ### 5.2 Java：Spring Cloud Alibaba 用法
 
 ```xml
-
 <!-- BOM：com.alibaba.cloud:spring-cloud-alibaba-dependencies:2023.0.1.0（import scope），对应 Spring Boot 3.2.4
      下面三个 starter 由 BOM 统一管版本，无需写 version -->
 <dependency>
@@ -202,7 +196,6 @@ public class NacosConfigDemo {
 `bootstrap.yml`（**必须**在 bootstrap 阶段拉取，否则晚于容器初始化）：
 
 ```yaml
-
 spring:
   application:
     name: order-service          # DataId 前缀
@@ -226,7 +219,6 @@ spring:
 ```
 
 ```java
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -249,12 +241,10 @@ public class ConfigController {
 ### 5.3 Go：nacos-sdk-go/v2 配置读取与监听
 
 ```bash
-
 go get github.com/nacos-group/nacos-sdk-go/v2@v2.3.1
 ```
 
 ```go
-
 package main
 
 import (
@@ -321,7 +311,6 @@ func main() {
 `spring.cloud.nacos.discovery`（见 5.2）配好后启动即自动注册。
 
 ```java
-
 import jakarta.annotation.Resource;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
@@ -353,7 +342,6 @@ public class DiscoveryController {
 原生 `NamingService` 手动注册（非 Spring 场景，import 已省略）：
 
 ```java
-
 Properties props = new Properties();
 props.put(PropertyKeyConst.SERVER_ADDR, "127.0.0.1:8848");
 props.put(PropertyKeyConst.NAMESPACE, "dev");
@@ -374,7 +362,6 @@ naming.subscribe("order-service", "DEFAULT_GROUP",
 ### 6.2 Go：RegisterInstance / SelectInstances / Subscribe
 
 ```go
-
 package main
 
 import (

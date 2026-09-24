@@ -19,7 +19,6 @@
 4. 这些工具**装在 `$(go env GOPATH)/bin`**（Windows 一般是 `C:\Users\<你>\go\bin`），必须加进系统 `PATH`，否则 VSCode 找不到 `gopls` / `dlv`。
 
 ```bash
-
 go env GOPATH GOBIN                        # 确认工具安装目录
 go install golang.org/x/tools/gopls@latest # 单独补装也行
 ```
@@ -27,7 +26,6 @@ go install golang.org/x/tools/gopls@latest # 单独补装也行
 ### 二、`settings.json`：语言服务 + 保存即格式化
 
 ```json
-
 {
   "go.useLanguageServer": true,
   "gopls": { "ui.semanticTokens": true, "ui.completion.usePlaceholders": true },
@@ -61,7 +59,6 @@ go install golang.org/x/tools/gopls@latest # 单独补装也行
 不放 `launch.json` 时按 `F5`，VSCode 会**自动生成模板并把 `program` 设成工作目录**（`${workspaceFolder}`）——一个仓库有多个 `main` 包时就会跑错目标，所以要按项目改 `program`。
 
 ```json
-
 {
   "version": "0.2.0",
   "configurations": [
@@ -123,7 +120,6 @@ go install golang.org/x/tools/gopls@latest # 单独补装也行
 ### 三、三种调试姿态
 
 ```bash
-
 dlv debug ./cmd/api -- -conf ./configs      # ① 本地从源码起（自动带 -N -l）
 dlv attach <pid>                            # ② 附加到已运行进程
 dlv --headless --listen=:2345 --api-version=2 --accept-multiclient exec ./app-debug  # ③ 远程/容器
@@ -132,7 +128,6 @@ dlv --headless --listen=:2345 --api-version=2 --accept-multiclient exec ./app-de
 第 ③ 种配合 attach + remote 的 `launch.json`：
 
 ```json
-
 {
   "name": "Attach to Remote (container)",
   "type": "go", "request": "attach", "mode": "remote",
@@ -146,7 +141,6 @@ dlv --headless --listen=:2345 --api-version=2 --accept-multiclient exec ./app-de
 ### 四、不打断点的三个偏方
 
 ```bash
-
 go build -gcflags="-S" . > asm.txt           # 汇编落到文件慢慢比对
 GOSSAFUNC=Foo go build .                     # 生成 SSA 图 ssa.html
 go test -count=1 -gcflags="all=-N -l" ./...  # 调测试必加 -count=1

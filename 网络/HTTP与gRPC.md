@@ -110,7 +110,6 @@ HTTP/1.1 需要**额外配置 SSL/TLS**；HTTP/2 **天然支持 TLS**。
 于是本仓库那条「中间件实例必须单例」在这里的具体形态是：
 
 ```go
-
 package httpdemo
 
 import (
@@ -163,7 +162,6 @@ var Client = sync.OnceValue(func() *http.Client {
 		// 需要严格隔离时用自定义 CheckRedirect 把敏感头剥掉
 	}
 })
-
 ```
 
 **三个必须记住的对照**：
@@ -183,7 +181,6 @@ var Client = sync.OnceValue(func() *http.Client {
 **这次请求到底有没有新建连接？握手花了多久？首字节多久回来？**
 
 ```go
-
 package httpdemo
 
 import (
@@ -237,7 +234,6 @@ func GetWithTrace(ctx context.Context, url string) (*http.Response, Timing, erro
 	t.Total = time.Since(start)
 	return resp, t, nil
 }
-
 ```
 
 > `Reused=false` 不一定是坏事（连接池刚建立时本来就要建），
@@ -276,7 +272,6 @@ func GetWithTrace(ctx context.Context, url string) (*http.Response, Timing, erro
 复现程序（单文件，`go mod init x && go run main.go`）：
 
 ```go
-
 package main
 
 import (
@@ -373,7 +368,6 @@ func main() {
 		fmt.Printf("%-3s maxConns=0   conc=%-3d total=%-12v dials=%d\n", proto, n, d.Round(10*time.Millisecond), dial)
 	}
 }
-
 ```
 
 > ⚠️ 这个实验量的是**应用层并发**，没有真网络，所以绝对值不代表线上。
@@ -387,7 +381,6 @@ func main() {
 **① `.proto` 与服务生成（见 [数据序列化.md](数据序列化.md)），② 客户端保持**长连接**（因为它是一条 HTTP/2 连接上跑多流）。
 
 ```go
-
 package httpdemo
 
 // 说明性片段：真实的 gRPC 拦截器要 `google.golang.org/grpc` 与生成的 stub，
@@ -403,7 +396,6 @@ package httpdemo
 //
 //  3. 重试要幂等：grpc 的 retry policy 会在 TRANSIENT_FAILURE 上重放，
 //     非幂等接口（扣款）必须关掉自动重试，改由业务侧带幂等键。
-
 ```
 
 ## 使用二：Java（HttpClient / OkHttp 的连接池）
@@ -413,7 +405,6 @@ package httpdemo
 ### 1. JDK `HttpClient`：单例 + HTTP/2 优先
 
 ```java
-
 package notes.appproto;
 
 import java.net.URI;
@@ -460,7 +451,6 @@ public class JdkHttp {
 ### 2. OkHttp：池参数与 Go 侧的对照表
 
 ```java
-
 package notes.appproto;
 
 import java.time.Duration;
@@ -524,7 +514,6 @@ public class OkHttpSingleton {
 ### 1. 一眼看清协议版本、ALPN 与帧
 
 ```bash
-
 # 关键看三行：Connected to / ALPN 协商结果 / 是否 "Using HTTP2, server supports multiplexing"
 curl -v --http2 https://example.com/ -o /dev/null 2>&1 | egrep 'ALPN|SSL connection|HTTP/|< |expire'
 
@@ -541,7 +530,6 @@ echo | openssl s_client -connect example.com:443 -alpn h2 2>/dev/null | openssl 
 ### 2. 直接看 HTTP/2 的帧与 HPACK
 
 ```bash
-
 # tshark：解开 TLS 才能看帧（用 SSLKEYLOGFILE，方法见 HTTPS与TLS.md）
 TSHARK_DEBUGS="Wireshark:DecryptionKeys:/tmp/sslkey.log:TLS" \
   tshark -i lo -f 'tcp port 8443' -Y http2 \

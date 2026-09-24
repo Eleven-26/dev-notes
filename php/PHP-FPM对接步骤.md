@@ -9,7 +9,6 @@
 理解了这条链路，后面每一步的配置项都能推出来：
 
 ```text
-
 PHP 扩展采集 span / 日志
    ↓ 写入
 shm 共享内存消息队列（/dev/shm，php-fpm 的 master + N 个 worker 共用）
@@ -41,14 +40,12 @@ Skywalking UI（服务名 = GROUP_NAME::SERVICE_NAME）
 ### 2.1 镜像地址
 
 ```bash
-
 registry.cn-shenzhen.aliyuncs.com/ykj-baseimages/nginx-php7.0.33-skywalking:1.0.0
 ```
 
 ### 2.2 标准 Dockerfile
 
 ```dockerfile
-
 FROM registry.cn-shenzhen.aliyuncs.com/ykj-baseimages/nginx-php7.0.33-skywalking:1.0.0
 WORKDIR /webser/www
 RUN mkdir -p /webser/www/rental-backend/rental/protected/runtime/tmp
@@ -83,7 +80,6 @@ ENTRYPOINT ["/tmp/run.sh"]
 镜像自带的 php.ini 里有 skywalking 配置；一旦业务镜像用自己的 php.ini 覆盖，这段没了就等于扩展装了但不开工。需要完整复制：
 
 ```ini
-
 [skywalking]
 skywalking.app_code = ${GROUP_NAME}::${SERVICE_NAME}
 skywalking.enable = ${SKYWALKING_ENABLE}
@@ -108,7 +104,6 @@ skywalking.logging_mq_length = ${SKYWALKING_LOGGING_MQ_LEN}
 ### 3.1 为什么必须 `-F`
 
 ```bash
-
 /usr/local/sbin/php-fpm -R -F
 ```
 
@@ -119,7 +114,6 @@ skywalking.logging_mq_length = ${SKYWALKING_LOGGING_MQ_LEN}
 ### 3.2 标准模板
 
 ```bash
-
 #!/bin/sh
 if [ $runtimemode = "prod" ];then
   env="prod"
@@ -164,7 +158,6 @@ exec /usr/local/sbin/php-fpm -R -F
 在星洲上至少增加 **GROUP_NAME**、**SERVICE_NAME**、**SKYWALKING_SERVER_ADDR**：
 
 ```bash
-
 GROUP_NAME=租赁组
 SERVICE_NAME=债权中心
 SKYWALKING_SERVER_ADDR=172.16.68.108:11800
@@ -196,7 +189,6 @@ SKYWALKING_SERVER_ADDR=172.16.68.108:11800
 **方式二：非框架日志，调全局函数**。自己实现的日志输出，用 `skywalking_logging_report(message, level)` 主动上报：
 
 ```php
-
 // 加 function_exists 判断，兼容没装 skywalking 扩展的环境（如本地、单测）
 if (function_exists('skywalking_logging_report')) {
     skywalking_logging_report($string, "INFO");
@@ -223,7 +215,6 @@ if (function_exists('skywalking_logging_report')) {
 SDK 的队列容量公式：
 
 ```text
-
 shm_size = (SKYWALKING_MQ_MSG_LEN * 1024) + (SKYWALKING_LOGGING_MQ_MSG_LEN * 1024) + 100KB
 ```
 
@@ -243,7 +234,6 @@ shm_size = (SKYWALKING_MQ_MSG_LEN * 1024) + (SKYWALKING_LOGGING_MQ_MSG_LEN * 102
 层次为 `spec.spec.volumes`：
 
 ```yaml
-
 - name: cache-volume
   emptyDir:
     medium: Memory
@@ -255,7 +245,6 @@ shm_size = (SKYWALKING_MQ_MSG_LEN * 1024) + (SKYWALKING_LOGGING_MQ_MSG_LEN * 102
 层次为 `spec.spec.containers.volumeMounts`：
 
 ```yaml
-
 - name: cache-volume
   mountPath: /dev/shm
 ```
@@ -277,7 +266,6 @@ K8s 删除 Pod 时的时序：先给容器 PID 1 发 `STOPSIGNAL`（Dockerfile �
 按「扩展 → 配置 → 进程 → 平台」四层依次确认，能定位到具体哪一环断掉：
 
 ```bash
-
 # 1. 扩展是否装进镜像（在容器内执行）
 php -m | grep -i skywalking
 

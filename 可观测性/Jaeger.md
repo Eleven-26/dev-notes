@@ -62,7 +62,6 @@ Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNC
 现代可观测性是「**采集与协议标准化（OTel）** + **后端可替换（Jaeger / Tempo / SkyWalking …）**」。
 
 ```
-
 应用 (OTel SDK 埋点) ──Trace/Span+Context 传播, OTLP(gRPC:4317/HTTP:4318)──▶
 [可选] OTel Collector（统一接收/采样/多路导出） ──OTLP──▶
 Jaeger (v2 = Collector + Query + UI) ──▶ Storage(ClickHouse/ES) ──▶ Jaeger UI :16686
@@ -82,7 +81,6 @@ Jaeger (v2 = Collector + Query + UI) ──▶ Storage(ClickHouse/ES) ──▶ 
 `jaegertracing/all-in-one` 是 **Jaeger 1.x 的单体镜像**（Collector + Query + Agent + 内存存储），只适合本地调试。
 
 ```yaml
-
 services:
   jaeger:
     image: jaegertracing/all-in-one:1.62.0
@@ -95,7 +93,6 @@ services:
 ```
 
 ```bash
-
 docker compose up -d   # 打开 http://localhost:16686 即为 Jaeger UI
 ```
 
@@ -106,7 +103,6 @@ docker compose up -d   # 打开 http://localhost:16686 即为 Jaeger UI
 Jaeger **v2 起 ClickHouse 是官方原生存储**（ADR-008，不再依赖三方 grpc-plugin）。本项目正是这一形态。
 
 ```yaml
-
 services:
   clickhouse:
     image: clickhouse/clickhouse-server:24.8
@@ -135,7 +131,6 @@ services:
 配套 `config.yaml`（Jaeger v2 即 OTel Collector 配置结构）：
 
 ```yaml
-
 extensions:
   jaeger_storage:
     backends:
@@ -185,7 +180,6 @@ service:
 ### 5.1 依赖
 
 ```bash
-
 go get go.opentelemetry.io/otel go.opentelemetry.io/otel/sdk
 go get go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc
 go get go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin
@@ -194,7 +188,6 @@ go get go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otel
 ### 5.2 初始化 TracerProvider
 
 ```go
-
 // infrastructure/tracing.go
 package infrastructure
 
@@ -244,7 +237,6 @@ func InitJaeger(ctx context.Context, endpoint, serviceName string) error {
 ### 5.3 Gin + HTTP 拦截器
 
 ```go
-
 import (
 	otelgin "go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -262,7 +254,6 @@ client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 ### 5.4 手动埋点与 context 传播
 
 ```go
-
 import (
 	"context"
 	"go.opentelemetry.io/otel"
@@ -307,7 +298,6 @@ func CreateOrder(ctx context.Context, req OrderReq) (Order, error) {
 零改码，字节码增强自动为 Spring MVC / JDBC / Redis / Kafka / HTTP Client 生成 span。
 
 ```bash
-
 # 启动参数
 java -javaagent:/opt/otel/opentelemetry-javaagent.jar \
      -Dotel.service.name=order-service \
@@ -332,7 +322,6 @@ JAVA_TOOL_OPTIONS=-javaagent:/opt/otel/opentelemetry-javaagent.jar
 Spring Boot 3 起用 **Micrometer Tracing**（底层桥接 OTel SDK）替代已停更的 Sleuth。
 
 ```xml
-
 <dependency>
   <groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId>
 </dependency>
@@ -342,7 +331,6 @@ Spring Boot 3 起用 **Micrometer Tracing**（底层桥接 OTel SDK）替代已�
 ```
 
 ```yaml
-
 management:
   tracing:
     sampling:
@@ -353,7 +341,6 @@ management:
 ```
 
 ```java
-
 import io.micrometer.tracing.Tracer;
 
 @Service
@@ -398,7 +385,6 @@ public class OrderService {
 ### 7.2 数据流（实际）
 
 ```
-
 前端 :8081/:8082/:8083 ── /api 剥前缀 ──▶ backend（Go + Gin，:8080）
    │ ① otelgin 生成 HTTP entry span（router.go 挂载 JaegerTrace）
    │ ② GORM OTel 插件生成 SQL client span（mysql.go，以 JaegerEnabled() 为条件安装）

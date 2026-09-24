@@ -123,7 +123,6 @@
 ### 1. 客户端单例，以及"为什么这里不能用 `sync.OnceValue`"
 
 ```go
-
 package raftdemo
 
 import (
@@ -186,7 +185,6 @@ func ClusterView(ctx context.Context) (string, error) {
 	}
 	return sb.String(), nil
 }
-
 ```
 
 > **Endpoints 要写全三个节点，不要只写一个**：客户端的重连是"换一个端点重连"，
@@ -195,7 +193,6 @@ func ClusterView(ctx context.Context) (string, error) {
 ### 2. 同一个 key 的两种读法（正文 Q1 的代码版）
 
 ```go
-
 package raftdemo
 
 import (
@@ -242,7 +239,6 @@ func ReadSerializable(ctx context.Context, key string) (string, int64, error) {
 	}
 	return string(resp.Kvs[0].Value), resp.Header.Revision, nil
 }
-
 ```
 
 **用法上的三条判断**：

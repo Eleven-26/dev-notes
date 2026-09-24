@@ -17,7 +17,6 @@
 最常用的是**内连接（`INNER JOIN`）**：
 
 ```sql
-
 SELECT o.id, o.amount, u.name
 FROM orders o
 INNER JOIN users u ON o.user_id = u.id;
@@ -62,7 +61,6 @@ INNER JOIN users u ON o.user_id = u.id;
 **Go 中的做法示例**：
 
 ```go
-
 // 用 errgroup 并发两次单表查询，再在内存拼接
 g, ctx := errgroup.WithContext(ctx)
 var users map[int64]*User
@@ -118,7 +116,6 @@ Q1 的结论是「面向 C 端的高并发链路，拆成多次单表查询 + �
 **用批查而不是逐条查（N+1）**、**并发写变量不要用共享 `err`**、**归并用 map 而不是嵌套循环**。
 
 ```go
-
 package joinfree
 
 import (
@@ -262,7 +259,6 @@ func usersByIDs(ctx context.Context, db *sql.DB, ids []int64) (map[int64]User, e
 Q1 的「应用层拼接」在 Java 里就是 `Stream` 分组归并（更多写法见 [Stream流实战.md](../../java/Stream流实战.md)）：
 
 ```java
-
 package notes.mysql.joinfree;
 
 import java.util.List;
@@ -329,7 +325,6 @@ public class OrderAssembler {
 ### 1. 起库与造数
 
 ```bash
-
 docker run -d --name mysql8 -p 3306:3306 \
   -e MYSQL_ROOT_PASSWORD=root123456 -e MYSQL_DATABASE=test \
   mysql:8.0 --innodb-buffer-pool-size=256M
@@ -367,7 +362,6 @@ SQL
 ### 2. 同一需求的两种写法对比
 
 ```sql
-
 -- 写法 A：INNER JOIN
 SELECT o.id, o.amount, u.name
 FROM orders o INNER JOIN users u ON o.user_id = u.id
@@ -381,7 +375,6 @@ SELECT id, user_id, amount FROM orders WHERE user_id = ? LIMIT 50;  -- 走 idx_u
 **怎么判断谁快**（对 [查询链路.md](查询链路.md) 链路里「优化器选路径」做一次实测）：
 
 ```bash
-
 # 分别看执行计划：重点看 type / key / rows / Extra
 docker exec -i mysql8 mysql -uroot -proot123456 test -e "EXPLAIN FORMAT=JSON SELECT o.id,o.amount,u.name FROM orders o INNER JOIN users u ON o.user_id=u.id WHERE u.name='u1000' LIMIT 50\G"
 
@@ -396,7 +389,6 @@ docker exec -i mysql8 mysql -uroot -proot123456 test -e "SET profiling=1; SELECT
 ### 3. 观察「连接池 / 预编译」这两环
 
 ```bash
-
 # 每个连接上缓存了多少 prepared statement（对应 Go 侧"每连接一份语句缓存"）
 docker exec -i mysql8 mysql -uroot -proot123456 -e "SHOW GLOBAL STATUS LIKE 'Prepared_stmt_count';"
 

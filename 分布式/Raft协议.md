@@ -274,7 +274,6 @@ Follower 收不到心跳（超时）  → 进入选举流程
 ### 1. 写操作：一条 Txn 就是"多数派提交"的原子单位
 
 ```go
-
 package raftdemo
 
 import (
@@ -346,7 +345,6 @@ func DeleteIfMatches(ctx context.Context, key, owner string) (bool, error) {
 	}
 	return resp.Succeeded, nil
 }
-
 ```
 
 > ⚠️ **etcd 的"写成功"只保证"日志被多数派接受并已提交"**，不保证"每个 Follower 都已 apply 到状态机"。
@@ -359,7 +357,6 @@ func DeleteIfMatches(ctx context.Context, key, owner string) (bool, error) {
 ### 2. 选举：把"强领导者"用成应用层的单写者
 
 ```go
-
 package raftdemo
 
 import (
@@ -424,7 +421,6 @@ func CurrentLeader(ctx context.Context, name string) (string, error) {
 	return fmt.Sprintf("key=%s rev=%d payload=%s",
 		resp.Kvs[0].Key, resp.Kvs[0].ModRevision, resp.Kvs[0].Value), nil
 }
-
 ```
 
 > `NewSession` 已经帮你做了**租约 + 后台 KeepAlive**（拿到 session 后 `sess.Lease()` 就是 LeaseID，
@@ -434,7 +430,6 @@ func CurrentLeader(ctx context.Context, name string) (string, error) {
 ### 3. Watch：服务发现最容易丢事件的地方
 
 ```go
-
 package raftdemo
 
 import (
@@ -502,7 +497,6 @@ func WatchInstances(ctx context.Context, prefix string, onChange ChangeFunc) err
 	}
 	return ctx.Err()
 }
-
 ```
 
 **这张表是 Watch 侧最常见的四种"以为没问题"**：
@@ -536,7 +530,6 @@ func WatchInstances(ctx context.Context, prefix string, onChange ChangeFunc) err
 ### 1. 客户端要做成 Spring 单例 Bean
 
 ```java
-
 package demo.raft;
 
 import io.etcd.jetcd.Client;
@@ -571,7 +564,6 @@ public class EtcdConfig {
 ```
 
 ```java
-
 package demo.raft;
 
 import io.etcd.jetcd.ByteSequence;
@@ -614,7 +606,6 @@ etcd 用 Raft，ZooKeeper 用 **ZAB**（Paxos 系）。**概念一一对应**，
 | 过半存活 | 3 容 1、5 容 2 | 完全相同（**多数派是共识算法的通性**） | ZK **必须**有 leader；etcd 亦如此 |
 
 ```java
-
 package demo.raft;
 
 import java.util.Collection;
@@ -686,7 +677,6 @@ public class ZkLeaderConfig {
 ### 1. 起一个 3 节点集群
 
 ```yaml
-
 # docker-compose.yml —— 三个节点同一台机器，用不同端口区分
 services:
   etcd1:
@@ -712,7 +702,6 @@ services:
 ```
 
 ```bash
-
 # 别名与常用观测（ETCDCTL_ENDPOINTS 一次给全，别只写一个）
 export ETCDCTL_API=3
 export ETCDCTL_ENDPOINTS=http://127.0.0.1:2379,http://127.0.0.1:2479,http://127.0.0.1:2579
@@ -732,7 +721,6 @@ etcdctl member list      -w table             # 成员 id / name / peer urls
 | **D** | 「CP 的系统牺牲的是 A」 | 实验 C 的同时，只连**存活那一台**做**本地读** | 读得到旧数据（serializable / `--consistency=s`，若该版本支持）→ **同一套 etcd，C 与 A 的差别只在这个开关** |
 
 ```bash
-
 # 实验 B：连续赶 leader 三次，观察 term 递增（etcdctl 输出里 RAFT TERM 列）
 for i in 1 2 3; do
   etcdctl endpoint status -w table --cluster

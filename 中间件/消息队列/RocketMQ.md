@@ -188,7 +188,6 @@ PullMessageService(单线程发起拉取,长轮询RPC) ─► 响应写入 Proce
 **5.x：任意时间定时消息**（RIP-43），系统 Topic 为 `rmq_sys_wheel_timer`，基于 TimerLog + 多级时间轮：
 
 ```java
-
 Message msg = new Message("TopicDelay", body);
 msg.setDelayTimeSec(10);                                     // 10s 后投递
 msg.setDelayTimeMs(10_000L);                                 // 毫秒版，效果同上
@@ -248,7 +247,6 @@ HALF topic 有索引、真实 topic 无索引（消费者不可达=不可见）
 ### 依赖坐标
 
 ```xml
-
 <dependency>
   <groupId>org.apache.rocketmq</groupId>
   <artifactId>rocketmq-client</artifactId>
@@ -263,7 +261,6 @@ HALF topic 有索引、真实 topic 无索引（消费者不可达=不可见）
 ### 普通消息：生产（同步 / 异步 / 单向）
 
 ```java
-
 public class NormalProducerDemo {
     public static void main(String[] args) throws Exception {
         DefaultMQProducer producer = new DefaultMQProducer("producer_group_demo");
@@ -292,7 +289,6 @@ public class NormalProducerDemo {
 ### 普通消息：消费（并发监听）
 
 ```java
-
 // 片段：方法体内
 DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("consumer_group_demo");
 consumer.setNamesrvAddr("127.0.0.1:9876");
@@ -323,7 +319,6 @@ consumer.start();
 ### 顺序消息完整示例
 
 ```java
-
 // 片段：生产者，同一 orderId 固定落同一队列
 DefaultMQProducer producer = new DefaultMQProducer("order_producer_group");
 producer.setNamesrvAddr("127.0.0.1:9876");
@@ -356,7 +351,6 @@ consumer.start();
 ### 事务消息完整示例
 
 ```java
-
 public class TxProducerDemo {
     public static void main(String[] args) throws Exception {
         TransactionMQProducer producer = new TransactionMQProducer("tx_producer_group");
@@ -405,7 +399,6 @@ class OrderTxListener implements TransactionListener {
 依赖坐标：`org.apache.rocketmq:rocketmq-spring-boot-starter:2.3.1`（内部已依赖 rocketmq-client 5.x）。
 
 ```yaml
-
 rocketmq:
   name-server: 127.0.0.1:9876
   producer:
@@ -414,7 +407,6 @@ rocketmq:
 ```
 
 ```java
-
 // 片段：发送，destination 语法为 "topic:tag"
 @Service
 public class OrderProducerService {
@@ -449,7 +441,6 @@ public class OrderConsumer implements RocketMQListener<OrderDTO> {
 ### 依赖与版本选择
 
 ```bash
-
 # 老版 remoting 协议客户端（对应 4.x Broker，社区最常用）
 go get github.com/apache/rocketmq-client-go/v2@v2.1.0
 # 5.x 官方新客户端（gRPC 协议，需 Broker/Proxy 开启 gRPC 端口，默认 8081）
@@ -466,7 +457,6 @@ go get github.com/apache/rocketmq-clients/golang/v5
 ### 生产者
 
 ```go
-
 package main
 
 import "context"
@@ -506,7 +496,6 @@ func main() {
 ### 消费者
 
 ```go
-
 package main
 
 import "context"
@@ -638,7 +627,6 @@ RocketMQ 只保证 **at least once**：网络抖动、超时重发、位点提�
 NameServer 用 **9876**；Broker 主通道 **10911**（`listenPort`）、HA 端口 **10912**（`listenPort + 1`）、`fastRemotingPort` **10909**（VIP 通道，5.x 已废弃）；rocketmq-dashboard 默认 **8080**。
 
 ```bash
-
 # 单机
 nohup sh bin/mqnamesrv &
 nohup sh bin/mqbroker -n 127.0.0.1:9876 -c conf/broker.conf &
@@ -647,7 +635,6 @@ sh bin/mqadmin clusterList -n 127.0.0.1:9876
 ```
 
 ```properties
-
 # conf/broker.conf
 brokerClusterName=DefaultCluster
 brokerName=broker-a

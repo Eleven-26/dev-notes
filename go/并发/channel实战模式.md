@@ -14,7 +14,6 @@
 ### 案例 1：基本数据传递（生产者 → 消费者）
 
 ```go
-
 ch := make(chan int) // 1. 创建无缓冲 channel
 
 go func() { // 2. 启动生产者 goroutine
@@ -30,7 +29,6 @@ fmt.Println(v) // 6. 打印 0~9
 ```
 时序图（简化）
 ```text
-
 生产者 goroutine                 main goroutine
       |                               |
       |--- ch <- 0 ------------------>| 收到 0，打印
@@ -75,7 +73,6 @@ fmt.Println(v) // 6. 打印 0~9
 - 读出 = **释放**一个许可。
 
 ```go
-
 sem := make(chan struct{}, 2) // 并发上限 2
 sem <- struct{}{}             // 获取
 defer func() { <-sem }()      // 释放
@@ -86,7 +83,6 @@ defer func() { <-sem }()      // 释放
 ### 案例 5：用 channel 控制超时
 
 ```go
-
 select {
 case res := <-workCh:
     fmt.Println("完成:", res)
@@ -103,7 +99,6 @@ case <-time.After(2 * time.Second):
 从而实现"一对多广播"，而不需要发 N 次信号。
 
 ```go
-
 stopCh := make(chan struct{})
 for i := 0; i < 5; i++ {
     go func(id int) {
@@ -151,7 +146,6 @@ N 个业务协程  →（写入 chan）→  1 个日志协程  →  顺序落盘
 **⭐ 顺带一个工程细节：用单向 channel 表达"职责"**
 
 ```go
-
 func producer(ch chan<- int)   // 只写：生产者只能发
 func consumer(ch <-chan int)   // 只读：消费者只能收
 ```
@@ -169,7 +163,6 @@ func consumer(ch <-chan int)   // 只读：消费者只能收
 **场景**：一批任务要并发跑，但不加限制可能瞬间起几十万个协程，把内存和后端打垮。
 
 ```go
-
 sem := make(chan struct{}, 3)   // 缓冲区大小 = 最大并发数
 for _, task := range tasks {
     sem <- struct{}{}           // 获取令牌：满了就阻塞在这里
@@ -193,7 +186,6 @@ for _, task := range tasks {
 **场景**：任务量大、创建销毁协程的开销不可忽略时，用固定数量的 worker **常驻**等待任务。
 
 ```go
-
 jobs    := make(chan Job)
 results := make(chan Result)
 
@@ -219,7 +211,6 @@ for i := 0; i < 3; i++ {          // 固定 3 个 worker
 ### 用法四：事件通知 / 优雅退出
 
 ```go
-
 func serve(stopCh <-chan struct{}) {
     for {
         select {
@@ -238,7 +229,6 @@ func serve(stopCh <-chan struct{}) {
 **更优雅的写法：`context`**
 
 ```go
-
 select {
 case <-ctx.Done():   // 与 close(ch) 是同一套底层机制
     return
@@ -282,7 +272,6 @@ IO 慢，所以每个文件各开一个协程并发读，读出的内容统一�
 可靠的信号应该是"**全部生产者结束**"这个**事件**：**每个生产者结束时交回一个信号，收满 N 个就说明全部干完**——这就是**手写版 `sync.WaitGroup`**。
 
 ```go
-
 package main
 
 import "fmt"
@@ -320,7 +309,6 @@ func main() {
 同一套路再用一次：用一个**无缓冲或容量 1** 的 channel 传"结束信号"，`main` 阻塞读取。
 
 ```go
-
 exitCh := make(chan struct{})
 go func() { defer close(exitCh); /* ...消费逻辑 */ }()
 <-exitCh // main 在这里等，消费者干完才放行（同样等价于 WaitGroup）

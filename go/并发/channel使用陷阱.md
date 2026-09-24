@@ -21,7 +21,6 @@
 ### 一、常规写入：没有事前判断
 
 ```go
-
 ch <- data   // 要么成功，要么阻塞，要么 panic（已关闭）
 ```
 
@@ -34,7 +33,6 @@ ch <- data   // 要么成功，要么阻塞，要么 panic（已关闭）
 ### 二、唯一的例外：`select` + `default`
 
 ```go
-
 select {
 case ch1 <- v:          // 能写就写
     // 写成功了
@@ -52,7 +50,6 @@ default:
 ⚠️ **反例：如果 `select` 没有 `default` 子句**
 
 ```go
-
 select {
 case ch1 <- v:   // 若 ch1 写不进去
 case ch2 <- v:   // 若 ch2 也写不进去
@@ -121,7 +118,6 @@ channel 的语义边界在哪里、哪些操作**合法但反直觉**。
 > **一个 channel 要有发送方、也要有接收方**；只发不收，发送协程会**永久阻塞**。
 
 ```go
-
 ch := make(chan int)
 ch <- 1   // ❌ 无缓冲 + 没有其他协程在收 → fatal error: all goroutines are asleep - deadlock!
 ```
@@ -205,7 +201,6 @@ close(ch)  →  所有阻塞在 <-ch 的协程同时被唤醒  →  每个都读
 ### 判据 4 的验证：普通协程阻塞，程序静默退出（不报错）
 
 ```go
-
 func main() {
 	ch := make(chan int, 1)
 	ch <- 1 // 缓冲区已满
@@ -223,7 +218,6 @@ func main() {
 ### 判据 3 的验证：`for range` 忘了 `close`，`main` 直接死锁
 
 ```go
-
 func main() {
 	ch := make(chan int, 3)
 	for i := 1; i <= 3; i++ {

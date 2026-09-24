@@ -24,7 +24,6 @@
 | **`sync.Map`** | 原生支持并发读写，并发场景可以直接用它 |
 
 ```go
-
 var m = map[int]int{}
 for i := 0; i < 4; i++ {
 	go func(k int) { m[k] = k * k }(i) // ❌ 并发写原生 map

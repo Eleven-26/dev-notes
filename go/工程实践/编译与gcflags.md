@@ -39,7 +39,6 @@
 `go help build` 的关键规则：**不写 pattern 时，参数只作用于命令行上直接指定的包**；要看依赖包（`net/http`、`crypto/*` 等）必须写 `all=`。
 
 ```bash
-
 go build -gcflags="-m" .                          # 只看当前包
 go build -gcflags="all=-m" .                      # 当前包 + 所有依赖（输出会刷屏）
 go build -gcflags="github.com/you/pkg=-m" .       # 只对指定包生效
@@ -83,7 +82,6 @@ go test -gcflags="all=-N -l" -count=1 -run TestFoo -v ./...   # 调测试时同�
 ### 二、`-m` 实战：真实输出长什么样
 
 ```go
-
 type Animal interface{ Name() string }
 type Dog struct{}
 
@@ -95,7 +93,6 @@ func f3()        { v := 42; fmt.Println(v) }                              // ③
 ```
 
 ```bash
-
 $ go build -gcflags="-m" .
 ./main.go:8:6: can inline Dog.Name                          # 内联决策也一并打印
 ./main.go:10:29: make([]int, 4) escapes to heap
@@ -108,7 +105,6 @@ $ go build -gcflags="-m" .
 把 `-m` 叠成 `-m -m`，会追加 `flow:` 数据流，直接指出"从哪一步开始漏到堆上"：
 
 ```bash
-
 $ go build -gcflags="-m -m" . 2>&1 | grep -A3 "escapes to heap in f1"
 ./main.go:10:29: make([]int, 4) escapes to heap in f1:
 ./main.go:10:29:   flow: s ← &{storage for make([]int, 4)}:
@@ -119,7 +115,6 @@ $ go build -gcflags="-m -m" . 2>&1 | grep -A3 "escapes to heap in f1"
 ### 三、`-S` 看汇编
 
 ```bash
-
 $ go build -gcflags="-S" . 2>&1 | sed -n '1,4p'
 main.Dog.Name STEXT nosplit size=13 args=0x0 locals=0x0 funcid=0x0 align=0x0
 	0x0000 00000 (main.go:8)	TEXT	main.Dog.Name(SB), NOSPLIT|NOFRAME|ABIInternal, $0-0
@@ -136,7 +131,6 @@ main.Dog.Name STEXT nosplit size=13 args=0x0 locals=0x0 funcid=0x0 align=0x0
 | 语句被重排/删除，断点变灰点打不上 | 单步可预期 |
 
 ```bash
-
 go build -gcflags="all=-N -l" -o app-debug ./cmd/app
 dlv exec ./app-debug
 ```
@@ -157,7 +151,6 @@ dlv exec ./app-debug
 ### 一、四条查找路径
 
 ```bash
-
 go help build | grep -A1 gcflags    # ① go 命令侧：只有"怎么传"
 go tool compile -h                  # ② 编译器侧：全部 flag（最权威）
 go tool compile -d help             # ③ -d 的二级子开关清单
@@ -169,7 +162,6 @@ go tool link -h / go tool asm -h    # ④ 链接器 / 汇编器的 flag
 ### 二、`-d help` 长这样
 
 ```bash
-
 $ go tool compile -d help
 usage: -d arg[,arg]* and arg is <key>[=<value>]
 
@@ -193,7 +185,6 @@ go build -gcflags="-t" .               # 打印编译器各阶段耗时
 `go build -gcflags="-S"` 和 `go tool compile -S main.go` 干的是同一件事，区别只是**参数由谁传**：
 
 ```bash
-
 go tool compile -m -S main.go   # 直接跑编译器
 go build -x .                   # 打印真实执行的每条命令（compile / asm / link）
 go build -n .                   # 只打印不执行，确认参数拼接

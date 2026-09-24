@@ -37,7 +37,6 @@
 inode 里只有**有限几个直接指针**，大文件靠**间接块**逐级扩展（ext4 改用 extent），是"大文件随机写慢"的结构性原因之一。
 
 ```bash
-
 df -i            # ⭐ 看 inode 使用率（不是磁盘空间）
 stat app.log     # inode 号、Links、三个时间戳
 ```
@@ -51,7 +50,6 @@ stat app.log     # inode 号、Links、三个时间戳
 ### 硬链接 vs 软链接 ⭐
 
 ```bash
-
 ln  src.txt  hard.txt     # 硬链接：多一个目录项指向同一 inode
 ln -s src.txt soft.txt    # 软链接：新建"内容为目标路径字符串"的特殊文件
 ```
@@ -81,7 +79,6 @@ ln -s src.txt soft.txt    # 软链接：新建"内容为目标路径字符串"�
 ### 一次 `write()` 的路径
 
 ```bash
-
 ① 用户缓冲区（bufio.Writer / BufferedWriter，用户态内存）
       ↓ write(fd, buf, n)  系统调用陷入内核
 ② ⭐ 页缓存 Page Cache（内核态；拷到这里 write 就返回了）→ 页标记 dirty，异步回写
@@ -128,7 +125,6 @@ ln -s src.txt soft.txt    # 软链接：新建"内容为目标路径字符串"�
 ### ⚠️ inode 耗尽：磁盘没满却写不进去
 
 ```bash
-
 df -h      # 空间还剩 40%  → 看起来没问题
 df -i      # IUse% = 100%  → ⭐ 真凶
 ```
@@ -140,7 +136,6 @@ df -i      # IUse% = 100%  → ⭐ 真凶
 `rm` 只是解除目录项。**只要有进程还持有该文件的 fd，数据块就不会释放**，`df` 也看不出空间回来。
 
 ```bash
-
 lsof +L1                  # ⭐ 已删除但仍被占用的文件（deleted 标记）
 lsof | grep -i deleted    # 同上，全量扫
 ```

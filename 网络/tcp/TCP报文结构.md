@@ -134,7 +134,6 @@
 所以任何自定义协议都必须自己划界——**生产上最常用的就是 4 字节长度前缀**。
 
 ```go
-
 package tcpdemo
 
 import (
@@ -241,7 +240,6 @@ func handle(c *net.TCPConn) {
 正文「四次挥手」的实现层对应物就是 `CloseWrite`——**这是"我发完了"而不是"连接结束了"**：
 
 ```go
-
 package tcpdemo
 
 import (
@@ -275,7 +273,6 @@ func RequestThenDrain(c *net.TCPConn, req io.Reader, resp io.Writer) error {
 ### 1. Netty：`LengthFieldBasedFrameDecoder` 就是第 1 小节的工业版
 
 ```java
-
 package notes.tcp;
 
 import io.netty.channel.ChannelInitializer;

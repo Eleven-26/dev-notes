@@ -36,7 +36,6 @@ SSL 由 Netscape 发明，**SSL 3.0（1996）是最后一版**，之后改名交
 
 ### 3.2 两次往返的完整流程
 ```
-
 Client                                              Server
   |--- ① ClientHello ----------------------------------->|   RTT 1
   |<-- ② ServerHello ------------------------------------|
@@ -88,7 +87,6 @@ Client                                              Server
 
 ### 3.5 主密钥是怎么推导出来的
 ```text
-
 Pre-Master Secret (PMS)：RSA = 客户端生成的 48 字节随机数；ECDHE = ECDH(client_priv, server_pub) 共享秘密
       │ PRF(PMS, "master secret", ClientRandom + ServerRandom) → 48 字节
       ▼
@@ -110,7 +108,6 @@ Session Keys: client_write_key / server_write_key
 省掉一个 RTT 的核心手段是 **客户端在 ClientHello 里直接带上 `key_share`（自己的临时公钥）**，把原本第二轮才做的事提前：
 
 ```
-
 Client                                                Server
   |--- ① ClientHello                                       |
   |       + supported_versions: 1.3                        |
@@ -228,7 +225,6 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 浏览器（Chrome / Firefox）以及 curl、Go、OpenSSL 等支持 NSS keylog 的程序，会把每个会话的密钥材料写进环境变量 `SSLKEYLOGFILE` 指向的文件；Wireshark 读该文件即可**解密本机流量**。
 
 ```bash
-
 export SSLKEYLOGFILE=/tmp/sslkeys.log       # Linux/macOS，之后启动浏览器或 curl
 $env:SSLKEYLOGFILE = 'C:\tmp\sslkeys.log'   # Windows PowerShell
 curl https://example.com >/dev/null
@@ -238,7 +234,6 @@ curl https://example.com >/dev/null
 
 ### 7.3 openssl / curl 常用命令
 ```bash
-
 # 看握手全过程：证书链、协商出的协议与套件、是否走了会话复用
 openssl s_client -connect example.com:443 -servername example.com -showcerts
 openssl s_client -connect example.com:443 -tls1_2     # 指定版本探测，能连上即支持
@@ -257,7 +252,6 @@ echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/
 最简写法是 `http.ListenAndServeTLS(":443", "fullchain.pem", "server.key", nil)`；生产要自己控 TLS 参数就用 `http.Server` + `TLSConfig`：
 
 ```go
-
 srv := &http.Server{
 	Addr:              ":443", // ReadHeaderTimeout 务必设，防慢速攻击
 	Handler:           mux,
@@ -283,7 +277,6 @@ log.Fatal(srv.ListenAndServeTLS("fullchain.pem", "server.key"))
 **服务端**要求并校验客户端证书：
 
 ```go
-
 pem, _ := os.ReadFile("ca.crt")                       // 签发客户端证书的 CA
 pool := x509.NewCertPool()
 pool.AppendCertsFromPEM(pem)
@@ -312,7 +305,6 @@ log.Fatal(srv.ListenAndServeTLS("fullchain.pem", "server.key"))
 **客户端**加载自己的证书发起请求：
 
 ```go
-
 cert, err := tls.LoadX509KeyPair("client.crt", "client.key") // err 记得判断
 client := &http.Client{
 	Timeout: 10 * time.Second,
@@ -329,7 +321,6 @@ resp, err := client.Post("https://api.internal:8443/pay", "application/json", bo
 
 ### 8.3 客户端自定义 tls.Config（含自签 CA）
 ```go
-
 caPEM, _ := os.ReadFile("ca.crt")              // 自签 / 内部 CA 根证书
 rootCAs, _ := x509.SystemCertPool()            // ⭐ 先取系统信任库，别用空池直接覆盖
 if rootCAs == nil {
@@ -369,7 +360,6 @@ JSSE 四个核心类：`SSLContext`（配置入口，由它产出 `SSLSocketFact
 
 ### 9.2 初始化 SSLContext
 ```java
-
 public static SSLContext create(Path keyStore, char[] ksPass,
                                 Path trustStore, char[] tsPass) throws Exception {
     KeyStore ks = KeyStore.getInstance("PKCS12");            // 1. 自己的凭证
@@ -394,7 +384,6 @@ public static SSLContext create(Path keyStore, char[] ksPass,
 **① JDK 原生 `HttpsURLConnection`**
 
 ```java
-
 char[] pw = "changeit".toCharArray();
 SSLContext ctx = SslContextFactory.create(Path.of("client.p12"), pw, Path.of("truststore.p12"), pw);
 HttpsURLConnection conn = (HttpsURLConnection)
@@ -411,7 +400,6 @@ try (var in = conn.getInputStream()) {
 **② OkHttp**（`sslSocketFactory` 两个参数缺一不可）
 
 ```java
-
 TrustManagerFactory tmf =
         TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 tmf.init((KeyStore) null);                          // 传 null = 用 JDK 默认信任库
@@ -424,7 +412,6 @@ OkHttpClient client = new OkHttpClient.Builder()
 **③ Apache HttpClient 5**
 
 ```java
-
 CloseableHttpClient httpclient = HttpClients.custom()
         .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
                 .setSSLSocketFactory(new SSLConnectionSocketFactory(ctx))
@@ -436,7 +423,6 @@ CloseableHttpClient httpclient = HttpClients.custom()
 
 ### 9.4 Spring Boot 开启 HTTPS
 ```yaml
-
 server:
   port: 8443
   ssl:
@@ -457,7 +443,6 @@ server:
 HTTP → HTTPS 的重定向建议放在网关 / Nginx，或给 Tomcat 追加一个明文连接器做跳转。
 
 ```bash
-
 # 生成自签证书（务必带 SAN，CN 已不被信任）
 keytool -genkeypair -alias myapp -keyalg RSA -keysize 2048 -validity 365 \
         -storetype PKCS12 -keystore server.p12 -storepass changeit \
@@ -487,7 +472,6 @@ keytool -list -v -keystore server.p12 -storepass changeit
 **OCSP Stapling**：客户端自己跑去 CA 查 OCSP 既慢、又泄漏用户访问行为，还容易因查询超时拖垮握手。改成服务端定期取自己的 OCSP 响应，握手时「订」在 Certificate 消息后面一起发：
 
 ```nginx
-
 ssl_stapling on;                                 # 服务端代取 OCSP 响应，握手时一起发出
 ssl_stapling_verify on;
 ssl_trusted_certificate /path/to/chain.pem;      # 含中间证书，用于验证 OCSP 响应

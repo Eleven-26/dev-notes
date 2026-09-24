@@ -26,7 +26,6 @@
 4. **发生变化** → 说明已有其他事务修改，当前事务需要**回滚或重新执行**
 
 ```sql
-
 -- 版本号机制的典型写法：把「比对版本」和「更新」放在一条 SQL 里，由数据库保证原子性
 UPDATE item
 SET stock = stock - 1, version = version + 1
@@ -65,7 +64,6 @@ WHERE id = #{id} AND version = #{oldVersion};
 8. **回滚机制**：事务无法提交时，数据库系统负责释放锁并回滚事务，保证数据一致性
 
 ```sql
-
 -- 悲观锁：一开始就锁住这行，直到事务结束（COMMIT/ROLLBACK）才释放
 BEGIN;
 SELECT stock FROM item WHERE id = 1 FOR UPDATE;   -- 排他锁
@@ -170,7 +168,6 @@ InnoDB 的 MVCC 由三样东西协作实现：
 Go 里对应的 API 是 `sql.Result.RowsAffected()`；不要先 `SELECT` 比对再无条件 `UPDATE`，那样等于把竞态窗口又打开。
 
 ```go
-
 package lockdemo
 
 import (
@@ -271,7 +268,6 @@ func jitter(attempt int) time.Duration {
 数据库在行锁内完成「判断 + 修改」，天然是原子的。
 
 ```go
-
 package lockdemo
 
 import (
@@ -306,7 +302,6 @@ func DeductByCondition(ctx context.Context, db *sql.DB, id, qty int64) (int64, e
 ### 3. 悲观锁：`FOR UPDATE` 的三条硬规矩
 
 ```go
-
 package lockdemo
 
 import (
@@ -402,7 +397,6 @@ func LockWaitBudget(ctx context.Context, db *sql.DB, budget time.Duration) error
 它把判断交给存储引擎的行锁与索引结构，一次往返搞定：
 
 ```go
-
 package lockdemo
 
 import (
@@ -458,7 +452,6 @@ func Accumulate(ctx context.Context, db *sql.DB, day string, delta int64) error 
 跑一遍比背十遍有用（`mysql -h... --comments` 开两个终端）：
 
 ```sql
-
 -- 终端 A（事务，RR）
 SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 BEGIN;
@@ -490,7 +483,6 @@ COMMIT;
 ### 1. 乐观锁：`@Version` 就是正文那套版本号机制
 
 ```java
-
 package notes.lock;
 
 import jakarta.persistence.Column;
@@ -532,7 +524,6 @@ public class Item {
 ```
 
 ```java
-
 package notes.lock;
 
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -572,7 +563,6 @@ public class StockService {
 **MyBatis 侧**没有自动版本管理，就是把正文那条 SQL 直接写出来并**判断返回的影响行数**：
 
 ```java
-
 // interface ItemMapper { int deduct(@Param("id") Long id, @Param("qty") long qty, @Param("v") long version); }
 // <update id="deduct">
 //   UPDATE item SET stock = stock - #{qty}, version = version + 1
@@ -587,7 +577,6 @@ if (affected == 0) {
 ### 2. 悲观锁与幂等
 
 ```java
-
 // FOR UPDATE：JPA 用锁提示，Hibernate 6 起支持 NOWAIT / SKIP_LOCKED
 @Transactional
 @Query(value = "SELECT * FROM item WHERE id = ?1 FOR UPDATE", nativeQuery = true)
@@ -601,7 +590,6 @@ List<Item> findTop10ByStockGreaterThanOrderByIdAsc(long stock);
 ```
 
 ```java
-
 // 幂等：直接依赖唯一索引 + ON DUPLICATE KEY，别写 findById 再 save
 @Modifying
 @Query(value = """
@@ -629,7 +617,6 @@ try {
 ### 1. 谁在等谁（8.0）
 
 ```sql
-
 -- 现成的视图：直接给出"被谁挡住 + 该 kill 谁 + 挡住了哪条 SQL"
 SELECT * FROM sys.innodb_lock_waits\G
 
@@ -645,13 +632,11 @@ UPDATE performance_schema.setup_instruments SET ENABLED='YES', TIMED='YES' WHERE
 ### 2. 死锁：不要只靠 `LATEST DETECTED DEADLOCK`
 
 ```bash
-
 # 只保留"最近一次"死锁，且需要 RECREATE 输出段才刷新；生产应把死锁写进错误日志
 docker exec -i mysql8 mysql -uroot -p -e "SHOW ENGINE INNODB STATUS\G" | sed -n '/LATEST DETECTED DEADLOCK/,/TRANSACTIONS/p'
 ```
 
 ```sql
-
 -- 让每次死锁都被完整记录（含两边 SQL），排期比看 STATUS 有用得多
 SHOW VARIABLES LIKE 'innodb_print_all_deadlocks';   -- 建议 ON
 SHOW VARIABLES LIKE 'innodb_deadlock_detect';       -- 关掉它 = 只能用等待超时兜底，热点行场景反而更糟
@@ -666,7 +651,6 @@ SHOW VARIABLES LIKE 'innodb_deadlock_detect';       -- 关掉它 = 只能用等�
 ### 3. 找到"持锁的老事务"
 
 ```sql
-
 -- 事务已经跑了很久还没结束 = 锁一直被持有；正文「大事务」的现场版
 SELECT trx_id, trx_state, trx_started, TIMESTAMPDIFF(SECOND, trx_started, NOW()) AS run_s,
        trx_rows_locked, trx_rows_modified, trx_mysql_thread_id

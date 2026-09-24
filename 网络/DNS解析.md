@@ -28,7 +28,6 @@
 ### 域名树
 
 ```
-
 .                            ← 根域（root），日常书写省略
 ├── com. / cn.               ← 顶级域 TLD（gTLD：.com/.net / ccTLD：.cn）
 └── example.com.             ← 二级域（注册域）
@@ -73,7 +72,6 @@
 4. 缓存没有 → LDNS **迭代**发问：
 
 ```
-
 LDNS ──1──▶ 根服务器   : "www.example.com 的 IP？"
 根    ──2──▶ LDNS      : "不知道，去问 .com 的 TLD：a.gtld-servers.net"
 LDNS ──3──▶ .com TLD   : "www.example.com 的 IP？"
@@ -132,7 +130,6 @@ LDNS ──7──▶ 客户端     : 返回 IP，并把结果按 TTL 缓存
 同一个名字配**多条 A 记录**，权威服务器每次应答**打乱顺序**返回，客户端通常取第一条：
 
 ```
-
 www  A  1.1.1.1
 www  A  1.1.1.2
 www  A  1.1.1.3     ← 应答顺序随机轮换
@@ -177,7 +174,6 @@ www  A  1.1.1.3     ← 应答顺序随机轮换
 **原理**：App 不走 UDP 53 问 LDNS，而是**通过 HTTP(S) 接口直接查厂商的 DNS 集群**，携带域名（通常还有客户端 IP），服务端返回 IP 列表。
 
 ```
-
 App ──HTTPS──▶ HTTPDNS 服务（阿里云 / 腾讯云 DNSPod 等）──▶ 返回 IP 列表 ──▶ App 用 IP + 正确的 Host/SNI 直连业务服务器
 ```
 
@@ -235,7 +231,6 @@ App ──HTTPS──▶ HTTPDNS 服务（阿里云 / 腾讯云 DNSPod 等）─
 ### 标准库基本用法
 
 ```go
-
 package main
 
 import (
@@ -268,7 +263,6 @@ func main() {
 ### 自定义解析器：`net.Resolver`（⭐ 指定 DNS 服务器）
 
 ```go
-
 // 忽略 resolv.conf 里的服务器，改为自己指定的 DNS（如 223.5.5.5:53）
 func newResolver(dnsServer string) *net.Resolver {
 	return &net.Resolver{
@@ -291,7 +285,6 @@ func demo() {
 ### HTTPDNS 风格：自查询 + 自缓存 + `DialContext` 落地
 
 ```go
-
 type HTTPDNS struct {
 	endpoint string // "https://dns.example.com/resolve?name="
 	client   *http.Client
@@ -370,7 +363,6 @@ func transportWithHTTPDNS(h *HTTPDNS, sni string) *http.Transport {
 ### 基本用法
 
 ```java
-
 import java.net.InetAddress;
 import java.util.Arrays;
 
@@ -400,7 +392,6 @@ public class DnsDemo {
 > 取值含义：**`-1` 永不过期；`0` 不缓存；正数 = 缓存秒数**。三处可配：启动参数 > `Security.setProperty` > `$JAVA_HOME/conf/security/java.security`，且**必须在任何解析发生前设置**。
 
 ```bash
-
 java -Dsun.net.inetaddr.ttl=60 -Dsun.net.inetaddr.negative.ttl=10 -jar app.jar
 ```
 
@@ -409,7 +400,6 @@ java -Dsun.net.inetaddr.ttl=60 -Dsun.net.inetaddr.negative.ttl=10 -jar app.jar
 ### 自定义 DNS 解析
 
 ```java
-
 // Netty DnsNameResolver：指定 DNS 服务器 + 自带 TTL 缓存
 DnsNameResolver resolver = new DnsNameResolverBuilder()
         .channelType(NioDatagramChannel.class)
@@ -429,7 +419,6 @@ try {
 ```
 
 ```java
-
 // OkHttp：实现 Dns 接口即可接入 HTTPDNS / 固定 hosts
 OkHttpClient client = new OkHttpClient.Builder()
         .dns(hostname -> {

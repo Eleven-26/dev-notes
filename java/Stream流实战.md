@@ -9,7 +9,6 @@
 ## 一、取一列
 
 ```java
-
 // 单层 list：取字段 → 过滤空 → 去重 → 收集
 List<Item> list = new ArrayList<>();
 List<String> ids = list.stream()
@@ -30,7 +29,6 @@ List<String> ids = nestedItemList.stream()
 ## 二、取多列（转成 DTO）
 
 ```java
-
 List<BillNoticeDTO> billNotices = new ArrayList<>();
 List<Item> itemList = billNotices.stream()
     .map(dto -> new Item(dto.getId(), dto.getCode()))
@@ -42,7 +40,6 @@ List<Item> itemList = billNotices.stream()
 ### 3.1 取两列组成 Map
 
 ```java
-
 // 取两列返回一个 map
 Map<String, Integer> codeToIdMap = userList.stream()
     .collect(Collectors.toMap(User::getCode, User::getId));
@@ -51,7 +48,6 @@ Map<String, Integer> codeToIdMap = userList.stream()
 ### 3.2 用列表字段作为 key
 
 ```java
-
 // id 相同时会抛 IllegalStateException
 Map<String, User> userMap = userList.stream()
     .collect(Collectors.toMap(User::getId, user -> user));
@@ -75,7 +71,6 @@ Map<String, User> userMap = userList.stream()
 ### 3.3 自定义组合 key
 
 ```java
-
 // 创建 Map<String, Item>：用字符串拼接做 key
 Map<String, Item> mapByIds = items.stream()
     .collect(Collectors.toMap(
@@ -120,7 +115,6 @@ Map<List<String>, List<Item>> mapByIdLists = items.stream()
 ### 3.4 Map 转回 List
 
 ```java
-
 // 按字段分组，得到 Map<String, List<User>>
 Map<String, List<User>> userMap = userList.stream()
     .collect(Collectors.groupingBy(User::getId));
@@ -129,7 +123,6 @@ Map<String, List<User>> userMap = userList.stream()
 ## 四、累加
 
 ```java
-
 // BigDecimal 类型（金额计算必须用 BigDecimal，避免精度丢失）
 BigDecimal totalAmount = items.stream()
     .map(Item::getAmount)
@@ -148,7 +141,6 @@ int totalAmount = items.stream()
 ## 五、排序
 
 ```java
-
 // 单字段升序
 List<Item> sortedList = items.stream()
     .sorted(Comparator.comparing(Item::getName))
@@ -158,7 +150,6 @@ List<Item> sortedList = items.stream()
 **多字段与降序**：
 
 ```java
-
 // 先按 age 升序，再按 name 降序
 items.stream()
     .sorted(Comparator.comparing(Item::getAge)
@@ -173,7 +164,6 @@ items.sort(Comparator.comparing(Item::getName));
 ### 6.1 单列去重，返回单列
 
 ```java
-
 // 返回单列，去重、去空
 public static List<String> extractUniqueNonEmptyNames(List<User> userList) {
     return userList.stream()
@@ -190,7 +180,6 @@ public static List<String> extractUniqueNonEmptyNames(List<User> userList) {
 ### 6.2 按字段去重，返回原对象
 
 ```java
-
 // 单列去重，返回原数据：以 name 为键，遇到相同 name 保留第一个出现的 User
 public static List<User> removeDuplicatesByName(List<User> userList) {
     return userList.stream()
