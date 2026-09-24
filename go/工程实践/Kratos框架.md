@@ -158,7 +158,7 @@ var GrpcServerOpts = []grpc.ServerOption{
 
 故意把必填的 `node_file_url` 从请求里删掉再发一次，返回 **400**，字段路径直接出现在报错里：
 
-```
+```text
 HTTP/1.1 400 Bad Request
 {"code":400,"reason":"VALIDATOR","message":"node_file_url: value length must be at least 1 runes"}
 ```

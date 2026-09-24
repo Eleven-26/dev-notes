@@ -84,7 +84,7 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 
 #### 消息在 CommitLog 里的物理布局
 
-```
+```text
 +------------------- 定长部分（示意，非全字段）-------------------+------ 变长部分（长度前缀+内容）------+
 | totalLen 4B | magic 4B | bodyCRC 4B | queueId 4B | flag 4B      |
 | queueOffset 8B | physOffset 8B | sysFlag 4B                      | bornHost | storeHost
@@ -113,7 +113,7 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 
 三层结构的写读全景（写一条路、读两跳）：
 
-```
+```text
 写入（全 Topic 混成一条流）：
   Producer TopicA/q0 ─┐
   Producer TopicA/q1 ─┼─► CommitLog 唯一追加点 ─► 1GiB 文件写满换下一个 ─► mmap/PageCache ─► 刷盘
@@ -143,7 +143,7 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 - **流控在客户端做**：每个队列的本地缓存（ProcessQueue）有条数/体积阈值，消费慢 → 阈值超 → 暂停该队列拉取并延后重试。表现为"**消费 TPS 掉但客户端没报错**"——排查堆积时先想到它（第七节 SOP）。
 - **消费端线程模型与并发度**：
 
-```
+```text
 rebalance(周期+成员变更) ─► 分到的队列 → 每队列一个 ProcessQueue(本地缓存)
         │ 入队 PullRequest                   │
         ▼                                   ▼
@@ -223,7 +223,7 @@ msg.setDeliverTimeMs(System.currentTimeMillis() + 10_000L);  // 定时到某个�
 - **不可见靠的是"位点模型"而非"隐藏标记"**：消费者拉消息的路径是 真实 Topic → ConsumeQueue → CommitLog（见第二节存储设计）。半消息虽然躺在 CommitLog 里，但**真实 Topic 的 ConsumeQueue 里没有它的索引条目**，消费者按位点根本走不到这条物理记录——不需要任何"不可见标志位"，索引缺席即不可见。
 - **Commit = 追加一条新消息，Rollback = 追加一条操作记录**：提交时 Broker 把半消息内容**重新投递**进真实 Topic（生成新的 CommitLog 记录 + 真实队列的 ConsumeQueue 索引，所以半消息与其副本的 offsetMsgId 不同，幂等键要用业务 Key）；回滚与清理都不原地改日志，而是往 `RMQ_SYS_TRANS_OP_HALF_TOPIC` 追加"已回滚/已提交"标记，后台线程按操作日志回收——标准的 **append-only + 补偿日志**做法，与 CommitLog 布局的约束一脉相承。状态全景：
 
-```
+```text
 sendMessageInTransaction
    │ ①发半消息
    ▼

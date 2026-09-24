@@ -131,7 +131,7 @@ ch <- 1   // ❌ 无缓冲 + 没有其他协程在收 → fatal error: all gorou
 **关闭一个 channel 时，它会向所有在该 channel 上等待的协程发送一个广播通知**，
 而不是只唤醒其中一个：
 
-```
+```text
 close(ch)  →  所有阻塞在 <-ch 的协程同时被唤醒  →  每个都读到零值 + ok = false
 ```
 

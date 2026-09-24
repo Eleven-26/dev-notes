@@ -1,6 +1,6 @@
 # Jaeger 链路追踪
 
-> 一句话说明本文件覆盖什么
+> Trace / Span 与采样率的核心概念、Jaeger 的四组件架构、与 OpenTelemetry 的协作关系、部署方式，以及 Go（主）与 Java（附）两套接入示例、与 SkyWalking 的分工。
 >
 > 内容整理自个人学习笔记，并结合 photography-server 项目的部署目录与架构整理。同目录另见 [Skywalking.md](Skywalking.md)。
 
@@ -61,7 +61,7 @@ Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNC
 
 现代可观测性是「**采集与协议标准化（OTel）** + **后端可替换（Jaeger / Tempo / SkyWalking …）**」。
 
-```
+```text
 应用 (OTel SDK 埋点) ──Trace/Span+Context 传播, OTLP(gRPC:4317/HTTP:4318)──▶
 [可选] OTel Collector（统一接收/采样/多路导出） ──OTLP──▶
 Jaeger (v2 = Collector + Query + UI) ──▶ Storage(ClickHouse/ES) ──▶ Jaeger UI :16686
@@ -384,7 +384,7 @@ public class OrderService {
 
 ### 7.2 数据流（实际）
 
-```
+```text
 前端 :8081/:8082/:8083 ── /api 剥前缀 ──▶ backend（Go + Gin，:8080）
    │ ① otelgin 生成 HTTP entry span（router.go 挂载 JaegerTrace）
    │ ② GORM OTel 插件生成 SQL client span（mysql.go，以 JaegerEnabled() 为条件安装）

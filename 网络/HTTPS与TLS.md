@@ -35,7 +35,7 @@ SSL 由 Netscape 发明，**SSL 3.0（1996）是最后一版**，之后改名交
 - 手段：**用非对称（证书 + 密钥交换）保护密钥协商，之后的数据全部走对称加密**。
 
 ### 3.2 两次往返的完整流程
-```
+```text
 Client                                              Server
   |--- ① ClientHello ----------------------------------->|   RTT 1
   |<-- ② ServerHello ------------------------------------|
@@ -107,7 +107,7 @@ Session Keys: client_write_key / server_write_key
 ### 4.1 1-RTT 握手：客户端先「赌」密钥交换参数
 省掉一个 RTT 的核心手段是 **客户端在 ClientHello 里直接带上 `key_share`（自己的临时公钥）**，把原本第二轮才做的事提前：
 
-```
+```text
 Client                                                Server
   |--- ① ClientHello                                       |
   |       + supported_versions: 1.3                        |

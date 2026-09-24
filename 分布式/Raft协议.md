@@ -14,7 +14,7 @@
 
 ### 讲解任何技术题的通用模板（先掌握这个）
 
-```
+```text
 ① 它是什么？有什么作用？
 ② 它有什么特点和优势？（与同类技术相比，优劣势）
 ③ 核心流程是怎样的？（关键机制的理解）
@@ -63,7 +63,7 @@
 
 **问题**：如果所有 Follower 的选举超时时间相同会怎样？
 
-```
+```text
 所有 Follower 同时超时 → 全部转为 Candidate
 → 每个节点的第一件事都是把票投给自己
 → 每人只有一票且都投给了自己 → 永远选不出 Leader
@@ -102,7 +102,7 @@
 
 #### 流程一：Leader 选举
 
-```
+```text
 ① 初始状态：所有节点都是 Follower（Leader 故障后也是这个状态）
 ② Follower 长时间收不到 Leader 心跳 → 选举超时 → 转为 Candidate
    （超时时间随机，谁先超时谁先转，避免同时选举）
@@ -121,7 +121,7 @@
 
 #### 流程二：日志复制
 
-```
+```text
 ① 客户端请求到达 Leader
 ② Leader 把日志追加到本地
 ③ Leader 通过 AppendEntries 请求把日志发送给所有 Follower
@@ -187,7 +187,7 @@
 
 #### 第 1 步：Follower 靠心跳维持
 
-```
+```text
 Follower 能收到 Leader 的心跳 → 不转换，一直保持 Follower
 Follower 收不到心跳（超时）  → 进入选举流程
 ```
@@ -195,7 +195,7 @@ Follower 收不到心跳（超时）  → 进入选举流程
 
 #### 第 2 步：递增任期 + 转为候选者 + 投自己一票
 
-```
+```text
 ① 递增自己的任期（term）
 ② 身份转为 Candidate（候选者）
 ③ 为自己投票 ← ★ 关键
@@ -251,7 +251,7 @@ Follower 收不到心跳（超时）  → 进入选举流程
 
 #### 第 5 步：三种结果
 
-```
+```text
 ① 发现已有 Leader → 转为 Follower
 ② 拿到多数票     → 当选 Leader → 向所有节点发心跳，
                     其他节点收到更高任期的 Leader 后全部转为 Follower
@@ -521,7 +521,6 @@ func WatchInstances(ctx context.Context, prefix string, onChange ChangeFunc) err
 
 ---
 
-## 使用二：Java（jetcd 与 ZooKeeper/Curator 对照）
 ## 使用二：Java（jetcd，以及与 ZooKeeper/Curator 的概念对照）
 
 > 校验说明：本节按 `jetcd 0.8.x` + `Curator 5.x` 的公开 API 书写，
@@ -667,7 +666,6 @@ public class ZkLeaderConfig {
 
 ---
 
-## 使用三：三节点实验（把每条结论都跑一遍）
 ## 使用三：三节点实验（把正文每一条结论都跑一遍）
 
 > ⚠️ 校验说明：**本节命令未在本机实测**（Docker Desktop 未运行，且 etcd 集群需要 3 个容器）。
@@ -747,6 +745,17 @@ etcdctl get foo --consistency=s              # ⚠️ 该 flag 是否存在以 e
 > 这三问分别对应正文的 [一致性与CAP.md](一致性与CAP.md)（可用性取舍）、Q1（多数派硬约束）、Q2（数据只能从 Leader 流向 Follower）。
 
 ---
+
+---
+
+## 面试官会追问什么
+
+- **Raft 和 Paxos 是什么关系？** → Raft 可以看成 Multi-Paxos 的「可理解性重写」：用强领导者 + 日志连续性 + 任期把协议拆成选举/复制/安全三条线，代价是**写必须过 Leader**。
+- **怎么防脑裂？** → 不是靠超时，而是靠**多数派**：一个任期内最多一个 Leader 能拿到多数票；少数派分区既选不出 Leader 也提交不了，自然写不进去。
+- **选举超时为什么要随机？** → 避免所有 Follower 同时超时、选票被均分导致反复重选（活锁）；随机区间是 Raft 能收敛的关键工程细节。
+- **日志不一致怎么修？** → Leader 强制以自己为准：从尾部往前找到最后一个匹配的 index，把 Follower 后面的**全部截断再补发**。
+- **集群能不能只有 2 个节点？** → 不能容忍任何一台故障（2 的多数派是 2），所以 Raft 集群要 3/5/7 这类奇数；扩容要按「容忍 N 台故障」反推节点数。
+- **为什么不直接从 Follower 读？** → 可能读到落后数据；要强一致读必须走 Leader，或加 ReadIndex / 租约机制（见 [一致性与CAP.md](一致性与CAP.md)）。
 
 ## 关联
 

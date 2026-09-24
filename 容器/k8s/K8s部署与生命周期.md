@@ -131,12 +131,15 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 ## Q2. K8s 侧与镜像相关的正确姿势 ⭐
 
+**来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
+**考察意图**：考**「镜像 tag 与拉取策略的连带后果」**。`Always` + 可变 tag 是最糟的组合；kubelet 还会按磁盘阈值 GC 掉不用的镜像，所以会出现「昨天还在、今天重拉」。
+
 ### 一、`imagePullPolicy` 与"节点上镜像漂移" ⭐
 
 `Always` 每次启动都去仓库确认；`IfNotPresent` 本地有这个 tag 就直接用、**不再问仓库**；`Never` 只用已有。
 **默认值取决于 tag**：`:latest` → `Always`，固定版本 tag → `IfNotPresent`。于是：
 
-```
+```text
 同一个 tag（v1 / latest）被覆盖推送
   → 老节点本地已有旧内容，IfNotPresent 不再拉 → 跑的是旧镜像
   → 新节点拉到新内容 → 同一个 Deployment 的副本行为不一致
@@ -185,6 +188,7 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 
 ## Q3. 生命周期与优雅关闭：探针、`preStop` 与 SIGTERM ⭐
 
+**来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
 **考察意图**：这题最能看出"有没有真在生产发布过服务"。三探针各解决什么、误配的**具体后果**、
 以及"`preStop` 里 sleep 几秒"到底在服务什么。
 
@@ -205,7 +209,7 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 
 ### 二、优雅关闭的时序与代码要点
 
-```
+```text
 delete pod 之后两条路并行：
  (A) API 打 deletionTimestamp → endpoint 摘除 → 各节点 kube-proxy / Ingress 规则更新  【异步、要传播】
  (B) kubelet：先跑 preStop hook → 再发 SIGTERM → 到 terminationGracePeriodSeconds 仍存活 → SIGKILL
@@ -240,6 +244,9 @@ db.Close()
 ---
 
 ## Q4. 滚动升级与回滚：参数、PDB、有状态为什么特殊
+
+**来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
+**考察意图**：考**「回滚到底能不能兜底」**。`rollout undo` 依赖「上一个 revision 恰好是好的那个」，且**只回滚代码、不回滚数据**；有状态负载还要额外考虑 quorum 与 RWO 卷不能双挂。
 
 ### 一、`maxSurge` / `maxUnavailable` 与 PDB
 

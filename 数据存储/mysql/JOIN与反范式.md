@@ -42,7 +42,7 @@ INNER JOIN users u ON o.user_id = u.id;
 
 ### 三、互联网的常见替代做法：拆成单表查询 + 应用层拼接
 
-```
+```text
 ① 先查 table1
 ② 再查 table2
 ③ 在应用程序的内存里把两次结果拼接起来，得到最终数据

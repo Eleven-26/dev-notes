@@ -1,6 +1,6 @@
 # I/O 多路复用
 
-> 一句话说明本文件覆盖什么：从系统调用原理到 Go/Java 实践，讲清五种 I/O 模型、select/poll/epoll、LT/ET、Reactor 与高频面试题。
+> 从系统调用原理到 Go/Java 实践，讲清五种 I/O 模型、select/poll/epoll、LT/ET、Reactor 与高频面试题。
 >
 > 内容整理自个人学习笔记。Go 侧的网络模型与调度见 [GMP调度.md](../go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../go/运行时/零拷贝.md)。
 

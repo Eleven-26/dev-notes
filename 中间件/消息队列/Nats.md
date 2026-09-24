@@ -1,6 +1,6 @@
 # NATS 消息系统
 
-> 一句话说明本文件覆盖什么：NATS 的定位与核心概念、Core NATS / JetStream 两套语义、部署与鉴权、Go 与 Java 双端示例、可靠性设计要点。
+> NATS 的定位与核心概念、Core NATS / JetStream 两套语义、部署与鉴权、Go 与 Java 双端示例、可靠性设计要点。
 >
 > 内容整理自个人学习笔记，并结合 photography-server 项目的实际用法整理。消息队列整体选型见 [消息队列选型.md](消息队列选型.md)。
 

@@ -97,7 +97,7 @@ map 存在的意义，就是让 **key 起到"索引"的作用**，快速定位 v
 
 #### 条件一：负载因子超标
 
-```
+```text
 负载因子 = count / 2^B >= 6.5
 ```
 
@@ -282,7 +282,7 @@ GC 扫描会**整块跳过桶内部**（性能好），但也因此**找不到�
 
 ### 共同的前置检查
 
-```
+```text
 ① h == nil？ 读 → 返回零值（读 nil map 合法）；写 → fatal("assignment to entry in nil map")
 ② h.flags & hashWriting != 0？ 写 → fatal("concurrent map writes")
                               读 → fatal("concurrent map read and map write")
@@ -314,7 +314,7 @@ if h.oldbuckets != nil {
 
 ### 桶内扫描：两层循环 + `emptyRest` 提前终止
 
-```
+```text
 外层：沿溢出桶链逐桶（b = b.overflow）
   内层：桶内 8 个槽位 i = 0..7
     ① 取 b.tophash[i]：与本 key 的 tophash 相等 → 用 key 做**精确比较**
@@ -330,7 +330,7 @@ if h.oldbuckets != nil {
 
 ### 写路径：找不到就落位，落不下就扩容
 
-```
+```text
 ① 遍历中记录第一个可用槽位（inserti / insertk / elem）
 ② 桶和溢出桶都满了 → 申请新溢出桶（优先取 extra.nextOverflow，否则 newobject）
 ③ 写入前判断：!h.growing() && ( overLoadFactor(h.count+1, h.B)
@@ -365,7 +365,7 @@ if h.oldbuckets != nil {
 
 ### `hashGrow`：判断类型 + 铺好新旧两套桶
 
-```
+```text
 ① 判断类型：overLoadFactor(h.count+1, h.B) → 双倍扩容（B+1）；否则 → 等量扩容（B 不变）
 ② 保存旧桶：oldbuckets = buckets
 ③ 分配新桶：双倍扩容 → h.B++，h.buckets = 新的 2^(B+1) 个桶
@@ -379,7 +379,7 @@ if h.oldbuckets != nil {
 
 ### 搬迁时怎么决定去 X 还是 Y
 
-```
+```text
 等量扩容（B 不变）：只有 x，元素仍落在同一个桶号位置 → 本质是"整理"
 双倍扩容（B+1）  ：旧桶 i 的元素只会去两个地方：x = i、y = i + 2^B（旧桶数量）
                   ← 取决于新哈希值**多出来的那一位**是 0 还是 1
@@ -416,7 +416,7 @@ if h.growing() { evacuate(t, h, h.nevacuate) }    // ② 再顺手搬 nevacuate 
 
 ### `evacuate` 内部：一个桶是怎么被搬空的
 
-```
+```text
 ① 定位旧桶，先检查是否已疏散（第一个槽位是 evacuated* → 直接 return）
 ② 按 useY 决定目标桶 x/y；目标桶第一个可写位置记为 ins.i
 ③ 遍历旧桶 8 个槽位：空的 → 标记 evacuatedEmpty 并 continue；正常值 → 取出 key

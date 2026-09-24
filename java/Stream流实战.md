@@ -218,6 +218,17 @@ public static List<User> removeDuplicatesByNameAndPhone(List<User> userList) {
 | **`parallelStream()` 滥用** | 小数据量反而更慢，且共享可变状态时不安全 | 数据量大且无共享状态时再用 |
 | **空集合 `.get(0)`** | 返回 null 或越界 | 用 `findFirst().orElse(null)`、`Optional` 兜底 |
 
+---
+
+## 面试官会追问什么
+
+- **Stream 和 for 循环谁快？** → 小数据量下 for 更快（装箱、lambda 调用、管道搭建都有开销）；大数据量且能短路/并行时 Stream 才有优势。**别拿性能当用 Stream 的理由**，理由应该是可读性。
+- **并行流什么时候用？** → 只在「数据量大 + 计算密集 + 无共享可变状态 + 不依赖顺序」时用。默认共用 `ForkJoinPool.commonPool`，IO 密集任务会把全局并行度拖死，生产更推荐自定义线程池或直接用并发 API。
+- **`Collectors.toMap` 为什么抛异常？** → 重复 key 抛 `IllegalStateException`、value 为 null 抛 NPE；必须传合并函数与 `LinkedHashMap` 供应商才可控。
+- **`findFirst` 和 `findAny` 的区别？** → 串行下等价；并行下 `findAny` 不保证顺序、能更早返回，`findFirst` 有顺序保证但可能得等全部算完。
+- **流能复用吗？** → 不能。流是一次性的，终端操作消费之后再操作会抛 `IllegalStateException`；要复用就重新 `stream()`。
+- **惰性求值意味着什么？** → 中间操作只记账、终端操作才触发遍历——所以「链很长」≠「遍历很多次」，但也意味着断点位置与直觉不同，调试时先确认是谁触发的终端操作。
+
 ## 关联
 
 - [../数据存储/mysql/JOIN与反范式.md](../数据存储/mysql/JOIN与反范式.md) — `groupingBy` 就是「应用层归并」的 Java 写法
