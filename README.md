@@ -61,11 +61,11 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [mysql/查询与架构.md](mysql/查询与架构.md) | 查询一条数据的完整链路、软件架构分层、JOIN 的用法与取舍、timestamp 与 datetime 选择 |
+| [mysql/查询与架构.md](mysql/查询与架构.md) | 查询一条数据的完整链路、软件架构分层、JOIN 的用法与取舍、timestamp 与 datetime 选择；Go 与 Java 两套落地（预编译、拆 JOIN、读写分离） |
 | [mysql/索引与优化.md](mysql/索引与优化.md) | 索引分类与回表、索引失效、慢查询优化与排查、分页优化 |
-| [mysql/事务与日志.md](mysql/事务与日志.md) | ACID 与隔离级别、读未提交场景、落盘流程、redo/binlog、主从延迟 |
-| [mysql/并发控制与MVCC.md](mysql/并发控制与MVCC.md) | 乐观锁 vs 悲观锁的原理/实现/选型、MVCC 特点、InnoDB 的隐藏列+undo 版本链+Read View、RC 与 RR 差异、主节点选举归属 |
-| [mysql/数据迁移与分表.md](mysql/数据迁移与分表.md) | 迁移三类手段、binlog+GTID 不停服切换、分表后非分片键的路由方案 |
+| [mysql/事务与日志.md](mysql/事务与日志.md) | ACID 与隔离级别、读未提交场景、落盘流程、redo/binlog、主从延迟；Go 事务（小事务/保存点/重试/读己之写）与 Spring 事务落地 |
+| [mysql/并发控制与MVCC.md](mysql/并发控制与MVCC.md) | 乐观锁 vs 悲观锁的原理/实现/选型、MVCC 特点、InnoDB 的隐藏列+undo 版本链+Read View、RC 与 RR 差异、主节点选举归属；Go 三种写冲突控制写法 + JPA 乐观/悲观锁与幂等 |
+| [mysql/数据迁移与分表.md](mysql/数据迁移与分表.md) | 迁移三类手段、binlog+GTID 不停服切换、分表后非分片键的路由方案；Go 路由/基因法/双写校验 + Java ShardingSphere-JDBC |
 | [redis/命令与使用.md](redis/命令与使用.md) | 五大数据结构与底层实现、RDB/AOF、主从/哨兵/Cluster、过期与淘汰、Go/Java 客户端与分布式锁实现 |
 | [redis/缓存与分布式锁.md](redis/缓存与分布式锁.md) | 缓存雪崩、淘汰策略、分布式锁、热 key、发布订阅、选型、本地缓存 vs Redis、内存不足、缓存污染 |
 
@@ -99,21 +99,21 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [network/TCP.md](network/TCP.md) | 报文结构、三次握手、滑动窗口、Nagle 算法与延迟确认 |
+| [network/TCP.md](network/TCP.md) | 报文结构、三次握手、滑动窗口、Nagle 算法与延迟确认；Go/Java 把窗口、Nagle、保活落到 socket 选项上（Go 编译校验，Java 侧未编译校验） |
 | [network/DNS解析.md](network/DNS解析.md) | 域名层级与四类服务器、递归/迭代查询全流程、TTL 与缓存故障、记录类型与 CNAME 三个坑、DNS 轮询与 GSLB、劫持/HTTPDNS/DoH、Go net.Resolver 与 Java 用法 |
 | [network/HTTPS与TLS.md](network/HTTPS与TLS.md) | TLS 与 SSL 关系、TLS 1.2 两次往返握手、RSA vs ECDHE、证书验证与主密钥推导、1.3 的 1-RTT/0-RTT 与重放攻击、会话复用、SSLKEYLOGFILE 解密抓包 |
 | [network/IO多路复用.md](network/IO多路复用.md) | 五种 I/O 模型、同步/异步与阻塞/非阻塞之辨、select/poll/epoll 演进、LT vs ET、惊群与 Reactor、Go netpoller 与 Java NIO、fd 上限 |
-| [network/应用层协议.md](network/应用层协议.md) | DHCP 流程与续租、HTTP 与 gRPC 的区别 |
-| [network/数据序列化.md](network/数据序列化.md) | JSON 与 Protobuf 对比、Protobuf 使用注意事项 |
+| [network/应用层协议.md](network/应用层协议.md) | DHCP 流程与续租、HTTP 与 gRPC 的区别；Go HTTP 客户端与租约、Java HttpClient/OkHttp 连接池，含一条/多条连接实测 |
+| [network/数据序列化.md](network/数据序列化.md) | JSON 与 Protobuf 对比与性能实测、Protobuf 使用注意事项；Go 逐字节拆解 varint/tag、Java protobuf-java 与 Jackson 对照组 |
 
 ### 系统与运维
 
 | 文件 | 知识点 |
 |---|---|
-| [linux/进程与线程.md](linux/进程与线程.md) | 进程概念与状态、线程三种实现方式、进程与线程的区别 |
+| [linux/进程与线程.md](linux/进程与线程.md) | 进程概念与状态、线程三种实现方式、进程与线程的区别；Go/Java 双册实测：进程/线程/协程创建成本、超订与上下文切换、协程栈内存（含与常见说法不符的量化结论） |
 | [linux/内存与文件系统.md](linux/内存与文件系统.md) | 虚拟内存与地址空间布局、分页/页表/TLB、缺页中断、伙伴系统与 Slab、Page Cache 与 free 的正确解读、kswapd 与 LRU 回收、ext4/XFS/Btrfs、inode 与软硬链接、write ≠ 落盘、Go MemStats vs RSS |
 | [linux/性能排查.md](linux/性能排查.md) | USE/RED 方法论与分层排查顺序、负载高但 CPU 低的成因、vmstat 速读、CPU 飙高套路与上下文切换、free 解读与 OOM Killer、内存泄漏判断、iostat 与磁盘/inode 满、连接状态分布、Go 服务排查 |
-| [linux/常用命令.md](linux/常用命令.md) | 查端口占用、看网络连接、递归建目录、日志关键词统计 |
+| [linux/常用命令.md](linux/常用命令.md) | 查端口占用、看网络连接、递归建目录、日志关键词统计；Go/Java 双册：命令注入、超时杀进程树、退出码语义、纯 Go 复刻管道并与 shell 对拍（均本机实测） |
 | [docker/Docker.md](docker/Docker.md) | 进入运行中的容器、构建镜像、多阶段构建、容器生成原理与 namespace/cgroup、与 VM 对比 |
 | [docker/命令速查.md](docker/命令速查.md) | 镜像/容器/网络/清理/Compose 命令与 `docker run` 参数速查、exec vs attach、高频组合场景 |
 | [docker/CI-CD.md](docker/CI-CD.md) | GitLab Runner、Docker-outside-of-Docker、构建与部署两阶段 |
@@ -141,12 +141,12 @@
 
 | 文件 | 知识点 |
 |---|---|
-| [distributed/一致性与Raft.md](distributed/一致性与Raft.md) | 强/弱/最终一致性、CAP、Raft 角色转换与选举流程 |
+| [distributed/一致性与Raft.md](distributed/一致性与Raft.md) | 强/弱/最终一致性、CAP、Raft 角色转换与选举流程；Go（etcd client v3 的两种读/Txn/Election/Watch）与 Java（jetcd + Curator 对照）落地，另有三节点实验（命令未在本机实测） |
 | [distributed/分布式事务.md](distributed/分布式事务.md) | XA/DTP 与 BASE、七种方案（2PC/3PC/TCC/Saga/本地消息表/事务消息/最大努力通知）对比与选型顺序、Seata AT 与 TCC 接入、Go dtm 四种模式 |
 | [distributed/分布式ID.md](distributed/分布式ID.md) | 三条硬要求、方案全景对比、雪花位结构与 workerId 分配、时钟回拨、前端 JS 精度丢失、Go(bwmarrin/sonyflake) 与 Java(Hutool/MyBatis-Plus) 落地 |
 | [distributed/限流降级熔断.md](distributed/限流降级熔断.md) | 四种限流算法与关键差异、Redis+Lua 分布式限流、熔断三态与 Half-Open、熔断与重试的相互作用、三类降级、sentinel-golang/gobreaker 与 Resilience4j |
-| [distributed/服务发现与负载均衡.md](distributed/服务发现与负载均衡.md) | etcd 租约注册、健康检查、客户端/服务端负载均衡、为什么用注册中心、注册中心选型 |
-| [distributed/系统设计.md](distributed/系统设计.md) | 直播弹幕、文件服务器选型、朋友圈设计、视频上传直传 vs 中转、微信海量存储、统计页加速 |
+| [distributed/服务发现与负载均衡.md](distributed/服务发现与负载均衡.md) | etcd 租约注册、健康检查、客户端/服务端负载均衡、为什么用注册中心、注册中心选型；Go 注册/发现/LB 四段可运行代码（哈希环比环平滑度为本机实测）+ Java（Spring Cloud/Nacos，未编译校验） |
+| [distributed/系统设计.md](distributed/系统设计.md) | 直播弹幕、文件服务器选型、朋友圈设计、视频上传直传 vs 中转、微信海量存储、统计页加速；四道场景题各配「落地实现：最小可运行骨架」（Go 已编译校验并跑通），Q1/Q3 另附逐类型移植的 Java 版骨架（JBR 编译并实测，含 Go↔Java 数字对照） |
 
 ### 面试与索引
 
@@ -164,6 +164,8 @@
   1. **面试真题整理**（Go / 数据库 / 网络 / 系统 / 分布式方向）：逐题包含**题目来源、考察意图、参考答案、面试官追问方向**；素材来源见 [interview/素材清单.md](interview/素材清单.md)。
   2. **个人学习笔记**（算法 / Java / GC / 安全 / Git / PHP 等）：以知识体系为主线组织，侧重对比表与选型结论。
   3. **中间件与组件手册**（数据存储 / 中间件 / 可观测性）：采用「介绍 + 使用方法」结构，**使用示例同时给出 Go 与 Java 两个版本**。
+- 上述「介绍 + 使用方法」结构现已覆盖**面试真题类**文档（mysql / network / distributed / linux）：
+  每题正文之后统一补「使用一：Go」「使用二：Java」，能本地跑的都已跑出**实测数据**并把偏差写进正文。
 - 文中配图已**全部本地化**到各自目录的 `images/` 下（用相对路径引用，不依赖外部图床）。
 - 代码块格式约定：**开栏围栏（```bash / ```go 等）后空一行**再写内容，否则渲染时语言标记的三角形会与首行文字重叠。
 - 「使用方法」章节标准：每篇都要给 **Go + Java 双版本**的客户端/实操示例（纯设计题写「落地实现：最小可运行骨架」）；**中间件实例一律单例**（Go 用 `sync.OnceValue`，Java 用 Spring 单例 Bean），不在请求路径里新建连接池。

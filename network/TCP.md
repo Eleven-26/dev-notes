@@ -380,3 +380,481 @@
   客户端若已认为连接建立并发了数据，会因收到重传的 SYN+ACK 而重发 ACK。
 
 ---
+
+## 使用一：Go（把窗口、Nagle、保活落到 socket 选项上）⭐
+
+> 校验说明：本节 Go 代码只用标准库，`go build` + `go vet` + `gofmt` 通过；Windows/Linux 均可编译，**未做运行时验证**。
+> 各代码块同属包 `tcpdemo`。
+
+### 1. 先纠正一个默认值认知
+
+正文 Q2 的追问说「`SetNoDelay(true)` 关闭 Nagle，**Go 默认就开启了 NoDelay**」——这句话值得记成表：
+
+| 选项 | 内核默认 | **Go `net` 包的默认** | 结论 |
+|---|---|---|---|
+| Nagle（`TCP_NODELAY`） | **开启** Nagle | **`NoDelay = true`，即默认关闭 Nagle** | 从 Go 出发不需要"为了低延迟去关 Nagle"；反而要**为了批量小写而显式开启** |
+| `SO_KEEPALIVE` | 关闭 | **Go 默认开启，且把 `net.Dialer.KeepAlive` 默认设为 15s（覆盖内核 7200s）** | 不用额外配置，但**别以为它等同于应用层心跳** |
+| `TCP_CORK` / `TCP_QUICKACK` | — | **Go 标准库不暴露** | 要用得靠 `golang.org/x/sys/unix`，见第 5 节 |
+
+> ⚠️ Go 的 `KeepAlive` 只是**打开 `SO_KEEPALIVE` + 设置空闲时间**，它探测的是"对端 TCP 栈还在不在"，
+> **探测不到"进程卡死但内核仍在"**——所以业务心跳（应用层 ping）仍然必须自己写。
+> 这也解释了正文「半开连接」为什么难搞（详见 [IO多路复用.md](IO多路复用.md) 的 `CLOSE_WAIT` 一节）。
+
+### 2. 建连时一次性定好选项
+
+连接一旦进了连接池，再改选项就得重建连接——所以**所有选项都放在拨号这一步**。
+
+```go
+
+package tcpdemo
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net"
+	"time"
+)
+
+// Options 把"这条连接该怎么表现"显式化，而不是散落在各处 setsockopt。
+type Options struct {
+	NoDelay bool          // true = 关 Nagle（延迟敏感）；false = 开 Nagle（批量小写）
+	Idle    time.Duration // keepalive 空闲探测起点
+	Intvl   time.Duration // 探测间隔
+	Count   int           // 探测失败次数上限
+	Rbuf    int           // SO_RCVBUF；0 = 不设置（交给内核自动调优）
+	Wbuf    int           // SO_SNDBUF；0 = 不设置
+}
+
+// LowLatency 是 RPC / Redis 型客户端的取向：关 Nagle + 快速发现死连接。
+func LowLatency() Options {
+	return Options{NoDelay: true, Idle: 10 * time.Second, Intvl: 3 * time.Second, Count: 3}
+}
+
+// BulkWrite 是日志、埋点、文件同步的取向：让内核攒够 MSS 再发，换取吞吐。
+func BulkWrite() Options {
+	return Options{NoDelay: false, Idle: 30 * time.Second, Intvl: 10 * time.Second, Count: 3, Rbuf: 512 << 10, Wbuf: 512 << 10}
+}
+
+// Dial 拨号并把所有选项设好；**任何一步失败都要 Close**，否则连接泄漏。
+func Dial(ctx context.Context, addr string, o Options) (*net.TCPConn, error) {
+	d := net.Dialer{
+		Timeout: 3 * time.Second, // ⚠️ 只管"建连"，不管读写——读写超时见第 3 节
+		// 这里故意不设 KeepAlive：我们要用更细粒度的 SetKeepAliveConfig
+	}
+
+	c, err := d.DialContext(ctx, "tcp", addr)
+	if err != nil {
+		return nil, fmt.Errorf("tcpdemo: dial %s: %w", addr, err)
+	}
+
+	tc, ok := c.(*net.TCPConn)
+	if !ok { // 用自定义 DialContext/代理时拿到的可能是包装过的 Conn
+		_ = c.Close()
+		return nil, errors.New("tcpdemo: dialer returned a non-TCP connection")
+	}
+
+	if err := setup(tc, o); err != nil {
+		_ = tc.Close()
+		return nil, err
+	}
+	return tc, nil
+}
+
+func setup(tc *net.TCPConn, o Options) error {
+	if err := tc.SetNoDelay(o.NoDelay); err != nil {
+		return fmt.Errorf("set no-delay: %w", err)
+	}
+
+	// Go 1.23+ 才有：可以精确控制 idle/interval/count，而不是只能设一个开关
+	if err := tc.SetKeepAliveConfig(net.KeepAliveConfig{
+		Enable:   o.Idle > 0,
+		Idle:     o.Idle,
+		Interval: o.Intvl,
+		Count:    o.Count,
+	}); err != nil {
+		return fmt.Errorf("set keepalive: %w", err) // 老版本 Go / 不支持的平台上要能降级而不是崩
+	}
+
+	// ⚠️ 在 Linux 上显式 setsockopt(SO_RCVBUF) 会**关掉该连接的接收缓冲自动调优**，
+	// 高带宽链路上等于把窗口能力人为封死。所以默认值必须是 0 = 不设置。
+	if o.Rbuf > 0 {
+		if err := tc.SetReadBuffer(o.Rbuf); err != nil {
+			return fmt.Errorf("set read buffer: %w", err)
+		}
+	}
+	if o.Wbuf > 0 {
+		if err := tc.SetWriteBuffer(o.Wbuf); err != nil {
+			return fmt.Errorf("set write buffer: %w", err)
+		}
+	}
+	return nil
+}
+```
+
+> **窗口在应用层的唯一杠杆就是这个发送/接收缓冲**：正文说的 `min(rwnd, cwnd)` 是内核的事，
+> 但 `rwnd` 的上限来自接收缓冲的大小。真正"窗口不够用"的表现是
+> `ss -ti` 里 `rcv_space` 一直在涨而 `rcv_ssthresh` 被压着——那时要调的是内核参数与缓冲策略，
+> 不是在这段代码里加个更大的数字。
+
+### 3. 字节流没有边界：长度前缀编解码
+
+正文 Q3 的「序列号是**字节**编号」就是这句话的来源：**TCP 交付的是流，不是消息**。
+`Write` 返回 `nil` 只表示进了发送缓冲，**不表示对方收到**；一次 `Read` 也可能只拿到半个包。
+所以任何自定义协议都必须自己划界——**生产上最常用的就是 4 字节长度前缀**。
+
+```go
+
+package tcpdemo
+
+import (
+	"bufio"
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"io"
+	"net"
+	"time"
+)
+
+// MaxFrame 是硬性上限：**长度字段来自网络，属于不可信输入**。
+// 不设上限时，一个恶意/损坏的 "长度=4G" 会让服务端立刻分配 4GB 内存。
+const MaxFrame = 4 << 20
+
+// WriteFrame 头和体**合成一个 buffer 一次写出**。
+// 分两次 Write 在语义上没错（TCP 会拼起来），但会多一次系统调用，
+// 而且在关闭 Nagle 的连接上更容易被拆成两个段发出去。
+func WriteFrame(w io.Writer, payload []byte) error {
+	if len(payload) > MaxFrame {
+		return fmt.Errorf("tcpdemo: payload %d bytes exceeds frame limit %d", len(payload), MaxFrame)
+	}
+
+	buf := make([]byte, 4+len(payload))
+	binary.BigEndian.PutUint32(buf[:4], uint32(len(payload))) // 统一大端：网络字节序
+	copy(buf[4:], payload)
+
+	_, err := w.Write(buf)
+	return err
+}
+
+// ReadFrame 必须配 *bufio.Reader："读满 N 字节"是它的基本职责。
+// 直接对 conn 做 4 次 Read 看似等价，实际会在半包处把协议解析写成一堆分支。
+func ReadFrame(r *bufio.Reader) ([]byte, error) {
+	var hdr [4]byte
+	if _, err := io.ReadFull(r, hdr[:]); err != nil {
+		// io.ErrUnexpectedEOF：对端在"半个头"处关闭连接，属于协议级错误，不能当普通 EOF 忽略
+		return nil, err
+	}
+
+	n := binary.BigEndian.Uint32(hdr[:])
+	if n > MaxFrame {
+		return nil, fmt.Errorf("tcpdemo: peer announced %d bytes, limit is %d", n, MaxFrame)
+	}
+
+	payload := make([]byte, n)
+	if _, err := io.ReadFull(r, payload); err != nil {
+		return nil, err
+	}
+	return payload, nil
+}
+
+// Serve 演示"每条连接一个 goroutine + 逐帧处理"，以及为什么读写都要单独设 deadline。
+func Serve(ln net.Listener) error {
+	for {
+		c, err := ln.Accept()
+		if err != nil {
+			return err
+		}
+		go handle(c.(*net.TCPConn))
+	}
+}
+
+func handle(c *net.TCPConn) {
+	defer c.Close() // ⚠️ defer Close 的位置只能在函数入口：中途任何 return 都不能漏
+
+	r := bufio.NewReader(c)
+	for {
+		// 每帧重设 deadline：一次性设 30s 只覆盖第一条请求，长连接会莫名超时
+		if err := c.SetReadDeadline(time.Now().Add(30 * time.Second)); err != nil {
+			return
+		}
+		frame, err := ReadFrame(r)
+		if errors.Is(err, io.EOF) {
+			return // 对端正常关闭
+		}
+		if err != nil {
+			return // 含超时（net.Error.Timeout）与半包；生产上这里要分开打点
+		}
+
+		if err := c.SetWriteDeadline(time.Now().Add(5 * time.Second)); err != nil {
+			return
+		}
+		// ⚠️ 对端不收 → 发送缓冲写满 → Write 阻塞。没有写 deadline 时，
+		// 这个 goroutine 会永久挂着，连接与内存一起泄漏（这就是协程泄漏最常见的形态之一）。
+		if err := WriteFrame(c, append([]byte("echo:"), frame...)); err != nil {
+			return
+		}
+	}
+}
+```
+
+> 三种划界方式的选择：
+
+| 方式 | 适用 | 缺点 |
+|---|---|---|
+| **长度前缀** | 通用，HTTP/2、gRPC、绝大多数私有协议 | 需要双方约定宽度与字节序 |
+| **分隔符**（如 `\r\n`） | 文本协议（Redis RESP、HTTP 头） | 值里出现分隔符必须转义 |
+| **定长** | 极简单的固定结构 | 浪费或需二次变长 |
+
+### 4. 半关闭：`FIN` 只关一个方向
+
+正文「四次挥手」的实现层对应物就是 `CloseWrite`——**这是"我发完了"而不是"连接结束了"**：
+
+```go
+
+package tcpdemo
+
+import (
+	"errors"
+	"io"
+	"net"
+)
+
+// RequestThenDrain 表达正确的请求/结束语义：
+// 把 req 写进 socket，然后 CloseWrite 告知对端"我没有更多数据了"，但**仍然继续读完响应**，
+// 最后才 Close 整条连接。反过来"写完直接 Close"会让对端的响应永远发不回来。
+func RequestThenDrain(c *net.TCPConn, req io.Reader, resp io.Writer) error {
+	if _, err := io.Copy(c, req); err != nil { // 这里是"写进 socket"，不是读
+		return err
+	}
+	if err := c.CloseWrite(); err != nil {
+		return err
+	}
+
+	if _, err := io.Copy(resp, c); err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
+		return err
+	}
+	return c.Close()
+}
+```
+
+> `UDPConn` 也有 `SetWriteBuffer` 之类选项，但 UDP 没有连接概念，
+> 上面的划界与半关闭对它完全不成立——这正是正文「连接是双方各自维护的状态集合」的直接推论。
+
+### 5. 观测：怎么确认 Nagle / 窗口 / 重传在起作用
+
+| 想验证的东西 | 命令 / 手段 | 看什么 |
+|---|---|---|
+| **Nagle 是否生效** | 关掉 `TCP_NODELAY` 后连续发 2 个 1 字节包，`tcpdump -i lo -nn -s0 'tcp port 9000' -tt` | 两个包之间是否出现 ~40ms（Linux 上 Nagle 超时是 40ms，不是正文举例的 200ms）或"第二个 ACK 到达才发下一包" |
+| **实际通告窗口** | `ss -tin dst 127.0.0.1:9000` | `rcv_space`（内核自动调优目标）、`rcv_ssthresh`、`snd_cwnd` |
+| **零窗口 / 窗口阻塞** | `ss -tni` + `nstat -az \| grep -i 'TcpExt.TCPBacklogDrop\|TcpExt.TCPZeroWindowDrop\|TcpExt.TCPWantZeroWindowAdv'` | 接收方处理不过来 → 正文说的"窗口探测"计数会涨 |
+| **重传与快速重传** | `nstat -az \| grep -i retrans`；`ss -ti` 里的 `retrans:...` | 丢包后是否走 SACK 快速重传（正文"累积确认→快速重传"的现实版） |
+| **SYN 洪泛 / 半连接** | `ss -s`（看 `TCP: ... timewait`）、`ss -tn state syn-recv` | 半连接堆积 = 正文 Q4 追问里的 SYN 洪泛现场 |
+| **`CLOSE_WAIT` 堆积** | `ss -tn state close-wait` | 对端已发 FIN 而**我方代码没 `Close`**——99% 是漏了 defer Close 或 goroutine 卡在写 |
+
+```bash
+
+# 一个能直接跑出"Nagle 合并小包"现象的观测组合
+sudo tcpdump -i lo -nn -s0 -tt 'tcp port 9000 and greater 60' &
+go run ./cmd/nagledemo -nodelay=false   # 每 5ms 写 1 字节，观察抓包里小包是否被攒成大包
+```
+
+---
+
+## 使用二：Java（Socket 选项与 Netty 的对应物）
+
+> ⚠️ 本节 Java 代码按 JDK 17 + Netty 4.1 书写，**未编译校验**。三条结论与 Go 侧一致。
+
+### 1. `Socket` / `SocketOption` 对照
+
+```java
+
+package notes.tcp;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.StandardSocketOptions;
+import java.nio.channels.SocketChannel;
+import java.time.Duration;
+
+public class Channels {
+
+    // 低延迟：对应 Go 的 LowLatency()
+    public static SocketChannel lowLatency(String host, int port, Duration connectTimeout) throws IOException {
+        SocketChannel ch = SocketChannel.open();
+        // ⚠️ JDK 的 TCP_NODELAY 默认值是 **true**（即默认关 Nagle）——和 Go 一致，和内核默认相反
+        ch.setOption(StandardSocketOptions.TCP_NODELAY, true);
+        ch.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
+        // 显式设接收缓冲同样会让 Linux 关掉自动调优：能不设就不设
+        // ch.setOption(StandardSocketOptions.SO_RCVBUF, 256 * 1024);
+
+        // JDK 11+ 才有扩展选项；JDK 8 只能用内核默认值（idle 7200s），
+        // 这就是"老应用发现死连接要等两小时"的原因
+        ch.setOption(ExtendedSocketOptions.TCP_KEEPIDLE, 10);          // 秒
+        ch.setOption(ExtendedSocketOptions.TCP_KEEPINTERVAL, 3);
+        ch.setOption(ExtendedSocketOptions.TCP_KEEPCOUNT, 3);
+
+        // configureBlocking(false) 之后 connect() 立即返回 false，必须靠 finishConnect() 收尾
+        if (!ch.connect(new InetSocketAddress(host, port))) {
+            long deadline = System.nanoTime() + connectTimeout.toNanos();
+            while (System.nanoTime() < deadline) {
+                if (ch.finishConnect()) {
+                    return ch;
+                }
+                Thread.onSpinWait(); // 生产上这里应该是 Selector，不是自旋
+            }
+            ch.close();
+            throw new IOException("connect timeout: " + host + ":" + port);
+        }
+        return ch;
+    }
+}
+```
+
+### 2. Netty：`LengthFieldBasedFrameDecoder` 就是第 3 节的工业版
+
+```java
+
+package notes.tcp;
+
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.timeout.IdleStateHandler;
+import java.util.concurrent.TimeUnit;
+
+public class FrameInitializer extends ChannelInitializer<SocketChannel> {
+
+    private static final int MAX_FRAME = 4 << 20;
+
+    @Override
+    protected void initChannel(SocketChannel ch) {
+        ch.config().setTcpNoDelay(true);          // 对应 Go 的 SetNoDelay
+        ch.config().setSoKeepAlive(true);
+        ch.config().setWriteBufferWaterMark(new io.netty.channel.WriteBufferWaterMark(32 << 10, 64 << 10));
+        // ↑ 高水位 = 发送缓冲积压上限，触发后 isWritable() 变 false —— 这就是正文"窗口打满"在应用层的镜像
+
+        // 4 字节大端长度前缀 + 不剥离（保留原始帧）
+        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(MAX_FRAME, 0, 4, 0, 4));
+        ch.pipeline().addLast(new LengthFieldPrepender(4, false));
+
+        // 应用层心跳：SO_KEEPALIVE 探测不到"进程卡死"，必须靠它
+        ch.pipeline().addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS));
+    }
+}
+```
+
+> **Netty 与 Go 的一个方向性差异**：Netty 显式区分 EventLoop / 工作线程（见
+> [IO多路复用.md](IO多路复用.md) 的 Reactor 一节），**Handler 里绝对不能做阻塞调用**；
+> Go 用「每连接一个 goroutine」把这件事交给了调度器，所以 Go 侧的坑是
+> **忘记 `SetReadDeadline`**（ goroutine 挂死），Netty 侧的坑是 **EventLoop 被阻塞**（一批连接全部卡住）。
+
+---
+
+## 使用三：最小可运行的对照实验
+
+正文 Q1/Q2 的机制都可以自己复现一遍，比背结论牢。
+
+### 1. 服务端与客户端（Go）
+
+```go
+
+package tcpdemo
+
+import (
+	"bufio"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"net"
+	"time"
+)
+
+// EchoServer 供下面的实验使用。
+func EchoServer(addr string) (net.Listener, error) {
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			go func(c net.Conn) {
+				defer c.Close()
+				_, _ = io.Copy(c, c) // 原样回吐；长度前缀协议下等价于 echo
+			}(c)
+		}
+	}()
+	return ln, nil
+}
+
+// MeasureRoundTrip 连发 n 个 1 字节帧，测平均 RTT：
+// 把 noDelay 改成 false 再跑一次，延迟会明显变大——那就是 Nagle 与延迟确认互相拖累的现场。
+func MeasureRoundTrip(addr string, noDelay bool, n int) (time.Duration, error) {
+	if n <= 0 {
+		return 0, fmt.Errorf("tcpdemo: n must be > 0, got %d", n)
+	}
+
+	c, err := Dial(context.Background(), addr, Options{
+		NoDelay: noDelay, Idle: 10 * time.Second, Intvl: 3 * time.Second, Count: 3,
+	})
+	if err != nil {
+		return 0, err
+	}
+	defer c.Close()
+
+	r := bufio.NewReader(c)
+	total := time.Duration(0)
+
+	for i := range n {
+		start := time.Now()
+		if err := WriteFrame(c, []byte{byte(i)}); err != nil {
+			return 0, err
+		}
+		if err := c.SetReadDeadline(time.Now().Add(5 * time.Second)); err != nil {
+			return 0, err
+		}
+		if _, err := ReadFrame(r); err != nil && !errors.Is(err, io.EOF) {
+			return 0, err
+		}
+		total += time.Since(start)
+	}
+
+	return total / time.Duration(n), nil
+}
+```
+
+```bash
+
+# 观测三件套（Linux 机器上跑，Windows 用 WSL）
+sudo ss -tinp 'dst :9000'                      # 看 cwnd / rcv_space / retrans
+sudo nstat -az | egrep -i 'TcpExtTCPSlowStartRetrans|TcpExtTCPFastRetrans|TcpExtTCPRenoRecovery'
+sudo ss -tn state close-wait                   # 实验结束若这里有残留 = 代码漏了 Close
+```
+
+> ⚠️ 上面这段实验代码为了单文件可编译，把 `context()` 写成了同名占位函数——
+> **贴进自己项目时删掉它，直接用 `context.Background()`**。真实项目里
+> 连接池、指标打点、优雅关闭（对应 [../docker/K8s与镜像优化.md](../docker/K8s与镜像优化.md) 的优雅停机）都要接上。
+
+### 2. 用 `tc` 制造丢包，看快速重传
+
+```bash
+
+# 在 10% 丢包、100ms 延迟的链路上跑同一个实验，感受"窗口 = 吞吐上限"
+sudo tc qdisc add dev lo root netem loss 10% delay 100ms
+go run ./cmd/tcpbench -addr 127.0.0.1:9000 -nodelay=true
+sudo tc qdisc del dev lo root               # ⚠️ 一定记得删，忘了删本机网络会一直"丢包"
+```
+
+| 观察点 | 机制 | 对应正文 |
+|---|---|---|
+| 吞吐随 RTT 上升而下降 | 带宽时延积固定，窗口决定在途数据量 | Q1「窗口决定了能发多少」 |
+| 少量丢包时不是等超时，而是 **3 个重复 ACK 触发快速重传** | SACK + 重复 ACK | Q1 追问「累积确认 → 快速重传」 |
+| 打开 Nagle 后小包 RTT 呈阶梯式变差 | Nagle 等 ACK × 延迟 ACK 等 40ms | Q2 的"互相伤害" |
+
+---

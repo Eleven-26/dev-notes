@@ -176,6 +176,7 @@ map 存在的意义，就是让 **key 起到"索引"的作用**，快速定位 v
 ### `B` 的推导：用负载因子反推桶数
 
 ```go
+
 B := uint8(0)
 for overLoadFactor(hint, B) { B++ }   // count > 8 && count > 6.5 × 2^B
 ```
@@ -299,6 +300,7 @@ GC 扫描会**整块跳过桶内部**（性能好），但也因此**找不到�
 ### ⭐ 扩容中的"双桶查找"（读路径独有）
 
 ```go
+
 b := 新桶[hash & (2^B - 1)]
 if h.oldbuckets != nil {
     m := 2^B 对应的掩码
@@ -406,6 +408,7 @@ if h.oldbuckets != nil {
 ### `growWork`：每次最多搬两个桶
 
 ```go
+
 evacuate(t, h, bucket & h.oldbucketmask())        // ① 先搬"当前要访问的桶"对应的旧桶
 if h.growing() { evacuate(t, h, h.nevacuate) }    // ② 再顺手搬 nevacuate 指向的那个旧桶
 ```
@@ -463,6 +466,7 @@ if h.growing() { evacuate(t, h, h.nevacuate) }    // ② 再顺手搬 nevacuate 
 ### 结论：必须是"可比较类型"（编译期强制）
 
 ```go
+
 m := make(map[[]int]int)   // ❌ 编译错误：invalid map key type []int
 ```
 
@@ -480,6 +484,7 @@ m := make(map[[]int]int)   // ❌ 编译错误：invalid map key type []int
 ### ⚠️ 反直觉案例：`NaN` 是"可比较类型"，但它是陷阱
 
 ```go
+
 nan := math.NaN()
 m := map[float64]string{nan: "hello"}
 

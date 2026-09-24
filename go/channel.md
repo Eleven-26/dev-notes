@@ -201,11 +201,44 @@ channel 按是否有缓冲区分为**有缓冲**和**无缓冲**两类，主要�
 ### 案例 1：基本数据传递（生产者 → 消费者）
 
 ```go
-ch := make(chan int)
-go func() { for i := 0; i < 10; i++ { ch <- i }; close(ch) }()
-for v := range ch { fmt.Println(v) }   // close 后 range 自动结束
+
+ch := make(chan int) // 1. 创建无缓冲 channel
+
+go func() { // 2. 启动生产者 goroutine
+for i := 0; i < 10; i++ {
+ch <- i // 3. 发送 0~9
+}
+close(ch) // 4. 发送完毕，关闭 channel
+}()
+
+for v := range ch { // 5. 消费者：循环接收
+fmt.Println(v) // 6. 打印 0~9
+} // 7. close 且数据取完后，range 自动结束
 ```
-要点：**生产完关闭 channel**，主协程通过 `range` 感知关闭状态并退出循环。
+时序图（简化）
+```text
+
+生产者 goroutine                 main goroutine
+      |                               |
+      |--- ch <- 0 ------------------>| 收到 0，打印
+      |--- ch <- 1 ------------------>| 收到 1，打印
+      |--- ...                       |
+      |--- ch <- 9 ------------------>| 收到 9，打印
+      |                               |
+      |--- close(ch)                  |
+      |                               | range 再次接收，发现已关闭且无数据
+      |                               | 循环结束
+      |                               | main 返回，程序退出
+```
+### ⚠️ 关键点与注意事项
+| 要点 | 说明 |
+| --- | --- |
+| 谁关闭 channel | 只有发送方应该关闭 channel，接收方关闭会 panic。 |
+| 关闭后不能发送 | 向已关闭的 channel 发送数据会 panic。 |
+| 关闭后仍可接收 | 接收方可以继续取完缓冲区中剩余数据，取完后返回零值。 |
+| range 自动结束 | 当 channel 关闭且数据取完，`range`<br/> 自动退出，不需要手动判断。 |
+| 无缓冲 vs 有缓冲 | 无缓冲强制同步；有缓冲时发送方在缓冲区满之前不会阻塞。 |
+| 不关闭的后果 | 如果生产者不 `close`<br/>，`range`<br/> 会永远阻塞，导致死锁。 |
 
 ### 案例 2：信号传递 + 同步等待
 
@@ -229,6 +262,7 @@ for v := range ch { fmt.Println(v) }   // close 后 range 自动结束
 - 读出 = **释放**一个许可。
 
 ```go
+
 sem := make(chan struct{}, 2) // 并发上限 2
 sem <- struct{}{}             // 获取
 defer func() { <-sem }()      // 释放
@@ -239,6 +273,7 @@ defer func() { <-sem }()      // 释放
 ### 案例 5：用 channel 控制超时
 
 ```go
+
 select {
 case res := <-workCh:
     fmt.Println("完成:", res)
@@ -255,6 +290,7 @@ case <-time.After(2 * time.Second):
 从而实现"一对多广播"，而不需要发 N 次信号。
 
 ```go
+
 stopCh := make(chan struct{})
 for i := 0; i < 5; i++ {
     go func(id int) {
@@ -290,6 +326,7 @@ close(stopCh)   // 5 秒后广播中止信号，5 个协程同时感知
 ### 一、常规写入：没有事前判断
 
 ```go
+
 ch <- data   // 要么成功，要么阻塞，要么 panic（已关闭）
 ```
 
@@ -302,6 +339,7 @@ ch <- data   // 要么成功，要么阻塞，要么 panic（已关闭）
 ### 二、唯一的例外：`select` + `default`
 
 ```go
+
 select {
 case ch1 <- v:          // 能写就写
     // 写成功了
@@ -319,6 +357,7 @@ default:
 ⚠️ **反例：如果 `select` 没有 `default` 子句**
 
 ```go
+
 select {
 case ch1 <- v:   // 若 ch1 写不进去
 case ch2 <- v:   // 若 ch2 也写不进去
@@ -387,6 +426,7 @@ channel 的语义边界在哪里、哪些操作**合法但反直觉**。
 > **一个 channel 要有发送方、也要有接收方**；只发不收，发送协程会**永久阻塞**。
 
 ```go
+
 ch := make(chan int)
 ch <- 1   // ❌ 无缓冲 + 没有其他协程在收 → fatal error: all goroutines are asleep - deadlock!
 ```
@@ -554,6 +594,7 @@ N 个业务协程  →（写入 chan）→  1 个日志协程  →  顺序落盘
 **⭐ 顺带一个工程细节：用单向 channel 表达"职责"**
 
 ```go
+
 func producer(ch chan<- int)   // 只写：生产者只能发
 func consumer(ch <-chan int)   // 只读：消费者只能收
 ```
@@ -571,6 +612,7 @@ func consumer(ch <-chan int)   // 只读：消费者只能收
 **场景**：一批任务要并发跑，但不加限制可能瞬间起几十万个协程，把内存和后端打垮。
 
 ```go
+
 sem := make(chan struct{}, 3)   // 缓冲区大小 = 最大并发数
 for _, task := range tasks {
     sem <- struct{}{}           // 获取令牌：满了就阻塞在这里
@@ -594,6 +636,7 @@ for _, task := range tasks {
 **场景**：任务量大、创建销毁协程的开销不可忽略时，用固定数量的 worker **常驻**等待任务。
 
 ```go
+
 jobs    := make(chan Job)
 results := make(chan Result)
 
@@ -619,6 +662,7 @@ for i := 0; i < 3; i++ {          // 固定 3 个 worker
 ### 用法四：事件通知 / 优雅退出
 
 ```go
+
 func serve(stopCh <-chan struct{}) {
     for {
         select {
@@ -637,6 +681,7 @@ func serve(stopCh <-chan struct{}) {
 **更优雅的写法：`context`**
 
 ```go
+
 select {
 case <-ctx.Done():   // 与 close(ch) 是同一套底层机制
     return
@@ -683,6 +728,7 @@ case <-ctx.Done():   // 与 close(ch) 是同一套底层机制
 ### 判据 4 的验证：普通协程阻塞，程序静默退出（不报错）
 
 ```go
+
 func main() {
 	ch := make(chan int, 1)
 	ch <- 1 // 缓冲区已满
@@ -700,6 +746,7 @@ func main() {
 ### 判据 3 的验证：`for range` 忘了 `close`，`main` 直接死锁
 
 ```go
+
 func main() {
 	ch := make(chan int, 3)
 	for i := 1; i <= 3; i++ {
@@ -749,6 +796,7 @@ IO 慢，所以每个文件各开一个协程并发读，读出的内容统一�
 可靠的信号应该是"**全部生产者结束**"这个**事件**：**每个生产者结束时交回一个信号，收满 N 个就说明全部干完**——这就是**手写版 `sync.WaitGroup`**。
 
 ```go
+
 package main
 
 import "fmt"
@@ -786,6 +834,7 @@ func main() {
 同一套路再用一次：用一个**无缓冲或容量 1** 的 channel 传"结束信号"，`main` 阻塞读取。
 
 ```go
+
 exitCh := make(chan struct{})
 go func() { defer close(exitCh); /* ...消费逻辑 */ }()
 <-exitCh // main 在这里等，消费者干完才放行（同样等价于 WaitGroup）
@@ -829,6 +878,7 @@ go func() { defer close(exitCh); /* ...消费逻辑 */ }()
 | **`sync.Map`** | 原生支持并发读写，并发场景可以直接用它 |
 
 ```go
+
 var m = map[int]int{}
 for i := 0; i < 4; i++ {
 	go func(k int) { m[k] = k * k }(i) // ❌ 并发写原生 map
