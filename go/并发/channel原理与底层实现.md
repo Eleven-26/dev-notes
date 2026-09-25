@@ -2,7 +2,7 @@
 
 > hchan 的字段结构、收发数据走哪条路径、并发安全与「缓冲区总是新鲜的」靠什么，以及 select 在底层怎么选 case。
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../../素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频，并按《Go 语言核心编程》（李文塔）5.1.3 chan 的相关章节**补充了机制分析与实测**；参考资料与原始素材见 [素材清单](../../素材清单.md)。
 
 ---
 
@@ -272,6 +272,94 @@ channel 按是否有缓冲区分为**有缓冲**和**无缓冲**两类，主要�
   这正是防死锁的关键。
 
 ---
+
+---
+
+## 四、channel 的三种状态：nil / 正常 / 已关闭的行为矩阵
+
+**来源**：本节为补充内容 —— 按《Go 语言核心编程》（李文塔）5.1.3 chan 整理，配套本机实测。
+**考察意图**：上面三节讲「底层怎么实现」，这一节回答**第一性问题** —— **「它在三种状态下分别是什么行为」**。面试官常直接问「nil channel 读写会怎样」「关闭后再读会怎样」，答得含糊就说明没真用熟。
+
+### 一、三种状态 × 四种操作
+
+| 操作 | **nil channel** | 正常（未关闭） | **已关闭** |
+|---|---|---|---|
+| 发送 `ch <- v` | **永久阻塞** | 缓冲满则阻塞 | **panic**：`send on closed channel` |
+| 接收 `<-ch` | **永久阻塞** | 无数据则阻塞 | **立即返回零值 + `ok=false`**（缓冲里还有数据时先取完） |
+| `close(ch)` | **panic**：`close of nil channel` | 正常关闭 | **panic**：`close of closed channel` |
+| `select` 里的该 case | **永不就绪** | 就绪才选中 | **永远就绪**（接收侧） |
+
+实测（每一条都是本机跑出来的）：
+
+```text
+1a_读 nil chan : select 里的 default 被选中 → 该分支永不就绪
+1b_写 nil chan : default 被选中 → 同样永不就绪
+1c_直接读 nil chan : 20ms 后仍未返回 → 永久阻塞（goroutine 泄漏）
+```
+
+```text
+2a_缓冲里还有数据 : v=7 ok=true
+2b_缓冲读空后     : v=0 ok=false （零值 + false，不阻塞）
+2c_已关闭再读     : v=0 ok=false （依然不阻塞）
+2d_向已关闭 chan 发送 → panic: send on closed channel
+2e_重复 close → panic: close of closed channel
+```
+
+> ⭐ **记两张脸**：
+> - **nil channel** 是「**哑**」的 —— 收发**都永久阻塞**，`select` 里那一支**永不就绪**；
+> - **已关闭 channel** 是「**只出不进**」的 —— **读永远成功**（先取完缓冲，再一直给零值），**写直接 panic**。
+
+### 二、由此得到一条高频用法：用 nil channel「摘掉」一个 select 分支
+
+上面那张表里「nil channel 在 select 里永不就绪」不是冷知识，是**实用技巧**：
+
+```go
+// 想把某个 case 暂时关掉，不必改结构 —— 把它的 channel 置 nil 即可
+var disabled <-chan int    // nil
+select {
+case v := <-disabled:      // 永不就绪，等于这一支不存在
+	fmt.Println("不会走到这里", v)
+case v := <-active:
+	fmt.Println("只在 active 上等", v)
+}
+```
+
+> ⭐ 反向用法也成立：**想让某个分支「永远就绪」**（例如优先处理已就绪的数据、不阻塞地扫一遍），
+> 可以配合 `default`。这也是「`select` 是 switch，但 case 的就绪性会变」这层含义的落地。
+
+### 三、⚠️ 只有「发送方」该 close：一条职责规则
+
+| 场景 | 谁该 close | 原因 |
+|---|---|---|
+| 单发送方 → 单/多接收方 | **发送方**——发完就 close | 接收方靠 `ok=false` 判断"数据发完了"；发送方才知道自己发完了 |
+| **多发送方** | **谁都不该直接 close** | 任一发送方 close 后，其余发送方再发就 **panic**（见 2d） |
+| 接收方 | **绝对不该 close** | 它无法知道还有没有别的发送者在发 |
+
+**多发送方的两种正确收尾**：
+
+```go
+// 做法一：协调者等到「所有发送方都结束」再 close
+var wg sync.WaitGroup
+done := make(chan struct{})
+for _, src := range sources {
+	wg.Add(1)
+	go func(s Source) { defer wg.Done(); for x := range s { ch <- x } }(src)
+}
+go func() { wg.Wait(); close(ch) }()   // 等所有发送者退出，再关
+
+// 做法二：另开一个"退出信号" channel（不关闭数据 channel）
+// 由 context 或 quit channel 通知，关闭职责不再落到数据通道上
+```
+
+> ⭐ 一句话规则：**「谁负责发，谁负责关；多人发，就别关」**。
+> `close` 的语义是**广播「不会再有数据了」**，而不是"释放资源"——把它当资源释放用，就会踩到 2d。
+
+### 面试官会追问什么
+
+- **`close` 一个 channel 会释放内存吗？** → 不会（它只是标记状态）——所以"用 close 释放"这个说法是错的。
+- **怎么判断一个 channel 已经关闭？** → **没有 `IsClosed()` 这类 API**；只能靠接收时的 `ok=false`，或用 `select` + `default` 探测。
+- **nil channel 有什么实际用处？** → 「摘掉 select 分支」（上面第二节）、以及"尚未就绪的通道先留 nil"这种状态机写法。
+- **缓冲满了再 close 会怎样？** → **照样能 close**（2a 的 `v=7` 就是从已关闭的缓冲里取出来的）；close 不会清空缓冲。
 
 ## 关联
 

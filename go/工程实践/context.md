@@ -2,7 +2,7 @@
 
 > context 是什么、四个派生函数怎么选、链路超时与级联取消怎么写，以及落地时最容易踩的四个反模式
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../../素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频，并按《Go 语言核心编程》（李文塔）5.3 context 标准库 的相关章节**补充了机制分析与实测**；参考资料与原始素材见 [素材清单](../../素材清单.md)。
 
 ---
 
@@ -415,6 +415,79 @@ for _, r := range replicas {
   自己写的裸 socket 调用则不会有任何反应。
 
 ---
+
+---
+
+## 六、四个具体类型是怎么串成一棵树的？
+
+**来源**：本节为补充内容 —— 按《Go 语言核心编程》（李文塔）5.3 context 标准库 整理，配套本机实测。
+**考察意图**：前五节讲「**怎么用**」，这一节讲「**它凭什么能做到这些**」。
+context 的全部行为（向上取值、向下取消、超时自动取消）都能用**四个类型的嵌入关系**解释完 ——
+被问到「context 内部是怎么实现的」，答出「四个类型串成一条链」就到位了。
+
+### 一、四个具体类型（实测 `%T`）
+
+```go
+fmt.Printf("%T\n", context.Background())                     // 根节点
+fmt.Printf("%T\n", context.WithValue(bg, ctxKey("k"), 1))    // 带值
+cancelCtx, cancel := context.WithCancel(bg)                  // 可取消
+timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
+```
+
+```text
+1_根节点类型      : context.backgroundCtx
+2_WithValue 之后  : *context.valueCtx
+3_WithCancel 之后 : *context.cancelCtx
+4_WithTimeout 之后: *context.timerCtx
+```
+
+| 类型 | 谁产生的 | 职责 |
+|---|---|---|
+| **`backgroundCtx`** | `context.Background()` / `TODO()` | **根节点**：永不取消、无值、无截止时间 —— 所有 ctx 树的起点 |
+| **`*valueCtx`** | `WithValue` | 存一个 k/v，并**持有父 ctx** |
+| **`*cancelCtx`** | `WithCancel` | 持有 **children 集合** + `done` channel |
+| **`*timerCtx`** | `WithTimeout` / `WithDeadline` | **内嵌一个 `cancelCtx`** + 一个 `time.Timer` |
+
+> ⚠️ **一处版本差异，先记下来**：大量文章（含较早的源码分析）把根节点写作 `*emptyCtx`；
+> 本机 **go1.26.5 实测打印出来是 `context.backgroundCtx`** —— 运行时已把原来共用的 `emptyCtx`
+> 拆成了 `backgroundCtx` 与 `todoCtx` 两个类型。**看老文章对不上时，不用怀疑自己。**
+
+### 二、两条传播规则，方向一致但**内容相反**
+
+```text
+5_子 ctx 取父设置的值 : parent （valueCtx 向上递归查找）
+6_父 ctx 取子设置的值 : <nil> （父看不到子的值）
+
+7_父取消后 child1.Err(): context canceled
+8_父取消后 child2.Err(): context canceled
+9_子取消后 子.Err()   : context canceled
+10_子取消后 父.Err()  : <nil> （nil —— 不向上传播）
+
+11_超时后 Err()      : context deadline exceeded （DeadlineExceeded）
+```
+
+| 维度 | 可见/传播方向 | 机制 |
+|---|---|---|
+| **取值** `Value(k)` | **子能看到父的**，父看不到子的 | `valueCtx.Value()` 先比自己的 key，不等就**递归调用 `parent.Value()`** |
+| **取消** `cancel()` | **父取消 → 所有子都取消**，子取消不影响父 | `cancelCtx` 维护 children 集合，取消时**逐个通知** |
+| **超时** | 同上（`timerCtx` 到点后调用内嵌 `cancelCtx` 的 cancel） | `time.Timer` 到点 → 触发 cancel → 再向下传播 |
+
+> ⭐ 一句话概括整棵树：**「父影响子，从不反向」**。
+> 值由父设置、子向上查得到；取消由父发起、向所有子蔓延。这两件事方向不同，但都**只朝一个方向生效** ——
+> 这正是它被设计成**树**而不是链表或图的原因（见第三节追问「为什么长得像树」）。
+
+### 三、两个实现细节，解释了"为什么要有这些规范"
+
+| 细节 | 解释 |
+|---|---|
+| **`Value` 的复杂度是 O(树深)** | 查找要沿链向上递归；**链越深越慢** —— 所以「不要把 ctx 当参数包用、不要十几层 `WithValue`」不只是风格问题 |
+| **取消后 `cancelCtx` 会释放 children 引用** | 否则父节点会一直持有所有子节点的引用，**整棵树无法被 GC 回收** —— 这也是「派生了就必须 `cancel()`」的另一个理由 |
+
+### 面试官会追问什么
+
+- **为什么 `WithValue` 的 key 必须自定义类型？** → 内置类型（尤其 `string`）会与其它包**冲突**：两个包都用 `"userID"` 就会互相覆盖；自定义类型（如 `type ctxKey string`）保证命名空间隔离。
+- **`ctx` 是线程安全的吗？** → **是**（值不可变、`Value` 只读、取消是一次性状态转换），所以可以跨 goroutine 传递。
+- **父被取消后，子还能继续用吗？** → `Done()` 已关闭、`Err()` 非 nil，**再往下传的 ctx 都是已取消状态**；业务上应立刻退出，而不是继续持有可能已失效的资源。
 
 ## 附：一页速查
 

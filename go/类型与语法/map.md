@@ -2,7 +2,7 @@
 
 > 底层结构、哈希冲突与解决、触发扩容的两个条件与两种扩容方式
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../../素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频，并按《Go 语言核心编程》（李文塔）1.6.4 map 的相关章节**补充了机制分析与实测**；参考资料与原始素材见 [素材清单](../../素材清单.md)。
 
 ---
 
@@ -508,6 +508,98 @@ fmt.Println(nan == nan)  // false        ← 根源在这里
   动态值本身不可比较会 panic；`nil` interface 作 key 是合法的。
 
 ---
+
+---
+
+## 八、nil map 能读不能写？map 是引用语义吗？遍历顺序为什么不固定？
+
+**来源**：本节为补充内容 —— 按《Go 语言核心编程》（李文塔）1.6.4 map 整理，配套本机实测。
+**考察意图**：前面七节都是源码层面的"深水区"。这一节回到**三个基础认知** —— 它们几乎每场面试都会被顺口问到，而且**都属于"看起来会、一写就错"的类型**：nil map 的边界、map 的引用语义、遍历顺序的随机性。
+
+### 一、nil map：读 / delete / range 都安全，唯独写会 panic
+
+```go
+var nilMap map[string]int
+len(nilMap)                 // 0
+nilMap["x"]                 // 零值 0，不 panic
+_, ok := nilMap["x"]        // false
+delete(nilMap, "x")         // no-op，不 panic
+for range nilMap { ... }    // 0 次，安全
+nilMap["k"] = 1             // ✗ panic
+```
+
+实测这条 panic 的真实文案：
+
+```text
+写入 nil map 之前，len = 0
+写入 nil map 的 panic : assignment to entry in nil map
+```
+
+| 操作 | nil map | 说明 |
+|---|---|---|
+| `len()` | 0 | 安全 |
+| 读 `m[k]` | 返回零值 | 安全（区分"值是零值"要用 comma-ok） |
+| `delete(m, k)` | no-op | 安全 |
+| `range` | 迭代 0 次 | 安全 |
+| **写 `m[k] = v`** | **panic** | `assignment to entry in nil map` |
+
+> ⭐ **`var m map[string]int` 是一个"只读的空集合"**：能查、能遍历、能删，就是不能写。
+> 要写必须 `make(...)` 或字面量 `map[string]int{}` 初始化。
+> 这也是「map 声明了就要马上初始化」这条经验的由来 —— 它不是风格问题，是会 panic 的。
+
+### 二、map 是引用语义：函数内写，调用方看得见
+
+```go
+func fill(m map[string]int) { m["from-func"] = 1 }
+
+m := map[string]int{"origin": 0}
+fill(m)
+```
+
+```text
+3a_函数内写入后调用方可见: map[from-func:1 origin:0] （map 头是值拷贝，但指向同一张哈希表）
+```
+
+> ⭐ 措辞要准：**map 头是值传递**（拷贝的是一个指针字段），但**它指向同一张哈希表**，所以函数内的写入外面可见。
+> 与切片是同一套逻辑 —— 「值是拷贝的，但拷贝出来的指针指向同一份底层数据」，所以**增删元素生效，而要让调用方拿到新 map 得用返回值**。
+
+### 三、遍历顺序：Go 刻意随机化，别依赖
+
+```text
+4a_200 次遍历的首元素分布: map[a:154 b:24 c:22] （每个键都可能当第一 → 顺序不固定）
+5a_连续 5 次的首个键     : [b c a d b] （不保证一致）
+```
+
+> ⭐ 同一个 map **连续遍历两次，顺序都可能不同**（第 5a 行）—— 因为 Go 在每次 `range` 时**随机挑选起始桶和一个桶内偏移**。
+> 这是**故意设计**：如果让顺序稳定，就会有代码依赖它，之后想改实现（比如换哈希算法、加并发）就不敢动。
+> 面试里被问"顺序为什么是随机的"，答"**防止依赖顺序**"比答"因为哈希"更准确。
+
+### 四、附：并发写 map 是 `fatal error`，`recover` 都拦不住
+
+和上面的 nil map **不是一类问题**，量级更严重：
+
+```text
+fatal error: concurrent map writes
+
+goroutine 160 [running]:
+internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
+	D:/go1.26.5.windows-amd64/go/src/runtime/panic.go:1181 +0x18
+```
+
+| 错误 | 类型 | 能否 `recover` |
+|---|---|---|
+| `assignment to entry in nil map` | 普通 panic | ✅ 能 |
+| **`fatal error: concurrent map writes`** | **fatal error** | ❌ **不能**，进程直接退出 |
+
+> ⚠️ 生产上"偶发整个进程挂掉、日志里只有 `fatal error: concurrent map writes`"就是这一条 ——
+> 它不是普通 panic，**`defer + recover` 救不了**。完整机制与替代方案见 [../并发/线程安全.md](../并发/线程安全.md)。
+
+### 面试官会追问什么
+
+- **为什么 `&m[k]` 编译不过？** → map 元素**不可寻址**：元素位置会随扩容搬迁而改变，允许取址会留下悬空指针。
+  需要"改元素"时要么整体重写 `m[k] = v`，要么把 value 换成指针/结构体指针（见 [for-range.md](for-range.md)）。
+- **`delete` 不存在的键会怎样？** → 静默 no-op，不报错也不 panic（连 nil map 上都安全）。
+- **map 能取 `cap` 吗？** → 不能，`cap` 只对数组/切片/channel 有效。map 只有 `len`。
 
 ## 关联
 
