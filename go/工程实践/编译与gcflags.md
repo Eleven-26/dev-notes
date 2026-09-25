@@ -2,11 +2,11 @@
 
 > `-gcflags` 是什么、什么时候必须用它、`-m` / `-N` / `-l` / `-S` 各解决什么问题，以及怎么查更多 flag。
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../../面试/素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../../素材清单.md)。
 
 ---
 
-## Q1. `gcflags` 是什么？什么时候必须用它？
+## 一、`gcflags` 是什么？什么时候必须用它？
 
 **来源**：`BV12qjA6aErF p=15` B站 Go 面试真题 · 时长 4分52秒
 **考察意图**：分清「go 命令的开关」与「编译器的开关」——`go build` / `go test` 只是构建入口，`-gcflags` 的本质是把参数**透传给 `go tool compile`**；并且要能说明"平时不用、什么时候必须用"。
@@ -21,7 +21,7 @@
 | `-asmflags` | `go tool asm` | 汇编器参数（很少用） |
 | `-ldflags` | `go tool link` | 注入版本号 `-X main.version=v1.0.0`、`-s -w` 去符号表 |
 
-`go build` 默认已用一套调好的参数，**绝大多数情况不需要 gcflags**；它的定位是"我要看编译器的内部行为，或者要改变编译产物"。`go help build` 对它的说明也只有一行——`-gcflags '[pattern=]arg list'：arguments to pass on each go tool compile invocation.`，**完整参数表在编译器自己的帮助里**（见 Q3）。
+`go build` 默认已用一套调好的参数，**绝大多数情况不需要 gcflags**；它的定位是"我要看编译器的内部行为，或者要改变编译产物"。`go help build` 对它的说明也只有一行——`-gcflags '[pattern=]arg list'：arguments to pass on each go tool compile invocation.`，**完整参数表在编译器自己的帮助里**（见第三节）。
 
 ### 二、什么时候必须用它
 
@@ -56,7 +56,7 @@ go test -gcflags="all=-N -l" -count=1 -run TestFoo -v ./...   # 调测试时同�
 
 ---
 
-## Q2. 常用 gcflags 速查表：`-m`、`-N`、`-l`、`-S` 分别解决什么问题？
+## 二、常用 gcflags 速查表：`-m`、`-N`、`-l`、`-S` 分别解决什么问题？
 
 **来源**：`BV12qjA6aErF p=15` B站 Go 面试真题 · 时长 4分52秒
 **考察意图**：能不能把 flag 和"要解决的问题"对上号——看逃逸用 `-m`、调试环境用 `-N -l`、看指令用 `-S`；并且要能读懂真实输出。
@@ -143,7 +143,7 @@ dlv exec ./app-debug
 
 ---
 
-## Q3. 如何查找更多的 gcflags？
+## 三、如何查找更多的 gcflags？
 
 **来源**：`BV12qjA6aErF p=15` B站 Go 面试真题 · 时长 4分52秒
 **考察意图**：考"遇到不认识的编译参数去哪儿查"的自查能力——go 命令的文档只有一行透传说明，**完整参数表在编译器自己的 `-h` 里**，二级调试开关在 `-d help` 里，实在不够就翻编译器源码。

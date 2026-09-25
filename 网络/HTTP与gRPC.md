@@ -2,11 +2,11 @@
 
 > HTTP/2 相对 HTTP/1.1 的五点改进，以及 gRPC 与 HTTP 的本质差别；含连接池、`httptrace` 复用观测与多路复用实测。
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../面试/素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../素材清单.md)。
 
 ---
 
-## Q1. HTTP 与 gRPC 有什么区别？
+## 一、HTTP 与 gRPC 有什么区别？
 
 **来源**：`p=47` 小鹏 AI Infra 后台开发日常实习面试 · 时长 13分09秒
 **考察意图**：**关键思路转换——这个问题等价于「HTTP/1.1 vs HTTP/2」**。
@@ -391,7 +391,7 @@ package httpdemo
 //     conn := grpc.NewClient(target, grpc.WithDefaultServiceConfig(...))  // 全进程共用
 //
 //  2. 超时由调用方给：ctx, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
-//     正文 Q1 说 gRPC 是"二进制帧 + 多流"，但**慢流会占住那条连接的一个流配额**，
+//     正文第一节说 gRPC 是"二进制帧 + 多流"，但**慢流会占住那条连接的一个流配额**，
 //     所以服务端要设 MaxConcurrentStreams，客户端要设每调用的 deadline。
 //
 //  3. 重试要幂等：grpc 的 retry policy 会在 TRANSIENT_FAILURE 上重放，

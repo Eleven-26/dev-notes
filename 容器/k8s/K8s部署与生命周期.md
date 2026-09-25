@@ -2,11 +2,11 @@
 
 > Helm 怎样像 apt 一样管理 K8s 应用、镜像与 K8s 相关的正确姿势、三探针与优雅关闭、滚动升级与回滚。
 >
-> 内容整理自大厂 Go 后端面试真题视频；本轮补充（imagePullPolicy 与 QoS、三探针与优雅关闭、滚动与回滚）参考《Docker 技术入门与实战》（第 3 版，杨保华 / 戴王剑 / 曹亚仑）。参考资料与原始素材见 [素材清单](../../面试/素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频；本轮补充（imagePullPolicy 与 QoS、三探针与优雅关闭、滚动与回滚）参考《Docker 技术入门与实战》（第 3 版，杨保华 / 戴王剑 / 曹亚仑）。参考资料与原始素材见 [素材清单](../../素材清单.md)。
 
 ---
 
-## Q1. Helm 是什么？它怎样"像 apt 一样"管理 Kubernetes 应用？
+## 一、Helm 是什么？它怎样"像 apt 一样"管理 Kubernetes 应用？
 
 **来源**：`BV12qjA6aErF p=11` B站 Go 面试真题 · 时长 3分17秒
 **考察意图**：考的是**K8s 的工程化能力**。会写 YAML 只是入门，面试官想确认你知不知道：
@@ -94,7 +94,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 |---|---|---|
 | `docker pull` 拉镜像慢 | **`registry-mirrors` 镜像加速**（[Docker网络与镜像源.md](../docker/Docker网络与镜像源.md) 对比表左列） | 宿主机 **dockerd** |
 | 构建镜像时 `apt / yum` 装包慢 | **换国内软件源**（[Docker网络与镜像源.md](../docker/Docker网络与镜像源.md)） | **镜像内部** |
-| Chart / 镜像在公网拉不动，或要控版本 | **自建 OCI Registry + Helm**（Q1 实战） | **集群侧 / 制品库** |
+| Chart / 镜像在公网拉不动，或要控版本 | **自建 OCI Registry + Helm**（第一节实战） | **集群侧 / 制品库** |
 
 > 串起来就是一条完整链路：**镜像从哪来（registry mirror）→ 构建时依赖从哪来（apt / yum 源）
 > → 应用制品怎么管（Helm + 私有 OCI Registry）**。
@@ -129,7 +129,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 ---
 
-## Q2. K8s 侧与镜像相关的正确姿势 ⭐
+## 二、K8s 侧与镜像相关的正确姿势 ⭐
 
 **来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
 **考察意图**：考**「镜像 tag 与拉取策略的连带后果」**。`Always` + 可变 tag 是最糟的组合；kubelet 还会按磁盘阈值 GC 掉不用的镜像，所以会出现「昨天还在、今天重拉」。
@@ -147,7 +147,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 ```
 
 解法只有两条，推荐第一条：**镜像不可变（用 commit SHA 做 tag）**；或退一步用 `@sha256:<digest>` 引用。
-`Always` + 可变 tag 是最糟的组合（tag 策略见 [CI-CD.md Q2](../CI-CD.md)）。
+`Always` + 可变 tag 是最糟的组合（tag 策略见 [CI-CD.md 第二节](../CI-CD.md)）。
 
 ### 二、拉取凭证与冷启动
 
@@ -180,13 +180,13 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 | 看到什么 | 结论 |
 |---|---|
 | `Reason: OOMKilled` + `137` | 超了自己的 memory limit（**不是**节点没内存）：查泄漏或调 limit |
-| `Reason: Error` + `137`，事件里有 "failed liveness probe, will be restarted" | **探针误杀**（Q3），与内存无关 |
+| `Reason: Error` + `137`，事件里有 "failed liveness probe, will be restarted" | **探针误杀**（第三节），与内存无关 |
 | Exit `1` / panic 栈 | 应用自己退出：配置或依赖连不上就崩 |
 | Exit `126` / `127` | 镜像里命令不存在/不可执行 → 改镜像，不是改集群 |
 
 ---
 
-## Q3. 生命周期与优雅关闭：探针、`preStop` 与 SIGTERM ⭐
+## 三、生命周期与优雅关闭：探针、`preStop` 与 SIGTERM ⭐
 
 **来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
 **考察意图**：这题最能看出"有没有真在生产发布过服务"。三探针各解决什么、误配的**具体后果**、
@@ -243,7 +243,7 @@ db.Close()
 
 ---
 
-## Q4. 滚动升级与回滚：参数、PDB、有状态为什么特殊
+## 四、滚动升级与回滚：参数、PDB、有状态为什么特殊
 
 **来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
 **考察意图**：考**「回滚到底能不能兜底」**。`rollout undo` 依赖「上一个 revision 恰好是好的那个」，且**只回滚代码、不回滚数据**；有状态负载还要额外考虑 quorum 与 RWO 卷不能双挂。

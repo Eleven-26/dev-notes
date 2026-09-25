@@ -2,11 +2,11 @@
 
 > Raft 的角色、任期与日志复制，以及选主流程的逐步拆解；含 etcd 客户端的 Txn / Election / Watch 落地与三节点实验。
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../面试/素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）；参考资料与原始素材见 [素材清单](../素材清单.md)。
 
 ---
 
-## Q1. 介绍一下 Raft 协议
+## 一、介绍一下 Raft 协议
 
 **来源**：`p=23` 百度 Go 实习一面 · 时长 22分33秒
 **考察意图**：面试官会顺着**项目经历**里的分布式组件追问。原视频先给了一个**回答任何技术题的通用模板**，
@@ -148,10 +148,10 @@
 
 ---
 
-## Q2. Raft 的三种角色如何转换？选举的详细流程是怎样的？
+## 二、Raft 的三种角色如何转换？选举的详细流程是怎样的？
 
 **来源**：`p=57`（携程云计算一面，节点状态转换，7分07秒）+ `p=58`（携程云计算一面，选主详细流程，12分06秒）
-**考察意图**：Q1 讲的是 Raft 的"是什么"，本题问的是**"过程细节"**——
+**考察意图**：第一节讲的是 Raft 的"是什么"，本题问的是**"过程细节"**——
 面试官会顺着"你项目里用了 etcd/强一致性"往下挖。
 
 ### 一、三种角色
@@ -287,7 +287,7 @@ import (
 // Compare(ModRevision(key), "=", 0) 的含义是"这个 key 从未存在过"。
 // 返回 false 表示别人已经注册了（走了 Else 分支）——**这个判断可信**，
 // 因为 Txn 的 If/Then/Else 是在 Leader 上作为**一条日志**提交的，
-// 只有多数派落盘后才返回（正文 Q1 流程二的 ①~⑤）。
+// 只有多数派落盘后才返回（正文第一节流程二的 ①~⑤）。
 //
 // leaseID 传 0 表示不挂租约（永久配置）；**服务实例注册必须挂租约**，
 // 否则进程崩溃后注册中心里会残留一个"活着"的脏实例。
@@ -367,7 +367,7 @@ import (
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
-// CampaignLeader 把正文 Q1「强领导者」变成应用层的**单写者**：
+// CampaignLeader 把正文第一节「强领导者」变成应用层的**单写者**：
 // 定时任务/对账/清理这类"全局只想跑一份"的作业，应该用 etcd 选举，而不是自己写锁。
 //
 // 返回的 release 必须由调用方执行。**Resign 与"只 Close"的差别很大**：
@@ -632,7 +632,7 @@ public class ZkLeaderConfig {
 
     /**
      * 与 etcd 的 Campaign 等价的"全局单写者"。
-     * 注意两点（和正文 Q2 完全对应）：
+     * 注意两点（和正文第二节完全对应）：
      *   1. LeaderLatch 靠**临时顺序节点**实现，进程崩溃 → session 超时 → 节点消失 → 下一个上位；
      *      所以"切换要等一个 sessionTimeout"，不要指望它是 0 秒。
      *   2. 业务代码要**以 listener 的 stateChanged 为准**，不要缓存"我是 Leader"的判断，
@@ -661,7 +661,7 @@ public class ZkLeaderConfig {
 
 > **选型对照（一句话）**：ZK 是"为协调而生的通用库"（临时节点、ACL、多种 watch 语义），
 > etcd 是"用 Raft 重做了一遍、只给你 KV + Watch 的极简库"。
-> 正文 Q1 说的"Raft 的初衷是可理解性"，在**客户端 API 上同样成立**：
+> 正文第一节说的"Raft 的初衷是可理解性"，在**客户端 API 上同样成立**：
 > etcd 的接口更少，所以第 3 节那四类坑更容易在 review 中被看出来。
 
 ---
@@ -734,7 +734,7 @@ etcdctl get foo --consistency=s              # ⚠️ 该 flag 是否存在以 e
 
 | 现象 / 报错 | 根因 | 处置 |
 |---|---|---|
-| `etcdserver: no leader` / `Unavailable`，且 `endpoint status` 里 `leader=0` | **quorum 丢了**（正文 Q1 的硬性约束） | 先恢复节点数，不要在客户端加重试风暴；**这正是 etcd 牺牲 A 的体现** |
+| `etcdserver: no leader` / `Unavailable`，且 `endpoint status` 里 `leader=0` | **quorum 丢了**（正文第一节的硬性约束） | 先恢复节点数，不要在客户端加重试风暴；**这正是 etcd 牺牲 A 的体现** |
 | `etcdserver: mvcc: database space exceeded` | 存储超过 `--quota-backend-bytes`（默认 2MiB 配额很小，生产要显式给 8GiB） | `etcdctl compact <rev>` → `etcdctl defrag` → **`etcdctl alarm disarm`**（三条都要，顺序不能错） |
 | 写入越来越慢、`DB SIZE` 一直涨 | 没开自动压缩（`--auto-compaction-retention`），历史版本堆积 | 配自动压缩 + 定期 defrag；**defrag 要一个节点一个节点来**（它会阻塞该节点） |
 | watch 报 `ErrCompacted`，之后本地视图永久错乱 | 压缩掉了订阅起点，**却没有回退成全量重拉** | 使用一 §5 的写法：捕获 `ErrCompacted` → 丢弃缓存 → 重新 `Get`+`WithRev` |
@@ -742,7 +742,7 @@ etcdctl get foo --consistency=s              # ⚠️ 该 flag 是否存在以 e
 > 面试时可以收一句：**"用 etcd 的难点从来不是理解 Raft，而是三件事——
 > 租约 TTL 与业务超时的关系、quorum 丢失时你的服务该降级还是该拒绝、
 > 以及 watch 断线后怎么把本地视图补齐。"**
-> 这三问分别对应正文的 [一致性与CAP.md](一致性与CAP.md)（可用性取舍）、Q1（多数派硬约束）、Q2（数据只能从 Leader 流向 Follower）。
+> 这三问分别对应正文的 [一致性与CAP.md](一致性与CAP.md)（可用性取舍）、第一节（多数派硬约束）、第二节（数据只能从 Leader 流向 Follower）。
 
 ---
 

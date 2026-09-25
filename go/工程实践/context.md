@@ -2,11 +2,11 @@
 
 > context 是什么、四个派生函数怎么选、链路超时与级联取消怎么写，以及落地时最容易踩的四个反模式
 >
-> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../../面试/素材清单.md)。
+> 内容整理自大厂 Go 后端面试真题视频，参考资料与原始素材见 [素材清单](../../素材清单.md)。
 
 ---
 
-## Q1. context 是什么？它要解决什么问题？
+## 一、context 是什么？它要解决什么问题？
 
 **来源**：`BV1LfB9Y2EUD p=1` 京东云 Go 后端一面 · 时长 15分01秒
 **考察意图**：先考"它为什么存在"。答不出问题域，后面所有 API 都只是背诵。
@@ -58,7 +58,7 @@ ctx := context.Background()
 
 ---
 
-## Q2. 四个派生函数分别是什么？什么场景用哪个？
+## 二、四个派生函数分别是什么？什么场景用哪个？
 
 **来源**：`BV1LfB9Y2EUD p=1` 京东云 Go 后端一面 · 时长 15分01秒
 **考察意图**：考 API 的**差异化理解**——尤其是 `WithTimeout` 与 `WithDeadline`、`WithValue` 的定位。
@@ -79,7 +79,7 @@ ctx := context.Background()
 
 ```go
 ctx, cancel := context.WithTimeout(parent, 3*time.Second)
-defer cancel()                 // 见 Q4：必须调用
+defer cancel()                 // 见第四节：必须调用
 
 <-ctx.Done()                   // 被取消 / 超时后关闭
 err := ctx.Err()               // context.Canceled 或 context.DeadlineExceeded
@@ -103,7 +103,7 @@ err := context.Cause(ctx)      // 拿到自定义原因；无原因时退化为 
 ### 三行代码讲清 `WithValue`
 
 ```go
-type ctxKeyTraceID struct{}                    // 自定义 key 类型，见 Q4
+type ctxKeyTraceID struct{}                    // 自定义 key 类型，见第四节
 
 ctx = context.WithValue(ctx, ctxKeyTraceID{}, "trace-123")
 v, ok := ctx.Value(ctxKeyTraceID{}).(string)   // 取值必须类型断言
@@ -127,7 +127,7 @@ v, ok := ctx.Value(ctxKeyTraceID{}).(string)   // 取值必须类型断言
 
 ---
 
-## Q3. context 在实际项目里怎么用？（三个典型 case）
+## 三、context 在实际项目里怎么用？（三个典型 case）
 
 **来源**：`BV1LfB9Y2EUD p=1` 京东云 Go 后端一面 · 时长 15分01秒
 **考察意图**：视频用三段可运行代码演示，**面试里"能不能写出可运行的骨架"比背定义更有说服力**。
@@ -149,7 +149,7 @@ func handle(ctx context.Context) {
 ```
 
 **关键点**：数据"穿过"中间层而不需要每个函数都显式加参数。
-代价是**链路变得隐式**，所以只能放元数据，不能放业务参数（见 Q4）。
+代价是**链路变得隐式**，所以只能放元数据，不能放业务参数（见第四节）。
 
 ### case 2：给单个请求设置超时（WithTimeout + 一次非阻塞检查 + 一次阻塞 select）
 
@@ -225,7 +225,7 @@ func work(ctx context.Context, id int) {
 }
 ```
 
-**这段代码是 Q3 的"标准答案模板"**，值得背下来：
+**这段代码是第三节的"标准答案模板"**，值得背下来：
 
 1. 一个 `ctx` + 一个 `cancel`，多个 worker 共享；
 2. worker 内部用 `for { select { case <-ctx.Done(): return ... } }` 形成可中断的循环；
@@ -237,13 +237,13 @@ func work(ctx context.Context, id int) {
 - **超时之后那个还在跑的 goroutine 会怎样？** → 不会被打断，它会继续执行到函数返回；
   如果它内部也在 `select` 检查 `ctx`，就能自己提前退出——**这就是为什么可中断的任务要把 ctx 一路传下去**。
 - **为什么 `case 2` 里要 `defer cancel()` 而不是干脆不调？** → 不调会让父节点一直持有子节点引用，
-  直到父节点自己被取消，属于**内存/goroutine 泄漏**（见 Q4）。
+  直到父节点自己被取消，属于**内存/goroutine 泄漏**（见第四节）。
 - **`cancel()` 可以被调用多次吗？** → 可以，幂等；重复调用只生效一次，不会 panic。
   所以 `defer cancel()` 和手动 `cancel()` 同时存在是安全的。
 
 ---
 
-## Q4. 使用 context 有哪些必须遵守的规范与反模式？
+## 四、使用 context 有哪些必须遵守的规范与反模式？
 
 **来源**：`BV1LfB9Y2EUD p=1` 京东云 Go 后端一面 · 时长 15分01秒
 **考察意图**：这一题区分"会写"和"在生产里被坑过"——规范大多是被事故教育出来的。
@@ -322,7 +322,7 @@ fn(context.Background())       // ✅ 顶层入口用这个
 
 ---
 
-## Q5. context 怎么和 select、errgroup 配合？
+## 五、context 怎么和 select、errgroup 配合？
 
 **来源**：`BV1LfB9Y2EUD p=1` 京东云 Go 后端一面 · 时长 15分01秒
 **考察意图**：考组合能力。单点 API 会背的人多，能把"取消 + 并发聚合"搭成生产代码的人少。

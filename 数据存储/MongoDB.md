@@ -195,11 +195,11 @@ db.users.dropIndex({ age: 1 })     // 删除索引
 索引是一棵**按键整体排序**的 B 树。理解 ESR 只需要一句话：**范围条件之后，索引里剩下的字段就不再连续了**，因此既不能用来定界，也不能用来排序。拿 `orders` 举例：
 
 ```javascript
-// Q1：状态等值 + 时间倒序取前 20 条 → ✅ { status: 1, createdAt: -1 }
+// 第一节：状态等值 + 时间倒序取前 20 条 → ✅ { status: 1, createdAt: -1 }
 //    E 定区间，S 就是区间内的自然顺序：反向扫到够 20 条就停，keysExamined ≈ 20，无 SORT
 db.orders.find({ status: "PAID", createdAt: { $lt: ISODate("2026-09-01") } })
          .sort({ createdAt: -1 }).limit(20);
-// Q2：范围条件换到 amount 上 → ✅ { status, createdAt, amount }（E-S-R）
+// 第二节：范围条件换到 amount 上 → ✅ { status, createdAt, amount }（E-S-R）
 //                       ⚠️ { status, amount, createdAt }（E-R-S）会退化成内存排序
 db.orders.find({ status: "PAID", amount: { $gt: 100 } }).sort({ createdAt: -1 }).limit(20);
 ```
