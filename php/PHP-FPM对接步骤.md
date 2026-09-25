@@ -155,6 +155,10 @@ exec /usr/local/sbin/php-fpm -R -F
 
 ## 四、第三步：平台注入环境变量
 
+先在平台的「容器配置」页填这几个变量：
+
+![fig-05.png](images/fig-05.png)
+
 在星洲上至少增加 **GROUP_NAME**、**SERVICE_NAME**、**SKYWALKING_SERVER_ADDR**：
 
 ```bash
@@ -227,7 +231,11 @@ shm_size = (SKYWALKING_MQ_MSG_LEN * 1024) + (SKYWALKING_LOGGING_MQ_MSG_LEN * 102
 
 ### 6.4 配置方法
 
-先在平台按下面的层次加卷。
+先在平台编辑容器配置文件，把卷与挂载加上：
+
+![fig-04.png](images/fig-04.png)
+
+然后按下面的层次加卷。
 
 ![fig-02.png](images/fig-02.png)
 
@@ -281,6 +289,8 @@ df -h /dev/shm
 
 5. 打开 `SKYWALKING_DEBUG_LOG_ENABLE=1`，看 `/data/log/skywalking.log` 里有没有连接 OAP 失败或队列写入失败的记录。
 6. 最后到 UI 的 Generals 列表找 `GROUP_NAME::SERVICE_NAME`，有服务、有 trace、日志能关联到 trace，即为接入完成。
+
+![fig-06.png](images/fig-06.png)
 
 ## 九、常见问题速查
 

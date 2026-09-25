@@ -583,7 +583,7 @@ fatal error: concurrent map writes
 
 goroutine 160 [running]:
 internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
-	D:/go1.26.5.windows-amd64/go/src/runtime/panic.go:1181 +0x18
+	.../go/src/runtime/panic.go:1181 +0x18
 ```
 
 | 错误 | 类型 | 能否 `recover` |

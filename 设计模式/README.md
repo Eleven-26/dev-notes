@@ -121,9 +121,9 @@
 
 ## 五、校验口径
 
-- **PHP**：`D:\phpstudy_pro\Extensions\php\php8.0.2nts\php.exe`（PHP 8.0.2 / Zend 4.0.2，CLI）。每个代码块先 `php -l` 再执行，正文 `text` 块为原始 stdout。语法定位 **PHP 8.0**：属性类型声明需 7.4+、构造器属性提升需 8.0+，全目录未使用 `readonly` / `enum` 等 8.1+ 特性（本机最高只有 8.0.2，用了就无法验证）。
+- **PHP**：PHP 8.0.2（NTS，Zend 4.0.2，CLI）。每个代码块先 `php -l` 再执行，正文 `text` 块为原始 stdout。语法定位 **PHP 8.0**：属性类型声明需 7.4+、构造器属性提升需 8.0+，全目录未使用 `readonly` / `enum` 等 8.1+ 特性（本机最高只有 8.0.2，用了就无法验证）。
 - **Go**：`go1.26.5`，`go run` 实跑；可用 Go 1.23+ 的 `iter.Seq` / `iter.Seq2`（见 [迭代器模式.md](行为型/迭代器模式.md)）。
-- **Java**：`D:\java\jdk1.8`（`javac -encoding UTF-8` + `java`）实跑，语法限制在 **JDK 8**。
+- **Java**：JDK 1.8（`javac -encoding UTF-8` + `java`）实跑，语法限制在 **JDK 8**。
 - **关于原文代码**：博客原文的输出写法面向浏览器（`<br/>`、`<hr>`、`<span style="color:red">`）。复核时统一替换为 `PHP_EOL` / 纯文本，**只改输出方式，不改逻辑**，各篇在对应小节里都注明了这处替换。
 - **未验证项**：全目录没有任何真实中间件实例（MySQL / Redis / MQ 均未连），涉及框架内部实现（Laravel / Symfony / Swoole）的描述属于"公开用法或定性推断"级；文中不含任何性能基准数字。
 
