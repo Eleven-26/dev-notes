@@ -689,4 +689,5 @@ SELECT id, user, host, db, command, time, state, LEFT(info, 120) AS sql_head
 - [事务与隔离级别.md](事务与隔离级别.md) — 隔离级别是 MVCC 的语义层
 - [日志与落盘.md](日志与落盘.md) — undo/redo 与版本链的存储
 - [索引与优化.md](索引与优化.md) — 加锁范围与索引的关系
+- [事务的实现与代价.md](事务的实现与代价.md) — 锁的持有时间、死锁检测与本机排查命令
 - [../../分布式/一致性与CAP.md](../../分布式/一致性与CAP.md) — 单机并发之外的一致性

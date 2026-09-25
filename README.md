@@ -106,8 +106,12 @@
 | [mysql/软件架构.md](数据存储/mysql/软件架构.md) | MySQL 分层架构（连接层 / SQL 层 / 存储引擎层）、读写分离的架构位置与实现 |
 | [mysql/JOIN与反范式.md](数据存储/mysql/JOIN与反范式.md) | JOIN 用法与取舍、互联网为什么少用 JOIN、拆成多次单表查询 + 应用层归并的实测 |
 | [mysql/索引与优化.md](数据存储/mysql/索引与优化.md) | 索引分类与回表、索引失效、慢查询优化与排查、分页优化 |
+| [mysql/索引设计.md](数据存储/mysql/索引设计.md) | B+Tree 与页分裂、为什么要自增主键、选择性/Cardinality、三星索引、覆盖索引与 ICP、EXPLAIN 每一列（源自《高性能MySQL》） |
+| [mysql/查询优化.md](数据存储/mysql/查询优化.md) | 优化器为什么选错索引、10 条查询重写套路、`COUNT`/排序/`GROUP BY`/JOIN 各自的优化点 |
 | [mysql/事务与隔离级别.md](数据存储/mysql/事务与隔离级别.md) | ACID 与四种隔离级别、「读未提交」的适用场景、小事务/保存点/死锁重试落地 |
+| [mysql/事务的实现与代价.md](数据存储/mysql/事务的实现与代价.md) | ACID 各自落在哪个机制、事务的代价与长事务的六宗罪、死锁检测与避免、隐式提交的坑 |
 | [mysql/日志与落盘.md](数据存储/mysql/日志与落盘.md) | 落盘流程、redo/undo/binlog 分工、两阶段提交、主从延迟与读己之写 |
+| [mysql/复制与高可用.md](数据存储/mysql/复制与高可用.md) | 三线程与 relay log、binlog 三种格式（RC 必须 ROW）、四种拓扑、半同步 AFTER_SYNC、GTID、并行复制三代、`Seconds_Behind_Master` 为何不可靠、切换与脑裂 |
 | [mysql/并发控制与MVCC.md](数据存储/mysql/并发控制与MVCC.md) | 乐观锁 vs 悲观锁的原理/实现/选型、MVCC 特点、隐藏列 + undo 版本链 + Read View、RC 与 RR 差异 |
 | [mysql/数据迁移.md](数据存储/mysql/数据迁移.md) | 大表搬迁三类做法、binlog + position 不停服切 GTID、迁移期双写与校验、切换与回滚命令 |
 | [mysql/分表与路由.md](数据存储/mysql/分表与路由.md) | 非分片键定位数据在哪张表的四类方案、基因法、表数扩容为什么「成倍扩」 |

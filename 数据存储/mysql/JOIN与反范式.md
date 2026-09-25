@@ -409,4 +409,5 @@ docker exec -i mysql8 mysql -uroot -proot123456 -e "SHOW FULL PROCESSLIST;"
 - [查询链路.md](查询链路.md) — 优化器如何选驱动表与关联顺序
 - [索引与优化.md](索引与优化.md) — 关联字段上的索引设计
 - [软件架构.md](软件架构.md) — 读写分离与报表查询分流
+- [查询优化.md](查询优化.md) — JOIN 算法、驱动表选择与 8.0 的 Hash Join
 - [Stream流实战.md](../../java/Stream流实战.md) — 应用层归并的 Java 写法
