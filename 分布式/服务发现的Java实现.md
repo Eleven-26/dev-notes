@@ -183,6 +183,7 @@ public class OrderLbConfig {
 ## 四、手写版（等价于使用一的 `Resolver` + `Balancer`）
 
 如果面试官要求"不用框架，你会不会写"，Java 版长这样——
+
 **结构和 Go 那节一一对应**：不可变快照 + `AtomicReference` 整体替换 + 无锁读路径。
 
 ```java
@@ -308,6 +309,7 @@ public final class NacosResolver {
 ### 三、K8s 里 Service 和 Ingress 分别做了什么？
 **Service 做 L4**：给一组 Pod 一个稳定虚拟 IP / DNS 名，并用 kube-proxy（iptables / IPVS）在**节点内核层**做转发与负载均衡，
 配合 readiness 探针把没就绪的 Pod 从 Endpoints 里摘掉。
+
 **Ingress 做 L7**：按域名 / 路径路由到不同的 Service，做 TLS 终止 —— 它**不是** Service 的替代品，而是它前面的一层。
 所以"K8s 里谁在做 LB"要分两层答：**Service（L4，内核转发）** 与 **Ingress（L7，七层路由）**；
 而**客户端负载均衡**（本篇与 Go 篇讲的那套）在 K8s 里通常被 Service 取代 —— 这是"两套词汇"最容易混的地方。

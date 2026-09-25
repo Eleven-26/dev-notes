@@ -9,6 +9,7 @@
 ## 一、如何在 Kratos 项目中集成 ent ORM 完成数据库访问？
 
 **来源**：`BV12qjA6aErF p=3` B站 Go 面试真题 · 时长 7分00秒
+
 **考察意图**：① 是否懂 Kratos 的分层约束——**数据交互必须收敛在 data 层**，biz 只认 repository 接口；② 是否知道 ent 是 **schema-first 的代码生成型 ORM**（schema 是唯一事实来源，改了必须重新生成）；③ 有没有走通"定义 schema → 生成代码 → 迁移建表 → wire 注入 client"这条完整链路，而不是只会 `Create().Save()`。
 
 ### 一、数据访问全部收敛到 data 层
@@ -102,6 +103,7 @@ func (r *userRepo) Create(ctx context.Context, u *biz.User) (*biz.User, error) {
 ## 二、如何用 validate 框架给 proto 字段做输入校验？
 
 **来源**：`BV12qjA6aErF p=4` B站 Go 面试真题 · 时长 4分45秒
+
 **考察意图**：考"校验写在哪一层"的判断力。把规则**写进 proto 契约**、由工具生成校验代码、用中间件统一拦截，体现"契约即校验、不重复造轮子"；同时要能说出 **HTTP 与 gRPC 两条 transport 都要挂中间件**，漏挂一个就有一半入口裸奔。
 
 ### 一、规则写在 proto 里，而不是写在 service 里
@@ -174,6 +176,7 @@ HTTP/1.1 400 Bad Request
 ## 三、Kratos 如何做服务注册与发现？容器化部署时怎么兼容？
 
 **来源**：`BV12qjA6aErF p=39` B站 Go 面试真题 · 时长 9分39秒
+
 **考察意图**：真正的考点不是"会不会用 etcd 注册"，而是**判断力**——什么时候需要注册发现、什么时候根本不需要。能说出"容器编排本身已用 DNS + 负载均衡解决寻址，所以线上不需要注册中心"，比背注册 API 有价值得多；再深问就是"一份代码怎么兼容两种部署形态"。
 
 ### 一、项目架构：寻址问题从哪来
@@ -254,6 +257,7 @@ func (d *Discovery) ConnectService(ctx context.Context, name string, port int) (
 ## 四、Kratos 服务间如何传递元数据并完成鉴权？
 
 **来源**：`BV12qjA6aErF p=42` B站 Go 面试真题 · 时长 8分35秒
+
 **考察意图**：考你对 Kratos **metadata 抽象**的理解——它是屏蔽 transport 差异的关键：HTTP 走 header、gRPC 走 metadata，业务代码却只用 `ctx` 一套 API。还要知道**默认前缀规范**（不在规范内的 header 拿不到），以及为什么内部服务鉴权用"固定 token"就够。
 
 ### 一、为什么用固定 token，而不是 JWT / 接口级权限
@@ -345,6 +349,7 @@ curl -X POST http://payment.service:8001/api.payment.v1.PaymentService/CreatePay
 ## 五、服务间调用报"身份认证失败"，该怎么定位？
 
 **来源**：`BV12qjA6aErF p=40` B站 Go 面试真题 · 时长 5分18秒
+
 **考察意图**：考**排查方法论** + 对框架默认行为细节的掌握。业务代码方向全对、日志全对，但就是鉴权失败——分水岭是"敢不敢怀疑自己的默认假设"。知道 **gRPC 健康检查走的是流式请求（server-streaming），不走一元（unary）链路**，是这题的核心知识点。
 
 ### 一、现象与先入为主的假设
@@ -399,6 +404,7 @@ func tokenAuth(expect string, logger log.Logger) middleware.Middleware {
 ## 六、如何获取 HTTP 的原始请求，用于特定场景？
 
 **来源**：`BV12qjA6aErF p=41` B站 Go 面试真题 · 时长 6分26秒
+
 **考察意图**：① 是否知道 Kratos 把 HTTP 请求封装成 transport 放进 `ctx`，能否正确**类型断言**取出 `*http.Request`；② 是否明白这招**只在 HTTP transport 下成立**，gRPC 请求断言必然失败；③ 判断力——什么场景**应该**用原始请求（能少一层解析/序列化），什么场景该老实传 message。
 
 ### 一、写法：取 transport → 断言 → 拿 request
@@ -456,6 +462,7 @@ func (s *PaymentService) PayNotify(ctx context.Context, req *v1.PayNotifyRequest
 ## 七、HTTP 请求里的 JSON 对象，如何准确转换成 Protobuf message？
 
 **来源**：`BV12qjA6aErF p=43` B站 Go 面试真题 · 时长 3分48秒
+
 **考察意图**：考 `google.protobuf.Any` 的 JSON 表示规范——**`@type` 字段**（值 = 命名空间 + message 名）。这是 protojson 与普通 JSON 库最不一样的地方，也是"参数随渠道变化、类型不固定"的标准解法；顺带考是否清楚 Kratos 的 HTTP transport 对 `proto.Message` 走的是 protojson 而非标准库 `encoding/json`。
 
 ### 一、场景：参数类型随渠道变化
