@@ -2,7 +2,9 @@
 
 > 证书为什么值得信赖、信任链怎么验证、SSL 与 HTTPS 的关系、X.509 的关键字段、CSR → CA 签发 → 链验证的完整实操（附本机实测输出与失败错误码），以及证书的自动化运维与常见事故。
 >
-> 内容整理自个人学习笔记；HTTPS 与 TLS 的实现细节以 [HTTPS与TLS.md](../网络/HTTPS与TLS.md) 为单一来源。
+> 素材来源：博客 [常用加密算法及应用](https://blog.csdn.net/weixin_43837229/article/details/90719470)（2019-05-31）—— 本篇取该文第 6 节「数字证书——值得信赖的公钥」与第 7、8 节（SSL / HTTPS）。
+>
+> HTTPS 与 TLS 的实现细节以 [HTTPS与TLS.md](../网络/HTTPS与TLS.md) 为单一来源。
 
 ---
 

@@ -14,7 +14,7 @@
 **怎么把一堆 YAML 打包、版本化、参数化，并且一条命令装上、一条命令卸掉**——
 也就是"包管理"这件事在 K8s 里是怎么落地的。
 
-### 一、先记住这个类比
+### 1.1 先记住这个类比
 
 | | 传统 Linux | Kubernetes |
 |---|---|---|
@@ -29,7 +29,7 @@
 > （该项目在 GitHub 上拿到 **27k+** star）。大量开源项目都会附带 Helm 安装方式：
 > 直接给你一条 `helm install` 命令，就能把整套应用部署进集群。
 
-### 二、四个核心概念
+### 1.2 四个核心概念
 
 | 概念 | 含义 |
 |---|---|
@@ -41,7 +41,7 @@
 > 关键理解：**Chart 是"源码"，Release 是"运行起来的实例"，`values.yaml` 是"编译参数"。**
 > 改参数不必改 YAML 本身，改 values 重新渲染即可。
 
-### 三、常用命令（含视频里的实战流程）
+### 1.3 常用命令（含视频里的实战流程）
 
 视频是**三节点 K8s 集群 + 本地 OCI Registry**，从 Registry 拉 Chart 部署：
 
@@ -75,7 +75,7 @@ Chart 里有 `Deployment` 就有 Deployment，有 `Service` 就有 Service。
 视频里那个 Nginx Chart 就同时装出了 Deployment 和 Service；
 **Chart 里没定义过的资源，装完自然不会有。**
 
-### 四、除了 install，还要会这几条
+### 1.4 除了 install，还要会这几条
 
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami   # 加仓库
@@ -89,7 +89,7 @@ helm template nginx bitnami/nginx                          # 只渲染不部署�
 helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 OCI Registry
 ```
 
-### 五、国内网络环境下的工程实践（三题串起来看）
+### 1.5 国内网络环境下的工程实践（三题串起来看）
 
 | 痛点 | 手段 | 落在哪一层 |
 |---|---|---|
@@ -101,7 +101,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 > → 应用制品怎么管（Helm + 私有 OCI Registry）**。
 > 面试时把这三层讲清楚，比只说一句"我会用 Helm"高一个层次。
 
-### 六、values 分层、子 chart 依赖与 hooks（用 Helm 落地时的三个坑）
+### 1.6 values 分层、子 chart 依赖与 hooks（用 Helm 落地时的三个坑）
 
 | 主题 | 正确做法 | 坑 |
 |---|---|---|
@@ -136,7 +136,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 **考察意图**：考 **「镜像 tag 与拉取策略的连带后果」**。`Always` + 可变 tag 是最糟的组合；kubelet 还会按磁盘阈值 GC 掉不用的镜像，所以会出现「昨天还在、今天重拉」。
 
-### 一、`imagePullPolicy` 与"节点上镜像漂移" ⭐
+### 2.1 `imagePullPolicy` 与"节点上镜像漂移" ⭐
 
 `Always` 每次启动都去仓库确认；`IfNotPresent` 本地有这个 tag 就直接用、**不再问仓库**；`Never` 只用已有。
 
@@ -152,7 +152,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 解法只有两条，推荐第一条：**镜像不可变（用 commit SHA 做 tag）**；或退一步用 `@sha256:<digest>` 引用。
 `Always` + 可变 tag 是最糟的组合（tag 策略见 [CI-CD.md 第二节](../CI-CD.md)）。
 
-### 二、拉取凭证与冷启动
+### 2.2 拉取凭证与冷启动
 
 | 主题 | 做法与坑 |
 |---|---|
@@ -160,7 +160,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 | 拉取失败怎么分 | 事件里 `ErrImagePull`（鉴权/网络）还是 `ImagePullBackOff`（反复失败，多为 tag 不存在或限速）→ 再在节点上手工 `crictl pull` 区分"集群凭证问题"和"仓库/网络问题" |
 | 冷启动加速 | 镜像做小（[镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md)）+ 薄层增量（[镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md)）+ 仓库就近（同 VPC/私有仓库）+ **DaemonSet 提前把关键镜像拉一遍**；⚠️ **kubelet 会按磁盘阈值 GC 掉不用的镜像**，节点磁盘压太满就会"昨天还在、今天重拉" |
 
-### 三、`requests` / `limits` 与 QoS 三档 ⭐
+### 2.3 `requests` / `limits` 与 QoS 三档 ⭐
 
 | QoS | 条件 | 后果 |
 |---|---|---|
@@ -172,7 +172,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 不设 requests 会让调度器误判容量、把 Pod 塞到已满载节点然后再驱逐（"我的 Pod 无故重启"常是邻居造成的）；
 JVM/Go 要按 cgroup 算预算，见 [资源限制与运维.md](../docker/资源限制与运维.md)。
 
-### 四、退出码与 OOMKilled 在 K8s 里怎么看
+### 2.4 退出码与 OOMKilled 在 K8s 里怎么看
 
 ```bash
 kubectl describe pod <pod>      # Last State: Terminated → Reason: OOMKilled / Error + Exit Code
@@ -196,7 +196,7 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 **考察意图**：这题最能看出"有没有真在生产发布过服务"。三探针各解决什么、误配的**具体后果**、
 以及"`preStop` 里 sleep 几秒"到底在服务什么。
 
-### 一、三个探针与误配后果
+### 3.1 三个探针与误配后果
 
 | 探针 | 回答的问题 | 失败的后果 |
 |---|---|---|
@@ -211,7 +211,7 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 | 只配 liveness 不配 readiness | 新 Pod 刚起、还没预热就被打流量 → 一批 5xx（readiness 是"接流量的门票"） |
 | 用 `initialDelaySeconds` 当启动保险 | 猜不准就还是误杀；**用 startupProbe 表达"启动要多久"更准确** |
 
-### 二、优雅关闭的时序与代码要点
+### 3.2 优雅关闭的时序与代码要点
 
 ```text
 delete pod 之后两条路并行：
@@ -236,7 +236,7 @@ db.Close()
 > Java 侧同理：注册 shutdown hook + 打开框架自带的优雅停机开关（以所用框架文档为准），
 > 线程池 `shutdown()` 之后要有 `awaitTermination()`。
 
-### 三、"`preStop` 里 sleep 几秒"：常见但讲不清原理的那句 ⭐
+### 3.3 "`preStop` 里 sleep 几秒"：常见但讲不清原理的那句 ⭐
 
 - 它在服务 **(A) 这条路**：给"endpoint 摘除 + 各节点转发规则同步"争取时间。规则还没收敛就关端口，
   客户端就看到 `connection reset` / 5xx。
@@ -253,7 +253,7 @@ db.Close()
 
 **考察意图**：考 **「回滚到底能不能兜底」**。`rollout undo` 依赖「上一个 revision 恰好是好的那个」，且**只回滚代码、不回滚数据**；有状态负载还要额外考虑 quorum 与 RWO 卷不能双挂。
 
-### 一、`maxSurge` / `maxUnavailable` 与 PDB
+### 4.1 `maxSurge` / `maxUnavailable` 与 PDB
 
 | 组合 | 效果 | 适用 |
 |---|---|---|
@@ -265,7 +265,7 @@ db.Close()
 **PDB 只保证"自愿中断"的下限**（drain、集群升级会被预算拦住），**不保证**硬件故障、OOM、探针误杀，
 也不管滚动发布本身的替换 → 真正确定可用性的是：多副本 + 反亲和打散 + readiness + 合理的 `maxUnavailable`。
 
-### 二、回滚：`rollout undo` 还是"重新部署上一版镜像"
+### 4.2 回滚：`rollout undo` 还是"重新部署上一版镜像"
 
 | | `kubectl rollout undo` | 改回上一版镜像 tag 再部署（GitOps 里就是 revert） |
 |---|---|---|
@@ -278,7 +278,7 @@ db.Close()
 > 另一件必须说的：**回滚只回滚代码，不回滚数据** —— 靠"向后兼容的 migration 序列"（加列 → 双写/回填 →
 > 切读 → 再清理）让代码能单独退，否则回滚反而延长故障。
 
-### 三、有状态工作负载为什么不能随便滚（定性）
+### 4.3 有状态工作负载为什么不能随便滚（定性）
 
 | 原因 | 应对思路 |
 |---|---|

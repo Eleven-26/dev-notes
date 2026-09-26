@@ -12,7 +12,7 @@
 
 **考察意图**：① 是否懂 Kratos 的分层约束——**数据交互必须收敛在 data 层**，biz 只认 repository 接口；② 是否知道 ent 是 **schema-first 的代码生成型 ORM**（schema 是唯一事实来源，改了必须重新生成）；③ 有没有走通"定义 schema → 生成代码 → 迁移建表 → wire 注入 client"这条完整链路，而不是只会 `Create().Save()`。
 
-### 一、数据访问全部收敛到 data 层
+### 1.1 数据访问全部收敛到 data 层
 
 分层是单向的：`api → service → biz → data`。项目在 data 层下建 `internal/data/ent/` 目录，**所有和数据交互的内容都封装在这个目录里**。
 
@@ -22,7 +22,7 @@
 | `biz/` | 业务逻辑，依赖 `UserRepo` 等**接口** | ❌ |
 | `data/` | 实现 biz 的 repo 接口，持有 ent client | ✅ 仅此一层 |
 
-### 二、装插件、初始化目录、定义 schema
+### 1.2 装插件、初始化目录、定义 schema
 
 ent 自带代码生成命令，先装插件（装到 `$GOPATH/bin`），生成 ent 目录后整体挪到 data 层；`schema/` 里定义**字段、表关系（edge）、索引**三样东西。
 
@@ -49,7 +49,7 @@ func (User) Indexes() []ent.Index { return []ent.Index{index.Fields("name").Uniq
 
 执行 `go generate ./internal/data/ent/...`，会生成一整套数据访问代码：`User` 实体、`UserClient`、`UserQuery`、`UserMutation` 以及事务（`Tx`）支持。
 
-### 三、建表 + wire 注入 client
+### 1.3 建表 + wire 注入 client
 
 **表结构可以自动建/改，但数据库本身必须先存在。** 链路是 `sql.Open` 拿 driver → 包成 ent client → `client.Schema.Create` 建表，这个 client 作为 provider 交给 wire 注入。
 
@@ -77,7 +77,7 @@ func wireApp(*conf.Server, *conf.Data, log.Logger) (*kratos.App, func(), error) 
 }
 ```
 
-### 四、业务侧读写
+### 1.4 业务侧读写
 
 按实体取到表的操作对象：插入是 `Create().SetXxx().Save()`，查询走 `Query().Where(...)`；跨多表强一致用 `r.data.db.Tx(ctx)`，闭包内改用 `tx.User.Create()`。
 
@@ -106,7 +106,7 @@ func (r *userRepo) Create(ctx context.Context, u *biz.User) (*biz.User, error) {
 
 **考察意图**：考"校验写在哪一层"的判断力。把规则**写进 proto 契约**、由工具生成校验代码、用中间件统一拦截，体现"契约即校验、不重复造轮子"；同时要能说出 **HTTP 与 gRPC 两条 transport 都要挂中间件**，漏挂一个就有一半入口裸奔。
 
-### 一、规则写在 proto 里，而不是写在 service 里
+### 2.1 规则写在 proto 里，而不是写在 service 里
 
 ```proto
 import "validate/validate.proto";
@@ -123,7 +123,7 @@ message CreatePaymentRequest {
 
 `validate/validate.proto` 不用自己下载——**Kratos 创建项目模板时已把它放进 `third_party/`**，直接 import 即可；支持的规则清单见官方文档里的 protoc-gen-validate 规则表（string / int / enum / message / repeated / 嵌套）。
 
-### 二、装插件、生成校验代码
+### 2.2 装插件、生成校验代码
 
 光写 proto 不生效，规则要在编译期变成 Go 代码：
 
@@ -138,7 +138,7 @@ protoc --proto_path=. --proto_path=./third_party \
 
 会额外产出 `payment.pb.validate.go`，为每个 message 按规则生成 `Validate()`。
 
-### 三、HTTP 与 gRPC 都要挂中间件
+### 2.3 HTTP 与 gRPC 都要挂中间件
 
 生成的 `Validate()` 不会自己生效，必须在服务端中间件里引用，两侧缺一不可：
 
@@ -156,7 +156,7 @@ var GrpcServerOpts = []grpc.ServerOption{
 
 `validate.Validator()` 的逻辑很朴素：请求对象实现了 `Validate() error` 就调它，失败直接返回 `errors.BadRequest("VALIDATOR", err.Error())`。
 
-### 四、效果验证
+### 2.4 效果验证
 
 故意把必填的 `node_file_url` 从请求里删掉再发一次，返回 **400**，字段路径直接出现在报错里：
 
@@ -179,11 +179,11 @@ HTTP/1.1 400 Bad Request
 
 **考察意图**：真正的考点不是"会不会用 etcd 注册"，而是**判断力**——什么时候需要注册发现、什么时候根本不需要。能说出"容器编排本身已用 DNS + 负载均衡解决寻址，所以线上不需要注册中心"，比背注册 API 有价值得多；再深问就是"一份代码怎么兼容两种部署形态"。
 
-### 一、项目架构：寻址问题从哪来
+### 3.1 项目架构：寻址问题从哪来
 
 服务拆成四个：**支付、订单、课程**三个基础服务，外加一个**业务聚合服务**。聚合服务把其他微服务的接口收拢、**统一对外提供接口**，同时**解耦微服务之间的相互调用并对流程做编排**。它要调支付/订单/课程，就必须先找到对方地址。
 
-### 二、本地 / 非容器化：etcd 注册 + 发现
+### 3.2 本地 / 非容器化：etcd 注册 + 发现
 
 **注册（服务端）**：构造 etcd 客户端 → 包成注册中心 → 在 `kratos.New` 时用 `kratos.Registrar` 挂上，启动后 Kratos 自动把本机地址写入 etcd。**发现（调用方）**：同样引 etcd contrib 包构造 `registry.Discovery`，客户端 endpoint 写 `discovery:///服务名`。
 
@@ -204,7 +204,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, r registry.Regi
 }
 ```
 
-### 三、容器化部署：不做注册发现
+### 3.3 容器化部署：不做注册发现
 
 线上是 **Docker Swarm 集群**部署，Swarm 自带①**服务发现**（直接用**服务名 + 端口**访问）和②**负载均衡**，所以容器化场景**完全不需要注册中心**。反过来说，注册发现的价值主要在**开发阶段**：多服务地址靠配置文件手改，改来改去极易出错。
 
@@ -213,7 +213,7 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, r registry.Regi
 | 本地 / 非容器化 | `discovery:///服务名`，地址由 etcd 返回 | etcd | 客户端侧（selector/balancer） |
 | 容器化（Swarm / K8s） | `服务名:端口`（DNS） | 不需要 | 编排层自带 |
 
-### 四、一份代码兼容两种形态
+### 3.4 一份代码兼容两种形态
 
 把"要不要注册中心"收敛成一个**可空的 `registry.Discovery`**：初始化时判断部署形态，容器化就置空，否则连 etcd；连接服务时按它是否为空切换 endpoint。
 
@@ -260,11 +260,11 @@ func (d *Discovery) ConnectService(ctx context.Context, name string, port int) (
 
 **考察意图**：考你对 Kratos **metadata 抽象**的理解——它是屏蔽 transport 差异的关键：HTTP 走 header、gRPC 走 metadata，业务代码却只用 `ctx` 一套 API。还要知道**默认前缀规范**（不在规范内的 header 拿不到），以及为什么内部服务鉴权用"固定 token"就够。
 
-### 一、为什么用固定 token，而不是 JWT / 接口级权限
+### 4.1 为什么用固定 token，而不是 JWT / 接口级权限
 
 服务之间都是**内部调用**，不需要面向用户的细粒度接口授权，只要确认"调用方是不是自己人"。最简方案就够：每个服务配一个**固定 token**，调用方携带相同 token，服务端取出来与本地配置**比对**，一致则放行。
 
-### 二、元数据的传递通道与默认前缀
+### 4.2 元数据的传递通道与默认前缀
 
 | 维度 | gRPC | HTTP | 备注 |
 |---|---|---|---|
@@ -277,7 +277,7 @@ func (d *Discovery) ConnectService(ctx context.Context, name string, port int) (
 
 **前缀规范必须留意**：只有带默认前缀（`x-md-global-` / `x-md-local-`）的 header 会被 Kratos metadata 中间件提取进 metadata，其余 header 拿不到，只能绕过框架从 transport 自己取——所以 token 的 key 用 `x-md-global-token` 这类规范名。
 
-### 三、传递与读取
+### 4.3 传递与读取
 
 **客户端附加**（token 来自配置文件），**服务端取出比对**：
 
@@ -296,7 +296,7 @@ if md.Get(metadataTokenKey) != uc.token {
 }
 ```
 
-### 四、服务端鉴权中间件（含回调白名单）
+### 4.4 服务端鉴权中间件（含回调白名单）
 
 **微信支付回调是 HTTP 打进来的，渠道方不会带我们的 token，必须放行**；其余请求无 token 一律拒绝：
 
@@ -352,20 +352,20 @@ curl -X POST http://payment.service:8001/api.payment.v1.PaymentService/CreatePay
 
 **考察意图**：考**排查方法论** + 对框架默认行为细节的掌握。业务代码方向全对、日志全对，但就是鉴权失败——分水岭是"敢不敢怀疑自己的默认假设"。知道 **gRPC 健康检查走的是流式请求（server-streaming），不走一元（unary）链路**，是这题的核心知识点。
 
-### 一、现象与先入为主的假设
+### 5.1 现象与先入为主的假设
 
 定时任务服务调用获取签名接口，报**身份认证失败**；聚合服务侧的报错是"**连接是活动的，但收到健康检查的 RPC 报错——身份认证失败**"。按代码看调用方每个请求都附加了 token，被调服务也实现了健康检查，理论上不该有问题，但服务端上下文 metadata 里**就是没有 token**。
 
 团队此前一直用**原生 gRPC** 开发，习惯只关注**一元调用**和一元拦截器，于是默认"健康检查也是一元请求，会走一元拦截器"。
 
-### 二、根因：健康检查走的是流式请求
+### 5.2 根因：健康检查走的是流式请求
 
 1. 客户端校验连接可用性时先发**健康检查（心跳）**，它**走流式拦截器**，不走一元拦截器；
 2. 健康检查请求**不携带任何业务 metadata**；
 3. Kratos 的 gRPC Server 会把中间件同时套在 unary 和 stream 两条链路上，于是鉴权中间件拿不到 token；
 4. 健康检查返回鉴权失败 → 连接被判为不健康 → **后续正常请求也跟着失败**。
 
-### 三、修复：让健康检查绕过鉴权
+### 5.3 修复：让健康检查绕过鉴权
 
 判断"是不是健康检查请求"，是就直接放行；**只有非心跳请求才走鉴权逻辑**：
 
@@ -407,7 +407,7 @@ func tokenAuth(expect string, logger log.Logger) middleware.Middleware {
 
 **考察意图**：① 是否知道 Kratos 把 HTTP 请求封装成 transport 放进 `ctx`，能否正确**类型断言**取出 `*http.Request`；② 是否明白这招**只在 HTTP transport 下成立**，gRPC 请求断言必然失败；③ 判断力——什么场景**应该**用原始请求（能少一层解析/序列化），什么场景该老实传 message。
 
-### 一、写法：取 transport → 断言 → 拿 request
+### 6.1 写法：取 transport → 断言 → 拿 request
 
 ```go
 import (
@@ -432,7 +432,7 @@ func (s *PaymentService) PayNotify(ctx context.Context, req *v1.PayNotifyRequest
 
 **前提**：请求确实是通过 HTTP 发过来的，断言才会成功；gRPC 入口这么写必然失败。
 
-### 二、为什么放着 message 不用，非要原始请求
+### 6.2 为什么放着 message 不用，非要原始请求
 
 支付服务要接入**多个支付渠道**（微信、支付宝等）：支付完成后渠道会**回调我们的 HTTP 接口**推送结果，我们据此更新订单状态。渠道方只支持 HTTP，所以 Kratos 里同时启了 `http.Server` 和 `grpc.Server` 两种 transport——对外回调走 HTTP，内部调用走 gRPC。
 
@@ -465,7 +465,7 @@ func (s *PaymentService) PayNotify(ctx context.Context, req *v1.PayNotifyRequest
 
 **考察意图**：考 `google.protobuf.Any` 的 JSON 表示规范——**`@type` 字段**（值 = 命名空间 + message 名）。这是 protojson 与普通 JSON 库最不一样的地方，也是"参数随渠道变化、类型不固定"的标准解法；顺带考是否清楚 Kratos 的 HTTP transport 对 `proto.Message` 走的是 protojson 而非标准库 `encoding/json`。
 
-### 一、场景：参数类型随渠道变化
+### 7.1 场景：参数类型随渠道变化
 
 支付服务选择支付渠道时，每个渠道需要的**特有参数不一样**，`pay_info` 不能固定成某个具体类型，于是用 `google.protobuf.Any` 做"类型盒子"。
 
@@ -487,7 +487,7 @@ message PayRequest {
 message WechatJSAPIPayInfo { string open_id = 1; }
 ```
 
-### 二、`@type` 是准确转换的关键
+### 7.2 `@type` 是准确转换的关键
 
 用 protojson 规范传 JSON 时，`Any` 必须带 **`@type`**，值 = **命名空间（package）+ message 名**：
 
@@ -507,7 +507,7 @@ message WechatJSAPIPayInfo { string open_id = 1; }
 
 Kratos 的 HTTP transport 对 `proto.Message` 用的就是 **protojson**，所以这套规范在路由上直接生效，无需额外配置。
 
-### 三、取值与返回（gRPC 侧不需要 `@type`）
+### 7.3 取值与返回（gRPC 侧不需要 `@type`）
 
 **取值**——按渠道把 Any 还原成具体 message；**返回**——返回值同样是 Any，protojson 序列化时会**自动补 `@type`**，调用方据此判断按哪个类型解析。gRPC 侧 `Any` 是二进制（type_url + value），不需要也不该手写 `@type`。
 

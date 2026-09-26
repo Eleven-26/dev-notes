@@ -14,7 +14,7 @@
 配置文件在哪、改哪几项、怎么让它生效、怎么验证。
 顺带考一个常见认知：**Docker 默认支持 IPv6，但默认是关着的。**
 
-### 一、结论先行
+### 1.1 结论先行
 
 Docker 本身**支持 IPv6，但默认不启用**。启用要三件事：
 
@@ -22,7 +22,7 @@ Docker 本身**支持 IPv6，但默认不启用**。启用要三件事：
 2. 改 **Docker 守护进程配置 `daemon.json`**（视频的主体内容）；
 3. **重载 + 重启 Docker**，再验证容器确实拿到了 IPv6 地址。
 
-### 二、内核参数：先确认宿主机支持 IPv6
+### 1.2 内核参数：先确认宿主机支持 IPv6
 
 ```bash
 cat /proc/sys/net/ipv6/conf/all/disable_ipv6   # 应该是 0
@@ -30,7 +30,7 @@ cat /proc/sys/net/ipv6/conf/all/disable_ipv6   # 应该是 0
 sysctl -w net.ipv6.conf.all.disable_ipv6=0
 ```
 
-### 三、改 `daemon.json`（核心步骤）
+### 1.3 改 `daemon.json`（核心步骤）
 
 配置文件位置：**`/etc/docker/daemon.json`**。
 **如果这个文件不存在，就自己创建**（视频里强调的正是这一步）。
@@ -50,7 +50,7 @@ sysctl -w net.ipv6.conf.all.disable_ipv6=0
 > ⚠️ 生产上请把 `fixed-cidr-v6` 换成**自己实际拥有的 IPv6 网段**。
 > `2001:db8::/32` 是 RFC 3849 专门保留给文档示例的地址段，不能真的拿来用。
 
-### 四、生效与验证
+### 1.4 生效与验证
 
 ```bash
 systemctl daemon-reload     # 重新加载配置
@@ -75,7 +75,7 @@ curl -g "http://[::1]:<port>/"
 **反证**：把容器停掉（`docker stop nginx`）之后再访问就访问不到了——
 说明刚才访问到的确实是这个容器。
 
-### 五、补充：自定义网络与运行参数
+### 1.5 补充：自定义网络与运行参数
 
 默认 `bridge` 网络靠 `daemon.json` 里的 `ipv6` + `fixed-cidr-v6` 就够了；
 自定义网络需要显式开启：
@@ -109,7 +109,7 @@ docker run -d --network=mynet6 --name nginx6 nginx
 ① 你知不知道**构建镜像的环境和宿主机是隔离的**，宿主机配好的加速在构建时是无效的；
 ② 遇到"基础镜像里压根没有 `sources.list`"这种情况，你会怎么处理。
 
-### 一、背景：境外能构建，搬回境内就构建不动
+### 2.1 背景：境外能构建，搬回境内就构建不动
 
 视频里的场景很典型：要部署一个支付服务，Dockerfile 是微服务脚手架生成的模板，
 只需要改编译镜像、编译镜像版本、配置文件和 cmd。在**境外服务器**上构建一切正常，
@@ -119,7 +119,7 @@ docker run -d --network=mynet6 --name nginx6 nginx
 > 这和 Go 编译要设 `GOPROXY` 国内代理是**一模一样的逻辑**：
 > 容器内的网络环境，需要单独为容器内配置。
 
-### 二、两种改法
+### 2.2 两种改法
 
 #### 情况一：基础镜像有 `/etc/apt/sources.list`（Debian / Ubuntu 常见）
 
@@ -161,7 +161,7 @@ RUN mkdir -p /etc/apt \
 > 源文件在 `/etc/apt/sources.list.d/debian.sources` / `ubuntu.sources`；
 > CentOS / Rocky 则改 `/etc/yum.repos.d/*.repo` 里的 `baseurl`。
 
-### 三、⚠️ 面试重点：这和 `registry mirror` 完全是两回事
+### 2.3 ⚠️ 面试重点：这和 `registry mirror` 完全是两回事
 
 很多人会把两者混为一谈，这里必须分清楚：
 

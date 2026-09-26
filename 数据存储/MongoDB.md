@@ -393,7 +393,7 @@ db.orders.aggregate([
 ```
 - 对驱动集合的**每一个**文档都要到被 join 集合查一次：被 join 侧的 `foreignField` **必须有索引**，否则代价是"驱动侧文档数 × 被 join 侧全表扫描"，这是 `$lookup` 最常见的事故。只有**等值** join 能自然用上索引；带表达式/非等值的 pipeline 形式更贵（内层管道对每个外部文档跑一遍）。
 - 什么时候该在**应用层 join**：① 驱动集合已被分页到几十上百条（先查页、再 `find({_id: {$in: ids}})` 批量取、内存里拼）；② 被 join 侧的结果可复用到缓存/其它请求；③ 分片集群上两个集合**没有按同一分片键共置**——这时 `$lookup` 只能广播到所有分片，而应用层按 `_id` 的批量 `$in` 可以定向。
-- 判据：`$lookup` 适合"一次聚合里顺带补齐维度"，不适合当 OLAP 的 join 引擎（多表统计应考虑 [ElasticSearch.md](ElasticSearch.md) 或离线链路）。
+- 判据：`$lookup` 适合"一次聚合里顺带补齐维度"，不适合当 OLAP 的 join 引擎（多表统计应考虑 [ElasticSearch.md](elasticsearch/ElasticSearch.md) 或离线链路）。
 
 ### `$unwind` 放大与内存限制
 `$unwind` 把 1 个文档变成 N 个（N = 数组长度；空数组默认整条消失），**下游 `$group` 处理的是放大后的流**：数组平均长度 20 时，"10 万订单"进入 `$group` 就是 200 万文档。
@@ -924,7 +924,7 @@ cache 目标大小按物理内存的一个比例算（默认量级约一半，�
 ### 其他高频坑
 | 坑 | 为什么 | 处置 |
 | --- | --- | --- |
-| 非锚定 `$regex` | 无法用索引定界，只能扫全部键 | 前缀锚定 `^abc` 才能吃索引；全文检索走 [ElasticSearch.md](ElasticSearch.md) |
+| 非锚定 `$regex` | 无法用索引定界，只能扫全部键 | 前缀锚定 `^abc` 才能吃索引；全文检索走 [ElasticSearch.md](elasticsearch/ElasticSearch.md) |
 | 拿 `$ne`/`$nin`/`$not` 当主力过滤 | 选择性差（"不等于"命中绝大多数），索引帮不上 | 改写成"等于哪几个值"的 `$in` |
 | `$or` 某个分支没索引 | 各分支分别规划，**最差分支决定整体代价** | 保证每个分支都有可用索引 |
 | `countDocuments({})` 数全量 | 走覆盖索引也要把键数完 | 无 filter 用 `estimatedDocumentCount()`（读元数据，不能带条件） |
@@ -953,7 +953,7 @@ cache 目标大小按物理内存的一个比例算（默认量级约一半，�
 
 ## 关联
 
-- [ElasticSearch.md](ElasticSearch.md) — 检索型存储与文档库的边界
+- [ElasticSearch.md](elasticsearch/ElasticSearch.md) — 检索型存储与文档库的边界
 - [../算法/缓存淘汰算法.md](../算法/缓存淘汰算法.md) — WiredTiger 缓存淘汰的算法基础
 - [../算法/压缩算法.md](../算法/压缩算法.md) — 页面块压缩与「压缩不省缓存内存」
 - [mysql/事务与隔离级别.md](mysql/事务与隔离级别.md) — 单文档原子与跨文档事务的取舍

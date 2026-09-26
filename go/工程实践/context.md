@@ -432,7 +432,7 @@ for _, r := range replicas {
 context 的全部行为（向上取值、向下取消、超时自动取消）都能用**四个类型的嵌入关系**解释完 ——
 被问到「context 内部是怎么实现的」，答出「四个类型串成一条链」就到位了。
 
-### 一、四个具体类型（实测 `%T`）
+### 6.1 四个具体类型（实测 `%T`）
 
 ```go
 fmt.Printf("%T\n", context.Background())                     // 根节点
@@ -459,7 +459,7 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 > 本机 **go1.26.5 实测打印出来是 `context.backgroundCtx`** —— 运行时已把原来共用的 `emptyCtx`
 > 拆成了 `backgroundCtx` 与 `todoCtx` 两个类型。**看老文章对不上时，不用怀疑自己。**
 
-### 二、两条传播规则，方向一致但**内容相反**
+### 6.2 两条传播规则，方向一致但**内容相反**
 
 ```text
 5_子 ctx 取父设置的值 : parent （valueCtx 向上递归查找）
@@ -483,7 +483,7 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 > 值由父设置、子向上查得到；取消由父发起、向所有子蔓延。这两件事方向不同，但都**只朝一个方向生效** ——
 > 这正是它被设计成**树**而不是链表或图的原因（见第三节追问「为什么长得像树」）。
 
-### 三、两个实现细节，解释了"为什么要有这些规范"
+### 6.3 两个实现细节，解释了"为什么要有这些规范"
 
 | 细节 | 解释 |
 |---|---|

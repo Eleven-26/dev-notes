@@ -456,4 +456,5 @@ OkHttpClient client = new OkHttpClient.Builder()
 - [HTTP与gRPC.md](HTTP与gRPC.md) — 连接复用与 DNS 缓存的关系
 - [../分布式/服务发现与负载均衡.md](../分布式/服务发现与负载均衡.md) — DNS 轮询 / GSLB 与服务发现的边界
 
+- [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — DNS 在整条链路里的位置（应用层第一步）
 > 反向引用（本篇被下列文档引到）：[Docker网络与镜像源.md](../容器/docker/Docker网络与镜像源.md)、[DHCP.md](DHCP.md)

@@ -12,7 +12,7 @@
 
 **考察意图**：考工程环境熟练度。面试官常拿"你平时怎么调试"当幌子，看的是三点：**工具链装在哪、多 main 包怎么跑起来、能不能带参数和环境变量调试**。
 
-### 一、前提：SDK 装好，工具链一次装齐
+### 1.1 前提：SDK 装好，工具链一次装齐
 
 1. 先装 Go SDK 并配好 `PATH`——**没装 SDK 时 `Ctrl+Shift+P` 里的 Go 命令根本不会出现**；
 2. 扩展商店搜 `Go`（发布者 golang.go）安装；
@@ -24,7 +24,7 @@ go env GOPATH GOBIN                        # 确认工具安装目录
 go install golang.org/x/tools/gopls@latest # 单独补装也行
 ```
 
-### 二、`settings.json`：语言服务 + 保存即格式化
+### 1.2 `settings.json`：语言服务 + 保存即格式化
 
 ```json
 {
@@ -55,7 +55,7 @@ go install golang.org/x/tools/gopls@latest # 单独补装也行
 - **`dlvLoadConfig` 决定调试时变量面板的"可视深度"**——默认会截断长字符串、大数组、指针链，调试时看到 `{...}` 通常就是这里配小了；
 - `go.testFlags` 里的 `-count=1` 顺手解决"断点进不去"（测试结果被缓存）。
 
-### 三、`launch.json`：让运行/调试按钮真正可用
+### 1.3 `launch.json`：让运行/调试按钮真正可用
 
 不放 `launch.json` 时按 `F5`，VSCode 会**自动生成模板并把 `program` 设成工作目录**（`${workspaceFolder}`）——一个仓库有多个 `main` 包时就会跑错目标，所以要按项目改 `program`。
 
@@ -106,11 +106,11 @@ go install golang.org/x/tools/gopls@latest # 单独补装也行
 
 **考察意图**：考"会不会用调试器解决问题"而不是"会不会打日志"。断点条件、命中计数、远程调试、测试缓存这几件事，是区分熟练与不熟练的分水岭。
 
-### 一、先解决"看不到值"
+### 2.1 先解决"看不到值"
 
 在 `launch.json` 的配置里加 `"buildFlags": "-gcflags=all=-N -l"`（`dlv debug` 模式默认已带），再把 `dlvLoadConfig.maxStringLen` / `maxArrayValues` 调大，才不至于看到 `{...}` 或 `<optimized out>`。
 
-### 二、四种比 `println` 高效的断点
+### 2.2 四种比 `println` 高效的断点
 
 | 手段 | 场景 | 用法 |
 |---|---|---|
@@ -119,7 +119,7 @@ go install golang.org/x/tools/gopls@latest # 单独补装也行
 | **日志断点** | 不想改代码、只想打印且不中断 | 右键 → Add Logpoint，`${expr}` 插值 |
 | **panic 断点** | 抓 panic 现场 | 在 `runtime.gopanic` 上打断点后 `continue` |
 
-### 三、三种调试姿态
+### 2.3 三种调试姿态
 
 ```bash
 dlv debug ./cmd/api -- -conf ./configs      # ① 本地从源码起（自动带 -N -l）
@@ -140,7 +140,7 @@ dlv --headless --listen=:2345 --api-version=2 --accept-multiclient exec ./app-de
 
 `substitutePath` 是容器调试的关键：把宿主机源码路径映射到容器内路径，否则断点会落在"源码找不到"的死点上。
 
-### 四、不打断点的三个偏方
+### 2.4 不打断点的三个偏方
 
 ```bash
 go build -gcflags="-S" . > asm.txt           # 汇编落到文件慢慢比对

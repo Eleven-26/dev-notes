@@ -47,6 +47,7 @@
 | 文件 | 知识点 |
 |---|---|
 | [数据结构.md](算法/数据结构.md) | 八大基础结构的特性与场景、跳表/Trie/布隆/并查集/一致性哈希、B+ 树与跳表的选型推导、结构×复杂度×隐藏代价总表 |
+| [位图与布隆过滤器.md](算法/位图与布隆过滤器.md) | 位图原理与三类边界、布隆过滤器的假阳性与不可删除、RoaringBitmap 分块压缩；Go/Java 双实现 + 实测（位图 vs map 内存差 303 倍、误判率实测 ≈ 理论） |
 | [复杂度分析.md](算法/复杂度分析.md) | 大 O 与常见复杂度、摊还分析、递归树与主定理直觉、空间复杂度与稳定性、大 O 之外的三个陷阱 |
 | [查找与排序对比.md](算法/查找与排序对比.md) | 查找结构与排序算法对照表、工程选型、标准库为何各选不同、Top-K 的堆怎么选 |
 | [压缩算法.md](算法/压缩算法.md) | Snappy/LZW 与 zstd/lz4 定位、块压缩 vs 流压缩、「开了压缩反而更慢」的判据 |
@@ -129,9 +130,9 @@
 | [redis/淘汰策略.md](数据存储/redis/淘汰策略.md) | maxmemory 触发时机、三大类淘汰策略的取舍 |
 | [redis/分布式锁.md](数据存储/redis/分布式锁.md) | SetNX + 过期 + Lua 释放、必须考虑的 6 个故障点、Go 手写与 Java Redisson |
 | [redis/发布订阅.md](数据存储/redis/发布订阅.md) | Pub/Sub 与 Stream 的实现差异、语义对比与选型 |
-| [ElasticSearch.md](数据存储/ElasticSearch.md) | 简介与选型、倒排索引与字段类型、text vs keyword 与 mapping 代价、写入全链路与段生命周期、BM25 打分，附原理层 6 个追问 |
-| [ElasticSearch应用与DSL.md](数据存储/ElasticSearch应用与DSL.md) | 写入与索引状态管理、集群与分片规划、文本分析、搜索 DSL（深翻页四方案、聚合误差与基数估算）、事故清单，附 8 个追问 |
-| [ElasticSearch客户端.md](数据存储/ElasticSearch客户端.md) | Go / Java 官方客户端的版本对应关系、两套调用形态的差异与接入代码 |
+| [ElasticSearch.md](数据存储/elasticsearch/ElasticSearch.md) | 简介与选型、倒排索引与字段类型、text vs keyword 与 mapping 代价、写入全链路与段生命周期、BM25 打分，附原理层 6 个追问 |
+| [ElasticSearch应用与DSL.md](数据存储/elasticsearch/ElasticSearch应用与DSL.md) | 写入与索引状态管理、集群与分片规划、文本分析、搜索 DSL（深翻页四方案、聚合误差与基数估算）、事故清单，附 8 个追问 |
+| [ElasticSearch客户端.md](数据存储/elasticsearch/ElasticSearch客户端.md) | Go / Java 官方客户端的版本对应关系、两套调用形态的差异与接入代码 |
 | [MongoDB.md](数据存储/MongoDB.md) | 文档建模模式与迁移、索引体系与 ESR 规则、explain 读法、聚合管道代价、分片与架构管理、副本集读写关注与因果一致性、事务边界、运维坑、Go/Java 客户端 |
 
 ### 中间件
@@ -165,6 +166,7 @@
 | [tcp/TCP报文结构.md](网络/tcp/TCP报文结构.md) | 连接的本质、首部字段、序列号与确认号演算、字节流没有边界的两种解法（Go 长度前缀 / Java Netty） |
 | [tcp/TCP三次握手.md](网络/tcp/TCP三次握手.md) | 三次握手逐步拆解、为什么必须三次、初始序号为什么必须随机 |
 | [DNS解析.md](网络/DNS解析.md) | 域名层级与四类服务器、递归/迭代查询全流程、TTL 与缓存故障、记录类型与 CNAME 三个坑、DNS 轮询与 GSLB、劫持/HTTPDNS/DoH、Go net.Resolver 与 Java 用法 |
+| [网络分层与数据包旅程.md](网络/网络分层与数据包旅程.md) | 五层模型各层解决什么、MAC 与 IP 为什么必须并存、ARP 与子网掩码；一次访问网页的完整封装与分片旅程（9 步）、两种地址的分工 |
 | [HTTPS与TLS.md](网络/HTTPS与TLS.md) | TLS 与 SSL 关系、TLS 1.2 两次往返握手、RSA vs ECDHE、证书验证与主密钥推导、1.3 的 1-RTT/0-RTT 与重放攻击、会话复用、SSLKEYLOGFILE 解密抓包 |
 | [HTTP与gRPC.md](网络/HTTP与gRPC.md) | HTTP/2 的五点改进、gRPC 与 HTTP 的本质差别、连接池与 `httptrace` 复用观测、多路复用实测 |
 | [DHCP.md](网络/DHCP.md) | DORA 四阶段、T1/T2 续租时间点、租约状态机在 Go / Java 里的复用 |
@@ -213,6 +215,7 @@
 | 文件 | 知识点 |
 |---|---|
 | [加密算法.md](安全/加密算法.md) | 对称/非对称/散列三类算法清单与优缺点对比、密钥长度怎么选、DES/3DES 为什么弃用 |
+| [密码与敏感信息存储.md](安全/密码与敏感信息存储.md) | 四种密码攻击的区别（在线 vs 离线）、加盐的作用与实测（彩虹表命中率 100% → 0%）、慢哈希与工作因子（迭代次数 vs 耗时）、Go/Java 实现、失败锁定与落地清单 |
 | [摘要与数字签名.md](安全/摘要与数字签名.md) | 数字摘要与数字签名的定义与实现步骤、与「数据加密」的区别、bcrypt 与盐 |
 | [数字证书与PKI.md](安全/数字证书与PKI.md) | 数字证书与信任链、SSL 与 HTTPS、现代工程实践、mTLS 与自签证书的坑 |
 

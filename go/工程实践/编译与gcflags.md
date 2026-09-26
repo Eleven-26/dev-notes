@@ -12,7 +12,7 @@
 
 **考察意图**：分清「go 命令的开关」与「编译器的开关」——`go build` / `go test` 只是构建入口，`-gcflags` 的本质是把参数**透传给 `go tool compile`**；并且要能说明"平时不用、什么时候必须用"。
 
-### 一、它只是"把参数转交给编译器"
+### 1.1 它只是"把参数转交给编译器"
 
 构建链路是 `go build` / `go test` → 编译器 `go tool compile` → 汇编器 `go tool asm` → 链接器 `go tool link`，三个中间工具各有一个透传开关：
 
@@ -24,7 +24,7 @@
 
 `go build` 默认已用一套调好的参数，**绝大多数情况不需要 gcflags**；它的定位是"我要看编译器的内部行为，或者要改变编译产物"。`go help build` 对它的说明也只有一行——`-gcflags '[pattern=]arg list'：arguments to pass on each go tool compile invocation.`，**完整参数表在编译器自己的帮助里**（见第三节）。
 
-### 二、什么时候必须用它
+### 1.2 什么时候必须用它
 
 | 场景 | 目的 | 典型写法 |
 |---|---|---|
@@ -35,7 +35,7 @@
 
 > `dlv` 在 `debug` 模式下会**自动**加上 `-gcflags="all=-N -l"`；但如果你自己 `go build` 出二进制再 `dlv exec`，就必须手动带上。
 
-### 三、写法：`-gcflags="[pattern=]参数列表"`
+### 1.3 写法：`-gcflags="[pattern=]参数列表"`
 
 `go help build` 的关键规则：**不写 pattern 时，参数只作用于命令行上直接指定的包**；要看依赖包（`net/http`、`crypto/*` 等）必须写 `all=`。
 
@@ -63,7 +63,7 @@ go test -gcflags="all=-N -l" -count=1 -run TestFoo -v ./...   # 调测试时同�
 
 **考察意图**：能不能把 flag 和"要解决的问题"对上号——看逃逸用 `-m`、调试环境用 `-N -l`、看指令用 `-S`；并且要能读懂真实输出。
 
-### 一、速查表（说明取自 `go tool compile -h`）
+### 2.1 速查表（说明取自 `go tool compile -h`）
 
 | flag | 官方说明 | 实际用途 |
 |---|---|---|
@@ -81,7 +81,7 @@ go test -gcflags="all=-N -l" -count=1 -run TestFoo -v ./...   # 调测试时同�
 
 按用途归类就是官方帮助里的几个板块：**调试相关**（`-N` `-l` `-d` `-t`）、**优化与代码生成**（`-m` `-B` `-smallframes` `-pgoprofile`）、**输出控制**（`-S` `-C` `-json`）、**导入与路径**（`-I` `-D` `-trimpath` `-p`）、**性能分析与调试信息**（`-dwarf` `-race` `-cpuprofile`）。
 
-### 二、`-m` 实战：真实输出长什么样
+### 2.2 `-m` 实战：真实输出长什么样
 
 ```go
 type Animal interface{ Name() string }
@@ -114,7 +114,7 @@ $ go build -gcflags="-m -m" . 2>&1 | grep -A3 "escapes to heap in f1"
 ./main.go:10:29:     from s := make([]int, 4) (assign) at ./main.go:10:22
 ```
 
-### 三、`-S` 看汇编
+### 2.3 `-S` 看汇编
 
 ```bash
 $ go build -gcflags="-S" . 2>&1 | sed -n '1,4p'
@@ -124,7 +124,7 @@ main.Dog.Name STEXT nosplit size=13 args=0x0 locals=0x0 funcid=0x0 align=0x0
 	0x0007 00007 (main.go:8)	MOVL	$3, BX
 ```
 
-### 四、`-N -l`：调试前必须先关优化
+### 2.4 `-N -l`：调试前必须先关优化
 
 | 不关会怎样 | 关了之后 |
 |---|---|
@@ -151,7 +151,7 @@ dlv exec ./app-debug
 
 **考察意图**：考"遇到不认识的编译参数去哪儿查"的自查能力——go 命令的文档只有一行透传说明，**完整参数表在编译器自己的 `-h` 里**，二级调试开关在 `-d help` 里，实在不够就翻编译器源码。
 
-### 一、四条查找路径
+### 3.1 四条查找路径
 
 ```bash
 go help build | grep -A1 gcflags    # ① go 命令侧：只有"怎么传"
@@ -162,7 +162,7 @@ go tool link -h / go tool asm -h    # ④ 链接器 / 汇编器的 flag
 
 源码位置：`$GOROOT/src/cmd/compile/internal/base/flag.go`，所有 gcflag 都在这里注册。
 
-### 二、`-d help` 长这样
+### 3.2 `-d help` 长这样
 
 ```bash
 $ go tool compile -d help
@@ -183,7 +183,7 @@ go build -gcflags="-d=checkptr=2" .    # 强化 unsafe.Pointer 检查（联调�
 go build -gcflags="-t" .               # 打印编译器各阶段耗时
 ```
 
-### 三、直接调用编译工具，以及"看编译过程"的两个口子
+### 3.3 直接调用编译工具，以及"看编译过程"的两个口子
 
 `go build -gcflags="-S"` 和 `go tool compile -S main.go` 干的是同一件事，区别只是**参数由谁传**：
 

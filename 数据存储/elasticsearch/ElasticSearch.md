@@ -233,11 +233,11 @@ Elasticsearch 还支持在一个请求中批量写入多个文档，过程如图
 ④ merge：小段合成大段，顺带物理清除被标记删除的文档
 ```
 
-+ **translog 就是那个丢失窗口**。`index.translog.durability` 默认 `request`：每个写请求 fsync 一次 translog，节点掉电不丢已确认数据，代价是 fsync 次数 ∝ 写 QPS（顺序写也很吃磁盘能力）。高吞吐日志场景改成 `async`，按 `index.translog.sync_interval` 周期 fsync，用"最多丢一个同步间隔"换吞吐——这是**业务可容忍度决策**，必须写进设计文档，不能当成"嫌慢就改"的调优旋钮。（page cache / fsync 的底层代价见 [Linux 文件系统与 I/O](../linux/文件系统与IO.md)。）
++ **translog 就是那个丢失窗口**。`index.translog.durability` 默认 `request`：每个写请求 fsync 一次 translog，节点掉电不丢已确认数据，代价是 fsync 次数 ∝ 写 QPS（顺序写也很吃磁盘能力）。高吞吐日志场景改成 `async`，按 `index.translog.sync_interval` 周期 fsync，用"最多丢一个同步间隔"换吞吐——这是**业务可容忍度决策**，必须写进设计文档，不能当成"嫌慢就改"的调优旋钮。（page cache / fsync 的底层代价见 [Linux 文件系统与 I/O](../../linux/文件系统与IO.md)。）
 + **"近实时(NRT)"的真实含义**：refresh 只是让新数据组成一个**段**并被新的 searcher 打开，段还在 page cache、translog 也没截断。所以「能搜到」≠「已落盘」，「返回 200」≠「能搜到」。需要写后立即可查用 `?refresh=wait_for`（等下一个刷新点，比 `true` 温和）；⚠️ 每次强制 refresh 都会造一个几乎空的段 → 段数暴涨 → merge 压力 → 搜索变慢。批量导数时把 `index.refresh_interval` 设 `-1`、副本设 0，写完再恢复。
 + **flush 不该手动频繁做**：flush = commit + 轮转 translog，频繁 flush 制造大量小段，只是把成本推给 merge。ES 按 translog 体积/时间自动触发，一般不需要人为干预。
 + **merge 的写放大**：合并 K 个段要把这 K 段的倒排与列式数据全部读出、重写成一个新段，累计写盘量远大于原始文档体积；这就是"批量导入 + 事后 force merge"比"边写边查"省资源的原因。merge 也解释了为什么删除/更新多之后搜索变慢（见下一小节）。
-+ 副本一致性：文档先写主分片再并行同步副本，两者都成功才返回——这套"确认语义 + 主分片任期"和 Raft 的多数派确认不是同一套东西（对比见 [一致性与 Raft](../分布式/Raft协议.md)），ES 默认是"全部 in-sync 副本"而不是多数派。
++ 副本一致性：文档先写主分片再并行同步副本，两者都成功才返回——这套"确认语义 + 主分片任期"和 Raft 的多数派确认不是同一套东西（对比见 [一致性与 Raft](../../分布式/Raft协议.md)），ES 默认是"全部 in-sync 副本"而不是多数派。
 
 #### 删除与更新为什么贵：标记删除 + 追加
 
@@ -264,7 +264,7 @@ POST my_index/_update/1?if_seq_no=42&if_primary_term=1
 
 + 业务侧"状态必须是 A 才能改 B"：读时带上版本号、写时用 `if_seq_no`；或把条件写进 painless 脚本（脚本更新在分片内原子，但每个候选文档都要解释执行一次脚本，贵）。
 + 内部重试：`_update` 的 `retry_on_conflict`（默认 0）；⚠️ 别靠调大它掩盖竞态，冲突率本身就是业务并发度的监控指标。
-+ 从 MySQL / Kafka 单向同步：`version_type=external` + 业务单调版本（更新时间、binlog 位点），天然丢弃乱序到达的旧数据（链路设计见 [Kafka](../中间件/消息队列/Kafka.md)）。注意 external version 只保证"旧的覆盖不了新的"，不给你并发更新的检测能力。
++ 从 MySQL / Kafka 单向同步：`version_type=external` + 业务单调版本（更新时间、binlog 位点），天然丢弃乱序到达的旧数据（链路设计见 [Kafka](../../中间件/消息队列/Kafka.md)）。注意 external version 只保证"旧的覆盖不了新的"，不给你并发更新的检测能力。
 
 #### 索引的搜索过程
 
@@ -384,31 +384,31 @@ curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/j
 
 ## 面试官会追问什么
 
-### 一、为什么 `text` 字段不能排序和聚合？
+### 1. 为什么 `text` 字段不能排序和聚合？
 分词后倒排里存的是 term → 文档，方向是"词找文档"；排序聚合需要"文档找值"的正排结构（`doc_values`）。text 反转出来的是无序 term 集合而不是原值，语义上就不成立，所以 ES 在 mapping 层直接禁止。解法是 `fields` 子字段：`title` 做全文、`title.kw` 做聚合。
 
-### 二、`term` 查 `text` 字段为什么查不到？
+### 2. `term` 查 `text` 字段为什么查不到？
 `text` 索引的是分词后的词项，`term` 不对查询串分词、拿整串去比对词典。"Elasticsearch 入门"在词典里以两个分词存在，整串这个 term 根本不存在，所以必然查不到。要么改用 `match`，要么这个字段本来就是 `keyword`。
 
-### 三、写入返回 200 之后多久能搜到？为什么？
+### 3. 写入返回 200 之后多久能搜到？为什么？
 默认最迟约 1 秒（`index.refresh_interval`）。因为请求返回只保证数据进了 in-memory buffer 并写了 translog，refresh 才会把 buffer 变成一个可被 searcher 看到的段。⚠️ 关键点：可见性发生在 page cache 里的段，不是磁盘——所以"能搜到"不代表"宕机不丢"，不丢靠 translog。
 
-### 四、那宕机到底会丢数据吗？
+### 4. 那宕机到底会丢数据吗？
 看 translog 的 fsync 策略。默认 `durability: request`，每个请求 fsync 一次 translog，已确认的写不丢；改成 `async` 后最多丢一个 `sync_interval` 内的数据，换来写入吞吐。这是"能接受丢多少"的业务决策，不是性能开关。
 
-### 五、为什么更新很贵？删除之后空间会立刻释放吗？
+### 5. 为什么更新很贵？删除之后空间会立刻释放吗？
 删除只在段的 live-docs 位图上标记，更新等于"标记删除旧文档 + 追加新文档"，倒排和列式结构全部重做一遍。空间不会立刻释放，只有 merge 读到含死文档的段时才物理回收；副作用是删除比例高时搜索仍需扫描死文档，表现为"数据变少了查询变慢了"。
 
-### 六、并发更新同一个文档怎么保证不写花？
+### 6. 并发更新同一个文档怎么保证不写花？
 `_seq_no` + `_primary_term` 做乐观并发：读时拿版本号，写时用 `if_seq_no`/`if_primary_term` 条件提交，不匹配返回 409。`_primary_term` 的作用是防止旧主分片残留的写在主切换后被错误接受。从 DB 单向同步则用 `version_type=external` + 单调业务版本丢弃乱序旧数据。
 
 ---
 
 ## 延伸
 
-- 段落盘与 fsync、page cache 的底层机制：[Linux 文件系统与 I/O](../linux/文件系统与IO.md)、[Linux 内存管理](../linux/内存管理.md)
-- 副本确认语义与多数派共识的差别：[Raft 协议](../分布式/Raft协议.md)
-- 从 binlog/CDC 单向同步到 ES 的链路设计：[Kafka](../中间件/消息队列/Kafka.md)
+- 段落盘与 fsync、page cache 的底层机制：[Linux 文件系统与 I/O](../../linux/文件系统与IO.md)、[Linux 内存管理](../../linux/内存管理.md)
+- 副本确认语义与多数派共识的差别：[Raft 协议](../../分布式/Raft协议.md)
+- 从 binlog/CDC 单向同步到 ES 的链路设计：[Kafka](../../中间件/消息队列/Kafka.md)
 
 ---
 
@@ -416,9 +416,9 @@ curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/j
 
 - [ElasticSearch应用与DSL.md](ElasticSearch应用与DSL.md) — 写入、文本分析与搜索 DSL 的落地用法
 - [ElasticSearch客户端.md](ElasticSearch客户端.md) — Go / Java 客户端怎么调
-- [MongoDB.md](MongoDB.md) — 另一类非关系型存储的选型与运维
-- [mysql/索引与优化.md](mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
-- [../linux/文件系统与IO.md](../linux/文件系统与IO.md) — translog 的 fsync 与 page cache
-- [存储选型.md](存储选型.md) — ES 在存储体系中的定位（该用与不该用、与 ClickHouse 的分工）
+- [MongoDB.md](../MongoDB.md) — 另一类非关系型存储的选型与运维
+- [mysql/索引与优化.md](../mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
+- [../linux/文件系统与IO.md](../../linux/文件系统与IO.md) — translog 的 fsync 与 page cache
+- [存储选型.md](../存储选型.md) — ES 在存储体系中的定位（该用与不该用、与 ClickHouse 的分工）
 
-> 反向引用（本篇被下列文档引到）：[海量数据存储设计.md](../分布式/系统设计/海量数据存储设计.md)、[统计页提速.md](../分布式/系统设计/统计页提速.md)
+> 反向引用（本篇被下列文档引到）：[海量数据存储设计.md](../../分布式/系统设计/海量数据存储设计.md)、[统计页提速.md](../../分布式/系统设计/统计页提速.md)

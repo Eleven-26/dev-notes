@@ -432,28 +432,28 @@ curl -X POST "localhost:9200/my_index/_search" -H 'Content-Type: application/jso
 
 ## 面试官会追问什么
 
-### 一、深分页为什么慢？给三个方案并说明怎么选。
+### 1. 深分页为什么慢？给三个方案并说明怎么选。
 `from + size` 时每个分片都要维护 from+size 大小的堆，协调节点归并 `分片数 × (from+size)` 条，前 from 条纯白算。选：后台列表能跳页且只看前几页 → from/size；无限下拉 → `search_after`（近乎零开销但不能跳页）；导出/一致性遍历 → PIT + `search_after`（scroll 是旧方案，段被钉住且不能跳页）。
 
-### 二、`terms` 聚合的 doc_count 一定是准的吗？
+### 2. `terms` 聚合的 doc_count 一定是准的吗？
 不一定。各分片只回传本地 top size，协调节点汇总，某 term 可能全局高频但每个分片都进不了本地前 N，被静默丢掉。响应里的 `doc_count_error_upper_bound` 是误差上界，`sum_other_doc_count` 非 0 说明长尾被截。要精确遍历全部 bucket 用 `composite`（按 key 有序归并，因此没有这个误差）。
 
-### 三、`cardinality` 能用来算钱吗？
+### 3. `cardinality` 能用来算钱吗？
 不能。它是 HyperLogLog 近似，内存固定，基数在 `precision_threshold` 内接近精确，超出后只保证数量级。对账/计费要精确去重：按天去重落库，或者 terms/composite 全遍历。另外 keyword 上的 `ignore_above` 会让超长值不进索引，近似值之外还漏值。
 
-### 四、分片是不是越多越好？
+### 4. 分片是不是越多越好？
 不是。每个分片是独立 Lucene 索引，有与数据量无关的固定开销（词典、段元数据、global ordinals、translog、search 线程占用）；不带 routing 的查询要在每个分片各跑一次，延迟由最慢分片决定；cluster state 体积也随分片数增长，压主节点。分片数按数据量和目标延迟倒推，历史索引靠 shrink 收口。
 
-### 五、主分片数建错了怎么办？shrink 和 split 有什么限制？
+### 5. 主分片数建错了怎么办？shrink 和 split 有什么限制？
 路由是 `hash(routing) % 主分片数`，改了旧数据就找不到，所以它是静态设置。三条路：`_reindex`（任意方向，代价是全量搬）；`_shrink`（目标必须整除源分片数，源要停写、分片需集中）；`_split`（目标必须是源的整数倍，同样停写，且不修正数据倾斜）。
 
-### 六、集群 yellow 需要处理吗？red 呢？
+### 6. 集群 yellow 需要处理吗？red 呢？
 yellow 表示副本没分配上——数据读写都正常，但容错已降级，主分片所在节点再挂就变 red，所以是"要尽快查原因"而不是"立刻救火"。red 表示有主分片未分配，这部分数据完全不可用、查询 partial failure，必须处理。第一步统一是 `_cluster/allocation/explain`，最常见的根因是磁盘水位触顶。
 
-### 七、查询突慢，你的排查顺序是什么？
+### 7. 查询突慢，你的排查顺序是什么？
 先看是不是集群层面的（线程池 rejected、pending tasks、GC、磁盘水位），再看是不是查询本身的（`profile: true` 看时间落在 query 还是 fetch、哪个子句/哪个分片最慢），最后看索引形态（段数是否爆炸 = refresh/merge 出问题；删除比例高；字段用错 text/keyword；聚合的 doc_count_error 与 cardinality 组合暴露长尾被砍）。slowlog 负责长期观测，profile 负责单条复现，两者不能互换。
 
-### 八、force merge 什么时候能做、什么时候不能做？
+### 8. force merge 什么时候能做、什么时候不能做？
 只做"未来不再写"的索引（rollover 之后的历史索引），因为它把死文档物理清除、把段数压到很小，代价是大 IO 且期间不可写。⚠️ 还在写的索引做等于白做（新段立刻污染）；按时间范围过滤的日志索引压成 1 段反而失去"按段的 min/max 跳过整段"的能力，通常留若干段更合适。
 
 ---
@@ -462,6 +462,6 @@ yellow 表示副本没分配上——数据读写都正常，但容错已降级�
 
 - [ElasticSearch.md](ElasticSearch.md) — 倒排索引与写入流程等原理
 - [ElasticSearch客户端.md](ElasticSearch客户端.md) — 这些 DSL 在 Go / Java 里怎么写
-- [../中间件/消息队列/Kafka.md](../中间件/消息队列/Kafka.md) — binlog/CDC 到 ES 的同步链路
-- [mysql/索引与优化.md](mysql/索引与优化.md) — ESR 与联合索引顺序的对照
-- [../linux/文件系统与IO.md](../linux/文件系统与IO.md) — merge 与磁盘 IO
+- [../中间件/消息队列/Kafka.md](../../中间件/消息队列/Kafka.md) — binlog/CDC 到 ES 的同步链路
+- [mysql/索引与优化.md](../mysql/索引与优化.md) — ESR 与联合索引顺序的对照
+- [../linux/文件系统与IO.md](../../linux/文件系统与IO.md) — merge 与磁盘 IO
