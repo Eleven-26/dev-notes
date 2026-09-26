@@ -121,6 +121,7 @@ MongoDB通过副本集（replication set）来实现数据库的高可用，这�
 一句话：**内嵌让"一次读"变便宜，引用让"一次写"变便宜**；写多、且读的时候经常不带上父文档的关联数据，几乎总是该引用。
 
 ### 基数关系可以双向建模：expanded / contracted
+
 | 方向 | 做法 | 换来什么 | 赔上什么 |
 | --- | --- | --- | --- |
 | expanded（把"一"复制进"多"） | `order_items[]` 每条内嵌一份商品快照（名称、单价） | 读订单列表零关联；价格天然是"下单时快照" | 商品改价要刷历史明细——但订单本就不该跟着变，这类冗余其实是正确语义 |
@@ -129,6 +130,7 @@ MongoDB通过副本集（replication set）来实现数据库的高可用，这�
 ⚠️ 两个方向同时存（既内嵌快照又维护反向数组）= 双写一致性自己扛，只有两侧都有真实读需求才做。
 
 ### 三种高频模式：attribute / subset / buckets
+
 | 模式 | 形状 | 解决什么 | 代价 |
 | --- | --- | --- | --- |
 | attribute-pattern | 动态字段收进一个子文档、键当字段名：`metrics: { "cpu_idle": 12, "disk_used": 3 }` | 字段名本身也是数据时，避免顶层字段无限增长、索引建不完 | 想按某个指标过滤就得单独建 `{ "metrics.cpu_idle": 1 }`；字段名在每份文档里重复存，占空间 |
@@ -204,6 +206,7 @@ db.orders.find({ status: "PAID", createdAt: { $lt: ISODate("2026-09-01") } })
 //                       ⚠️ { status, amount, createdAt }（E-R-S）会退化成内存排序
 db.orders.find({ status: "PAID", amount: { $gt: 100 } }).sort({ createdAt: -1 }).limit(20);
 ```
+
 | 索引顺序 | 扫描行为 | 后果 |
 | --- | --- | --- |
 | `{status, createdAt, amount}`（E-S-R） | 区间锁在 `status="PAID"` 且 `createdAt < X`，按索引序输出；`amount` 在键里只能**边扫边过滤**（缩窄不了区间），但过滤发生在索引层，少回表 | 排序免费 + 靠 `limit` 提前停；命中几十万也只看 20 条左右 |
@@ -223,6 +226,7 @@ db.users.find({ city: "HZ" }, { city: 1, age: 1 })          // ❌ 只差一个 
 ⚠️ 多键（数组）索引**永远不能覆盖**，一定要回表取原文档；含数组元素的索引也**不能用于满足排序**（同一文档会因不同数组元素出现在多个位置，顺序无定义），排了就是 `SORT`。
 
 ### 部分索引 vs 稀疏索引
+
 | | `sparse: true` | `partialFilterExpression` |
 | --- | --- | --- |
 | 收录哪些文档 | 索引字段**存在**的文档（含显式写成 `null` 的） | 满足给定表达式的文档（可小到"活跃子集"，体积能小一个数量级） |
@@ -265,6 +269,7 @@ db.places.find({ loc: { $near: {
 操作符：`$near`（按距离排序）、`$geoWithin`（范围内）、`$geoIntersects`（相交）、`$geoNear`（聚合阶段，附带距离字段）。
 
 ### 唯一索引
+
 ```javascript
 db.users.createIndex({ email: 1 }, { unique: true })
 ```
@@ -350,6 +355,7 @@ db.runCommand({ collMod: "sessions",                               // 改过期�
 `rejectedPlans` 为什么值得看：`winningPlan` 只是"竞速赢了的"，不等于最优。如果 `rejectedPlans` 里躺着一个明显更合理的索引计划，通常是三种原因之一：① query shape 命中了**旧缓存计划**（换了索引但没清缓存）；② 新索引只部分可用（前缀对但方向/字段不全），竞速时被老计划赢；③ 数据分布偏斜让试跑阶段估计失真。处置手法见上文「多个候选索引时，planner 怎么选」，重点是：别直接下"这个索引没用"的结论。
 
 ### 慢查询定位：profiler
+
 ```javascript
 // level: 0 关闭 / 1 只记超过阈值的 / 2 全记（2 明显拖慢，只短时排查）
 db.setProfilingLevel(1, { slowms: 100 })      // 阈值随命令/配置下发，不要用默认值上线
@@ -369,6 +375,7 @@ db.killOp(<opid>)                             // ⚠️ 先确认不是长事务
 ⭐ 聚合的执行模型是"文档流依次穿过 stage"，因此**优化只有两个方向：让更少的文档进入下游 stage；让每个 stage 少占内存**。
 
 ### stage 顺序与管道优化器
+
 ```javascript
 // 反例：$unwind 在前、$match 在后 → 索引完全接不上，全集合先进管道再筛
 db.orders.aggregate([{ $unwind: "$items" }, { $match: { status: "PAID", "items.qty": { $gt: 5 } } },
@@ -384,6 +391,7 @@ db.orders.aggregate([
 服务端有管道优化器，会做几类等价改写：把 `$match` 尽量**下移**到能命中索引的位置、把 `$project` 裁剪下移、把 `$sort + $limit` 合成 top-k（有索引顺序时不真的排序）。⚠️ 但它**只在能证明语义等价时才改写**：跨 `$group`、`$unwind`、`$lookup` 的 `$match` 不会硬推（`$unwind` 之后才有意义的字段条件，前移就改变结果）。所以顺序自己写对，别指望优化器救你。能被索引"接住"的入口 stage 很有限：`$match`（等价于 find 的 filter）、`$geoNear`（必须在管道最前）、`$sort`（与 `$match` 组合成 ESR 时）、`$limit`；放在 `$group` 之后的任何过滤都只发生在内存里。
 
 ### `$lookup` 的代价：本质是嵌套循环
+
 ```javascript
 db.orders.aggregate([
   { $match: { createdAt: { $gte: ISODate("2026-09-01") } } },   // 先把驱动侧缩小
@@ -407,6 +415,7 @@ db.orders.aggregate([
 - `$bucket`（给定 `boundaries` + `default`）/ `$bucketAuto`（自动等分）：做直方图、金额分布、时长分布，比自己堆 `$cond` 清晰且只扫一遍。
 
 ### 大集合上的聚合分页
+
 ```javascript
 // 一次拿到"第 3 页 + 总数"：总数与页数据共用同一个 $match
 db.orders.aggregate([
@@ -496,6 +505,7 @@ db.orders.aggregate([
 - 故推荐 3 节点（PSS / PSA）或 5 节点，**不要 4 节点**；⚠️ Arbiter 不存数据，一旦一个数据节点故障，剩余数据节点可能凑不齐多数派而无法选举，`majority` 写关注也可能永久阻塞。
 
 #### 角色配置项与它们的适用边界
+
 | 角色 | 怎么配 | 用来解决什么 | ⚠️ 风险/约束 |
 | --- | --- | --- | --- |
 | `priority: 0` | `members[i].priority = 0` | 永不发起也不会当选 → 纯读池、跨机房只读副本 | 主挂了它接不了班，容量要按"少一个可当选节点"预算 |
@@ -537,7 +547,9 @@ err := mongo.WithSession(ctx, sess, func(sc mongo.SessionContext) error {
 跨进程/跨服务时把 `operationTime` 随消息或请求头传下去，接收方读时显式指定，等于把因果链延续出去。⚠️ 它保证的是"不比自己旧"而不是"全局最新"；要严格不旧于任何写入就直接读 primary。驱动默认在会话内开启 causal consistency，关掉能省等待但要业务自己兜。
 
 ## 分片与架构管理 ⭐
+
 ### 集群角色
+
 | 组件 | 职责 | 部署要点 |
 | --- | --- | --- |
 | `mongos` | 路由：用 chunk 映射剪枝，必要时广播 + 归并 | 无状态，多实例 + LB；它不是数据可靠性的来源 |
@@ -551,6 +563,7 @@ err := mongo.WithSession(ctx, sess, func(sc mongo.SessionContext) error {
 - 可控手段：建集合时指定 split points 做预分片、限定 balancer 窗口（只在低峰搬，搬不完只是倾斜继续存在，不影响正确性）、必要时手工合并/拆分 chunk。
 
 ### 分片键选择的三个目标（互相冲突）
+
 | 目标 | 想要什么 | 倾向的键 | 与谁冲突 |
 | --- | --- | --- | --- |
 | 写吞吐摊平 | 新写均匀落到所有分片 | 高基数、近随机（hash、打散后的 ID） | 与"查询可剪枝"冲突：hash 之后范围查询废掉 |
@@ -586,7 +599,9 @@ chunk 从源分片搬到目标分片期间，这段区间的**所有权（owners
 - 结论：⚠️ 迁移不是"免费的负载均衡"，它在被搬的那段键区间上制造一个短暂的写抖动窗口。热点集合宁可手工预分片 + 限定 balancer 窗口，也不要让 balancer 在业务高峰自行决定搬哪块。
 
 ## 事务与一致性边界 ⭐
+
 ### 前提与硬边界
+
 | 项 | 结论 |
 | --- | --- |
 | 拓扑 | 需要副本集或分片集群；**standalone 不支持**多文档事务（本地测试要起单节点副本集） |
@@ -597,6 +612,7 @@ chunk 从源分片搬到目标分片期间，这段区间的**所有权（owners
 | 冲突 | 事务持锁到提交；两个事务改同一文档 → 后者报事务冲突，**必须由业务层重试整个事务** |
 
 ### 用法要点（Go）
+
 ```go
 // ⭐ 事务体必须可重放：闭包里不能有外部副作用
 // 下面是 v1 驱动的显式写法（Start/Commit/Abort）；驱动同时提供 WithTransaction 便捷方法，
@@ -637,6 +653,7 @@ err := client.UseSession(ctx, func(sctx mongo.SessionContext) error {
 连接串速查：`mongodb://localhost:27017`（单机）；`mongodb://u:p@host:27017/?authSource=admin`（带认证库）；`mongodb://u:p@h1:27017,h2:27017,h3:27017/?replicaSet=rs0&w=majority`（副本集）；`mongodb+srv://u:p@cluster0.abcde.mongodb.net/`（Atlas，隐含 TLS）。
 
 ### Go 客户端（go.mongodb.org/mongo-driver）
+
 ```bash
 go get go.mongodb.org/mongo-driver/mongo          # v1
 go get go.mongodb.org/mongo-driver/v2@latest      # v2（模块路径带 /v2）
@@ -663,6 +680,7 @@ coll := client.Database("demo").Collection("users")
 ```
 
 #### 插入
+
 ```go
 res, err := coll.InsertOne(ctx, bson.M{
 	"name": "alice", "age": 30, "tags": []string{"go", "db"}, "createdAt": time.Now(),
@@ -703,6 +721,7 @@ if err := cur.Err(); err != nil { log.Fatal(err) } // ⚠️ 必须显式检查�
 常用操作符：`$eq $ne $gt $gte $lt $lte $in $nin $exists $regex $and $or $not $elemMatch $all $size`。
 
 #### 更新
+
 ```go
 res, err := coll.UpdateOne(ctx, bson.M{"name": "alice"}, bson.M{
 	"$set":  bson.M{"age": 31},
@@ -720,6 +739,7 @@ _, err = coll.UpdateMany(ctx, bson.M{"age": bson.M{"$lt": 30}}, bson.M{"$set": b
 常用更新操作符：`$set $unset $inc $mul $min $max $rename $push $pull $addToSet $pop`；⚠️ `MatchedCount` 是命中条数，`ModifiedCount` 是真正变化的条数；⚠️ 更新对象不带 `$` 操作符会被当作**整体替换**。
 
 #### 删除
+
 ```go
 res, err := coll.DeleteOne(ctx, bson.M{"name": "dave"})
 log.Println("deleted:", res.DeletedCount)
@@ -728,6 +748,7 @@ res, err = coll.DeleteMany(ctx, bson.M{"age": bson.M{"$lt": 18}})
 ⚠️ 批量删除前先用同样的 filter 跑一次 `CountDocuments` 确认影响范围。
 
 #### 聚合
+
 ```go
 pipeline := mongo.Pipeline{
 	{{Key: "$match", Value: bson.M{"age": bson.M{"$gte": 18}}}}, // 尽早过滤，最好命中索引
@@ -749,6 +770,7 @@ if err := cur.All(ctx, &stats); err != nil { log.Fatal(err) } // All 会自动�
 其他常用 stage：`$lookup`、`$unwind`、`$facet`、`$bucket`、`$out` / `$merge`、`$graphLookup`。
 
 #### 创建索引
+
 ```go
 // 单键索引
 _, err = coll.Indexes().CreateOne(ctx, mongo.IndexModel{
@@ -773,6 +795,7 @@ names, _ := coll.Indexes().ListNames(ctx) // 数组/嵌套字段同理：bson.D{
 
 ### Java 客户端（org.mongodb:mongodb-driver-sync）
 Maven 坐标：`org.mongodb:mongodb-driver-sync:5.2.1`（Gradle 同坐标；驱动走 SLF4J 门面，需自行引入日志实现）。
+
 ```xml
 <dependency>
     <groupId>org.mongodb</groupId>
@@ -782,6 +805,7 @@ Maven 坐标：`org.mongodb:mongodb-driver-sync:5.2.1`（Gradle 同坐标；驱�
 ```
 
 #### 连接、CRUD 与聚合
+
 ```java
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
@@ -854,6 +878,7 @@ public class MongoDemo {
 ```
 
 #### Spring Data MongoDB 简述
+
 ```yaml
 spring:
   data:
@@ -861,6 +886,7 @@ spring:
       uri: mongodb://user:pass@localhost:27017/demo?authSource=admin&w=majority
       auto-index-creation: true   # ⭐ 启动时按注解自动建索引
 ```
+
 ```java
 @Document(collection = "users")          // 不写则默认取类名小写
 public class User {
@@ -886,6 +912,7 @@ List<User> top = mongoTemplate.aggregate(agg, "users", User.class).getMappedResu
 ⚠️ Spring Boot 3.x 引入 `spring-boot-starter-data-mongodb` 即可；`@Indexed` 仅在 `auto-index-creation: true` 时生效，生产建议用迁移脚本显式建索引，避免启动时并发建索引阻塞。
 
 ## 运维与常见坑 ⭐
+
 ### 连接与连接池
 客户端小节说的"单例"不是风格问题：每个 `MongoClient` 自带连接池 + 拓扑监控线程，**每请求 new 一个**等于每请求建一批 TCP 与心跳，`serverStatus().connections.totalCreated` 会远大于 `current`。容量预算：总连接 ≈ 应用实例数 × `maxPoolSize`，多实例部署要按这个乘积下调每实例池大小，而不是指望服务端无限接。
 
@@ -910,6 +937,7 @@ cache 目标大小按物理内存的一个比例算（默认量级约一半，�
 机制链：mongod 启动要打开并恢复所有索引的元数据 → 从节点追 oplog 时**每笔写都要维护全部索引** → 回放越慢 → lag 越大。选举协议本身只看心跳和 oplog 位置，但 lag 严重的从节点即使当选也接不住读、还会拖住多数派写；切换瞬间新主要把大量索引页读进 cache（冷缓存）→ "切完之后整体慢一阵"，运维上就像"切不过去"。所以索引数量是**运维预算**，删索引要和删集合一样走评审。
 
 ### 监控指标清单
+
 | 指标 | 怎么看 | 告警思路 |
 | --- | --- | --- |
 | 复制延迟 | `rs.printSecondaryReplicationInfo()` | 阈值按 oplog 窗口的占比设，不设固定秒数 |
@@ -922,6 +950,7 @@ cache 目标大小按物理内存的一个比例算（默认量级约一半，�
 | 冲突与均衡 | `currentOp` 冲突计数、balancer 状态与迁移日志 | 突增 = 热点 chunk 或长事务；高峰出现迁移 = 抖动源 |
 
 ### 其他高频坑
+
 | 坑 | 为什么 | 处置 |
 | --- | --- | --- |
 | 非锚定 `$regex` | 无法用索引定界，只能扫全部键 | 前缀锚定 `^abc` 才能吃索引；全文检索走 [ElasticSearch.md](elasticsearch/ElasticSearch.md) |

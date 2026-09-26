@@ -149,6 +149,7 @@ for (;;) {
 ```
 
 写操作也要循环到发送缓冲区满；剩余数据放用户态队列并订阅 `EPOLLOUT`，写完立即取消订阅。
+
 > ⚠️ ET 最典型事故：只读一次便返回，缓冲区仍有旧数据，却没有新的边沿，连接像“卡死”。
 
 ---
@@ -187,6 +188,7 @@ Nginx 更准确地说是“多个 worker 进程各自运行单线程 Reactor”�
 
 Go runtime 的 netpoller 在 Linux 上使用 epoll：网络 I/O 暂不可完成时挂起 goroutine，
 对应 M 不必等待；fd 就绪后 runtime 再把 goroutine 置为可运行。
+
 > ⭐ Go 中可写阻塞式 `Accept/Read/Write`，底层却由非阻塞 fd + 多路复用承接，这降低了并发编程心智负担。
 
 G、M、P 的配合与调度细节见 [Go GMP 调度模型](../go/运行时/GMP调度.md)。

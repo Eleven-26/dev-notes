@@ -8,25 +8,30 @@
 ## 简介
 
 Elasticsearch 是一个分布式、RESTful 的搜索和数据分析引擎。
+
 ### 优点
 
 + 高性能：倒排索引
 + 易扩展：分布式
 + 容错性好：副本机制
 + 上手快：RESTful API，社区活跃
+
 ### 使用场景
 
 + 在线实时日志分析，ELK(Elasticsearch、Logstash、Kibana)和 Elastic Stack
 + 物联网(internet of things，IoT)数据监控
 + 文献检索和文献计量
 + 商务智能(business intelligence，BI)大屏展示
+
 ### 选型分析
 
 + 写少读多
 + 不支持事务
 + 数据量大、响应要快
 + 使用 SQL 、NoSQL 也无法满足（避免过度设计）
+
 ## 原理
+
 ### 基本原理
 
 搜索引擎的使用在我们的日常生活中应该已经司空见惯，通常搜索引擎包括数据采集模块、文本分析模块、索引存储模块、搜索模块等，这些模块的协作流程是：
@@ -35,7 +40,9 @@ Elasticsearch 是一个分布式、RESTful 的搜索和数据分析引擎。
 + 文本分析模块：负责将原始文本数据切分成有意义的分词以便于搜索；
 + 索引存储模块：负责将数据组建成倒排索引以实现高速搜索；
 + 搜索模块：负责根据用户的查询条件返回最相关的搜索结果。
+
 ### 索引
+
 #### 倒排索引
 
 ⭐ **为什么倒排索引比正排快**：
@@ -61,6 +68,7 @@ Elasticsearch 是一个分布式、RESTful 的搜索和数据分析引擎。
 | 分词 / 模糊匹配 | 天然支持（按分词匹配） | 不支持，只能前缀 like |
 | 结果相关性 | 可结合 TF-IDF / BM25 计算得分 | 不返回相关性得分 |
 | 典型系统 | Elasticsearch / Lucene | MySQL InnoDB 等关系型数据库 |
+
 #### 索引字段类型
 
 ⭐ 映射(mapping)的核心是给每个字段指定类型，类型决定了**是否分词**、**能做什么查询**、**能否排序和聚合**。
@@ -81,12 +89,14 @@ Elasticsearch 是一个分布式、RESTful 的搜索和数据分析引擎。
 | `binary` | Base64 编码的二进制 | ❌ | ⚠️ 不可搜索，仅存储 |
 
 **文本类型(text)**：文本类型是索引中常用的字段类型，索引 `mysougoulog` 的两个字段都是文本类型。文本类型是一种默认会被分词的字段类型，如果不指定，Elasticsearch 会使用标准分词器切分文本，并会把切分后的文本保存到索引中。搜索时，只有搜索文本和索引中的文本相匹配的文档才会出现在搜索结果中。
+
 ```json
 PUT mysougoulog
 { "settings": { "number_of_shards": "5", "number_of_replicas": "1" },
   "mappings": { "properties": { "userid": { "type": "text" } } } }
 ```
 **日期(date)**：默认情况下，索引中的日期为 UTC 时间格式，其比北京时间晚 8h，使用时每次查询都需要进行格式转换，很不方便。所以在实际项目中，你可以使用 `format` 参数自定义时间格式，例如：
+
 ```json
 PUT sougoulog-date
 { "mappings": { "properties": { "visittime": {
@@ -99,16 +109,20 @@ PUT sougoulog-date
 **关键字(keyword)**：与 `text` 相对，`keyword` 不做分词，把整个字段值当作一个词项建索引，适合精确匹配、排序与聚合。
 
 **布尔(boolean)、经纬度(geo_point)、对象(object)、数组(array)、二进制文件(binary)**：用途与注意事项见上表；其中 `object` 与 `nested` 的差异是高频考点——对象数组若需维持元素间关联，必须用 `nested`。
+
 #### 忽略映射中不合法的数据
 
 默认情况下，若写入的数据与映射定义的类型不兼容（例如向 `date` 字段写入无法解析的字符串），Elasticsearch 会直接抛错并**拒绝整条文档**，批量写入时尤为麻烦。可以在字段级别设置 `ignore_malformed: true`，让 ES 忽略这条不合法的数据（该字段不被索引，但整条文档仍可写入）：
+
 ```json
 PUT my_index
 { "mappings": { "properties": { "age": { "type": "integer", "ignore_malformed": true } } } }
 ```
+
 #### 字段复制和字段存储
 
 Elasticsearch 允许在映射中为某个字段定义 `copy_to` 参数，以实现复制多个其他字段的内容，这样在搜索一个字段时能够达到同时搜索多个字段的效果，使用字段复制比使用多字段匹配 `multi_match` 性能更好。
+
 ```json
 PUT my_index
 { "mappings": { "properties": {
@@ -117,6 +131,7 @@ PUT my_index
     "full_name":  { "type": "text" } } } }
 ```
 字段存储(`store`)指字段是否**独立**保存原始值。默认 `_source` 已保存完整原始文档，一般无需 `store`；只有在关闭 `_source`、或确实需要在结果中单独取出某字段时才设置为 `true`。
+
 #### 动态映射
 
 若向 Elasticsearch 的索引中添加数据的字段是原先未定义的，数据也依然可以被成功添加。Elasticsearch 拥有动态映射机制，会根据添加的数据内容自动识别对应的字段类型，这也正是索引的映射可以根据写入的数据自动“扩张”的原因。
@@ -136,6 +151,7 @@ PUT my_index
 **为什么 ES 拒绝为 text 开 doc_values**：要做聚合就必须有「文档 → 值」的正排结构，否则只能把整份倒排现场反转（即 fielddata，见「常见事故」）。而 text 字段反转出来的不是"这个字段的值"，是"这个文档里出现过的一堆无序 term"（同一文档的分词还被去重合并进倒排），语义上没法用来分组或排序——所以 ES 直接在 mapping 层禁掉，而不是等到运行时慢。
 
 **标准解法是子字段（多字段），不是二选一**：
+
 ```json
 { "mappings": { "properties": { "title": {
     "type": "text",
@@ -170,6 +186,7 @@ PUT my_index
 假如 node-1 和 node-2 是同一个服务器的两个虚拟机，node-3 是另一个服务器的虚拟机。如果某个时刻 node-1 和 node-2 所在的那台物理机宕机或停电，而分片 P0 和它的副本分片 R0 都在这台物理机上，则会直接导致索引丢失分片不能使用。为了解决这一问题，可以使用分片分配的感知，对副本分片分配的位置进行人为干预。分片分配的感知允许把 Elasticsearch 的节点划分为属于不同的区域，当分配一个副本分片时，不允许将它分配到它的主分片所在的区域。这样做的好处是，即使某个区域的节点全部“挂掉”，其他区域依然有相应的副本分片，不影响集群的使用。
 
 分片分配需满足的基本条件：同一分片的主分片和副本分片不能分配到同一节点；同一分片的多个副本分片也不能在同一节点。
+
 #### 索引分片的恢复
 
 分片的恢复指的是把一个分片复制一份产生新的分片的过程。通常在分片的分配、索引分片的副本数改变、快照恢复时都会伴随有分片的恢复。
@@ -188,6 +205,7 @@ PUT my_index
 + 恢复完成前副本分片状态为 `INITIALIZING`，集群健康度显示为 `yellow`，分片的容错能力下降。
 
 常见缓解手段：延长未分配分片的延迟分配时间 `index.unassigned.node_left.delayed_timeout`（默认 1m），让短暂离线的节点有机会回归从而避免重建副本；限制并发恢复数 `cluster.routing.allocation.node_concurrent_recoveries`；必要时通过 `_cluster/settings` 降低恢复吞吐。
+
 #### 索引的写入
 
 假如包含 3 个节点的集群中有一个索引，拥有 3 个主分片，每个主分片有 1 个副本分片，当一个文档写入请求到来时，Elasticsearch 的处理过程如图 2.12 所示。
@@ -256,6 +274,7 @@ Elasticsearch 还支持在一个请求中批量写入多个文档，过程如图
 | `_primary_term` | 主分片任期号 | 主分片切换（failover / 重新分配）时递增 |
 
 `_primary_term` 用来挡掉"旧主分片残留的写"，`_seq_no` 用来做条件更新，两者一起才构成可靠的 CAS：
+
 ```json
 POST my_index/_update/1?if_seq_no=42&if_primary_term=1
 { "doc": { "status": "paid" } }

@@ -97,6 +97,7 @@
 ---
 
 ## 使用一：Go（`SetNoDelay` 的默认值认知）⭐
+
 ### 1. 先纠正一个默认值认知
 
 正文第一节的追问说「`SetNoDelay(true)` 关闭 Nagle，**Go 默认就开启了 NoDelay**」——这句话值得记成表：

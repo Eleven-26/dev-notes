@@ -8,6 +8,7 @@
 ## 使用方法
 
 客户端与 ES 版本必须匹配，见下表。
+
 ### 版本对应关系
 
 | ES 版本 | Java 客户端 | Go 客户端 | 关键说明 |
@@ -18,13 +19,17 @@
 | 8.x | `co.elastic.clients:elasticsearch-java` 8.x | `go-elasticsearch/v8` | ⚠️ 8.x 默认开启 HTTPS + 认证 |
 
 ⚠️ 匹配原则：客户端主版本 = ES 服务端主版本。跨主版本一般能通，但存在 API 不兼容与弃用告警。
+
 ### Go 客户端
 
 安装官方客户端，⭐ 社区客户端 `github.com/olivere/elastic` 已停止维护，新项目请直接使用官方客户端：
+
 ```bash
 go get github.com/elastic/go-elasticsearch/v8@latest
 ```
+
 #### 建立客户端
+
 ```go
 // 依赖: github.com/elastic/go-elasticsearch/v8
 // 另需: crypto/tls、net/http、encoding/json、bytes、strings、time、fmt、log
@@ -45,7 +50,9 @@ func newClient() *elasticsearch.Client {
 	return es
 }
 ```
+
 #### 创建索引（含 mapping）
+
 ```go
 res, err := es.Indices.Create("my_index",
 	es.Indices.Create.WithBody(strings.NewReader(`{
@@ -61,7 +68,9 @@ if err != nil {
 }
 defer res.Body.Close()
 ```
+
 #### 单条写入 / 查询 / 更新 / 删除
+
 ```go
 // 写入
 doc := map[string]any{
@@ -81,9 +90,11 @@ res, err = es.Update("my_index", "1", // 部分更新
 	strings.NewReader(`{"doc": {"title": "更新后的标题"}}`))
 res, err = es.Delete("my_index", "1") // 删除
 ```
+
 #### 批量写入 Bulk
 
 ⭐ 生产环境必须使用 Bulk。请求体是 NDJSON：**每行一个 JSON，行尾必须换行**，由「动作行 + 文档行」成对组成，最后一行也要有换行。
+
 ```go
 var buf bytes.Buffer
 enc := json.NewEncoder(&buf)
@@ -102,7 +113,9 @@ res, err := es.Bulk(bytes.NewReader(buf.Bytes()))
 defer res.Body.Close()
 // ⚠️ 即使 HTTP 200，也要逐条检查 items[*].index.status / error
 ```
+
 #### 查询（bool + term/match/range，含高亮与分页）
+
 ```go
 query := map[string]any{
 	"from": 0, "size": 10,
@@ -129,9 +142,11 @@ for _, h := range r["hits"].(map[string]any)["hits"].([]any) {
 	fmt.Println(m["_id"], m["_source"], m["highlight"])
 }
 ```
+
 ### Java 客户端
 
 8.x 使用官方 Java API Client `co.elastic.clients:elasticsearch-java`。Maven 依赖：
+
 ```xml
 <dependency>
   <groupId>co.elastic.clients</groupId>
@@ -151,7 +166,9 @@ for _, h := range r["hits"].(map[string]any)["hits"].([]any) {
 </dependency>
 ```
 ⚠️ `RestHighLevelClient` 自 7.15 起被标记为**弃用**，7.16+ 官方推荐迁移到 `elasticsearch-java`。新项目不要再写 `RestHighLevelClient`。
+
 #### 建立 ElasticsearchClient
+
 ```java
 // 依赖: co.elastic.clients:elasticsearch-java + org.apache.httpcomponents.client5:httpclient5
 // 需 import: ElasticsearchClient、JacksonJsonpMapper、RestClientTransport、RestClient 等
@@ -166,7 +183,9 @@ RestClient restClient = RestClient.builder(new HttpHost("localhost", 9200, "http
 ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
 ElasticsearchClient client = new ElasticsearchClient(transport);
 ```
+
 #### 索引创建 / 文档 CRUD
+
 ```java
 // 创建索引（含 mapping）
 client.indices().create(c -> c
@@ -193,7 +212,9 @@ client.update(u -> u.index("my_index").id("1") // 部分更新
 
 client.delete(d -> d.index("my_index").id("1")); // 删除
 ```
+
 #### bulk 批量写入
+
 ```java
 List<BulkOperation> ops = new ArrayList<>();
 ops.add(BulkOperation.of(b -> b.index(i -> i.id("1").document(doc))));
@@ -206,7 +227,9 @@ if (bulk.errors()) { // ⚠️ 需逐条检查错误
             .forEach(it -> System.err.println("写入失败: " + it.error().reason()));
 }
 ```
+
 #### search 查询
+
 ```java
 // import co.elastic.clients.json.JsonData;
 SearchResponse<Map> resp = client.search(s -> s

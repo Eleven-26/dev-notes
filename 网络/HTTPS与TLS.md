@@ -30,11 +30,13 @@ SSL 由 Netscape 发明，**SSL 3.0（1996）是最后一版**，之后改名交
 口语里的「SSL 证书」「SSL 握手」其实几乎都是 TLS，只是名字沿用下来了。
 
 ## 三、TLS 1.2 完整握手 ⭐
+
 ### 3.1 前提与目标
 - 前提：**TCP 三次握手已完成**，双方在 TCP 之上开始 TLS 握手。目标：① 协商一套密码参数；② **安全地**协商出一个只有双方知道的对称会话密钥。
 - 手段：**用非对称（证书 + 密钥交换）保护密钥协商，之后的数据全部走对称加密**。
 
 ### 3.2 两次往返的完整流程
+
 ```text
 Client                                              Server
   |--- ① ClientHello ----------------------------------->|   RTT 1
@@ -86,6 +88,7 @@ Client                                              Server
 任一步失败即中断握手：浏览器报「您的连接不是私密连接」，Go 客户端报 `x509: certificate signed by unknown authority` 之类。
 
 ### 3.5 主密钥是怎么推导出来的
+
 ```text
 Pre-Master Secret (PMS)：RSA = 客户端生成的 48 字节随机数；ECDHE = ECDH(client_priv, server_pub) 共享秘密
       │ PRF(PMS, "master secret", ClientRandom + ServerRandom) → 48 字节
@@ -104,6 +107,7 @@ Session Keys: client_write_key / server_write_key
 - ⚠️ 链式设计的效果：**任何握手消息被篡改，双方算出的 Finished 摘要就对不上，握手立刻失败**。
 
 ## 四、TLS 1.3 的变化 ⭐
+
 ### 4.1 1-RTT 握手：客户端先「赌」密钥交换参数
 省掉一个 RTT 的核心手段是 **客户端在 ClientHello 里直接带上 `key_share`（自己的临时公钥）**，把原本第二轮才做的事提前：
 
@@ -147,6 +151,7 @@ Client                                                Server
 - ⚠️ **版本协商走 `supported_versions` 扩展**，记录层版本号固定写兼容用的 legacy 值 `0x0303`，所以**不能靠记录层版本判断是不是 1.3**。
 
 ### 4.4 TLS 1.2 vs 1.3 对比表
+
 | 维度 | TLS 1.2 | TLS 1.3 |
 |---|---|---|
 | 首次握手延迟 | 2-RTT | ⭐ **1-RTT**（复用可 0-RTT） |
@@ -161,6 +166,7 @@ Client                                                Server
 每次完整握手都要做非对称运算（尤其 RSA 私钥解密极耗 CPU），连接量大时开销可观。思路是**协商一次、多次使用**。
 
 ### 5.1 Session ID vs Session Ticket
+
 | 维度 | Session ID | Session Ticket |
 |---|---|---|
 | 谁有状态 | ⭐ **服务端**存会话参数，按 session_id 索引 | 服务端**无状态**：把会话参数**加密后交客户端保管** |
@@ -181,7 +187,9 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 正确做法：集群**共享同一份** ticket key（Nginx `ssl_session_ticket_key`，可配多份平滑轮转）、**定期轮换（建议 ≤ 24h）**；追求更强前向安全可直接 `ssl_session_tickets off`。
 
 ## 六、证书：握手视角下的要点
+
 ### 6.1 X.509 结构速览
+
 | 字段 | 作用 |
 |---|---|
 | Version / Serial Number | 通常为 v3；序列号在 CA 内唯一，吊销与 CT 定位都靠它 |
@@ -199,6 +207,7 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 - **证书固定（Certificate Pinning）**：把服务器的公钥 / 证书哈希硬编码进 App（Android `network-security-config`、iOS Trust Evaluation、OkHttp `CertificatePinner`、Go `VerifyPeerCertificate`），只接受这一个。优点是抗「恶意 / 被攻破的 CA 签发了假证书」；⚠️ 风险是**证书轮换或到期而 App 未更新 ⇒ 大面积不可用**，且用户无法自助修复。现代实践更推荐依赖 **CT（证书透明度）** + 受控 CA 列表，或至少配置**备用 pin**。
 
 ### 6.3 ⚠️ 常见故障速查
+
 | 现象 | 常见原因 |
 |---|---|
 | `unknown authority` / `unable to get local issuer certificate` | ⚠️ **服务端证书链不完整（漏了中间证书）**；或客户端信任库太老（旧 JDK cacerts 缺新根） |
@@ -209,7 +218,9 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 | 只在部分网络下握手失败 | 中间透明代理 / 老 WAF / 负载均衡固件不支持 TLS 1.3（见第十节） |
 
 ## 七、抓包与排障
+
 ### 7.1 Wireshark 看握手
+
 | 显示过滤器 | 看什么 |
 |---|---|
 | `tls.handshake.type == 1` | ClientHello（版本、套件列表、SNI、ALPN） |
@@ -233,6 +244,7 @@ curl https://example.com >/dev/null
 然后 **Wireshark → Preferences → Protocols → TLS → (Pre)-Master-Secret log filename** 填同一路径，再过滤 `http` 就能看到明文请求。⚠️ 只有**参与握手、能导出密钥的那一端**才能解密，截获别人的流量照样解不开；该文件泄漏等于泄密，用完即删，**不要提交到 Git**。
 
 ### 7.3 openssl / curl 常用命令
+
 ```bash
 # 看握手全过程：证书链、协商出的协议与套件、是否走了会话复用
 openssl s_client -connect example.com:443 -servername example.com -showcerts
@@ -247,7 +259,9 @@ echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/
      | openssl x509 -noout -dates -subject -ext subjectAltName
 ```
 （-servername 一定要带上，否则多域名站点会取到默认虚拟主机的证书，现象就是「域名不匹配」。）
+
 ## 八、使用一：Go ⭐
+
 ### 8.1 起一个 HTTPS 服务
 最简写法是 `http.ListenAndServeTLS(":443", "fullchain.pem", "server.key", nil)`；生产要自己控 TLS 参数就用 `http.Server` + `TLSConfig`：
 
@@ -320,6 +334,7 @@ resp, err := client.Post("https://api.internal:8443/pay", "application/json", bo
 > ⚠️ **`RequireAndVerifyClientCert` 不会查 CRL / OCSP**，要吊销客户端得自己在 `VerifyPeerCertificate` 里比对序列号黑名单，或改用短期证书 + 自动轮换。
 
 ### 8.3 客户端自定义 tls.Config（含自签 CA）
+
 ```go
 caPEM, _ := os.ReadFile("ca.crt")              // 自签 / 内部 CA 根证书
 rootCAs, _ := x509.SystemCertPool()            // ⭐ 先取系统信任库，别用空池直接覆盖
@@ -339,6 +354,7 @@ client := &http.Client{Transport: &http.Transport{TLSClientConfig: cfg}}
 > ⚠️ **`InsecureSkipVerify: true` 同时跳过证书校验与域名校验，等于放任中间人冒充**。自签证书的正确做法是上面的 `RootCAs`，而不是跳过校验——安全扫描工具会直接把前者判为高危。
 
 ### 8.4 `tls.Config` 常用字段
+
 | 字段 | 作用 |
 |---|---|
 | `MinVersion` / `MaxVersion` | 限制协议版本（建议 `MinVersion: tls.VersionTLS12`） |
@@ -348,7 +364,9 @@ client := &http.Client{Transport: &http.Transport{TLSClientConfig: cfg}}
 | `InsecureSkipVerify` | ⚠️ **生产禁用**（会同时跳过证书与域名校验） |
 
 ## 九、使用二：Java ⭐
+
 ### 9.1 先分清 KeyStore 与 TrustStore ⭐
+
 | 名称 | 装什么 | 谁用 |
 |---|---|---|
 | **KeyStore** | **自己的**私钥 + 证书链 | 由 `KeyManager` 读取 → **向对端出示证书**（服务端出示服务证书 / mTLS 时客户端出示客户端证书） |
@@ -359,6 +377,7 @@ JSSE 四个核心类：`SSLContext`（配置入口，由它产出 `SSLSocketFact
 > JVM 默认 TrustStore 是 `$JAVA_HOME/lib/security/cacerts`（密码 `changeit`）。⚠️ 老 JDK 的 cacerts 缺新根（如 Let's Encrypt 的 ISRG Root X1），会报 `PKIX path building failed`，需升级 JDK 或用 `-Djavax.net.ssl.trustStore` 指定。
 
 ### 9.2 初始化 SSLContext
+
 ```java
 public static SSLContext create(Path keyStore, char[] ksPass,
                                 Path trustStore, char[] tsPass) throws Exception {
@@ -422,6 +441,7 @@ CloseableHttpClient httpclient = HttpClients.custom()
 > ⚠️ **绝不要在生产使用「信任所有证书」的 TrustManager**（网上流传的 `checkServerTrusted(...) {}` 空实现）——它让 HTTPS 退化成「只加密不认证」，中间人拿自签证书就能解密全部流量，Android / iOS 与合规扫描也会直接判定不通过；自签场景的正确做法是把内部 CA 加进 TrustStore。另外用 IP 访问 HTTPS 会因主机名校验失败，应使用证书里的 SAN 名作为 hostname，而**不是**把 `HostnameVerifier` 覆盖成总是通过。
 
 ### 9.4 Spring Boot 开启 HTTPS
+
 ```yaml
 server:
   port: 8443
@@ -456,12 +476,14 @@ keytool -list -v -keystore server.p12 -storepass changeit
 （`-ext "SAN=..."` 必须写：现代 JDK 与浏览器**只认 SAN**，`CN` 匹配已废弃，少了它就报 `No subject alternative names present`。）
 
 ## 十、生产实践与坑
+
 ### 10.1 全站 HTTPS 与 HSTS
 全站 HTTPS + HTTP 301 跳转，再加 **HSTS**：`Strict-Transport-Security: max-age=31536000; includeSubDomains`。⭐ 浏览器会**记住**该域名只走 HTTPS，省掉一次跳转 RTT，还能挡 SSL Stripping 降级攻击。⚠️ `preload`（提交进浏览器内置列表）基本**不可回退**：一旦上线，某个子域名暂时没 HTTPS 就彻底打不开，务必确认全站（含所有子域）就绪再加。
 
 **混合内容（mixed content）**：HTTPS 页面里加载 HTTP 子资源（图片 / js / iframe）即 mixed content，浏览器会**拦截**其中的脚本与 XHR 类资源。排查看控制台 Console 警告，修复办法是全站 HTTPS，或加 `Content-Security-Policy: upgrade-insecure-requests` 自动升级。
 
 ### 10.2 性能开销
+
 | 项 | 说明 |
 |---|---|
 | 握手 CPU | 大头是**非对称运算**。**ECDHE（尤其 X25519）比 RSA 快得多**，RSA-2048 私钥运算在突发连接时会明显吃 CPU；也可在 LB / CDN 做 TLS 终结 |

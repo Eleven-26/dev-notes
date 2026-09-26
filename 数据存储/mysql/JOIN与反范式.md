@@ -111,6 +111,7 @@ if err := g.Wait(); err != nil { return err }
 ---
 
 ## 使用一：Go（拆 JOIN：并发单表查询 + 内存归并）⭐
+
 ### 1. 拆 JOIN：并发单表查询 + 内存归并
 
 第一节的结论是「面向 C 端的高并发链路，拆成多次单表查询 + 应用层拼接」。落到代码要注意三件事：
@@ -263,6 +264,7 @@ func usersByIDs(ctx context.Context, db *sql.DB, ids []int64) (map[int64]User, e
 > 上文第一节的示意代码里两个 `g.Go` 共用了外层 `err`，那是**数据竞争**写法；以本节 `ListWithUser` 为准。
 
 ## 使用二：Java（`groupingBy` + 并发批查）
+
 ### 1. 拆 JOIN：`groupingBy` + 并发批查
 
 第一节的「应用层拼接」在 Java 里就是 `Stream` 分组归并（更多写法见 [Stream流实战.md](../../java/Stream流实战.md)）：

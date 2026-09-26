@@ -29,6 +29,7 @@ fmt.Println(v) // 6. 打印 0~9
 } // 7. close 且数据取完后，range 自动结束
 ```
 时序图（简化）
+
 ```text
 生产者 goroutine                 main goroutine
       |                               |
@@ -42,7 +43,9 @@ fmt.Println(v) // 6. 打印 0~9
       |                               | 循环结束
       |                               | main 返回，程序退出
 ```
+
 ### ⚠️ 关键点与注意事项
+
 | 要点 | 说明 |
 | --- | --- |
 | 谁关闭 channel | 只有发送方应该关闭 channel，接收方关闭会 panic。 |

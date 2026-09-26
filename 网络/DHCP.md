@@ -81,6 +81,7 @@
 ---
 
 ## 使用一：Go（租约状态机：T1/T2 的形状在别处还会用到三次）⭐
+
 ### 1. 租约状态机：T1/T2 的形状在别处还会用到三次
 
 正文「50% 续租、87.5% 再续、到期重来」之所以取 50% 而不是 95%，
@@ -263,6 +264,7 @@ func (l *Lease) snapshot() Renewal {
 ---
 
 ## 使用二：Java（租约式刷新：同一个形状）
+
 ### 1. 租约式刷新：同一个形状
 
 ```java
@@ -330,6 +332,7 @@ public final class LeaseKeeper<T> implements AutoCloseable {
 ---
 
 ## 使用三：抓包与命令实操（DORA 与续租）
+
 ### 1. DHCP：看 DORA 与续租
 
 ```bash

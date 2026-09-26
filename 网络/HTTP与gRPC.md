@@ -33,6 +33,7 @@
 - → 一旦第一个请求阻塞（服务端很久不响应），**后续请求全都被卡住**，这就是**队头阻塞**。
 
 原视频的资源加载图很直观：
+
 ```text
 请求 index.html → 等响应 → 请求样式文件 → 等响应 → 请求脚本 → 等响应
        ↑ 任何一步阻塞，后面全部等待
@@ -570,4 +571,5 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 - [通信选型.md](通信选型.md) — 应用层协议与序列化格式的完整选型（含 WebSocket / SSE / MQTT / HTTP3）
 
 - [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 应用层数据如何被逐层封装、以及 MTU 引起的分片
+
 > 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[DNS解析.md](DNS解析.md)

@@ -128,6 +128,7 @@
 ---
 
 ## 使用一：Go（字节流边界与半关闭）⭐
+
 ### 1. 字节流没有边界：长度前缀编解码
 
 正文第一节的「序列号是**字节**编号」就是这句话的来源：**TCP 交付的是流，不是消息**。
@@ -271,6 +272,7 @@ func RequestThenDrain(c *net.TCPConn, req io.Reader, resp io.Writer) error {
 > 上面的划界与半关闭对它完全不成立——这正是正文「连接是双方各自维护的状态集合」的直接推论。
 
 ## 使用二：Java（Netty 的 `LengthFieldBasedFrameDecoder`）
+
 ### 1. Netty：`LengthFieldBasedFrameDecoder` 就是第 1 小节的工业版
 
 ```java
