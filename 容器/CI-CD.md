@@ -241,3 +241,4 @@
 - [docker/镜像瘦身与构建缓存.md](docker/镜像瘦身与构建缓存.md) — CI 上的缓存复用
 - [k8s/K8s部署与生命周期.md](k8s/K8s部署与生命周期.md) — 声明式部署与回滚
 - [docker/命令速查.md](docker/命令速查.md) — 排查镜像与容器问题的命令
+- [容器与编排选型.md](容器与编排选型.md) — CI/CD 四方案对比与 GitOps（Argo CD）的取舍

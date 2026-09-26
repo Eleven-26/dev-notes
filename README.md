@@ -108,6 +108,7 @@
 
 | 文件 | 知识点 |
 |---|---|
+| [存储选型.md](数据存储/存储选型.md) | 六类存储的定位矩阵、MySQL vs PostgreSQL、MySQL vs MongoDB、Elasticsearch 该用与不该用、缓存分层（本地 + 分布式）、ClickHouse vs ES、组合范式与选型决策清单 |
 | [mysql/查询链路.md](数据存储/mysql/查询链路.md) | 查询一条数据的完整链路、预编译在接口层的真实收益与坑（Go / Java 双版本） |
 | [mysql/软件架构.md](数据存储/mysql/软件架构.md) | MySQL 分层架构（连接层 / SQL 层 / 存储引擎层）、读写分离的架构位置与实现 |
 | [mysql/JOIN与反范式.md](数据存储/mysql/JOIN与反范式.md) | JOIN 用法与取舍、互联网为什么少用 JOIN、拆成多次单表查询 + 应用层归并的实测 |
@@ -137,6 +138,7 @@
 
 | 文件 | 知识点 |
 |---|---|
+| [中间件选型.md](中间件/中间件选型.md) | 注册中心五方案（Nacos / etcd / Consul / ZooKeeper / Eureka）、分布式协调底座三选一、API 网关六方案、MQ 与定时任务速查、引入中间件的通用原则与降级路径 |
 | [消息队列/消息队列选型.md](中间件/消息队列/消息队列选型.md) | MQ 的五大使用场景、四款 MQ 横向对比与选型决策、分册导航、事务消息三种方案、延迟队列四种实现 |
 | [消息队列/Kafka.md](中间件/消息队列/Kafka.md) | 分区与 ISR、acks/幂等/事务、消费者组重平衡与两个超时参数、KRaft 去 ZK、Go 三客户端取舍 + Java 原生/Spring Kafka |
 | [消息队列/RabbitMQ.md](中间件/消息队列/RabbitMQ.md) | 四种交换机路由模型、Publisher Confirm 与手动 ack、DLX 与两种延迟队列、Quorum 队列、Go/Java 客户端 |
@@ -151,11 +153,13 @@
 |---|---|
 | [Skywalking.md](可观测性/Skywalking.md) | 业务痛点与 UI 六大面板、Agent/OAP/Storage/UI 架构、javaAgent 与轻量级队列内核原理、多语言探针、Go/Java 接入两条路线对比 |
 | [Jaeger.md](可观测性/Jaeger.md) | Trace/Span 概念、与 OpenTelemetry 的协作、部署与采样策略、Go/Java 接入、与 SkyWalking 的分工（结合 photography-server 实际架构） |
+| [可观测性选型.md](可观测性/可观测性选型.md) | 三支柱（Metrics / Logs / Traces）的定位与成本重心、链路追踪五方案对比、指标监控五方案、日志四方案、存储与可视化选型、三套推荐组合 |
 
 ### 网络
 
 | 文件 | 知识点 |
 |---|---|
+| [通信选型.md](网络/通信选型.md) | 同步 RPC 与异步消息的分工、七种应用层协议对比（HTTP/1.1~3、gRPC、WebSocket、SSE、MQTT）、六种序列化格式对比、连接层选型、四套推荐组合 |
 | [tcp/TCP滑动窗口.md](网络/tcp/TCP滑动窗口.md) | 窗口怎么滑、窗口的本质与吞吐上限、把窗口/保活落到 socket 选项上的 Go / Java 写法与对照实验 |
 | [tcp/TCP的Nagle与延迟确认.md](网络/tcp/TCP的Nagle与延迟确认.md) | Nagle 合并小包、延迟确认合并 ACK、两者同时开启的「互相伤害」与破解办法 |
 | [tcp/TCP报文结构.md](网络/tcp/TCP报文结构.md) | 连接的本质、首部字段、序列号与确认号演算、字节流没有边界的两种解法（Go 长度前缀 / Java Netty） |
@@ -181,6 +185,7 @@
 
 | 文件 | 知识点 |
 |---|---|
+| [容器与编排选型.md](容器/容器与编排选型.md) | 运行时三选一（Docker / containerd / Podman）、编排四方案、服务网格要不要上、CI/CD 四方案（含 GitOps）、配套组件与三套推荐组合 |
 | [docker/容器原理.md](容器/docker/容器原理.md) | 容器 = Namespace + cgroup + rootfs + 一个进程、与 VM 的本质差异、rootfs 为什么用 `pivot_root`、PID 1 的信号语义 |
 | [docker/进入运行中的容器.md](容器/docker/进入运行中的容器.md) | docker exec / attach / nsenter 的差别与生产用法、进不去容器时的排查顺序 |
 | [docker/镜像构建与缓存.md](容器/docker/镜像构建与缓存.md) | 多阶段构建解决什么、构建缓存何时失效、层顺序、ENTRYPOINT vs CMD、HEALTHCHECK ≠ K8s 探针 |

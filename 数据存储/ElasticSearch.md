@@ -394,3 +394,4 @@ POST my_index/_update/1?if_seq_no=42&if_primary_term=1
 - [MongoDB.md](MongoDB.md) — 另一类非关系型存储的选型与运维
 - [mysql/索引与优化.md](mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
 - [../linux/文件系统与IO.md](../linux/文件系统与IO.md) — translog 的 fsync 与 page cache
+- [存储选型.md](存储选型.md) — ES 在存储体系中的定位（该用与不该用、与 ClickHouse 的分工）

@@ -455,3 +455,4 @@ jaeger（v2，collector+query 一体）──▶ ClickHouse（库 jaeger）─�
 - [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md) — 多语言探针接入的对照
 - [../网络/HTTP与gRPC.md](../网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
 - [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — 采集组件的部署形态
+- [可观测性选型.md](可观测性选型.md) — 链路追踪的完整选型表（含指标、日志、存储、可视化的选型）

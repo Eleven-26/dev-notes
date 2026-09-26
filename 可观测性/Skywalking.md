@@ -664,3 +664,4 @@ SW_AGENT_REPORTER_DISCARD=true
 - [../php/PHP-FPM对接步骤.md](../php/PHP-FPM对接步骤.md) — PHP-FPM 侧探针的完整接入步骤
 - [../网络/HTTP与gRPC.md](../网络/HTTP与gRPC.md) — 跨进程上下文传播
 - [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — OAP 与 UI 的部署方式
+- [可观测性选型.md](可观测性选型.md) — 与 Jaeger、Zipkin、Tempo、云托管方案的横向对比与组合建议

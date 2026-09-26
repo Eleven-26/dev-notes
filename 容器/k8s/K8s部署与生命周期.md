@@ -307,3 +307,4 @@ db.Close()
 - [资源限制与运维.md](../docker/资源限制与运维.md) — Pod 的 requests/limits 与 QoS 分级
 - [容器原理.md](../docker/容器原理.md) — SIGTERM 为什么能直达业务进程
 - [CI-CD.md](../CI-CD.md) — 声明式部署与回滚的流水线视角
+- [容器与编排选型.md](../容器与编排选型.md) — K8s 在编排方案中的位置（与 Compose / Swarm / Nomad 的对比）

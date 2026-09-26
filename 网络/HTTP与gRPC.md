@@ -567,3 +567,4 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 - [HTTPS与TLS.md](HTTPS与TLS.md) — h2 的事实前提：TLS 与 ALPN
 - [数据序列化.md](数据序列化.md) — gRPC 默认的 Protobuf 载荷
 - [context.md](../go/工程实践/context.md) — 请求取消与超时在客户端侧的落点
+- [通信选型.md](通信选型.md) — 应用层协议与序列化格式的完整选型（含 WebSocket / SSE / MQTT / HTTP3）
