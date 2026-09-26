@@ -142,7 +142,11 @@ func Split(start time.Time, duration time.Duration) Renewal {
 		ExpireAt: start.Add(duration),
 	}
 }
+```
 
+状态机与 50%/87.5% 的租期切分只是地基；下面是真正驱动这三个时间点的 `Lease`，以及一个正常情况永不返回的续租守护循环。
+
+```go
 // Lease 是"带自动续期的授权"。
 // ⚠️ Renew / Rebind 两个回调必须是**并发安全且幂等**的：
 // 一次网络抖动可能让它们被重复触发（DHCP 里对应"发了 REQUEST 没收到 ACK 又发一次"）。
@@ -216,7 +220,11 @@ func (l *Lease) Wait(ctx context.Context) error {
 		}
 	}
 }
+```
 
+`Wait` 只负责决定「什么时候动手」；下面的 `attempt` 负责真正发起续租或重绑，并把状态机推到下一档。
+
+```go
 func (l *Lease) attempt(ctx context.Context, rebind bool) error {
 	fn := l.Renew
 	l.mu.Lock()

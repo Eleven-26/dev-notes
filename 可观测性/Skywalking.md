@@ -665,3 +665,5 @@ SW_AGENT_REPORTER_DISCARD=true
 - [../网络/HTTP与gRPC.md](../网络/HTTP与gRPC.md) — 跨进程上下文传播
 - [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — OAP 与 UI 的部署方式
 - [可观测性选型.md](可观测性选型.md) — 与 Jaeger、Zipkin、Tempo、云托管方案的横向对比与组合建议
+
+> 反向引用（本篇被下列文档引到）：[缓存问题与方案.md](../数据存储/redis/缓存问题与方案.md)、[TCP三次握手.md](../网络/tcp/TCP三次握手.md)

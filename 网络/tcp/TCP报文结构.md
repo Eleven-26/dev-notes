@@ -317,3 +317,5 @@ public class FrameInitializer extends ChannelInitializer<SocketChannel> {
 - [TCP滑动窗口.md](TCP滑动窗口.md) — 窗口与流量控制
 - [数据序列化.md](../数据序列化.md) — 长度前缀之外的边界方案（TLV、JSON 流）
 - [IO多路复用.md](../IO多路复用.md) — 半关闭与 CLOSE_WAIT 的排查
+
+> 反向引用（本篇被下列文档引到）：[TCP的Nagle与延迟确认.md](TCP的Nagle与延迟确认.md)

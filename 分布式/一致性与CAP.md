@@ -269,3 +269,5 @@ func ReadSerializable(ctx context.Context, key string) (string, int64, error) {
 - [分布式事务.md](分布式事务.md) — 一致性问题的另一半：跨服务事务
 - [服务发现与负载均衡.md](服务发现与负载均衡.md) — etcd 的生产用法
 - [并发控制与MVCC.md](../数据存储/mysql/并发控制与MVCC.md) — 单机侧的读写一致
+
+> 反向引用（本篇被下列文档引到）：[Nacos.md](../中间件/Nacos.md)、[中间件选型.md](../中间件/中间件选型.md)、[Kafka.md](../中间件/消息队列/Kafka.md)、[分布式ID.md](分布式ID.md)、[复制与高可用.md](../数据存储/mysql/复制与高可用.md)

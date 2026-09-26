@@ -537,9 +537,40 @@ if err := protojson.Unmarshal(body, req); err != nil {
 
 ---
 
+## 使用：用 Kratos 起一个服务并调用下游
+
+```go
+// ① 起服务：server 由 wire 注入，newApp 把 http / grpc 两条 transport 组装进 kratos.App
+func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
+	return kratos.New(               // Run() 起服务；收到信号后 Stop() 优雅退出
+		kratos.Name("payment"),      // 服务名，注册到 etcd 后就是对外的 key
+		kratos.Version("v1.0.0"),    // 版本随注册信息一起上报
+		kratos.Logger(logger),
+		kratos.Server(hs, gs),       // 同时挂 HTTP 与 gRPC
+	)
+}
+
+// ② 服务端中间件：recovery 放最外层，validate 负责跑 proto 里写的校验规则
+var ServerOpts = []http.ServerOption{
+	http.Middleware(recovery.Recovery(), validate.Validator()),
+}
+
+// ③ 调下游：非容器化用 discovery:///服务名（地址由 etcd 发现）；容器化直接写 服务名:端口
+opts := []grpc.ClientOption{
+	grpc.WithEndpoint("discovery:///order"), // etcd 返回真实实例地址
+	grpc.WithMiddleware(metadata.Client()),  // 把 ctx 里的 metadata（如 token）带出去
+	grpc.WithDiscovery(d.reg),               // 内部走 selector 做客户端负载均衡
+}
+conn, err := grpc.DialInsecure(ctx, opts...) // 用它生成 payment client 发请求
+```
+
+---
+
 ## 关联
 
 - [依赖注入.md](依赖注入.md) — Kratos 项目里 wire 的实际用法
 - [context.md](context.md) — 元数据传递与链路超时预算
 - [../../中间件/Nacos.md](../../中间件/Nacos.md) — 配置中心与注册中心的落地
 - [../../分布式/服务发现与负载均衡.md](../../分布式/服务发现与负载均衡.md) — 注册发现的原理侧
+
+> 反向引用（本篇被下列文档引到）：[Eino框架.md](Eino框架.md)、[国际化.md](国际化.md)

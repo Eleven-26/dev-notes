@@ -194,6 +194,27 @@ RUN mkdir -p /etc/apt \
 
 ---
 
+## 使用：把镜像加速、IPv6 与自定义网络一次配好并验证
+
+```json
+// /etc/docker/daemon.json —— 三类配置放同一个文件，改完必须 restart docker 才生效
+{
+  "registry-mirrors": ["https://<你的加速地址>.mirror.aliyuncs.com"],  // 加速 docker pull 拉镜像层（与装包无关）
+  "ipv6": true,                                                         // 打开容器 IPv6 联网能力
+  "fixed-cidr-v6": "2001:db8:1::/64"                                    // 指定默认 IPv6 网段，容器才分得到地址
+}
+```
+
+```bash
+cat /proc/sys/net/ipv6/conf/all/disable_ipv6          # 先确认内核没关（0 = 开着），否则怎么配都没用
+systemctl daemon-reload && systemctl restart docker   # 改完 daemon.json 必须 restart（容器会重建）
+docker network create --ipv6 --subnet=fd00:1::/64 mynet6   # 自定义网络要显式开 --ipv6
+docker run -d --network=mynet6 --name nginx6 nginx         # 容器加入该网络，即可拿到 IPv6 地址
+ifconfig                                                  # 宿主机网卡应同时看到 IPv4 与 IPv6 地址
+curl -g "http://[::1]:<port>/"                            # IPv6 回环要加方括号；IPv4 对照 curl 127.0.0.1:<port>/
+docker run --rm -it --name test <镜像名> ls -l /etc/apt/   # 换 apt 源之前先确认镜像里到底有没有 sources.list
+```
+
 ## 关联
 
 - [网络与存储.md](网络与存储.md) — Docker 网络驱动的整体模型与 `-p` 的 DNAT 本质

@@ -540,14 +540,14 @@ Kafka 只保证 At Least Once，以下场景必然重复：消费者处理完但
 
 ## 十、面试官会追问什么
 
-1. **Kafka 为什么快？** 顺序写磁盘（append-only，免随机 IO）+ PageCache（写先落页缓存，读优先命中）+ 零拷贝 sendfile（数据从页缓存直送网卡）+ 批量发送与整批压缩 + 分区水平并行 + 稀疏索引快速定位。**只说「磁盘顺序写」不完整，要凑齐这条链。**
-2. **ISR 是什么？为什么要它？** 与 Leader 保持同步（未落后超过 `replica.lag.time.max.ms`）的副本集合，**含 Leader 自身**。`acks=all` 的「all」指 ISR 而非全部副本，所以必须配 `min.insync.replicas≥2`。它是在**可用性与一致性**间折中：只从 ISR 选新 Leader，避免落后副本上位丢数据。
-3. **`acks=all` 就不会丢消息吗？** 不一定。① 不保证**落盘**（OS 崩溃仍可能丢）；② 若 `min.insync.replicas=1` 且 ISR 只剩 Leader，等价 `acks=1`；③ 生产端未处理发送异常仍会丢。需三处齐配：`acks=all` + `min.insync.replicas≥2` + `replication.factor≥3` + `unclean=false` + 消费端先处理后提交。
-4. **重平衡为什么被称为「灾难」？** EAGER 下是 **Stop The World**：全组停止消费、撤销分区再重分，期间消息持续堆积；分区易主后从旧位点继续导致重复消费；处理慢反复超时被踢会形成「踢出 → 重平衡 → 再超时」死循环。缓解：静态成员 `group.instance.id`、CooperativeSticky、合理设置两个超时参数。
-5. **分区数怎么定？** ① 不低于预期消费者实例数（否则实例空闲）；② 按「目标吞吐 ÷ 单分区吞吐（约 10 MB/s）」反推；③ 不宜过多（句柄、内存、元数据、重平衡耗时随分区数上升）；④ 一次留余量；⑤ ⚠️ **只能增不能减**，扩容会破坏 key→分区映射、影响顺序性。
-6. **Kafka 能保证全局有序吗？** 不能（除非 Topic 只有 1 个分区，代价是并行度归零），只保证**分区内有序**。做法：生产端用业务 key 哈希路由 + 消费端对该分区串行处理。⚠️ 生产端重试 + `max.in.flight>1` 也可能乱序，需开 `enable.idempotence=true`。
-7. **`max.poll.interval.ms` 和 `session.timeout.ms` 有什么区别？** 前者是**两次 `poll()` 的最大间隔**（业务处理一批消息的最长时间，超时客户端主动离组，管「处理进度」）；后者是**心跳**超时（心跳线程报「我还活着」，超时被移出组，管「存活」）。业务处理慢时最先踩的是前者。
-8. **`enable.auto.commit=true` 有什么风险？** 它按 `auto.commit.interval.ms` 周期提交，可能在**业务处理成功之前**就提交了位点；若此时消费者崩溃，重启后从已提交位点继续 → 那批消息永久丢失。所以高可靠场景一律 `enable.auto.commit=false` + 处理成功后手动 `commitSync`。
+- **Kafka 为什么快？** 顺序写磁盘（append-only，免随机 IO）+ PageCache（写先落页缓存，读优先命中）+ 零拷贝 sendfile（数据从页缓存直送网卡）+ 批量发送与整批压缩 + 分区水平并行 + 稀疏索引快速定位。**只说「磁盘顺序写」不完整，要凑齐这条链。**
+- **ISR 是什么？为什么要它？** 与 Leader 保持同步（未落后超过 `replica.lag.time.max.ms`）的副本集合，**含 Leader 自身**。`acks=all` 的「all」指 ISR 而非全部副本，所以必须配 `min.insync.replicas≥2`。它是在**可用性与一致性**间折中：只从 ISR 选新 Leader，避免落后副本上位丢数据。
+- **`acks=all` 就不会丢消息吗？** 不一定。① 不保证**落盘**（OS 崩溃仍可能丢）；② 若 `min.insync.replicas=1` 且 ISR 只剩 Leader，等价 `acks=1`；③ 生产端未处理发送异常仍会丢。需三处齐配：`acks=all` + `min.insync.replicas≥2` + `replication.factor≥3` + `unclean=false` + 消费端先处理后提交。
+- **重平衡为什么被称为「灾难」？** EAGER 下是 **Stop The World**：全组停止消费、撤销分区再重分，期间消息持续堆积；分区易主后从旧位点继续导致重复消费；处理慢反复超时被踢会形成「踢出 → 重平衡 → 再超时」死循环。缓解：静态成员 `group.instance.id`、CooperativeSticky、合理设置两个超时参数。
+- **分区数怎么定？** ① 不低于预期消费者实例数（否则实例空闲）；② 按「目标吞吐 ÷ 单分区吞吐（约 10 MB/s）」反推；③ 不宜过多（句柄、内存、元数据、重平衡耗时随分区数上升）；④ 一次留余量；⑤ ⚠️ **只能增不能减**，扩容会破坏 key→分区映射、影响顺序性。
+- **Kafka 能保证全局有序吗？** 不能（除非 Topic 只有 1 个分区，代价是并行度归零），只保证**分区内有序**。做法：生产端用业务 key 哈希路由 + 消费端对该分区串行处理。⚠️ 生产端重试 + `max.in.flight>1` 也可能乱序，需开 `enable.idempotence=true`。
+- **`max.poll.interval.ms` 和 `session.timeout.ms` 有什么区别？** 前者是**两次 `poll()` 的最大间隔**（业务处理一批消息的最长时间，超时客户端主动离组，管「处理进度」）；后者是**心跳**超时（心跳线程报「我还活着」，超时被移出组，管「存活」）。业务处理慢时最先踩的是前者。
+- **`enable.auto.commit=true` 有什么风险？** 它按 `auto.commit.interval.ms` 周期提交，可能在**业务处理成功之前**就提交了位点；若此时消费者崩溃，重启后从已提交位点继续 → 那批消息永久丢失。所以高可靠场景一律 `enable.auto.commit=false` + 处理成功后手动 `commitSync`。
 
 ## 关联
 
@@ -555,3 +555,5 @@ Kafka 只保证 At Least Once，以下场景必然重复：消费者处理完但
 - [RocketMQ.md](RocketMQ.md) — 存储与可靠性设计的另一种路线
 - [../../数据存储/mysql/日志与落盘.md](../../数据存储/mysql/日志与落盘.md) — 顺序追加与页缓存
 - [../../分布式/一致性与CAP.md](../../分布式/一致性与CAP.md) — ISR 与多数派确认的区别
+
+> 反向引用（本篇被下列文档引到）：[零拷贝.md](../../go/运行时/零拷贝.md)、[Nats.md](Nats.md)、[RabbitMQ.md](RabbitMQ.md)、[ElasticSearch客户端.md](../../数据存储/ElasticSearch客户端.md)、[ElasticSearch应用与DSL.md](../../数据存储/ElasticSearch应用与DSL.md)、[发布订阅.md](../../数据存储/redis/发布订阅.md)、[观察者模式.md](../../设计模式/行为型/观察者模式.md)

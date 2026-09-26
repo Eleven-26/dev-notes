@@ -87,7 +87,11 @@ func (w *WeightedRoundRobin) Pick(list []string) (string, error) {
 	w.state.Store(next)
 	return best, nil
 }
+```
 
+前两个策略只看当前实例列表；策略 3 换成一致性哈希，解决"新节点 IP 变了怎么办"。
+
+```go
 // —— 策略 3：一致性哈希（正文「新节点 IP 变了怎么办」的标准答案）——————————————
 
 // HashRing 是一致性哈希：节点和 key 都映射到同一个环上，key 顺时针找到第一个节点。
@@ -129,7 +133,11 @@ func (r *HashRing) Lookup(key string) (string, error) {
 	}
 	return r.nodes[r.points[i]], nil
 }
+```
 
+接着是给一致性哈希做对拍与量化的工具：取模对照组、换节点时的 key 迁移率、建环的便捷函数。
+
+```go
 // Modulo 是"哈希取模"的对照组：n 一变，几乎所有 key 都要搬家。
 func Modulo(key string, list []string) (string, error) {
 	if len(list) == 0 {
@@ -383,6 +391,33 @@ func NewClient(service string, r *Resolver, w Balancer) *http.Client {
 
 ---
 
+## 使用：把客户端负载均衡接进 HTTP 客户端
+
+```go
+package main
+
+// 前置：Resolver 在后台维护本地快照，Resolve 拿的就是 (*Resolver).Instances（见第三节）
+//
+// ① 选策略：三个策略都只依赖 Pick(list []string) (string, error) 这一个方法
+var bal Balancer = &RoundRobin{}                       // 实例同构、请求耗时均匀 → 默认就选它
+// 灰度 / 机器异构时换平滑加权，权重通常来自注册时写入的实例元数据
+bal = NewWeightedRoundRobin(map[string]int{"10.0.0.1:8080": 5, "10.0.0.2:8080": 1})
+
+// ② 一步接进标准库：r 是 *Resolver，业务侧拿到的就是一个普通 *http.Client（MaxRetries 默认 2）
+client := NewClient("user-service", r, bal)
+
+// ③ 请求照常发：URL 里的 host 只是占位，RoundTrip 会改写成"这次挑中的实例地址"
+resp, err := client.Get("http://user-service/users/1")  // 命中哪台由 Pick 决定
+if err != nil {
+    log.Fatalf("call failed: %v", err)                  // 列表为空 → ErrNoInstance
+}
+defer resp.Body.Close()                                 // 必须读完并关闭：否则共享 Transport 复用不了连接
+
+// ④ 有状态场景（本地缓存 / 按用户分片）不走 Pick，按业务 key 查环
+ring := NewHashRingFrom([]string{"10.0.0.1:8080", "10.0.0.2:8080"})  // 每节点 200 个虚拟节点
+addr, _ := ring.Lookup("user:1001")                                  // 同一个 key 永远落在同一台
+```
+
 ## 面试官会追问什么
 
 ### 一、"平滑"加权轮询和普通加权轮询差在哪？
@@ -410,3 +445,5 @@ func NewClient(service string, r *Resolver, w Balancer) *http.Client {
 - [服务发现与负载均衡.md](服务发现与负载均衡.md) — 负载均衡为什么放在客户端做
 - [../go/并发/并发同步原语.md](../go/并发/并发同步原语.md) — 一致性哈希里的原子替换与并发
 - [限流降级熔断.md](限流降级熔断.md) — 重试与熔断如何配合
+
+> 反向引用（本篇被下列文档引到）：[服务发现的Java实现.md](服务发现的Java实现.md)

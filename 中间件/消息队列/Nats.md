@@ -490,14 +490,14 @@ nc.close();
 
 ## 十、面试官会追问什么
 
-1. **Core NATS 会丢消息吗？** 会。消息发到无人订阅（或订阅者离线）的 Subject 直接丢弃，发布端无回执；订阅者在线但 pending 队列写满（默认 65536 条 / 64MB）也会被判 SlowConsumer 丢消息。**要可靠必须用 JetStream**。
-2. **Queue Group 与 Kafka 消费者组的区别？** Kafka 消费组是「分区分配给成员、共享一个 offset」，分区内严格有序、成员变动触发 rebalance；NATS 队列组是「服务端把每条消息随机派给组内一个订阅者」，**不绑定分区、不保证同 key 同实例、不保证顺序**，但也没有 rebalance 停顿。
-3. **JetStream 的 ACK 与重投怎么工作？** 消费端必须在 `AckWait`（默认 30s）内 ACK；未 ACK 或 `Nak()` 即重投；累计到 `MaxDeliver` 后停止自动投递。`MaxAckPending` 限在途未 ACK 数，达到即暂停投递（服务端限流）；长耗时任务用 `InProgress()` 续期。
-4. **NATS 为什么不需要外部队列协调组件？** 路由、成员发现、元数据与副本一致性全部内建在 Server：集群靠 gossip 收敛成全网状 route，JetStream 用内嵌 Raft 组维护 Stream 副本与 Consumer 状态。对比 Kafka 的 ZooKeeper / KRaft、RocketMQ 的 NameServer，NATS 只需一个二进制。
-5. **`Drain()` 和 `Close()` 的区别？** `Close()` 立即取消订阅、丢弃在途回调、断开连接；`Drain()` 先取消订阅（不再收新消息）→ 等在途回调执行完 → 冲刷待发缓冲 → 再关闭。**生产停机用 Drain**，否则正在处理的消息被掐断，JetStream 消息因未 ACK 会在 `AckWait` 后被重投，造成重复消费。
-6. **Core NATS 和 JetStream 怎么共存？** 两者是同一 `nats.Conn` 上的两种用法：`nc.Publish/Subscribe` 走纯内存通道，`nc.JetStream()` 拿到的 `JetStreamContext` 走持久化通道。可对同一 Subject 同时使用——Core 订阅做实时广播，JetStream Consumer 做可靠兜底，互不影响。
-7. **同一 Subject 上的消息如何保证顺序？** NATS 不提供跨消息顺序保证。要顺序只能：① 单订阅 + 串行回调（牺牲吞吐）；② 按业务键（如 `order_id`）分片到不同 Subject / Stream；③ 消费端状态机校验，容忍乱序。**不要用加并发提吞吐**——会破坏顺序。
-8. **At-Least-Once 下如何做到「业务上只执行一次」？** 两条腿：① 发布端带 `Msg-Id`，靠 Stream 去重窗口（默认 2min）做服务端过滤；② 消费端幂等（唯一键 / 去重表 / 状态机条件更新），这是跨系统唯一可靠的手段。切勿依赖中间件的 Exactly-Once。
+- **Core NATS 会丢消息吗？** 会。消息发到无人订阅（或订阅者离线）的 Subject 直接丢弃，发布端无回执；订阅者在线但 pending 队列写满（默认 65536 条 / 64MB）也会被判 SlowConsumer 丢消息。**要可靠必须用 JetStream**。
+- **Queue Group 与 Kafka 消费者组的区别？** Kafka 消费组是「分区分配给成员、共享一个 offset」，分区内严格有序、成员变动触发 rebalance；NATS 队列组是「服务端把每条消息随机派给组内一个订阅者」，**不绑定分区、不保证同 key 同实例、不保证顺序**，但也没有 rebalance 停顿。
+- **JetStream 的 ACK 与重投怎么工作？** 消费端必须在 `AckWait`（默认 30s）内 ACK；未 ACK 或 `Nak()` 即重投；累计到 `MaxDeliver` 后停止自动投递。`MaxAckPending` 限在途未 ACK 数，达到即暂停投递（服务端限流）；长耗时任务用 `InProgress()` 续期。
+- **NATS 为什么不需要外部队列协调组件？** 路由、成员发现、元数据与副本一致性全部内建在 Server：集群靠 gossip 收敛成全网状 route，JetStream 用内嵌 Raft 组维护 Stream 副本与 Consumer 状态。对比 Kafka 的 ZooKeeper / KRaft、RocketMQ 的 NameServer，NATS 只需一个二进制。
+- **`Drain()` 和 `Close()` 的区别？** `Close()` 立即取消订阅、丢弃在途回调、断开连接；`Drain()` 先取消订阅（不再收新消息）→ 等在途回调执行完 → 冲刷待发缓冲 → 再关闭。**生产停机用 Drain**，否则正在处理的消息被掐断，JetStream 消息因未 ACK 会在 `AckWait` 后被重投，造成重复消费。
+- **Core NATS 和 JetStream 怎么共存？** 两者是同一 `nats.Conn` 上的两种用法：`nc.Publish/Subscribe` 走纯内存通道，`nc.JetStream()` 拿到的 `JetStreamContext` 走持久化通道。可对同一 Subject 同时使用——Core 订阅做实时广播，JetStream Consumer 做可靠兜底，互不影响。
+- **同一 Subject 上的消息如何保证顺序？** NATS 不提供跨消息顺序保证。要顺序只能：① 单订阅 + 串行回调（牺牲吞吐）；② 按业务键（如 `order_id`）分片到不同 Subject / Stream；③ 消费端状态机校验，容忍乱序。**不要用加并发提吞吐**——会破坏顺序。
+- **At-Least-Once 下如何做到「业务上只执行一次」？** 两条腿：① 发布端带 `Msg-Id`，靠 Stream 去重窗口（默认 2min）做服务端过滤；② 消费端幂等（唯一键 / 去重表 / 状态机条件更新），这是跨系统唯一可靠的手段。切勿依赖中间件的 Exactly-Once。
 
 ## 关联
 

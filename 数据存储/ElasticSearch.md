@@ -357,6 +357,31 @@ POST my_index/_update/1?if_seq_no=42&if_primary_term=1
 
 ---
 
+## 使用：建一个带 mapping 的索引，写一条再查一次
+
+跑通这三步，就把「建索引 → 写入 → 可见 → 检索」这条最短路径走了一遍；注意 mapping 要显式写死，别指望动态映射。
+
+```bash
+# ① 建索引：显式 mapping 把字段类型固化（正文「动态映射的坑」：类型猜错只能 reindex）
+curl -X PUT "localhost:9200/mysougoulog" -H 'Content-Type: application/json' -d '
+{ "settings": { "number_of_shards": "5", "number_of_replicas": "1" },
+  "mappings": { "properties": { "userid": { "type": "text" } } } }'
+# → {"acknowledged":true,"shards_acknowledged":true,"index":"mysougoulog"}（示意）
+
+# ② 写一条文档：?refresh=wait_for 等一次刷新点，才有「写后立即可查」（正文「写入路径全链路」）
+curl -X PUT "localhost:9200/mysougoulog/_doc/1?refresh=wait_for" -H 'Content-Type: application/json' -d '
+{ "userid": "1001 搜索 入门" }'
+# → {"result":"created","_shards":{"successful":2,"failed":0}}（示意：主分片 + 副本分片都写成功才返回）
+
+# ③ 查一次：text 字段必须用 match（它会对查询串分词）
+curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/json' -d '
+{ "query": { "match": { "userid": "搜索" } } }'
+# → hits.total.value: 1（示意）
+
+# ④ 踩坑对照：同一个字段换成 term 拿整串去比词典，必然查不到（见追问二）
+#    term 只适用于 keyword / 数值 / 日期等不分词的字段
+```
+
 ## 面试官会追问什么
 
 ### 一、为什么 `text` 字段不能排序和聚合？
@@ -395,3 +420,5 @@ POST my_index/_update/1?if_seq_no=42&if_primary_term=1
 - [mysql/索引与优化.md](mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
 - [../linux/文件系统与IO.md](../linux/文件系统与IO.md) — translog 的 fsync 与 page cache
 - [存储选型.md](存储选型.md) — ES 在存储体系中的定位（该用与不该用、与 ClickHouse 的分工）
+
+> 反向引用（本篇被下列文档引到）：[海量数据存储设计.md](../分布式/系统设计/海量数据存储设计.md)、[统计页提速.md](../分布式/系统设计/统计页提速.md)

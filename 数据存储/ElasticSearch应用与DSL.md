@@ -401,6 +401,35 @@ POST _aliases
 
 ---
 
+## 使用：一次组合查询 + 聚合 + search_after 翻页的 DSL 骨架
+
+下面这份 body 把「打分条件、过滤条件、聚合、排序」装进同一个请求，翻页则用排序值往下续。
+
+```bash
+# ① 一个请求装下四件事：must/should 打分、filter 过滤（不掉分可缓存）、aggs 聚合、sort 排序
+curl -X POST "localhost:9200/my_index/_search" -H 'Content-Type: application/json' -d '
+{ "size": 10,
+  "query": { "bool": {
+    "must":   [ { "match": { "title": "elasticsearch" } } ],
+    "should": [ { "match": { "title": "入门" } } ],
+    "filter": [ { "term":  { "userid": "u001" } },
+                { "range": { "visittime": { "gte": "2024-01-01 00:00:00" } } } ],
+    "must_not": [ { "term": { "status": "deleted" } } ],
+    "minimum_should_match": 1 } },
+  "sort": [ { "visittime": "asc" }, { "_id": "asc" } ],
+  "aggs": { "by_user": { "terms": { "field": "userid", "size": 10 },
+      "aggs": { "avg_age": { "avg": { "field": "age" } } } } } }'
+# 说明：能把过滤表达成 filter 就别塞进 must —— 不进打分、能命中 bitset 缓存（正文「bool 四个子句」）
+# 说明：sort 用「业务时间 + _id」保证全序，否则同序文档会被跳过或重复（正文「分页」）
+# 说明：aggs 的 field 必须是 keyword / 数值；userid 若是 text 得改用它的 keyword 子字段
+
+# ② 翻下一页：把上一页最后一条的排序值填进 search_after，没有 from 所以不受 max_result_window 限制
+curl -X POST "localhost:9200/my_index/_search" -H 'Content-Type: application/json' -d '
+{ "size": 100, "sort": [ { "visittime": "asc" }, { "_id": "asc" } ],
+  "search_after": [ "2024-01-01 10:00:00", "abc123" ] }'
+# 说明：需要「遍历期间视图一致」时改用 PIT + search_after 并带上 keep_alive（正文「深翻页方案对照」）
+```
+
 ## 面试官会追问什么
 
 ### 一、深分页为什么慢？给三个方案并说明怎么选。

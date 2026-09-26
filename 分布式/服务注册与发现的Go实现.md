@@ -198,7 +198,11 @@ func (r *Resolver) Instances() []string { return r.snap.Load().Instances }
 
 // Revision 返回当前本地列表对应的 etcd revision（打日志/对账用）。
 func (r *Resolver) Revision() int64 { return r.snap.Load().Revision }
+```
 
+全量拉取和无锁读路径已经就位；下面是 `Run`，用 Watch 把两次全量之间的增删补回来。
+
+```go
 // Run 阻塞式地维持列表，直到 ctx 结束。
 //
 // ★ 三条铁律（正文机制 2 只讲了"更新本地 list"，这三条才是踩坑处）：
@@ -237,7 +241,11 @@ func (r *Resolver) Run(ctx context.Context) error {
 		}
 	}
 }
+```
 
+`Run` 只负责调度与推进 revision；最后是它依赖的折叠函数 `apply`、兜底重拉和自检。
+
+```go
 // apply 把一批事件折叠成新列表（copy-on-write）。
 func (r *Resolver) apply(events []*clientv3.Event, rev int64) {
 	old := r.snap.Load()
@@ -384,6 +392,37 @@ kubectl exec -it <pod> -- sh -c 'ss -tn state established "( sport = :8080 )" | 
 ---
 
 ---
+
+## 使用：起一个实例，再把注册到的实例列表用起来
+
+```go
+package main
+
+// ① 客户端单例：一个进程一个（必须按指针传递，拷例会触发 go vet: passes lock by value）
+cli := raftdemo.Client()
+
+ctx := context.Background()   // 生产上换成 signal.NotifyContext：收到 SIGTERM 就 cancel
+
+// ② 服务端：建租约 + 挂 KV + 一条 KeepAlive 流，ttl=10s（心跳停 → 10s 后自动摘除）
+reg, err := NewRegistry(ctx, cli, "user", "10.0.0.1:8080", 10)
+if err != nil {
+    log.Fatal(err)            // key = /services/user/10-0-0-1-8080（serviceKey 拼出来的）
+}
+// 元数据挂同一个租约：实例地址与 zone / 权重一起过期，不会一个没了另一个还在
+_ = reg.Attach(ctx, ServicePrefix("user")+"meta-10-0-0-1", `{"zone":"sh-a","weight":"100"}`)
+defer reg.Deregister(ctx)     // ★ 优雅下线：Revoke 立刻摘除，不等 TTL
+
+// ③ 客户端：先全量拉一次，再由 Run 用 Watch 续增量（Watch 断开时不清空列表）
+r, err := NewResolver(ctx, cli, "user")
+if err != nil {
+    log.Fatal(err)
+}
+go r.Run(ctx)                 // 阻塞式维持列表；Watch 报错只把 Healthy() 置为 false
+
+// ④ 读路径：无锁、常数时间，可以直接放在每次请求之前
+list := r.Instances()         // 要挑一台就按策略从中选（见 [客户端负载均衡的Go实现.md](客户端负载均衡的Go实现.md)）
+log.Printf("rev=%d instances=%v healthy=%v", r.Revision(), list, r.Healthy())
+```
 
 ## 面试官会追问什么
 

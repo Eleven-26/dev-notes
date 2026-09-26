@@ -221,6 +221,33 @@
 
 ---
 
+## 使用：一条从提交到部署的最小流水线
+
+```yaml
+# .gitlab-ci.yml —— 两阶段：构建（与目标环境无关）+ 部署（靠变量区分开发 / 生产）
+stages: [build, deploy]
+
+variables:
+  IMAGE: <你的仓库>/app:$CI_COMMIT_SHA     # ★ 不可变 tag：镜像与 commit 一一对应，"回滚"才有对象
+  DEPLOY_FILE: deploy/staging.yaml         # 生产换成 prod 的清单（路径由变量给，不写死在脚本里）
+
+build:
+  stage: build
+  image: docker:<版本>                     # docker executor：环境写在 YAML 里，job 之间互不污染
+  tags: [build-runner]                     # 多 Runner 靠 tag 分流：谁来构建、谁去部署
+  script:
+    - docker build -t "$IMAGE" .           # 上下文只放需要的文件，并配好 .dockerignore
+    - docker push "$IMAGE"                 # Runner 每次是新容器 → 本地层缓存天然是空的
+
+deploy:
+  stage: deploy
+  tags: [deploy-runner]
+  script:
+    - kubectl apply -f "$DEPLOY_FILE"      # 命令式部署：清单里引用的 tag 就是上面那个变量
+    - kubectl rollout status deploy/<应用>  # 卡住就停在这条：先让人看见，再决定回不回
+    - kubectl rollout undo deploy/<应用>    # 紧急止血；之后把改动落回仓库才不会留漂移
+```
+
 ## 面试官会追问什么（CI/CD 横向串联）
 
 - **"一次 push 到上线，链路说一遍。"** → 触发 → Runner 取 job → executor 起环境 → 拉码 → 编译测试
@@ -242,3 +269,5 @@
 - [k8s/K8s部署与生命周期.md](k8s/K8s部署与生命周期.md) — 声明式部署与回滚
 - [docker/命令速查.md](docker/命令速查.md) — 排查镜像与容器问题的命令
 - [容器与编排选型.md](容器与编排选型.md) — CI/CD 四方案对比与 GitOps（Argo CD）的取舍
+
+> 反向引用（本篇被下列文档引到）：[数据迁移.md](../数据存储/mysql/数据迁移.md)、[命令与场景.md](../版本控制/命令与场景.md)

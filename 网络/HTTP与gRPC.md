@@ -568,3 +568,5 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 - [数据序列化.md](数据序列化.md) — gRPC 默认的 Protobuf 载荷
 - [context.md](../go/工程实践/context.md) — 请求取消与超时在客户端侧的落点
 - [通信选型.md](通信选型.md) — 应用层协议与序列化格式的完整选型（含 WebSocket / SSE / MQTT / HTTP3）
+
+> 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[DNS解析.md](DNS解析.md)

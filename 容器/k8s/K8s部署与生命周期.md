@@ -301,6 +301,44 @@ db.Close()
 
 ---
 
+## 使用：部署一个服务并观察它的生命周期
+
+```yaml
+# deploy.yaml —— 一个"滚动发布不报错"的最小 Deployment：探针、资源、排空都在这里
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: app }
+spec:
+  replicas: 3
+  strategy: { rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }   # 容量绝不下降：先起新的再杀旧的
+  minReadySeconds: 10                                              # Ready 后再观察一会儿才算数，挡"启动即崩"
+  template:
+    spec:
+      imagePullSecrets: [{ name: regcred }]                        # kubectl create secret docker-registry 建的那个
+      containers:
+        - name: app
+          image: registry.example.com/app@sha256:<digest>          # 不可变引用：绕开"同 tag 内容被覆盖"
+          imagePullPolicy: IfNotPresent                            # 固定 tag / digest 的默认行为
+          resources:
+            requests: { cpu: 500m, memory: 512Mi }                 # requests == limits → Guaranteed 档
+            limits:   { cpu: 500m, memory: 512Mi }                 # 内存超 limit 直接 OOMKilled，没有中间态
+          startupProbe: { httpGet: { path: /healthz, port: 8080 }, failureThreshold: 30 }
+          readinessProbe: { httpGet: { path: /ready, port: 8080 } }      # 失败只摘流量、不重启
+          livenessProbe: { httpGet: { path: /healthz, port: 8080 } }     # 失败才重启；别让它依赖下游
+          lifecycle: { preStop: { exec: { command: ["sleep", "5"] } } }  # 给 endpoint 摘除 / 规则同步争取时间
+      terminationGracePeriodSeconds: 30                            # > preStop 等待 + 排空最坏耗时 + 余量
+```
+
+```bash
+kubectl apply -f deploy.yaml                 # 声明式提交，控制器负责把现实拉向期望状态
+kubectl get pod,deploy,svc                   # 先确认副本都 Ready（Restarts 在涨 = 反复重启）
+kubectl rollout status deploy/app            # 发布卡住先看这条：新 Pod 是 Pending 还是 CrashLoop
+kubectl describe pod <pod>                   # Last State: Terminated → Reason: OOMKilled / Error
+kubectl logs <pod> --previous                # 重启前那个实例的日志（关键证据）
+kubectl get events --sort-by=.lastTimestamp  # Killing / Unhealthy / FailedScheduling
+kubectl rollout undo deploy/app              # 紧急止血：只回滚代码，不回滚数据
+```
+
 ## 关联
 
 - [镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) — 发布时长与冷启动的镜像侧收益
@@ -308,3 +346,5 @@ db.Close()
 - [容器原理.md](../docker/容器原理.md) — SIGTERM 为什么能直达业务进程
 - [CI-CD.md](../CI-CD.md) — 声明式部署与回滚的流水线视角
 - [容器与编排选型.md](../容器与编排选型.md) — K8s 在编排方案中的位置（与 Compose / Swarm / Nomad 的对比）
+
+> 反向引用（本篇被下列文档引到）：[PHP-FPM对接步骤.md](../../php/PHP-FPM对接步骤.md)、[服务发现的Java实现.md](../../分布式/服务发现的Java实现.md)、[文件存储与上传架构.md](../../分布式/系统设计/文件存储与上传架构.md)、[Jaeger.md](../../可观测性/Jaeger.md)、[Skywalking.md](../../可观测性/Skywalking.md)、[可观测性选型.md](../../可观测性/可观测性选型.md)、[数字证书与PKI.md](../../安全/数字证书与PKI.md)

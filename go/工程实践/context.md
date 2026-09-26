@@ -517,3 +517,5 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 - [../并发/channel原理与底层实现.md](../并发/channel原理与底层实现.md) — 取消传播本质是 close 广播
 - [../../网络/HTTP与gRPC.md](../../网络/HTTP与gRPC.md) — 客户端侧的请求取消与超时
 - [../../分布式/限流降级熔断.md](../../分布式/限流降级熔断.md) — 超时预算与熔断的关系
+
+> 反向引用（本篇被下列文档引到）：[Kratos框架.md](Kratos框架.md)、[channel使用陷阱.md](../并发/channel使用陷阱.md)、[并发控制实战.md](../并发/并发控制实战.md)、[限流器.md](../并发/限流器.md)、[服务注册与发现的Go实现.md](../../分布式/服务注册与发现的Go实现.md)

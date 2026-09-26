@@ -163,7 +163,11 @@ func listWithUserNPlusOne(ctx context.Context, db *sql.DB, uid int64) ([]OrderVi
 	}
 	return out, nil
 }
+```
 
+上面是反例；下面是正确写法：两次单表查询并发跑，再在内存里按 map 归并出 JOIN 的效果。
+
+```go
 // ✓ 两次单表查询 + 并发 + 内存归并：总耗时 ≈ 较慢的那一次。
 func ListWithUser(ctx context.Context, db *sql.DB, userIDs []int64) ([]OrderView, error) {
 	if len(userIDs) == 0 {
@@ -204,7 +208,11 @@ func ListWithUser(ctx context.Context, db *sql.DB, userIDs []int64) ([]OrderView
 	}
 	return out, nil
 }
+```
 
+归并所依赖的两个批查函数放在最后，它们各自只做一条 `IN (...)` 的单表查询。
+
+```go
 func ordersByUsers(ctx context.Context, db *sql.DB, ids []int64) ([]Order, error) {
 	args := make([]any, len(ids))
 	for i, id := range ids {

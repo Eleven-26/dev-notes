@@ -455,3 +455,5 @@ OkHttpClient client = new OkHttpClient.Builder()
 - [HTTPS与TLS.md](HTTPS与TLS.md) — SNI 与证书校验里的域名
 - [HTTP与gRPC.md](HTTP与gRPC.md) — 连接复用与 DNS 缓存的关系
 - [../分布式/服务发现与负载均衡.md](../分布式/服务发现与负载均衡.md) — DNS 轮询 / GSLB 与服务发现的边界
+
+> 反向引用（本篇被下列文档引到）：[Docker网络与镜像源.md](../容器/docker/Docker网络与镜像源.md)、[DHCP.md](DHCP.md)

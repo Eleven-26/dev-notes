@@ -156,6 +156,28 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 
 ---
 
+## 使用：观测握手与两个队列
+
+服务端「偶发连不上」的第一现场不是抓包，而是下面这三条命令；按顺序跑，先定位是哪个队列在丢。
+
+```bash
+# ① 看队列现状：Recv-Q = 当前排在 accept 队列里的连接数，Send-Q = 该监听套接字的上限（正文 2.4）
+ss -lnt
+# State   Recv-Q  Send-Q  Local Address:Port
+# LISTEN  129     128     0.0.0.0:8080    ← Recv-Q 顶着 Send-Q = 全连接队列满（示意，本机为 Windows 无实测）
+
+# ② 看溢出计数（数字持续增长就是证据）：全连接与半连接溢出的报文不一样（正文 2.4）
+netstat -s | grep -i -E "listen|SYN"
+# listen queue of a socket overflowed  → 全连接队列溢出：第三次 ACK 被丢，客户端却显示「连接成功」
+# SYNs to LISTEN sockets dropped       → 半连接队列溢出 / 丢 SYN：客户端建连变慢直到超时
+
+# ③ 更细的内核计数器，用来区分到底哪个队列在丢
+nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
+
+# ④ 复测纪律：全连接队列上限 = min(应用 backlog, net.core.somaxconn)，只改应用参数等于没改（正文 2.2 / 2.5）
+#    调完 somaxconn 与 tcp_max_syn_backlog 后重跑 ①~③，Recv-Q 不再顶格、overflow 计数不再增长才算修好
+```
+
 ## 面试官会追问什么
 
 - **为什么断开连接要四次挥手？** → 因为 TCP 是全双工，**关闭需要两个方向各自关闭**：
@@ -178,3 +200,5 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 - [TCP滑动窗口.md](TCP滑动窗口.md) — 窗口与 SYN 洪泛半连接堆积
 - [HTTPS与TLS.md](../HTTPS与TLS.md) — 握手之上的 TLS 握手
 - [Skywalking.md](../../可观测性/Skywalking.md) — 线上观测建连耗时的手段
+
+> 反向引用（本篇被下列文档引到）：[DNS解析.md](../DNS解析.md)、[通信选型.md](../通信选型.md)

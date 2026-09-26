@@ -440,14 +440,14 @@ jaeger（v2，collector+query 一体）──▶ ClickHouse（库 jaeger）─�
 
 ## 九、面试官会追问什么
 
-1. **采样率怎么定？** 开发全采；生产按流量 `ParentBased(TraceIDRatioBased(1%~10%))` 保证父子决策一致；最优是 Collector **尾部采样**——错误与慢请求 100% 保留、正常请求抽样，又省存储又不丢关键链路。
-2. **TraceID 如何跨服务透传？** W3C `traceparent` 头（`version-traceid-spanid-flags`）随 HTTP/RPC 传递；MQ 放消息 Header；下游 `Extract` 提取后作为父上下文创建新 span。⚠️ 头格式全链路须统一，混用 `sw8`/`uber-trace-id` 会断链。
-3. **异步 / MQ 怎么串联？** 生产端发送前 `Inject`（把当前 span 注入消息头），消费端 `Extract` 后续接同一 trace；定时任务这类无上游入口的创建**根 span** 独立成链。本项目已按此实现（`nats.go` 注入 / `consumer.go` 抽取）。
-4. **Jaeger 存储怎么选？** 本地/CI 用 Badger 或内存；生产 ClickHouse（高基数、按 ID 精查、成本低，v2 官方原生）或 Elasticsearch（生态成熟、聚合强）；Cassandra 适合超大规模写入但运维要求高。
-5. **为什么 Jaeger v2 转向 OTel？** OTel 已成事实标准：v2 直接以 OTel Collector 为运行时，统一接收/处理/导出模型，避免维护私有协议与 SDK，也让 Jaeger 成为生态里“可替换的后端”。
-6. **为什么老 Jaeger SDK 不再用？** `jaeger-client-go/java` 已归档，私有 `uber-trace-id` 与私有 Thrift 协议与 OTel 标准冲突；统一 OTel SDK + OTLP 后，后端可换而埋点不动。
-7. **Span 爆炸 / 性能开销怎么控？** 采样 + 批量异步导出（`BatchSpanProcessor`）+ 属性精简（避免把大 body/敏感字段写进 span，本项目 `TraceParams` 已做 4KB 截断与敏感字段脱敏）+ 关闭时零开销（中间件返回 `nil`）。
-8. **TraceID 怎么和日志关联？** 把当前 span 的 `trace_id` 写入响应头与日志字段（本项目 `X-Trace-Id` + 响应体 `trace_id`），日志系统按 `trace_id` 聚合即可从日志跳回 UI 检索。
+- **采样率怎么定？** 开发全采；生产按流量 `ParentBased(TraceIDRatioBased(1%~10%))` 保证父子决策一致；最优是 Collector **尾部采样**——错误与慢请求 100% 保留、正常请求抽样，又省存储又不丢关键链路。
+- **TraceID 如何跨服务透传？** W3C `traceparent` 头（`version-traceid-spanid-flags`）随 HTTP/RPC 传递；MQ 放消息 Header；下游 `Extract` 提取后作为父上下文创建新 span。⚠️ 头格式全链路须统一，混用 `sw8`/`uber-trace-id` 会断链。
+- **异步 / MQ 怎么串联？** 生产端发送前 `Inject`（把当前 span 注入消息头），消费端 `Extract` 后续接同一 trace；定时任务这类无上游入口的创建**根 span** 独立成链。本项目已按此实现（`nats.go` 注入 / `consumer.go` 抽取）。
+- **Jaeger 存储怎么选？** 本地/CI 用 Badger 或内存；生产 ClickHouse（高基数、按 ID 精查、成本低，v2 官方原生）或 Elasticsearch（生态成熟、聚合强）；Cassandra 适合超大规模写入但运维要求高。
+- **为什么 Jaeger v2 转向 OTel？** OTel 已成事实标准：v2 直接以 OTel Collector 为运行时，统一接收/处理/导出模型，避免维护私有协议与 SDK，也让 Jaeger 成为生态里“可替换的后端”。
+- **为什么老 Jaeger SDK 不再用？** `jaeger-client-go/java` 已归档，私有 `uber-trace-id` 与私有 Thrift 协议与 OTel 标准冲突；统一 OTel SDK + OTLP 后，后端可换而埋点不动。
+- **Span 爆炸 / 性能开销怎么控？** 采样 + 批量异步导出（`BatchSpanProcessor`）+ 属性精简（避免把大 body/敏感字段写进 span，本项目 `TraceParams` 已做 4KB 截断与敏感字段脱敏）+ 关闭时零开销（中间件返回 `nil`）。
+- **TraceID 怎么和日志关联？** 把当前 span 的 `trace_id` 写入响应头与日志字段（本项目 `X-Trace-Id` + 响应体 `trace_id`），日志系统按 `trace_id` 聚合即可从日志跳回 UI 检索。
 
 ## 关联
 
