@@ -22,7 +22,7 @@
 | [并发/channel原理与底层实现.md](go/并发/channel原理与底层实现.md) | hchan 字段、收发流程、并发安全来源、缓冲区「总是新鲜的」、select 的三轮检查与轮询顺序 |
 | [并发/channel使用陷阱.md](go/并发/channel使用陷阱.md) | 能不能先判断阻塞再写入、最容易踩的 4 个点、死锁什么时候报（四条判据） |
 | [并发/channel实战模式.md](go/并发/channel实战模式.md) | 通信 6 案例、项目里 4 种典型用法、多生产者 + 单消费者的两个同步点 |
-| [并发/Goroutine.md](go/并发/Goroutine.md) | goroutine 与线程的五维对照、初始栈（Linux 2KB / **Windows 8KB**）与增长收缩、创建成本实测、goroutine id 为什么不给、循环变量语义变更、泄漏三个判据 |
+| [并发/Goroutine.md](go/并发/Goroutine.md) | **原理**：与线程的五维对照、`g` 结构体四类字段与六态状态机、`gopark`/`goready` 的阻塞与唤醒（实测 1 万阻塞协程只占 10 条线程）、初始栈（Linux 2KB / **Windows 8KB**）与增长收缩、创建复用实测、id 为什么不给、循环变量语义、泄漏判据；**用法**：五种形态（errgroup / fan-out / 信号量 / 常驻 worker / 后台任务）、四条规矩（协程内 panic 带走进程、背压实测）、**真实业务场景判据**（以导入导出为例：多段独立查询可并发、写响应/写库绝不能并发、批量事务比并发重要） |
 | [并发/共享内存与CSP.md](go/并发/共享内存与CSP.md) | 「不要通过共享内存来通信」到底在说什么、两条路线的适用边界 |
 | [并发/sync.Pool.md](go/并发/sync.Pool.md) | 不是缓存而是「减少分配」、victim cache（1 次 GC 后仍命中 15/16、2 次后 0/16）、按 P 分片 + 偷取、必须重置、**存指针不存 slice（24B 装箱差）**、不该用 Pool 的场景 |
 | [并发/并发同步原语.md](go/并发/并发同步原语.md) | Mutex 语义与饥饿模式、排队上限、手动加锁 vs sync.Map、协程间通信五法、RWMutex 相容矩阵与写饥饿、sync.Once 与单例、分段锁 map、WaitGroup 误用、**sync/atomic（原子 vs 锁实测、64 位对齐 panic、atomic.Value / Pointer、伪共享 4.7 倍）** |
