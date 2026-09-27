@@ -613,4 +613,4 @@ if err := config.DecryptSecrets(cipher, &cfg); err != nil {
 - [xxl-job.md](xxl-job.md) — 另一类基础组件的对照
 - [中间件选型.md](中间件选型.md) — 注册中心与配置中心的横向选型（Nacos / etcd / Consul / ZooKeeper / Eureka）
 
-> 反向引用（本篇被下列文档引到）：[Kratos框架.md](../go/工程实践/Kratos框架.md)、[依赖注入.md](../go/工程实践/依赖注入.md)、[服务发现的Java实现.md](../分布式/服务发现的Java实现.md)、[分布式锁.md](../数据存储/redis/分布式锁.md)
+> 反向引用（本篇被下列文档引到）：[Kratos框架.md](../go/工程实践/Kratos框架.md)、[依赖注入.md](../go/工程实践/依赖注入.md)、[分布式与微服务.md](../分布式/分布式与微服务.md)、[服务发现的Java实现.md](../分布式/服务发现的Java实现.md)、[分布式锁.md](../数据存储/redis/分布式锁.md)

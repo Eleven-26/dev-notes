@@ -491,4 +491,4 @@ public final class SnowflakeIdWorker {
 - [Raft协议.md](Raft协议.md) — 多节点下的单调与唯一
 - [一致性与CAP.md](一致性与CAP.md) — 为什么本地 ID 生成敢不加锁
 
-> 反向引用（本篇被下列文档引到）：[xxl-job.md](../中间件/xxl-job.md)、[中间件选型.md](../中间件/中间件选型.md)
+> 反向引用（本篇被下列文档引到）：[xxl-job.md](../中间件/xxl-job.md)、[中间件选型.md](../中间件/中间件选型.md)、[分布式与微服务.md](分布式与微服务.md)
