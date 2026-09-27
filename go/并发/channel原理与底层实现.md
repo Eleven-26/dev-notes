@@ -366,5 +366,6 @@ go func() { wg.Wait(); close(ch) }()   // 等所有发送者退出，再关
 - [并发同步原语.md](并发同步原语.md) — Mutex / RWMutex / sync.Once 的对照
 - [共享内存与CSP.md](共享内存与CSP.md) — 为什么这条通信路径被 Go 官方推荐
 - [GC基础算法.md](../../垃圾回收/GC基础算法.md) — 挂起与唤醒背后的调度与 GC 协作
+- [Goroutine.md](Goroutine.md) — 阻塞的 goroutine 挂到哪里去了
 
 > 反向引用（本篇被下列文档引到）：[context.md](../工程实践/context.md)、[for-range.md](../类型与语法/for-range.md)、[弹幕系统的接入与推送.md](../../分布式/系统设计/弹幕系统的接入与推送.md)、[IO多路复用.md](../../网络/IO多路复用.md)
