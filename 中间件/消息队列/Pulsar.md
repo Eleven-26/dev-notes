@@ -897,4 +897,4 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 - [../../分布式/一致性与CAP.md](../../分布式/一致性与CAP.md) — BookKeeper quorum 写与多数派的对应关系
 - [../../可观测性/可观测性选型.md](../../可观测性/可观测性选型.md) — 订阅积压指标的采集与告警口径
 
-> 反向引用（本篇被下列文档引到）：[消息队列选型.md](消息队列选型.md)、[中间件选型.md](../中间件选型.md)、[Kafka.md](Kafka.md)、[RocketMQ.md](RocketMQ.md)、[Nats.md](Nats.md)、[RabbitMQ.md](RabbitMQ.md)、[目录.md](../../目录.md)
+> 反向引用（本篇被下列文档引到）：[消息队列选型.md](消息队列选型.md)、[中间件选型.md](../中间件选型.md)、[Kafka.md](Kafka.md)、[RocketMQ.md](RocketMQ.md)、[Nats.md](Nats.md)、[RabbitMQ.md](RabbitMQ.md)、[ActiveMQ.md](ActiveMQ.md)、[目录.md](../../目录.md)
