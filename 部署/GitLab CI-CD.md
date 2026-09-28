@@ -673,4 +673,4 @@ npx gitlab-ci-local --list --validate-dependency-chain
 - [k8s/K8s部署与生命周期面试题.md](k8s/K8s部署与生命周期面试题.md) — 部署阶段的声明式与回滚、`rollout undo`
 - [k8s/K8s部署流程.md](k8s/K8s部署流程.md) — 流水线的下游：集群搭建、基础组件、应用清单与上线检查单
 - [容器与编排选型.md](容器与编排选型.md) — CI/CD 四方案对比与 GitOps 的取舍
-- [../版本控制/命令与场景.md](../版本控制/命令与场景.md) — 流水线里用到的 git 命令
+- [../版本控制/Git命令与使用场景.md](../版本控制/Git命令与使用场景.md) — 流水线里用到的 git 命令
