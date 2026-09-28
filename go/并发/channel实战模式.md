@@ -419,6 +419,8 @@ func (f *future) get() string { return <-f.ch }
 
 ## 关联
 
+- [goroutine实战模式.md](goroutine实战模式.md) — 同一批模式的 goroutine 侧：起法、收口、限并发分别该用哪种形态
+
 - [channel原理与底层实现.md](channel原理与底层实现.md) — 这些模式背后的收发与调度机制
 - [channel使用陷阱.md](channel使用陷阱.md) — 关闭语义与死锁判据
 - [并发控制实战.md](并发控制实战.md) — 同一主题的可运行练习
