@@ -398,7 +398,7 @@ ps -o pid,comm -p 1
 - [../go/接入Skywalking.md](../go/接入Skywalking.md) — Go 侧的编译期注入路线
 - [../java/接入Skywalking.md](../java/接入Skywalking.md) — Java 侧的 `-javaagent` 无侵入路线
 - [../可观测性/Jaeger.md](../可观测性/Jaeger.md) — 另一套 tracing 体系的对照
-- [../容器/docker/镜像构建与缓存.md](../容器/docker/镜像构建与缓存.md) — 多阶段构建与镜像层缓存
-- [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — 优雅停机与 SIGTERM 排空
+- [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — 多阶段构建与镜像层缓存
+- [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 SIGTERM 排空
 
-> 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[go/接入Skywalking.md](../go/接入Skywalking.md)、[java/接入Skywalking.md](../java/接入Skywalking.md)、[镜像构建与缓存.md](../容器/docker/镜像构建与缓存.md)、[K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md)、[目录.md](../目录.md)
+> 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[go/接入Skywalking.md](../go/接入Skywalking.md)、[java/接入Skywalking.md](../java/接入Skywalking.md)、[镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md)、[K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md)、[目录.md](../目录.md)

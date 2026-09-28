@@ -458,4 +458,4 @@ OkHttpClient client = new OkHttpClient.Builder()
 
 - [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — DNS 在整条链路里的位置（应用层第一步）
 
-> 反向引用（本篇被下列文档引到）：[Docker网络与镜像源.md](../容器/docker/Docker网络与镜像源.md)、[DHCP.md](DHCP.md)
+> 反向引用（本篇被下列文档引到）：[Docker网络与镜像源.md](../部署/docker/Docker网络与镜像源.md)、[DHCP.md](DHCP.md)

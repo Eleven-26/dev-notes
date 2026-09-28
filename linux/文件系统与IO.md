@@ -158,4 +158,4 @@ lsof | grep -i deleted    # 同上，全量扫
 - [性能排查.md](性能排查.md) — iostat、inode 满、磁盘满的排查
 - [零拷贝.md](../go/运行时/零拷贝.md) — mmap / sendfile 在同一套 I/O 栈上的位置
 
-> 反向引用（本篇被下列文档引到）：[常用命令.md](常用命令.md)、[网络与存储.md](../容器/docker/网络与存储.md)、[ElasticSearch.md](../数据存储/elasticsearch/ElasticSearch.md)、[ElasticSearch应用与DSL.md](../数据存储/elasticsearch/ElasticSearch应用与DSL.md)
+> 反向引用（本篇被下列文档引到）：[常用命令.md](常用命令.md)、[网络与存储.md](../部署/docker/网络与存储.md)、[ElasticSearch.md](../数据存储/elasticsearch/ElasticSearch.md)、[ElasticSearch应用与DSL.md](../数据存储/elasticsearch/ElasticSearch应用与DSL.md)

@@ -450,6 +450,6 @@ nc -vz oap.observability 11800
 - [../php/接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型
 - [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
 - [../go/工程实践/context.md](工程实践/context.md) — OTel 路线下 ctx 传播的基础
-- [../容器/docker/镜像构建与缓存.md](../容器/docker/镜像构建与缓存.md) — `-a` 全量重编译与构建缓存的取舍
+- [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — `-a` 全量重编译与构建缓存的取舍
 
 > 反向引用（本篇被下列文档引到）：[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[接入Jaeger.md](接入Jaeger.md)、[../java/接入Skywalking.md](../java/接入Skywalking.md)、[目录.md](../目录.md)

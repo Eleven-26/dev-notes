@@ -385,7 +385,7 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 - [Jaeger.md](Jaeger.md) — Trace 概念的对照与分工
 - [../php/接入Skywalking.md](../php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤
 - [../网络/HTTP与gRPC.md](../网络/HTTP与gRPC.md) — 跨进程上下文传播
-- [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — OAP 与 UI 的部署方式
+- [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — OAP 与 UI 的部署方式
 - [可观测性选型.md](可观测性选型.md) — 与 Jaeger、Zipkin、Tempo、云托管方案的横向对比与组合建议
 
 > 反向引用（本篇被下列文档引到）：[go/接入Skywalking.md](../go/接入Skywalking.md)、[java/接入Skywalking.md](../java/接入Skywalking.md)、[php/接入Skywalking.md](../php/接入Skywalking.md)、[分布式与微服务.md](../分布式/分布式与微服务.md)、[缓存问题与方案.md](../数据存储/redis/缓存问题与方案.md)、[TCP三次握手.md](../网络/tcp/TCP三次握手.md)

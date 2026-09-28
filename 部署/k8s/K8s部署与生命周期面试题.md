@@ -1,6 +1,9 @@
-# K8s 部署与生命周期
+# K8s 部署与生命周期面试题
 
 > Helm 怎样像 apt 一样管理 K8s 应用、镜像与 K8s 相关的正确姿势、三探针与优雅关闭、滚动升级与回滚。
+>
+> 本篇按**常见问法**组织（每题带 `**本节要点**`）。**按标准流程从零部署的完整文档**见
+> [K8s部署流程.md](K8s部署流程.md)——那篇讲"一步步怎么做、每步怎么验"，本篇讲"为什么这么做、坑在哪"。
 >
 > 内容整理自大厂 Go 后端面试真题；本轮补充（imagePullPolicy 与 QoS、三探针与优雅关闭、滚动与回滚）参考《Docker 技术入门与实战》（第 3 版，杨保华 / 戴王剑 / 曹亚仑）。参考资料与原始素材见 [素材清单](../../素材清单.md)。
 
@@ -8,7 +11,7 @@
 
 ## 一、Helm 是什么？它怎样"像 apt 一样"管理 Kubernetes 应用？
 
-**考察意图**：考的是**K8s 的工程化能力**。会写 YAML 只是入门，面试官想确认你知不知道：
+**本节要点**：实质是考**K8s 的工程化能力**。会写 YAML 只是入门，关键在
 **怎么把一堆 YAML 打包、版本化、参数化，并且一条命令装上、一条命令卸掉**——
 也就是"包管理"这件事在 K8s 里是怎么落地的。
 
@@ -97,7 +100,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 > 串起来就是一条完整链路：**镜像从哪来（registry mirror）→ 构建时依赖从哪来（apt / yum 源）
 > → 应用制品怎么管（Helm + 私有 OCI Registry）**。
-> 面试时把这三层讲清楚，比只说一句"我会用 Helm"高一个层次。
+> 把这三层串起来看，比只记一条 `helm install` 清楚得多。
 
 ### 1.6 values 分层、子 chart 依赖与 hooks（用 Helm 落地时的三个坑）
 
@@ -132,7 +135,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 
 **来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
 
-**考察意图**：考 **「镜像 tag 与拉取策略的连带后果」**。`Always` + 可变 tag 是最糟的组合；kubelet 还会按磁盘阈值 GC 掉不用的镜像，所以会出现「昨天还在、今天重拉」。
+**本节要点**：**镜像 tag 与拉取策略是连带的**。`Always` + 可变 tag 是最糟的组合；kubelet 还会按磁盘阈值 GC 掉不用的镜像，所以会出现「昨天还在、今天重拉」。
 
 ### 2.1 `imagePullPolicy` 与"节点上镜像漂移" ⭐
 
@@ -148,7 +151,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 ```
 
 解法只有两条，推荐第一条：**镜像不可变（用 commit SHA 做 tag）**；或退一步用 `@sha256:<digest>` 引用。
-`Always` + 可变 tag 是最糟的组合（tag 策略见 [CI-CD.md 第二节](../CI-CD.md)）。
+`Always` + 可变 tag 是最糟的组合（tag 策略见 [CI-CD面试题.md 第二节](../CI-CD面试题.md)）。
 
 ### 2.2 拉取凭证与冷启动
 
@@ -191,8 +194,8 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 
 **来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
 
-**考察意图**：这题最能看出"有没有真在生产发布过服务"。三探针各解决什么、误配的**具体后果**、
-以及"`preStop` 里 sleep 几秒"到底在服务什么。
+**本节要点**：三探针各解决什么、误配的**具体后果**、
+以及"`preStop` 里 sleep 几秒"到底在服务什么——这三点只有在生产里真发布过服务，才写得具体。
 
 ### 3.1 三个探针与误配后果
 
@@ -249,7 +252,7 @@ db.Close()
 
 **来源**：本轮补充 · 参考《Docker 技术入门与实战》（第 3 版）
 
-**考察意图**：考 **「回滚到底能不能兜底」**。`rollout undo` 依赖「上一个 revision 恰好是好的那个」，且**只回滚代码、不回滚数据**；有状态负载还要额外考虑 quorum 与 RWO 卷不能双挂。
+**本节要点**：**回滚到底能不能兜底**。`rollout undo` 依赖「上一个 revision 恰好是好的那个」，且**只回滚代码、不回滚数据**；有状态负载还要额外考虑 quorum 与 RWO 卷不能双挂。
 
 ### 4.1 `maxSurge` / `maxUnavailable` 与 PDB
 
@@ -339,10 +342,11 @@ kubectl rollout undo deploy/app              # 紧急止血：只回滚代码，
 
 ## 关联
 
+- [K8s部署流程.md](K8s部署流程.md) — **按标准流程从零部署**的完整文档：形态选型、kubeadm 搭建、基础组件、应用清单、检查单与排障
 - [镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) — 发布时长与冷启动的镜像侧收益
 - [资源限制与运维.md](../docker/资源限制与运维.md) — Pod 的 requests/limits 与 QoS 分级
 - [容器原理.md](../docker/容器原理.md) — SIGTERM 为什么能直达业务进程
-- [CI-CD.md](../CI-CD.md) — 声明式部署与回滚的流水线视角
+- [CI-CD面试题.md](../CI-CD面试题.md) — 声明式部署与回滚的流水线视角
 - [容器与编排选型.md](../容器与编排选型.md) — K8s 在编排方案中的位置（与 Compose / Swarm / Nomad 的对比）
 
-> 反向引用（本篇被下列文档引到）：[接入Skywalking.md](../../php/接入Skywalking.md)、[go/接入Jaeger.md](../../go/接入Jaeger.md)、[java/接入Skywalking.md](../../java/接入Skywalking.md)、[java/接入Jaeger.md](../../java/接入Jaeger.md)、[服务发现的Java实现.md](../../分布式/服务发现的Java实现.md)、[文件存储与上传架构.md](../../分布式/系统设计/文件存储与上传架构.md)、[Jaeger.md](../../可观测性/Jaeger.md)、[Skywalking.md](../../可观测性/Skywalking.md)、[可观测性选型.md](../../可观测性/可观测性选型.md)、[数字证书与PKI.md](../../安全/数字证书与PKI.md)
+> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../../go/接入Jaeger.md)、[接入Jaeger.md](../../java/接入Jaeger.md)、[接入Skywalking.md](../../java/接入Skywalking.md)、[接入Skywalking.md](../../php/接入Skywalking.md)、[服务发现的Java实现.md](../../分布式/服务发现的Java实现.md)、[文件存储与上传架构.md](../../分布式/系统设计/文件存储与上传架构.md)、[Jaeger.md](../../可观测性/Jaeger.md)、[Skywalking.md](../../可观测性/Skywalking.md)、[可观测性选型.md](../../可观测性/可观测性选型.md)、[数字证书与PKI.md](../../安全/数字证书与PKI.md)、[GitLab CI-CD.md](../GitLab CI-CD.md)

@@ -332,7 +332,7 @@ grep -m1 'TID' /path/to/app.log
 - [../go/接入Skywalking.md](../go/接入Skywalking.md) — 编译期注入路线，对照「运行期字节码增强 vs 编译期 AST 注入」的差异
 - [../php/接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型与 `exec` 信号转发
 - [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
-- [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — 优雅停机、SIGTERM 与宽限期
-- [../容器/docker/镜像构建与缓存.md](../容器/docker/镜像构建与缓存.md) — `COPY --from` 多阶段构建与镜像瘦身
+- [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
+- [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — `COPY --from` 多阶段构建与镜像瘦身
 
 > 反向引用（本篇被下列文档引到）：[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[接入Jaeger.md](接入Jaeger.md)、[../go/接入Skywalking.md](../go/接入Skywalking.md)、[目录.md](../目录.md)

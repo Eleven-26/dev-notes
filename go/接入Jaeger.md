@@ -334,7 +334,7 @@ srv.Shutdown(ctx)              // 1. 先停 HTTP server，排空 in-flight 请�
 infrastructure.Shutdown(ctx)   // 2. 再 flush span 队列
 ```
 
-⚠️ **顺序很重要**：先 flush 再停 server，会把排空期间新产生的 span 漏掉。任何 `kill -9` 都等于放弃最后一批数据——K8s 侧要保证 `terminationGracePeriodSeconds` 大于「HTTP 排空 + span flush」的总时间（部署与生命周期见 [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md)）。
+⚠️ **顺序很重要**：先 flush 再停 server，会把排空期间新产生的 span 漏掉。任何 `kill -9` 都等于放弃最后一批数据——K8s 侧要保证 `terminationGracePeriodSeconds` 大于「HTTP 排空 + span flush」的总时间（部署与生命周期见 [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md)）。
 
 ---
 
@@ -474,7 +474,7 @@ curl -s "http://localhost:16686/api/services"
 - [../java/接入Jaeger.md](../java/接入Jaeger.md) — Java 侧的 OTel Agent 与 Micrometer Tracing 两条路线
 - [工程实践/context.md](工程实践/context.md) — ctx 传播、超时预算与级联取消的基础
 - [../网络/HTTP与gRPC.md](../网络/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
-- [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — 优雅停机与 `terminationGracePeriodSeconds`
+- [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 `terminationGracePeriodSeconds`
 - [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md) — 链路后端与存储的选型对比
 
 > 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[接入Skywalking.md](接入Skywalking.md)、[../java/接入Jaeger.md](../java/接入Jaeger.md)、[目录.md](../目录.md)
