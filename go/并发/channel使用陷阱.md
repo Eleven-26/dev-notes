@@ -56,7 +56,7 @@ case ch2 <- v:   // 若 ch2 也写不进去
 // 没有 default → 两个都写不进去就永久阻塞
 ```
 
-原视频演示：放入 10 次，但 channel 空间有限且**没有读取的协程**
+演示：放入 10 次，但 channel 空间有限且**没有读取的协程**
 → 填满之后直接**死锁**（`fatal error: all goroutines are asleep`）。
 
 ### 1.3 从底层 `chansend` 看"能写成功"的四个快路径

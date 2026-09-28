@@ -39,9 +39,9 @@
 > 关键理解：**Chart 是"源码"，Release 是"运行起来的实例"，`values.yaml` 是"编译参数"。**
 > 改参数不必改 YAML 本身，改 values 重新渲染即可。
 
-### 1.3 常用命令（含视频里的实战流程）
+### 1.3 常用命令（含实战流程）
 
-视频是**三节点 K8s 集群 + 本地 OCI Registry**，从 Registry 拉 Chart 部署：
+**三节点 K8s 集群 + 本地 OCI Registry**，从 Registry 拉 Chart 部署：
 
 ```bash
 # 0. 安装 Helm（官方脚本）
@@ -56,7 +56,7 @@ helm install my-nginx oci://registry.example.com/charts/nginx \
   --plain-http          # ★ 本地 Registry 没启用 HTTPS，必须走 HTTP
 ```
 
-> ⚠️ 视频里特别说明：本地 OCI Registry **没有做 HTTPS**，
+> ⚠️ 特别说明：本地 OCI Registry **没有做 HTTPS**，
 > 所以要**显式指定用 HTTP 方式**（`--plain-http`），否则拉取会失败。
 
 ```bash
@@ -70,7 +70,7 @@ helm uninstall my-nginx
 
 **一个很重要的点**：安装完会创建**哪些资源，完全取决于 Chart 里定义了什么**——
 Chart 里有 `Deployment` 就有 Deployment，有 `Service` 就有 Service。
-视频里那个 Nginx Chart 就同时装出了 Deployment 和 Service；
+那个 Nginx Chart 就同时装出了 Deployment 和 Service；
 **Chart 里没定义过的资源，装完自然不会有。**
 
 ### 1.4 除了 install，还要会这几条
