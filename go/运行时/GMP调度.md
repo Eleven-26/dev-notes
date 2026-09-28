@@ -256,7 +256,7 @@ SCHED 843ms: gomaxprocs=8 idleprocs=0 threads=10 spinningthreads=0 needspinning=
 | `schedticks=[...]` | —— | 每个 P 的调度次数（Go 1.26 新增字段） |
 
 ⭐ **两个可以对照的点**：
-1. **P0 的本地队列最长（170 / 151）** —— 因为 Goroutine 是在主协程（P0）上创建的，
+1. **P0 的本地队列最长（170 / 151）** —— 因为 goroutine 是在主协程（P0）上创建的，
    **新建的 G 优先进"当前 P"的本地队列**，本地队列满 256 才溢出到全局队列；这也解释了为什么全局队列会涨到 355；
 2. **`threads=10 > gomaxprocs=8`** —— M 不受 `GOMAXPROCS` 限制，除了 8 个干活的外还有 sysmon 等系统线程。
 
@@ -385,6 +385,6 @@ GC 要做 STW 时，需要**所有 goroutine 都到达"安全点"**。老版本�
 - [程序启动流程.md](程序启动流程.md) — `schedinit` 里调度器怎么初始化
 - [内存分配器.md](内存分配器.md) — P 上的 mcache 与无锁分配
 - [../并发/协程泄漏与死锁.md](../并发/协程泄漏与死锁.md) — 协程堆积的现场
-- [../并发/Goroutine.md](../并发/Goroutine.md) — goroutine 本身有多轻、栈怎么长、怎么排查泄漏
+- [../并发/goroutine.md](../并发/goroutine.md) — goroutine 本身有多轻、栈怎么长、怎么排查泄漏
 - [垃圾回收机制.md](垃圾回收机制.md) — 抢占式调度为什么是 STW 能稳定在亚毫秒的前提
 - [../../linux/进程与线程.md](../../linux/进程与线程.md) — 线程与协程的创建成本对照

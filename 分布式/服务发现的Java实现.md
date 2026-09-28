@@ -1,15 +1,15 @@
 # 服务发现的 Java 实现（Spring Cloud + Nacos）
 
-> 面试问服务发现时，**Java 背景的面试官默认你说的是 Spring Cloud**，Go 背景的默认是 etcd / K8s。
+> 一提到服务发现，**Java 背景的人默认你说的是 Spring Cloud**，Go 背景的默认是 etcd / K8s。
 > 这篇的重点是**把两套词汇对上**：Nacos 的 `lease` ≈ etcd 的租约，`@LoadBalanced` ≈ Go 侧的 `DiscoveryTransport`；
 > 并说清 **K8s 那一层到底谁在做负载均衡**。
 >
-> 内容整理自大厂 Go 后端面试真题，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）；参考资料与原始素材见 [素材清单](../素材清单.md)。
+> 内容整理自个人学习笔记，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）；参考资料与原始素材见 [素材清单](../素材清单.md)。
 >
 > ⚠️ **Java 代码未在本机编译校验**（依赖 Spring Cloud Alibaba，需要私服 / 联网拉包）；
 > API 名称按 `spring-cloud-starter-alibaba-nacos-discovery` + `spring-cloud-starter-loadbalancer` 的公开接口书写，落地前请以你所用版本的源码为准。
 
-> 面试问服务发现时，**Java 背景的面试官默认你说的是 Spring Cloud**，
+> 一提到服务发现，**Java 背景的人默认你说的是 Spring Cloud**，
 > Go 背景的默认是 etcd/K8s。所以这节的重点是**把两套词汇对上**：
 > Nacos 的 `lease` ≈ etcd 的租约，`@LoadBalanced` ≈ 使用一的 `DiscoveryTransport`。
 >
@@ -43,7 +43,7 @@ spring:
 容忍连续丢 2 次心跳，第 3 次还没来才摘——
 把 `lease-expiration` 调到 5s 只是"心跳周期"，**一次网络抖动就会误摘实例**。
 
-**和 etcd 的两点差异（面试可用来加分）**：
+**和 etcd 的两点差异**：
 
 | | etcd | Nacos |
 |---|---|---|
@@ -91,7 +91,7 @@ OrderVO vo = restTemplate.getForObject(
         "http://order-service/api/order/{id}", OrderVO.class, orderId);
 ```
 
-**`@LoadBalanced` 背后发生了什么**（这段说清楚，面试官就知道你不是只会用注解）：
+**`@LoadBalanced` 背后发生了什么**（这段说清楚，才算不是只会用注解）：
 
 ```text
 RestTemplate 拦截 URL 的 host = "order-service"
@@ -182,7 +182,7 @@ public class OrderLbConfig {
 
 ## 四、手写版（等价于使用一的 `Resolver` + `Balancer`）
 
-如果面试官要求"不用框架，你会不会写"，Java 版长这样——
+如果要"不用框架手写一把"，Java 版长这样——
 
 **结构和 Go 那节一一对应**：不可变快照 + `AtomicReference` 整体替换 + 无锁读路径。
 
@@ -282,7 +282,7 @@ public final class NacosResolver {
 | **Consul** | Agent 注册 service | **主动探测**（HTTP/TCP/gRPC check 周期性访问）+ 可选 TTL；**失败会立刻摘出 DNS/接口** | check interval（秒级，可配） |
 | **Nacos** | 客户端注册（临时实例） | **被动心跳**为主，持久实例**主动探测**；不健康实例**默认只停转发不删除** | 15s 标不健康 / 30s+ 摘除 |
 
-> **面试模板**：**先说"谁主动"（服务端心跳 vs 注册中心探测），再说"摘除延迟"，最后说"摘除是否可逆"**。
+> **讲法**：**先说"谁主动"（服务端心跳 vs 注册中心探测），再说"摘除延迟"，最后说"摘除是否可逆"**。
 > 比如 Consul/Nacos 会把不健康实例**标记**而不是删除，恢复后立刻回流；
 > etcd/ZK 是**删除**，恢复要靠服务重新注册。
 
@@ -316,7 +316,7 @@ public final class NacosResolver {
 
 ## 关联
 
-- [服务发现与负载均衡.md](服务发现与负载均衡.md) — 机制与面试三道题
+- [服务发现与负载均衡.md](服务发现与负载均衡.md) — 机制与三道题
 - [服务注册与发现的Go实现.md](服务注册与发现的Go实现.md) — etcd 侧的对应实现
 - [客户端负载均衡的Go实现.md](客户端负载均衡的Go实现.md) — LB 策略在 Go 侧怎么写
 - [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — K8s 那一层的服务发现与 LB

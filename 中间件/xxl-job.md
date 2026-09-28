@@ -71,7 +71,7 @@
     │ ③ 结果回调 POST /api/callback   ④ 回拉日志 POST http://executor:9999/log
     ▼
 ┌─ 执行器集群（AppName=xxl-job-executor-sample，:9999，可多实例） ─┐
-│ HTTP Server(/run /kill /log /beat /idleBeat) + 线程池/Goroutine + 本地日志 │
+│ HTTP Server(/run /kill /log /beat /idleBeat) + 线程池/goroutine + 本地日志 │
 └───────────────────────────────────────────────────────────────┘
 ```
 
