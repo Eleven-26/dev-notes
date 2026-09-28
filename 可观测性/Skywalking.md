@@ -1,6 +1,6 @@
 # SkyWalking 链路追踪与 APM
 
-> 本文覆盖 SkyWalking 的痛点与案例、UI 面板、整体架构与核心名词、多语言探针实现原理，以及 Java / Go 两种接入方式与选型对比。
+> 本文覆盖 SkyWalking 的痛点与案例、UI 面板、整体架构与核心名词、多语言探针实现原理与探针选型；**各语言的接入代码已按语言拆成分册**（Go / Java / PHP），见第五节。
 >
 > 内容整理自个人学习笔记。同目录另有 [Jaeger.md](Jaeger.md)，两者的分工对比见该文件。
 
@@ -388,4 +388,4 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 - [../容器/k8s/K8s部署与生命周期.md](../容器/k8s/K8s部署与生命周期.md) — OAP 与 UI 的部署方式
 - [可观测性选型.md](可观测性选型.md) — 与 Jaeger、Zipkin、Tempo、云托管方案的横向对比与组合建议
 
-> 反向引用（本篇被下列文档引到）：[go/接入Skywalking.md](../go/接入Skywalking.md)、[java/接入Skywalking.md](../java/接入Skywalking.md)、[分布式与微服务.md](../分布式/分布式与微服务.md)、[缓存问题与方案.md](../数据存储/redis/缓存问题与方案.md)、[TCP三次握手.md](../网络/tcp/TCP三次握手.md)
+> 反向引用（本篇被下列文档引到）：[go/接入Skywalking.md](../go/接入Skywalking.md)、[java/接入Skywalking.md](../java/接入Skywalking.md)、[php/接入Skywalking.md](../php/接入Skywalking.md)、[分布式与微服务.md](../分布式/分布式与微服务.md)、[缓存问题与方案.md](../数据存储/redis/缓存问题与方案.md)、[TCP三次握手.md](../网络/tcp/TCP三次握手.md)
