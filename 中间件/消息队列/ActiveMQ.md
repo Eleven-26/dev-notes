@@ -67,7 +67,7 @@ ActiveMQ Classic 的持久化默认是 **KahaDB**：所有持久化目的地**�
 
 > ⚠️ 对比记忆：Kafka 靠**分区副本 + ISR** 横向扩，Pulsar 靠 **BookKeeper quorum + bundle 迁移**，ActiveMQ Classic 只有「主从 + 级联」——**单队列的吞吐与容量上限就是单 broker 的上限**，这是它不适合数据管道的根因。
 
-### 3.3 与 Artemis 的关系（面试高频）
+### 3.3 与 Artemis 的关系
 
 ActiveMQ Artemis 是 Apache **另起炉灶**的实现（源自 HornetQ 捐赠）：核心协议换成自研 Core Protocol + 地址模型（Address/Queue 分离）、存储换成分页 journal、集群用 Raft 无关的 quorum 复制。**两者配置文件、地址语义、集群方式互不兼容**——把 Classic 的 `activemq.xml` 抄进 Artemis 是新人最常见的事故。
 
@@ -578,7 +578,7 @@ curl -s -u admin:admin "http://127.0.0.1:8161/api/jolokia/read/org.apache.active
 
 ## 十一、面试官会追问什么
 
-- **ActiveMQ 和 Artemis 是什么关系？** → 不是版本升级，是**两套实现**：Artemis 源自 HornetQ 捐赠，核心协议、地址模型、存储与集群方式都重写；Classic 的 `activemq.xml` 在 Artemis 里不认。面试里把两者混为一谈是减分项。
+- **ActiveMQ 和 Artemis 是什么关系？** → 不是版本升级，是**两套实现**：Artemis 源自 HornetQ 捐赠，核心协议、地址模型、存储与集群方式都重写；Classic 的 `activemq.xml` 在 Artemis 里不认。把两者混为一谈是常见误判。
 - **为什么 ActiveMQ 不适合做数据管道？** → 存储是「一个 broker 一个 KahaDB 目录」，单队列不能拆分区，**吞吐上限 = 单 broker 上限**；且 ack 即删、无 retention 重放。Kafka 的分区日志恰好解决这两点。
 - **KahaDB 为什么怕大消息？** → journal 按固定页顺序追加，单条消息接近页大小时触发整页重写，IO 放大；再叠加「全局单 store」，一个队列的大消息会拖慢所有目的地。
 - **`useAsyncSend=true` 的代价是什么？** → send 返回只代表进了客户端发送队列，**不代表 broker 落盘**；broker 崩溃丢最后一批。要「发了就算数」就用同步发送或带 receipt。

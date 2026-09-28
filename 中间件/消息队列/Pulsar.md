@@ -52,7 +52,7 @@
 | 回溯入口 | ① `seek(MessageId)`；② `seekByTime(Instant)` **按时间戳回溯**（Kafka 靠 timeindex 也能做，Pulsar 是默认能力）；③ 用 Reader 自定起点 |
 | 幂等键 | ⚠️ 别拿 MessageId 当业务幂等键，要用**业务唯一键**；MessageId 只能证明「同一条消息重复投递了」 |
 
-> 💡 面试口径：「Pulsar 没有 offset 概念，消费进度是订阅游标记录的 MessageId，回溯按 MessageId 或时间戳做。」
+> 💡 一句话概括：「Pulsar 没有 offset 概念，消费进度是订阅游标记录的 MessageId，回溯按 MessageId 或时间戳做。」
 
 ---
 

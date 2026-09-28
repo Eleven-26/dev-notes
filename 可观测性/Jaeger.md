@@ -6,7 +6,7 @@
 
 Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNCF，2019 年毕业（Graduated），用于分布式/微服务架构下的**调用链追踪与性能分析**：一次请求经过了哪些服务、每个服务做了什么、耗时卡在哪一跳、失败发生在哪个环节。
 
-覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → 使用方法（分册）→ 与 SkyWalking 分工 → 面试追问。结合 photography-server 项目的落地映射见 [../go/接入Jaeger.md](../go/接入Jaeger.md) 第十节。
+覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → 使用方法（分册）→ 与 SkyWalking 分工 → 常见追问。结合 photography-server 项目的落地映射见 [../go/接入Jaeger.md](../go/接入Jaeger.md) 第十节。
 
 ## 一、核心概念
 
