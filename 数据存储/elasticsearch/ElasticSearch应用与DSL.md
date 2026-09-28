@@ -498,3 +498,4 @@ yellow 表示副本没分配上——数据读写都正常，但容错已降级�
 - [../中间件/消息队列/Kafka.md](../../中间件/消息队列/Kafka.md) — binlog/CDC 到 ES 的同步链路
 - [mysql/索引与优化.md](../mysql/索引与优化.md) — ESR 与联合索引顺序的对照
 - [../linux/文件系统与IO.md](../../linux/文件系统与IO.md) — merge 与磁盘 IO
+- [深分页优化.md](../mysql/深分页优化.md) — 深分页的另一种落点：`search_after` 与 `max_result_window`
