@@ -215,7 +215,7 @@
 
 | 事故 | 为什么会这样 | 怎么防 |
 |---|---|---|
-| ⚠️ Runner 上定时 `docker system prune -a`，之后**构建突然巨慢/失败** | 容器被 `rm` 后它用的基础镜像就成了"无主"，`-a` 把它们连同 `cache-from` 的旧层一起当垃圾删了 | 只清悬空/按时间加条件，或干脆只 `builder prune`；范围对照见 [命令速查](docker/命令速查.md) 第八节 |
+| ⚠️ Runner 上定时 `docker system prune -a`，之后**构建突然巨慢/失败** | 容器被 `rm` 后它用的基础镜像就成了"无主"，`-a` 把它们连同 `cache-from` 的旧层一起当垃圾删了 | 只清悬空/按时间加条件，或干脆只 `builder prune`；范围对照见 [命令速查](docker/命令速查.md) 第六节 |
 | 构建时间从 2 分钟变 8 分钟 | 缓存未命中：无 `.dockerignore`、基础镜像升版、`RUN` 顺序把不常变的放后面 | 看输出里 `CACHED` 停在第几层，从第一层非缓存处往上查 |
 | `COPY . .` 把 secrets / 测试数据 / 大文件带进镜像 | 上下文里有什么就拷什么，"本地能跑"≠"仓库里没有 `.env`" | `.dockerignore` + 构建后抽查镜像内容（`docker history`） |
 | 并发 job 共用工作目录，互相覆盖文件 | shell executor 或直接 build 到宿主同一目录时，两个 job 同时 `git checkout` 不同分支 | 每个 job 独立目录（容器化 executor 天然解决），或按 job ID 分目录 |
