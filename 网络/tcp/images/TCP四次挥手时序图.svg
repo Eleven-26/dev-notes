@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 430" width="680" height="430" role="img">
+<title>TCP 四次挥手时序图</title>
+<desc>客户端主动关闭、服务端被动关闭的四次挥手：FIN、ACK、FIN、ACK 四个报文，两端的 CLOSE_WAIT / FIN_WAIT_2 / TIME_WAIT 状态迁移，以及谁在等 TIME_WAIT。</desc>
+<rect x="0" y="0" width="680" height="430" fill="#1e1e1e"/>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<rect x="40" y="28" width="200" height="56" rx="12" fill="#0C447C" stroke="#85B7EB" stroke-width="0.5"/>
+<text x="140" y="50" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#B5D4F4">客户端（主动关闭）</text>
+<text x="140" y="68" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#85B7EB">先 close() 的一方</text>
+<rect x="440" y="28" width="200" height="56" rx="12" fill="#633806" stroke="#EF9F27" stroke-width="0.5"/>
+<text x="540" y="50" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#FAC775">服务端（被动关闭）</text>
+<text x="540" y="68" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#EF9F27">等应用 close()</text>
+<line x1="140" y1="84" x2="140" y2="322" stroke="#888780" stroke-width="0.5" stroke-dasharray="4 4"/>
+<line x1="540" y1="84" x2="540" y2="322" stroke="#888780" stroke-width="0.5" stroke-dasharray="4 4"/>
+<line x1="140" y1="122" x2="534" y2="122" stroke="#85B7EB" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="340" y="110" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#B5D4F4">1. FIN, seq = u</text>
+<text x="130" y="140" text-anchor="end" dominant-baseline="central" font-size="12" fill="#85B7EB">FIN_WAIT_1</text>
+<text x="550" y="140" text-anchor="start" dominant-baseline="central" font-size="12" fill="#EF9F27">CLOSE_WAIT</text>
+<line x1="540" y1="166" x2="146" y2="166" stroke="#EF9F27" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="340" y="154" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#FAC775">2. ACK, ack = u + 1</text>
+<text x="130" y="184" text-anchor="end" dominant-baseline="central" font-size="12" fill="#85B7EB">FIN_WAIT_2（等我方的 FIN）</text>
+<line x1="540" y1="222" x2="146" y2="222" stroke="#EF9F27" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="340" y="210" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#FAC775">3. FIN, seq = w, ack = u + 1</text>
+<text x="550" y="240" text-anchor="start" dominant-baseline="central" font-size="12" fill="#EF9F27">LAST_ACK</text>
+<line x1="140" y1="262" x2="534" y2="262" stroke="#85B7EB" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="340" y="250" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#B5D4F4">4. ACK, ack = w + 1</text>
+<text x="130" y="280" text-anchor="end" dominant-baseline="central" font-size="12" fill="#EF9F27">TIME_WAIT</text>
+<text x="550" y="280" text-anchor="start" dominant-baseline="central" font-size="12" fill="#888780">CLOSED</text>
+<rect x="40" y="322" width="600" height="88" rx="12" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="56" y="344" dominant-baseline="central" font-size="12" fill="#D3D1C7">FIN 只关一个方向 → 收到 FIN 仍可继续发（半关闭，用 shutdown(SHUT_WR) 触发）</text>
+<text x="56" y="368" dominant-baseline="central" font-size="12" fill="#D3D1C7">TIME_WAIT 只在主动关闭方：等 2MSL（RFC 取 4 分钟 / Linux 固定 60 秒 / Windows 实测 ≈121 秒）</text>
+<text x="56" y="392" dominant-baseline="central" font-size="12" fill="#D3D1C7">CLOSE_WAIT 在被关闭方：等的是应用 close()，没有超时 —— 堆积就是代码泄漏</text>
+</svg>
