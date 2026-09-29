@@ -1,8 +1,16 @@
-# Go 常见算法题
+# Go 算法题
 
-> 环形缓冲统计、用栈解除递归、堆的构建与堆顶删除、TopK、TTL 超时缓存
+> **八道 Go 手撕题**，每题都给可运行的完整代码与实测输出：环形缓冲统计「最近 N 次」、
+> 斐波那契用栈消除递归、堆的构建与删堆顶、TopK 为什么用小根堆、TTL 缓存（map + 堆）、
+> **LRU 缓存（map + 双向链表）**、滑动窗口最长无重复子串、**二分边界与 `sort.Search`**；
+> 末尾附答题套路五步与 Go 刷题模板速查。
 >
 > 内容整理自大厂 Go 后端面试真题，参考资料与原始素材见 [素材清单](../素材清单.md)。
+>
+> ⭐ **分工**：本篇是「**用 Go 把题写出来**」（含边界与易错点）；**算法原理与选型判据**是另一层，
+> 见 [算法目录](../算法/README.md) 下各篇（堆 → [数据结构.md](../算法/数据结构.md)、Top-K → [查找与排序对比.md](../算法/查找与排序对比.md)、
+> 淘汰策略 → [缓存淘汰算法.md](../算法/缓存淘汰算法.md)），两处互引、**不重复讲原理**。
+> 代码与输出均为 `go1.26.5 windows/amd64` 本机实跑。
 
 ---
 
@@ -499,7 +507,303 @@ func main() {
 
 ---
 
-## 答题套路
+## 六、如何实现一个 LRU 缓存，让 Get 和 Put 都是 O(1)？
+
+**本节要点**：这是第五节 TTL 缓存的**姊妹题**，两者只在"按什么时间淘汰"上不同：**TTL 按写入时间**（数据过期），**LRU 按访问时间**（冷数据占内存）。真正想看的是你能否把 **`map` 的 O(1) 定位**和**双向链表的 O(1) 移动/删除**拼起来。
+
+### 思路
+
+> LRU 的**算法原理**（为什么它会有缓存污染、LFU / Clock / W-TinyLFU 各自的代价）是单一来源，见
+> [../算法/缓存淘汰算法.md](../算法/缓存淘汰算法.md) 第一节；本节只讲 **Go 里怎么把它写出来**。
+
+单个数据结构都不够用：
+
+| 只用… | 缺什么 |
+|---|---|
+| `map` | 能 O(1) 查到值，但**不知道谁最久没用**（map 无顺序） |
+| 双向链表（按访问时间排） | 知道顺序，但**查某个 key 要 O(n) 遍历** |
+
+于是组合：**`map` 负责"定位"，双向链表负责"排序"**。约定的位置语义是——**链表头部 = 最近使用，尾部 = 最久未用**。
+
+三个操作各只动一处：
+
+| 操作 | 链表侧 | `map` 侧 |
+|---|---|---|
+| `Get` 命中 | `MoveToFront` 挪到队头 | 不动 |
+| `Put` 新 key | `PushFront` 插到队头 | 新增映射 |
+| 超容量 | 删 `Back()` 队尾 | **`delete` 同一个 key**（两边必须同步删） |
+
+⚠️ 关键细节：**`map` 的 value 存的是 `*list.Element`（链表节点），不是值本身**。因为 `MoveToFront` / `Remove` 需要的是节点指针；若只存值，就得先 O(n) 找到节点，O(1) 立刻没了。
+
+### Go 实现
+
+```go
+package main
+import (
+	"container/list"
+	"fmt"
+)
+type LRUCache struct {
+	cap  int
+	data map[string]*list.Element // key → 链表节点（拿到节点才能 O(1) 移动 / 删除）
+	lst  *list.List               // 双向链表：头部 = 最近使用，尾部 = 最久未用
+}
+type kv struct{ key, value string }
+func NewLRUCache(cap int) *LRUCache {
+	return &LRUCache{cap: cap, data: make(map[string]*list.Element), lst: list.New()}
+}
+func (c *LRUCache) Get(key string) (string, bool) {
+	if el, ok := c.data[key]; ok {
+		c.lst.MoveToFront(el) // 命中 = 最近使用，挪到队头
+		return el.Value.(kv).value, true
+	}
+	return "", false
+}
+func (c *LRUCache) Put(key, value string) {
+	if el, ok := c.data[key]; ok { // 已存在：更新值并挪到队头
+		el.Value = kv{key, value}
+		c.lst.MoveToFront(el)
+		return
+	}
+	c.data[key] = c.lst.PushFront(kv{key, value}) // 新元素放队头
+	if c.lst.Len() > c.cap {                      // 超容量：淘汰队尾（最久未用）
+		tail := c.lst.Back()
+		delete(c.data, tail.Value.(kv).key)
+		c.lst.Remove(tail)
+	}
+}
+func (c *LRUCache) Keys() []string { // 从队头到队尾，即"最近 → 最久"
+	out := make([]string, 0, c.lst.Len())
+	for el := c.lst.Front(); el != nil; el = el.Next() {
+		out = append(out, el.Value.(kv).key)
+	}
+	return out
+}
+func main() {
+	c := NewLRUCache(3)
+	c.Put("a", "1")
+	c.Put("b", "2")
+	c.Put("c", "3")
+	fmt.Println("写入 a,b,c 后:", c.Keys())
+	c.Get("a") // 访问 a → a 变成最近使用
+	fmt.Println("Get(a) 后:  ", c.Keys())
+	c.Put("d", "4") // 超容量，淘汰最久未用的 b
+	fmt.Println("Put(d) 后:  ", c.Keys())
+	v, ok := c.Get("b")
+	fmt.Printf("Get(b): %q, %v\n", v, ok)
+	c.Put("c", "33") // 更新已存在的 key：更新值且挪到队头，长度不变
+	fmt.Println("Put(c,33)后:", c.Keys())
+	v2, _ := c.Get("c")
+	fmt.Println("c 的新值:", v2)
+}
+```
+
+**实测**（`go1.26.5 windows/amd64`）：
+
+```text
+写入 a,b,c 后: [c b a]
+Get(a) 后:   [a c b]
+Put(d) 后:   [d a c]
+Get(b): "", false
+Put(c,33)后: [c d a]
+c 的新值: 33
+```
+
+逐行读这段输出，LRU 的全部语义都在里面：`Keys()` 是「最近 → 最久」，`Put(d)` 淘汰的是**队尾的 b**（因为它最久没被访问，而不是最早写入的 a）；被淘汰后 `Get(b)` 返回 `false`；最后更新 `c` 的值时长度仍是 3，且 `c` 挪到了队头。
+
+### 复杂度与易错点
+
+`Get` / `Put` 均 **O(1)**（哈希定位 + 链表头尾操作）；额外空间 O(cap)。
+
+1. **淘汰时两边都要删**：只 `Remove(tail)` 不 `delete(map)` 会留下悬挂映射，下次 `Get` 返回已被删除的节点。
+2. **更新已存在的 key 要走单独分支**：直接 `PushFront` 会插入重复节点，`map` 只指向新的那个，旧的成了"僵尸"。
+3. **`container/list` 的 `Value` 是 `interface{}`**，取用时必须断言（`el.Value.(kv)`）；**不同 key 必须存同类型**，否则 panic。
+4. **拿到 capacity 就该说并发**：`map` 和链表都非并发安全，实际用 `sync.Mutex` 包住整个方法（比 RWMutex 更合适——`Get` 会修改链表顺序，**不是只读**）。
+
+### 延伸追问
+
+- **`Get` 为什么不能用读锁？** → 它要 `MoveToFront` 修改链表，**不是只读操作**，`RWMutex` 的读锁会并发写链表，必须加写锁。
+- **LRU 的缺陷是什么？** → **缓存污染**：一次全表扫描会把热数据全挤出去（见 [../算法/缓存淘汰算法.md](../算法/缓存淘汰算法.md) 2.5）。生产上 Redis 用的是**近似 LRU**（随机采样），Caffeine 用 **W-TinyLFU**。
+- **和第五节 TTL 缓存能合并吗？** → 能，而且很常见：`map` 同时存 `expireAt`，访问时先判过期再判容量；Redis 的 `volatile-lru` 就是"只对设了 TTL 的 key 做 LRU"。
+
+---
+
+## 七、滑动窗口 / 双指针怎么用在字符串题上？
+
+**本节要点**：考点是「**窗口不清空、只伸缩**」这个心智模型——用**常数额外空间**把 O(n²) 的枚举压到 O(n)。
+真正的分水岭是能不能说出「**right 一直往前，left 只前进不回退**」这一句：说得出，O(n) 就已经成立。
+
+> ⚠️ **先澄清一个同名问题**：本节的"滑动窗口"指**字符串 / 数组上的双指针技巧**；
+> 计数与时间维度上的那个"滑动窗口"（**限流算法**）见 [../分布式/限流降级熔断.md](../分布式/限流降级熔断.md) 与
+> [../算法/限流算法.md](../算法/限流算法.md)——两者只是名字相同，没有共同之处。
+
+### 思路
+
+题面：给定字符串，求**不含重复字符的最长子串**的长度。
+
+朴素做法是枚举每个起点向右扫到重复为止，O(n²)。关键观察是：**当 `[left, right]` 里已经出现重复时，任何包含这段的更长区间都不可能是答案**——那就没必要回退 `left` 去重试。
+
+于是维护一个**始终保持合法**（无重复）的窗口 `[left, right]`：
+
+1. `right` 每次右移一格，把新字符纳入窗口；
+2. 若新字符上次出现的位置 `prev` **落在当前窗口内**（`prev >= left`），说明重复了 → 把 `left` 直接跳到 `prev + 1`；
+3. 用当前窗口长度更新答案。
+
+**`prev >= left` 这个判断是整道题最容易漏掉的一行**：字符在窗口**外面**重复过不算重复，`left` 绝不能因为它而被拽回去。
+
+### Go 实现
+
+```go
+package main
+import "fmt"
+// lengthOfLongestSubstring：返回 s 中不含重复字符的最长子串的长度
+func lengthOfLongestSubstring(s string) int {
+	last := make(map[byte]int, len(s)) // 字符 → 最近一次出现的下标
+	best, left := 0, 0                 // left 是窗口左边界，窗口恒为 [left, right]
+	for right := 0; right < len(s); right++ {
+		c := s[right]
+		if prev, ok := last[c]; ok && prev >= left { // 重复且在当前窗口内 → 收缩左边界
+			left = prev + 1
+		}
+		last[c] = right
+		if cur := right - left + 1; cur > best {
+			best = cur
+		}
+	}
+	return best
+}
+func main() {
+	for _, s := range []string{"abcabcbb", "bbbbb", "pwwkew", "", "dvdf", "abba"} {
+		fmt.Printf("%-10q → %d\n", s, lengthOfLongestSubstring(s))
+	}
+}
+```
+
+**实测**：
+
+```text
+"abcabcbb" → 3
+"bbbbb"    → 1
+"pwwkew"   → 3
+""         → 0
+"dvdf"     → 3
+"abba"     → 2
+```
+
+### 复杂度与易错点
+
+时间 **O(n)**（`right` 走一趟、`left` 只单调前进）；额外空间 **O(min(n, 字符集大小))**。
+
+**最容易漏的就是这一行**。把 `prev >= left` 判断删掉，实测会变成这样：
+
+```text
+"abba"     → 错版 3（正解 2）
+"tmmzuxt"  → 错版 6（正解 5）
+```
+
+⚠️ 注意错版给出的答案比正解**更大**——这本身就暴露了错误：答案不可能超过字符串自身合法子串的长度。它是怎么错的？在 `abba` 里，最后一个 `a` 的上次出现位置是 `0`，错版把 `left` 拽回 `1`，于是窗口变成 `"bba"`（**含重复 b**）却算出长度 3。**自检办法**：答案若大于 `len(s)` 或者明显不合理，先怀疑这里的 `prev` 判断。
+
+其它两个坑：
+
+1. **`left` 的偏移量是 `prev + 1` 不是 `prev`**：窗口左边界要**落在重复字符之后**。
+2. **`map[byte]` 只适用于 ASCII**：含中文要用 `map[rune]int`，并且 `for range` 拿到的是 rune 下标，与字节下标不是一回事（混合中英文时长度会算错）。
+
+### 延伸追问
+
+- **要返回子串本身而不是长度怎么办？** → 更新 `best` 的同时记下 `bestLeft`，最后返回 `s[bestLeft : bestLeft+best]`。
+- **什么时候双指针不够用？** → 窗口需要"动态求极值 / 第 K 大"时（如滑动窗口的最大值），得上**单调队列**；退化成堆是 O(n log k)，达不到 O(n)。
+- **这题还有别的形式吗？** → 找最短覆盖子串（变长窗口 + 计数 map）、找和为定值的最长子数组（前缀和 + 双指针），内核都是"**right 一直往前、left 只进不退**"。
+
+---
+
+## 八、二分查找为什么手写容易错？怎么用标准库规避？
+
+**本节要点**：二分查找是"**思路人人会、代码写不利索**"的典型——真正的瓶颈永远是**边界**：mid 溢出、死循环、找不到的返回值、重复元素到底拿第一个还是最后一个。本节给一套**能记住的不变式**，并说明为什么优先 `sort.Search`。
+
+### 思路
+
+先约定本节使用的**区间不变式**：**搜索区间是 `[l, r)`（左闭右开）**，目标是找**第一个 ≥ target 的位置**（即 C++ 的 `lower_bound`）。
+
+三条铁律，每一条都对应一个经典 bug：
+
+| 写法 | 后果 |
+|---|---|
+| `mid := (l + r) / 2` | **溢出**：`l`、`r` 极大时 `l+r` 会越过 `int` 上限（Go 里会静默变负）→ 写成 `l + (r-l)/2` |
+| `for l <= r` | **死循环**：当 `r = mid`（而不是 `mid-1`）时区间不会缩小 → 左开右闭必须用 `for l < r` |
+| `r = mid - 1` | **漏解**：区间右端**不可达**（`[l, r)` 不含 `r`），必须写成 `r = mid` |
+
+至于 **重复元素怎么拿首尾两个位置**——不要为它写两遍二分，用同一个 `lower_bound` 变换 Comparator 即可：
+
+```text
+第一个 == target 的位置 = 第一个 >= target 的位置
+最后一个 == target 的位置 = 第一个 >  target 的位置 − 1
+```
+
+### Go 实现
+
+```go
+package main
+import (
+	"fmt"
+	"sort"
+)
+// 手写版：在升序 a 中找第一个 ≥ target 的下标（lower_bound），不存在返回 len(a)
+func lowerBound(a []int, target int) int {
+	l, r := 0, len(a) // 区间是 [l, r)，写成 len(a)-1 就要改下面的判定
+	for l < r {       // 区间为空时结束；写成 l <= r 会在单元素时死循环
+		mid := l + (r-l)/2 // 防溢出；写成 (l+r)/2 在极大下标时会溢出
+		if a[mid] < target {
+			l = mid + 1
+		} else {
+			r = mid // r 不可达 → 不写 mid-1
+		}
+	}
+	return l
+}
+func main() {
+	a := []int{1, 3, 5, 7, 9}
+	for _, t := range []int{5, 4, 0, 10} {
+		fmt.Printf("target=%-3d sort.SearchInts=%-2d 手写 lowerBound=%-2d\n",
+			t, sort.SearchInts(a, t), lowerBound(a, t))
+	}
+	// 重复元素：找第一个 / 最后一个等于 target 的位置
+	b := []int{1, 2, 2, 2, 3}
+	first := sort.Search(len(b), func(i int) bool { return b[i] >= 2 })
+	last := sort.Search(len(b), func(i int) bool { return b[i] > 2 }) - 1
+	fmt.Printf("重复元素 first=%d last=%d\n", first, last)
+}
+```
+
+**实测**：
+
+```text
+target=5   sort.SearchInts=2  手写 lowerBound=2
+target=4   sort.SearchInts=2  手写 lowerBound=2
+target=0   sort.SearchInts=0  手写 lowerBound=0
+target=10  sort.SearchInts=5  手写 lowerBound=5
+重复元素 first=1 last=3
+```
+
+注意三个边界情形：`target=4`（不存在但应插在 2 号位）返回 **2**；`target=10`（比所有元素都大）返回 **5 == len(a)**，**不是 `-1`**——这是调用方必须自己判的一点。
+
+### 复杂度与易错点
+
+时间 O(log n)、空间 O(1)。
+
+1. **存在性必须单独判**：拿到下标 `i` 后要 `i < len(a) && a[i] == target`，否则会把"插入位置"当成"找到了"。
+2. **`sort.Search` 的谓词必须单调**：要求形如 `false…false true…true`，即在某个点之后永久为真；写 `a[i] == target` 这种非单调条件，结果是未定义的。
+3. **数组必须有序，且比较方向要与排序一致**：降序数组要用 `>`，否则永远走错分支。
+4. **优先用标准库**：`sort.SearchInts` / `sort.SearchStrings` / `sort.Search`；自己写二分的收益是"讲清边界"，工程里不必重复造。
+
+### 延伸追问
+
+- **怎么在答案空间上二分（二分答案）？** → 把"求最优解"转成"判断某个值是否可行"，对答案域二分；典型如"在 `n` 天内完成 `m` 个任务的最小日产能"。
+- **Go 为什么没有 `bisect`？** → `sort.Search` 就是它的通用版（传谓词而非数组），代价是必须自己保证谓词单调。
+- **复杂度上二分一定快吗？** → 不一定。小规模数据线性扫描可能更快（缓存局部性好），且二分要求**有序 + 随机访问**——链表上做二分反而退化成对 n/2 的单次访问。
+
+---
+
+## 九、算法题的答题套路怎么组织？
 
 算法题的得分点从来不是"背出答案"，而是把**思考过程**讲出来。按五步走，即使写不出最优解也不会挂：
 
@@ -515,7 +819,8 @@ func main() {
 
 ---
 
-## Go 刷题常用模板速查
+## 十、Go 刷题常用模板有哪些？
+
 以下均为**片段**：语句类直接粘贴到函数体内，类型 / 方法定义放在包级即可使用。
 
 **一、slice 原地反转**
@@ -600,7 +905,11 @@ k := sort.Search(len(a), func(i int) bool { return a[i] >= 5 })
 
 ## 关联
 
-- [../算法/数据结构.md](../算法/数据结构.md) — 堆、哈希表等结构的原理
-- [../算法/查找与排序对比.md](../算法/查找与排序对比.md) — Top-K 为什么用小顶堆
-- [../算法/缓存淘汰算法.md](../算法/缓存淘汰算法.md) — TTL 缓存与淘汰算法
-- [../算法/复杂度分析.md](../算法/复杂度分析.md) — 摊还分析与递归代价
+- [../算法/数据结构.md](../算法/数据结构.md) — 堆、哈希表等结构的原理（单一来源）
+- [../算法/查找与排序对比.md](../算法/查找与排序对比.md) — Top-K 为什么用小顶堆、标准库排序怎么选
+- [../算法/缓存淘汰算法.md](../算法/缓存淘汰算法.md) — LRU / LFU / W-TinyLFU 的原理与代价（第五节、第六节的上一层）
+- [../算法/复杂度分析.md](../算法/复杂度分析.md) — 摊还分析与递归代价（第二节的递归开销）
+- [../算法/限流算法.md](../算法/限流算法.md) — ⚠️ 同名不同物：那里的"滑动窗口"是**计数限流**，与第七节无关
+- [数据结构备考.md](数据结构备考.md) — 同一批素材里的备考策略题（先分类、再挑 2~3 种讲透）
+- [../go/并发/并发同步原语.md](../go/并发/并发同步原语.md) — 第五节、第六节的并发化（`sync.RWMutex` / `Mutex` 怎么加）
+> 反向引用（本篇被下列文档引到）：[README.md](../算法/README.md)
