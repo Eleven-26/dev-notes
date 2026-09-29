@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340" width="700" height="340" role="img">
+<title>数据包在每一跳的地址改写</title>
+<desc>一个数据包从客户端网卡出发，经出口网关 SNAT、途中路由器、目标负载均衡 DNAT，到达服务端，每一跳的源 IP、目的 IP、MAC 与 TTL 如何变化。</desc>
+<rect x="0" y="0" width="700" height="340" fill="#1e1e1e"/>
+<rect x="40" y="24" width="620" height="292" rx="10" fill="#2C2C2A" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="60" y="52" font-size="12" font-weight="500" fill="#F1EFE8">跳</text>
+<text x="214" y="52" font-size="12" font-weight="500" fill="#F1EFE8">源 IP</text>
+<text x="374" y="52" font-size="12" font-weight="500" fill="#F1EFE8">目的 IP</text>
+<text x="524" y="52" font-size="12" font-weight="500" fill="#F1EFE8">MAC</text>
+<text x="626" y="52" font-size="12" font-weight="500" fill="#F1EFE8">TTL</text>
+<line x1="56" y1="62" x2="644" y2="62" stroke="#5F5E5A" stroke-width="0.5"/>
+<rect x="52" y="68" width="596" height="32" rx="6" fill="#0C447C"/>
+<text x="60" y="84" dominant-baseline="central" font-size="11" fill="#B5D4F4">① 出客户端网卡</text>
+<text x="214" y="84" dominant-baseline="central" font-size="11" fill="#B5D4F4">10.44.147.x</text>
+<text x="374" y="84" dominant-baseline="central" font-size="11" fill="#B5D4F4">203.0.113.9</text>
+<text x="524" y="84" dominant-baseline="central" font-size="11" fill="#B5D4F4">客户端 → 网关</text>
+<text x="626" y="84" dominant-baseline="central" font-size="11" fill="#B5D4F4">64</text>
+<rect x="52" y="104" width="596" height="32" rx="6" fill="#412402"/>
+<text x="60" y="120" dominant-baseline="central" font-size="11" fill="#FAC775">② 网关 SNAT 后转发</text>
+<text x="214" y="120" dominant-baseline="central" font-size="11" fill="#FAC775">203.0.113.9 ←改</text>
+<text x="374" y="120" dominant-baseline="central" font-size="11" fill="#FAC775">203.0.113.9</text>
+<text x="524" y="120" dominant-baseline="central" font-size="11" fill="#FAC775">逐跳重写</text>
+<text x="626" y="120" dominant-baseline="central" font-size="11" fill="#FAC775">63</text>
+<rect x="52" y="140" width="596" height="32" rx="6" fill="#1e1e1e"/>
+<text x="60" y="156" dominant-baseline="central" font-size="11" fill="#D3D1C7">③ 途中每个路由器</text>
+<text x="214" y="156" dominant-baseline="central" font-size="11" fill="#D3D1C7">不变</text>
+<text x="374" y="156" dominant-baseline="central" font-size="11" fill="#D3D1C7">不变</text>
+<text x="524" y="156" dominant-baseline="central" font-size="11" fill="#D3D1C7">逐跳重写</text>
+<text x="626" y="156" dominant-baseline="central" font-size="11" fill="#D3D1C7">递减</text>
+<rect x="52" y="176" width="596" height="32" rx="6" fill="#412402"/>
+<text x="60" y="192" dominant-baseline="central" font-size="11" fill="#FAC775">④ LB DNAT 后到后端</text>
+<text x="214" y="192" dominant-baseline="central" font-size="11" fill="#FAC775">203.0.113.9</text>
+<text x="374" y="192" dominant-baseline="central" font-size="11" fill="#FAC775">10.0.0.8 ←改</text>
+<text x="524" y="192" dominant-baseline="central" font-size="11" fill="#FAC775">LB → 后端</text>
+<text x="626" y="192" dominant-baseline="central" font-size="11" fill="#FAC775">62</text>
+<rect x="52" y="212" width="596" height="32" rx="6" fill="#2C2C2A"/>
+<text x="60" y="228" dominant-baseline="central" font-size="11" fill="#F1EFE8">⑤ 服务端收到</text>
+<text x="214" y="228" dominant-baseline="central" font-size="11" fill="#F1EFE8">203.0.113.9</text>
+<text x="374" y="228" dominant-baseline="central" font-size="11" fill="#F1EFE8">10.0.0.8</text>
+<text x="524" y="228" dominant-baseline="central" font-size="11" fill="#F1EFE8">服务端网卡</text>
+<text x="626" y="228" dominant-baseline="central" font-size="11" fill="#F1EFE8">61</text>
+<line x1="56" y1="254" x2="644" y2="254" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="60" y="272" font-size="11" fill="#888780">服务端看到的是网关公网 IP（203.0.113.9），不是客户端内网地址 —— 真实 IP 只能靠应用层头传</text>
+<text x="60" y="294" font-size="11" fill="#888780">若 LB 是 L7 反向代理：源 IP 变成 LB 自己的地址，且「客户端↔LB」「LB↔后端」是两条独立 TCP</text>
+</svg>

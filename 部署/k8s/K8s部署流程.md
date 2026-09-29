@@ -691,3 +691,5 @@ kubectl -n shop rollout undo deploy/app     # 排不出来就先止血，再回�
 - [docker/镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) — 冷启动与发布时长的镜像侧收益
 - [docker/资源限制与运维.md](../docker/资源限制与运维.md) — requests / limits 与 cgroup 的底层口径
 - [可观测性选型.md](../../可观测性/可观测性选型.md) — 日志 / 指标 / 链路三件套
+
+> 反向引用（本篇被下列文档引到）：[网络通信链路详解.md](../../网络/网络通信链路详解.md)

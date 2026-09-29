@@ -34,6 +34,7 @@
   │ ─────────────────────────────────────────► │  （CLOSED）
   │  （TIME_WAIT：再等 2MSL 才 CLOSED）         │
 ```
+
 > 这就是 RFC 9293 Figure 12 的"正常关闭序列"（Normal Close Sequence）。
 > ⚠️ 两个 `FIN` **各占一个序号**（和 SYN 一样），所以确认号是 `u + 1` / `w + 1`；
 > 而第 2、4 个报文是**纯 ACK，不占序号**（这条在 [TCP三次握手.md](TCP三次握手.md) 里已经用过一次）。
@@ -291,3 +292,5 @@ netstat -ano | findstr "<端口或对端IP>"
 - [../IO多路复用.md](../IO多路复用.md) — 连接被对端关闭时 epoll 侧的表现（可读且读到 EOF）
 - [../../linux/常用命令.md](../../linux/常用命令.md) — `ss` / `netstat` 查端口占用与连接状态
 - [../../部署/k8s/K8s部署与生命周期面试题.md](../../部署/k8s/K8s部署与生命周期面试题.md) — 停服时的连接排空与 `terminationGracePeriodSeconds`
+
+> 反向引用（本篇被下列文档引到）：[网络通信链路详解.md](../网络通信链路详解.md)
