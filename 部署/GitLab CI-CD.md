@@ -197,8 +197,8 @@ deploy:fallback               deploy  on_success   false
 
 ## 四、复用三件套：`extends` / `!reference` / `include`
 
-**本节要点**：三者解决的不是同一个问题 —— **`extends` 是"整体继承 + 覆盖"，`!reference` 是"片段内联"，
-`include` 是"跨文件拼装"**。日常最常用的组合是 `extends`（配模板 job）+ `include`（配共享片段）。
+**本节要点**：三者解决的不是同一个问题 —— **`extends` 是"整体继承 + 覆盖"，`!reference` 是"片段内联**"，
+**`include` 是"跨文件拼装"**。日常最常用的组合是 `extends`（配模板 job）+ `include`（配共享片段）。
 
 ### 4.1 `extends`：`variables` 合并，`script` 整体替换
 

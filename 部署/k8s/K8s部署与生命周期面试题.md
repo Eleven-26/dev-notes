@@ -98,8 +98,8 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 | 构建镜像时 `apt / yum` 装包慢 | **换国内软件源**（[Docker网络与镜像源.md](../docker/Docker网络与镜像源.md)） | **镜像内部** |
 | Chart / 镜像在公网拉不动，或要控版本 | **自建 OCI Registry + Helm**（第一节实战） | **集群侧 / 制品库** |
 
-> 串起来就是一条完整链路：**镜像从哪来（registry mirror）→ 构建时依赖从哪来（apt / yum 源）
-> → 应用制品怎么管（Helm + 私有 OCI Registry）**。
+> 串起来就是一条完整链路：**镜像从哪来（registry mirror）→ 构建时依赖从哪来（apt / yum 源**）
+> **→ 应用制品怎么管（Helm + 私有 OCI Registry）**。
 > 把这三层串起来看，比只记一条 `helm install` 清楚得多。
 
 ### 1.6 values 分层、子 chart 依赖与 hooks（用 Helm 落地时的三个坑）
@@ -121,8 +121,8 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
   （部署在集群里、需要配 RBAC、权限过大）；
   **Helm 3 移除了 Tiller**，直接用本地 `kubeconfig` 的权限访问集群，更安全也更简单。
 - **`helm install` 和 `kubectl apply -f` 的区别？** → `apply` 只管"把这份 YAML 提交上去"，
-  没有版本、没有回滚、没有参数化；`helm install` 多了 **Release 概念、版本历史、
-  参数渲染和回滚能力**。
+  没有版本、没有回滚、没有参数化；`helm install` 多了 **Release 概念、版本历史**、
+  **参数渲染和回滚能力**。
 - **OCI Registry 和传统 Chart 仓库的区别？** → 传统方式是 `helm repo add` 一个 `index.yaml` 索引；
   **OCI 方式把 Chart 当标准容器制品推拉**，可以直接复用已有的 registry 与鉴权体系，
   不用再额外维护索引文件。
@@ -220,8 +220,8 @@ delete pod 之后两条路并行：
  (B) kubelet：先跑 preStop hook → 再发 SIGTERM → 到 terminationGracePeriodSeconds 仍存活 → SIGKILL
 ```
 
-应用侧四步（顺序重要）：**① 停止 accept 新连接 → ② 主动摘注册中心 / 让 readiness 转失败 →
-③ 等在途请求处理完（必须有上限）→ ④ 关资源（连接池、flush、消费者 offset）→ `exit 0`**。
+应用侧四步（顺序重要）：**① 停止 accept 新连接 → ② 主动摘注册中心 / 让 readiness 转失败** →
+**③ 等在途请求处理完（必须有上限）→ ④ 关资源（连接池、flush、消费者 offset）→ `exit 0`**。
 
 ```go
 // 收到 SIGTERM 后停止接收并等在途请求结束（等待上限必须小于 grace period）
@@ -290,8 +290,8 @@ db.Close()
 
 ### 面试官会追问什么（发布与回滚横向）
 
-- **滚动发布怎么做到 0 报错？** → 把链路说全：**不可变镜像 → readiness 把关 → `maxUnavailable=0` + 资源余量
-  → preStop/SIGTERM 排空 → `minReadySeconds` 观察**；少一环就漏错误。
+- **滚动发布怎么做到 0 报错？** → 把链路说全：**不可变镜像 → readiness 把关 → `maxUnavailable=0` + 资源余量**
+  **→ preStop/SIGTERM 排空 → `minReadySeconds` 观察**；少一环就漏错误。
 - **"发完必然报错几条"三种根因？** → ① 没 readiness，新 Pod 未预热就接流量；② 没 preStop 或等待不够，
   摘除未收敛就关端口；③ 应用收到 SIGTERM 直接退出，在途请求被砍。
 - **发布卡住先看什么？** → `kubectl rollout status` → 新 RS 的 Pod 是 Pending（调度不上 / PVC 没绑 / 资源不足）

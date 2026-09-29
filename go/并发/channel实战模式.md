@@ -205,8 +205,8 @@ for i := 0; i < 3; i++ {          // 固定 3 个 worker
 | **worker 数量固定** | 没有新任务时 worker 阻塞在 `range` 上**不销毁**，有新任务立刻接上 |
 | **退出机制** | 投递完 `close(jobs)`，worker 的 `for range` 自然结束（对应 [channel使用陷阱.md](channel使用陷阱.md)"关闭后仍可读"） |
 
-> 这就是"协程池"最朴素的实现：**不需要自己写调度器——channel 就是队列，
-> `for range` 就是 worker 的主循环**。
+> 这就是"协程池"最朴素的实现：**不需要自己写调度器——channel 就是队列**，
+> **`for range` 就是 worker 的主循环**。
 
 ### 用法四：事件通知 / 优雅退出
 

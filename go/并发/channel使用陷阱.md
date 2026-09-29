@@ -169,8 +169,8 @@ close(ch)  →  所有阻塞在 <-ch 的协程同时被唤醒  →  每个都读
 - **`close` 一个已关闭的 channel 会怎样？** → panic（`close of closed channel`）。
   **关闭的责任只归发送方**，且只 `close` 一次。
 - **接收方能 `close` 吗？** → 如果有多个发送方，接收方 `close` 之后它们再发送就会 panic
-  （`send on closed channel`）。正确做法是**发送方用 `sync.WaitGroup` 收敛后，
-  由单一协程 `close`**。
+  （`send on closed channel`）。正确做法是**发送方用 `sync.WaitGroup` 收敛后**，
+  **由单一协程 `close`**。
 - **关闭后一直不读会怎样？** → 有缓冲时剩余数据**留在缓冲区**（不是被清空），
   `len(ch)` 能看出还剩几个；这个 channel 最终会被 GC 回收。
 - **`chan struct{}` 为什么是通知的首选？** → 元素**零内存**，只表达"信号"、不承载数据，语义最干净。
