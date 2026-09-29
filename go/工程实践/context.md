@@ -47,7 +47,7 @@ ctx := context.Background()
 > **`Background` 与 `TODO` 的区别**：语义上一个是"确定的根"，一个是"还没想好"；
 > 实现上两者都是空的 `emptyCtx`，行为完全一致。面试问到就答"**约定不同，能力相同**"。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **context 是并发安全的吗？** → 是。可以在多个 goroutine 中同时读取、同时派生，内部用锁 + 原子变量保证。
 - **不传 context 的代码有什么问题？** → 调用方失去了取消和超时能力，长链路里的 goroutine 只能等自己跑完，
@@ -114,7 +114,7 @@ v, ok := ctx.Value(ctxKeyTraceID{}).(string)   // 取值必须类型断言
 - 要挂多个键值，就**一层层往下套**（每次调用返回新 ctx，父 ctx 不变）；
 - 遍历是**沿父链逐级向上查找**的链表式查找，所以**别挂太多层**，更别把 context 当万能传参袋子。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`WithTimeout` 和 `WithDeadline` 选哪个？** → 自己决定超时用 `WithTimeout`；
   上游已经把**绝对时间**传下来（例如 HTTP 的 `X-Request-Deadline`、gRPC deadline）用 `WithDeadline`，
@@ -230,7 +230,7 @@ func work(ctx context.Context, id int) {
 3. **退出信号只有一个来源**——`cancel()`，没有它 worker 永远不会返回；
 4. 主协程 `cancel()` 之后必须 `wg.Wait()`，否则主协程先退出，任务被"腰斩"。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **超时之后那个还在跑的 goroutine 会怎样？** → 不会被打断，它会继续执行到函数返回；
   如果它内部也在 `select` 检查 `ctx`，就能自己提前退出——**这就是为什么可中断的任务要把 ctx 一路传下去**。
@@ -308,7 +308,7 @@ fn(context.Background())       // ✅ 顶层入口用这个
 传 `nil` 会在下游调用 `ctx.Done()` / `ctx.Err()` 时 panic，
 而且很多静态检查工具也要求 ctx 参数不可为 nil。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`context.Background()` 和 `context.TODO()` 的实现有区别吗？** → 没有，都是 `emptyCtx`，纯语义区分。
 - **`ctx.Value` 为什么建议少用？** → 取值要类型断言（断言失败返回 nil 而非报错），
@@ -400,7 +400,7 @@ for _, r := range replicas {
 只要有一个副本成功，业务侧就可以从 `resultCh` 取走结果；
 配合 `ctx` 取消把"已经不需要的"剩余请求全部叫停——**超时压测下的尾延迟优化，靠的就是这套**。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`errgroup` 的 ctx 和 `WaitGroup` 能混用吗？** → 能，但没必要，
   `errgroup` 已经把"等齐 + 取消"都包了；硬要混用只会让取消来源变多，排查困难。
@@ -480,7 +480,7 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 | **`Value` 的复杂度是 O(树深)** | 查找要沿链向上递归；**链越深越慢** —— 所以「不要把 ctx 当参数包用、不要十几层 `WithValue`」不只是风格问题 |
 | **取消后 `cancelCtx` 会释放 children 引用** | 否则父节点会一直持有所有子节点的引用，**整棵树无法被 GC 回收** —— 这也是「派生了就必须 `cancel()`」的另一个理由 |
 
-### 面试官会追问什么
+### 延伸追问
 
 - **为什么 `WithValue` 的 key 必须自定义类型？** → 内置类型（尤其 `string`）会与其它包**冲突**：两个包都用 `"userID"` 就会互相覆盖；自定义类型（如 `type ctxKey string`）保证命名空间隔离。
 - **`ctx` 是线程安全的吗？** → **是**（值不可变、`Value` 只读、取消是一次性状态转换），所以可以跨 goroutine 传递。

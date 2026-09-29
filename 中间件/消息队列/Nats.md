@@ -488,7 +488,7 @@ nc.close();
 
 > 选型一句话：**要低延迟 + 极简运维 → NATS；要吞吐 + 回溯 → Kafka；要延迟消息 + 事务消息 → RocketMQ；要灵活路由 + 协议适配 → RabbitMQ。**
 
-## 十、面试官会追问什么
+## 十、延伸追问
 
 - **Core NATS 会丢消息吗？** 会。消息发到无人订阅（或订阅者离线）的 Subject 直接丢弃，发布端无回执；订阅者在线但 pending 队列写满（默认 65536 条 / 64MB）也会被判 SlowConsumer 丢消息。**要可靠必须用 JetStream**。
 - **Queue Group 与 Kafka 消费者组的区别？** Kafka 消费组是「分区分配给成员、共享一个 offset」，分区内严格有序、成员变动触发 rebalance；NATS 队列组是「服务端把每条消息随机派给组内一个订阅者」，**不绑定分区、不保证同 key 同实例、不保证顺序**，但也没有 rebalance 停顿。

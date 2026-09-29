@@ -663,7 +663,7 @@ kubectl -n shop rollout undo deploy/app     # 排不出来就先止血，再回�
 
 ---
 
-## 面试官会追问什么
+## 延伸追问
 
 - **"从零装一套 K8s，说下顺序。"** → 前置（swap / 内核 / 时间 / 端口）→ 运行时（**cgroup 驱动一致 + pause 镜像**）
   → `kubeadm init`（**网段与 CNI 对齐**）→ **装 CNI** → join → 验 CoreDNS 与 DNS → 再装 Metrics Server 等基础组件。

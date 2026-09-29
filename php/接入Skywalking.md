@@ -381,7 +381,7 @@ ps -o pid,comm -p 1
 
 ---
 
-## 面试官会追问什么
+## 延伸追问
 
 - **为什么 php-fpm 必须前台运行？** → grpc/kafka reporter 的 worker 是 master 在 module init 时 fork 的，且挂了 `PR_SET_PDEATHSIG`；daemon 模式下原 master 退出会把 worker 一起带走，于是「扩展在、配置对、零数据」。前台 `-F` 或 standalone reporter 二选一。
 - **PHP 进程和上报进程之间怎么通信？** → unix domain socket（`runtime_dir` 下按启动时间戳命名的 `.sock`），消息是 bincode 序列化的采集项；不是共享内存，所以没有 shm 容量这类问题，但有目录可写性问题。

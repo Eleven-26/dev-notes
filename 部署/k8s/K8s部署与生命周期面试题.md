@@ -115,7 +115,7 @@ helm push mychart-0.1.0.tgz oci://registry.example.com/charts   # 推 Chart 到 
 > 用 ArgoCD/Flux 这类声明式方案时，migration 通常改为"同步阶段的前置 Job"（Sync Wave / pre-sync hook），
 > 而不是随手一个 hook —— 否则"仓库里的 YAML"就不再是完整事实了。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **Helm 2 和 Helm 3 最大的区别？** → Helm 2 有一个服务端组件 **Tiller**
   （部署在集群里、需要配 RBAC、权限过大）；
@@ -288,7 +288,7 @@ db.Close()
 | 更新顺序有意义（先存储后计算、先 follower 后 leader） | `podManagementPolicy` + `partition` 控制节奏 |
 | RWO 的 PVC 不能双挂：旧 Pod 没真正终止，新 Pod 就 Pending | 保证旧 Pod 彻底终止；别用 Deployment 跑有状态（身份与卷要稳定，用 StatefulSet） |
 
-### 面试官会追问什么（发布与回滚横向）
+### 延伸追问（发布与回滚横向）
 
 - **滚动发布怎么做到 0 报错？** → 把链路说全：**不可变镜像 → readiness 把关 → `maxUnavailable=0` + 资源余量**
   **→ preStop/SIGTERM 排空 → `minReadySeconds` 观察**；少一环就漏错误。
@@ -298,7 +298,7 @@ db.Close()
   还是 CrashLoop（应用或配置问题）→ 再看 `maxUnavailable` 与探针是否太保守。
 - **HPA 和滚动发布会打架吗？** → 发布期 readiness 抖动使可服务副本数下降 → HPA 扩容，发布完又缩；
   还有 **HPA 会接管 replicas 初值**这个坑。
-- **镜像变小对发布有什么影响？** → 见 [镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) 的「面试官会追问什么」。
+- **镜像变小对发布有什么影响？** → 见 [镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) 的「延伸追问」。
 
 ---
 

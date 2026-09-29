@@ -410,7 +410,7 @@ nc -vz oap.observability 11800
 
 ---
 
-## 十一、面试官会追问什么
+## 十一、延伸追问
 
 - **Go 为什么不能像 Java 那样运行时无侵入埋点？** → Go 是 AOT 编译成静态机器码，没有 classloader 也没有运行期改指令的口子；eBPF 只能抓 syscall 与少数 uprobe，拿不到参数与业务语义。所以 skywalking-go 走**编译期 AST 注入**（`-toolexec`），代价是配置与插件集被固化进二进制、且 `-a` 全量重编译拖慢 CI。
 - **`-toolexec` 具体做了什么？** → 让 Go 把每次 `compile`/`link` 调用先转交给指定程序。agent 借此在编译每个包时解析 AST，匹配插件定义的调用点，在前后织入埋点代码，再把改写后的源码交给真正的编译器。

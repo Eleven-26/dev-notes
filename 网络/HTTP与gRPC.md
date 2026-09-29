@@ -551,7 +551,7 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 
 ---
 
-## 面试官会追问什么
+## 延伸追问
 
 - **HTTP/2 解决了队头阻塞吗？** → 只解决了**应用层**的；TCP 层仍是字节流，一个包丢了整条连接都等——这正是 HTTP/3 上 QUIC 的原因。
 - **gRPC 一定比 HTTP+JSON 快吗？** → 主要快在**序列化体积**与多路复用，不是协议本身；载荷小、调用少的场景差异很小，还要付出可读性与网关兼容性的代价。

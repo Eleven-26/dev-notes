@@ -86,7 +86,7 @@ case ch2 <- v:   // 若 ch2 也写不进去
 > **非阻塞模式**，靠的是底层 `chansend` 在 `block=false` 时**返回 bool** 这个机制。
 > **除此之外任何情况都做不到"先判断再写"。**
 
-### 面试官会追问什么
+### 延伸追问
 
 - **为什么 `select` + `default` 能"不阻塞"？** → 因为编译器会把它编译成
   `chansend(c, v, false, ...)`，**`block=false` 表示"能写就写，不能写就返回 false"**。
@@ -164,7 +164,7 @@ close(ch)  →  所有阻塞在 <-ch 的协程同时被唤醒  →  每个都读
 
 **一句话**：缓冲区的存在，把"同步交接"变成了"**发送方可以先走**"的异步语义。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`close` 一个已关闭的 channel 会怎样？** → panic（`close of closed channel`）。
   **关闭的责任只归发送方**，且只 `close` 一次。
@@ -232,7 +232,7 @@ func main() {
 **结论**：**`for range` 的退出条件是"管道已空且已 `close`"**——
 只空不关就会一直等。这正是"谁生产谁关闭"必须成为纪律的原因。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **为什么普通协程阻塞不报死锁？** → 因为 `main` 还活着，runtime 认为"还有希望"；
   只有所有协程都睡死、没有任何协程能推动局面时，才会判定死锁并中止进程。
@@ -345,7 +345,7 @@ for {
 | `time.After` **每轮都创建一个 timer**，循环快时会产生大量待回收的 timer | 把 `timer := time.NewTimer(...)` 建在循环外，用 `timer.Reset(d)` 复用（记得 `defer timer.Stop()`） |
 | 有 `ctx` 时更简单 | 直接用 `ctx.Done()` 做超时出口，不自己管 timer |
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`select` 一个 case 都没有会怎样？** → `select {}` **永久阻塞**（所有 goroutine 都这样时会 `fatal error: all goroutines are asleep - deadlock!`）；它有时被用来"让 main 永不退出"。
 - **`select` 里能写两个相同的 channel 吗？** → 语法可以，但**同一个 channel 的两个 case 都可能被选中**，逻辑上等于把一个分支拆成两份（没有实际意义）。

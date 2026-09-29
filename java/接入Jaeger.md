@@ -372,7 +372,7 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 
 ---
 
-## 十、面试官会追问什么
+## 十、延伸追问
 
 - **为什么不用 `jaeger-client-java`？** → 已归档。它绑定私有的 `uber-trace-id` 头与 Thrift 协议，与 OTel 标准冲突。统一 OTel SDK + OTLP 后，**后端可换而埋点不动**——把 endpoint 从 Jaeger 换成 SkyWalking OAP 或 Tempo，业务代码一行不改。
 - **OTel Java Agent 和 SkyWalking agent 能同时挂吗？** → ⚠️ 不能。两者都会在同一个入口/出口创建 span，结果是双份上报、CPM/Apdex 等指标翻倍、告警阈值失真，且两套 `trace_id` 互不相干，排障反而割裂。选一条主线。

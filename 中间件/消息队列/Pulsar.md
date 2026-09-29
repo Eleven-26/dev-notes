@@ -875,7 +875,7 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 
 ---
 
-## 十二、面试官会追问什么
+## 十二、延伸追问
 
 - **Pulsar 和 Kafka 最本质的差别是什么？** → 存算分离。Kafka 的分区副本落在 Broker 本机，扩容要搬数据；Pulsar 把存储交给 BookKeeper，Broker 无状态，迁的是 topic 所有权。带来的附带好处是 Broker 可弹性伸缩、扇出共享一份数据、分层存储天然好做。
 - **为什么 Pulsar 吞吐通常不如 Kafka？** → 写路径要经过 BookKeeper quorum 确认（跨节点、多副本 ack），换来的是「确认即持久」；Kafka 靠 OS 页缓存 + 顺序追加 + 零拷贝，把刷盘异步化，吞吐高但「acks=all 不等于落盘」。这是**可靠性实现方式的取舍，不是实现质量差异**。

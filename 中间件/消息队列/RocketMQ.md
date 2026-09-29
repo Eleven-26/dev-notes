@@ -686,7 +686,7 @@ diskMaxUsedSpaceRatio=75        # 磁盘使用率超 75% 拒绝写入
 - ⚠️ 因为是混写文件，**保留策略是集群全局的**：做不到 Kafka 那样"Topic A 留 3 天、Topic B 留 30 天"——不同保留 SLA 的业务要分集群部署（对照 [Kafka.md](Kafka.md) 的 segment 级 retention）。
 - "未消费也照删"是设计立场：RocketMQ 的堆积容忍上限 = 保留期 × 磁盘，不是无限日志；重要数据在业务库落库，MQ 只做通道。
 
-## 八、面试官会追问什么
+## 八、延伸追问
 
 - **RocketMQ 为什么不支持任意延迟（4.x）？** 4.x 用固定 `delayLevel`，每个级别对应 `SCHEDULE_TOPIC_XXXX` 下一条队列 + 定时任务扫描，实现简单、无排序成本；任意延迟需要海量定时任务或时间轮支撑，5.x 才用 TimerLog + 多级时间轮（`rmq_sys_wheel_timer`）做到毫秒级任意延迟。
 - **事务消息的回查是怎么触发的？** 半消息写入 `RMQ_SYS_TRANS_HALF_TOPIC`；Producer 未回 Commit/Rollback（返回 UNKNOW、宕机、断网）时，Broker 的 `TransactionalMessageCheckService` 每 60s 扫描超时半消息，反查 `checkLocalTransaction`，默认最多 15 次，因此回查逻辑必须幂等且能反查本地事务。

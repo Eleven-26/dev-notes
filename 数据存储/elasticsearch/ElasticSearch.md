@@ -401,7 +401,7 @@ curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/j
 #    term 只适用于 keyword / 数值 / 日期等不分词的字段
 ```
 
-## 面试官会追问什么
+## 延伸追问
 
 ### 1. 为什么 `text` 字段不能排序和聚合？
 分词后倒排里存的是 term → 文档，方向是"词找文档"；排序聚合需要"文档找值"的正排结构（`doc_values`）。text 反转出来的是无序 term 集合而不是原值，语义上就不成立，所以 ES 在 mapping 层直接禁止。解法是 `fields` 子字段：`title` 做全文、`title.kw` 做聚合。

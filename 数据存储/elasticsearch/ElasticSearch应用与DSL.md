@@ -463,7 +463,7 @@ curl -X POST "localhost:9200/my_index/_search" -H 'Content-Type: application/jso
 # 说明：需要「遍历期间视图一致」时改用 PIT + search_after 并带上 keep_alive（正文「深翻页方案对照」）
 ```
 
-## 面试官会追问什么
+## 延伸追问
 
 ### 1. 深分页为什么慢？给三个方案并说明怎么选。
 `from + size` 时每个分片都要维护 from+size 大小的堆，协调节点归并 `分片数 × (from+size)` 条，前 from 条纯白算。选：后台列表能跳页且只看前几页 → from/size；无限下拉 → `search_after`（近乎零开销但不能跳页）；导出/一致性遍历 → PIT + `search_after`（scroll 是旧方案，段被钉住且不能跳页）。

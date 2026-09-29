@@ -506,7 +506,7 @@ resolver 8.8.8.8 valid=300s;
 - ⚠️ **中间设备导致握手失败**：企业出口代理、老 WAF、部分负载均衡固件**解析不了 TLS 1.3 的新记录格式与扩展**，只有部分网络用户受影响；排查用 `openssl s_client -tls1_2` 与 `-tls1_3` 对比，短期可针对该来源降级。带 SNI 拦截的透明代理会签发自己的证书，只能靠客户端信任库 / 证书固定发现。
 - ⚠️ HTTP/3 over QUIC 走 **UDP 443**，不少防火墙直接丢 UDP，表现为「网站时而打不开」；MTU / 分片问题（DF 位 + ICMP 被禁的 PMTUD 黑洞）会让 TLS 记录变大后偶发连接挂起。
 
-## 十一、面试官会追问什么
+## 十一、延伸追问
 - **HTTPS 握手过程？和 TCP 握手什么关系？** → TCP 三次握手先建立连接；TLS 在 TCP 之上再走：ClientHello → ServerHello → Certificate →（ECDHE 时）ServerKeyExchange → ServerHelloDone → ClientKeyExchange → 双方 ChangeCipherSpec + Finished，之后对称加密传数据。**TLS 的 RTT 是叠加在 TCP 之上的额外开销**。
 - **HTTPS 是不是一个新协议？** → ⚠️ **不是**。它在 TCP 与 HTTP 之间插了一层 TLS，HTTP 报文原封不动交给 TLS 加密后再交 TCP，即 HTTP over TLS（同理还有 gRPC over TLS）。
 - **TLS 1.2 与 1.3 最大的区别？** → ① 2-RTT → **1-RTT**（客户端提前在 ClientHello 带 `key_share`）；② **删除 RSA / 静态 DH，强制前向安全**；③ 套件精简到 5 个、只留 AEAD、交换与认证分离；④ **Hello 之后立刻加密，服务器证书也被加密**（1.2 里是明文）；⑤ PRF → **HKDF**。

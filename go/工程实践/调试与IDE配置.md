@@ -90,7 +90,7 @@ go install golang.org/x/tools/gopls@latest # 单独补装也行
 - `configurations` 是数组，**配几段就能在运行下拉框里选几个入口**，这是"多应用/多目录"的标准做法；
 - 不调试只想跑一遍用 `Ctrl+F5`；命令行 `go run ./cmd/api -conf ./configs` 与 IDE 按钮完全等价。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`gopls` 报错不准 / 补全卡住？** → `Go: Restart Language Server` 重启并清缓存，再确认 VSCode 里的 `GOPATH`/`GOROOT` 与终端一致（多版本 SDK 最容易踩）。
 - **断点是灰色打不上？** → 触发优化/内联了，用 `-gcflags="all=-N -l"`；或该代码路径根本没走到；或调试的二进制与源码不同版本。
@@ -144,7 +144,7 @@ GOSSAFUNC=Foo go build .                     # 生成 SSA 图 ssa.html
 go test -count=1 -gcflags="all=-N -l" ./...  # 调测试必加 -count=1
 ```
 
-### 面试官会追问什么
+### 延伸追问
 
 - **调试时变量显示 `<optimized out>` 是什么原因？** → 优化把变量放进寄存器或被常量传播了，用 `-N -l` 重新构建。
 - **线上服务怎么调试？** → 不建议在生产开 `-N -l`；常规做法是 `dlv attach` 到进程、用日志断点/条件断点最小化停顿，或者靠 pprof + 日志回放复现。

@@ -47,7 +47,7 @@ go test -gcflags="all=-N -l" -count=1 -run TestFoo -v ./...   # 调测试时同�
 
 > `-count=1` 是配合调试的关键：不加的话测试命中结果缓存，断点根本不会进去。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`-gcflags` 和 `-ldflags` 的区别？** → 前者给编译器（编译期行为），后者给链接器（链接期行为，如注入版本变量、去符号表）。
 - **不加 pattern 为什么看不到第三方库的逃逸信息？** → 只作用于命令行指定的包，要 `all=-m`；但全量输出噪音极大，通常先看自己包的。
@@ -133,7 +133,7 @@ go build -gcflags="all=-N -l" -o app-debug ./cmd/app
 dlv exec ./app-debug
 ```
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`-m` 和 `-m -m` 区别？** → 后者多打一层 `flow:` 传播链，用于定位逃逸的**起点**。
 - **`fmt.Println(v)` 里 `v` 为什么逃逸？** → 值被装箱成 `any`（输出里 `... argument does not escape` 说的是参数切片没逃逸，`42 escapes to heap` 才是值本身）。
@@ -189,7 +189,7 @@ go build -n .                   # 只打印不执行，确认参数拼接
 
 注意：直接调用 `go tool compile` **不会自动处理 import 配置**（需要自己准备 `-I`、`-importcfg`、`-p`），单文件玩具代码可以，真实项目继续用 `go build -gcflags=...`。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **想看 `go build` 到底执行了什么命令？** → `-x`（执行并打印）/ `-n`（只打印）。
 - **想看某个函数被 SSA 优化成什么样？** → `GOSSAFUNC=FuncName go build .`，产出 `ssa.html`。

@@ -643,7 +643,7 @@ npx gitlab-ci-local --list --validate-dependency-chain
 
 ---
 
-## 面试官会追问什么
+## 延伸追问
 
 - **`rules` 和 `only/except` 该用哪个？** → 新项目一律用 `rules`：它能表达 `if` / `changes` / `exists` 的组合，
    且**可以给每条规则单独设 `when` 与 `variables`**。`only/except` 是旧写法，两者**不能在同一 job 里混用**。

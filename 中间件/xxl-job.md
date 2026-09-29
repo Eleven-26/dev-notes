@@ -437,7 +437,7 @@ public class SampleXxlJob {
 
 ---
 
-## 9. 面试官会追问什么
+## 9. 延伸追问
 
 - **调度中心如何保证同一任务不被重复调度？** 集群里每个实例都在跑调度线程，但调度前必须先执行 `SELECT * FROM xxl_job_lock WHERE lock_name='schedule_lock' FOR UPDATE`，**只有拿到 MySQL 行锁的实例**才能继续扫描 `xxl_job_info` 并推进时间轮；锁随事务提交释放，天然排他，因此任意时刻只有一个实例在调度——不需要 ZK 选主。
 - **执行器怎么被发现的？** 不是中心扫机器，而是**执行器主动注册**：启动后 POST `/api/registry` 上报 `AppName + http://ip:port`，之后周期续约（Go 20s / Java 30s）。中心每 30s 扫描注册表，删除 90s 未续约（`DEAD_TIMEOUT = BEAT_TIMEOUT × 3`）的地址，并把存活地址刷回 `xxl_job_group.address_list`。

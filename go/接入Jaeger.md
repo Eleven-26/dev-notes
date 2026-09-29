@@ -434,7 +434,7 @@ curl -s "http://localhost:16686/api/services"
 
 ---
 
-## 十三、面试官会追问什么
+## 十三、延伸追问
 
 - **为什么不用 `jaeger-client-go`？** → 已归档。它绑定私有的 `uber-trace-id` 头与私有 Thrift 协议，与 OTel 标准冲突；统一 OTel SDK + OTLP 后，**后端可换而埋点不动**——把 endpoint 从 Jaeger 换成 SkyWalking OAP 或 Tempo，业务代码一行不改。
 - **`InitJaeger` 为什么必须在 GORM 之前？** → GORM 的 OTel 插件在 `Install` 时**捕获当时的全局 TracerProvider** 并存下来。顺序颠倒会让它拿到 noop provider，SQL span 永远不上报，且不报错。这是「初始化顺序依赖全局单例」的典型坑。

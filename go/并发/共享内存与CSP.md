@@ -44,7 +44,7 @@ CSP（Communicating Sequential Processes，通信顺序进程）说白了就一�
 **所以 Go 的口号是"不要通过共享内存来通信，而要通过通信来共享内存"**——
 channel 就是这句话的载体，[channel实战模式.md](channel实战模式.md) 的"生产者-消费者 / 协程池"就是它的落地形态。
 
-### 面试官会追问什么
+## 延伸追问
 
 - **并发写原生 `map` 会怎样？** → `fatal error: concurrent map writes`，
   进程直接崩溃；**它不是数据错乱，而是运行时主动中止，无法 recover**。

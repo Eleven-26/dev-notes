@@ -220,7 +220,7 @@ public static List<User> removeDuplicatesByNameAndPhone(List<User> userList) {
 
 ---
 
-## 面试官会追问什么
+## 延伸追问
 
 - **Stream 和 for 循环谁快？** → 小数据量下 for 更快（装箱、lambda 调用、管道搭建都有开销）；大数据量且能短路/并行时 Stream 才有优势。**别拿性能当用 Stream 的理由**，理由应该是可读性。
 - **并行流什么时候用？** → 只在「数据量大 + 计算密集 + 无共享可变状态 + 不依赖顺序」时用。默认共用 `ForkJoinPool.commonPool`，IO 密集任务会把全局并行度拖死，生产更推荐自定义线程池或直接用并发 API。

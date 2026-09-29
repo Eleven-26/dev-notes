@@ -199,7 +199,7 @@ service:
 
 ⭐ 建议：**二选一为主线，不要并行双报**。已用 OTel、多语言、要标准化 → **Jaeger 主链路**，指标告警另接 Prometheus + Grafana；要开箱即用 APM 大盘与拓扑告警 → **SkyWalking 主线**，Jaeger 仅在按 ID 精查时按需开。
 
-## 七、面试官会追问什么
+## 七、延伸追问
 
 - **采样率怎么定？** 开发全采；生产按流量 `ParentBased(TraceIDRatioBased(1%~10%))` 保证父子决策一致；最优是 Collector **尾部采样**——错误与慢请求 100% 保留、正常请求抽样，又省存储又不丢关键链路。
 - **TraceID 如何跨服务透传？** W3C `traceparent` 头（`version-traceid-spanid-flags`）随 HTTP/RPC 传递；MQ 放消息 Header；下游 `Extract` 提取后作为父上下文创建新 span。⚠️ 头格式全链路须统一，混用 `sw8`/`uber-trace-id` 会断链。

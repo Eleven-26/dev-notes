@@ -295,7 +295,7 @@ grep -m1 'TID' /path/to/app.log
 
 ---
 
-## 十三、面试官会追问什么
+## 十三、延伸追问
 
 - **javaagent 为什么能不改一行业务代码就拿到链路？** → JVM 的 `java.lang.instrument` 允许在**类加载时**拿到 `Instrumentation` 改字节码。`-javaagent` 让 JVM 在 `main` 之前调用 `premain`，agent 注册 `ClassFileTransformer`，之后每个匹配的类被加载时由 ByteBuddy 在方法前/后/异常分支织入拦截器，拦截器创建 Entry/Exit/Local span。
 - **`plugins/` 与 `bootstrap-plugins/` 有什么区别？** → `bootstrap-plugins/` 增强的是 **JDK/JVM 自身的类**（线程池、`java.net`、日志框架），由 BootstrapClassLoader 加载，必须在 agent core 之前生效；`plugins/` 是常规框架插件。另有 `optional-plugins/` 默认不加载，要手动拷过去。

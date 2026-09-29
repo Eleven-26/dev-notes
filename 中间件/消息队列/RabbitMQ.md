@@ -538,7 +538,7 @@ public class OrderConsumer {
 | **`PRECONDITION_FAILED`** ⚠️ | 用**不同的 durable/autoDelete/args** 重复声明同名队列/交换机 | 声明参数必须完全一致；已存在的旧队列需**先删重建**或改新名字。⚠️ 该异常是 **channel 级**异常，会导致**整个 Channel 关闭**，而非单次操作失败 |
 | **延迟消息不准** | TTL + DLX 的队头阻塞 | 换用延迟插件，或按延迟粒度分队列 |
 
-## 十一、面试官会追问什么 ⭐
+## 十一、延伸追问 ⭐
 
 - **四种交换机的区别？** direct 按 RoutingKey 精确匹配；fanout 忽略路由键广播到所有绑定队列；topic 按 `*`（一个词）/`#`（零到多个词）通配；headers 按消息头键值匹配（`x-match: all/any`），性能差极少用。默认交换机 `""` 会把消息直接投给同名队列，`amq.*` 是 Broker 预置的系统交换机。
 - **如何保证消息不丢？** 三段都要管：生产端用 Publisher Confirm（异步确认 + 失败重发）而非事务；Broker 端队列 `durable` + 消息 `delivery_mode=2` + Quorum 队列多副本；消费端 `autoAck=false`，**先处理业务再 ack**，处理异常用 nack 并配死信兜底。

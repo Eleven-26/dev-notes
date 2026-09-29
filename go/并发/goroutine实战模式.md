@@ -293,7 +293,7 @@ waitWithTimeout(&wg, 5*time.Second) // ② 再等收尾，但别无限等
 | **`Wait` 要带超时** | 有的任务卡在 IO 上，收不回来也得退 |
 | **后台协程自带 `recover`** | 见案例 7：一个 panic 崩的是整个进程 |
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`errgroup` 和 `WaitGroup` 怎么选？** → 需要"**一错全停**"用 `errgroup.WithContext`；
   只要结果、不要取消语义就用 `WaitGroup` + 按下标写切片。
@@ -520,7 +520,7 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 
 ---
 
-## 面试官会追问什么
+## 延伸追问
 
 - **什么时候必须限并发？** → 只要调用了**容量有限的外部资源**（DB、三方 API、连接池）就必须限。
   实测：5000 个任务，无限制峰值协程 3702、耗时 46ms；限 50 后峰值 52、耗时 2.034s ——

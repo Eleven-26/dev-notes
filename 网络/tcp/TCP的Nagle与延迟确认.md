@@ -81,7 +81,7 @@
 > **这就是为什么对延迟敏感的短连接请求场景需要关闭 Nagle（`TCP_NODELAY`）**，
 > Redis、gRPC、游戏服务器等都会显式关闭它。
 
-### 面试官会追问什么
+## 延伸追问
 
 - **什么时候该关 Nagle？** → 延迟敏感、请求-响应型交互（如 Redis 客户端、
   实时游戏、RPC 调用）。**关闭方式：** `conn.(*net.TCPConn).SetNoDelay(true)`（Go 默认就开启了 `NoDelay`）。

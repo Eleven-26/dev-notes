@@ -232,7 +232,7 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 #    调完 somaxconn 与 tcp_max_syn_backlog 后重跑 ①~③，Recv-Q 不再顶格、overflow 计数不再增长才算修好
 ```
 
-## 面试官会追问什么
+## 延伸追问
 
 - **为什么断开连接要四次挥手？** → 因为 TCP 是全双工，**关闭需要两个方向各自关闭**：
   一方发 FIN 只表示"我没数据要发了"，对方可能还有数据要发，

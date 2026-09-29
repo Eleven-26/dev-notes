@@ -424,7 +424,7 @@ list := r.Instances()         // 要挑一台就按策略从中选（见 [客户
 log.Printf("rev=%d instances=%v healthy=%v", r.Revision(), list, r.Healthy())
 ```
 
-## 面试官会追问什么
+## 延伸追问
 
 ### 1. `KeepAlive` 为什么返回 channel，而不是 error？
 因为租约续期是**长期过程**，不是一次性结果：`KeepAlive` 返回一个 `<-chan *LeaseKeepAliveResponse`，

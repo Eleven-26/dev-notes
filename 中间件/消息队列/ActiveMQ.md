@@ -576,7 +576,7 @@ curl -s -u admin:admin "http://127.0.0.1:8161/api/jolokia/read/org.apache.active
 
 ---
 
-## 十一、面试官会追问什么
+## 十一、延伸追问
 
 - **ActiveMQ 和 Artemis 是什么关系？** → 不是版本升级，是**两套实现**：Artemis 源自 HornetQ 捐赠，核心协议、地址模型、存储与集群方式都重写；Classic 的 `activemq.xml` 在 Artemis 里不认。把两者混为一谈是常见误判。
 - **为什么 ActiveMQ 不适合做数据管道？** → 存储是「一个 broker 一个 KahaDB 目录」，单队列不能拆分区，**吞吐上限 = 单 broker 上限**；且 ack 即删、无 retention 重放。Kafka 的分区日志恰好解决这两点。

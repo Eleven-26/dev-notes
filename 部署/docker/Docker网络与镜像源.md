@@ -85,7 +85,7 @@ docker network create --ipv6 --subnet=fd00:1::/64 mynet6
 docker run -d --network=mynet6 --name nginx6 nginx
 ```
 
-### 面试官会追问什么
+### 延伸追问
 
 - **为什么 `fixed-cidr-v6` 是必须的？** → 不给 Docker 一个 IPv6 网段，
   它就没法给容器分配地址，`"ipv6": true` 形同虚设。
@@ -177,7 +177,7 @@ RUN mkdir -p /etc/apt \
 
 一句话记：**mirror 管"拉镜像"，apt 源管"装软件"，两个加速要分别配。**
 
-### 面试官会追问什么
+### 延伸追问
 
 - **为什么宿主机配了代理，构建镜像还是慢？** → **容器是相对独立的环境**，
   宿主机的东西它不一定继承；构建时必须把它当成一台全新的虚拟机，

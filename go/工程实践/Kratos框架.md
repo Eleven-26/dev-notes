@@ -90,7 +90,7 @@ func (r *userRepo) Create(ctx context.Context, u *biz.User) (*biz.User, error) {
 // 查询：r.data.db.User.Query().Where(user.NameEQ(name)).Only(ctx)，user.NameEQ 是生成的字段谓词
 ```
 
-### 面试官会追问什么
+### 延伸追问
 
 - **为什么不直接在 service 层调 ent？** → 破坏分层，业务逻辑与存储实现耦死，换 ORM 或加缓存要改业务代码。
 - **ent 和 GORM 怎么选？** → ent 是 schema-first + 代码生成，类型安全、edge 图遍历强；GORM 上手快但复杂查询易失控。
@@ -161,7 +161,7 @@ HTTP/1.1 400 Bad Request
 {"code":400,"reason":"VALIDATOR","message":"node_file_url: value length must be at least 1 runes"}
 ```
 
-### 面试官会追问什么
+### 延伸追问
 
 - **为什么不直接在 service 层写 if 校验？** → 规则分散、无法被网关和文档复用；proto 里的规则还能生成 OpenAPI 描述，前后端共享同一份契约。
 - **中间件顺序有讲究吗？** → 有。`recovery` 放最外层，`validate` 应在鉴权/日志之后、业务之前，避免对未通过鉴权的请求做无谓校验。
@@ -240,7 +240,7 @@ func (d *Discovery) ConnectService(ctx context.Context, name string, port int) (
 
 > **容易踩的坑**：容器化分支不要返回 `(*etcd.Registry)(nil)`。那是**类型非空的 interface**，`kratos.Registrar(r)` 会当作注册中心存在并调它的方法，直接 panic；要么让接口是真的 `nil`，要么用 `if r != nil` 显式跳过 option。验证时可 `etcdctl get --prefix /kratos` 查看注册实例，里面**同时含 gRPC endpoint 和 HTTP endpoint**。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **实例下线后注册信息怎么清理？** → 注册时用 etcd 租约 + 心跳续约，进程退出或续约失败后 key 自动过期。
 - **K8s 里到底要不要注册中心？** → 一般不要，Service/Headless Service 已提供 DNS + 负载均衡；需要跨集群、跨注册中心、按权重灰度路由时才引入。
@@ -330,7 +330,7 @@ curl -X POST http://payment.service:8001/api.payment.v1.PaymentService/CreatePay
   -d '{"order_no":"20260101"}'
 ```
 
-### 面试官会追问什么
+### 延伸追问
 
 - **固定 token 有什么风险？** → 无法区分调用方身份、无法限权、轮换要全量重启。内部够用；涉及外部或跨团队应升级为 mTLS / JWT / 网格身份。
 - **为什么用 `x-md-global-` 而不是自定义 `x-token`？** → 自定义 header 不在默认前缀内，`FromServerContext` 取不到，得自己从 transport 抠，白写一堆代码。
@@ -383,7 +383,7 @@ func tokenAuth(expect string, logger log.Logger) middleware.Middleware {
 
 > 复盘一句话：**Kratos 在微服务之间建立的是流式通道，至少心跳是通过流式请求发送的**；鉴权中间件必须区分"心跳请求"和"业务请求"，心跳不做鉴权。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **放行健康检查会不会造成安全漏洞？** → 只放行固定的健康检查 operation（且只返回服务状态），不放行任何业务方法；更严格的做法是健康检查只监听内网/管理端口。
 - **怎么避免同类问题再犯？** → 把 health、reflection 等"系统级 RPC"白名单在中间件里集中维护，不要散落各处。
@@ -439,7 +439,7 @@ func (s *PaymentService) PayNotify(ctx context.Context, req *v1.PayNotifyRequest
 
 若坚持走 message 路线，就要把回调里**所有字段**都在 proto 里定义一遍、全部接收过来，再原样拼回去——纯重复劳动。参数只是"过路"的场景，直接传原始请求更合理。
 
-### 面试官会追问什么
+### 延伸追问
 
 - **gRPC 入口能这么写吗？** → 不能，断言会失败，应返回明确错误，不能忽略 `ok`。
 - **直接读 body 会不会影响 Kratos 自己的参数解析？** → 会。`Request.Body` 是流，读一次就空了；要么 `req.Body = io.NopCloser(bytes.NewReader(data))` 复原，要么让 SDK 先读、业务不再重复解析。
@@ -515,7 +515,7 @@ if err := protojson.Unmarshal(body, req); err != nil {
 }
 ```
 
-### 面试官会追问什么
+### 延伸追问
 
 - **`@type` 里的类型没编进二进制会怎样？** → 解析失败（`unable to resolve`）；解决办法是显式 import 该类型的 Go 包触发注册，或用 `protojson.UnmarshalOptions{Resolver: ...}` 提供自定义解析器。
 - **`Any` 和 oneof 怎么选？** → 分支固定且都在同一 proto 内定义用 **oneof**（类型安全、无额外解析）；子类型分散在多个服务、需要动态扩展时才用 **Any**。
