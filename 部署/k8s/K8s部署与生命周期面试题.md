@@ -349,4 +349,4 @@ kubectl rollout undo deploy/app              # 紧急止血：只回滚代码，
 - [CI-CD面试题.md](../CI-CD面试题.md) — 声明式部署与回滚的流水线视角
 - [容器与编排选型.md](../容器与编排选型.md) — K8s 在编排方案中的位置（与 Compose / Swarm / Nomad 的对比）
 
-> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../../go/接入Jaeger.md)、[接入Jaeger.md](../../java/接入Jaeger.md)、[接入Skywalking.md](../../java/接入Skywalking.md)、[接入Skywalking.md](../../php/接入Skywalking.md)、[服务发现的Java实现.md](../../分布式/服务发现的Java实现.md)、[文件存储与上传架构.md](../../分布式/系统设计/文件存储与上传架构.md)、[Jaeger.md](../../可观测性/Jaeger.md)、[Skywalking.md](../../可观测性/Skywalking.md)、[可观测性选型.md](../../可观测性/可观测性选型.md)、[数字证书与PKI.md](../../安全/数字证书与PKI.md)、[GitLab CI-CD.md](../GitLab CI-CD.md)
+> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../../go/接入Jaeger.md)、[接入Jaeger.md](../../java/接入Jaeger.md)、[接入Skywalking.md](../../java/接入Skywalking.md)、[接入Skywalking.md](../../php/接入Skywalking.md)、[服务发现的Java实现.md](../../分布式/服务发现的Java实现.md)、[文件存储与上传架构.md](../../分布式/系统设计/文件存储与上传架构.md)、[Jaeger.md](../../可观测性/Jaeger.md)、[Skywalking.md](../../可观测性/Skywalking.md)、[可观测性选型.md](../../可观测性/可观测性选型.md)、[数字证书与PKI.md](../../安全/数字证书与PKI.md)、[TCP四次挥手.md](../../网络/tcp/TCP四次挥手.md)、[GitLab CI-CD.md](../GitLab CI-CD.md)
