@@ -295,7 +295,7 @@ grep -m1 'TID' /path/to/app.log
 
 ---
 
-## 十三、延伸追问
+## 延伸追问
 
 - **javaagent 为什么能不改一行业务代码就拿到链路？** → JVM 的 `java.lang.instrument` 允许在**类加载时**拿到 `Instrumentation` 改字节码。`-javaagent` 让 JVM 在 `main` 之前调用 `premain`，agent 注册 `ClassFileTransformer`，之后每个匹配的类被加载时由 ByteBuddy 在方法前/后/异常分支织入拦截器，拦截器创建 Entry/Exit/Local span。
 - **`plugins/` 与 `bootstrap-plugins/` 有什么区别？** → `bootstrap-plugins/` 增强的是 **JDK/JVM 自身的类**（线程池、`java.net`、日志框架），由 BootstrapClassLoader 加载，必须在 agent core 之前生效；`plugins/` 是常规框架插件。另有 `optional-plugins/` 默认不加载，要手动拷过去。
@@ -309,7 +309,7 @@ grep -m1 'TID' /path/to/app.log
 
 ---
 
-## 校验口径
+## 十三、校验口径
 
 > ✅ 本篇校验方式与范围（本机 Maven 3.8.1 + JBR 17，网络可达 repo1.maven.org）：
 >
@@ -334,5 +334,3 @@ grep -m1 'TID' /path/to/app.log
 - [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
 - [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
 - [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — `COPY --from` 多阶段构建与镜像瘦身
-
-> 反向引用（本篇被下列文档引到）：[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[接入Jaeger.md](接入Jaeger.md)、[../go/接入Skywalking.md](../go/接入Skywalking.md)、[目录.md](../目录.md)

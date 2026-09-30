@@ -220,7 +220,7 @@ go func() {
 1. 在每条日志里注入当前 `traceId` / `segmentId` / `spanId`（字段名由插件决定）；
 2. 按配置把日志本身也上报给 OAP，从而在 UI 的日志面板里按 Trace ID 反查。
 
-排查用法与 Java 侧一致：**Trace 找慢/失败的 span → 拿 traceId 查日志 → 看业务日志里当时在做什么**（UI 面板部分见 [../可观测性/Skywalking.md](../可观测性/Skywalking.md) 第二节）。
+排查用法与 Java 侧一致：**Trace 找慢/失败的 span → 拿 traceId 查日志 → 看业务日志里当时在做什么**（UI 面板部分见 [../可观测性/Skywalking.md](../可观测性/Skywalking.md) 第三节）。
 
 指标侧：agent 会采集 `runtime/metrics` 的原生运行时指标（GC、goroutine 数、内存），这部分**不需要写代码**。业务指标 SkyWalking 侧能力有限，要完整的指标大盘与告警建议另接 Prometheus（分工见 [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md)）。
 
@@ -410,7 +410,7 @@ nc -vz oap.observability 11800
 
 ---
 
-## 十一、延伸追问
+## 延伸追问
 
 - **Go 为什么不能像 Java 那样运行时无侵入埋点？** → Go 是 AOT 编译成静态机器码，没有 classloader 也没有运行期改指令的口子；eBPF 只能抓 syscall 与少数 uprobe，拿不到参数与业务语义。所以 skywalking-go 走**编译期 AST 注入**（`-toolexec`），代价是配置与插件集被固化进二进制、且 `-a` 全量重编译拖慢 CI。
 - **`-toolexec` 具体做了什么？** → 让 Go 把每次 `compile`/`link` 调用先转交给指定程序。agent 借此在编译每个包时解析 AST，匹配插件定义的调用点，在前后织入埋点代码，再把改写后的源码交给真正的编译器。
@@ -423,7 +423,7 @@ nc -vz oap.observability 11800
 
 ---
 
-## 校验口径
+## 十一、校验口径
 
 > ✅ 本篇 Go 代码块的校验方式与范围（Go 1.26.5，windows/amd64）：
 >
@@ -451,5 +451,3 @@ nc -vz oap.observability 11800
 - [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
 - [../go/工程实践/context.md](工程实践/context.md) — OTel 路线下 ctx 传播的基础
 - [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — `-a` 全量重编译与构建缓存的取舍
-
-> 反向引用（本篇被下列文档引到）：[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[接入Jaeger.md](接入Jaeger.md)、[../java/接入Skywalking.md](../java/接入Skywalking.md)、[目录.md](../目录.md)

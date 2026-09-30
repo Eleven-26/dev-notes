@@ -5,7 +5,7 @@
 > 内容整理自个人学习笔记；参考《Elasticsearch 数据搜索与分析实战》（王深湛）。
 > 查询 DSL 与 mapping 见 [ElasticSearch应用与DSL.md](ElasticSearch应用与DSL.md)；原理见 [ElasticSearch.md](ElasticSearch.md)。
 
-## 使用方法
+## 一、使用方法
 
 客户端与 ES 版本必须匹配，见下表。
 

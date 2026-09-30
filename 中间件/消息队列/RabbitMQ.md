@@ -555,3 +555,4 @@ public class OrderConsumer {
 - [Kafka.md](Kafka.md)、[RocketMQ.md](RocketMQ.md) — 另外两条技术路线
 - [Pulsar.md](Pulsar.md) — 同样「一份存储、多路消费」，但队列换成 BookKeeper、绑定换成订阅类型
 - [../../分布式/分布式事务.md](../../分布式/分布式事务.md) — 事务消息与最终一致
+> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)

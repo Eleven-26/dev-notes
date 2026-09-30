@@ -4,7 +4,7 @@
 >
 > 内容整理自个人学习笔记；本轮补充（文档建模模式、ESR 索引规则、explain 读法、聚合管道、分片与架构管理、读写关注与因果一致性、事务边界、运维坑）参考《MongoDB 进阶与实战：微服务整合、性能优化、架构管理》（唐卓章）。
 
-## 入门
+## 一、入门
 
 ### 什么是MongoDB
 该数据库基于灵活的JSON文档模型，非常适合敏捷式的快速开发。
@@ -81,7 +81,7 @@ MongoDB通过副本集（replication set）来实现数据库的高可用，这�
 | 事务 | 单机强事务 | 4.0 副本集事务、4.2 分片事务 | 能用，但代价高 |
 | 约束 | `NOT NULL` / `UNIQUE` / `CHECK` | `unique` 索引 + JSON Schema | 约束能力弱于 MySQL |
 
-## 与 MySQL 的选型
+## 二、与 MySQL 的选型
 ⭐ 没有“谁更好”，只有“谁更合适”。
 
 | 判断维度 | 更该选 MongoDB | 更该选 MySQL |
@@ -98,7 +98,7 @@ MongoDB通过副本集（replication set）来实现数据库的高可用，这�
 
 **不适合 MongoDB**：强事务（账户、库存扣减等多表联动，事务代价高、运维复杂）；⚠️ 复杂多表关联统计（`$lookup` 能力与性能远不如 MySQL 的 JOIN 优化器）；强 schema 约束场景（外键、`CHECK`、复杂唯一性要应用层保证）。
 
-## 数据模型
+## 三、数据模型
 建模的核心只有一个问题：关联数据是**内嵌（Embedding**）还是**引用（Referencing）**？⭐ 判据：**一对少用内嵌，一对多用引用。**
 
 | 对比维度 | 内嵌 Embedding | 引用 Referencing |
@@ -159,7 +159,7 @@ db.users.updateOne({ _id: id, schemaVersion: { $lt: 2 } },
 
 判据：如果一次业务操作**总**要跨 N 个文档开事务，先怀疑建模——不变量一般应该收在同一个文档里（单文档写天然原子）。事务是兜底，不是默认路径；真有大量跨表强一致需求，说明这数据本质是关系型的（对照 [事务与隔离级别.md](mysql/事务与隔离级别.md)）。
 
-## 索引介绍
+## 四、索引介绍
 
 ### 什么是索引
 索引的本质是**用空间与写入开销换查询速度**：维护一份“字段值 → 记录位置”的有序映射，让查询从全表扫描（`COLLSCAN`）变成定点定位（`IXSCAN`）。
@@ -371,7 +371,7 @@ db.killOp(<opid>)                             // ⚠️ 先确认不是长事务
 - `system.profile` 是 **capped collection**，写满滚动覆盖，只在**本机**留痕：要长期分析就定期 `$merge` 到独立集合，或直接采 `currentOp`。
 - ⚠️ profiler 对每条操作都有判定与写盘开销，生产常开 level 1 + 较高阈值；开 level 2 排查完必须立刻回落到 0/1。
 
-## 聚合管道
+## 五、聚合管道
 ⭐ 聚合的执行模型是"文档流依次穿过 stage"，因此**优化只有两个方向：让更少的文档进入下游 stage；让每个 stage 少占内存**。
 
 ### stage 顺序与管道优化器
@@ -431,7 +431,7 @@ db.orders.aggregate([
 - 排序必须带唯一兜底字段（通常是 `_id`），否则同一秒内多条文档的相对顺序不稳定，翻页会重复/漏。
 - 游标只解决"网络分批"，不解决"服务端仍要扫过 skip 的部分"。
 
-## 副本集
+## 六、副本集
 副本集由**一个主节点（Primary）+ 多个从节点（Secondary**）组成，可选**仲裁节点（Arbiter）**。写入都走主节点，从节点持续复制主节点的 oplog。三个步骤：
 
 + 选举机制
@@ -546,7 +546,7 @@ err := mongo.WithSession(ctx, sess, func(sc mongo.SessionContext) error {
 ```
 跨进程/跨服务时把 `operationTime` 随消息或请求头传下去，接收方读时显式指定，等于把因果链延续出去。⚠️ 它保证的是"不比自己旧"而不是"全局最新"；要严格不旧于任何写入就直接读 primary。驱动默认在会话内开启 causal consistency，关掉能省等待但要业务自己兜。
 
-## 分片与架构管理 ⭐
+## 七、分片与架构管理 ⭐
 
 ### 集群角色
 
@@ -598,7 +598,7 @@ chunk 从源分片搬到目标分片期间，这段区间的**所有权（owners
 - 目标分片可能暂时读到一个"归属未定"的文档，客户端结果仍正确（靠 `SHARDING_FILTER` 过滤）；迁移完成后源分片要清理**孤儿文档（orphan）**，没清完之前不带片键的广播查询会多扫一批文档——`totalDocsExamined` 莫名偏高就是这个信号。
 - 结论：⚠️ 迁移不是"免费的负载均衡"，它在被搬的那段键区间上制造一个短暂的写抖动窗口。热点集合宁可手工预分片 + 限定 balancer 窗口，也不要让 balancer 在业务高峰自行决定搬哪块。
 
-## 事务与一致性边界 ⭐
+## 八、事务与一致性边界 ⭐
 
 ### 前提与硬边界
 
@@ -649,7 +649,7 @@ err := client.UseSession(ctx, func(sctx mongo.SessionContext) error {
 
 对照：MongoDB 多文档事务只解决"本库内 ACID"，跨服务仍需消息/Saga 的最终一致方案 → 见 [分布式事务.md](../分布式/分布式事务.md)。
 
-## 使用方法
+## 九、使用方法
 连接串速查：`mongodb://localhost:27017`（单机）；`mongodb://u:p@host:27017/?authSource=admin`（带认证库）；`mongodb://u:p@h1:27017,h2:27017,h3:27017/?replicaSet=rs0&w=majority`（副本集）；`mongodb+srv://u:p@cluster0.abcde.mongodb.net/`（Atlas，隐含 TLS）。
 
 ### Go 客户端（go.mongodb.org/mongo-driver）
@@ -911,7 +911,7 @@ List<User> top = mongoTemplate.aggregate(agg, "users", User.class).getMappedResu
 ```
 ⚠️ Spring Boot 3.x 引入 `spring-boot-starter-data-mongodb` 即可；`@Indexed` 仅在 `auto-index-creation: true` 时生效，生产建议用迁移脚本显式建索引，避免启动时并发建索引阻塞。
 
-## 运维与常见坑 ⭐
+## 十、运维与常见坑 ⭐
 
 ### 连接与连接池
 客户端小节说的"单例"不是风格问题：每个 `MongoClient` 自带连接池 + 拓扑监控线程，**每请求 new 一个**等于每请求建一批 TCP 与心跳，`serverStatus().connections.totalCreated` 会远大于 `current`。容量预算：总连接 ≈ 应用实例数 × `maxPoolSize`，多实例部署要按这个乘积下调每实例池大小，而不是指望服务端无限接。

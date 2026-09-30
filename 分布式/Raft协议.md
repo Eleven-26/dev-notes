@@ -767,4 +767,4 @@ etcdctl get foo --consistency=s              # ⚠️ 该 flag 是否存在以 e
 - [Nacos.md](../中间件/Nacos.md) — 另一套一致性协议（Distro + JRaft）
 - [分布式ID.md](分布式ID.md) — 多节点下的单调与唯一
 
-> 反向引用（本篇被下列文档引到）：[RocketMQ.md](../中间件/消息队列/RocketMQ.md)、[服务注册与发现的Go实现.md](服务注册与发现的Go实现.md)、[复制与高可用.md](../数据存储/mysql/复制与高可用.md)、[DHCP.md](../网络/DHCP.md)
+> 反向引用（本篇被下列文档引到）：[RocketMQ.md](../中间件/消息队列/RocketMQ.md)、[服务注册与发现的Go实现.md](服务注册与发现的Go实现.md)、[ElasticSearch.md](../数据存储/elasticsearch/ElasticSearch.md)、[复制与高可用.md](../数据存储/mysql/复制与高可用.md)、[DHCP.md](../网络/DHCP.md)

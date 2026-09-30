@@ -5,7 +5,7 @@
 > 内容整理自个人学习笔记；原理部分的补充（mapping 与字段开关、写入与段生命周期、BM25）参考《Elasticsearch 数据搜索与分析实战》（王深湛）。
 > 工程应用与搜索 DSL 见 [ElasticSearch应用与DSL.md](ElasticSearch应用与DSL.md)；Go / Java 客户端用法见 [ElasticSearch客户端.md](ElasticSearch客户端.md)。
 
-## 简介
+## 一、简介
 
 Elasticsearch 是一个分布式、RESTful 的搜索和数据分析引擎。
 
@@ -30,7 +30,7 @@ Elasticsearch 是一个分布式、RESTful 的搜索和数据分析引擎。
 + 数据量大、响应要快
 + 使用 SQL 、NoSQL 也无法满足（避免过度设计）
 
-## 原理
+## 二、原理
 
 ### 基本原理
 
@@ -423,14 +423,6 @@ curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/j
 
 ---
 
-## 延伸
-
-- 段落盘与 fsync、page cache 的底层机制：[Linux 文件系统与 I/O](../../linux/文件系统与IO.md)、[Linux 内存管理](../../linux/内存管理.md)
-- 副本确认语义与多数派共识的差别：[Raft 协议](../../分布式/Raft协议.md)
-- 从 binlog/CDC 单向同步到 ES 的链路设计：[Kafka](../../中间件/消息队列/Kafka.md)
-
----
-
 ## 关联
 
 - [ElasticSearch应用与DSL.md](ElasticSearch应用与DSL.md) — 写入、文本分析与搜索 DSL 的落地用法
@@ -438,6 +430,9 @@ curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/j
 - [MongoDB.md](../MongoDB.md) — 另一类非关系型存储的选型与运维
 - [mysql/索引与优化.md](../mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
 - [../linux/文件系统与IO.md](../../linux/文件系统与IO.md) — translog 的 fsync 与 page cache
+- [../../linux/内存管理.md](../../linux/内存管理.md) — 段落盘与 fsync、page cache 的底层机制
+- [../../分布式/Raft协议.md](../../分布式/Raft协议.md) — 副本确认语义与多数派共识的差别
+- [../../中间件/消息队列/Kafka.md](../../中间件/消息队列/Kafka.md) — 从 binlog / CDC 单向同步到 ES 的链路设计
 - [存储选型.md](../存储选型.md) — ES 在存储体系中的定位（该用与不该用、与 ClickHouse 的分工）
 
-> 反向引用（本篇被下列文档引到）：[海量数据存储设计.md](../../分布式/系统设计/海量数据存储设计.md)、[统计页提速.md](../../分布式/系统设计/统计页提速.md)
+> 反向引用（本篇被下列文档引到）：[海量数据存储设计.md](../../分布式/系统设计/海量数据存储设计.md)、[统计页提速.md](../../分布式/系统设计/统计页提速.md)、[位图与布隆过滤器.md](../../算法/位图与布隆过滤器.md)

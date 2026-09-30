@@ -267,7 +267,7 @@ K8s 删 Pod 的时序是「SIGTERM → 等 `terminationGracePeriodSeconds`（默
 
 **`terminationGracePeriodSeconds` > `request_terminate_timeout` >  P99 请求耗时**。
 
-worker 靠 `PR_SET_PDEATHSIG` 跟着 master 走：master 还在 graceful stop，worker 就还活着、还能发数据；master 一退，worker 立刻收到 SIGTERM，队列里剩下的就没了。任何 `kill -9` 都等于放弃最后一批数据，这与 Java agent 靠 ShutdownHook flush 是同一个道理（见 [Skywalking.md](../可观测性/Skywalking.md) 第四节）。
+worker 靠 `PR_SET_PDEATHSIG` 跟着 master 走：master 还在 graceful stop，worker 就还活着、还能发数据；master 一退，worker 立刻收到 SIGTERM，队列里剩下的就没了。任何 `kill -9` 都等于放弃最后一批数据，这与 Java agent 靠 ShutdownHook flush 是同一个道理（见 [Skywalking.md](../可观测性/Skywalking.md) 第五节）。
 
 ---
 
@@ -401,4 +401,4 @@ ps -o pid,comm -p 1
 - [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — 多阶段构建与镜像层缓存
 - [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 SIGTERM 排空
 
-> 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[Skywalking.md](../可观测性/Skywalking.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[go/接入Skywalking.md](../go/接入Skywalking.md)、[java/接入Skywalking.md](../java/接入Skywalking.md)、[镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md)、[K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md)、[目录.md](../目录.md)
+> 反向引用（本篇被下列文档引到）：[可观测性选型.md](../可观测性/可观测性选型.md)

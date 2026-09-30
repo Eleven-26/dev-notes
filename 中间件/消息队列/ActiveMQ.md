@@ -596,5 +596,3 @@ curl -s -u admin:admin "http://127.0.0.1:8161/api/jolokia/read/org.apache.active
 - [Pulsar.md](Pulsar.md) — 存算分离路线：把 KahaDB 单 store 换成 BookKeeper
 - [Nats.md](Nats.md) — Go 系轻量通信的对照选项
 - [../../可观测性/Skywalking.md](../../可观测性/Skywalking.md) — 消息链路的 trace 埋点思路相通
-
-> 反向引用（本篇被下列文档引到）：[消息队列选型.md](消息队列选型.md)、[中间件选型.md](../中间件选型.md)、[目录.md](../../目录.md)

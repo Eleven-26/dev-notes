@@ -219,5 +219,3 @@ service:
 - [../网络/HTTP与gRPC.md](../网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
 - [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 采集组件的部署形态
 - [可观测性选型.md](可观测性选型.md) — 链路追踪的完整选型表（含指标、日志、存储、可视化的选型）
-
-> 反向引用（本篇被下列文档引到）：[go/接入Jaeger.md](../go/接入Jaeger.md)、[java/接入Jaeger.md](../java/接入Jaeger.md)、[Skywalking.md](Skywalking.md)、[可观测性选型.md](可观测性选型.md)、[php/接入Skywalking.md](../php/接入Skywalking.md)、[分布式与微服务.md](../分布式/分布式与微服务.md)、[HTTP与gRPC.md](../网络/HTTP与gRPC.md)

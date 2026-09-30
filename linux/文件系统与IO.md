@@ -106,7 +106,7 @@ ln -s src.txt soft.txt    # 软链接：新建"内容为目标路径字符串"�
 | ⭐ **O_DIRECT** | 打开时加此标志，**绕过页缓存**，直接在用户缓冲与设备间传输 | ⚠️ ① **必须自己保证对齐**（内存地址、长度、文件偏移都要按块对齐）；② 失去预读与缓存，**小随机 IO 变慢**；③ 与 Page Cache 并存可能不一致。适合**自带缓存的数据库**（MySQL 常用 `innodb_flush_method=O_DIRECT`） |
 | ⭐ **mmap** | 把文件**映射成一段内存**，读写像操作字节数组，省掉 `read/write` 的**系统调用 + 一次用户/内核拷贝** | ✅ 零拷贝、随机访问友好、多进程共享天然可用；⚠️ 缺页中断开销（大文件首次访问抖动）、脏页回写**时机不可控**（需 `msync`）、**占 RSS**、32 位寻址受限 |
 
-## 常用命令速查
+## 三、常用命令速查
 
 | 命令 | 看什么 |
 |---|---|
@@ -120,7 +120,7 @@ ln -s src.txt soft.txt    # 软链接：新建"内容为目标路径字符串"�
 | `lsblk` / `blkid`、`mount` / `findmnt` | 块设备树与 fs 类型 / 挂载点与挂载选项（`noatime`、`discard`） |
 | `sync` | 手动回写所有脏页（关机/拔盘前）；详细排查见 [性能排查.md](性能排查.md) |
 
-## 生产实践与坑
+## 四、生产实践与坑
 
 ### ⚠️ inode 耗尽：磁盘没满却写不进去
 
@@ -158,4 +158,4 @@ lsof | grep -i deleted    # 同上，全量扫
 - [性能排查.md](性能排查.md) — iostat、inode 满、磁盘满的排查
 - [零拷贝.md](../go/运行时/零拷贝.md) — mmap / sendfile 在同一套 I/O 栈上的位置
 
-> 反向引用（本篇被下列文档引到）：[常用命令.md](常用命令.md)、[网络与存储.md](../部署/docker/网络与存储.md)、[ElasticSearch.md](../数据存储/elasticsearch/ElasticSearch.md)、[ElasticSearch应用与DSL.md](../数据存储/elasticsearch/ElasticSearch应用与DSL.md)
+> 反向引用（本篇被下列文档引到）：[常用命令.md](常用命令.md)、[ElasticSearch.md](../数据存储/elasticsearch/ElasticSearch.md)、[ElasticSearch应用与DSL.md](../数据存储/elasticsearch/ElasticSearch应用与DSL.md)、[网络与存储.md](../部署/docker/网络与存储.md)

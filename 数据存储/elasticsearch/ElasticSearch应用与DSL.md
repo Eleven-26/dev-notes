@@ -5,7 +5,7 @@
 > 内容整理自个人学习笔记；补充（写入与段生命周期、BM25 与聚合代价、深翻页四方案、集群与 ILM、事故清单）参考《Elasticsearch 数据搜索与分析实战》（王深湛）。
 > 核心原理（倒排索引、分片、写入与搜索流程）见 [ElasticSearch.md](ElasticSearch.md)；客户端用法见 [ElasticSearch客户端.md](ElasticSearch客户端.md)。
 
-## 应用
+## 一、应用
 
 ### 写入索引
 
@@ -499,3 +499,4 @@ yellow 表示副本没分配上——数据读写都正常，但容错已降级�
 - [mysql/索引与优化.md](../mysql/索引与优化.md) — ESR 与联合索引顺序的对照
 - [../linux/文件系统与IO.md](../../linux/文件系统与IO.md) — merge 与磁盘 IO
 - [深分页优化.md](../mysql/深分页优化.md) — 深分页的另一种落点：`search_after` 与 `max_result_window`
+> 反向引用（本篇被下列文档引到）：[基数与频率估计.md](../../算法/基数与频率估计.md)

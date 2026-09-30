@@ -6,7 +6,7 @@
 
 ---
 
-## 1. 一句话定位：它解决什么
+## 一、一句话定位：它解决什么
 
 **I/O 多路复用让一个进程或线程同时监视多个 I/O 通道，只在通道就绪时处理它。**
 网络服务的大量连接通常都在等待数据；若采用“每连接一线程”，连接数上升后会遇到 C10K 问题。
@@ -22,7 +22,7 @@
 
 ---
 
-## 2. 五种 I/O 模型 ⭐
+## 二、五种 I/O 模型 ⭐
 
 一次输入分两段：① **等待数据就绪**，数据进入内核 socket 缓冲区；② **数据拷贝**，内核将数据复制到用户空间。
 
@@ -68,7 +68,7 @@ if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 
 ---
 
-## 3. select / poll / epoll 三代演进 ⭐
+## 三、select / poll / epoll 三代演进 ⭐
 
 设监视 fd 总数为 `n`，本轮就绪数为 `k`。
 
@@ -118,7 +118,7 @@ int n = epoll_wait(epfd, events, maxevents, -1);  // 返回就绪事件
 
 ---
 
-## 4. epoll 的两种触发模式 ⭐
+## 四、epoll 的两种触发模式 ⭐
 
 | 维度 | LT（水平触发，默认） | ET（边缘触发） |
 |---|---|---|
@@ -154,7 +154,7 @@ for (;;) {
 
 ---
 
-## 5. 典型问题：惊群与 Reactor
+## 五、典型问题：惊群与 Reactor
 
 ### 5.1 惊群（thundering herd）
 
@@ -184,7 +184,7 @@ Nginx 更准确地说是“多个 worker 进程各自运行单线程 Reactor”�
 
 ---
 
-## 6. Go 的实现：netpoller 与 goroutine
+## 六、Go 的实现：netpoller 与 goroutine
 
 Go runtime 的 netpoller 在 Linux 上使用 epoll：网络 I/O 暂不可完成时挂起 goroutine，
 对应 M 不必等待；fd 就绪后 runtime 再把 goroutine 置为可运行。
@@ -196,7 +196,7 @@ G、M、P 的配合与调度细节见 [Go GMP 调度模型](../go/运行时/GMP�
 
 ---
 
-## 7. 使用一：Go ⭐
+## 七、使用一：Go ⭐
 
 ### 7.1 日常优先使用 net 包
 
@@ -313,7 +313,7 @@ go run .
 
 ---
 
-## 8. 使用二：Java ⭐
+## 八、使用二：Java ⭐
 
 ### 8.1 NIO 三件套
 
@@ -424,7 +424,7 @@ Netty 采用成熟的 Reactor/NIO，也可用 Linux native epoll transport，而
 
 ---
 
-## 9. 生产实践与坑
+## 九、生产实践与坑
 
 ### 9.1 fd 与连接上限
 
@@ -466,7 +466,7 @@ lsof -p "$PID" -a -iTCP
 
 ---
 
-## 10. 延伸追问 ⭐
+## 延伸追问 ⭐
 
 - **select、poll、epoll 的区别？** select 有位图/1024 限制，poll 去掉数量限制但仍复制和遍历；epoll 持久注册且只返回就绪项。
 - **epoll 为什么高效？** 红黑树管理兴趣集合、就绪链表收集活跃项；等待处理 `k` 而非扫描 `n`，但并非所有操作都是 `O(1)`。

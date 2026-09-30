@@ -505,3 +505,4 @@ nc.close();
 - [Kafka.md](Kafka.md) — 日志型流平台的对照
 - [Pulsar.md](Pulsar.md) — 同样做「服务端订阅 + 通配符 + 重放」，但用存算分离换 durability，代价是四五个服务组件
 - [../../数据存储/redis/发布订阅.md](../../数据存储/redis/发布订阅.md) — 轻量 Pub/Sub 的边界
+> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)

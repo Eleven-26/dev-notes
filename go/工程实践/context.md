@@ -486,7 +486,7 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 - **`ctx` 是线程安全的吗？** → **是**（值不可变、`Value` 只读、取消是一次性状态转换），所以可以跨 goroutine 传递。
 - **父被取消后，子还能继续用吗？** → `Done()` 已关闭、`Err()` 非 nil，**再往下传的 ctx 都是已取消状态**；业务上应立刻退出，而不是继续持有可能已失效的资源。
 
-## 附：一页速查
+## 七、附：一页速查
 
 | 问题 | 结论 |
 |---|---|
@@ -509,4 +509,4 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 - [../../分布式/限流降级熔断.md](../../分布式/限流降级熔断.md) — 超时预算与熔断的关系
 - [数据导入导出设计.md](../../分布式/系统设计/数据导入导出设计.md) — 异步任务的取消与超时：ctx 要贯穿到每一批提交的安全点
 
-> 反向引用（本篇被下列文档引到）：[Kratos框架.md](Kratos框架.md)、[channel使用陷阱.md](../并发/channel使用陷阱.md)、[并发控制实战.md](../并发/并发控制实战.md)、[限流器.md](../并发/限流器.md)、[服务注册与发现的Go实现.md](../../分布式/服务注册与发现的Go实现.md)、[goroutine实战模式.md](../并发/goroutine实战模式.md)
+> 反向引用（本篇被下列文档引到）：[Kratos框架.md](Kratos框架.md)、[channel使用陷阱.md](../并发/channel使用陷阱.md)、[goroutine实战模式.md](../并发/goroutine实战模式.md)、[并发控制实战.md](../并发/并发控制实战.md)、[限流器.md](../并发/限流器.md)、[接入Jaeger.md](../接入Jaeger.md)、[接入Skywalking.md](../接入Skywalking.md)、[服务注册与发现的Go实现.md](../../分布式/服务注册与发现的Go实现.md)

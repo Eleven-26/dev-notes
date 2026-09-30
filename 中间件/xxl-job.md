@@ -6,7 +6,7 @@
 
 ---
 
-## 1. 一句话定位：它解决什么问题
+## 一、一句话定位：它解决什么问题
 
 **XXL-JOB = 分布式任务调度平台**（作者许雪里，国产开源），核心理念是「**调度与任务解耦**」：**调度中心（Admin）** 只决定「何时、按什么策略、调度到哪台机器」，**执行器（Executor）** 只负责「把业务逻辑跑起来」。两者用 **HTTP 反向触发** 通信，业务代码几乎零侵入（不用继承框架 Job 基类）。
 
@@ -21,7 +21,7 @@
 
 ---
 
-## 2. 核心概念
+## 二、核心概念
 
 | 概念 | 含义 | 关键点 |
 | --- | --- | --- |
@@ -59,7 +59,7 @@
 
 ---
 
-## 3. 整体架构
+## 三、整体架构
 
 ```text
 ┌────────────── 调度中心集群（xxl-job-admin ×N，:8080） ──────────────┐
@@ -95,7 +95,7 @@
 
 ---
 
-## 4. 部署
+## 四、部署
 
 | 项 | 值 |
 | --- | --- |
@@ -146,7 +146,7 @@ services:
 
 ---
 
-## 5. 使用一：Go ⭐
+## 五、使用一：Go ⭐
 
 ```bash
 go get github.com/xxl-job/xxl-job-executor-go
@@ -301,7 +301,7 @@ func failFastMiddleware(next xxl.TaskFunc) xxl.TaskFunc {
 
 ---
 
-## 6. 使用二：Java（官方，对照）
+## 六、使用二：Java（官方，对照）
 
 ```xml
 <!-- 调度中心与执行器共用核心包，版本须与 admin 镜像一致 -->
@@ -401,7 +401,7 @@ public class SampleXxlJob {
 
 ---
 
-## 7. 生产实践与坑
+## 七、生产实践与坑
 
 | 主题 | 做法 / 坑点 |
 | --- | --- |
@@ -419,7 +419,7 @@ public class SampleXxlJob {
 
 ---
 
-## 8. 选型对比
+## 八、选型对比
 
 | 维度 | **XXL-JOB** | Quartz | Spring `@Scheduled` | K8s CronJob | Airflow |
 | --- | --- | --- | --- | --- | --- |
@@ -437,7 +437,7 @@ public class SampleXxlJob {
 
 ---
 
-## 9. 延伸追问
+## 延伸追问
 
 - **调度中心如何保证同一任务不被重复调度？** 集群里每个实例都在跑调度线程，但调度前必须先执行 `SELECT * FROM xxl_job_lock WHERE lock_name='schedule_lock' FOR UPDATE`，**只有拿到 MySQL 行锁的实例**才能继续扫描 `xxl_job_info` 并推进时间轮；锁随事务提交释放，天然排他，因此任意时刻只有一个实例在调度——不需要 ZK 选主。
 - **执行器怎么被发现的？** 不是中心扫机器，而是**执行器主动注册**：启动后 POST `/api/registry` 上报 `AppName + http://ip:port`，之后周期续约（Go 20s / Java 30s）。中心每 30s 扫描注册表，删除 90s 未续约（`DEAD_TIMEOUT = BEAT_TIMEOUT × 3`）的地址，并把存活地址刷回 `xxl_job_group.address_list`。

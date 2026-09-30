@@ -434,7 +434,7 @@ curl -s "http://localhost:16686/api/services"
 
 ---
 
-## 十三、延伸追问
+## 延伸追问
 
 - **为什么不用 `jaeger-client-go`？** → 已归档。它绑定私有的 `uber-trace-id` 头与私有 Thrift 协议，与 OTel 标准冲突；统一 OTel SDK + OTLP 后，**后端可换而埋点不动**——把 endpoint 从 Jaeger 换成 SkyWalking OAP 或 Tempo，业务代码一行不改。
 - **`InitJaeger` 为什么必须在 GORM 之前？** → GORM 的 OTel 插件在 `Install` 时**捕获当时的全局 TracerProvider** 并存下来。顺序颠倒会让它拿到 noop provider，SQL span 永远不上报，且不报错。这是「初始化顺序依赖全局单例」的典型坑。
@@ -447,7 +447,7 @@ curl -s "http://localhost:16686/api/services"
 
 ---
 
-## 校验口径
+## 十三、校验口径
 
 > ✅ 本篇 Go 代码块的校验方式与范围（Go 1.26.5，windows/amd64）：
 >
@@ -476,5 +476,3 @@ curl -s "http://localhost:16686/api/services"
 - [../网络/HTTP与gRPC.md](../网络/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
 - [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 `terminationGracePeriodSeconds`
 - [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md) — 链路后端与存储的选型对比
-
-> 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[接入Skywalking.md](接入Skywalking.md)、[../java/接入Jaeger.md](../java/接入Jaeger.md)、[目录.md](../目录.md)

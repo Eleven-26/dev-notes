@@ -372,7 +372,7 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 
 ---
 
-## 十、延伸追问
+## 延伸追问
 
 - **为什么不用 `jaeger-client-java`？** → 已归档。它绑定私有的 `uber-trace-id` 头与 Thrift 协议，与 OTel 标准冲突。统一 OTel SDK + OTLP 后，**后端可换而埋点不动**——把 endpoint 从 Jaeger 换成 SkyWalking OAP 或 Tempo，业务代码一行不改。
 - **OTel Java Agent 和 SkyWalking agent 能同时挂吗？** → ⚠️ 不能。两者都会在同一个入口/出口创建 span，结果是双份上报、CPM/Apdex 等指标翻倍、告警阈值失真，且两套 `trace_id` 互不相干，排障反而割裂。选一条主线。
@@ -386,7 +386,7 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 
 ---
 
-## 校验口径
+## 十、校验口径
 
 > ✅ 本篇校验方式与范围（本机 Maven 3.8.1 + JBR 17，网络可达 repo1.maven.org）：
 >
@@ -415,5 +415,3 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 - [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
 - [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — `COPY --from` 与 initContainer 两种 agent 分发方式
 - [JVM与垃圾回收.md](JVM与垃圾回收.md) — agent 带来的额外内存开销与 GC 影响
-
-> 反向引用（本篇被下列文档引到）：[Jaeger.md](../可观测性/Jaeger.md)、[可观测性选型.md](../可观测性/可观测性选型.md)、[接入Skywalking.md](接入Skywalking.md)、[../go/接入Jaeger.md](../go/接入Jaeger.md)、[目录.md](../目录.md)
