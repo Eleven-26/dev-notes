@@ -3,13 +3,13 @@
 > **八道 Go 手撕题**，每题都给可运行的完整代码与实测输出：环形缓冲统计「最近 N 次」、
 > 斐波那契用栈消除递归、堆的构建与删堆顶、TopK 为什么用小根堆、TTL 缓存（map + 堆）、
 > **LRU 缓存（map + 双向链表）**、滑动窗口最长无重复子串、**二分边界与 `sort.Search`**；
-> 末尾附答题套路五步与 Go 刷题模板速查。
+> 末尾附答题套路五步与 Go 刷题模板速查（末三则是**网格 DFS / 网格 BFS / DFS+回溯**）。
 >
 > 内容整理自大厂 Go 后端面试真题，参考资料与原始素材见 [素材清单](../素材清单.md)。
 >
 > ⭐ **分工**：本篇是「**用 Go 把题写出来**」（含边界与易错点）；**算法原理与选型判据**是另一层，
 > 见 [算法目录](../算法/README.md) 下各篇（堆 → [数据结构.md](../算法/数据结构.md)、Top-K → [查找与排序对比.md](../算法/查找与排序对比.md)、
-> 淘汰策略 → [缓存淘汰算法.md](../算法/缓存淘汰算法.md)），两处互引、**不重复讲原理**。
+> 淘汰策略 → [缓存淘汰算法.md](../算法/缓存淘汰算法.md)、遍历 → [DFS与BFS.md](../算法/DFS与BFS.md)），两处互引、**不重复讲原理**。
 > 代码与输出均为 `go1.26.5 windows/amd64` 本机实跑。
 
 ---
@@ -903,13 +903,151 @@ j := sort.SearchInts(a, 4) // 不存在时返回可插入位置 2
 k := sort.Search(len(a), func(i int) bool { return a[i] >= 5 })
 ```
 
+**六、网格 DFS（连通块 / 岛屿计数）**
+
+```go
+// 网格 DFS：连通块 / 岛屿（原地标记省掉 visited）
+func sink(grid [][]int, r, c int) {
+	if r < 0 || r >= len(grid) || c < 0 || c >= len(grid[0]) || grid[r][c] != 1 {
+		return
+	}
+	grid[r][c] = 2 // ⭐ 原地标记
+	dirs := [4][2]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+	for _, d := range dirs {
+		sink(grid, r+d[0], c+d[1])
+	}
+}
+
+func countIslands(grid [][]int) int {
+	cnt := 0
+	for r := range grid {
+		for c := range grid[r] {
+			if grid[r][c] == 1 {
+				cnt++
+				sink(grid, r, c)
+			}
+		}
+	}
+	return cnt
+}
+```
+
+> 实测输入 `[[1 1 0 0] [1 0 0 1] [0 0 1 1]]`，输出岛屿数 `2`。「原地标记」的效果画出来就是每次 `sink` 把一个连通块整片染色：
+>
+> ```text
+>   输入网格（1=陆地）        sink 之后（2=已沉）      连通块
+>   1 1 0 0                   2 2 0 0                 块①: (0,0)(0,1)(1,0)
+>   1 0 0 1        →          2 0 0 2                 块②: (1,3)(2,2)(2,3)
+>   0 0 1 1                   0 0 2 2                 岛屿数 = 2
+> ```
+>
+> ⚠️ **网格的面积就是递归深度**：几百×几百的图就可能把调用栈推到上限，Java 侧默认栈实测 ~2 万层就 `StackOverflowError`；这种题要么改用下面**第七则**的网格 BFS，要么改显式栈（判据与实测见 [../算法/DFS与BFS.md](../算法/DFS与BFS.md) 第五节）。
+
+**七、网格 BFS（最少步数 / 最短路）**
+
+```go
+// 网格 BFS：最短路层数（越界 / 障碍 / 已访问三道判断挡在最前面）
+func bfsGridShortest(grid [][]int, sr, sc, tr, tc int) int {
+	r, c := len(grid), len(grid[0])
+	if grid[sr][sc] == 1 || grid[tr][tc] == 1 {
+		return -1
+	}
+	type pos struct{ r, c, step int }
+	q := []pos{{sr, sc, 0}}
+	seen := make([][]bool, r)
+	for i := range seen {
+		seen[i] = make([]bool, c)
+	}
+	seen[sr][sc] = true
+	dirs := [4][2]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+	for len(q) > 0 {
+		p := q[0]
+		q = q[1:]
+		if p.r == tr && p.c == tc {
+			return p.step
+		}
+		for _, d := range dirs {
+			nr, nc := p.r+d[0], p.c+d[1]
+			if nr < 0 || nr >= r || nc < 0 || nc >= c || seen[nr][nc] || grid[nr][nc] == 1 {
+				continue // ⭐ 入队时就标记，弹出时不重复判
+			}
+			seen[nr][nc] = true
+			q = append(q, pos{nr, nc, p.step + 1})
+		}
+	}
+	return -1
+}
+```
+
+> 实测四种网格（同一次 `go run`）：3×3 无障碍 `(0,0)→(2,2)` = `4`；3×3 第二行堵两格 `[[0 0 0] [1 1 0] [0 0 0]]` = `4`；3×3 第二行**整行**堵死 = `-1`；`[[0 1] [1 0]]` 对角 = `-1`。
+>
+> ```text
+>   网格（. = 可走，# = 墙）     BFS 每格的首达步数
+>   . . .                        0 1 2
+>   # # .           →            # # 3
+>   . . .                        6 5 4      ← 终点 (2,2) 第 4 步入队，函数返回 4
+>
+>   # 号那一行整行是墙时，第三行永远进不了队 ⇒ 循环自然结束，返回 -1
+> ```
+>
+> ⭐ 要「最少步数」就必须 BFS：层数即距离，这是 DFS 给不出的性质。上图的步数矩阵同时说明了另一件事——⚠️ **DFS 走出的顺序不是这个矩阵**（它先把一条路径钻到底，见 [../算法/DFS与BFS.md](../算法/DFS与BFS.md) 第一节的对照图）。
+
+**八、DFS + 回溯（全排列）**
+
+```go
+// DFS + 回溯：全排列（used 与 path 都要撤销）
+func permute(nums []int) [][]int {
+	res := [][]int{}
+	used := make([]bool, len(nums))
+	path := []int{}
+	var dfs func()
+	dfs = func() {
+		if len(path) == len(nums) {
+			cp := make([]int, len(path))
+			copy(cp, path) // ⭐ 必须拷贝，否则切片复用会互相覆盖
+			res = append(res, cp)
+			return
+		}
+		for i := range nums {
+			if used[i] {
+				continue
+			}
+			used[i] = true
+			path = append(path, nums[i])
+			dfs()
+			used[i] = false
+			path = path[:len(path)-1] // ⭐ 两处撤销缺一不可
+		}
+	}
+	dfs()
+	return res
+}
+```
+
+> 实测 `[1 2 3]` → `6` 条；字典序前三 `[1 2 3] [1 3 2] [2 1 3]`。
+>
+> ```text
+>   回溯树（→ 表示 append 进 path，↑ 表示撤销 used 与 path）:
+>
+>   [] ─1→ [1] ─2→ [1 2] ─3→ [1 2 3] ★ 记入结果，↑3 ↑2
+>              └────3→ [1 3] ─2→ [1 3 2] ★        ↑2 ↑3
+>     ├──────2→ [2] ─1→ [2 1] ─3→ [2 1 3] ★   …其余同构
+>     └──────3→ [3] ─…
+>
+>   ⭐ ★ 只出现在「path 长度 == len(nums)」这一层，其余层的唯一作用是把分支铺开再撤掉
+> ```
+>
+> ⚠️ 三个高频错：① 漏 `copy`（所有结果都指向同一底层数组，最后只剩最后一组）；② 只撤销 `used` 不撤销 `path`；③ 在 `for` 外声明 `path` 却用 `append` 到的长度做判据（`len(path) == len(nums)` 才对）。
+
 ## 关联
 
 - [../算法/数据结构.md](../算法/数据结构.md) — 堆、哈希表等结构的原理（单一来源）
 - [../算法/查找与排序对比.md](../算法/查找与排序对比.md) — Top-K 为什么用小顶堆、标准库排序怎么选
 - [../算法/缓存淘汰算法.md](../算法/缓存淘汰算法.md) — LRU / LFU / W-TinyLFU 的原理与代价（第五节、第六节的上一层）
 - [../算法/复杂度分析.md](../算法/复杂度分析.md) — 摊还分析与递归代价（第二节的递归开销）
+- [../算法/DFS与BFS.md](../算法/DFS与BFS.md) — 第十节六/七/八三个模板的上一层：栈与队列各自「下一步先走哪条边」、BFS 为什么给得出最少步数、深图为何要显式栈
 - [../算法/限流算法.md](../算法/限流算法.md) — ⚠️ 同名不同物：那里的"滑动窗口"是**计数限流**，与第七节无关
 - [数据结构备考.md](数据结构备考.md) — 同一批素材里的备考策略题（先分类、再挑 2~3 种讲透）
 - [../go/并发/并发同步原语.md](../go/并发/并发同步原语.md) — 第五节、第六节的并发化（`sync.RWMutex` / `Mutex` 怎么加）
-> 反向引用（本篇被下列文档引到）：[README.md](../算法/README.md)
+
+> 反向引用（本篇被下列文档引到）：[README.md](../算法/README.md)、[DFS与BFS.md](../算法/DFS与BFS.md)
