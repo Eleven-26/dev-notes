@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 480" width="880" height="480" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect width="880" height="480" fill="#ffffff"/>
+
+  <text x="440" y="34" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">熔断器三态机</text>
+  <text x="440" y="56" text-anchor="middle" font-size="12.5" fill="#6b7280">打开后必须快速失败（不再发起真实调用）；恢复必须经半开探测</text>
+
+  <!-- closed -->
+  <rect x="70" y="180" width="210" height="106" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+  <text x="175" y="212" text-anchor="middle" font-size="16" font-weight="700" fill="#047857">closed（关闭）</text>
+  <text x="175" y="236" text-anchor="middle" font-size="11.5" fill="#475569">正常放行全部请求</text>
+  <text x="175" y="255" text-anchor="middle" font-size="11.5" fill="#475569">用滑动窗口统计失败率</text>
+  <text x="175" y="274" text-anchor="middle" font-size="11" fill="#6b7280">（不能用累计计数）</text>
+
+  <!-- open -->
+  <rect x="335" y="180" width="210" height="106" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+  <text x="440" y="212" text-anchor="middle" font-size="16" font-weight="700" fill="#b91c1c">open（打开）</text>
+  <text x="440" y="236" text-anchor="middle" font-size="11.5" fill="#475569">全部快速失败 → 503</text>
+  <text x="440" y="255" text-anchor="middle" font-size="11.5" fill="#475569">不再向该上游发起调用</text>
+  <text x="440" y="274" text-anchor="middle" font-size="11" fill="#6b7280">实测：连打 8 次 → 第 5 次起 503</text>
+
+  <!-- half-open -->
+  <rect x="600" y="180" width="212" height="106" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+  <text x="706" y="212" text-anchor="middle" font-size="16" font-weight="700" fill="#b45309">half-open（半开）</text>
+  <text x="706" y="236" text-anchor="middle" font-size="11.5" fill="#475569">只放极少量探测请求</text>
+  <text x="706" y="255" text-anchor="middle" font-size="11.5" fill="#475569">（本例 HalfOpenMax = 2）</text>
+  <text x="706" y="274" text-anchor="middle" font-size="11" fill="#6b7280">用真实结果决定去留</text>
+
+  <!-- 箭头：closed -> open -->
+  <path d="M280 210 L330 210" stroke="#ef4444" stroke-width="2" marker-end="url(#ar2)"/>
+  <text x="305" y="196" text-anchor="middle" font-size="11" fill="#b91c1c" font-weight="600">失败率超阈值</text>
+  <text x="305" y="232" text-anchor="middle" font-size="10.5" fill="#6b7280">且样本 ≥ MinRequests</text>
+
+  <!-- 箭头：open -> half-open -->
+  <path d="M545 210 L595 210" stroke="#f59e0b" stroke-width="2" marker-end="url(#ar3)"/>
+  <text x="570" y="196" text-anchor="middle" font-size="11" fill="#b45309" font-weight="600">冷却到期</text>
+  <text x="570" y="232" text-anchor="middle" font-size="10.5" fill="#6b7280">OpenFor = 3s</text>
+
+  <!-- half-open -> closed -->
+  <path d="M706 286 L706 340 L175 340 L175 290" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#ar4)"/>
+  <text x="440" y="334" text-anchor="middle" font-size="11.5" fill="#047857" font-weight="600">探测请求全部成功 → 回到 closed（实测：上游恢复后连打 4 次全 200）</text>
+
+  <!-- half-open -> open -->
+  <path d="M600 300 L560 340 L470 340 L470 290" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+  <text x="520" y="372" text-anchor="middle" font-size="11.5" fill="#b91c1c" font-weight="600">任一探测失败 → 立刻回 open</text>
+
+  <!-- 底部说明 -->
+  <rect x="70" y="392" width="742" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="88" y="416" font-size="12.5" font-weight="700" fill="#334155">为什么必须有 half-open？</text>
+  <text x="88" y="437" font-size="11.5" fill="#475569">冷却后若直接回 closed，还没恢复的上游会被瞬间打满 → 再次雪崩 → 再次熔断，来回横跳。</text>
+  <text x="88" y="452" font-size="11.5" fill="#475569">半开的本质是「只花极少流量去试探」，用真实结果决定，而不是靠计时器猜。</text>
+
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
+    </marker>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 660" width="900" height="660" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect width="900" height="660" fill="#ffffff"/>
+
+  <text x="450" y="34" text-anchor="middle" font-size="19" font-weight="700" fill="#1f2937">一次请求穿过网关的完整时序</text>
+  <text x="450" y="56" text-anchor="middle" font-size="12.5" fill="#6b7280">四类结果：200 正常 / 401·403 鉴权失败 / 429 限流 / 503 熔断</text>
+
+  <!-- 泳道头 -->
+  <rect x="60"  y="76" width="150" height="34" rx="6" fill="#eef2ff" stroke="#6366f1" stroke-width="1.3"/>
+  <text x="135" y="98" text-anchor="middle" font-size="12.5" font-weight="600" fill="#3730a3">客户端</text>
+  <rect x="290" y="76" width="180" height="34" rx="6" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.3"/>
+  <text x="380" y="98" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0369a1">网关（七模块）</text>
+  <rect x="550" y="76" width="140" height="34" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1.3"/>
+  <text x="620" y="98" text-anchor="middle" font-size="12.5" font-weight="600" fill="#047857">HTTP 后端</text>
+  <rect x="740" y="76" width="120" height="34" rx="6" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.3"/>
+  <text x="800" y="98" text-anchor="middle" font-size="12.5" font-weight="600" fill="#6d28d9">gRPC 后端</text>
+
+  <!-- 泳道竖线 -->
+  <line x1="135" y1="118" x2="135" y2="600" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="380" y1="118" x2="380" y2="600" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="620" y1="118" x2="620" y2="600" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="800" y1="118" x2="800" y2="600" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <!-- 步骤 -->
+  <g font-size="11.5" fill="#1f2937">
+    <!-- 1 请求 -->
+    <path d="M135 142 L374 142" stroke="#6366f1" stroke-width="1.8" marker-end="url(#a6)"/>
+    <text x="255" y="136" text-anchor="middle" font-size="11" fill="#4338ca">GET /api/orders/123　+ JWT</text>
+
+    <!-- 2 trace -->
+    <rect x="292" y="152" width="176" height="30" rx="5" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.1"/>
+    <text x="380" y="172" text-anchor="middle" font-size="11" fill="#0369a1">⑦ TraceID：沿用或生成</text>
+
+    <!-- 3 route -->
+    <rect x="292" y="192" width="176" height="30" rx="5" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.1"/>
+    <text x="380" y="212" text-anchor="middle" font-size="11" fill="#1d4ed8">① 路由：prefix /api/order/</text>
+
+    <!-- 4 auth -->
+    <rect x="292" y="232" width="176" height="30" rx="5" fill="#fef2f2" stroke="#ef4444" stroke-width="1.1"/>
+    <text x="380" y="252" text-anchor="middle" font-size="11" fill="#b91c1c">② 鉴权：验签 + exp + 角色</text>
+
+    <!-- 5 limit -->
+    <rect x="292" y="272" width="176" height="30" rx="5" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.1"/>
+    <text x="380" y="292" text-anchor="middle" font-size="11" fill="#b45309">③ 限流：按 user 取令牌</text>
+
+    <!-- 6 breaker -->
+    <rect x="292" y="312" width="176" height="30" rx="5" fill="#fef2f2" stroke="#ef4444" stroke-width="1.1"/>
+    <text x="380" y="332" text-anchor="middle" font-size="11" fill="#b91c1c">③ 熔断：Allow() 判状态</text>
+
+    <!-- 7 lb -->
+    <rect x="292" y="352" width="176" height="30" rx="5" fill="#ecfdf5" stroke="#10b981" stroke-width="1.1"/>
+    <text x="380" y="372" text-anchor="middle" font-size="11" fill="#047857">④ 选节点 → 127.0.0.1:19001</text>
+
+    <!-- 8 转发 -->
+    <path d="M468 382 L614 382" stroke="#10b981" stroke-width="1.8" marker-end="url(#a6)"/>
+    <text x="541" y="376" text-anchor="middle" font-size="10.5" fill="#047857">⑥ 反代（剥 X-Company-Id）</text>
+
+    <path d="M468 402 L794 402" stroke="#8b5cf6" stroke-width="1.8" marker-end="url(#a6)"/>
+    <text x="631" y="396" text-anchor="middle" font-size="10.5" fill="#6d28d9">⑤ 或 转 gRPC（连接池复用 + metadata）</text>
+
+    <!-- 回程 -->
+    <path d="M614 428 L474 428" stroke="#10b981" stroke-width="1.8" marker-end="url(#a6)"/>
+    <text x="544" y="422" text-anchor="middle" font-size="10.5" fill="#047857">200 JSON（backend=A）</text>
+
+    <path d="M794 448 L474 448" stroke="#8b5cf6" stroke-width="1.8" marker-end="url(#a6)"/>
+    <text x="634" y="442" text-anchor="middle" font-size="10.5" fill="#6d28d9">gRPC 响应 → 转回 JSON</text>
+
+    <!-- 记账 -->
+    <rect x="292" y="464" width="176" height="30" rx="5" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.1"/>
+    <text x="380" y="484" text-anchor="middle" font-size="11" fill="#0369a1">⑦ 指标 + 日志（含 route/via）</text>
+
+    <!-- 返回 -->
+    <path d="M292 520 L141 520" stroke="#6366f1" stroke-width="1.8" marker-end="url(#a6)"/>
+    <text x="216" y="514" text-anchor="middle" font-size="10.5" fill="#4338ca">200 + X-Trace-Id</text>
+  </g>
+
+  <!-- 四类短路 -->
+  <rect x="60" y="556" width="790" height="88" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="78" y="580" font-size="12.5" font-weight="700" fill="#334155">任何一步失败都会短路，且都记进同一份日志与指标：</text>
+  <g font-size="11.5">
+    <text x="78"  y="604" fill="#1d4ed8">① 路由未命中 → 404 route_not_found</text>
+    <text x="78"  y="626" fill="#b91c1c">② 无凭证/签名错/过期 → 401　·　角色不足 → 403（两者必须区分）</text>
+    <text x="480" y="604" fill="#b45309">③ 限流拒绝 → 429 + Retry-After: 1</text>
+    <text x="480" y="626" fill="#b91c1c">③ 熔断打开 → 503 circuit_open（不再调用上游）</text>
+  </g>
+
+  <defs>
+    <marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

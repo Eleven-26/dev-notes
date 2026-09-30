@@ -821,3 +821,4 @@ http {
 - [../网络/HTTPS与TLS.md](../网络/HTTPS与TLS.md) — `ssl_certificate_by_lua*` 按 SNI 动态选证书的前置知识
 - [../部署/docker/容器原理.md](../部署/docker/容器原理.md) — Nginx / OpenResty 的官方镜像与容器化部署（`nginx -g` 传参那点事）
 - [../go/工程实践/Kratos框架.md](../go/工程实践/Kratos框架.md) — 网关与微服务框架的分工边界
+> 反向引用（本篇被下列文档引到）：[从零实现网关.md](../go/从零实现网关.md)
