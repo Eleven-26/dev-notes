@@ -321,3 +321,4 @@ public final class NacosResolver {
 - [客户端负载均衡的Go实现.md](客户端负载均衡的Go实现.md) — LB 策略在 Go 侧怎么写
 - [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — K8s 那一层的服务发现与 LB
 - [../中间件/Nacos.md](../中间件/Nacos.md) — Nacos 作为注册中心的配置与实操
+- [../java/并发/锁与AQS.md](../java/并发/锁与AQS.md) — 不可变快照 + `AtomicInteger` 轮询背后的 CAS、可见性与原子类选择

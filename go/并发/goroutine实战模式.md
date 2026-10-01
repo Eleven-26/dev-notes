@@ -568,4 +568,6 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 - [../运行时/GMP调度.md](../运行时/GMP调度.md) — 起了这么多协程，谁在调度它们
 - [../../分布式/系统设计/数据导入导出设计.md](../../分布式/系统设计/数据导入导出设计.md) — 第三节实例的完整设计（异步任务、进度回报、幂等）
 - [../../分布式/限流降级熔断.md](../../分布式/限流降级熔断.md) — 下游被打穿之后怎么办
+- [../../java/并发/线程池.md](../../java/并发/线程池.md) — Java 侧 worker 池的对照：七参数、有界队列与四种拒绝策略
+
 > 反向引用（本篇被下列文档引到）：[sync.Pool.md](sync.Pool.md)

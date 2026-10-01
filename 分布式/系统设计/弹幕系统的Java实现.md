@@ -299,3 +299,5 @@ Java 的 `offer` 返回 `false` 也只是告诉你"没放进去"，丢不丢、�
 - [弹幕系统的编排与落库.md](弹幕系统的编排与落库.md) — Go 版后两段骨架
 - [../../java/运行时数据区与栈帧.md](../../java/运行时数据区与栈帧.md) — 虚拟线程对照实验涉及的线程与栈
 - [../../数据存储/redis/发布订阅.md](../../数据存储/redis/发布订阅.md) — Java 侧同样靠订阅实现跨节点扇出
+- [../../java/并发/锁与AQS.md](../../java/并发/锁与AQS.md) — 本篇 `AtomicReference` 不可变快照 + `synchronized` 写侧背后的锁语义与 CAS
+- [../../java/并发/线程池.md](../../java/并发/线程池.md) — 有界队列 + `offer` 非阻塞投递的拒绝策略选择（为什么不选 `CallerRunsPolicy`）
