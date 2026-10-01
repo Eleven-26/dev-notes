@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">回溯的三步：做选择 → 递归 → 撤销选择</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">左：`[1,2,3]` 的决策树（只展开「先选 1」的分支）　右：`path` 与 `used` 的逐步变化</text>
+
+  <!-- 左：决策树 -->
+  <rect x="30" y="80" width="450" height="470" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="50" y="106" font-size="14" font-weight="bold" fill="#0f172a">决策树：每个节点是一个「部分解」</text>
+
+  <line x1="120" y1="132" x2="62" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="120" y1="132" x2="200" y2="176" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="120" y1="132" x2="330" y2="176" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="62" y1="212" x2="45" y2="256" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="62" y1="212" x2="120" y2="256" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="45" y1="292" x2="45" y2="336" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="120" y1="292" x2="120" y2="336" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <rect x="88" y="112" width="66" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="121" y="132" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">path=[]</text>
+
+  <rect x="30" y="176" width="64" height="36" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="62" y="194" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="#334155">path=[1]</text>
+  <rect x="168" y="176" width="64" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="200" y="194" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="#94a3b8">path=[2]</text>
+  <rect x="298" y="176" width="64" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="330" y="194" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="#94a3b8">path=[3]</text>
+
+  <rect x="13" y="256" width="64" height="36" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="45" y="274" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="#334155">[1,2]</text>
+  <rect x="88" y="256" width="64" height="36" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="120" y="274" text-anchor="middle" dominant-baseline="central" font-size="12.5" fill="#334155">[1,3]</text>
+
+  <rect x="10" y="336" width="70" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="45" y="354" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#166534">[1,2,3]</text>
+  <rect x="85" y="336" width="70" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="120" y="354" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#166534">[1,3,2]</text>
+
+  <text x="18" y="166" font-size="12" fill="#2563eb">选1</text>
+  <text x="176" y="166" font-size="12" fill="#94a3b8">选2</text>
+  <text x="306" y="166" font-size="12" fill="#94a3b8">选3</text>
+  <text x="2" y="248" font-size="12" fill="#2563eb">选2</text>
+  <text x="130" y="248" font-size="12" fill="#2563eb">选3</text>
+  <text x="2" y="330" font-size="12" fill="#2563eb">选3</text>
+  <text x="130" y="330" font-size="12" fill="#2563eb">选2</text>
+
+  <text x="50" y="400" font-size="12.5" fill="#64748b">绿色 = 叶子（一个完整解）。虚线分支省略。</text>
+  <text x="50" y="424" font-size="12.5" fill="#64748b">叶子数 = 3 × 2 × 1 = 3! = 6 个。</text>
+  <text x="50" y="456" font-size="13" font-weight="bold" fill="#0f172a">「剪枝」= 不生成注定不可能的分支</text>
+  <text x="50" y="480" font-size="12.5" fill="#334155">在全排列里体现为：`used[i]` 为真就跳过 ——</text>
+  <text x="50" y="502" font-size="12.5" fill="#334155">已经选过的元素不再作为候选，那整棵子树</text>
+  <text x="50" y="524" font-size="12.5" fill="#334155">根本不会被展开。</text>
+
+  <!-- 右：path / used 快照 -->
+  <rect x="510" y="80" width="460" height="470" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="530" y="106" font-size="14" font-weight="bold" fill="#0f172a">逐步快照：为什么「撤销」不能省</text>
+
+  <g font-family="Consolas, Courier New, monospace" font-size="12.5">
+    <text x="530" y="136" fill="#64748b">步  path      used        动作</text>
+    <line x1="530" y1="146" x2="950" y2="146" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="530" y="170" fill="#334155">0   []        [F F F]     起点</text>
+    <text x="530" y="196" fill="#166534">1   [1]       [T F F]     做选择：选 1</text>
+    <text x="530" y="222" fill="#166534">2   [1,2]     [T T F]     做选择：选 2</text>
+    <text x="530" y="248" fill="#166534">3   [1,2,3]   [T T T]     做选择：选 3 → 记录一个解</text>
+    <text x="530" y="274" fill="#b45309">4   [1,2]     [T T F]     撤销：把 3 弹掉</text>
+    <text x="530" y="300" fill="#b45309">5   [1]       [T F F]     撤销：把 2 弹掉</text>
+    <text x="530" y="326" fill="#166534">6   [1,3]     [T F T]     做选择：改选 3</text>
+    <text x="530" y="352" fill="#166534">7   [1,3,2]   [T T T]     做选择：选 2 → 记录第二个解</text>
+    <text x="530" y="378" fill="#b45309">8   [1,3]     [T F T]     撤销：把 2 弹掉</text>
+    <text x="530" y="404" fill="#b45309">9   [1]       [T F F]     撤销：把 3 弹掉</text>
+    <text x="530" y="430" fill="#b45309">10  []        [F F F]     撤销：把 1 弹掉 → 回到根</text>
+    <text x="530" y="456" fill="#64748b">    …然后改选 2 作为第一位，整棵子树重来一遍</text>
+  </g>
+
+  <line x1="530" y1="478" x2="950" y2="478" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="530" y="504" font-size="12.5" font-weight="bold" fill="#991b1b">⚠️ 不撤销会怎样？</text>
+  <text x="530" y="528" font-size="12.5" fill="#334155">回到上一层时 `path` 里还留着下层的元素，后续</text>
+  <text x="530" y="550" font-size="12.5" fill="#334155">分支会拼出 `[1,2,3,2]` 这种错误解 —— 实测里</text>
+  <text x="530" y="572" font-size="12.5" fill="#334155">表现为解的数量和正确性一起崩掉（见 2.2 节）。</text>
+
+  <text x="30" y="588" font-size="13" fill="#334155">⭐ 一句话：**「做选择」把状态推进一步，「撤销选择」把它原样退回来 —— 两者必须严格配对，否则同一份 `path` 会被上下两层同时污染。**</text>
+  <text x="30" y="610" font-size="12" fill="#94a3b8">（图：本机无法栅格化 SVG，需要 PNG 请自行导出，建议浅色底）</text>
+</svg>

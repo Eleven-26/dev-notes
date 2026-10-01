@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Floyd 的 k 是「阶段」：中转点集合逐轮放开</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">图（有向）：0→1(3)  1→2(1)  0→2(10)  2→3(2)  1→3(7)  3→0(4)</text>
+
+  <rect x="30" y="80" width="455" height="270" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="48" y="106" font-size="14" font-weight="bold" fill="#0f172a">初始：只有直接边</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#334155">
+    <text x="48" y="136">     0    1    2    3</text>
+    <text x="48" y="160">0  [ 0    3   10    ∞ ]</text>
+    <text x="48" y="184">1  [ ∞    0    1    7 ]</text>
+    <text x="48" y="208">2  [ ∞    ∞    0    2 ]</text>
+    <text x="48" y="232">3  [ 4    ∞    ∞    0 ]</text>
+  </g>
+  <text x="48" y="268" font-size="12.5" fill="#64748b">行 = 起点，列 = 终点；∞ = 暂不可达</text>
+  <text x="48" y="292" font-size="12.5" fill="#64748b">d[i][i] = 0（自己到自己）</text>
+  <text x="48" y="322" font-size="13" font-weight="bold" fill="#0f172a">k = 0  →  只允许经过「0」中转</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="12.5" fill="#b45309">
+    <text x="48" y="344">3 行变了：d[3][1]=7  d[3][2]=14</text>
+  </g>
+
+  <rect x="515" y="80" width="455" height="270" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="533" y="106" font-size="14" font-weight="bold" fill="#166534">k = 1  →  允许经过「0、1」中转</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#334155">
+    <text x="533" y="136">     0    1    2    3</text>
+    <text x="533" y="160">0  [ 0    3    4   10 ]</text>
+    <text x="533" y="184">1  [ ∞    0    1    7 ]</text>
+    <text x="533" y="208">2  [ ∞    ∞    0    2 ]</text>
+    <text x="533" y="232">3  [ 4    7    8    0 ]</text>
+  </g>
+  <text x="533" y="268" font-size="12.5" font-weight="bold" fill="#166534">d[0][2]：10 → 4（走 0→1→2）</text>
+  <text x="533" y="292" font-size="12.5" font-weight="bold" fill="#166534">d[3][2]：14 → 8（走 3→0→1→2）</text>
+  <text x="533" y="322" font-size="12.5" fill="#b45309">⚠️ 一次更新可能用上「本轮刚算出的值」</text>
+  <text x="533" y="342" font-size="12.5" fill="#b45309">    这正是 k 必须在外层的原因</text>
+
+  <rect x="30" y="370" width="455" height="270" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="48" y="396" font-size="14" font-weight="bold" fill="#166534">k = 2  →  允许经过「0、1、2」中转</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#334155">
+    <text x="48" y="426">     0    1    2    3</text>
+    <text x="48" y="450">0  [ 0    3    4    6 ]</text>
+    <text x="48" y="474">1  [ ∞    0    1    3 ]</text>
+    <text x="48" y="498">2  [ ∞    ∞    0    2 ]</text>
+    <text x="48" y="522">3  [ 4    7    8    0 ]</text>
+  </g>
+  <text x="48" y="558" font-size="12.5" font-weight="bold" fill="#166534">d[0][3]：10 → 6（走 0→1→2→3）</text>
+  <text x="48" y="582" font-size="12.5" font-weight="bold" fill="#166534">d[1][3]：7 → 3（走 1→2→3）</text>
+  <text x="48" y="612" font-size="12.5" fill="#64748b">到这里「经过 0/1/2 中转」的最优解都拿到了</text>
+  <text x="48" y="632" font-size="12.5" fill="#64748b">但 3 还是没人能到达的起点（d[i][0] 仍是 ∞）</text>
+
+  <rect x="515" y="370" width="455" height="270" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="533" y="396" font-size="14" font-weight="bold" fill="#166534">k = 3  →  任意点都可以中转（最终）</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#14532d">
+    <text x="533" y="426">     0    1    2    3</text>
+    <text x="533" y="450">0  [ 0    3    4    6 ]</text>
+    <text x="533" y="474">1  [ 7    0    1    3 ]</text>
+    <text x="533" y="498">2  [ 6    9    0    2 ]</text>
+    <text x="533" y="522">3  [ 4    7    8    0 ]</text>
+  </g>
+  <text x="533" y="558" font-size="12.5" font-weight="bold" fill="#166534">d[1][0]：∞ → 7（走 1→2→3→0）</text>
+  <text x="533" y="582" font-size="12.5" font-weight="bold" fill="#166534">d[2][0]：∞ → 6（走 2→3→0）</text>
+  <text x="533" y="612" font-size="12.5" font-weight="bold" fill="#166534">d[2][1]：∞ → 9（走 2→3→0→1）</text>
+  <text x="533" y="632" font-size="12.5" fill="#166534">✅ 全源最短路一次算完</text>
+
+  <text x="30" y="670" font-size="13" fill="#334155">⭐ 三行核心代码：`for k { for i { for j { d[i][j] = min(d[i][j], d[i][k] + d[k][j]) } } }` —— k 在外层，把「最多经过前 k 个点」当作 DP 的阶段。</text>
+  <text x="30" y="692" font-size="12" fill="#94a3b8">（图：本机无法栅格化 SVG，需要 PNG 请自行导出，建议浅色底）</text>
+</svg>

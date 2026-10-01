@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <defs>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+    </marker>
+    <marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">负环检测：为什么「沿 prev 退 V 步」一定能落进环里</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">Bellman-Ford 不只能判「有没有负环」，还能把环上的顶点找出来</text>
+
+  <line x1="192" y1="145" x2="458" y2="100" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+  <line x1="192" y1="160" x2="458" y2="220" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+  <line x1="462" y1="114" x2="462" y2="206" stroke="#64748b" stroke-width="1.5" marker-end="url(#a2)"/>
+  <line x1="498" y1="206" x2="498" y2="114" stroke="#dc2626" stroke-width="2" marker-end="url(#a3)"/>
+
+  <circle cx="170" cy="152" r="20" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="170" y="152" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#7f1d1d">0</text>
+  <circle cx="480" cy="90" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="480" y="90" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">1</text>
+  <circle cx="480" cy="230" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="480" y="230" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">2</text>
+
+  <text x="320" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+  <text x="320" y="200" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">5</text>
+  <text x="440" y="162" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+  <text x="524" y="162" text-anchor="start" font-size="14" font-weight="bold" fill="#dc2626">−10</text>
+
+  <text x="650" y="120" font-size="13" fill="#334155">⚠️ 回路 1→2→1 的总权 = 1 + (−10) = −9 &lt; 0</text>
+  <text x="650" y="146" font-size="13" fill="#334155">所以「到点 1 的最短距离」没有最小值（每绕一圈少 9）</text>
+  <text x="650" y="180" font-size="13" font-weight="bold" fill="#0f172a">检测分四步：</text>
+  <text x="650" y="204" font-size="13" fill="#334155">① 正常跑满 V−1 = 2 轮</text>
+  <text x="650" y="228" font-size="13" fill="#334155">② 第 V = 3 轮再扫一遍，看还能不能松弛</text>
+  <text x="650" y="252" font-size="13" fill="#334155">③ 能 → 记下这条边的终点 x，沿 prev 退 V 步</text>
+  <text x="650" y="276" font-size="13" fill="#334155">④ 从落点绕 prev 一圈，就是环</text>
+
+  <rect x="40" y="310" width="440" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="338" font-size="14" font-weight="bold" fill="#0f172a">① 跑满 V−1 = 2 轮后</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#334155">
+    <text x="60" y="368">第 1 轮  dist = [0 -8 2]</text>
+    <text x="60" y="392">第 2 轮  dist = [0 -17 -7]</text>
+    <text x="60" y="424" fill="#b45309">⚠️ 这个结果已经是错的（会继续掉），</text>
+    <text x="60" y="446" fill="#b45309">   但算法自己「不知道」——必须再扫一轮才能判</text>
+  </g>
+
+  <rect x="520" y="310" width="440" height="150" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="540" y="338" font-size="14" font-weight="bold" fill="#991b1b">② 第 V = 3 轮：还能松弛 ⇒ 有负环</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#7f1d1d">
+    <text x="540" y="368">0→1： 1 ≥ -17   ✗</text>
+    <text x="540" y="392">0→2： 5 ≥ -7    ✗</text>
+    <text x="540" y="416" font-weight="bold">1→2：-17 + 1 = -16 &lt; -7  ✅</text>
+    <text x="540" y="442">→ 断定存在负环，记下终点 x = 2</text>
+  </g>
+
+  <rect x="40" y="476" width="440" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="504" font-size="14" font-weight="bold" fill="#0f172a">③ 从 x = 2 沿 prev 退 V = 3 步</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#334155">
+    <text x="60" y="534">prev[2] = 1（来自 1→2）</text>
+    <text x="60" y="558">prev[1] = 2（来自 2→1）</text>
+    <text x="60" y="582" font-weight="bold">2 → 1 → 2 → 1    落在 1 上</text>
+    <text x="60" y="608" fill="#b45309">⚠️ x 可能只是「被负环影响」但不</text>
+    <text x="60" y="620" fill="#b45309">   在环上的点 —— 退 V 步才排除</text>
+  </g>
+
+  <rect x="520" y="476" width="440" height="150" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="540" y="504" font-size="14" font-weight="bold" fill="#166534">④ 从落点 1 绕 prev 一圈 = 环</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#14532d">
+    <text x="540" y="534">1 → prev[1]=2 → prev[2]=1 停</text>
+    <text x="540" y="560" font-weight="bold">环 = [1, 2] → 输出 2 → 1 → 2</text>
+    <text x="540" y="588" font-weight="bold">环总权 = 1 + (−10) = −9 &lt; 0 ✓</text>
+    <text x="540" y="612">⭐ 与 Bellman-Ford 的「有负环 = true」对得上</text>
+  </g>
+
+  <text x="40" y="650" font-size="12" fill="#94a3b8">（图：本机无法栅格化 SVG，需要 PNG 请自行导出，建议浅色底）</text>
+</svg>

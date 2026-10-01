@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2563eb"/>
+    </marker>
+    <marker id="red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一维滚动数组：容量的遍历方向为什么不能随便定</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">同一行 dp，同一件物品 A（重量 2、价值 4），容量 6 —— 只把 w 的循环方向反过来，答案就变了</text>
+
+  <rect x="30" y="92" width="460" height="420" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="55" y="126" font-size="16" font-weight="bold" fill="#1e3a8a">逆序 w：6 → 0（0-1 背包，正确）</text>
+  <text x="55" y="152" font-size="12.5" fill="#475569">算 dp[w] 时读的 dp[w-wi] 还没被本件碰过，是「上一件」的旧值</text>
+
+  <path d="M310,224 L310,188 L426,188 L426,224" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#blue)"/>
+  <text x="368" y="182" text-anchor="middle" font-size="12" fill="#2563eb">读 dp[4] = 0（旧值）</text>
+
+  <g>
+    <rect x="52" y="232" width="52" height="40" rx="5" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.2"/>
+    <text x="78" y="258" text-anchor="middle" font-size="14" fill="#1e293b">0</text>
+    <rect x="110" y="232" width="52" height="40" rx="5" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.2"/>
+    <text x="136" y="258" text-anchor="middle" font-size="14" fill="#1e293b">0</text>
+    <rect x="168" y="232" width="52" height="40" rx="5" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.2"/>
+    <text x="194" y="258" text-anchor="middle" font-size="14" fill="#1e293b">4</text>
+    <rect x="226" y="232" width="52" height="40" rx="5" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.2"/>
+    <text x="252" y="258" text-anchor="middle" font-size="14" fill="#1e293b">4</text>
+    <rect x="284" y="232" width="52" height="40" rx="5" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.2"/>
+    <text x="310" y="258" text-anchor="middle" font-size="14" fill="#1e293b">4</text>
+    <rect x="342" y="232" width="52" height="40" rx="5" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.2"/>
+    <text x="368" y="258" text-anchor="middle" font-size="14" fill="#1e293b">4</text>
+    <rect x="400" y="232" width="52" height="40" rx="5" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.2"/>
+    <text x="426" y="258" text-anchor="middle" font-size="14" fill="#1e293b">4</text>
+  </g>
+  <g font-size="11.5" fill="#64748b" text-anchor="middle">
+    <text x="78" y="290">w=0</text>
+    <text x="136" y="290">w=1</text>
+    <text x="194" y="290">w=2</text>
+    <text x="252" y="290">w=3</text>
+    <text x="310" y="290">w=4</text>
+    <text x="368" y="290">w=5</text>
+    <text x="426" y="290">w=6</text>
+  </g>
+
+  <g font-size="12.5" fill="#1e293b">
+    <text x="55" y="330">处理顺序：w=6 时 dp[4] 还停在 0，所以</text>
+    <text x="55" y="352">dp[6] = max(0, 0 + 4) = 4</text>
+    <text x="55" y="382">再走 w=5、w=4 …，dp[4] 才被写成本件的 4</text>
+    <text x="55" y="406">写 dp[4] 时读的 dp[2] 同样还是 0</text>
+    <text x="55" y="440" font-weight="bold" fill="#1d4ed8">每件最多被用一次 —— 这正是 0-1 背包</text>
+    <text x="55" y="470">结果 dp = [0 0 4 4 4 4 4]，最优值 4</text>
+    <text x="55" y="496" fill="#475569">实测输出完全相同：[0 0 4 4 4 4 4]</text>
+  </g>
+
+  <rect x="510" y="92" width="460" height="420" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="535" y="126" font-size="16" font-weight="bold" fill="#7f1d1d">正序 w：0 → 6（写错了：变成完全背包）</text>
+  <text x="535" y="152" font-size="12.5" fill="#475569">算 dp[w] 时读的 dp[w-wi] 已经被本件写过，是「本件」的新值</text>
+
+  <path d="M700,224 L700,188 L790,188 L790,224" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#red)"/>
+  <text x="745" y="182" text-anchor="middle" font-size="12" fill="#dc2626">读 dp[2] = 4（本件刚写的）</text>
+
+  <g>
+    <rect x="532" y="232" width="52" height="40" rx="5" fill="#fee2e2" stroke="#f87171" stroke-width="1.2"/>
+    <text x="558" y="258" text-anchor="middle" font-size="14" fill="#1e293b">0</text>
+    <rect x="590" y="232" width="52" height="40" rx="5" fill="#fee2e2" stroke="#f87171" stroke-width="1.2"/>
+    <text x="616" y="258" text-anchor="middle" font-size="14" fill="#1e293b">0</text>
+    <rect x="648" y="232" width="52" height="40" rx="5" fill="#fecaca" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="674" y="258" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">4</text>
+    <rect x="706" y="232" width="52" height="40" rx="5" fill="#fee2e2" stroke="#f87171" stroke-width="1.2"/>
+    <text x="732" y="258" text-anchor="middle" font-size="14" fill="#1e293b">4</text>
+    <rect x="764" y="232" width="52" height="40" rx="5" fill="#fecaca" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="790" y="258" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">8</text>
+    <rect x="822" y="232" width="52" height="40" rx="5" fill="#fee2e2" stroke="#f87171" stroke-width="1.2"/>
+    <text x="848" y="258" text-anchor="middle" font-size="14" fill="#1e293b">8</text>
+    <rect x="880" y="232" width="52" height="40" rx="5" fill="#fecaca" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="906" y="258" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">12</text>
+  </g>
+  <g font-size="11.5" fill="#64748b" text-anchor="middle">
+    <text x="558" y="290">w=0</text>
+    <text x="616" y="290">w=1</text>
+    <text x="674" y="290">w=2</text>
+    <text x="732" y="290">w=3</text>
+    <text x="790" y="290">w=4</text>
+    <text x="848" y="290">w=5</text>
+    <text x="906" y="290">w=6</text>
+  </g>
+
+  <g font-size="12.5" fill="#1e293b">
+    <text x="535" y="330">处理顺序：w=2 先被写成 4；轮到 w=4 时</text>
+    <text x="535" y="352">dp[4] = max(0, 4 + 4) = 8 —— 同一件 A 又加了一次</text>
+    <text x="535" y="382">再轮到 w=6：dp[6] = max(0, 8 + 4) = 12</text>
+    <text x="535" y="406">于是 A 被取了 3 次（重量 2 × 3 = 6）</text>
+    <text x="535" y="440" font-weight="bold" fill="#dc2626">每件可以被用无限次 —— 这其实完全背包</text>
+    <text x="535" y="470">结果 dp = [0 0 4 4 8 8 12]，最优值 12</text>
+    <text x="535" y="496" font-size="12.5" fill="#475569">实测输出完全相同：[0 0 4 4 8 8 12]</text>
+  </g>
+
+  <line x1="30" y1="532" x2="970" y2="532" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="558" font-size="13" fill="#334155">判据只有一句话：dp[w] 要用 dp[w-wi] 的「旧值」还是「新值」？要旧值就逆序（本件还没覆盖到它），要新值就正序。</text>
+  <text x="30" y="584" font-size="13" fill="#334155">注意两者是镜像的：0-1 背包一维逆序、完全背包一维正序，写反了正好得到对方的答案，各自都不会报错。</text>
+</svg>

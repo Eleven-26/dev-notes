@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">KMP 失配时：模式滑动，主串指针不回溯</text>
+  <text x="500" y="64" text-anchor="middle" font-size="13" fill="#64748b">文本 t = abababc，模式 p = ababc，next = [0 0 1 2 0]</text>
+
+  <!-- 文本行 -->
+  <text x="248" y="112" text-anchor="end" font-size="13" font-weight="bold" fill="#0f172a">文本 t</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="12" fill="#94a3b8" text-anchor="middle">
+    <text x="308" y="112">0</text>
+    <text x="372" y="112">1</text>
+    <text x="436" y="112">2</text>
+    <text x="500" y="112">3</text>
+    <text x="564" y="112">4</text>
+    <text x="628" y="112">5</text>
+    <text x="692" y="112">6</text>
+  </g>
+  <g>
+    <rect x="276" y="120" width="64" height="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="340" y="120" width="64" height="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="404" y="120" width="64" height="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="468" y="120" width="64" height="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="532" y="120" width="64" height="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="596" y="120" width="64" height="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="660" y="120" width="64" height="46" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  </g>
+  <g font-family="Consolas, Courier New, monospace" font-size="24" font-weight="bold" fill="#1e293b" text-anchor="middle">
+    <text x="308" y="153">a</text>
+    <text x="372" y="153">b</text>
+    <text x="436" y="153">a</text>
+    <text x="500" y="153">b</text>
+    <text x="564" y="153">a</text>
+    <text x="628" y="153">b</text>
+    <text x="692" y="153">c</text>
+  </g>
+
+  <!-- 偏移 0 -->
+  <text x="60" y="220" font-size="13" font-weight="bold" fill="#0f172a">偏移 0</text>
+  <g>
+    <rect x="276" y="194" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="340" y="194" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="404" y="194" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="468" y="194" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="532" y="194" width="64" height="44" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  </g>
+  <g font-family="Consolas, Courier New, monospace" font-size="22" font-weight="bold" text-anchor="middle">
+    <text x="308" y="224" fill="#166534">a</text>
+    <text x="372" y="224" fill="#166534">b</text>
+    <text x="436" y="224" fill="#166534">a</text>
+    <text x="500" y="224" fill="#166534">b</text>
+    <text x="564" y="224" fill="#b91c1c">c</text>
+  </g>
+  <text x="620" y="222" font-size="12.5" fill="#b91c1c">← 失配（t[4]='a' ≠ p[4]='c'），已匹配 "abab"</text>
+
+  <!-- 回退说明 -->
+  <text x="60" y="280" font-size="13" font-weight="bold" fill="#7c3aed">回退 j</text>
+  <text x="176" y="280" font-size="13" fill="#334155">j = 4 → next[3] = 2（"abab" 的最长真前后缀是 "ab"），主串指针 i 仍停在 4</text>
+
+  <!-- 偏移 2 -->
+  <text x="60" y="350" font-size="13" font-weight="bold" fill="#0f172a">偏移 2</text>
+  <g>
+    <rect x="404" y="324" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="468" y="324" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="532" y="324" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="596" y="324" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="660" y="324" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  </g>
+  <g font-family="Consolas, Courier New, monospace" font-size="22" font-weight="bold" text-anchor="middle">
+    <text x="436" y="354" fill="#166534">a</text>
+    <text x="500" y="354" fill="#166534">b</text>
+    <text x="564" y="354" fill="#166534">a</text>
+    <text x="628" y="354" fill="#166534">b</text>
+    <text x="692" y="354" fill="#166534">c</text>
+  </g>
+  <text x="736" y="352" font-size="12.5" fill="#166534">← 全程匹配，命中 @2</text>
+
+  <!-- 结论框 -->
+  <rect x="60" y="400" width="880" height="168" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="84" y="432" font-size="14" font-weight="bold" fill="#0f172a">两件事同时发生</text>
+  <text x="84" y="464" font-size="13" fill="#334155">1. 模式整体从偏移 0 右滑到偏移 2 —— 因为 "abab" 的真前后缀 "ab" 已经匹配好了，可以直接复用</text>
+  <text x="84" y="492" font-size="13" fill="#334155">2. 文本指针 i 一直向前走，从不后退 —— 这是 KMP 摊还 O(n + m) 的根本原因</text>
+  <text x="84" y="528" font-size="13" fill="#64748b">对照：朴素匹配在失配后会令 i 回到「起点 + 1」重新比，最坏 O(n × m)</text>
+  <text x="84" y="554" font-size="13" fill="#64748b">本机实测（文本 8 个 'a'，模式 a a a b）：朴素比较 20 次，KMP 比较 12 次</text>
+</svg>

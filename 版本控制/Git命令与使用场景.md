@@ -274,4 +274,4 @@ git reset --hard HEAD@{2}
 
 - [../部署/CI-CD面试题.md](../部署/CI-CD面试题.md) — 这些命令在流水线里的自动化用法
 - [../linux/常用命令.md](../linux/常用命令.md) — 同一台机器上的其他日常命令
-> 反向引用（本篇被下列文档引到）：[GitLab CI-CD.md](../部署/GitLab CI-CD.md)
+> 反向引用（本篇被下列文档引到）：[LCS.md](../算法/动态规划/LCS.md)、[GitLab CI-CD.md](../部署/GitLab CI-CD.md)

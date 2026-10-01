@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <defs>
+    <marker id="af" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">k 挪到最内层就错：它「看不见」需要连过多个中转点的路径</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">图 0→3→2→1（每条边权 1）—— ⚠️ 点的编号顺序与路径方向相反</text>
+
+  <line x1="162" y1="122" x2="358" y2="122" stroke="#64748b" stroke-width="1.5" marker-end="url(#af)"/>
+  <line x1="402" y1="122" x2="598" y2="122" stroke="#64748b" stroke-width="1.5" marker-end="url(#af)"/>
+  <line x1="642" y1="122" x2="838" y2="122" stroke="#64748b" stroke-width="1.5" marker-end="url(#af)"/>
+
+  <circle cx="140" cy="122" r="21" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="140" y="122" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#7f1d1d">0</text>
+  <circle cx="380" cy="122" r="21" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="380" y="122" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">3</text>
+  <circle cx="620" cy="122" r="21" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="620" y="122" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">2</text>
+  <circle cx="860" cy="122" r="21" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="860" y="122" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">1</text>
+
+  <text x="260" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+  <text x="500" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+  <text x="740" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+
+  <text x="500" y="170" text-anchor="middle" font-size="13" fill="#b45309">⚠️ 编号从左到右是 0、3、2、1 —— 不是递增，这正是「k 在内层」的致命处</text>
+  <text x="500" y="194" text-anchor="middle" font-size="13" fill="#334155">正确答案：0 → 1 要走 0→3→2→1，距离 3</text>
+
+  <rect x="30" y="222" width="455" height="290" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="50" y="250" font-size="14" font-weight="bold" fill="#166534">✅ k 在最外层：按「阶段」推进</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="12.5" fill="#14532d">
+    <text x="50" y="282">k=0：无变化</text>
+    <text x="50" y="306">k=1：无变化（没有边指向 1）</text>
+    <text x="50" y="330" font-weight="bold">k=2：d[3][1] = d[3][2] + d[2][1]</text>
+    <text x="50" y="352" font-weight="bold">             = 1 + 1 = 2   ✅</text>
+    <text x="50" y="376" font-weight="bold">k=3：d[0][1] = d[0][3] + d[3][1]</text>
+    <text x="50" y="398" font-weight="bold">             = 1 + 2 = 3   ✅</text>
+  </g>
+  <text x="50" y="432" font-size="12.5" fill="#166534">信息沿着阶段依次传递：先算出 3→1，</text>
+  <text x="50" y="454" font-size="12.5" fill="#166534">再由它算出 0→1。</text>
+  <text x="50" y="486" font-size="13" font-weight="bold" fill="#166534">结果 d[0][1] = 3</text>
+
+  <rect x="515" y="222" width="455" height="290" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="535" y="250" font-size="14" font-weight="bold" fill="#991b1b">❌ k 在最内层：同一个 (i,j) 里试完所有 k</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="12.5" fill="#7f1d1d">
+    <text x="535" y="282">i=0, j=1 时依次试 k：</text>
+    <text x="535" y="306">  k=0 → d[0][0]+d[0][1] = 0+∞  = ∞</text>
+    <text x="535" y="330">  k=1 → d[0][1]+d[1][1] = ∞+0  = ∞</text>
+    <text x="535" y="354" font-weight="bold">  k=2 → d[0][2]+d[2][1]</text>
+    <text x="535" y="374">         d[0][2] 此刻还是 ∞（j=2 还没轮到）</text>
+    <text x="535" y="398" font-weight="bold">  k=3 → d[0][3]+d[3][1]</text>
+    <text x="535" y="418">         d[3][1] 还是 ∞（3 这一行还没处理到）</text>
+  </g>
+  <text x="535" y="452" font-size="12.5" fill="#991b1b">i=0 行处理完之后才会轮到 i=3 行，可那时</text>
+  <text x="535" y="474" font-size="12.5" fill="#991b1b">0 这一行已经不再回头看了。</text>
+  <text x="535" y="506" font-size="13" font-weight="bold" fill="#dc2626">结果 d[0][1] = ∞  ❌</text>
+
+  <line x1="30" y1="528" x2="970" y2="528" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="30" y="556" font-size="13" font-weight="bold" fill="#0f172a">⭐ 根本原因：Floyd 是动态规划，k 是阶段；阶段必须在外层</text>
+  <text x="30" y="580" font-size="12.5" fill="#334155">把 k 放内层，「同一个 (i,j) 的计算里既读又写」，读到的不是「上一阶段」的值 —— DP 的递推关系被破坏了。</text>
+  <text x="30" y="606" font-size="12.5" fill="#b45309">⚠️ 实测补充：换一张「编号单调递增」的图，错误版**又是对的**（i、j 递增时它能利用同行更早算出的 j）。所以它是「有时候对」—— 这才是真正危险的地方。</text>
+  <text x="30" y="630" font-size="12" fill="#94a3b8">（图：本机无法栅格化 SVG，需要 PNG 请自行导出，建议浅色底）</text>
+</svg>

@@ -557,4 +557,4 @@ Kafka 只保证 At Least Once，以下场景必然重复：消费者处理完但
 - [../../数据存储/mysql/日志与落盘.md](../../数据存储/mysql/日志与落盘.md) — 顺序追加与页缓存
 - [../../分布式/一致性与CAP.md](../../分布式/一致性与CAP.md) — ISR 与多数派确认的区别
 
-> 反向引用（本篇被下列文档引到）：[零拷贝.md](../../go/运行时/零拷贝.md)、[ActiveMQ.md](ActiveMQ.md)、[Nats.md](Nats.md)、[RabbitMQ.md](RabbitMQ.md)、[ElasticSearch.md](../../数据存储/elasticsearch/ElasticSearch.md)、[ElasticSearch客户端.md](../../数据存储/elasticsearch/ElasticSearch客户端.md)、[ElasticSearch应用与DSL.md](../../数据存储/elasticsearch/ElasticSearch应用与DSL.md)、[发布订阅.md](../../数据存储/redis/发布订阅.md)、[观察者模式.md](../../设计模式/行为型/观察者模式.md)
+> 反向引用（本篇被下列文档引到）：[零拷贝.md](../../go/运行时/零拷贝.md)、[ActiveMQ.md](ActiveMQ.md)、[Nats.md](Nats.md)、[RabbitMQ.md](RabbitMQ.md)、[ElasticSearch.md](../../数据存储/elasticsearch/ElasticSearch.md)、[ElasticSearch客户端.md](../../数据存储/elasticsearch/ElasticSearch客户端.md)、[ElasticSearch应用与DSL.md](../../数据存储/elasticsearch/ElasticSearch应用与DSL.md)、[发布订阅.md](../../数据存储/redis/发布订阅.md)、[霍夫曼编码.md](../../算法/贪心/霍夫曼编码.md)、[观察者模式.md](../../设计模式/行为型/观察者模式.md)

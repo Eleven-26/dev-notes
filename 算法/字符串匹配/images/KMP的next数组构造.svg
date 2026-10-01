@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">KMP 前缀函数 next 的逐位构造（模式串 ababaca）</text>
+  <text x="500" y="64" text-anchor="middle" font-size="13" fill="#64748b">next[i] = p[0..i] 的「最长真前后缀」长度；next[0] = 0</text>
+
+  <!-- 索引行 -->
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#94a3b8" text-anchor="middle">
+    <text x="308" y="106">0</text>
+    <text x="372" y="106">1</text>
+    <text x="436" y="106">2</text>
+    <text x="500" y="106">3</text>
+    <text x="564" y="106">4</text>
+    <text x="628" y="106">5</text>
+    <text x="692" y="106">6</text>
+  </g>
+
+  <!-- 模式串格子 -->
+  <g>
+    <rect x="276" y="114" width="64" height="46" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="340" y="114" width="64" height="46" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="404" y="114" width="64" height="46" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <rect x="468" y="114" width="64" height="46" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <rect x="532" y="114" width="64" height="46" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <rect x="596" y="114" width="64" height="46" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="660" y="114" width="64" height="46" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  </g>
+  <g font-family="Consolas, Courier New, monospace" font-size="24" font-weight="bold" fill="#1e3a8a" text-anchor="middle">
+    <text x="308" y="147">a</text>
+    <text x="372" y="147">b</text>
+    <text x="436" y="147">a</text>
+    <text x="500" y="147">b</text>
+    <text x="564" y="147">a</text>
+    <text x="628" y="147">c</text>
+    <text x="692" y="147">a</text>
+  </g>
+
+  <text x="276" y="190" font-size="12.5" fill="#64748b">p[0..i] 前缀</text>
+
+  <!-- prev 行 -->
+  <g font-family="Consolas, Courier New, monospace" font-size="13" fill="#94a3b8" text-anchor="middle">
+    <text x="250" y="228">next</text>
+  </g>
+  <g>
+    <rect x="276" y="204" width="64" height="44" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="340" y="204" width="64" height="44" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="404" y="204" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="468" y="204" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="532" y="204" width="64" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <rect x="596" y="204" width="64" height="44" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="660" y="204" width="64" height="44" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  </g>
+  <g font-family="Consolas, Courier New, monospace" font-size="22" font-weight="bold" fill="#166534" text-anchor="middle">
+    <text x="308" y="234">0</text>
+    <text x="372" y="234">0</text>
+    <text x="436" y="234">1</text>
+    <text x="500" y="234">2</text>
+    <text x="564" y="234">3</text>
+    <text x="628" y="234">0</text>
+    <text x="692" y="234">1</text>
+  </g>
+
+  <!-- 说明框 -->
+  <rect x="60" y="292" width="880" height="230" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="84" y="324" font-size="14" font-weight="bold" fill="#0f172a">三处关键推演</text>
+
+  <text x="84" y="356" font-size="13" fill="#334155">i = 2（前缀 "aba"）：前缀 "a" 与后缀 "a" 相同 → next[2] = 1</text>
+  <text x="84" y="384" font-size="13" fill="#334155">i = 4（前缀 "ababa"）：最长真前后缀 "aba"（长度 3） → next[4] = 3</text>
+  <text x="84" y="412" font-size="13" fill="#334155">i = 5（前缀 "ababac"）：末位 'c' 与 'b' 不匹配，沿 next 回退 2 次仍不匹配 → next[5] = 0</text>
+
+  <text x="84" y="452" font-size="13" font-weight="bold" fill="#0f172a">为什么可以「回退」而不是「重来」</text>
+  <text x="84" y="478" font-size="13" fill="#334155">已匹配的 "abab" 本身有真前后缀 "ab"，回退到 next[3] = 2 继续比，就能直接跳过已匹配的部分</text>
+  <text x="84" y="504" font-size="13" fill="#334155">主串指针永远只向前走，所以匹配阶段是 O(n + m)</text>
+</svg>

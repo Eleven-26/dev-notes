@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Bellman-Ford 的轮数由「边的遍历顺序」决定</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个图、同一个算法，只是边在内存里的先后不同 —— 轮数从 4 变成 1</text>
+
+  <line x1="130" y1="110" x2="300" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="340" y1="110" x2="510" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="550" y1="110" x2="720" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="760" y1="110" x2="930" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <circle cx="110" cy="110" r="20" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="110" y="110" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#7f1d1d">0</text>
+  <circle cx="320" cy="110" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="320" y="110" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">1</text>
+  <circle cx="530" cy="110" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="530" y="110" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">2</text>
+  <circle cx="740" cy="110" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="740" y="110" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">3</text>
+  <circle cx="950" cy="110" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="950" y="110" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">4</text>
+
+  <text x="215" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+  <text x="425" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+  <text x="635" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+  <text x="845" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">1</text>
+
+  <rect x="40" y="160" width="445" height="330" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="60" y="188" font-size="14" font-weight="bold" fill="#991b1b">⚡ 边表逆序：3→4、2→3、1→2、0→1</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="12.5" fill="#7f1d1d">
+    <text x="60" y="218">第 1 轮  只有 0→1 生效</text>
+    <text x="60" y="240">        dist = [0 1 ∞ ∞ ∞]</text>
+    <text x="60" y="266">第 2 轮  只有 1→2 生效</text>
+    <text x="60" y="288">        dist = [0 1 2 ∞ ∞]</text>
+    <text x="60" y="314">第 3 轮  只有 2→3 生效</text>
+    <text x="60" y="336">        dist = [0 1 2 3 ∞]</text>
+    <text x="60" y="362">第 4 轮  只有 3→4 生效</text>
+    <text x="60" y="384">        dist = [0 1 2 3 4]</text>
+    <text x="60" y="418" font-weight="bold" fill="#dc2626">用满 4 轮 = V-1，扫描 16 次边</text>
+    <text x="60" y="446">每轮只推进一跳 —— 因为链上</text>
+    <text x="60" y="468">的边都排在它前面先扫过了</text>
+  </g>
+
+  <rect x="515" y="160" width="445" height="330" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="535" y="188" font-size="14" font-weight="bold" fill="#166534">✅ 边表正序：0→1、1→2、2→3、3→4</text>
+  <g font-family="Consolas, Courier New, monospace" font-size="12.5" fill="#14532d">
+    <text x="535" y="218">第 1 轮  四条边依次全部生效</text>
+    <text x="535" y="240">        dist = [0 1 2 3 4]</text>
+    <text x="535" y="266">第 2 轮  再扫一遍：无变化</text>
+    <text x="535" y="288">        → 提前退出</text>
+    <text x="535" y="322" font-weight="bold" fill="#166534">只用了 1 轮，扫描 8 次边</text>
+    <text x="535" y="352">一条路径上的边若在遍历顺序里是</text>
+    <text x="535" y="374">「顺次」的，一轮就能走完整条路</text>
+    <text x="535" y="408" font-weight="bold">两图最终 dist 完全相同</text>
+    <text x="535" y="430">= [0 1 2 3 4]</text>
+    <text x="535" y="462">⚠️ 所以 BF 的中间过程不可复现，</text>
+    <text x="535" y="484">除非两实现的边序一致</text>
+  </g>
+
+  <line x1="40" y1="516" x2="960" y2="516" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="40" y="546" font-size="13.5" font-weight="bold" fill="#0f172a">⭐ 为什么上界是 V-1 轮？</text>
+  <text x="40" y="572" font-size="13" fill="#334155">第 k 轮结束后，dist 里装的是「最多经过 k 条边」的最短路。任意两点间的简单路径最多 V-1 条边，所以 V-1 轮必然收敛。</text>
+  <text x="40" y="596" font-size="13" fill="#334155">⚠️ 轮数是上界而不是实际值：某轮没有任何变化就可以立刻停（右图 1 轮就停了），这也是唯一能提前退出的判据。</text>
+  <text x="40" y="622" font-size="12" fill="#94a3b8">（图：本机无法栅格化 SVG，需要 PNG 请自行导出，建议浅色底）</text>
+</svg>
