@@ -806,8 +806,6 @@ static List<Integer> postorderIter(TreeNode root) {
 - [../面试/Go算法题.md](../面试/Go算法题.md) — 第二题「用栈消除递归」、模板节的网格 DFS（面积即递归深度）
 - [../垃圾回收/并发标记与写屏障.md](../垃圾回收/并发标记与写屏障.md) — GC 的三色抽象：与本篇三色判环同名不同义
 - [../垃圾回收/GC基础算法.md](../垃圾回收/GC基础算法.md) — 可达性分析本身就是一次图遍历（DFS/BFS 皆可）
-- [../java/JVM与垃圾回收.md](../java/JVM与垃圾回收.md) — 线程栈大小与 `StackOverflowError` 的成因
+- [../java/JVM与垃圾回收.md](../java/运行时/JVM与垃圾回收.md) — 线程栈大小与 `StackOverflowError` 的成因
 - [../go/并发/goroutine.md](../go/并发/goroutine.md) — 协程栈初始 2KB 与按需增长，解释 Go 深递归为什么不爆
 - [../数据存储/mysql/索引与优化.md](../数据存储/mysql/索引与优化.md) — B+ 树叶子链表提供的「中序有序 + 范围扫描」能力
-
-> 反向引用（本篇被下列文档引到）：[README.md](README.md)

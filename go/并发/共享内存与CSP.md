@@ -152,3 +152,4 @@ goroutine 1 [chan send]:
 - [并发同步原语.md](并发同步原语.md) — 共享内存路线的原语（Mutex / atomic / sync.Map）
 - [进程与线程.md](../../linux/进程与线程.md) — 协程轻量化的量化对照
 - [goroutine.md](goroutine.md) — 被调度的实体本身：栈、创建成本与生命周期
+> 反向引用（本篇被下列文档引到）：[JMM与内存屏障.md](../../java/并发/JMM与内存屏障.md)
