@@ -311,7 +311,7 @@ waitWithTimeout(&wg, 5*time.Second) // ② 再等收尾，但别无限等
 **本节要点**：检验"并发判据能不能落到真实接口上" —— 面对"这个导出接口能不能加并发"，
 正确答案是**逐环节看**，而不是一句"能"或"不能"。
 
-**分析对象**：`photography-server` 的 `FinanceExport`（导出对账 CSV；权限点独立于"查看"——
+**分析对象**：[photography-server](https://github.com/Eleven-26/photography-server) 的 `FinanceExport`（导出对账 CSV；权限点独立于"查看"——
 可见不等于可带走）。它由几个环节组成，每一环的答案都不一样：
 
 ```go
@@ -516,7 +516,6 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 所以"起 20 万个协程"并不等于"同时有 20 万个活着"——
 但**上游一突发**（创建快、任务慢），这个数字就会立刻冲上去。
 
-实验台：`.workbuddy/tmp/golab/workerpool/`（`go run ./workerpool`，现场跑三个场景并打印校准值）。
 
 ---
 
@@ -570,4 +569,4 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 - [../../../04-架构与系统/分布式/服务治理/限流降级熔断.md](../../../04-架构与系统/分布式/服务治理/限流降级熔断.md) — 下游被打穿之后怎么办
 - [../../java/并发/线程池.md](../../java/并发/线程池.md) — Java 侧 worker 池的对照：七参数、有界队列与四种拒绝策略
 
-> 反向引用（本篇被下列文档引到）：[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/服务治理/并发限制器.md)
+> 反向引用（本篇被下列文档引到）：[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/服务治理/并发限制器.md)、[负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md)

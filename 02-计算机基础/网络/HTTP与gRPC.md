@@ -604,4 +604,4 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 
 - [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 应用层数据如何被逐层封装、以及 MTU 引起的分片
 
-> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md)、[DNS解析.md](DNS解析.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)、[Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)、[Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)、[可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)
+> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md)、[DNS解析.md](DNS解析.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)、[反向代理原理与实现.md](反向代理原理与实现.md)、[Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)、[Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)、[可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)

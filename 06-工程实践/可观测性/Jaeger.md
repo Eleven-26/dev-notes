@@ -6,7 +6,7 @@
 
 Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNCF，2019 年毕业（Graduated），用于分布式/微服务架构下的**调用链追踪与性能分析**：一次请求经过了哪些服务、每个服务做了什么、耗时卡在哪一跳、失败发生在哪个环节。
 
-覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → 使用方法（分册）→ 与 SkyWalking 分工 → 常见追问。结合 photography-server 项目的落地映射见 [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第十节。
+覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → 使用方法（分册）→ 与 SkyWalking 分工 → 常见追问。结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的落地映射见 [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第十节。
 
 ## 一、核心概念
 
@@ -181,7 +181,7 @@ service:
 
 | 语言 | 分册 | 覆盖内容 |
 | --- | --- | --- |
-| Go | [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) | OTel SDK 初始化、Gin / GORM / NATS / xxl-job 四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、photography-server 落地映射 |
+| Go | [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) | OTel SDK 初始化、Gin / GORM / NATS / xxl-job 四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、[photography-server](https://github.com/Eleven-26/photography-server) 落地映射 |
 | Java | [../../01-编程语言/java/接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) | OTel Java Agent 无侵入路线、Spring Boot 3 + Micrometer Tracing、日志 MDC 与响应头、跨线程传播、从 `jaeger-client` 迁移 |
 
 > ⚠️ `jaeger-client-go` / `jaeger-client-java` **均已归档**，新项目一律用 OTel SDK + OTLP，不要再用私有客户端与私有 `uber-trace-id` 头。
@@ -212,7 +212,7 @@ service:
 
 ## 关联
 
-- [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) — Go 侧 OTel SDK 埋点的完整接入手册（含 photography-server 落地映射）
+- [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) — Go 侧 OTel SDK 埋点的完整接入手册（含 [photography-server](https://github.com/Eleven-26/photography-server) 落地映射）
 - [../../01-编程语言/java/接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
 - [Skywalking.md](Skywalking.md) — 探针式 APM 的另一条路线与分工
 - [../../01-编程语言/php/接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) — 多语言探针接入的对照

@@ -725,7 +725,7 @@ ngx.say(body)
 
 ### 场景
 
-`photography-server` 是 `Go + Gin + GORM` 的多租户服务（按 `company_id` 隔离数据），直接对外暴露。引入 OpenResty 做**南北向入口**后，能下沉这些事：
+[photography-server](https://github.com/Eleven-26/photography-server) 是 `Go + Gin + GORM` 的多租户服务（按 `company_id` 隔离数据），直接对外暴露。引入 OpenResty 做**南北向入口**后，能下沉这些事：
 
 | 放在网关（`access_by_lua*`） | 留在后端 |
 |---|---|

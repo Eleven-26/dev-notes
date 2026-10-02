@@ -1,6 +1,6 @@
 # Go 接入 Jaeger
 
-> 内容整理自个人学习笔记 —— Go 侧接入 Jaeger 的完整手册，按**前提认知 → 依赖 → TracerProvider 初始化 → HTTP / SQL / MQ / 定时任务四类埋点 → context 传播铁律 → 日志关联 → 优雅退出 → 项目落地映射 → 验证排查**组织，并结合 photography-server 项目的实际接入点整理。
+> 内容整理自个人学习笔记 —— Go 侧接入 Jaeger 的完整手册，按**前提认知 → 依赖 → TracerProvider 初始化 → HTTP / SQL / MQ / 定时任务四类埋点 → context 传播铁律 → 日志关联 → 优雅退出 → 项目落地映射 → 验证排查**组织，并结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的实际接入点整理。
 >
 > Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [../../06-工程实践/可观测性/Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)；同一套埋点发往 SkyWalking OAP 的写法见 [接入Skywalking.md](接入Skywalking.md)。
 
