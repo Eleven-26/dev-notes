@@ -13,7 +13,6 @@
 >
 > 📎 本篇所有输出均为本机实跑逐字抄录：**Go 1.26.5（windows/amd64）** 与 **JDK 1.8.0_321** 各实现一份，
 > 输出**逐行对齐**（93 行 diff 为空 —— 本篇没有耗时统计，全是确定性数据）。
-> 实验代码在 `.workbuddy/tmp/dp_lab/lcs/` 与 `.workbuddy/tmp/dp_lab/java/LcsLab.java`。
 
 ---
 

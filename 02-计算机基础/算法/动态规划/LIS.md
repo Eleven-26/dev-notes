@@ -14,7 +14,6 @@
 >
 > 📎 本篇所有输出均为本机实跑逐字抄录：**Go 1.26.5（windows/amd64）** 与 **JDK 1.8.0_321** 各实现一份，
 > 输出**逐行对齐**（85 行里 diff 只剩实验六的 6 行耗时 + 1 行由耗时算出的倍数）。
-> 实验代码在 `.workbuddy/tmp/dp_lab/lis/` 与 `.workbuddy/tmp/dp_lab/java/LisLab.java`。
 
 ---
 
