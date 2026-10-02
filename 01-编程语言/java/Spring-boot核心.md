@@ -318,7 +318,7 @@ BeanDefinitionStoreException: Failed to read candidate component class: ... Data
 
 ## 使用：`@Scheduled` 与 `@LoadBalanced` 在真实项目里的两个坑
 
-本项目里**真实存在**的 Spring 用法在 [服务发现的Java实现.md](../../04-架构与系统/分布式/服务发现的Java实现.md)（Spring Cloud + Nacos）。挑两个注解按本节机制拆：
+本项目里**真实存在**的 Spring 用法在 [服务发现的Java实现.md](../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md)（Spring Cloud + Nacos）。挑两个注解按本节机制拆：
 
 ### 坑一：`@LoadBalanced` 为什么只能加在 `@Bean` 上
 
@@ -361,7 +361,7 @@ Spring Cloud 的负载均衡是靠「给 `RestTemplate` 换一个带了拦截器
 ## 关联
 
 - [并发/锁与AQS.md](并发/锁与AQS.md) — 单例 Bean 的线程安全是「共享可变状态」问题，容器不替你解决
-- [../../04-架构与系统/分布式/服务发现的Java实现.md](../../04-架构与系统/分布式/服务发现的Java实现.md) — 「使用」一节的代码出处：`@LoadBalanced` 与 `@Scheduled` 的落地
+- [../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md](../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md) — 「使用」一节的代码出处：`@LoadBalanced` 与 `@Scheduled` 的落地
 - [../../05-设计模式/创建型/工厂模式.md](../../05-设计模式/创建型/工厂模式.md) — IoC 容器本质是一个**通用工厂**，与那里讲的「工厂 vs 容器 DI 的边界」直接呼应
 - [../../05-设计模式/原则/面向切面编程.md](../../05-设计模式/原则/面向切面编程.md) — AOP 不必依赖框架：PHP 里手写切面的四种方式与代价
 - [../../05-设计模式/结构型/代理模式.md](../../05-设计模式/结构型/代理模式.md) — JDK 动态代理 / CGLIB 就是代理模式在框架层的实现

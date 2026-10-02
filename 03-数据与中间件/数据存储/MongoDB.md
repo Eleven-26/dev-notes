@@ -647,7 +647,7 @@ err := client.UseSession(ctx, func(sctx mongo.SessionContext) error {
 | 4 | **最终一致**：本地消息表 / 事务消息 + 消费幂等 + 定时对账修复 | 跨服务、跨库、跨消息队列 |
 | 5 | **多文档事务** | 同库跨文档且必须同时可见（A 扣 + B 加） |
 
-对照：MongoDB 多文档事务只解决"本库内 ACID"，跨服务仍需消息/Saga 的最终一致方案 → 见 [分布式事务.md](../../04-架构与系统/分布式/分布式事务.md)。
+对照：MongoDB 多文档事务只解决"本库内 ACID"，跨服务仍需消息/Saga 的最终一致方案 → 见 [分布式事务.md](../../04-架构与系统/分布式/理论/分布式事务.md)。
 
 ## 九、使用方法
 连接串速查：`mongodb://localhost:27017`（单机）；`mongodb://u:p@host:27017/?authSource=admin`（带认证库）；`mongodb://u:p@h1:27017,h2:27017,h3:27017/?replicaSet=rs0&w=majority`（副本集）；`mongodb+srv://u:p@cluster0.abcde.mongodb.net/`（Atlas，隐含 TLS）。

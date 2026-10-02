@@ -4,7 +4,7 @@
 > 这篇的重点是**把两套词汇对上**：Nacos 的 `lease` ≈ etcd 的租约，`@LoadBalanced` ≈ Go 侧的 `DiscoveryTransport`；
 > 并说清 **K8s 那一层到底谁在做负载均衡**。
 >
-> 内容整理自个人学习笔记，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）；参考资料与原始素材见 [素材清单](../../素材清单.md)。
+> 内容整理自个人学习笔记，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）；参考资料与原始素材见 [素材清单](../../../素材清单.md)。
 >
 > ⚠️ **Java 代码未在本机编译校验**（依赖 Spring Cloud Alibaba，需要私服 / 联网拉包）；
 > API 名称按 `spring-cloud-starter-alibaba-nacos-discovery` + `spring-cloud-starter-loadbalancer` 的公开接口书写，落地前请以你所用版本的源码为准。
@@ -319,8 +319,8 @@ public final class NacosResolver {
 - [服务发现与负载均衡.md](服务发现与负载均衡.md) — 机制与三道题
 - [服务注册与发现的Go实现.md](服务注册与发现的Go实现.md) — etcd 侧的对应实现
 - [客户端负载均衡的Go实现.md](客户端负载均衡的Go实现.md) — LB 策略在 Go 侧怎么写
-- [../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — K8s 那一层的服务发现与 LB
-- [../../03-数据与中间件/中间件/Nacos.md](../../03-数据与中间件/中间件/Nacos.md) — Nacos 作为注册中心的配置与实操
-- [../../01-编程语言/java/并发/锁与AQS.md](../../01-编程语言/java/并发/锁与AQS.md) — 不可变快照 + `AtomicInteger` 轮询背后的 CAS、可见性与原子类选择
-- [../../01-编程语言/java/并发/JMM与内存屏障.md](../../01-编程语言/java/并发/JMM与内存屏障.md) — 推送回调线程与业务线程之间必须有一条 `happens-before` 链，这就是快照能被安全看到的原因
-- [../../01-编程语言/java/Spring-boot核心.md](../../01-编程语言/java/Spring-boot核心.md) — `@LoadBalanced` 为什么只能加在 `@Bean` 上、`@Scheduled` 在多副本下为什么会重复执行
+- [../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — K8s 那一层的服务发现与 LB
+- [../../../03-数据与中间件/中间件/Nacos.md](../../../03-数据与中间件/中间件/Nacos.md) — Nacos 作为注册中心的配置与实操
+- [../../../01-编程语言/java/并发/锁与AQS.md](../../../01-编程语言/java/并发/锁与AQS.md) — 不可变快照 + `AtomicInteger` 轮询背后的 CAS、可见性与原子类选择
+- [../../../01-编程语言/java/并发/JMM与内存屏障.md](../../../01-编程语言/java/并发/JMM与内存屏障.md) — 推送回调线程与业务线程之间必须有一条 `happens-before` 链，这就是快照能被安全看到的原因
+- [../../../01-编程语言/java/Spring-boot核心.md](../../../01-编程语言/java/Spring-boot核心.md) — `@LoadBalanced` 为什么只能加在 `@Bean` 上、`@Scheduled` 在多副本下为什么会重复执行

@@ -205,7 +205,7 @@ producer.newMessage().key("ORDER_1003").value(json)
 
 ### 6.3 事务
 
-`transactionEnabled` 相关能力较新且默认关闭，用于「读 A → 处理 → 写 B（+ ack）」的原子提交，定位与 Kafka 事务一致（**流内** exactly-once），不是 RocketMQ 那种「半消息 + 回查」的业务事务消息。业务侧分布式事务仍优先看 [../../../04-架构与系统/分布式/分布式事务.md](../../../04-架构与系统/分布式/分布式事务.md)。
+`transactionEnabled` 相关能力较新且默认关闭，用于「读 A → 处理 → 写 B（+ ack）」的原子提交，定位与 Kafka 事务一致（**流内** exactly-once），不是 RocketMQ 那种「半消息 + 回查」的业务事务消息。业务侧分布式事务仍优先看 [../../../04-架构与系统/分布式/理论/分布式事务.md](../../../04-架构与系统/分布式/理论/分布式事务.md)。
 
 ### 6.4 分层存储与保留
 
@@ -894,7 +894,7 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 - [Kafka.md](Kafka.md) — 存算一体的对照路线：分区/ISR、acks、零拷贝为什么快
 - [RocketMQ.md](RocketMQ.md) — 业务消息功能最全的另一条路线（半消息事务、18 级延迟）
 - [Nats.md](Nats.md) — 轻量派：Core NATS + JetStream，Go 生态里 Pulsar 之外的另一选择
-- [../../../04-架构与系统/分布式/一致性与CAP.md](../../../04-架构与系统/分布式/一致性与CAP.md) — BookKeeper quorum 写与多数派的对应关系
+- [../../../04-架构与系统/分布式/理论/一致性与CAP.md](../../../04-架构与系统/分布式/理论/一致性与CAP.md) — BookKeeper quorum 写与多数派的对应关系
 - [../../../06-工程实践/可观测性/可观测性选型.md](../../../06-工程实践/可观测性/可观测性选型.md) — 订阅积压指标的采集与告警口径
 
 > 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[RabbitMQ.md](RabbitMQ.md)

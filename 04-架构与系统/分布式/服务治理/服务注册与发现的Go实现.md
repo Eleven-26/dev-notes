@@ -3,7 +3,7 @@
 > 把 [服务发现与负载均衡.md](服务发现与负载均衡.md) 的注册 / 发现机制**写成能跑的东西**——
 > 这套代码的坑**全在细节里**：`KeepAlive` 返回的是 channel 不是 error、Watch 断开时**不能清空列表**、退出要走 `Revoke` 而不是等 TTL。
 >
-> 内容整理自个人学习笔记，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）；参考资料与原始素材见 [素材清单](../../素材清单.md)。
+> 内容整理自个人学习笔记，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）；参考资料与原始素材见 [素材清单](../../../素材清单.md)。
 >
 > **验证情况**：`go build ./... && go vet ./...` 通过、`gofmt -l` 无输出，依赖 `go.etcd.io/etcd/client/v3 v3.7.2`（`grpc v1.83.2`）。
 > ⚠️ **未做运行时验证**：本机 Docker 未启动，没连真实 etcd 集群跑过；涉及 etcd 交互的部分只保证编译与 API 用词正确。
@@ -12,7 +12,7 @@
 ## 一、先拿一个 etcd 客户端单例
 
 `clientv3.Client` 内部自带连接池与锁，**一个进程一个**；
-获取方式直接用 [Raft协议.md 使用一](Raft协议.md) 里的 `raftdemo.Client()` 单例，
+获取方式直接用 [Raft协议.md 使用一](../理论/Raft协议.md) 里的 `raftdemo.Client()` 单例，
 不要在这里再写一遍。**注意它必须按指针传递**——拷例会触发 `go vet: passes lock by value`。
 
 ---
@@ -317,7 +317,7 @@ func Metadata(kv *mvccpb.KeyValue) (map[string]string, error) {
 ## 四、实验与排障（把这册每一条结论都跑一遍）
 
 > 三节点 etcd 集群的 `docker-compose.yml` 与 `etcdctl` 别名见
-> [Raft协议.md 使用三](Raft协议.md)，这里不重复；
+> [Raft协议.md 使用三](../理论/Raft协议.md)，这里不重复；
 > 下面只给**本册主题专属**的四个实验。
 >
 > ⚠️ **未实测声明**：本机 Docker 未启动，以下命令按 etcd v3.5 的公开子命令书写，
@@ -447,5 +447,5 @@ log.Printf("rev=%d instances=%v healthy=%v", r.Revision(), list, r.Healthy())
 - [服务发现与负载均衡.md](服务发现与负载均衡.md) — 注册 / 发现的机制与三道题
 - [客户端负载均衡的Go实现.md](客户端负载均衡的Go实现.md) — 接续：LB 策略与重试
 - [服务发现的Java实现.md](服务发现的Java实现.md) — 同一套语义在 Spring Cloud 里的词汇
-- [Raft协议.md](Raft协议.md) — etcd 客户端单例与三节点集群的搭建
-- [../../01-编程语言/go/工程实践/context.md](../../01-编程语言/go/工程实践/context.md) — Watch 与优雅退出里的取消传播
+- [Raft协议.md](../理论/Raft协议.md) — etcd 客户端单例与三节点集群的搭建
+- [../../../01-编程语言/go/工程实践/context.md](../../../01-编程语言/go/工程实践/context.md) — Watch 与优雅退出里的取消传播
