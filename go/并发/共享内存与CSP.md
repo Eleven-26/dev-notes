@@ -81,7 +81,7 @@ Go 把并发做进了语言层（`go` 关键字、`chan` 内置类型、`select`
 |---|---|---|
 | 语言语法 | 无关键字，靠库 | `go` / `chan` / `select` **是语言的一部分** |
 | 标准库 | `sync.Mutex`、`sync.Map`、`sync/atomic` | channel 本身 |
-| 官方立场 | ⭐ **两者都正式推荐** —— 标准库里 `sync` 包一直在演进（`sync.OnceValue`、`sync.WaitGroup.Go` 等新 API 不断加入） |
+| 官方立场 | 标准库 `sync` 包一直在演进（`sync.OnceValue`、`sync.WaitGroup.Go` 等新 API 不断加入） | ⭐ **两者都正式推荐** —— `go` / `chan` / `select` 是语言原语 |
 
 > ⭐ 顺着这条线可以自然接上另一个高频题：**Go 的调度模型（G/M/P）正是为 CSP 服务的** ——
 > 每个 goroutine 相当于一个"顺序进程"，调度器负责在它们之间切换、并在 channel 收发时挂起与唤醒（见 [../运行时/GMP调度.md](../运行时/GMP调度.md)）。
