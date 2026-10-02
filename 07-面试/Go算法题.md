@@ -1,0 +1,1055 @@
+# Go 算法题
+
+> **八道 Go 手撕题**，每题都给可运行的完整代码与实测输出：环形缓冲统计「最近 N 次」、
+> 斐波那契用栈消除递归、堆的构建与删堆顶、TopK 为什么用小根堆、TTL 缓存（map + 堆）、
+> **LRU 缓存（map + 双向链表）**、滑动窗口最长无重复子串、**二分边界与 `sort.Search`**；
+> 末尾附答题套路五步与 Go 刷题模板速查（末三则是**网格 DFS / 网格 BFS / DFS+回溯**）。
+>
+> 内容整理自大厂 Go 后端面试真题，参考资料与原始素材见 [素材清单](../素材清单.md)。
+>
+> ⭐ **分工**：本篇是「**用 Go 把题写出来**」（含边界与易错点）；**算法原理与选型判据**是另一层，
+> 见 [算法目录](../02-计算机基础/算法/README.md) 下各篇（堆 → [数据结构.md](../02-计算机基础/算法/基础算法/数据结构.md)、Top-K → [查找与排序对比.md](../02-计算机基础/算法/基础算法/查找与排序对比.md)、
+> 淘汰策略 → [缓存淘汰算法.md](../03-数据与中间件/数据存储/缓存淘汰算法.md)、遍历 → [DFS与BFS遍历.md](../02-计算机基础/算法/图论算法/图的遍历/DFS与BFS遍历.md) 总纲与它的两篇零件篇（[DFS深度优先遍历.md](../02-计算机基础/算法/图论算法/图的遍历/DFS深度优先遍历.md) / [BFS广度优先遍历.md](../02-计算机基础/算法/图论算法/图的遍历/BFS广度优先遍历.md)）），两处互引、**不重复讲原理**。
+> 代码与输出均为 `go1.26.5 windows/amd64` 本机实跑。
+
+---
+
+## 一、如何用环形缓冲统计「最近 N 次」数据的平均值？
+
+**本节要点**：这里给的是**工程场景**（最近 100 次接口耗时的均值、最近 10 笔订单的平均成交额、最近 30 个交易日的最高/最低/均价），想看你能否把它**抽象成合适的数据结构**——而不是先写代码。第二层才考 `container/ring` 的 API 与 `interface{}` 类型断言。
+
+### 思路
+
+需求特征是：**只关心"最近 N 次"，且 N 固定**。数组 / 切片只能 `append` 到尾部，会**无限膨胀**，想只留最近 N 个就得整体挪动元素；队列能做，但要自己维护"满了就出队一个"。**环形缓冲**则天然契合：**容量固定为 N，写满后新数据自动覆盖最旧数据**。
+
+结构很简单：**把链表首尾相连**，并定义两个方向——`Next` 顺时针、`Prev` 逆时针。写入时把值赋给**当前指针位置**（`r.Value = v`），再让指针**前进一格**（`r = r.Next()`）。于是第 N+1 个数据自然覆盖最旧的那个，**内存恒定**。统计时只需从当前位置绕一圈读回来，`Do` 会把环上每个元素依次交给回调函数。
+
+注意 `Do` 的参数**不是普通值，而是一个函数** `func(interface{})`——Go 里函数是一等公民；拿到元素后必须**先做类型断言**（`v.(int)`）才能参与运算。
+
+### Go 实现
+
+```go
+package main
+
+import (
+	"container/ring"
+	"fmt"
+)
+
+func main() {
+	const windowSize = 10
+	r := ring.New(windowSize) // 容量固定 10，只保留最近 10 次采样
+
+	// 模拟一批接口耗时（毫秒），刻意多给几个以验证"覆盖"行为
+	samples := []int{12, 8, 15, 20, 9, 11, 14, 7, 18, 10, 22, 6, 13}
+	for _, v := range samples {
+		r.Value = v  // 本格写入
+		r = r.Next() // 指针顺时针前进一格
+	}
+
+	// 绕环一周，统计最近 windowSize 次的平均值
+	sum, cnt := 0, 0
+	r.Do(func(v interface{}) {
+		if v == nil { // 采样不足时槽位为空，不能断言为 int
+			return
+		}
+		sum += v.(int)
+		cnt++
+	})
+	if cnt == 0 {
+		fmt.Println("暂无采样数据")
+		return
+	}
+	fmt.Printf("最近 %d 次平均耗时：%.2f ms\n", cnt, float64(sum)/float64(cnt))
+}
+```
+
+**实测**：13 次采样、窗口 10，只保留最新 10 个，输出 `最近 10 次平均耗时：13.00 ms`。
+
+### 复杂度与易错点
+
+写入一次（覆盖最旧 + 指针前进）**O(1)**；统计最近 N 次（遍历整个环）**O(N)**；额外空间 **O(N) 且恒定不增长**。
+
+1. **`v.(int)` 会 panic**：环初始化后每个 `Value` 都是 `nil`，采样次数不足窗口大小时必须判空。
+2. **窗口语义是"次数"不是"时间"**：这是"最近 N **次**调用"。若要按时间窗口，得额外带时间戳，用堆或链表淘汰（见第五节）。
+3. **`Do` 从当前指针位置开始遍历**，不是从逻辑上的"第 0 格"；求和无影响，要求有序输出时需先 `Move`。另外 `ring` 存 `interface{}` 有**装箱开销**，`list` 则长度可变、需自己控上限——`ring` 长度固定、写满即覆盖，才正是"固定窗口"的语义。
+
+### 延伸追问
+
+- **不用 `container/ring` 怎么写？** → 定长切片 + 写指针 `idx = (idx + 1) % N`，语义等价且无装箱开销，面试写这个更稳。
+- **和"滑动窗口 + 双指针"是一回事吗？** → 思想同源。这里窗口固定、只进不出所以用环形缓冲；变长窗口（如滑动窗口最大值）要用**单调队列**。
+
+---
+
+## 二、斐波那契：递归为什么慢？如何用栈把递归改成迭代？
+
+**本节要点**：这题**不是考斐波那契**，而是考三件事——① 是否**主动想到递归**；② 是否知道递归的**性能陷阱**（重复子问题）；③ 是否知道 **"栈"可以消除递归**这一通用手段（后序遍历、表达式求值、DFS 显式栈都靠它）。
+
+### 思路
+
+数列 `0, 1, 1, 2, 3, 5, 8, 13 ...`，编号从 1 开始：前两项**写死**，从第 3 项起等于前两项之和，即 `F(1)=0`、`F(2)=1`、`F(n)=F(n-1)+F(n-2)`（n ≥ 3）。前两项正好等于 `n-1`，所以 `n <= 2` 时直接 `return n - 1`，递归实现只有 4 行。
+
+**问题在于重复计算**：求 `F(5)` 要先算 `F(4)`、`F(3)`；算 `F(4)` 又要算 `F(3)`、`F(2)`……于是 **`F(2)`、`F(3)` 被反复计算**，n 越大越夸张，时间复杂度是 **O(2ⁿ)** 级别。
+
+**用栈展开递归**：递归本质是函数调用栈，那我们自己开一个栈、显式模拟即可。以 `F(5)` 为例：初始压入前两项 `[0, 1]`（即 `F(1), F(2)`），之后每轮固定做 **pop A → pop B → push A → push A+B**，栈的变化为 `[0,1]` → `[1,1]` → `[1,2]` → `[2,3]`，栈顶 `3` 就是 `F(5)`。**规律**：栈里**始终只保留最近两项**，做 `n-2` 轮后栈顶即 `F(n)`。
+
+Go 里**没有 `stack` 类型**。`container/list` 虽叫 list，本质是**双端链表**，栈只是它的子集功能，所以"弹栈"要**两步**：`Back()` 拿到栈顶元素 → `Remove()` 把它删掉；`PushBack` 即压栈。
+
+### Go 实现
+
+```go
+package main
+
+import (
+	"container/list"
+	"fmt"
+)
+
+// addCount 统计加法执行次数，用来衡量耗时（时间复杂度）
+var addCount int
+
+// 递归版：F(1)=0, F(2)=1, F(n)=F(n-1)+F(n-2)
+func fibRec(n int) int {
+	if n <= 2 {
+		return n - 1
+	}
+	addCount++
+	return fibRec(n-1) + fibRec(n-2)
+}
+
+// 栈版：返回 F(n) 与折算的操作单元次数
+func fibStack(n int) (int, int) {
+	if n <= 2 {
+		return n - 1, 0
+	}
+	st := list.New() // 用双端链表模拟栈
+	st.PushBack(0)   // F(1)
+	st.PushBack(1)   // F(2)
+
+	ops := 0
+	for i := 2; i < n; i++ { // 做 n-2 轮
+		top := st.Back() // 取栈顶（不删）
+		vTop := top.Value.(int)
+		st.Remove(top) // 再删除 -> 合起来才是 pop
+
+		next := st.Back()
+		vNext := next.Value.(int)
+		st.Remove(next) // 再 pop 一次
+
+		st.PushBack(vTop)         // 保留较大的那一项 F(k+2)
+		st.PushBack(vNext + vTop) // 新算出的项 F(k+3) 入栈
+		ops += 5                  // 2 次 pop + 2 次 push + 1 次加法
+	}
+	return st.Back().Value.(int), ops // 栈顶就是结果
+}
+
+func main() {
+	const n = 20
+	addCount = 0
+	v1 := fibRec(n)
+	fmt.Printf("递归：F(%d) = %d，加法执行 %d 次\n", n, v1, addCount)
+
+	v2, ops := fibStack(n)
+	fmt.Printf("栈：  F(%d) = %d，操作单元 %d 次\n", n, v2, ops)
+}
+```
+
+**实测**（`n = 20`）：递归 `F(20) = 4181`，加法执行 **6764** 次；栈 `F(20) = 4181`，操作单元 **90** 次。结果一致、计算量差近**两个数量级**，n 越大差距越大。
+
+### 复杂度与易错点
+
+朴素递归 **O(2ⁿ)**（实际约 `F(n)` 次调用）、空间 O(n) 调用栈；栈迭代 **O(n)**、空间 O(1)（栈中恒为 2 个元素）；两个滚动变量的迭代同为 O(n)/O(1) 且代码最短。
+
+1. **先对齐定义**：本题编号从 1 起、值从 0 起，所以是 `return n - 1`（`F(20)=4181`）。若按经典 `F(1)=F(2)=1`，`F(20)` 是 `6765`——**说反了结果就对不上**。
+2. **Go 里 pop 必须两步**：`container/list` 只提供 `Front()` / `Back()`，**不会自动删除**，忘记 `Remove` 会死循环。
+3. **每轮要 push 两个**（保留的旧项 + 新算出的项），只 push 结果会丢掉相邻项；同时 `n <= 0` 要在入口拦掉，否则返回 `-1`。栈方案本身也不是最优解——最优是两个滚动变量，栈的价值在于它是"**消除递归**"的通用手法。
+
+### 延伸追问
+
+- **递归慢的根因？** → **重叠子问题**被重复求解，`F(2)` 在 `F(5)` 的递归树里算了 3 次；解法是记忆化（自顶向下）或 DP（自底向上）。
+- **什么时候必须用显式栈？** → 递归分支是**非线性**时，如二叉树三序遍历、DFS、表达式求值、括号匹配——"回来的位置"不止一个，必须靠栈记录现场。
+- **递归会不会爆栈？** → 会。Go 的 goroutine 栈可自动扩缩容（初始 2KB），但极深递归仍可能 `stack overflow`，工程上优先改迭代。
+
+---
+
+## 三、堆是什么？如何构建堆、如何删除堆顶？
+
+**本节要点**：堆的定义只有两句话，真正的考点是 **"怎么构建、怎么删除"**——以及**建堆为什么是 O(n) 而不是 O(n log n)**、**删堆顶为什么是 O(log n)**。调整方向的差异（自下而上 vs 自上而下）最能区分"真懂"和"背 API"。
+
+### 思路
+
+> 堆的**定位与适用场景**（什么时候该用堆、"完全二叉树"为什么重要）见 [数据结构.md](../02-计算机基础/算法/基础算法/数据结构.md) 第六节；本节讲的是**怎么构建、怎么删除**——这正是这道题的考点所在。
+
+堆的定义就两句：① 它是一棵**完全二叉树**；② **小根堆**中任意节点的值都 **≤ 它的两个孩子**，**大根堆**则都 **≥ 两个孩子**。
+
+堆**用数组实现，不需要指针**——把完全二叉树**从上到下、从左到右**依次填进数组即可，下标关系是核心：
+
+```text
+下标: 0   1   2   3   4   5   6
+元素: 50  20  49  15  30  62  5
+
+父 i → 左孩子 2i+1、右孩子 2i+2
+孩子 i → 父 (i-1)/2        // 整除截断，左/右孩子通用
+```
+
+验证：`i = 1` 的孩子是 `3`、`4`（值 15、30）；孩子 `i = 3` 的父是 `(3-1)/2 = 1`，孩子 `i = 4` 的父也是 `(4-1)/2 = 1`，**左右孩子都用同一个公式**。
+
+**① 构建堆（自下而上，逐个下沉）**：先把乱序数组**原样**放进去（此时它不是堆）；再从**最后一个非叶子节点**（下标 `len/2 - 1`）开始**依次往前**，对每个节点做一次**下沉调整（sift down）**——与两个孩子比较把最小的换上来，换下来的元素继续对它新的孩子重复，直到不需要再换。从后往前的原因是：叶子节点本身已是合法堆，**只有非叶子节点才可能需要调整**。
+
+以 `[50, 20, 49, 15, 30, 62, 5]` 为例：
+
+| 步骤 | 调整对象 | 操作 | 数组 |
+|---|---|---|---|
+| 1 | 节点 2（49）与子 62、5 | 5 最小 → 与 49 交换 | `[50 20 5 15 30 62 49]` |
+| 2 | 节点 1（20）与子 15、30 | 15 最小 → 与 20 交换 | `[50 15 5 20 30 62 49]` |
+| 3 | 节点 0（50）与子 15、5 | 5 最小 → 与 50 交换 | `[5 15 50 20 30 62 49]` |
+| 4 | 50 下沉后**打乱了节点 2 区域** | 49 最小 → 与 50 交换 | `[5 15 49 20 30 62 50]` |
+
+**第 4 步是绝大多数人挂掉的地方**：元素一旦被换下来，就**必须对以它为父节点的那个三角形重新调整**，如此递归下去直到不需要调整；忘了这一步，堆就是错的。
+
+**② 删除堆顶（自上而下，一次下沉）**：删掉堆顶后**堆顶不能空着**（否则整棵树断裂），所以先把**最后一个元素挪到堆顶**（末尾补位，形态不变、长度减 1），再从堆顶开始**自上而下向下调整**——与两个孩子中较小的那个交换，直到不需要交换。以 `[5 15 49 20 30 62 50]` 为例：末尾 50 补到堆顶得 `[50 15 49 20 30 62]` → 与子 15、49 比，15 最小，交换 → `[15 50 49 20 30 62]` → 与子 20、30 比，20 最小，交换 → `[15 20 49 50 30 62]`，50 已到叶子，结束。注意被换下去后**只影响它自己所在的子树**，**另一个分支完全不用看**——这正是下沉能保持 O(log n) 的原因。
+
+### Go 实现
+
+```go
+package main
+
+import "fmt"
+
+// siftDown：对以 i 为根的子树做下沉调整（小根堆）
+func siftDown(a []int, i int) {
+	for {
+		l, r := 2*i+1, 2*i+2
+		min := i
+		if l < len(a) && a[l] < a[min] {
+			min = l
+		}
+		if r < len(a) && a[r] < a[min] {
+			min = r
+		}
+		if min == i { // 父节点已是最小，调整结束
+			return
+		}
+		a[i], a[min] = a[min], a[i]
+		i = min // 继续往下看被换下来的元素
+	}
+}
+
+// buildHeap：自下而上建堆，O(n)
+func buildHeap(a []int) {
+	if len(a) < 2 {
+		return // 空数组 / 单元素本身就是堆
+	}
+	for i := len(a)/2 - 1; i >= 0; i-- { // 从最后一个非叶子节点往前
+		siftDown(a, i)
+	}
+}
+
+// popTop：删除并返回堆顶，O(log n)
+func popTop(a []int) (int, []int) {
+	if len(a) == 0 {
+		return 0, a // 空堆，调用方需先判空
+	}
+	top := a[0]
+	a[0] = a[len(a)-1] // 末尾元素补到堆顶
+	a = a[:len(a)-1]   // 长度减 1
+	if len(a) > 0 {
+		siftDown(a, 0) // 自上而下调整
+	}
+	return top, a
+}
+
+func main() {
+	a := []int{50, 20, 49, 15, 30, 62, 5}
+	buildHeap(a)
+	fmt.Println("建堆后:", a) // [5 15 49 20 30 62 50]
+
+	top, a := popTop(a)
+	fmt.Println("弹出堆顶:", top, "剩余:", a) // 5 [15 20 49 50 30 62]
+}
+```
+
+### 复杂度与易错点
+
+构建堆 **O(n)**：叶子约占总数的一半，越靠底层的节点越多、但它们下沉的距离越短，`Σ h·n/2^h` 收敛到线性量级。删除堆顶 **O(log n)**：只沿**一条路径**从根走到叶子，路径长度 = 树高。查询堆顶 **O(1)**，就是 `a[0]`。
+
+1. **忘记"级联下沉"**：换下来的元素必须继续往下比较，否则堆序被破坏（见上面第 4 步）。
+2. **起始下标写错**：最后一个非叶子节点是 `len(a)/2 - 1`，从它开始**往前**；写成 `len(a)/2` 会从叶子开始，白跑一轮。
+3. **空数组 / 单元素 / 空堆**：`len < 2` 时直接返回，避免 `len/2-1 = -1` 死循环；`popTop` 空堆必须判，否则取 `a[0]` panic。
+4. **不要"整体搬移"删堆顶**：把后面元素集体前移是 O(n) 且破坏堆序，必须**末尾元素补位**；越界判断还必须在比较之前（短路求值顺序不能反），**大根堆 / 小根堆只差一个比较符号**，别搞反。
+
+### 延伸追问
+
+- **建堆为什么是 O(n)？** → 第 `h` 层节点数约 `n/2^h`、下沉代价 `h`，`Σ h·n/2^h` 收敛到 O(n)。
+- **插入元素怎么做？** → 放到数组末尾然后**自下而上上浮（sift up）**，O(log n)。本次重点是"建堆"和"删堆顶"。
+- **删除任意一个元素怎么做？** → 找到下标 → 末尾元素补位 → 判断该位置应**上浮**还是**下沉** → O(log n)，这正是 `container/heap` 里 `Remove(i)` 的做法。
+- **堆和二叉搜索树的区别？** → BST 要求**左右子树整体有序**（左 < 根 < 右），堆只要求**父子偏序**，兄弟间无约束，所以堆能用数组存、建堆只要 O(n)。
+
+---
+
+## 四、如何从 100 万个整数里找出最大的前 10 个数？
+
+**本节要点**：**TopK 是堆最经典的应用**（等价于优先级队列）。考点在"**为什么用小根堆找最大**"这个反直觉选择，以及 O(n log k) 与全排序 O(n log n) 的取舍、内存受限场景下的空间意识。
+
+### 思路
+
+> Top-K 的**算法选择**（为什么用大小为 K 的堆而不是全排序、快速选择怎么做到 O(n)、以及"找最大用最小堆"的判据推导）见 [查找与排序对比.md](../02-计算机基础/算法/基础算法/查找与排序对比.md) 第四节；本节给 **Go 完整实现**。
+
+**为什么不用"排序后取前 10"？** 100 万个数全排序是 O(n log n)，还可能占额外空间；而 TopK 只需要知道"前 10 个是谁"，**不关心剩下的顺序**。
+
+**关键：找最大的 K 个，用「大小为 K 的**小根堆 **」。** 小根堆的堆顶是**当前 TopK 里最小的那个**，也就是"守门员"：① 取前 K 个数（若 `k > n` 则把 k 收窄为 n）建小根堆；② 遍历剩下的数，**只要大于堆顶**就说明它比守门员更有资格进 TopK → **替换堆顶并下沉**，否则跳过；③ 遍历结束后堆里就是最大的 K 个数。反过来，**找最小的 K 个要用大根堆**——这一点最容易答反。
+
+**收益**：堆的大小恒为 K，每次调整是 O(log K) 而非 O(log n)，总时间 **O(n log K)**、额外空间 **O(K)**。100 万取前 10，`log K ≈ 3.3`，几乎等于线性扫描。相比之下全排序是 O(n log n)；若允许改原数组，"快速选择"平均能到 O(n)。
+
+### Go 实现
+
+```go
+package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// siftDown：小根堆下沉（以传入切片的长度为界）
+func siftDown(h []int, i int) {
+	for {
+		l, r := 2*i+1, 2*i+2
+		min := i
+		if l < len(h) && h[l] < h[min] {
+			min = l
+		}
+		if r < len(h) && h[r] < h[min] {
+			min = r
+		}
+		if min == i {
+			return
+		}
+		h[i], h[min] = h[min], h[i]
+		i = min
+	}
+}
+
+// topK：返回 data 中最大的 k 个数（降序）
+func topK(data []int, k int) []int {
+	if k <= 0 || len(data) == 0 {
+		return nil // 边界：非法 k / 空输入
+	}
+	if k > len(data) {
+		k = len(data)
+	}
+
+	h := make([]int, k)
+	copy(h, data[:k]) // 复制前 k 个（不要用 data[:k]，会改坏入参）
+	for i := k/2 - 1; i >= 0; i-- {
+		siftDown(h, i) // 1. 建小根堆
+	}
+	for _, v := range data[k:] { // 2. 逐个挑战堆顶
+		if v > h[0] { // 比"守门员"大才有资格
+			h[0] = v
+			siftDown(h, 0)
+		}
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(h))) // 3. 需要降序再排一次
+	return h
+}
+
+func main() {
+	data := []int{3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5}
+	fmt.Println(topK(data, 3)) // [9 6 5]
+	fmt.Println(topK(data, 0)) // []
+	fmt.Println(topK(nil, 5))  // []
+}
+```
+
+### 复杂度与易错点
+
+1. **方向上最容易答反**：**最大的 K 个用小根堆**（堆顶当门槛），**最小的 K 个用大根堆**。总复杂度 = n 次比较 + 每次 O(log K) 调整 = **O(n log K)**，额外空间 **O(K)**。
+2. **`k > n` / `k <= 0` / 空输入**必须拦掉，否则 `data[:k]` 越界 panic。
+3. **用 `make` + `copy` 复制前 k 个**，不要写 `h := data[:k]`，否则排序阶段会**改坏调用方的原数组**。
+4. **重复元素**：用 `>` 严格大于堆顶才替换，不影响答案；若要求相同值都计入，需改用 `>=`（按题意明确）。另注意 K 接近 n 时堆相比排序就没有优势了，要主动说出来。
+
+### 延伸追问
+
+- **内存放不下 100 万个整数怎么办？** → **流式处理**：逐批读入，只维护大小为 K 的堆，内存恒为 O(K)。这是堆方案最大的工程价值。
+- **要返回"第 K 大"而不是"前 K 大"？** → 同样用小根堆，最后返回堆顶即可，不必排序输出；直接用 `sort.Slice` 虽可行但是 O(n log n)，被问到"100 万取前 10"就是在暗示你上堆。
+
+---
+
+## 五、如何实现一个超时缓存（TTL 缓存），做到及时淘汰过期 key？
+
+**本节要点**：这是**堆的工程落地综合题**。要看的是你能不能把"两个数据结构组合起来解决问题"（map 存数据 + 堆管过期顺序），并**用复杂度分析证明方案更优**——而不是只会 `for range map` 硬扫。
+
+### 思路
+
+**场景**：拿 `userID` 查了一次 DB，把结果放进本地 `map` 做缓存，希望在很短时间（比如 10 秒、5 分钟）内复用。不做过期控制有两个后果：**① map 无限膨胀、内存失控；② DB 数据已变而缓存没更新，读到脏数据。** 需求是：每个 key 在写入时就算好到期时刻（TTL 固定，到期时刻可确定），到期后必须被及时清掉。
+
+**反面方案（要主动否掉）**：开个死循环不断 `for range map` 检查每个 key。代价是**每次都要全量扫描整个 map**，而且是**常驻忙等循环**——即使程序里别的什么都不干，也能把一个 CPU 核跑满。
+
+**正面方案：`map` + 按过期时间排序的**小根堆 **。**
+
+1. **`map`** 按 key 存缓存数据，O(1) 读写。
+2. **小根堆**里每个节点是 `(key, 到期时刻)`，**比较大小用「到期时刻」**，于是**堆顶 = 最早到期的那个 key**。
+3. **惰性淘汰**：每次访问前只看**堆顶**——堆顶**还没到期**，因为它是**最早到期**的，堆里其他元素更不可能到期，直接停止检查、**完全不遍历**；堆顶**已到期**，就从 `map` 和堆里各删一份，**继续看新的堆顶**（循环，可能一次清掉一批）。
+
+| 方案 | 每次检查的代价 |
+|---|---|
+| 遍历整个 map | O(m)，m 为缓存条目总数 |
+| **只检查堆顶** | **O(1)** 判断；真有到期才触发 `O(log m)` 的删堆顶，**没到期就是零成本** |
+
+而"删堆顶"内部就是第三节讲的"末尾补位 + 向下调整"，`container/heap` 的 `Pop` 已帮我们做完。
+
+### Go 实现
+
+```go
+package main
+
+import (
+	"container/heap"
+	"fmt"
+	"time"
+)
+
+// 缓存条目：值 + 到期时刻
+type entry struct {
+	key      string
+	value    string
+	expireAt time.Time
+}
+
+// 按到期时间排序的小根堆：堆顶 = 最早到期的 key（需实现 heap.Interface 的 5 个方法）
+type expireHeap []entry
+
+func (h expireHeap) Len() int           { return len(h) }
+func (h expireHeap) Less(i, j int) bool { return h[i].expireAt.Before(h[j].expireAt) } // 大根堆改成 .After
+func (h expireHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+// Push / Pop 只需"往切片里加 / 从切片里删"，上下调整由 container/heap 完成
+func (h *expireHeap) Push(x any) { *h = append(*h, x.(entry)) }
+func (h *expireHeap) Pop() any {
+	old := *h
+	n := len(old)
+	item := old[n-1]
+	*h = old[:n-1] // 子切片截取，等价于"删掉最后一个元素"
+	return item
+}
+
+// TTL 缓存 = map（存数据） + 小根堆（按到期时间淘汰）
+type TTLCache struct {
+	data map[string]entry
+	exp  expireHeap
+	ttl  time.Duration
+}
+
+func NewTTLCache(ttl time.Duration) *TTLCache {
+	c := &TTLCache{
+		data: make(map[string]entry),
+		exp:  make(expireHeap, 0),
+		ttl:  ttl,
+	}
+	heap.Init(&c.exp) // 把普通切片"提升"为堆，之后 heap.Push/Pop 才会帮你调整
+	return c
+}
+
+func (c *TTLCache) Set(key, value string) {
+	e := entry{key: key, value: value, expireAt: time.Now().Add(c.ttl)}
+	c.data[key] = e
+	heap.Push(&c.exp, e) // map 和堆里各存一份
+}
+
+func (c *TTLCache) Get(key string) (string, bool) {
+	c.evict()
+	if e, ok := c.data[key]; ok {
+		return e.value, true
+	}
+	return "", false
+}
+
+// evict：惰性淘汰，只盯堆顶
+func (c *TTLCache) evict() {
+	now := time.Now()
+	for c.exp.Len() > 0 && !c.exp[0].expireAt.After(now) { // 堆顶已到期
+		e := heap.Pop(&c.exp).(entry) // O(log m)：末尾补位 + 向下调整
+		if cur, ok := c.data[e.key]; ok && cur.expireAt.Equal(e.expireAt) {
+			delete(c.data, e.key) // 版本校验：避免误删被刷新过的条目
+		}
+	}
+}
+
+func main() {
+	c := NewTTLCache(50 * time.Millisecond)
+	c.Set("user:1", "alice")
+	_, ok := c.Get("user:1")
+	fmt.Println("第一次命中:", ok) // true
+	time.Sleep(80 * time.Millisecond)
+	_, ok = c.Get("user:1")
+	fmt.Println("过期后命中:", ok) // false
+}
+```
+
+**实测输出**：`第一次命中: true` / `过期后命中: false`。
+
+### 复杂度与易错点
+
+`Set` = O(1) map 写 + **O(log m)** 堆插入；`Get` 无过期条目时 **O(1)**（只比一次堆顶）；淘汰一个过期 key **O(log m)**；额外空间 O(m)（map + 堆各一份）。
+
+1. **忘记 `heap.Init`**：`container/heap` 的 `Push` / `Pop` 只做"调整"，**不会自动建堆**，没 `Init` 就不保证堆序。
+2. **`Less` 比错维度**：这里比较的是**到期时刻**，不是字符串 key；写错堆顶就不是最早到期的。
+3. **绕过 `heap.Push` / `heap.Pop`**：直接 `append` 会跳过上下调整，堆序立刻破坏；且必须用指针接收者 + `&c.exp`，值接收者改不动切片头。另外**重复刷新会留下"僵尸堆节点"**（旧到期时刻仍在堆里），代码里用 `expireAt.Equal` 做版本校验兜底。
+4. **惰性淘汰 ≠ 精确定时**：只有 `Get` 才触发清理，**长期不访问的 key 会滞留**，生产上通常再加低频后台协程兜底。
+
+### 延伸追问
+
+- **为什么用堆而不是 `time.AfterFunc`？** → 定时器要**为每个 key 开一个 goroutine/定时器**，条目多时开销大；堆是**集中管理**、内存紧凑，淘汰逻辑只有一处。
+- **为什么必须"小根堆"？** → 我们要最快找到**到期时间最小**的那条；大根堆只能拿到最晚到期的，毫无用处。
+- **和 LRU 的区别？** → LRU 按**访问时间**淘汰（处理"冷数据占内存"），TTL 按**写入时间**淘汰（处理"数据过期"）；生产里常结合（如 Redis 的 `volatile-lru`）。
+- **并发安全怎么办？** → `map` 与堆都非并发安全，需 `sync.RWMutex` 保护 `Set` / `Get` / `evict` 的整段临界区；分片加锁可降低竞争。
+
+---
+
+## 六、如何实现一个 LRU 缓存，让 Get 和 Put 都是 O(1)？
+
+**本节要点**：这是第五节 TTL 缓存的**姊妹题**，两者只在"按什么时间淘汰"上不同：**TTL 按写入时间**（数据过期），**LRU 按访问时间**（冷数据占内存）。真正想看的是你能否把 **`map` 的 O(1) 定位**和**双向链表的 O(1) 移动/删除**拼起来。
+
+### 思路
+
+> LRU 的**算法原理**（为什么它会有缓存污染、LFU / Clock / W-TinyLFU 各自的代价）是单一来源，见
+> [缓存淘汰算法.md](../03-数据与中间件/数据存储/缓存淘汰算法.md) 第一节；本节只讲 **Go 里怎么把它写出来**。
+
+单个数据结构都不够用：
+
+| 只用… | 缺什么 |
+|---|---|
+| `map` | 能 O(1) 查到值，但**不知道谁最久没用**（map 无顺序） |
+| 双向链表（按访问时间排） | 知道顺序，但**查某个 key 要 O(n) 遍历** |
+
+于是组合：**`map` 负责"定位"，双向链表负责"排序"**。约定的位置语义是——**链表头部 = 最近使用，尾部 = 最久未用**。
+
+三个操作各只动一处：
+
+| 操作 | 链表侧 | `map` 侧 |
+|---|---|---|
+| `Get` 命中 | `MoveToFront` 挪到队头 | 不动 |
+| `Put` 新 key | `PushFront` 插到队头 | 新增映射 |
+| 超容量 | 删 `Back()` 队尾 | **`delete` 同一个 key**（两边必须同步删） |
+
+⚠️ 关键细节：**`map` 的 value 存的是 `*list.Element`（链表节点），不是值本身**。因为 `MoveToFront` / `Remove` 需要的是节点指针；若只存值，就得先 O(n) 找到节点，O(1) 立刻没了。
+
+### Go 实现
+
+```go
+package main
+import (
+	"container/list"
+	"fmt"
+)
+type LRUCache struct {
+	cap  int
+	data map[string]*list.Element // key → 链表节点（拿到节点才能 O(1) 移动 / 删除）
+	lst  *list.List               // 双向链表：头部 = 最近使用，尾部 = 最久未用
+}
+type kv struct{ key, value string }
+func NewLRUCache(cap int) *LRUCache {
+	return &LRUCache{cap: cap, data: make(map[string]*list.Element), lst: list.New()}
+}
+func (c *LRUCache) Get(key string) (string, bool) {
+	if el, ok := c.data[key]; ok {
+		c.lst.MoveToFront(el) // 命中 = 最近使用，挪到队头
+		return el.Value.(kv).value, true
+	}
+	return "", false
+}
+func (c *LRUCache) Put(key, value string) {
+	if el, ok := c.data[key]; ok { // 已存在：更新值并挪到队头
+		el.Value = kv{key, value}
+		c.lst.MoveToFront(el)
+		return
+	}
+	c.data[key] = c.lst.PushFront(kv{key, value}) // 新元素放队头
+	if c.lst.Len() > c.cap {                      // 超容量：淘汰队尾（最久未用）
+		tail := c.lst.Back()
+		delete(c.data, tail.Value.(kv).key)
+		c.lst.Remove(tail)
+	}
+}
+func (c *LRUCache) Keys() []string { // 从队头到队尾，即"最近 → 最久"
+	out := make([]string, 0, c.lst.Len())
+	for el := c.lst.Front(); el != nil; el = el.Next() {
+		out = append(out, el.Value.(kv).key)
+	}
+	return out
+}
+func main() {
+	c := NewLRUCache(3)
+	c.Put("a", "1")
+	c.Put("b", "2")
+	c.Put("c", "3")
+	fmt.Println("写入 a,b,c 后:", c.Keys())
+	c.Get("a") // 访问 a → a 变成最近使用
+	fmt.Println("Get(a) 后:  ", c.Keys())
+	c.Put("d", "4") // 超容量，淘汰最久未用的 b
+	fmt.Println("Put(d) 后:  ", c.Keys())
+	v, ok := c.Get("b")
+	fmt.Printf("Get(b): %q, %v\n", v, ok)
+	c.Put("c", "33") // 更新已存在的 key：更新值且挪到队头，长度不变
+	fmt.Println("Put(c,33)后:", c.Keys())
+	v2, _ := c.Get("c")
+	fmt.Println("c 的新值:", v2)
+}
+```
+
+**实测**（`go1.26.5 windows/amd64`）：
+
+```text
+写入 a,b,c 后: [c b a]
+Get(a) 后:   [a c b]
+Put(d) 后:   [d a c]
+Get(b): "", false
+Put(c,33)后: [c d a]
+c 的新值: 33
+```
+
+逐行读这段输出，LRU 的全部语义都在里面：`Keys()` 是「最近 → 最久」，`Put(d)` 淘汰的是**队尾的 b**（因为它最久没被访问，而不是最早写入的 a）；被淘汰后 `Get(b)` 返回 `false`；最后更新 `c` 的值时长度仍是 3，且 `c` 挪到了队头。
+
+### 复杂度与易错点
+
+`Get` / `Put` 均 **O(1)**（哈希定位 + 链表头尾操作）；额外空间 O(cap)。
+
+1. **淘汰时两边都要删**：只 `Remove(tail)` 不 `delete(map)` 会留下悬挂映射，下次 `Get` 返回已被删除的节点。
+2. **更新已存在的 key 要走单独分支**：直接 `PushFront` 会插入重复节点，`map` 只指向新的那个，旧的成了"僵尸"。
+3. **`container/list` 的 `Value` 是 `interface{}`**，取用时必须断言（`el.Value.(kv)`）；**不同 key 必须存同类型**，否则 panic。
+4. **拿到 capacity 就该说并发**：`map` 和链表都非并发安全，实际用 `sync.Mutex` 包住整个方法（比 RWMutex 更合适——`Get` 会修改链表顺序，**不是只读**）。
+
+### 延伸追问
+
+- **`Get` 为什么不能用读锁？** → 它要 `MoveToFront` 修改链表，**不是只读操作**，`RWMutex` 的读锁会并发写链表，必须加写锁。
+- **LRU 的缺陷是什么？** → **缓存污染**：一次全表扫描会把热数据全挤出去（见 [缓存淘汰算法.md](../03-数据与中间件/数据存储/缓存淘汰算法.md) 2.5）。生产上 Redis 用的是**近似 LRU**（随机采样），Caffeine 用 **W-TinyLFU**。
+- **和第五节 TTL 缓存能合并吗？** → 能，而且很常见：`map` 同时存 `expireAt`，访问时先判过期再判容量；Redis 的 `volatile-lru` 就是"只对设了 TTL 的 key 做 LRU"。
+
+---
+
+## 七、滑动窗口 / 双指针怎么用在字符串题上？
+
+**本节要点**：考点是「**窗口不清空、只伸缩**」这个心智模型——用**常数额外空间**把 O(n²) 的枚举压到 O(n)。
+真正的分水岭是能不能说出「**right 一直往前，left 只前进不回退**」这一句：说得出，O(n) 就已经成立。
+
+> ⚠️ **先澄清一个同名问题**：本节的"滑动窗口"指**字符串 / 数组上的双指针技巧**；
+> 计数与时间维度上的那个"滑动窗口"（**限流算法**）见 [../../04-架构与系统/分布式/限流降级熔断.md](../04-架构与系统/分布式/限流降级熔断.md) 与
+> [限流算法.md](../04-架构与系统/分布式/限流算法.md)——两者只是名字相同，没有共同之处。
+
+### 思路
+
+题面：给定字符串，求**不含重复字符的最长子串**的长度。
+
+朴素做法是枚举每个起点向右扫到重复为止，O(n²)。关键观察是：**当 `[left, right]` 里已经出现重复时，任何包含这段的更长区间都不可能是答案**——那就没必要回退 `left` 去重试。
+
+于是维护一个**始终保持合法**（无重复）的窗口 `[left, right]`：
+
+1. `right` 每次右移一格，把新字符纳入窗口；
+2. 若新字符上次出现的位置 `prev` **落在当前窗口内**（`prev >= left`），说明重复了 → 把 `left` 直接跳到 `prev + 1`；
+3. 用当前窗口长度更新答案。
+
+**`prev >= left` 这个判断是整道题最容易漏掉的一行**：字符在窗口**外面**重复过不算重复，`left` 绝不能因为它而被拽回去。
+
+### Go 实现
+
+```go
+package main
+import "fmt"
+// lengthOfLongestSubstring：返回 s 中不含重复字符的最长子串的长度
+func lengthOfLongestSubstring(s string) int {
+	last := make(map[byte]int, len(s)) // 字符 → 最近一次出现的下标
+	best, left := 0, 0                 // left 是窗口左边界，窗口恒为 [left, right]
+	for right := 0; right < len(s); right++ {
+		c := s[right]
+		if prev, ok := last[c]; ok && prev >= left { // 重复且在当前窗口内 → 收缩左边界
+			left = prev + 1
+		}
+		last[c] = right
+		if cur := right - left + 1; cur > best {
+			best = cur
+		}
+	}
+	return best
+}
+func main() {
+	for _, s := range []string{"abcabcbb", "bbbbb", "pwwkew", "", "dvdf", "abba"} {
+		fmt.Printf("%-10q → %d\n", s, lengthOfLongestSubstring(s))
+	}
+}
+```
+
+**实测**：
+
+```text
+"abcabcbb" → 3
+"bbbbb"    → 1
+"pwwkew"   → 3
+""         → 0
+"dvdf"     → 3
+"abba"     → 2
+```
+
+### 复杂度与易错点
+
+时间 **O(n)**（`right` 走一趟、`left` 只单调前进）；额外空间 **O(min(n, 字符集大小))**。
+
+**最容易漏的就是这一行**。把 `prev >= left` 判断删掉，实测会变成这样：
+
+```text
+"abba"     → 错版 3（正解 2）
+"tmmzuxt"  → 错版 6（正解 5）
+```
+
+⚠️ 注意错版给出的答案比正解**更大**——这本身就暴露了错误：答案不可能超过字符串自身合法子串的长度。它是怎么错的？在 `abba` 里，最后一个 `a` 的上次出现位置是 `0`，错版把 `left` 拽回 `1`，于是窗口变成 `"bba"`（**含重复 b**）却算出长度 3。**自检办法**：答案若大于 `len(s)` 或者明显不合理，先怀疑这里的 `prev` 判断。
+
+其它两个坑：
+
+1. **`left` 的偏移量是 `prev + 1` 不是 `prev`**：窗口左边界要**落在重复字符之后**。
+2. **`map[byte]` 只适用于 ASCII**：含中文要用 `map[rune]int`，并且 `for range` 拿到的是 rune 下标，与字节下标不是一回事（混合中英文时长度会算错）。
+
+### 延伸追问
+
+- **要返回子串本身而不是长度怎么办？** → 更新 `best` 的同时记下 `bestLeft`，最后返回 `s[bestLeft : bestLeft+best]`。
+- **什么时候双指针不够用？** → 窗口需要"动态求极值 / 第 K 大"时（如滑动窗口的最大值），得上**单调队列**；退化成堆是 O(n log k)，达不到 O(n)。
+- **这题还有别的形式吗？** → 找最短覆盖子串（变长窗口 + 计数 map）、找和为定值的最长子数组（前缀和 + 双指针），内核都是"**right 一直往前、left 只进不退**"。
+
+---
+
+## 八、二分查找为什么手写容易错？怎么用标准库规避？
+
+**本节要点**：二分查找是"**思路人人会、代码写不利索**"的典型——真正的瓶颈永远是**边界**：mid 溢出、死循环、找不到的返回值、重复元素到底拿第一个还是最后一个。本节给一套**能记住的不变式**，并说明为什么优先 `sort.Search`。
+
+### 思路
+
+先约定本节使用的**区间不变式**：**搜索区间是 `[l, r)`（左闭右开）**，目标是找**第一个 ≥ target 的位置**（即 C++ 的 `lower_bound`）。
+
+三条铁律，每一条都对应一个经典 bug：
+
+| 写法 | 后果 |
+|---|---|
+| `mid := (l + r) / 2` | **溢出**：`l`、`r` 极大时 `l+r` 会越过 `int` 上限（Go 里会静默变负）→ 写成 `l + (r-l)/2` |
+| `for l <= r` | **死循环**：当 `r = mid`（而不是 `mid-1`）时区间不会缩小 → 左开右闭必须用 `for l < r` |
+| `r = mid - 1` | **漏解**：区间右端**不可达**（`[l, r)` 不含 `r`），必须写成 `r = mid` |
+
+至于 **重复元素怎么拿首尾两个位置**——不要为它写两遍二分，用同一个 `lower_bound` 变换 Comparator 即可：
+
+```text
+第一个 == target 的位置 = 第一个 >= target 的位置
+最后一个 == target 的位置 = 第一个 >  target 的位置 − 1
+```
+
+### Go 实现
+
+```go
+package main
+import (
+	"fmt"
+	"sort"
+)
+// 手写版：在升序 a 中找第一个 ≥ target 的下标（lower_bound），不存在返回 len(a)
+func lowerBound(a []int, target int) int {
+	l, r := 0, len(a) // 区间是 [l, r)，写成 len(a)-1 就要改下面的判定
+	for l < r {       // 区间为空时结束；写成 l <= r 会在单元素时死循环
+		mid := l + (r-l)/2 // 防溢出；写成 (l+r)/2 在极大下标时会溢出
+		if a[mid] < target {
+			l = mid + 1
+		} else {
+			r = mid // r 不可达 → 不写 mid-1
+		}
+	}
+	return l
+}
+func main() {
+	a := []int{1, 3, 5, 7, 9}
+	for _, t := range []int{5, 4, 0, 10} {
+		fmt.Printf("target=%-3d sort.SearchInts=%-2d 手写 lowerBound=%-2d\n",
+			t, sort.SearchInts(a, t), lowerBound(a, t))
+	}
+	// 重复元素：找第一个 / 最后一个等于 target 的位置
+	b := []int{1, 2, 2, 2, 3}
+	first := sort.Search(len(b), func(i int) bool { return b[i] >= 2 })
+	last := sort.Search(len(b), func(i int) bool { return b[i] > 2 }) - 1
+	fmt.Printf("重复元素 first=%d last=%d\n", first, last)
+}
+```
+
+**实测**：
+
+```text
+target=5   sort.SearchInts=2  手写 lowerBound=2
+target=4   sort.SearchInts=2  手写 lowerBound=2
+target=0   sort.SearchInts=0  手写 lowerBound=0
+target=10  sort.SearchInts=5  手写 lowerBound=5
+重复元素 first=1 last=3
+```
+
+注意三个边界情形：`target=4`（不存在但应插在 2 号位）返回 **2**；`target=10`（比所有元素都大）返回 **5 == len(a)**，**不是 `-1`**——这是调用方必须自己判的一点。
+
+### 复杂度与易错点
+
+时间 O(log n)、空间 O(1)。
+
+1. **存在性必须单独判**：拿到下标 `i` 后要 `i < len(a) && a[i] == target`，否则会把"插入位置"当成"找到了"。
+2. **`sort.Search` 的谓词必须单调**：要求形如 `false…false true…true`，即在某个点之后永久为真；写 `a[i] == target` 这种非单调条件，结果是未定义的。
+3. **数组必须有序，且比较方向要与排序一致**：降序数组要用 `>`，否则永远走错分支。
+4. **优先用标准库**：`sort.SearchInts` / `sort.SearchStrings` / `sort.Search`；自己写二分的收益是"讲清边界"，工程里不必重复造。
+
+### 延伸追问
+
+- **怎么在答案空间上二分（二分答案）？** → 把"求最优解"转成"判断某个值是否可行"，对答案域二分；典型如"在 `n` 天内完成 `m` 个任务的最小日产能"。
+- **Go 为什么没有 `bisect`？** → `sort.Search` 就是它的通用版（传谓词而非数组），代价是必须自己保证谓词单调。
+- **复杂度上二分一定快吗？** → 不一定。小规模数据线性扫描可能更快（缓存局部性好），且二分要求**有序 + 随机访问**——链表上做二分反而退化成对 n/2 的单次访问。
+
+---
+
+## 九、算法题的答题套路怎么组织？
+
+算法题的得分点从来不是"背出答案"，而是把**思考过程**讲出来。按五步走，即使写不出最优解也不会挂：
+
+| 步骤 | 做什么 | 为什么加分 |
+|---|---|---|
+| **① 先问约束** | 数据规模多大？有没有序？能否改原数组？内存/时间限制？要"第 K 个"还是"前 K 个"？ | 展示"先确认需求"的工程习惯，也能避免答偏 |
+| **② 先讲思路再写码** | 先说选什么数据结构、**为什么选它**（"最近 N 次"→ 环形缓冲；"动态取极值"→ 堆） | 证明你会**抽象建模**，不是碰运气套模板 |
+| **③ 主动说复杂度** | 时间/空间，分最好、平均、最坏；对比替代方案（O(n log K) vs O(n log n)） | 复杂度意识是区分"会写代码"和"会写算法"的分水岭 |
+| **④ 主动提边界** | 空输入、单元素、全相同、`k <= 0` 或 `k > n`、整数溢出、递归深度、堆为空 | **边界处理最容易拉开差距**，一定要自己说出来 |
+| **⑤ 写完走一遍** | 拿一个 3~5 元素的小样例，逐行念变量的变化 | 能当场发现写错的下标/循环条件 |
+
+**亮点**：主动说可优化点（"栈解递归这里可用两个滚动变量做到 O(1) 空间"）；主动说工程落点（"堆方案在流式数据下内存恒为 O(K)"、"生产里会再加一把 `RWMutex`"）；主动说验证方式（"用 `go test -race` 确认无数据竞争"）；代码命名清晰、`min`/`max` 别撞内建名、多用早返回减少嵌套。
+
+---
+
+## 十、Go 刷题常用模板有哪些？
+
+以下均为**片段**：语句类直接粘贴到函数体内，类型 / 方法定义放在包级即可使用。
+
+**一、slice 原地反转**
+
+```go
+func reverse(a []int) {
+	for i, j := 0, len(a)-1; i < j; i, j = i+1, j-1 {
+		a[i], a[j] = a[j], a[i]
+	}
+}
+```
+
+**二、`sort.Slice` 自定义排序**
+
+```go
+type User struct {
+	Name string
+	Age  int
+}
+
+users := []User{{"bob", 30}, {"alice", 30}, {"carol", 25}}
+
+// 按 Age 降序，同 Age 时按 Name 升序
+sort.Slice(users, func(i, j int) bool {
+	if users[i].Age != users[j].Age {
+		return users[i].Age > users[j].Age
+	}
+	return users[i].Name < users[j].Name
+})
+// 需保持相等元素原有相对顺序时用 sort.SliceStable；基本类型用 sort.Ints / sort.Strings 更快
+```
+
+**三、`container/heap` 优先队列（最小堆模板）**
+
+```go
+type IntHeap []int
+
+func (h IntHeap) Len() int           { return len(h) }
+func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] } // 改成 > 即最大堆
+func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *IntHeap) Push(x any) { *h = append(*h, x.(int)) }
+func (h *IntHeap) Pop() any {
+	old := *h
+	n := len(old)
+	v := old[n-1]
+	*h = old[:n-1]
+	return v
+}
+
+// 用法（放在函数内）：Init 建堆 → Push/Pop 代替 append/切片截取
+h := &IntHeap{3, 1, 4}
+heap.Init(h)
+heap.Push(h, 2)
+min := heap.Pop(h).(int) // 1
+// 删除任意下标：heap.Remove(h, i)；元素变化后修正：heap.Fix(h, i)
+```
+
+**四、`map` 计数 / 去重**
+
+```go
+cnt := make(map[string]int)
+for _, w := range words {
+	cnt[w]++ // 遍历顺序随机，需要有序输出时先收集 key 再 sort.Strings
+}
+// 判断是否存在要用 ok，不要用 v != 0（值可能正好是 0）
+if v, ok := cnt["go"]; ok {
+	fmt.Println(v)
+}
+```
+
+**五、二分查找（优先用标准库，别手写错）**
+
+```go
+a := []int{1, 3, 5, 7}
+i := sort.SearchInts(a, 5) // 返回下标 2
+j := sort.SearchInts(a, 4) // 不存在时返回可插入位置 2
+
+// 自定义条件：找第一个满足 cond(i) 的下标（cond 必须形如 false...false true...true）
+k := sort.Search(len(a), func(i int) bool { return a[i] >= 5 })
+```
+
+**六、网格 DFS（连通块 / 岛屿计数）**
+
+```go
+// 网格 DFS：连通块 / 岛屿（原地标记省掉 visited）
+func sink(grid [][]int, r, c int) {
+	if r < 0 || r >= len(grid) || c < 0 || c >= len(grid[0]) || grid[r][c] != 1 {
+		return
+	}
+	grid[r][c] = 2 // ⭐ 原地标记
+	dirs := [4][2]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+	for _, d := range dirs {
+		sink(grid, r+d[0], c+d[1])
+	}
+}
+
+func countIslands(grid [][]int) int {
+	cnt := 0
+	for r := range grid {
+		for c := range grid[r] {
+			if grid[r][c] == 1 {
+				cnt++
+				sink(grid, r, c)
+			}
+		}
+	}
+	return cnt
+}
+```
+
+> 实测输入 `[[1 1 0 0] [1 0 0 1] [0 0 1 1]]`，输出岛屿数 `2`。「原地标记」的效果画出来就是每次 `sink` 把一个连通块整片染色：
+>
+> ```text
+>   输入网格（1=陆地）        sink 之后（2=已沉）      连通块
+>   1 1 0 0                   2 2 0 0                 块①: (0,0)(0,1)(1,0)
+>   1 0 0 1        →          2 0 0 2                 块②: (1,3)(2,2)(2,3)
+>   0 0 1 1                   0 0 2 2                 岛屿数 = 2
+> ```
+>
+> ⚠️ **网格的面积就是递归深度**：几百×几百的图就可能把调用栈推到上限，Java 侧默认栈实测 ~2 万层就 `StackOverflowError`；这种题要么改用下面**第七则**的网格 BFS，要么改显式栈（判据与实测见 [DFS与BFS遍历.md](../02-计算机基础/算法/图论算法/图的遍历/DFS与BFS遍历.md) 第三节的内存画像）。
+
+**七、网格 BFS（最少步数 / 最短路）**
+
+```go
+// 网格 BFS：最短路层数（越界 / 障碍 / 已访问三道判断挡在最前面）
+func bfsGridShortest(grid [][]int, sr, sc, tr, tc int) int {
+	r, c := len(grid), len(grid[0])
+	if grid[sr][sc] == 1 || grid[tr][tc] == 1 {
+		return -1
+	}
+	type pos struct{ r, c, step int }
+	q := []pos{{sr, sc, 0}}
+	seen := make([][]bool, r)
+	for i := range seen {
+		seen[i] = make([]bool, c)
+	}
+	seen[sr][sc] = true
+	dirs := [4][2]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+	for len(q) > 0 {
+		p := q[0]
+		q = q[1:]
+		if p.r == tr && p.c == tc {
+			return p.step
+		}
+		for _, d := range dirs {
+			nr, nc := p.r+d[0], p.c+d[1]
+			if nr < 0 || nr >= r || nc < 0 || nc >= c || seen[nr][nc] || grid[nr][nc] == 1 {
+				continue // ⭐ 入队时就标记，弹出时不重复判
+			}
+			seen[nr][nc] = true
+			q = append(q, pos{nr, nc, p.step + 1})
+		}
+	}
+	return -1
+}
+```
+
+> 实测四种网格（同一次 `go run`）：3×3 无障碍 `(0,0)→(2,2)` = `4`；3×3 第二行堵两格 `[[0 0 0] [1 1 0] [0 0 0]]` = `4`；3×3 第二行**整行**堵死 = `-1`；`[[0 1] [1 0]]` 对角 = `-1`。
+>
+> ```text
+>   网格（. = 可走，# = 墙）     BFS 每格的首达步数
+>   . . .                        0 1 2
+>   # # .           →            # # 3
+>   . . .                        6 5 4      ← 终点 (2,2) 第 4 步入队，函数返回 4
+>
+>   # 号那一行整行是墙时，第三行永远进不了队 ⇒ 循环自然结束，返回 -1
+> ```
+>
+> ⭐ 要「最少步数」就必须 BFS：层数即距离，这是 DFS 给不出的性质。上图的步数矩阵同时说明了另一件事——⚠️ **DFS 走出的顺序不是这个矩阵**（它先把一条路径钻到底，见 [DFS与BFS遍历.md](../02-计算机基础/算法/图论算法/图的遍历/DFS与BFS遍历.md) 第一节的对照图）。
+
+**八、DFS + 回溯（全排列）**
+
+```go
+// DFS + 回溯：全排列（used 与 path 都要撤销）
+func permute(nums []int) [][]int {
+	res := [][]int{}
+	used := make([]bool, len(nums))
+	path := []int{}
+	var dfs func()
+	dfs = func() {
+		if len(path) == len(nums) {
+			cp := make([]int, len(path))
+			copy(cp, path) // ⭐ 必须拷贝，否则切片复用会互相覆盖
+			res = append(res, cp)
+			return
+		}
+		for i := range nums {
+			if used[i] {
+				continue
+			}
+			used[i] = true
+			path = append(path, nums[i])
+			dfs()
+			used[i] = false
+			path = path[:len(path)-1] // ⭐ 两处撤销缺一不可
+		}
+	}
+	dfs()
+	return res
+}
+```
+
+> 实测 `[1 2 3]` → `6` 条；字典序前三 `[1 2 3] [1 3 2] [2 1 3]`。
+>
+> ```text
+>   回溯树（→ 表示 append 进 path，↑ 表示撤销 used 与 path）:
+>
+>   [] ─1→ [1] ─2→ [1 2] ─3→ [1 2 3] ★ 记入结果，↑3 ↑2
+>              └────3→ [1 3] ─2→ [1 3 2] ★        ↑2 ↑3
+>     ├──────2→ [2] ─1→ [2 1] ─3→ [2 1 3] ★   …其余同构
+>     └──────3→ [3] ─…
+>
+>   ⭐ ★ 只出现在「path 长度 == len(nums)」这一层，其余层的唯一作用是把分支铺开再撤掉
+> ```
+>
+> ⚠️ 三个高频错：① 漏 `copy`（所有结果都指向同一底层数组，最后只剩最后一组）；② 只撤销 `used` 不撤销 `path`；③ 在 `for` 外声明 `path` 却用 `append` 到的长度做判据（`len(path) == len(nums)` 才对）。
+
+## 关联
+
+- [数据结构.md](../02-计算机基础/算法/基础算法/数据结构.md) — 堆、哈希表等结构的原理（单一来源）
+- [查找与排序对比.md](../02-计算机基础/算法/基础算法/查找与排序对比.md) — Top-K 为什么用小顶堆、标准库排序怎么选
+- [缓存淘汰算法.md](../03-数据与中间件/数据存储/缓存淘汰算法.md) — LRU / LFU / W-TinyLFU 的原理与代价（第五节、第六节的上一层）
+- [复杂度分析.md](../02-计算机基础/算法/基础算法/复杂度分析.md) — 摊还分析与递归代价（第二节的递归开销）
+- [DFS与BFS遍历.md](../02-计算机基础/算法/图论算法/图的遍历/DFS与BFS遍历.md) — 第十节六/七/八三个模板的**上一层总纲**：栈与队列各自「下一步先走哪条边」、BFS 为什么给得出最少步数、深图为何要显式栈
+- [DFS深度优先遍历.md](../02-计算机基础/算法/图论算法/图的遍历/DFS深度优先遍历.md) — 网格 DFS 的机制层：`visited` 标记时机、递归深度 = 路径长度、手推演练
+- [BFS广度优先遍历.md](../02-计算机基础/算法/图论算法/图的遍历/BFS广度优先遍历.md) — 网格 BFS 的机制层：队列快照、为什么层数即最少步数、多源扩散
+- [限流算法.md](../04-架构与系统/分布式/限流算法.md) — ⚠️ 同名不同物：那里的"滑动窗口"是**计数限流**，与第七节无关
+- [数据结构备考.md](数据结构备考.md) — 同一批素材里的备考策略题（先分类、再挑 2~3 种讲透）
+- [../../01-编程语言/go/并发/并发同步原语.md](../01-编程语言/go/并发/并发同步原语.md) — 第五节、第六节的并发化（`sync.RWMutex` / `Mutex` 怎么加）
+
+> 反向引用（本篇被下列文档引到）：[从零实现网关.md](../01-编程语言/go/从零实现网关.md)、[Dijkstra.md](../02-计算机基础/算法/图论算法/最短路/Dijkstra.md)、[双指针.md](../02-计算机基础/算法/基础算法/双指针.md)、[摩尔投票.md](../02-计算机基础/算法/基础算法/摩尔投票.md)、[滑动窗口.md](../02-计算机基础/算法/基础算法/滑动窗口.md)
