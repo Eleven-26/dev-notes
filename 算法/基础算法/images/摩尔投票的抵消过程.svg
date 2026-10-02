@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 840" width="1000" height="840" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="840" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">Boyer-Moore 投票：两两抵消的逐步过程</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">每次「读入 v」只做一件事：加票、减票、或在净票数为 0 时换候选。最后得到的只是候选，必须二次验证</text>
+
+  <rect x="30" y="84" width="940" height="404" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="50" y="112" font-size="15" font-weight="bold" fill="#1e3a8a">① 有多数元素：数组 [2 2 1 1 1 2 2]（n=7）</text>
+  <rect x="50" y="126" width="900" height="30" rx="5" fill="#e2e8f0"/>
+  <text x="70" y="146" font-size="13" font-weight="bold" fill="#334155">步骤</text>
+  <text x="150" y="146" font-size="13" font-weight="bold" fill="#334155">读入 v</text>
+  <text x="250" y="146" font-size="13" font-weight="bold" fill="#334155">处理前 net</text>
+  <text x="380" y="146" font-size="13" font-weight="bold" fill="#334155">动作</text>
+  <text x="700" y="146" font-size="13" font-weight="bold" fill="#334155">处理后 cand</text>
+  <text x="840" y="146" font-size="13" font-weight="bold" fill="#334155">处理后 net</text>
+
+  <g font-size="13">
+    <text x="70" y="182" fill="#475569">1</text>
+    <text x="150" y="182" fill="#334155">2</text>
+    <text x="250" y="182" fill="#64748b">0</text>
+    <text x="380" y="182" fill="#2563eb">net == 0 → 换候选 cand=2</text>
+    <text x="700" y="182" fill="#1e3a8a">2</text>
+    <text x="840" y="182" fill="#1e3a8a">1</text>
+
+    <text x="70" y="216" fill="#475569">2</text>
+    <text x="150" y="216" fill="#334155">2</text>
+    <text x="250" y="216" fill="#64748b">1</text>
+    <text x="380" y="216" fill="#16a34a">v == cand → net++</text>
+    <text x="700" y="216" fill="#1e3a8a">2</text>
+    <text x="840" y="216" fill="#1e3a8a">2</text>
+
+    <text x="70" y="250" fill="#475569">3</text>
+    <text x="150" y="250" fill="#334155">1</text>
+    <text x="250" y="250" fill="#64748b">2</text>
+    <text x="380" y="250" fill="#dc2626">v != cand → net--（抵消一对）</text>
+    <text x="700" y="250" fill="#1e3a8a">2</text>
+    <text x="840" y="250" fill="#1e3a8a">1</text>
+
+    <text x="70" y="284" fill="#475569">4</text>
+    <text x="150" y="284" fill="#334155">1</text>
+    <text x="250" y="284" fill="#64748b">1</text>
+    <text x="380" y="284" fill="#dc2626">v != cand → net--（抵消一对）</text>
+    <text x="700" y="284" fill="#1e3a8a">2</text>
+    <text x="840" y="284" fill="#1e3a8a">0</text>
+
+    <text x="70" y="318" fill="#475569">5</text>
+    <text x="150" y="318" fill="#334155">1</text>
+    <text x="250" y="318" fill="#64748b">0</text>
+    <text x="380" y="318" fill="#2563eb">net == 0 → 换候选 cand=1</text>
+    <text x="700" y="318" fill="#1e3a8a">1</text>
+    <text x="840" y="318" fill="#1e3a8a">1</text>
+
+    <text x="70" y="352" fill="#475569">6</text>
+    <text x="150" y="352" fill="#334155">2</text>
+    <text x="250" y="352" fill="#64748b">1</text>
+    <text x="380" y="352" fill="#dc2626">v != cand → net--（抵消一对）</text>
+    <text x="700" y="352" fill="#1e3a8a">1</text>
+    <text x="840" y="352" fill="#1e3a8a">0</text>
+
+    <text x="70" y="386" fill="#475569">7</text>
+    <text x="150" y="386" fill="#334155">2</text>
+    <text x="250" y="386" fill="#64748b">0</text>
+    <text x="380" y="386" fill="#2563eb">net == 0 → 换候选 cand=2</text>
+    <text x="700" y="386" fill="#1e3a8a">2</text>
+    <text x="840" y="386" fill="#1e3a8a">1</text>
+  </g>
+
+  <line x1="50" y1="404" x2="950" y2="404" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="50" y="428" font-size="13" fill="#334155">候选 = 2，抵消后净票数 = 1。此时候选只说明「2 没有被抵消光」，不说明它一定过半。</text>
+  <text x="50" y="452" font-size="13" fill="#16a34a">二次验证：2 实际出现 4 次，阈值 n/2 = 3，4 &gt; 3 → 通过，2 是真多数元素。</text>
+  <text x="50" y="476" font-size="13" fill="#b45309">⚠️ 第 4 步 net 归零但 cand 仍是 2；第 5 步因为 net == 0 才把 cand 换成 1 —— 换与不换只看 net，不看 cand。</text>
+
+  <rect x="30" y="504" width="940" height="264" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="50" y="532" font-size="15" font-weight="bold" fill="#b91c1c">② 无多数元素：数组 [1 2 3 4]（n=4）—— 算法照样返回一个候选</text>
+  <rect x="50" y="546" width="900" height="30" rx="5" fill="#e2e8f0"/>
+  <text x="70" y="566" font-size="13" font-weight="bold" fill="#334155">步骤</text>
+  <text x="150" y="566" font-size="13" font-weight="bold" fill="#334155">读入 v</text>
+  <text x="250" y="566" font-size="13" font-weight="bold" fill="#334155">处理前 net</text>
+  <text x="380" y="566" font-size="13" font-weight="bold" fill="#334155">动作</text>
+  <text x="700" y="566" font-size="13" font-weight="bold" fill="#334155">处理后 cand</text>
+  <text x="840" y="566" font-size="13" font-weight="bold" fill="#334155">处理后 net</text>
+
+  <g font-size="13">
+    <text x="70" y="602" fill="#475569">1</text>
+    <text x="150" y="602" fill="#334155">1</text>
+    <text x="250" y="602" fill="#64748b">0</text>
+    <text x="380" y="602" fill="#2563eb">net == 0 → 换候选 cand=1</text>
+    <text x="700" y="602" fill="#1e3a8a">1</text>
+    <text x="840" y="602" fill="#1e3a8a">1</text>
+
+    <text x="70" y="636" fill="#475569">2</text>
+    <text x="150" y="636" fill="#334155">2</text>
+    <text x="250" y="636" fill="#64748b">1</text>
+    <text x="380" y="636" fill="#dc2626">v != cand → net--</text>
+    <text x="700" y="636" fill="#1e3a8a">1</text>
+    <text x="840" y="636" fill="#1e3a8a">0</text>
+
+    <text x="70" y="670" fill="#475569">3</text>
+    <text x="150" y="670" fill="#334155">3</text>
+    <text x="250" y="670" fill="#64748b">0</text>
+    <text x="380" y="670" fill="#2563eb">net == 0 → 换候选 cand=3</text>
+    <text x="700" y="670" fill="#1e3a8a">3</text>
+    <text x="840" y="670" fill="#1e3a8a">1</text>
+
+    <text x="70" y="704" fill="#475569">4</text>
+    <text x="150" y="704" fill="#334155">4</text>
+    <text x="250" y="704" fill="#64748b">1</text>
+    <text x="380" y="704" fill="#dc2626">v != cand → net--</text>
+    <text x="700" y="704" fill="#1e3a8a">3</text>
+    <text x="840" y="704" fill="#1e3a8a">0</text>
+  </g>
+
+  <line x1="50" y1="722" x2="950" y2="722" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="50" y="746" font-size="13" fill="#334155">候选 = 3，净票数回到 0。二次验证：3 只出现 1 次，阈值 n/2 = 2，1 不大于 2 → 候选是假的。</text>
+  <text x="50" y="768" font-size="13" fill="#b91c1c">⚠️ 这正是不做二次验证会出的错：把「抵消后剩下的那个」直接当成多数元素。</text>
+
+  <text x="40" y="800" font-size="13" fill="#334155">为什么成立：若某元素出现次数 &gt; n/2，把它与别的元素两两配对消掉，它最多被消掉「其余元素的总数」个，必然还有剩余。</text>
+  <text x="40" y="824" font-size="12" fill="#94a3b8">本图对应正文第二节，数值与 .workbuddy/tmp/basic_lab 的实测输出逐行一致。⚠️ 本机无法栅格化 SVG，需要 PNG 时请自行导出。</text>
+</svg>
