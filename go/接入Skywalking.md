@@ -449,5 +449,5 @@ nc -vz oap.observability 11800
 - [../java/接入Skywalking.md](../java/接入Skywalking.md) — Java agent 路线，对照「运行期字节码增强 vs 编译期注入」的差异
 - [../php/接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型
 - [../可观测性/可观测性选型.md](../可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
-- [../go/工程实践/context.md](工程实践/context.md) — OTel 路线下 ctx 传播的基础
+- [context.md](工程实践/context.md) — OTel 路线下 ctx 传播的基础
 - [../部署/docker/镜像构建与缓存.md](../部署/docker/镜像构建与缓存.md) — `-a` 全量重编译与构建缓存的取舍

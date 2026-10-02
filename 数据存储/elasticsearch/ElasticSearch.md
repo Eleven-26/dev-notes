@@ -429,10 +429,10 @@ curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/j
 - [ElasticSearch客户端.md](ElasticSearch客户端.md) — Go / Java 客户端怎么调
 - [MongoDB.md](../MongoDB.md) — 另一类非关系型存储的选型与运维
 - [mysql/索引与优化.md](../mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
-- [../linux/文件系统与IO.md](../../linux/文件系统与IO.md) — translog 的 fsync 与 page cache
+- [文件系统与IO.md](../../linux/文件系统与IO.md) — translog 的 fsync 与 page cache
 - [../../linux/内存管理.md](../../linux/内存管理.md) — 段落盘与 fsync、page cache 的底层机制
 - [../../分布式/Raft协议.md](../../分布式/Raft协议.md) — 副本确认语义与多数派共识的差别
 - [../../中间件/消息队列/Kafka.md](../../中间件/消息队列/Kafka.md) — 从 binlog / CDC 单向同步到 ES 的链路设计
 - [存储选型.md](../存储选型.md) — ES 在存储体系中的定位（该用与不该用、与 ClickHouse 的分工）
 
-> 反向引用（本篇被下列文档引到）：[海量数据存储设计.md](../../分布式/系统设计/海量数据存储设计.md)、[统计页提速.md](../../分布式/系统设计/统计页提速.md)、[位图与布隆过滤器.md](../../算法/位图与布隆过滤器.md)、[AC自动机.md](../../算法/字符串匹配/AC自动机.md)、[BM.md](../../算法/字符串匹配/BM.md)、[KMP.md](../../算法/字符串匹配/KMP.md)
+> 反向引用（本篇被下列文档引到）：[海量数据存储设计.md](../../分布式/系统设计/海量数据存储设计.md)、[统计页提速.md](../../分布式/系统设计/统计页提速.md)、[AC自动机.md](../../算法/字符串匹配/AC自动机.md)、[BM.md](../../算法/字符串匹配/BM.md)、[KMP.md](../../算法/字符串匹配/KMP.md)、[位图与布隆过滤器.md](../../算法/高级数据结构/位图与布隆过滤器.md)

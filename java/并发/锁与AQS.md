@@ -420,9 +420,9 @@ synchronized void join(Sub s) { /* 造新列表 → snap.set(...) */ }
 - [线程池.md](线程池.md) — 同一目录：`ThreadPoolExecutor` 内部用的也是 `ReentrantLock` + `Condition`，本篇的锁语义是读懂它的前置
 - [并发容器.md](并发容器.md) — `ConcurrentHashMap` 的桶级 `synchronized`、`BlockingQueue` 的双 `Condition`，都用的是本篇这套机制
 - [JMM与内存屏障.md](JMM与内存屏障.md) — `volatile` 的可见性与有序性为什么保不住原子性（本篇 2.2 的实测正是它的反面证据）
-- [../JVM与垃圾回收.md](../运行时/JVM与垃圾回收.md) — 锁与 GC 共享同一套「对象头」结构：偏向锁占 Mark Word，GC 分代年龄也在里面
-- [../运行时数据区与栈帧.md](../运行时/运行时数据区与栈帧.md) — 轻量级锁的「锁记录」就分配在线程栈上
-- [../go/并发/并发同步原语.md](../../go/并发/并发同步原语.md) — 同主题的 Go 侧：`Mutex` 的饥饿模式与 `sync.Map`，与本文的公平锁 / `ConcurrentHashMap` 正好对照
+- [JVM与垃圾回收.md](../运行时/JVM与垃圾回收.md) — 锁与 GC 共享同一套「对象头」结构：偏向锁占 Mark Word，GC 分代年龄也在里面
+- [运行时数据区与栈帧.md](../运行时/运行时数据区与栈帧.md) — 轻量级锁的「锁记录」就分配在线程栈上
+- [并发同步原语.md](../../go/并发/并发同步原语.md) — 同主题的 Go 侧：`Mutex` 的饥饿模式与 `sync.Map`，与本文的公平锁 / `ConcurrentHashMap` 正好对照
 - [../../分布式/系统设计/弹幕系统的Java实现.md](../../分布式/系统设计/弹幕系统的Java实现.md) — 「使用」一节的代码出处：`AtomicReference<List<Sub>>` 快照 + `synchronized` 写侧
 - [../../分布式/服务发现的Java实现.md](../../分布式/服务发现的Java实现.md) — 同一手法的另一处落地：不可变快照 + `ConcurrentHashMap` + `AtomicInteger` 轮询
 > 反向引用（本篇被下列文档引到）：[Spring-boot核心.md](../Spring-boot核心.md)

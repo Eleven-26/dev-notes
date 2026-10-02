@@ -260,4 +260,4 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 - [HTTPS与TLS.md](../HTTPS与TLS.md) — 握手之上的 TLS 握手
 - [Skywalking.md](../../可观测性/Skywalking.md) — 线上观测建连耗时的手段
 
-> 反向引用（本篇被下列文档引到）：[TCP拥塞控制算法.md](../../算法/TCP拥塞控制算法.md)、[DNS解析.md](../DNS解析.md)、[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[抓包实战.md](../抓包实战.md)、[网络分层与数据包旅程.md](../网络分层与数据包旅程.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[通信选型.md](../通信选型.md)
+> 反向引用（本篇被下列文档引到）：[DNS解析.md](../DNS解析.md)、[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[TCP拥塞控制算法.md](../TCP拥塞控制算法.md)、[抓包实战.md](../抓包实战.md)、[网络分层与数据包旅程.md](../网络分层与数据包旅程.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[通信选型.md](../通信选型.md)
