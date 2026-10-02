@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect width="1000" height="640" fill="#f8fafc"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">三个自适应算法的 limit 轨迹（实测，每 20 tick 采样）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">都从 limit = 1 起步；第 100 tick 下游从「每 tick 处理 8 个」掉到「每 tick 处理 2 个」</text>
+
+  <!-- 坐标轴 -->
+  <line x1="90" y1="470" x2="972" y2="470" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="90" y1="90" x2="90" y2="470" stroke="#94a3b8" stroke-width="2"/>
+
+  <!-- y 轴刻度 -->
+  <g font-size="12" fill="#64748b" text-anchor="end">
+    <text x="80" y="474">0</text>
+    <text x="80" y="348">10</text>
+    <text x="80" y="222">20</text>
+    <text x="80" y="95">30</text>
+  </g>
+  <g stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3 3">
+    <line x1="90" y1="343" x2="972" y2="343"/>
+    <line x1="90" y1="217" x2="972" y2="217"/>
+    <line x1="90" y1="90" x2="972" y2="90"/>
+  </g>
+
+  <!-- 下游变慢的分界线 -->
+  <line x1="477" y1="90" x2="477" y2="470" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="485" y="110" font-size="13" font-weight="bold" fill="#b91c1c">第 100 tick：下游变慢</text>
+  <text x="485" y="128" font-size="12" fill="#991b1b">（并发能力 8 → 2）</text>
+
+  <!-- x 轴刻度 -->
+  <g font-size="12" fill="#64748b" text-anchor="middle">
+    <text x="90" y="492">20</text>
+    <text x="187" y="492">40</text>
+    <text x="283" y="492">60</text>
+    <text x="380" y="492">80</text>
+    <text x="477" y="492">100</text>
+    <text x="573" y="492">120</text>
+    <text x="670" y="492">140</text>
+    <text x="767" y="492">160</text>
+    <text x="863" y="492">180</text>
+    <text x="960" y="492">200</text>
+  </g>
+  <text x="530" y="516" text-anchor="middle" font-size="13" fill="#475569">tick</text>
+
+  <!-- AIMD 轨迹 [1 4 10 18 26 1 1 3 5 7] -->
+  <polyline points="90,457 187,419 283,343 380,242 477,141 573,457 670,457 767,432 863,407 960,381"
+            fill="none" stroke="#2563eb" stroke-width="3"/>
+
+  <!-- Vegas 轨迹 [8 28 6 24 8 4 4 4 4 4] -->
+  <polyline points="90,369 187,115 283,394 380,166 477,369 573,419 670,419 767,419 863,419 960,419"
+            fill="none" stroke="#16a34a" stroke-width="3"/>
+
+  <!-- Gradient2 轨迹（全程采到 10） -->
+  <polyline points="90,343 187,343 283,343 380,343 477,343 573,343 670,343 767,343 863,343 960,343"
+            fill="none" stroke="#d97706" stroke-width="3" stroke-dasharray="8 4"/>
+
+  <!-- 数据点 -->
+  <g fill="#2563eb">
+    <circle cx="90" cy="457" r="3.5"/><circle cx="187" cy="419" r="3.5"/><circle cx="283" cy="343" r="3.5"/>
+    <circle cx="380" cy="242" r="3.5"/><circle cx="477" cy="141" r="3.5"/><circle cx="573" cy="457" r="3.5"/>
+    <circle cx="670" cy="457" r="3.5"/><circle cx="767" cy="432" r="3.5"/><circle cx="863" cy="407" r="3.5"/>
+    <circle cx="960" cy="381" r="3.5"/>
+  </g>
+  <g fill="#16a34a">
+    <circle cx="90" cy="369" r="3.5"/><circle cx="187" cy="115" r="3.5"/><circle cx="283" cy="394" r="3.5"/>
+    <circle cx="380" cy="166" r="3.5"/><circle cx="477" cy="369" r="3.5"/><circle cx="573" cy="419" r="3.5"/>
+    <circle cx="670" cy="419" r="3.5"/><circle cx="767" cy="419" r="3.5"/><circle cx="863" cy="419" r="3.5"/>
+    <circle cx="960" cy="419" r="3.5"/>
+  </g>
+  <g fill="#d97706">
+    <circle cx="90" cy="343" r="3.5"/><circle cx="187" cy="343" r="3.5"/><circle cx="283" cy="343" r="3.5"/>
+    <circle cx="380" cy="343" r="3.5"/><circle cx="477" cy="343" r="3.5"/><circle cx="573" cy="343" r="3.5"/>
+    <circle cx="670" cy="343" r="3.5"/><circle cx="767" cy="343" r="3.5"/><circle cx="863" cy="343" r="3.5"/>
+    <circle cx="960" cy="343" r="3.5"/>
+  </g>
+
+  <!-- 图例 -->
+  <rect x="700" y="120" width="262" height="118" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="718" y1="146" x2="758" y2="146" stroke="#2563eb" stroke-width="3"/>
+  <text x="766" y="151" font-size="13" fill="#1e293b">AIMD（锯齿：慢升快降）</text>
+  <line x1="718" y1="176" x2="758" y2="176" stroke="#16a34a" stroke-width="3"/>
+  <text x="766" y="181" font-size="13" fill="#1e293b">Vegas（震荡后收敛）</text>
+  <line x1="718" y1="206" x2="758" y2="206" stroke="#d97706" stroke-width="3" stroke-dasharray="8 4"/>
+  <text x="766" y="211" font-size="13" fill="#1e293b">Gradient2（小步微调）</text>
+  <text x="718" y="230" font-size="11" fill="#64748b">采样 10 个点，Gradient2 波动更细</text>
+
+  <!-- 底部说明 -->
+  <rect x="90" y="536" width="882" height="82" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="108" y="560" font-size="13" fill="#334155">三条线的共同点：<tspan font-weight="bold">下游一变慢，limit 都被自动压了下来</tspan>（不需要人工设参）——</text>
+  <text x="108" y="580" font-size="13" fill="#334155">AIMD 反应最猛（26 直接砍到 1，后半段重新爬到 7）；Vegas 收敛最快最稳（后半段稳定在 4）；</text>
+  <text x="108" y="600" font-size="13" fill="#334155">Gradient2 最保守（长窗口平滑让它只做小步调整）。三者后半段的实际 RTT：4.15 / 2.08 / 2.68。</text>
+</svg>

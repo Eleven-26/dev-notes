@@ -570,4 +570,4 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 - [../../../04-架构与系统/分布式/限流降级熔断.md](../../../04-架构与系统/分布式/限流降级熔断.md) — 下游被打穿之后怎么办
 - [../../java/并发/线程池.md](../../java/并发/线程池.md) — Java 侧 worker 池的对照：七参数、有界队列与四种拒绝策略
 
-> 反向引用（本篇被下列文档引到）：[sync.Pool.md](sync.Pool.md)
+> 反向引用（本篇被下列文档引到）：[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/并发限制器.md)
