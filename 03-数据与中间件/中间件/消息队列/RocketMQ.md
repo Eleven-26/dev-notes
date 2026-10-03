@@ -711,4 +711,4 @@ diskMaxUsedSpaceRatio=75        # 磁盘使用率超 75% 拒绝写入
 - [Raft协议.md](../../../04-架构与系统/分布式/理论/Raft协议.md) — DLedger 模式的主选举
 - [分布式事务.md](../../../04-架构与系统/分布式/理论/分布式事务.md) — 事务消息的完整语义
 
-> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[RabbitMQ.md](RabbitMQ.md)、[日志与落盘.md](../../数据存储/mysql/日志与落盘.md)
+> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[RabbitMQ.md](RabbitMQ.md)、[日志与落盘.md](../../数据存储/mysql/日志与落盘.md)、[订单系统设计.md](../../../04-架构与系统/系统设计/秒杀系统/订单系统设计.md)
