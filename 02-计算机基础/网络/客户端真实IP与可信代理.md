@@ -8,10 +8,10 @@
 > 正确做法是**先判定直接对端是否可信**，只有转发头确实由我们自己部署的代理写下时，它才有证据价值。
 >
 > 内容整理自个人学习笔记，实测基于自研网关项目 [gateway](https://github.com/Eleven-26/gateway)（module `gwlab`，Go 1.26.5）的
-> `internal/clientip/`（本篇所有 `text` 块都是本机真实运行结果）。
+> `internal/clientip/`（本篇 `text` 块都是本机真实运行结果，**只有第六节 6.3 与第七节例外，已在原处标注**）。
 > 另有单元测试钉住每个边界（`TestResolve` 25 个子用例、`TestParseTrusted` 12 个、`TestResolveMultipleXFFHeaders`）。
 >
-> ⭐ **分工**：本篇讲**可信代理链的解析规则与安全边界**；
+> ⭐ **分工**：本篇讲**可信代理链的解析规则与安全边界**，以及**出站时该写谁**（第七节）；
 > 反向代理怎么写入 / 不写入这些头见 [反向代理原理与实现.md](反向代理原理与实现.md)；
 > 网络链路上每一跳改了什么见 [网络通信链路详解.md](网络通信链路详解.md)。
 
@@ -214,6 +214,175 @@ func hostOnly(addr string) string {
 前者是**书写习惯**（多打了一个逗号），后者是**配置错误**（本该写网段却写错了）。
 对两者一视同仁（都跳过）会让「可信列表其实没配上」这件事悄无声息。
 
+## 六、链还有哪些形态？
+
+**本节要点**：XFF 不只有「逗号分隔的一条链」——它还可能**拆在多个同名头里**；
+链上的每个条目、以及 `RemoteAddr` 自己，也都有「带不带端口」两种写法；
+而在 L4 转发场景下，**这些头压根不存在**。
+
+### 6.1 多个同名 `X-Forwarded-For` 头
+
+HTTP 允许同一个头出现多次，语义上等价于**按到达顺序用逗号拼接**。Go 的 `http.Header` 正好把这两种形态暴露成两个方法：
+
+| 方法 | 行为 | 用来解析 XFF 时 |
+|---|---|---|
+| `h.Get("X-Forwarded-For")` | 只返回**第一个**头的值 | ❌ 链被截断，后面的跳全丢 |
+| `h.Values("X-Forwarded-For")` | 返回**全部**头的值（按到达顺序） | ✅ 按序拼接才是一条完整的链 |
+
+```text
+两个头：X-Forwarded-For: 10.9.9.9        ← 第 1 跳（可信网段内的代理写下）
+        X-Forwarded-For: 9.9.9.9         ← 第 2 跳（真实客户端）
+
+  h.Values 拿到的原始值           = [10.9.9.9 9.9.9.9]
+  h.Values（正确）                → 9.9.9.9
+  h.Get（错误，只拿到第一个头）    → 10.9.9.9     ← 可信跳被当成客户端，真实 IP 丢了
+```
+
+⭐ 注意这里的**失败方向**：`h.Get` 既不报错也不返回空，它返回的是**一个看起来很合法的 IP**（`10.9.9.9`）。
+所以在限流与审计里，表现是「客户端 IP 变成内网地址」而不是「解析失败」—— **又是一次静默失效**。
+
+⚠️ 这与第三节并不冲突：`h.Get` 的错**不在「取最左」**，而在它**把一条两跳的链截成了只有一跳的链**，
+于是「从右往左扫」这个正确算法拿到了错误的输入。**算法对、输入错，结果一样是错的。**
+
+本包的做法是让 `parseChain` 收 `[]string` 而不是 `string`：
+
+```go
+chain := parseChain(h.Values("X-Forwarded-For"))   // 收全部同名头，内部再按 ',' 拆
+
+func parseChain(values []string) []netip.Addr {
+    var out []netip.Addr
+    for _, v := range values {                       // 先遍历「多个头」
+        for _, seg := range strings.Split(v, ",") {  // 再拆「一个头里的逗号列表」
+            ip, ok := parseIP(hostOnly(strings.TrimSpace(seg)))
+            if !ok {
+                continue // 非法条目跳过并继续，不能因此放弃整条链
+            }
+            out = append(out, ip)
+        }
+    }
+    return out
+}
+```
+
+> 📎 `X-Real-IP` 没有这个问题（单值语义，`h.Get` 即可），代价是它**表达不了多跳** ——
+> 这正是「使用」段第 3 条口径的来源。
+
+### 6.2 带端口 / 不带端口的形态
+
+`RemoteAddr` 一定是 `IP:port`，但 XFF 的条目**没有统一规定**要带端口 ——
+实践里两种都能遇到（有的 LB 会写成 `1.2.3.4:5678`）。本机实测四种形态都能正确剥离：
+
+```text
+  XFF 单条目带端口        remote=127.0.0.1:5000  XFF=9.9.9.9:1234                    → 9.9.9.9
+  XFF 中间条目带端口       remote=127.0.0.1:5000  XFF=1.1.1.1, 9.9.9.9:1234, 10.1.1.1 → 9.9.9.9
+  对端不带端口            remote=127.0.0.1       XFF=9.9.9.9                         → 9.9.9.9
+  对端方括号无端口          remote=[::1]           XFF=2001:db8::1                     → 2001:db8::1
+```
+
+⭐ 这四条其实都靠**同一个函数**兜住 —— `hostOnly`（先 `net.SplitHostPort`，
+失败就按「整串即主机」并去掉方括号）：
+
+```go
+func hostOnly(addr string) string {
+    if host, _, err := net.SplitHostPort(addr); err == nil {
+        return host
+    }
+    return strings.TrimSuffix(strings.TrimPrefix(addr, "["), "]")
+}
+```
+
+链里的每个条目、以及 `RemoteAddr` 自己，走的都是它。**只有一处实现，就不存在「某条路径忘了剥端口」的可能** ——
+这也是为什么第四节坑⑤值得单独列一条：它的正确修法就是「别自己按 `:` 切」。
+
+### 6.3 L4 场景：链上根本没有 HTTP 头
+
+**如果前面那一跳不做 L7 终结，本节前面所有规则都不适用**：
+
+```text
+客户端 → L4 负载均衡（TCP 转发 / DNAT）→ 网关
+              ↑ 只改 IP 包，不解析 HTTP
+                因此没有 X-Forwarded-For、没有 X-Real-IP，也没有 Host
+```
+
+这类场景（AWS NLB、LVS/DR 模式、HAProxy `mode tcp`）想拿到真实 IP，只有两条路：
+
+| 方案 | 怎么传 | 条件 |
+|---|---|---|
+| **PROXY protocol** | LB 在接受连接后、转发真实数据**之前**，先发一段独立的头：v1 是文本 `PROXY TCP4 1.2.3.4 5.6.7.8 40000 80`，v2 是二进制格式 | LB 与网关**两端都要显式开启**（HAProxy `send-proxy`、nginx `proxy_protocol`） |
+| **在 LB 上做 L7 终结** | 让 LB 自己解析 HTTP，再按第二节的方式追加 XFF | LB 支持，且你愿意承担 L7 的开销 |
+
+⭐ **PROXY protocol 的性质和 XFF 完全不同**：它**不在 HTTP 报文里**，
+而是**连接建立阶段的一个独立前缀** —— 所以**客户端伪造不了**（除非它能直接连到网关的端口）。
+「可信」这件事由**网络拓扑**保证，而不是靠一个网段列表去猜。
+代价是**要么整条链都开这个开关、要么完全不用**：链上任何一跳没开，后面就什么都拿不到。
+
+> ⚠️ **本节未在本机实测**：本机既不监听端口、也没有真实 LB，无法构造 L4 转发链路。
+> 上面是协议事实与配置项对照。落地时请在真实拓扑上验证「LB 是否真的在转发数据前发了 PROXY 头」，
+> 以及网关这一侧是否已把解析出的地址接进 `RemoteAddr`（否则它只是个普通的前缀，没人读）。
+
+## 七、`X-Real-IP` 由谁写？写出来的可能还是代理地址
+
+**本节要点**：前六节都在讲**怎么读**转发头；但同一个头**由谁写、写的是谁**同样决定结论 ——
+这里有一处跨篇的口径分叉，在项目源码里能直接看到。
+
+第四节给出的上游侧口径是「取真实客户端 IP 要用 `X-Real-IP`」。那这个头是谁写的？—— **网关**（见 [反向代理原理与实现.md](反向代理原理与实现.md) 第三节）。它在 `Director` 里这样写：
+
+```go
+clientIP, _, _ := net.SplitHostPort(req.RemoteAddr)
+req.Header.Set("X-Real-IP", clientIP)
+```
+
+⭐ 关键在于 `req.RemoteAddr` 是谁：**在出站请求里它仍然是「入站时的直接对端」**。
+这一点可以直接在标准库里核对 —— `net/http/httputil/reverseproxy.go` 里 `RemoteAddr` 只出现两次、
+**都是读入站请求**，并且**从没有给 `outreq.RemoteAddr` 赋过值**（出站请求是 `req.Clone` 来的，原样带走）：
+
+```go
+// net/http/httputil/reverseproxy.go 第 519 行起（节选，注释原文）
+if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+    // If we aren't the first proxy retain prior
+    // X-Forwarded-For information as a comma+space
+    // separated list and fold multiple headers into one.
+    prior, ok := outreq.Header["X-Forwarded-For"]
+    ...
+    outreq.Header.Set("X-Forwarded-For", clientIP)
+}
+```
+
+⭐ 顺带两个副产品：① 它读的是**入站** `req.RemoteAddr`，所以写往上游的 XFF 末尾那一段就是**直接对端**；
+② 注释里 `fold multiple headers into one` 说明标准库**自己就会把多个同名 XFF 头折叠成一条链** ——
+这正是第六节 6.1 要处理的形态从哪来的。
+
+于是：
+
+| 部署形态 | `RemoteAddr` | 网关写出的 `X-Real-IP` | 上游看到的「客户端」 |
+|---|---|---|---|
+| 网关**直接**面对客户端 | 真实客户端 | 真实客户端 ✅ | 正确 |
+| 网关在 **LB 后面** | LB | **LB** ❌ | 又变回代理地址 |
+
+这与第一节是**同一个错误的两次出现**：入口侧因为 `RemoteAddr` 不可用，我们解出了 `clientIP`；
+可如果出站头仍从 `RemoteAddr` 取，等于把刚修好的问题在**出口处又写回去了**。
+
+**修法**：把解析结果**顺着 context 传下去**。项目里 `X-Forwarded-User` 已经是这个写法 ——
+它从 `auth.FromContext` 取，而不是从入站头里读：
+
+```go
+// 入口：解析一次（internal/gateway/gateway.go）
+clientIP := clientip.Resolve(r.RemoteAddr, r.Header, snap.trustedProxies)
+r = r.WithContext(clientip.WithClient(r.Context(), clientIP))
+
+// 出口：从 context 取同一个值，而不是再从 RemoteAddr 推一遍（internal/proxy/proxy.go）
+if ip, ok := clientip.FromClient(req.Context()); ok {
+    req.Header.Set("X-Real-IP", ip)
+}
+```
+
+⭐ 归纳成一条通用判据：**「入站时解析出来的可信身份」，出站时必须从 context 取，不能重新从原始头 / 地址推导。**
+否则就是「入口修一次、出口又坏一次」，而且两次都只在**多跳部署**下才暴露 —— 本地怎么跑都是对的。
+
+> ⚠️ 以上是**对项目源码的静态核对**（`internal/proxy/proxy.go:115` 的 `req.RemoteAddr`、
+> `internal/gateway/gateway.go:406` 的 `clientip.Resolve`），本机无法起端到端链路，**未做动态验证**。
+> 单跳部署下两者恰好相等，所以这个分叉不会在开发环境暴露。
+
 ## 使用：给网关配可信代理
 
 ### 1) 配置
@@ -262,6 +431,37 @@ func hostOnly(addr string) string {
 > 那么 `RemoteAddr` 就是真实客户端 IP，`trusted` 应当留空 ——
 > 此时任何 XFF 都是伪造的。**先画清楚拓扑，再决定配什么。**
 
+### 5) 只解析一次，三处共用同一个值
+
+```go
+// ===== 入口：整个请求只解析这一次 =====
+clientIP := clientip.Resolve(r.RemoteAddr, r.Header, snap.trustedProxies)
+entry.ClientIP = clientIP                        // ① 审计日志的 client 字段
+
+// ===== ③ 限流：key = 路由 + 用户 + IP =====
+g.rl.Allow(ratelimit.Key(m.Route.Name, identity.Subject, clientIP), p)
+
+// ===== ④ 选节点：一致性哈希没有显式 key 时回落到它 =====
+hashKey = clientIP
+```
+
+⭐ **这三处必须共用同一个值**，不能各算各的：否则同一个请求在限流里是 A、在日志里是 B、在哈希环上是 C。
+本包的 `Resolve` 是**纯函数**（不缓存、不共享状态），所以「只调用一次」是为了**口径一致**，不是为了性能。
+
+⚠️ 一个容易忽略的推论：`ratelimit.Key` 的设计是**登录用户按 `subject`、匿名才按 IP**：
+
+```go
+func Key(routeName, subject, ip string) string {
+    if subject != "" && subject != "anonymous" {
+        return "route:" + routeName + "|user:" + subject
+    }
+    return "route:" + routeName + "|ip:" + ip
+}
+```
+
+所以 **IP 坍缩只影响匿名流量** —— 这也解释了这个问题为什么常常「迟迟没被发现」：
+登录接口与内部接口看起来一切正常，只有匿名接口在 LB 后面悄悄共用一个桶。
+
 ## 延伸追问
 
 - **为什么不干脆在 LB 上就把 XFF 清干净？** →
@@ -285,10 +485,20 @@ func hostOnly(addr string) string {
 - **客户端 IP 能不能作为身份？** →
   不能。它只是**弱标识**：NAT 后面的用户共享 IP，同一个用户也可能在移动网络中换 IP。
   可以作为限流/风控的**加权因子**，不能当作鉴权依据。
+- **L4 负载均衡（只做 TCP 转发）下没有 `X-Forwarded-For`，怎么办？** →
+  两条路：**PROXY protocol**（连接建立阶段的独立前缀，可信性由拓扑保证、客户端伪造不了，
+  但要求链上每一跳都开启），或**把那一跳改成 L7 终结**。详见第六节 6.3。
+- **CDN 的私有头（`True-Client-IP` / `CF-Connecting-IP` / `X-Real-IP` 各家的变体）能用吗？** →
+  一律当作**不可信的普通头**处理 —— 它们只是「厂商自己约定的字段名」，
+  没有任何协议保证它们由谁写入。要用就把它那一跳写进 `trusted`，
+  但第三方 CDN 的网段会变、且不由你控制，管控成本往往高于收益（见「使用」段第 2 条判据）。
+- **多个 `X-Forwarded-For` 头要不要合并？** →
+  必须。`h.Get` 只拿第一个头，会把**两跳的链截成一跳**、让「从右往左扫」这个正确算法拿到错输入，
+  且失败得很安静（返回的是内网地址而不是错误）。用 `h.Values` 按序拼接，见第六节 6.1。
 
 ## 关联
 
-- [反向代理原理与实现.md](反向代理原理与实现.md) — 网关如何写入 `X-Real-IP` / 为什么不手写 `X-Forwarded-For`
+- [反向代理原理与实现.md](反向代理原理与实现.md) — 网关如何写入 `X-Real-IP` / 为什么不手写 `X-Forwarded-For`；⚠️ 它写的是**对端地址**，与本篇第七节的口径需要对齐
 - [网络通信链路详解.md](网络通信链路详解.md) — 代理这一跳在整条链路上改了什么
 - [DNS解析.md](DNS解析.md) — 另一类「客户端看起来来自哪里」的问题（就近接入与 GSLB）
 - [../../06-工程实践/安全/JWT与APIKey鉴权.md](../../06-工程实践/安全/JWT与APIKey鉴权.md) — 「不信任客户端输入」这条原则在鉴权侧的体现
