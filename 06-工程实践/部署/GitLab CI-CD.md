@@ -600,6 +600,92 @@ deploy:production:
 
 ---
 
+## 十、对照：GitHub Actions 的最小 Go CI
+
+**本节要点**：GitLab CI 的写法讲完了，用一份**真跑在 CI 上**的 GitHub Actions 配置做对照 ——
+概念几乎一一对应，但有四个「Go 项目特有」的点值得单独记。
+
+### 10.1 完整配置
+
+```yaml
+name: ci
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod   # 版本以 go.mod 为准，避免两处各写一遍
+          cache: true
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "以下文件未格式化，请跑 make fmt："
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: go test -race
+        run: go test -race ./... -count=1
+      - name: build 三个入口
+        run: go build -o bin/gateway ./cmd/gateway
+      - name: benchmark（仅记录）
+        run: go test ./internal/router/ -run XXX -bench . -benchtime 200ms -count=1
+```
+
+### 10.2 四个值得单独说的点
+
+**① `gofmt -l` 有输出就失败** —— 把格式当成**门禁**，而不是 review 意见。
+注意失败信息里要告诉人怎么修（提示 `make fmt`），否则每次都要去猜。
+
+**② `go-version-file: go.mod`** —— 版本以 `go.mod` 为**单一来源**，
+避免「CI 用 1.22、本地用 1.26」这种只能靠偶发编译错误才发现的漂移。
+
+**③ ⭐ `-race` 只在 Linux runner 上跑** —— 本机（Windows + `CGO_ENABLED=0` + 无 gcc）的真实报错：
+
+```text
+$ go test ./internal/clientip/ -race -count=1
+go: -race requires cgo; enable cgo by setting CGO_ENABLED=1
+
+$ go test ./internal/clientip/ -count=1          # 不带 -race 正常
+ok  	gwlab/internal/clientip	0.834s
+```
+
+→ 竞态检测需要 cgo（Linux runner 默认可开）。**这不是「本地可以不测」的理由**，
+而是「把这一项放到 runner 上去做」的理由 —— 并发代码的竞态本来就在本地最难触发。
+
+**④ benchmark 只记录、不设阈值** —— 机器规格差异太大，写死阈值只会天天假报警。
+两个细节：`-run XXX` 让测试不跑（只跑基准）；阈值更好的替代是**与上一次比**（把数字存成 artifact）。
+
+### 10.3 GitLab ↔ GitHub 概念对照
+
+| 概念 | GitLab CI | GitHub Actions |
+|---|---|---|
+| 配置文件 | `.gitlab-ci.yml`（单文件） | `.github/workflows/*.yml`（可多文件） |
+| 执行单位 | stage → job | job（内部 steps 顺序执行） |
+| 顺序控制 | `stages` + `needs` | `needs`（默认并行） |
+| 变量 / 密钥 | `variables` / CI/CD Variables | `env` / `secrets` / `vars` |
+| 缓存 | `cache:` | `actions/cache`，或 `setup-*` 自带 `cache: true` |
+| 条件 | `rules:` / `only` / `except` | `on:` + `if:` |
+| 触发 | `trigger` / webhook | `on:` |
+| 复用 | `extends` / `!reference` / `include` | 复合 action / reusable workflow |
+
+### 10.4 选哪个
+
+| 判据 | 选 |
+|---|---|
+| 仓库就在 GitHub，想直接用 marketplace 上现成的 action | GitHub Actions |
+| 自建 runner、要与 Issue / MR / Registry 一体 | GitLab CI |
+| 只要「vet + test + build」这三条 | 两家都够用 —— **别为了 CI 换托管平台** |
+
 ## 使用：不装 GitLab 也能把 YAML 验证一遍
 
 **本节要点**：改 `.gitlab-ci.yml` 最怕"推上去才发现 job 没被创建"。用 `gitlab-ci-local`
