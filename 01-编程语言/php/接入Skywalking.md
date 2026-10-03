@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— 按 apache/skywalking-php（PHP agent，v1.1.0）的**官方文档与源码口径**，从一台只有裸 `php-fpm` 镜像的机器开始，走一遍标准接入流程：**链路原理 → 装扩展 → 配 php.ini → 选 reporter → 容器化 → 日志与指标 → 验证排查**。
 >
-> 本篇只讲 PHP 侧。SkyWalking 本体原理、OAP/UI 见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)；Go 与 Java 的接入分册见 [../go/接入Skywalking.md](../go/接入Skywalking.md)、[../java/接入Skywalking.md](../java/接入Skywalking.md)。
+> 本篇只讲 PHP 侧。SkyWalking 本体原理、OAP/UI 见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)；Go 与 Java 的接入分册见 [接入Skywalking.md](../go/接入Skywalking.md)、[接入Skywalking.md](../java/接入Skywalking.md)。
 
 ---
 
@@ -394,11 +394,11 @@ ps -o pid,comm -p 1
 
 ## 关联
 
-- [../../06-工程实践/可观测性/Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) — 探针与上报链路的原理、OAP/UI
-- [../go/接入Skywalking.md](../go/接入Skywalking.md) — Go 侧的编译期注入路线
-- [../java/接入Skywalking.md](../java/接入Skywalking.md) — Java 侧的 `-javaagent` 无侵入路线
-- [../../06-工程实践/可观测性/Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) — 另一套 tracing 体系的对照
-- [../../06-工程实践/部署/docker/镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — 多阶段构建与镜像层缓存
-- [../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 SIGTERM 排空
+- [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) — 探针与上报链路的原理、OAP/UI
+- [接入Skywalking.md](../go/接入Skywalking.md) — Go 侧的编译期注入路线
+- [接入Skywalking.md](../java/接入Skywalking.md) — Java 侧的 `-javaagent` 无侵入路线
+- [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) — 另一套 tracing 体系的对照
+- [镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — 多阶段构建与镜像层缓存
+- [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 SIGTERM 排空
 
 > 反向引用（本篇被下列文档引到）：[可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)

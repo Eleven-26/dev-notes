@@ -448,4 +448,4 @@ log.Printf("rev=%d instances=%v healthy=%v", r.Revision(), list, r.Healthy())
 - [客户端负载均衡的Go实现.md](客户端负载均衡的Go实现.md) — 接续：LB 策略与重试
 - [服务发现的Java实现.md](服务发现的Java实现.md) — 同一套语义在 Spring Cloud 里的词汇
 - [Raft协议.md](../理论/Raft协议.md) — etcd 客户端单例与三节点集群的搭建
-- [../../../01-编程语言/go/工程实践/context.md](../../../01-编程语言/go/工程实践/context.md) — Watch 与优雅退出里的取消传播
+- [context.md](../../../01-编程语言/go/工程实践/context.md) — Watch 与优雅退出里的取消传播

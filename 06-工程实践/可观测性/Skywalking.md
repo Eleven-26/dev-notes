@@ -341,13 +341,13 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 
 ## 六、使用方法
 
-本篇只讲原理、架构与 UI；接入代码按语言拆成分册，与 [../../01-编程语言/php/接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 同一命名口径：
+本篇只讲原理、架构与 UI；接入代码按语言拆成分册，与 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 同一命名口径：
 
 | 语言 | 分册 | 覆盖内容 |
 | --- | --- | --- |
-| Go | [../../01-编程语言/go/接入Skywalking.md](../../01-编程语言/go/接入Skywalking.md) | 编译期注入（`-toolexec`）、`toolkit/trace` 手动埋点、跨 goroutine 快照、OTel SDK + OTLP 备选路线、两条路线对比与「不要同开」 |
-| Java | [../../01-编程语言/java/接入Skywalking.md](../../01-编程语言/java/接入Skywalking.md) | `-javaagent` 接入、配置优先级、插件目录机制、Spring Boot / Dockerfile / K8s、日志与跨线程关联、优雅停机 |
-| PHP | [../../01-编程语言/php/接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) | 扩展安装、php.ini、三种 reporter、容器化四坑、PSR-3 日志上报 |
+| Go | [接入Skywalking.md](../../01-编程语言/go/接入Skywalking.md) | 编译期注入（`-toolexec`）、`toolkit/trace` 手动埋点、跨 goroutine 快照、OTel SDK + OTLP 备选路线、两条路线对比与「不要同开」 |
+| Java | [接入Skywalking.md](../../01-编程语言/java/接入Skywalking.md) | `-javaagent` 接入、配置优先级、插件目录机制、Spring Boot / Dockerfile / K8s、日志与跨线程关联、优雅停机 |
+| PHP | [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) | 扩展安装、php.ini、三种 reporter、容器化四坑、PSR-3 日志上报 |
 
 ## 七、思考的问题
 
@@ -380,12 +380,12 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 
 ## 关联
 
-- [../../01-编程语言/go/接入Skywalking.md](../../01-编程语言/go/接入Skywalking.md) — Go 侧编译期注入与 OTel 备选路线的完整接入手册
-- [../../01-编程语言/java/接入Skywalking.md](../../01-编程语言/java/接入Skywalking.md) — Java 侧 javaagent 接入、日志关联、跨线程与优雅停机
+- [接入Skywalking.md](../../01-编程语言/go/接入Skywalking.md) — Go 侧编译期注入与 OTel 备选路线的完整接入手册
+- [接入Skywalking.md](../../01-编程语言/java/接入Skywalking.md) — Java 侧 javaagent 接入、日志关联、跨线程与优雅停机
 - [Jaeger.md](Jaeger.md) — Trace 概念的对照与分工
-- [../../01-编程语言/php/接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤
-- [../../02-计算机基础/网络/HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — 跨进程上下文传播
-- [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — OAP 与 UI 的部署方式
+- [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤
+- [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — 跨进程上下文传播
+- [K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — OAP 与 UI 的部署方式
 - [可观测性选型.md](可观测性选型.md) — 与 Jaeger、Zipkin、Tempo、云托管方案的横向对比与组合建议
 
 > 反向引用（本篇被下列文档引到）：[TCP三次握手.md](../../02-计算机基础/网络/tcp/TCP三次握手.md)、[ActiveMQ.md](../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)、[缓存问题与方案.md](../../03-数据与中间件/数据存储/redis/缓存问题与方案.md)、[分布式与微服务.md](../../04-架构与系统/分布式/分布式与微服务.md)、[Prometheus直方图与分位数.md](Prometheus直方图与分位数.md)

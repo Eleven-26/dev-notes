@@ -423,6 +423,6 @@ synchronized void join(Sub s) { /* 造新列表 → snap.set(...) */ }
 - [JVM与垃圾回收.md](../运行时/JVM与垃圾回收.md) — 锁与 GC 共享同一套「对象头」结构：偏向锁占 Mark Word，GC 分代年龄也在里面
 - [运行时数据区与栈帧.md](../运行时/运行时数据区与栈帧.md) — 轻量级锁的「锁记录」就分配在线程栈上
 - [并发同步原语.md](../../go/并发/并发同步原语.md) — 同主题的 Go 侧：`Mutex` 的饥饿模式与 `sync.Map`，与本文的公平锁 / `ConcurrentHashMap` 正好对照
-- [../../../04-架构与系统/系统设计/弹幕系统/Java实现.md](../../../04-架构与系统/系统设计/弹幕系统/Java实现.md) — 「使用」一节的代码出处：`AtomicReference<List<Sub>>` 快照 + `synchronized` 写侧
-- [../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md](../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md) — 同一手法的另一处落地：不可变快照 + `ConcurrentHashMap` + `AtomicInteger` 轮询
+- [Java实现.md](../../../04-架构与系统/系统设计/弹幕系统/Java实现.md) — 「使用」一节的代码出处：`AtomicReference<List<Sub>>` 快照 + `synchronized` 写侧
+- [服务发现的Java实现.md](../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md) — 同一手法的另一处落地：不可变快照 + `ConcurrentHashMap` + `AtomicInteger` 轮询
 > 反向引用（本篇被下列文档引到）：[Spring-boot核心.md](../Spring-boot核心.md)

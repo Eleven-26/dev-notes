@@ -6,7 +6,7 @@
 
 Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNCF，2019 年毕业（Graduated），用于分布式/微服务架构下的**调用链追踪与性能分析**：一次请求经过了哪些服务、每个服务做了什么、耗时卡在哪一跳、失败发生在哪个环节。
 
-覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → 使用方法（分册）→ 与 SkyWalking 分工 → 常见追问。结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的落地映射见 [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第十节。
+覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → 使用方法（分册）→ 与 SkyWalking 分工 → 常见追问。结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的落地映射见 [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第十节。
 
 ## 一、核心概念
 
@@ -177,12 +177,12 @@ service:
 
 ## 五、使用方法
 
-本篇只讲概念、架构、部署与选型；接入代码按语言拆成分册，与 [../../01-编程语言/php/接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 同一命名口径：
+本篇只讲概念、架构、部署与选型；接入代码按语言拆成分册，与 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 同一命名口径：
 
 | 语言 | 分册 | 覆盖内容 |
 | --- | --- | --- |
-| Go | [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) | OTel SDK 初始化、Gin / GORM / NATS / xxl-job 四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、[photography-server](https://github.com/Eleven-26/photography-server) 落地映射 |
-| Java | [../../01-编程语言/java/接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) | OTel Java Agent 无侵入路线、Spring Boot 3 + Micrometer Tracing、日志 MDC 与响应头、跨线程传播、从 `jaeger-client` 迁移 |
+| Go | [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) | OTel SDK 初始化、Gin / GORM / NATS / xxl-job 四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、[photography-server](https://github.com/Eleven-26/photography-server) 落地映射 |
+| Java | [接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) | OTel Java Agent 无侵入路线、Spring Boot 3 + Micrometer Tracing、日志 MDC 与响应头、跨线程传播、从 `jaeger-client` 迁移 |
 
 > ⚠️ `jaeger-client-go` / `jaeger-client-java` **均已归档**，新项目一律用 OTel SDK + OTLP，不要再用私有客户端与私有 `uber-trace-id` 头。
 
@@ -203,7 +203,7 @@ service:
 
 - **采样率怎么定？** 开发全采；生产按流量 `ParentBased(TraceIDRatioBased(1%~10%))` 保证父子决策一致；最优是 Collector **尾部采样**——错误与慢请求 100% 保留、正常请求抽样，又省存储又不丢关键链路。
 - **TraceID 如何跨服务透传？** W3C `traceparent` 头（`version-traceid-spanid-flags`）随 HTTP/RPC 传递；MQ 放消息 Header；下游 `Extract` 提取后作为父上下文创建新 span。⚠️ 头格式全链路须统一，混用 `sw8`/`uber-trace-id` 会断链。
-- **异步 / MQ 怎么串联？** 生产端发送前 `Inject`（把当前 span 注入消息头），消费端 `Extract` 后续接同一 trace；定时任务这类无上游入口的创建**根 span** 独立成链。落地代码见 [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第七节。
+- **异步 / MQ 怎么串联？** 生产端发送前 `Inject`（把当前 span 注入消息头），消费端 `Extract` 后续接同一 trace；定时任务这类无上游入口的创建**根 span** 独立成链。落地代码见 [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第七节。
 - **Jaeger 存储怎么选？** 本地/CI 用 Badger 或内存；生产 ClickHouse（高基数、按 ID 精查、成本低，v2 官方原生）或 Elasticsearch（生态成熟、聚合强）；Cassandra 适合超大规模写入但运维要求高。
 - **为什么 Jaeger v2 转向 OTel？** OTel 已成事实标准：v2 直接以 OTel Collector 为运行时，统一接收/处理/导出模型，避免维护私有协议与 SDK，也让 Jaeger 成为生态里“可替换的后端”。
 - **为什么老 Jaeger SDK 不再用？** `jaeger-client-go/java` 已归档，私有 `uber-trace-id` 与私有 Thrift 协议与 OTel 标准冲突；统一 OTel SDK + OTLP 后，后端可换而埋点不动。
@@ -212,11 +212,11 @@ service:
 
 ## 关联
 
-- [../../01-编程语言/go/接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) — Go 侧 OTel SDK 埋点的完整接入手册（含 [photography-server](https://github.com/Eleven-26/photography-server) 落地映射）
-- [../../01-编程语言/java/接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
+- [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) — Go 侧 OTel SDK 埋点的完整接入手册（含 [photography-server](https://github.com/Eleven-26/photography-server) 落地映射）
+- [接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
 - [Skywalking.md](Skywalking.md) — 探针式 APM 的另一条路线与分工
-- [../../01-编程语言/php/接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) — 多语言探针接入的对照
-- [../../02-计算机基础/网络/HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
-- [../部署/k8s/K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 采集组件的部署形态
+- [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) — 多语言探针接入的对照
+- [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
+- [K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 采集组件的部署形态
 - [可观测性选型.md](可观测性选型.md) — 链路追踪的完整选型表（含指标、日志、存储、可视化的选型）
 > 反向引用（本篇被下列文档引到）：[Prometheus直方图与分位数.md](Prometheus直方图与分位数.md)

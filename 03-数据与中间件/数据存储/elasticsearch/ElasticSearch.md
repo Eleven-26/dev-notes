@@ -428,11 +428,11 @@ curl -X GET "localhost:9200/mysougoulog/_search" -H 'Content-Type: application/j
 - [ElasticSearch应用与DSL.md](ElasticSearch应用与DSL.md) — 写入、文本分析与搜索 DSL 的落地用法
 - [ElasticSearch客户端.md](ElasticSearch客户端.md) — Go / Java 客户端怎么调
 - [MongoDB.md](../MongoDB.md) — 另一类非关系型存储的选型与运维
-- [mysql/索引与优化.md](../mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
+- [索引与优化.md](../mysql/索引与优化.md) — B+ 树索引与倒排索引的对照
 - [文件系统与IO.md](../../../02-计算机基础/linux/文件系统与IO.md) — translog 的 fsync 与 page cache
-- [../../../02-计算机基础/linux/内存管理.md](../../../02-计算机基础/linux/内存管理.md) — 段落盘与 fsync、page cache 的底层机制
-- [../../../04-架构与系统/分布式/理论/Raft协议.md](../../../04-架构与系统/分布式/理论/Raft协议.md) — 副本确认语义与多数派共识的差别
-- [../../中间件/消息队列/Kafka.md](../../中间件/消息队列/Kafka.md) — 从 binlog / CDC 单向同步到 ES 的链路设计
+- [内存管理.md](../../../02-计算机基础/linux/内存管理.md) — 段落盘与 fsync、page cache 的底层机制
+- [Raft协议.md](../../../04-架构与系统/分布式/理论/Raft协议.md) — 副本确认语义与多数派共识的差别
+- [Kafka.md](../../中间件/消息队列/Kafka.md) — 从 binlog / CDC 单向同步到 ES 的链路设计
 - [存储选型.md](../存储选型.md) — ES 在存储体系中的定位（该用与不该用、与 ClickHouse 的分工）
 
 > 反向引用（本篇被下列文档引到）：[B树与B+树.md](../../../02-计算机基础/数据结构/树/B树与B+树.md)、[平衡树.md](../../../02-计算机基础/数据结构/树/平衡树.md)、[位图与布隆过滤器.md](../../../02-计算机基础/数据结构/高级数据结构/位图与布隆过滤器.md)、[AC自动机.md](../../../02-计算机基础/算法/字符串匹配/AC自动机.md)、[BM.md](../../../02-计算机基础/算法/字符串匹配/BM.md)、[KMP.md](../../../02-计算机基础/算法/字符串匹配/KMP.md)、[海量数据存储设计.md](../../../04-架构与系统/系统设计/海量数据存储设计.md)、[统计页提速.md](../../../04-架构与系统/系统设计/统计页提速.md)

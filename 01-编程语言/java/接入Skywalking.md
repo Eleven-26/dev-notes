@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Java 侧接入 SkyWalking 的完整手册，按**javaagent 为什么能零改码 → 接入清单 → 配置优先级 → 插件目录 → Spring Boot / Dockerfile / K8s → 日志关联 → 跨线程 → 优雅停机 → 验证排查**组织。
 >
-> SkyWalking 本体原理（javaAgent 机制、ByteBuddy 织入、轻量级队列内核、Dubbo 插件生命周期）、OAP 架构与 UI 六大面板见 [../../06-工程实践/可观测性/Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)；同命名口径的另两篇是 [../go/接入Skywalking.md](../go/接入Skywalking.md) 与 [../php/接入Skywalking.md](../php/接入Skywalking.md)。
+> SkyWalking 本体原理（javaAgent 机制、ByteBuddy 织入、轻量级队列内核、Dubbo 插件生命周期）、OAP 架构与 UI 六大面板见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)；同命名口径的另两篇是 [接入Skywalking.md](../go/接入Skywalking.md) 与 [接入Skywalking.md](../php/接入Skywalking.md)。
 
 ---
 
@@ -29,7 +29,7 @@ JVM 退出 → ShutdownHook 触发：先停消费者线程并 flush 队列，再
 三个直接推论：
 
 1. **装/卸插件不用重新编译业务代码**。插件就是 jar，拷进 `plugins/` 即生效、删掉即失效；也可以用 `plugin.exclude_plugins` 排除。
-2. **配置在运行期读**。改环境变量重启即可，不像 Go 那样要重新编译（对照见 [../go/接入Skywalking.md](../go/接入Skywalking.md) 第一节）。
+2. **配置在运行期读**。改环境变量重启即可，不像 Go 那样要重新编译（对照见 [接入Skywalking.md](../go/接入Skywalking.md) 第一节）。
 3. **`kill -9` 会丢最后一批数据**。flush 依赖 ShutdownHook，而 `SIGKILL` 不触发任何 hook（见第十节）。
 
 ⚠️ 代价也要说清：字节码增强带来 CPU/内存开销；agent 与 **JDK 版本、框架版本、其他 agent** 存在兼容风险；探针异常理论上可能影响业务进程。所以生产要**灰度**，并保留「一键摘除」的能力（删 jar / 排除插件 / 摘掉 `-javaagent` 重启）。
@@ -157,7 +157,7 @@ K8s 侧的三个要点：
    ```
 
 2. **给 agent 预留额外内存**：`resources.limits.memory` 要比裸跑多留 200~500MB（agent 的元空间 + 队列缓冲）。不预留的典型症状是「加了探针就 OOMKilled」。
-3. ⚠️ **优雅停机**：`terminationGracePeriodSeconds` 要大于业务排空时间，且用 SIGTERM 触发 ShutdownHook（第十节）。`ENTRYPOINT` 走 `sh -c` 时，注意 shell 是否会转发信号——必要时用 `exec java ...` 或引入 `tini`（PHP 侧同一问题的详细讨论见 [../php/接入Skywalking.md](../php/接入Skywalking.md)）。
+3. ⚠️ **优雅停机**：`terminationGracePeriodSeconds` 要大于业务排空时间，且用 SIGTERM 触发 ShutdownHook（第十节）。`ENTRYPOINT` 走 `sh -c` 时，注意 shell 是否会转发信号——必要时用 `exec java ...` 或引入 `tini`（PHP 侧同一问题的详细讨论见 [接入Skywalking.md](../php/接入Skywalking.md)）。
 
 ---
 
@@ -203,7 +203,7 @@ String traceId = TraceContext.traceId();  // 未接入 agent 时返回 ""
 
 从 `optional-plugins/` 拷日志上报插件到 `plugins/`，再加对应 toolkit 依赖（`apm-toolkit-logback-1.x` 的 `LogbackAppender`）。上报后在 UI 的**日志面板**按 Trace ID 查询，能直接捞出这一次请求的所有日志。
 
-标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**（日志面板用法见 [../../06-工程实践/可观测性/Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) 2.5 节）。
+标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**（日志面板用法见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) 2.5 节）。
 
 ⚠️ 日志上报走的是**与链路同一条 gRPC 通道**，所以「链路有、日志没有」通常是日志侧开关或消息体大小超限，而不是网络问题。大对象日志要在打印前裁剪，超限会被静默丢弃。
 
@@ -250,7 +250,7 @@ agent 启动时注册了 **ShutdownHook**，JVM 正常退出时会：先停消�
 | `kill -9` / `SIGKILL` | ❌ 不触发 | **最后一批链路数据丢失** |
 | OOMKilled | ❌ 不触发 | 同上，且会连带丢掉故障时刻最关键的数据 |
 
-K8s 侧要保证 `terminationGracePeriodSeconds` 大于「业务请求排空 + 队列 flush」的总时间。这与 PHP 侧靠 `exec` 转发 SIGTERM、Go 侧靠 `tp.Shutdown(ctx)` 是**同一个道理**（对照见 [../php/接入Skywalking.md](../php/接入Skywalking.md) 第五节、[../go/接入Jaeger.md](../go/接入Jaeger.md) 第九节）。
+K8s 侧要保证 `terminationGracePeriodSeconds` 大于「业务请求排空 + 队列 flush」的总时间。这与 PHP 侧靠 `exec` 转发 SIGTERM、Go 侧靠 `tp.Shutdown(ctx)` 是**同一个道理**（对照见 [接入Skywalking.md](../php/接入Skywalking.md) 第五节、[接入Jaeger.md](../go/接入Jaeger.md) 第九节）。
 
 ⚠️ 顺带一个设计取向：队列满时 SkyWalking 默认走 `IF_POSSIBLE` 策略——**宁可丢数据，也不阻塞业务线程**。所以高 QPS 下「链路偶发缺失」是设计取舍，不是 bug；要提高完整度得调大队列并评估 OAP 的写入能力。
 
@@ -327,10 +327,10 @@ grep -m1 'TID' /path/to/app.log
 
 ## 关联
 
-- [../../06-工程实践/可观测性/Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) — javaAgent 与 ByteBuddy 织入原理、轻量级队列内核、Dubbo 插件生命周期、OAP 架构、UI 六大面板
+- [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) — javaAgent 与 ByteBuddy 织入原理、轻量级队列内核、Dubbo 插件生命周期、OAP 架构、UI 六大面板
 - [接入Jaeger.md](接入Jaeger.md) — OTel Java Agent / Micrometer Tracing 两条路线的对照
-- [../go/接入Skywalking.md](../go/接入Skywalking.md) — 编译期注入路线，对照「运行期字节码增强 vs 编译期 AST 注入」的差异
-- [../php/接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型与 `exec` 信号转发
-- [../../06-工程实践/可观测性/可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
-- [../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
-- [../../06-工程实践/部署/docker/镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `COPY --from` 多阶段构建与镜像瘦身
+- [接入Skywalking.md](../go/接入Skywalking.md) — 编译期注入路线，对照「运行期字节码增强 vs 编译期 AST 注入」的差异
+- [接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型与 `exec` 信号转发
+- [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
+- [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
+- [镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `COPY --from` 多阶段构建与镜像瘦身

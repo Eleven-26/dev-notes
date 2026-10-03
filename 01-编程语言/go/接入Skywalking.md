@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Go 侧接入 SkyWalking 的完整手册，按**为什么只能编译期注入 → 路线一（skywalking-go 注入）→ 手动埋点 → 跨 goroutine → 日志与指标 → 路线二（OTel + OTLP）→ 两条路线取舍 → 验证排查**组织。
 >
-> SkyWalking 本体原理、OAP 架构与 UI 面板见 [../../06-工程实践/可观测性/Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)；OTel 路线的后端部署见 [../../06-工程实践/可观测性/Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)；同命名口径的另两篇是 [../java/接入Skywalking.md](../java/接入Skywalking.md) 与 [../php/接入Skywalking.md](../php/接入Skywalking.md)。
+> SkyWalking 本体原理、OAP 架构与 UI 面板见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)；OTel 路线的后端部署见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)；同命名口径的另两篇是 [接入Skywalking.md](../java/接入Skywalking.md) 与 [接入Skywalking.md](../php/接入Skywalking.md)。
 
 ---
 
@@ -220,11 +220,11 @@ go func() {
 1. 在每条日志里注入当前 `traceId` / `segmentId` / `spanId`（字段名由插件决定）；
 2. 按配置把日志本身也上报给 OAP，从而在 UI 的日志面板里按 Trace ID 反查。
 
-排查用法与 Java 侧一致：**Trace 找慢/失败的 span → 拿 traceId 查日志 → 看业务日志里当时在做什么**（UI 面板部分见 [../../06-工程实践/可观测性/Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) 第三节）。
+排查用法与 Java 侧一致：**Trace 找慢/失败的 span → 拿 traceId 查日志 → 看业务日志里当时在做什么**（UI 面板部分见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) 第三节）。
 
-指标侧：agent 会采集 `runtime/metrics` 的原生运行时指标（GC、goroutine 数、内存），这部分**不需要写代码**。业务指标 SkyWalking 侧能力有限，要完整的指标大盘与告警建议另接 Prometheus（分工见 [../../06-工程实践/可观测性/可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)）。
+指标侧：agent 会采集 `runtime/metrics` 的原生运行时指标（GC、goroutine 数、内存），这部分**不需要写代码**。业务指标 SkyWalking 侧能力有限，要完整的指标大盘与告警建议另接 Prometheus（分工见 [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)）。
 
-⚠️ 别把大对象整体打进日志再指望它上报：日志与链路共用上报通道，超限的消息会被**静默丢弃**，排障时最需要的恰好是那条被丢掉的大日志。打印前裁剪（PHP 侧同一问题的量化讨论见 [../php/接入Skywalking.md](../php/接入Skywalking.md)）。
+⚠️ 别把大对象整体打进日志再指望它上报：日志与链路共用上报通道，超限的消息会被**静默丢弃**，排障时最需要的恰好是那条被丢掉的大日志。打印前裁剪（PHP 侧同一问题的量化讨论见 [接入Skywalking.md](../php/接入Skywalking.md)）。
 
 ---
 
@@ -319,7 +319,7 @@ func InitTracer(ctx context.Context, endpoint, serviceName string) (func(context
 **结论**：
 
 - **以 SkyWalking 为统一 APM（尤其 Java 为主、Go 为辅）** → 选**路线一**，与 Java 侧体验一致、`sw8` 上下文直接互通、拓扑与告警零适配。
-- **已有 OTel 基础设施 / 多语言 / 不想被单一后端锁定** → 选**路线二**，避免维护两套埋点体系；此时链路后端选 Jaeger 还是 SkyWalking 只是 endpoint 的差别（见 [../../06-工程实践/可观测性/可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)）。
+- **已有 OTel 基础设施 / 多语言 / 不想被单一后端锁定** → 选**路线二**，避免维护两套埋点体系；此时链路后端选 Jaeger 还是 SkyWalking 只是 endpoint 的差别（见 [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)）。
 
 ### 7.2 为什么不能同时开
 
@@ -444,11 +444,11 @@ nc -vz oap.observability 11800
 
 ## 关联
 
-- [../../06-工程实践/可观测性/Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) — 探针原理（javaAgent / 轻量级队列内核 / PHP SAPI 生命周期）、OAP 架构、UI 六大面板
+- [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) — 探针原理（javaAgent / 轻量级队列内核 / PHP SAPI 生命周期）、OAP 架构、UI 六大面板
 - [接入Jaeger.md](接入Jaeger.md) — 同一套 OTel 埋点、换 endpoint 即换后端的对照写法
-- [../java/接入Skywalking.md](../java/接入Skywalking.md) — Java agent 路线，对照「运行期字节码增强 vs 编译期注入」的差异
-- [../php/接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型
-- [../../06-工程实践/可观测性/可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
+- [接入Skywalking.md](../java/接入Skywalking.md) — Java agent 路线，对照「运行期字节码增强 vs 编译期注入」的差异
+- [接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型
+- [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
 - [context.md](工程实践/context.md) — OTel 路线下 ctx 传播的基础
-- [../../06-工程实践/部署/docker/镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `-a` 全量重编译与构建缓存的取舍
+- [镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `-a` 全量重编译与构建缓存的取舍
 > 反向引用（本篇被下列文档引到）：[Prometheus直方图与分位数.md](../../06-工程实践/可观测性/Prometheus直方图与分位数.md)

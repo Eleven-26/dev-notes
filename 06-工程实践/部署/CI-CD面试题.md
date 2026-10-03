@@ -267,11 +267,11 @@ deploy:
 ## 关联
 
 - [GitLab CI-CD.md](GitLab CI-CD.md) — **语法与用法手册**：`rules` 求值、`extends` / `!reference` / `include`、变量 10 级优先级、`cache` vs `artifacts`、`needs` DAG、触发方式，配本机 `gitlab-ci-local` 实测
-- [docker/镜像构建与缓存.md](docker/镜像构建与缓存.md) — 流水线里构建镜像这一段
-- [docker/镜像瘦身与构建缓存.md](docker/镜像瘦身与构建缓存.md) — CI 上的缓存复用
-- [k8s/K8s部署与生命周期面试题.md](k8s/K8s部署与生命周期面试题.md) — 声明式部署与回滚
-- [k8s/K8s部署流程.md](k8s/K8s部署流程.md) — 部署阶段的标准流程：集群搭建 → 基础组件 → 应用上线 → 检查单
-- [docker/命令速查.md](docker/命令速查.md) — 排查镜像与容器问题的命令
+- [镜像构建与缓存.md](docker/镜像构建与缓存.md) — 流水线里构建镜像这一段
+- [镜像瘦身与构建缓存.md](docker/镜像瘦身与构建缓存.md) — CI 上的缓存复用
+- [K8s部署与生命周期面试题.md](k8s/K8s部署与生命周期面试题.md) — 声明式部署与回滚
+- [K8s部署流程.md](k8s/K8s部署流程.md) — 部署阶段的标准流程：集群搭建 → 基础组件 → 应用上线 → 检查单
+- [命令速查.md](docker/命令速查.md) — 排查镜像与容器问题的命令
 - [容器与编排选型.md](容器与编排选型.md) — CI/CD 四方案对比与 GitOps（Argo CD）的取舍
 
 > 反向引用（本篇被下列文档引到）：[数据迁移.md](../../03-数据与中间件/数据存储/mysql/数据迁移.md)、[Git命令与使用场景.md](../版本控制/Git命令与使用场景.md)

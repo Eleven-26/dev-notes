@@ -289,8 +289,8 @@ netstat -ano | findstr "<端口或对端IP>"
 - [TCP三次握手.md](TCP三次握手.md) — 建立连接的另一半：seq/ack 的含义、为什么必须三次
 - [TCP报文结构.md](TCP报文结构.md) — `FIN` / `ACK` / `RST` 标志位与序号占用规则
 - [TCP滑动窗口.md](TCP滑动窗口.md) — 关闭与在途数据：为什么关闭要等对端数据处理完
-- [../IO多路复用.md](../IO多路复用.md) — 连接被对端关闭时 epoll 侧的表现（可读且读到 EOF）
-- [../../linux/常用命令.md](../../linux/常用命令.md) — `ss` / `netstat` 查端口占用与连接状态
-- [../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 停服时的连接排空与 `terminationGracePeriodSeconds`
+- [IO多路复用.md](../IO多路复用.md) — 连接被对端关闭时 epoll 侧的表现（可读且读到 EOF）
+- [常用命令.md](../../linux/常用命令.md) — `ss` / `netstat` 查端口占用与连接状态
+- [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 停服时的连接排空与 `terminationGracePeriodSeconds`
 
 > 反向引用（本篇被下列文档引到）：[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[抓包实战.md](../抓包实战.md)、[网络通信链路详解.md](../网络通信链路详解.md)

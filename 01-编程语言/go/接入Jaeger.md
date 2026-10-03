@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Go 侧接入 Jaeger 的完整手册，按**前提认知 → 依赖 → TracerProvider 初始化 → HTTP / SQL / MQ / 定时任务四类埋点 → context 传播铁律 → 日志关联 → 优雅退出 → 项目落地映射 → 验证排查**组织，并结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的实际接入点整理。
 >
-> Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [../../06-工程实践/可观测性/Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)；同一套埋点发往 SkyWalking OAP 的写法见 [接入Skywalking.md](接入Skywalking.md)。
+> Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)；同一套埋点发往 SkyWalking OAP 的写法见 [接入Skywalking.md](接入Skywalking.md)。
 
 ---
 
@@ -95,7 +95,7 @@ func Shutdown(ctx context.Context) error {
 2. ⚠️ **单例**：`tp` 是包级变量、`main` 里初始化一次。**禁止**在请求路径里 `NewTracerProvider`：每次新建都会起一套批处理协程与 gRPC 连接，直接协程泄漏 + 连接爆炸。未启用链路追踪时应该让中间件返回 `nil`（见第四节），走 noop provider，请求路径零开销。
 3. ⚠️ **`ParentBased` 不能省**：它保证子 span 沿用父 span 的采样决策。只用 `TraceIDRatioBased` 会出现「上游采了、下游没采」，一条 trace 只剩半截，比不采更难排查。
 
-采样率的取值与尾部采样方案见 [../../06-工程实践/可观测性/Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) 第四节。
+采样率的取值与尾部采样方案见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) 第四节。
 
 ---
 
@@ -334,7 +334,7 @@ srv.Shutdown(ctx)              // 1. 先停 HTTP server，排空 in-flight 请�
 infrastructure.Shutdown(ctx)   // 2. 再 flush span 队列
 ```
 
-⚠️ **顺序很重要**：先 flush 再停 server，会把排空期间新产生的 span 漏掉。任何 `kill -9` 都等于放弃最后一批数据——K8s 侧要保证 `terminationGracePeriodSeconds` 大于「HTTP 排空 + span flush」的总时间（部署与生命周期见 [../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md)）。
+⚠️ **顺序很重要**：先 flush 再停 server，会把排空期间新产生的 span 漏掉。任何 `kill -9` 都等于放弃最后一批数据——K8s 侧要保证 `terminationGracePeriodSeconds` 大于「HTTP 排空 + span flush」的总时间（部署与生命周期见 [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md)）。
 
 ---
 
@@ -429,7 +429,7 @@ curl -s "http://localhost:16686/api/services"
 | MQ 消费端是全新 trace | 生产端没 `Inject`，或 MQ 不支持消息头 | 按 7.1 实现 Inject/Extract；NATS 需 2.2+ |
 | 定时任务的 SQL 全是孤立 trace | 任务入口没创建根 span | 用 `traced()` 包装（7.2） |
 | 重启后最后几秒的 trace 缺失 | 没调 `tp.Shutdown`，批量队列未 flush | 按第九节接入优雅退出 |
-| ClickHouse 存储启动报错 | 漏了 `--feature-gates=storage.clickhouse` | 见 [../../06-工程实践/可观测性/Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) 第四节 |
+| ClickHouse 存储启动报错 | 漏了 `--feature-gates=storage.clickhouse` | 见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) 第四节 |
 | 存储成本涨得离谱 | span attribute 里塞了完整请求体 / SQL 参数 | 4KB 截断 + 敏感字段脱敏；收紧采样率（第八节） |
 
 ---
@@ -469,11 +469,11 @@ curl -s "http://localhost:16686/api/services"
 
 ## 关联
 
-- [../../06-工程实践/可观测性/Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
+- [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
 - [接入Skywalking.md](接入Skywalking.md) — 同一套 OTel 埋点发往 SkyWalking OAP；以及编译期注入路线的对照
-- [../java/接入Jaeger.md](../java/接入Jaeger.md) — Java 侧的 OTel Agent 与 Micrometer Tracing 两条路线
-- [工程实践/context.md](工程实践/context.md) — ctx 传播、超时预算与级联取消的基础
-- [../../02-计算机基础/网络/HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
-- [../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 `terminationGracePeriodSeconds`
-- [../../06-工程实践/可观测性/可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路后端与存储的选型对比
+- [接入Jaeger.md](../java/接入Jaeger.md) — Java 侧的 OTel Agent 与 Micrometer Tracing 两条路线
+- [context.md](工程实践/context.md) — ctx 传播、超时预算与级联取消的基础
+- [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
+- [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 `terminationGracePeriodSeconds`
+- [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路后端与存储的选型对比
 > 反向引用（本篇被下列文档引到）：[Prometheus直方图与分位数.md](../../06-工程实践/可观测性/Prometheus直方图与分位数.md)

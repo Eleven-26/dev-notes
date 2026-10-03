@@ -4,7 +4,7 @@
 >
 > 内容整理自大厂 Go 后端面试真题，参考资料与原始素材见 [素材清单](../../../素材清单.md)。
 >
-> 池化只是"减少分配"的一种手段，减少 GC 压力的全貌（GOGC / GOMEMLIMIT / 指针密度）见 [../运行时/垃圾回收机制.md](../运行时/垃圾回收机制.md)。
+> 池化只是"减少分配"的一种手段，减少 GC 压力的全貌（GOGC / GOMEMLIMIT / 指针密度）见 [垃圾回收机制.md](../运行时/垃圾回收机制.md)。
 
 ---
 
@@ -288,8 +288,8 @@ go test -bench=. -benchmem -run=^$ ./...     # 看 allocs/op 与 B/op 是否真�
 
 - [goroutine实战模式.md](goroutine实战模式.md) — 「用协程池还是信号量」的实测取舍
 
-- [../运行时/垃圾回收机制.md](../运行时/垃圾回收机制.md) — Pool 服务的对象：GOGC / GOMEMLIMIT / 分配压力
-- [../类型与语法/接口.md](../类型与语法/接口.md) — Put/Get 的 `any` 装箱成本与 24 字节分配从哪来
+- [垃圾回收机制.md](../运行时/垃圾回收机制.md) — Pool 服务的对象：GOGC / GOMEMLIMIT / 分配压力
+- [接口.md](../类型与语法/接口.md) — Put/Get 的 `any` 装箱成本与 24 字节分配从哪来
 - [并发同步原语.md](并发同步原语.md) — Mutex / RWMutex / Once / WaitGroup / atomic 的取舍
-- [../运行时/内存分配器.md](../运行时/内存分配器.md) — 不用 Pool 时，小对象走哪条分配路径
+- [内存分配器.md](../运行时/内存分配器.md) — 不用 Pool 时，小对象走哪条分配路径
 - [goroutine.md](goroutine.md) — 每个 goroutine 的成本，以及"用协程池还是信号量"的取舍

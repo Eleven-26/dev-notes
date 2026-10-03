@@ -234,9 +234,9 @@ curl -sS --http3 -o /dev/null -w 'HTTP/%{http_version} 建连 %{time_connect}s �
 
 ## 关联
 
-- [tcp/TCP三次握手.md](tcp/TCP三次握手.md) — QUIC 把这里的三次握手压成了 1-RTT（甚至 0-RTT）的对照
-- [tcp/TCP四次挥手.md](tcp/TCP四次挥手.md) — QUIC 没有 `TIME_WAIT`：包号不复用，退出更干净
-- [tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) — QUIC 的流控是「流级 + 连接级」两层，这里是单层
+- [TCP三次握手.md](tcp/TCP三次握手.md) — QUIC 把这里的三次握手压成了 1-RTT（甚至 0-RTT）的对照
+- [TCP四次挥手.md](tcp/TCP四次挥手.md) — QUIC 没有 `TIME_WAIT`：包号不复用，退出更干净
+- [TCP滑动窗口.md](tcp/TCP滑动窗口.md) — QUIC 的流控是「流级 + 连接级」两层，这里是单层
 - [HTTPS与TLS.md](HTTPS与TLS.md) — QUIC 内嵌 TLS 1.3，ALPN 与证书都来自这里
 - [HTTP与gRPC.md](HTTP与gRPC.md) — 应用层多路复用在 h2 与 h3 下的差别
 - [DNS解析.md](DNS解析.md) — `HTTPS` / `SVCB` 记录属于资源记录类型，HTTP/3 的入口在这里

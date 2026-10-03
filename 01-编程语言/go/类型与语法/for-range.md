@@ -247,5 +247,5 @@ for i := range s {
 
 - [切片.md](切片.md) — range 切片时拷的是元素值
 - [map.md](map.md) — range map 的顺序与迭代器语义
-- [../并发/channel原理与底层实现.md](../并发/channel原理与底层实现.md) — range channel 与 close 的配合
-- [../并发/并发控制实战.md](../并发/并发控制实战.md) — range 变量捕获的经典坑
+- [channel原理与底层实现.md](../并发/channel原理与底层实现.md) — range channel 与 close 的配合
+- [并发控制实战.md](../并发/并发控制实战.md) — range 变量捕获的经典坑

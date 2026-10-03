@@ -8,8 +8,8 @@
 > [Prim.md](最小生成树/Prim.md)），另有根下的 [拓扑排序.md](拓扑排序.md)。
 >
 > 本篇是**入口总纲** —— 回答「图怎么表示、遇到一个图问题该往哪个方向走、各算法的前提是什么」。
-> ⚠️ **子目录各自还有更细的导读**（[最短路/README.md](最短路/README.md)、[最小生成树/README.md](最小生成树/README.md)），
-> 本篇不重复它们的选型细节。算法目录的整体导读见 [../README.md](../README.md)。
+> ⚠️ **子目录各自还有更细的导读**（[README.md](最短路/README.md)、[README.md](最小生成树/README.md)），
+> 本篇不重复它们的选型细节。算法目录的整体导读见 [README.md](../README.md)。
 
 ---
 
@@ -108,10 +108,10 @@
 
 | 问题 | 关键算法 | 在哪 |
 |---|---|---|
-| **单源最短路（非负权）** | Dijkstra（堆 / 朴素） | [最短路/Dijkstra.md](最短路/Dijkstra.md) |
-| **单源最短路（可负权）** | Bellman-Ford；队列优化版 SPFA | [最短路/Bellman-Ford.md](最短路/Bellman-Ford.md) |
-| **多源最短路（全源）** | Floyd-Warshall（`O(V³)`，DP 思想） | [最短路/Floyd.md](最短路/Floyd.md) |
-| **最小生成树** | Kruskal（按边贪心）、Prim（按点贪心） | [最小生成树/Kruskal.md](最小生成树/Kruskal.md)、[最小生成树/Prim.md](最小生成树/Prim.md) |
+| **单源最短路（非负权）** | Dijkstra（堆 / 朴素） | [Dijkstra.md](最短路/Dijkstra.md) |
+| **单源最短路（可负权）** | Bellman-Ford；队列优化版 SPFA | [Bellman-Ford.md](最短路/Bellman-Ford.md) |
+| **多源最短路（全源）** | Floyd-Warshall（`O(V³)`，DP 思想） | [Floyd.md](最短路/Floyd.md) |
+| **最小生成树** | Kruskal（按边贪心）、Prim（按点贪心） | [Kruskal.md](最小生成树/Kruskal.md)、[Prim.md](最小生成树/Prim.md) |
 | **拓扑排序** | Kahn（BFS）/ DFS 后序反转 | [拓扑排序.md](拓扑排序.md) |
 | **图的遍历** | DFS（栈 / 递归）、BFS（队列） | [DFS与BFS遍历.md](图的遍历/DFS与BFS遍历.md)（**总纲**：两种遍历的区别与选型）、[DFS深度优先遍历.md](图的遍历/DFS深度优先遍历.md)、[BFS广度优先遍历.md](图的遍历/BFS广度优先遍历.md) |
 | **强连通分量** | Tarjan / Kosaraju | ⚠️ 待补 |
@@ -120,8 +120,8 @@
 
 ⚠️ **两个子目录各有一份更细的导读**：
 
-- [最短路/README.md](最短路/README.md) —— 三个算法怎么选、各自的失效边界；
-- [最小生成树/README.md](最小生成树/README.md) —— Kruskal vs Prim 的判据，以及 **MST 与最短路的区别**（高频误区）。
+- [README.md](最短路/README.md) —— 三个算法怎么选、各自的失效边界；
+- [README.md](最小生成树/README.md) —— Kruskal vs Prim 的判据，以及 **MST 与最短路的区别**（高频误区）。
 
 ⚠️ 「待补」的三篇尚未落盘，**本篇不留链接**（避免断链），写完会回补。
 
@@ -210,7 +210,7 @@ Floyd       ：第 k 轮结束 ⇒ 允许用 {0..k} 中转时的最优值
 | **Floyd 是纯 DP** | `dp[k][i][j]` 压成二维，`k` 是阶段（[Floyd.md](最短路/Floyd.md)） |
 | **Bellman-Ford 是 DP 的「逐轮松弛」** | 轮数就是阶段数（[Bellman-Ford.md](最短路/Bellman-Ford.md)） |
 | **DAG 上的最短路 = 按拓扑序做一次 DP** | 有向无环图不需要 Dijkstra，拓扑序天然给出 DP 的推进顺序（[DFS深度优先遍历.md](图的遍历/DFS深度优先遍历.md)） |
-| **图上也有 DP 类问题** | 如「经过 k 条边的最短路」「状压 DP 跑 TSP」（[../动态规划/README.md](../动态规划/README.md) 的状态机 / 状压两类） |
+| **图上也有 DP 类问题** | 如「经过 k 条边的最短路」「状压 DP 跑 TSP」（[README.md](../动态规划/README.md) 的状态机 / 状压两类） |
 
 ### 图论 vs 回溯
 
@@ -220,22 +220,22 @@ Floyd       ：第 k 轮结束 ⇒ 允许用 {0..k} 中转时的最优值
 | 状态 | `visited` 即可 | 需要完整的**现场恢复**（撤销选择） |
 | 复杂度 | `O(V + E)` | 指数级 |
 
-⭐ 关系：回溯**就是** DFS 加「撤销」—— 走图时如果目标是「枚举所有路径」（而不是访问所有点），就必须用回溯的写法（[../回溯/README.md](../回溯/README.md)）。区别只在**「同一个点能不能重复走」**：不能 → `visited` 就够了；能 → 必须撤销，否则会漏路径。
+⭐ 关系：回溯**就是** DFS 加「撤销」—— 走图时如果目标是「枚举所有路径」（而不是访问所有点），就必须用回溯的写法（[README.md](../回溯/README.md)）。区别只在**「同一个点能不能重复走」**：不能 → `visited` 就够了；能 → 必须撤销，否则会漏路径。
 
 ---
 
 ## 关联
 
-- [../README.md](../README.md) — 算法目录总导读（本目录在其中的位置与收录门槛）
-- [最短路/README.md](最短路/README.md) — **子目录导读**：三个最短路算法怎么选、各自的失效边界
-- [最小生成树/README.md](最小生成树/README.md) — **子目录导读**：Kruskal vs Prim，以及 MST 与最短路的区别
+- [README.md](../README.md) — 算法目录总导读（本目录在其中的位置与收录门槛）
+- [README.md](最短路/README.md) — **子目录导读**：三个最短路算法怎么选、各自的失效边界
+- [README.md](最小生成树/README.md) — **子目录导读**：Kruskal vs Prim，以及 MST 与最短路的区别
 - [拓扑排序.md](拓扑排序.md) — DAG 的线性化、两种实现的取舍、并行边界的实测
 - [DFS与BFS遍历.md](图的遍历/DFS与BFS遍历.md) — **遍历三件套的总纲**：两种遍历的区别、选型判据与「零件各自成篇」的体例
 - [DFS深度优先遍历.md](图的遍历/DFS深度优先遍历.md) — 遍历骨架与四类边（树边 / 前向 / 回边 / 交叉）
 - [BFS广度优先遍历.md](图的遍历/BFS广度优先遍历.md) — 无权图最短路（层号即距离）与队列按层推进
-- [数据结构/图/图的表示与存储.md](../../数据结构/图/图的表示与存储.md) — 前置：邻接表 / 邻接矩阵 / 边列表怎么选
-- [数据结构/高级数据结构/常考补充结构.md](../../数据结构/高级数据结构/常考补充结构.md) — 并查集（连通性）
-- [数据结构/堆/堆与优先队列.md](../../数据结构/堆/堆与优先队列.md) — 小顶堆（优先队列）
-- [../贪心/README.md](../贪心/README.md) — Dijkstra / Prim / Kruskal 的贪心性质总纲
-- [../动态规划/README.md](../动态规划/README.md) — Floyd 与 Bellman-Ford 的 DP 视角
-- [../../../素材清单.md](../../../素材清单.md) — 素材来源登记
+- [图的表示与存储.md](../../数据结构/图/图的表示与存储.md) — 前置：邻接表 / 邻接矩阵 / 边列表怎么选
+- [常考补充结构.md](../../数据结构/高级数据结构/常考补充结构.md) — 并查集（连通性）
+- [堆与优先队列.md](../../数据结构/堆/堆与优先队列.md) — 小顶堆（优先队列）
+- [README.md](../贪心/README.md) — Dijkstra / Prim / Kruskal 的贪心性质总纲
+- [README.md](../动态规划/README.md) — Floyd 与 Bellman-Ford 的 DP 视角
+- [素材清单.md](../../../素材清单.md) — 素材来源登记
