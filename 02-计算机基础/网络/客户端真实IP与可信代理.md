@@ -8,7 +8,7 @@
 > 正确做法是**先判定直接对端是否可信**，只有转发头确实由我们自己部署的代理写下时，它才有证据价值。
 >
 > 内容整理自个人学习笔记，实测基于自研网关项目 [gateway](https://github.com/Eleven-26/gateway)（module `gwlab`，Go 1.26.5）的
-> `internal/clientip/`（本篇 `text` 块都是本机真实运行结果，**只有第六节 6.3 与第七节例外，已在原处标注**）。
+> `internal/clientip/`（本篇 `text` 块都是本机真实运行结果，**只有第六节 6.3 例外，已在原处标注**）。
 > 另有单元测试钉住每个边界（`TestResolve` 25 个子用例、`TestParseTrusted` 12 个、`TestResolveMultipleXFFHeaders`）。
 >
 > ⭐ **分工**：本篇讲**可信代理链的解析规则与安全边界**，以及**出站时该写谁**（第七节）；
@@ -316,23 +316,25 @@ func hostOnly(addr string) string {
 「可信」这件事由**网络拓扑**保证，而不是靠一个网段列表去猜。
 代价是**要么整条链都开这个开关、要么完全不用**：链上任何一跳没开，后面就什么都拿不到。
 
-> ⚠️ **本节未在本机实测**：本机既不监听端口、也没有真实 LB，无法构造 L4 转发链路。
+> ⚠️ **本节未在本机实测**：本机没有真实的 L4 负载均衡，也没有可用的转发拓扑，
+> PROXY protocol 的端到端行为无法复现（它需要在 LB 与网关两端同时开启）。
 > 上面是协议事实与配置项对照。落地时请在真实拓扑上验证「LB 是否真的在转发数据前发了 PROXY 头」，
-> 以及网关这一侧是否已把解析出的地址接进 `RemoteAddr`（否则它只是个普通的前缀，没人读）。
+> 以及网关这一侧是否已把这个前缀接进「客户端地址」的判定（否则它只是一段没人读的字节）。
 
-## 七、`X-Real-IP` 由谁写？写出来的可能还是代理地址
+## 七、`X-Real-IP` 由谁写？——「入口解析、出口复用」
 
 **本节要点**：前六节都在讲**怎么读**转发头；但同一个头**由谁写、写的是谁**同样决定结论 ——
-这里有一处跨篇的口径分叉，在项目源码里能直接看到。
+这里有一个极易复发的位置：入口已经解析对了，**出口又按原始地址推了一遍**。
 
-第四节给出的上游侧口径是「取真实客户端 IP 要用 `X-Real-IP`」。那这个头是谁写的？—— **网关**（见 [反向代理原理与实现.md](反向代理原理与实现.md) 第三节）。它在 `Director` 里这样写：
+第四节给出的上游侧口径是「取真实客户端 IP 要用 `X-Real-IP`」。那这个头是谁写的？—— **网关**（见 [反向代理原理与实现.md](反向代理原理与实现.md) 第三节）。它在 `Director` 里写。⚠️ 下面这版是**反面写法**：
 
 ```go
+// ⚠️ 反面写法：从 RemoteAddr 推 —— 写出来的是「直连对端」，不一定是客户端
 clientIP, _, _ := net.SplitHostPort(req.RemoteAddr)
 req.Header.Set("X-Real-IP", clientIP)
 ```
 
-⭐ 关键在于 `req.RemoteAddr` 是谁：**在出站请求里它仍然是「入站时的直接对端」**。
+⭐ 为什么它在 LB 后面会错：`req.RemoteAddr` **在出站请求里仍然是「入站时的直接对端」**。
 这一点可以直接在标准库里核对 —— `net/http/httputil/reverseproxy.go` 里 `RemoteAddr` 只出现两次、
 **都是读入站请求**，并且**从没有给 `outreq.RemoteAddr` 赋过值**（出站请求是 `req.Clone` 来的，原样带走）：
 
@@ -352,9 +354,9 @@ if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
 ② 注释里 `fold multiple headers into one` 说明标准库**自己就会把多个同名 XFF 头折叠成一条链** ——
 这正是第六节 6.1 要处理的形态从哪来的。
 
-于是：
+于是「从 `RemoteAddr` 推」的后果是：
 
-| 部署形态 | `RemoteAddr` | 网关写出的 `X-Real-IP` | 上游看到的「客户端」 |
+| 部署形态 | `RemoteAddr` | 写出的 `X-Real-IP` | 上游看到的「客户端」 |
 |---|---|---|---|
 | 网关**直接**面对客户端 | 真实客户端 | 真实客户端 ✅ | 正确 |
 | 网关在 **LB 后面** | LB | **LB** ❌ | 又变回代理地址 |
@@ -362,26 +364,72 @@ if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
 这与第一节是**同一个错误的两次出现**：入口侧因为 `RemoteAddr` 不可用，我们解出了 `clientIP`；
 可如果出站头仍从 `RemoteAddr` 取，等于把刚修好的问题在**出口处又写回去了**。
 
-**修法**：把解析结果**顺着 context 传下去**。项目里 `X-Forwarded-User` 已经是这个写法 ——
-它从 `auth.FromContext` 取，而不是从入站头里读：
+### 7.1 正确写法：解析结果顺着 context 走
+
+项目里的 `X-Forwarded-User` 早就是这个写法 —— 它从 `auth.FromContext` 取，而不是从入站头里读。
+真实客户端 IP 现在也走同一条路：
 
 ```go
-// 入口：解析一次（internal/gateway/gateway.go）
+// 入口：解析一次，并把结果挂到 ctx（internal/gateway/gateway.go）
 clientIP := clientip.Resolve(r.RemoteAddr, r.Header, snap.trustedProxies)
 r = r.WithContext(clientip.WithClient(r.Context(), clientIP))
 
-// 出口：从 context 取同一个值，而不是再从 RemoteAddr 推一遍（internal/proxy/proxy.go）
-if ip, ok := clientip.FromClient(req.Context()); ok {
-    req.Header.Set("X-Real-IP", ip)
+// 出口：优先取 ctx 里的解析结果，只有没挂过时才退回 RemoteAddr（internal/proxy/proxy.go）
+func clientIPOf(req *http.Request) string {
+    if ip, ok := clientip.FromClient(req.Context()); ok {
+        return ip
+    }
+    if host, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+        return host
+    }
+    return req.RemoteAddr
 }
 ```
 
+⚠️ 别小看那个**回落分支**：它让「直接调用 `proxy` 包 / 单测里手工构造的请求」仍有确定语义，
+同时顺手修掉一个边界 —— 旧写法 `clientIP, _, _ := net.SplitHostPort(...)` **忽略了错误**，
+`RemoteAddr` 不带端口时会写出一个**空的 `X-Real-IP`**。
+
+⭐ **转码那条出口也要同源**：走 `Transcode`（HTTP → gRPC）的请求，网关把**同一个**解析结果作为
+metadata `x-real-ip` 带上去（键是 `transcode.MetadataClientIP`，值同样取自 `clientip.FromClient(ctx)`）。
+本机实测（起一个最小 gRPC 上游回显 metadata）：
+
+```text
+=== HTTP → gRPC 转码：客户端 IP 走 metadata ===
+  ctx 里有入口解析结果               → 上游 metadata: x-real-ip=[9.9.9.9]        x-trace-id=[trace-abc]
+  ctx 里没有（直接调用本包）            → 上游 metadata: x-real-ip=(缺)              x-trace-id=[trace-abc]
+```
+
+⭐ 为什么值得单独写一次：**出口不止一个**。只在 HTTP 的 `Director` 里修，同一个请求走 REST 出去带真实客户端、
+走 gRPC 出去什么都没有 —— 上游两个口径，而问题会以「某个接口的审计日志里 IP 全是空的」这种形式出现。
+**判据**：新增任何一条「把请求转给别人」的出口时，都要问一句「这条路上客户端是谁，和别的路一致吗」。
+
+### 7.2 本机实测（含反例）
+
+`go test` 里两条端到端用例（`httptest` 上游 + 真网关，见 `internal/gateway/realip_test.go`）：
+
+```text
+TestRealIPReachesUpstreamThroughContext
+   入站 RemoteAddr=127.0.0.1:5000（可信代理）、XFF=9.9.9.9  → 上游看到 X-Real-IP=9.9.9.9        ✅
+TestRealIPUntrustedPeerIgnoresXFF
+   入站 RemoteAddr=203.0.113.9:5000（不可信）、XFF=9.9.9.9  → 上游看到 X-Real-IP=203.0.113.9   ✅（伪造无效）
+```
+
+⭐ **把出口改回「从 `RemoteAddr` 推」后，第一条立刻失败**（本机实跑，输出未加工）：
+
+```text
+realip_test.go:74: 上游看到的 X-Real-IP = "127.0.0.1"，期望 "9.9.9.9"；若为 127.0.0.1 说明出口又从 RemoteAddr 推了一遍
+--- FAIL: TestRealIPReachesUpstreamThroughContext
+```
+
+那个 `127.0.0.1` 就是「LB 的地址」在单机环境里的等价物 ——
+一次**请求能通、日志也正常、只是值错了**的失败，正是它最难被发现的原因。
+
+⭐ 两条用例必须配套：只有正向那条，说明不了「走 ctx 没有绕过可信代理判定」；
+而**反例必须真的跑一遍**（否则很容易写出一个「错误版居然也对」的假反例）。
+
 ⭐ 归纳成一条通用判据：**「入站时解析出来的可信身份」，出站时必须从 context 取，不能重新从原始头 / 地址推导。**
 否则就是「入口修一次、出口又坏一次」，而且两次都只在**多跳部署**下才暴露 —— 本地怎么跑都是对的。
-
-> ⚠️ 以上是**对项目源码的静态核对**（`internal/proxy/proxy.go:115` 的 `req.RemoteAddr`、
-> `internal/gateway/gateway.go:406` 的 `clientip.Resolve`），本机无法起端到端链路，**未做动态验证**。
-> 单跳部署下两者恰好相等，所以这个分叉不会在开发环境暴露。
 
 ## 使用：给网关配可信代理
 
@@ -447,6 +495,8 @@ hashKey = clientIP
 
 ⭐ **这三处必须共用同一个值**，不能各算各的：否则同一个请求在限流里是 A、在日志里是 B、在哈希环上是 C。
 本包的 `Resolve` 是**纯函数**（不缓存、不共享状态），所以「只调用一次」是为了**口径一致**，不是为了性能。
+⭐ 同理，**出口也取这一个值**：HTTP 侧写 `X-Real-IP`（第七节 7.1），gRPC 转码侧写 metadata `x-real-ip`。
+**入口解析、出口复用** —— 全链路只有一个口径，上游不管走哪条路看到的都是同一个客户端。
 
 ⚠️ 一个容易忽略的推论：`ratelimit.Key` 的设计是**登录用户按 `subject`、匿名才按 IP**：
 
@@ -498,7 +548,7 @@ func Key(routeName, subject, ip string) string {
 
 ## 关联
 
-- [反向代理原理与实现.md](反向代理原理与实现.md) — 网关如何写入 `X-Real-IP` / 为什么不手写 `X-Forwarded-For`；⚠️ 它写的是**对端地址**，与本篇第七节的口径需要对齐
+- [反向代理原理与实现.md](反向代理原理与实现.md) — 网关如何写入 `X-Real-IP` / 为什么不手写 `X-Forwarded-For`；⚠️ 它写的是**对端地址**还是客户端，取决于出口有没有从 context 取（本篇第七节）
 - [网络通信链路详解.md](网络通信链路详解.md) — 代理这一跳在整条链路上改了什么
 - [DNS解析.md](DNS解析.md) — 另一类「客户端看起来来自哪里」的问题（就近接入与 GSLB）
 - [../../06-工程实践/安全/JWT与APIKey鉴权.md](../../06-工程实践/安全/JWT与APIKey鉴权.md) — 「不信任客户端输入」这条原则在鉴权侧的体现
