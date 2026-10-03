@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect width="1000" height="600" fill="#f8fafc"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="23" font-weight="bold" fill="#0f172a">固定窗口计数：为什么它最坏能放到「2 倍阈值」</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">窗口 1s、阈值 10：两个窗口各自都没超限，可它们在「交界处」合起来看，实际速率翻倍</text>
+
+  <!-- 时间轴 -->
+  <rect x="80" y="150" width="600" height="70" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <rect x="680" y="150" width="240" height="70" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="380" y="182" text-anchor="middle" font-size="14" font-weight="bold" fill="#075985">窗口 1：[0, 1000ms)</text>
+  <text x="380" y="204" text-anchor="middle" font-size="12" fill="#0369a1">独立计数：10 个 ≤ 阈值 10 → 全放行</text>
+  <text x="800" y="182" text-anchor="middle" font-size="14" font-weight="bold" fill="#075985">窗口 2：[1000, 2000ms)</text>
+  <text x="800" y="204" text-anchor="middle" font-size="12" fill="#0369a1">计数清零：10 个 ≤ 阈值 10 → 全放行</text>
+
+  <line x1="680" y1="140" x2="680" y2="240" stroke="#dc2626" stroke-width="3" stroke-dasharray="6 4"/>
+  <text x="680" y="132" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">窗口交界</text>
+  <text x="680" y="258" text-anchor="middle" font-size="12" fill="#b91c1c">计数在这里清零</text>
+
+  <!-- 两批突刺 -->
+  <line x1="620" y1="150" x2="620" y2="106" stroke="#7c3aed" stroke-width="2"/>
+  <polygon points="620,100 614,112 626,112" fill="#7c3aed"/>
+  <text x="620" y="92" text-anchor="middle" font-size="13" font-weight="bold" fill="#6d28d9">t = 900ms：打 10 个</text>
+
+  <line x1="740" y1="150" x2="740" y2="106" stroke="#7c3aed" stroke-width="2"/>
+  <polygon points="740,100 734,112 746,112" fill="#7c3aed"/>
+  <text x="742" y="92" text-anchor="middle" font-size="13" font-weight="bold" fill="#6d28d9">t = 1100ms：再打 10 个</text>
+
+  <!-- 实际时间轴 -->
+  <line x1="80" y1="246" x2="920" y2="246" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="80" y1="246" x2="80" y2="254" stroke="#94a3b8" stroke-width="2"/>
+  <text x="80" y="274" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <line x1="620" y1="246" x2="620" y2="254" stroke="#94a3b8" stroke-width="2"/>
+  <text x="620" y="274" text-anchor="middle" font-size="12" fill="#64748b">900</text>
+  <line x1="680" y1="246" x2="680" y2="254" stroke="#94a3b8" stroke-width="2"/>
+  <text x="680" y="274" text-anchor="middle" font-size="12" fill="#64748b">1000</text>
+  <line x1="740" y1="246" x2="740" y2="254" stroke="#94a3b8" stroke-width="2"/>
+  <text x="740" y="274" text-anchor="middle" font-size="12" fill="#64748b">1100</text>
+  <text x="920" y="274" text-anchor="end" font-size="12" fill="#64748b">ms</text>
+
+  <!-- 突刺区间括号 -->
+  <path d="M620,300 L620,316 L740,316 L740,300" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <text x="680" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#b91c1c">这 0.2 秒内实际放行 20 个 = 2 倍阈值</text>
+
+  <!-- 阈值对比条 -->
+  <text x="80" y="386" font-size="13" fill="#334155">阈值</text>
+  <rect x="130" y="372" width="200" height="20" rx="4" fill="#94a3b8"/>
+  <text x="342" y="388" font-size="13" fill="#475569">10 个 / 秒</text>
+  <text x="80" y="418" font-size="13" fill="#334155">实际</text>
+  <rect x="130" y="404" width="400" height="20" rx="4" fill="#dc2626"/>
+  <text x="542" y="420" font-size="13" font-weight="bold" fill="#b91c1c">20 个 / 0.2 秒（= 2 倍阈值）</text>
+
+  <!-- 实测 -->
+  <rect x="24" y="446" width="952" height="126" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="2"/>
+  <text x="44" y="476" font-size="15" font-weight="bold" fill="#b45309">本机实测（Go）：突刺位置 t 从 0 扫到 900ms，每批 10 个、两批相隔 200ms</text>
+  <text x="44" y="502" font-size="13" fill="#92400e">t ≤ 700ms 时通过 10 个（两批落在同一个窗口里，第二批被拒）；t = 800 / 900ms 时通过 20 个</text>
+  <text x="44" y="526" font-size="13" fill="#92400e">→ 突刺要「跨过交界」才会翻倍，所以风险带是「交界前一个突刺宽度」这一段</text>
+  <text x="44" y="552" font-size="13" font-weight="bold" fill="#b45309">⭐ 突刺宽度越大，能踩中的风险带越宽；但只要不跨交界，它仍然被正常计入窗口</text>
+</svg>
