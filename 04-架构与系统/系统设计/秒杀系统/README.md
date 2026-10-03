@@ -168,11 +168,25 @@ return redis.call('DECRBY', KEYS[1], want)
   消费完成 10000 条：成功 10000  失败 0  耗时 16.038s（≈ 623 条/秒）
   排队等待：第 1 条 7ms，最后 1 条 15.987s
   队列积压峰值 10000 条
+  ⭐ 一条没丢、下游并发始终不超过 50 —— 代价是后面那部分订单要排队等待
 
 === ③ 同样的队列，换成异步批量入队（PublishAsync）===
   入队 10000 条（异步批量 + 等落盘）：耗时 139ms（≈ 71949 条/秒）
   队列积压峰值约 10000 条 —— 入队远快于消费，积压是必然的
+  ⭐ 对比 ② ：同一个队列，**入队方式**决定了它能不能真的削峰
 ```
+
+⭐ **读数说明（必读，否则会高估一个数量级）**：上面 ②③ 两段的**绝对值依赖宿主机磁盘状态** ——
+本机 JetStream 用 `FileStorage`，每条消息都要 fsync，连跑四次的区间是：
+
+| 场景 | 四次区间 | 结论（这个才是稳定的） |
+|---|---|---|
+| ② 同步 `Publish` 入队速率 | 225 ~ 625 条/秒 | **几百条/秒量级** |
+| ③ 异步批量入队速率 | 21721 ~ 71949 条/秒 | **万条/秒量级** |
+
+⭐ **要记住的不是 71949，而是「两者差两个数量级」** —— 这才是「入队方式决定削峰成败」的证据。
+⚠️ 下面 1.8⑤ 那句「入队速率必须远大于下游（2500 条/秒）」用 `FileStorage` 衡量会显得苛刻；
+换内存存储的 NATS 或换读数更小的下游，这条约束会放松，但**结论方向不变**。
 
 ⭐ **三行结论，一行比一行重要**：
 
@@ -367,7 +381,9 @@ Go 内存侧的实测（10000 并发请求 / 1000 库存，每种写法跑 3 轮
 | **超时回收** | 下单时投一条"延迟消息"（或定时扫表），到点检查状态；未支付则**归还库存** | ⭐ 归还前**必须再查一次订单状态**（可能刚好付款成功） |
 | **幂等** | 每个写操作带一个去重键（订单号 / `requestId`） | 消费者重投、用户重复提交都要靠它兜住 |
 | **对账** | 定时比对「Redis 剩余库存 + 已下单数」与「DB 库存 + 订单表」 | 对不上不自动改，先**告警 + 人工确认** |
-| **限购库存** | 活动结束后把"多预留的库存"（活动期预扣、实际未支付）一次性归位 | 归位要有**幂等标记**，避免重复归还 |
+| **补偿** | 对账捞出「订单已落库但 `sku_stock` 未扣」（消费端条件 `UPDATE` 影响 0 行） | ⭐ **从订单表出发**算差集（MQ 侧无线索：重投会被Ack 掉、消息不留痕）；人工确认后**补扣或撤单**，不自动改 |
+| **占位卡死** | 网络类错误不释放 Redis 占位时（见「使用」第一段），该 `(sku, uid)` 会被锁到占位 TTL 到期 | 兜底二选一：**缩短占位 TTL**（如 5 分钟，代价是同一用户多台设备会各占一次）或**按 uid 补偿释放**（确认 Redis 侧无扣减后主动 `Del`）；⚠️ 释放前必须确认「脚本没执行」，否则就是超卖 |
+| **限购库存** | 活动结束后把"多预留的库存"（活动期预扣、实际未支付）一次性归位 | 归位要有**幂等标记**，避免重复归还（白扣回补的幂等键见 [优惠券系统设计.md](优惠券系统设计.md) 第二段，同一类要求的两个实例） |
 
 ⭐ 一条容易忽略的：**Redis 预扣和 DB 落库之间是"最终一致"**，所以**必须能对账**。
 对账的粒度不用实时，但**必须有**；没有对账的预扣方案，等于把"账"交给了运气。
@@ -400,7 +416,9 @@ Go 内存侧的实测（10000 并发请求 / 1000 库存，每种写法跑 3 轮
 
 > ⚠️ **三段都是骨架片段**（为可读性省略了 import、类型定义与多层错误包装）。其中
 > **Lua 扣减、异步入队、带条件的 `UPDATE`** 三处逻辑取自 1.3~1.5 的实测程序，读数已在本机验证；
-> **`SETNX` 一人一单**与 **`INSERT IGNORE` 幂等**两处是**按语义补全的示意代码、未单独实测** —— 已在原处标注。
+> **`SETNX` 一人一单**与**幂等消费整段**是**按语义补全的示意代码、未单独实测** —— 已在原处标注。
+> ⚠️ 唯一的例外是**条件 `UPDATE` 影响 0 行的处置**：那一处本机实测过（MySQL 8.0.46，读数见第三段下方），
+> 但**修法本身只做到「不静默丢」，没做到自愈** —— 原因写在代码注释里，不要当成已解决的问题。
 
 ### 第一段：Lua 预扣（原子判定）
 
@@ -416,9 +434,10 @@ return redis.call('DECRBY', KEYS[1], want)
 
 func Seckill(ctx context.Context, rdb *redis.Client, sku string, userID int64) (int64, error) {
 	key := "stock:" + sku
+	hold := fmt.Sprintf("bought:%s:%d", sku, userID)
 	// ⚠️ 示意（未单独实测）：用 SETNX 占位实现「一人一单」；
 	//    真正的兜底仍是 DB 唯一索引 —— 见 1.6 的两层设计
-	ok, err := rdb.SetNX(ctx, fmt.Sprintf("bought:%s:%d", sku, userID), "1", 24*time.Hour).Result()
+	ok, err := rdb.SetNX(ctx, hold, "1", 24*time.Hour).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -427,33 +446,116 @@ func Seckill(ctx context.Context, rdb *redis.Client, sku string, userID int64) (
 	}
 	left, err := rdb.Eval(ctx, luaDeduct, []string{key}, 1).Int64()
 	if err != nil {
+		// ⚠️ 这里**故意不 Del 占位**：`err != nil` 不等于「脚本没执行」——
+		//    网络超时 / 连接中断时 Lua 很可能已在服务端执行完 DECRBY，只是确认包没回来。
+		//    此时释放占位 → 用户重试 → 扣第二次 → **超卖 1 件**。
+		//    只有「能确定脚本没跑」的错误才释放（判据见 isScriptNotRun 的实现骨架）。
+		// ⚠️ 不释放的代价不是「全局少卖」——占位是**按 uid 定向**的：
+		//    这一个用户被锁死 24h（他之后每次点都是 ErrAlreadyBought），
+		//    别的用户不受影响。兜底见 1.7 兜底表的「占位卡死」那一行。
+		if isScriptNotRun(err) {
+			_, _ = rdb.Del(ctx, hold).Result()
+		}
 		return 0, err
 	}
 	if left < 0 {
-		_, _ = rdb.Del(ctx, fmt.Sprintf("bought:%s:%d", sku, userID)).Result() // 没抢到就释放占位
+		_, _ = rdb.Del(ctx, hold).Result() // 没抢到就释放占位（这里能确定脚本跑完了）
 		return 0, ErrSoldOut
 	}
 	return left, nil
 }
 ```
 
-⚠️ 注意最后那个 `Del`：**"没抢到"不算数，占位要还回去** ——
+⚠️ 注意 `left < 0` 那个 `Del`：**"没抢到"不算数，占位要还回去** ——
 否则用户第一次点显示售罄、后来有库存回流也永远买不了（这就是"占位泄漏"）。
+
+⚠️ 但**不是所有失败都能释放占位**：`err != nil` 时脚本可能已经执行完了（见上面注释）。
+两类错误的处置方向相反 ——
+「确定没抢到」要**释放**（少卖），「不确定有没有扣成」要**保留**（防超卖），
+**判据是「能不能确定脚本没执行」**，不是「有没有报错」。
+
+⚠️ 不释放的代价要说准：占位是**按 (sku, uid) 定向**的，所以后果**不是全局少卖**，
+而是**这个用户被卡住 24h**（他之后每次点都撞 `SetNX` 失败 → `ErrAlreadyBought`），
+其他用户完全不受影响。兜底手段见 1.7 兜底表最后一行。
+
+#### `isScriptNotRun`：判据必须写成黑名单
+
+⚠️ **这是一个决定「超卖还是少卖」的谓词，判据方向必须写死**：
+写反一次、或有人加个 `default: return true`兜底，就从「少卖一件」变成「超卖一件」。
+
+```go
+// ⚠️ 示意（未单独实测）：判据形状，不是完整实现。
+//    方向写死：**只有「错误可枚举、且确定与本次执行结果无关」才返回 true**。
+//    任何网络类 / 超时类一律 false —— 宁可少卖，不可超卖。
+func isScriptNotRun(err error) bool {
+	// 判据 1：能用errors.Is 断定的**确定型**错误（穷举，不是模糊匹配）
+	switch {
+	case errors.Is(err, redis.ErrScriptNotExists): // 服务端没有这个脚本 → 必然没执行
+		return true
+	}
+	// 判据 2：错误串精确匹配「启动期失败」那几类。
+	//    ⚠️ 必须是**相等/前缀**匹配，不能用 strings.Contains(err.Error(), ...) ——
+	//    包含匹配会把「脚本执行到一半网络断了」这类也匹配进去，方向就反了。
+	switch err.Error() {
+	case "ERR Error compiling script", // 编译期就失败，脚本体从未开始执行
+		"ERR wrong number of arguments": // 参数个数不对，入口就拒了
+		return true
+	}
+	// ⛔ 兜底必须 return false，**不允许 return true**。
+	//    i/o timeout / connection reset by peer / context deadline exceeded /
+	//    任何没列举到的错误 → 一律保留占位。
+	return false
+}
+```
+
+⚠️ **为什么必须是黑名单**（这是本段最关键的一句）：
+白名单 + `default: return true` 的写法下，**任何没预料到的错误都会释放占位** ——
+而「没预料到」恰恰是最危险的一类（未来的库版本、新的错误包装）。
+黑名单 + `default: return false` 下，**漏判的代价只是少卖一件**（可对账、可补偿），
+**误判的代价是超卖一件**（不可逆）。⚠️ 两种错误的代价不对称，所以默认值必须偏保守。
+
+⚠️ **逐处标注（铁律：跑不了的要在正文里标）**：
+- ⚠️ **`isScriptNotRun` 的两个判据都是未实测**：本机**没有构造过**「脚本已执行但确认包丢失」，
+  也没有逐一验证过 Redis 客户端在 `NOSCRIPT` / 编译错 / 超时三种情况下返回的具体错误值。
+  上面的错误串是**按文档与常见实现写的示意**，落地前必须先用真实客户端跑一遍打印 `err` 确认。
+- ⚠️ **`redis.ErrScriptNotExists` 这个哨兵错误未实测**：不同客户端版本是否导出、
+  是否被 `errors.Is` 识别，都要验。
+- 已实测的只有「`left < 0` 那个 `Del` 的语义」——它不依赖本函数。
 
 ### 第二段：异步入队（入队必须快）
 
 ```go
-// 用 JetStream 的异步批量入队：本机实测 71949 条/秒 vs 同步 Publish 的 625 条/秒
-func Enqueue(js jetstream.JetStream, order Order) error {
+// 用 JetStream 的 PublishAsync 异步入队
+func Enqueue(ctx context.Context, js jetstream.JetStream, order Order) error {
 	payload, _ := json.Marshal(order)
-	// PublishAsync 不阻塞等 ack；真正的落盘确认由后台 batch 完成
-	_, err := js.Publish(ctx, subjectOrderCreated, payload)
-	return err
+	// ⚠️ 上面那个读数是**10000 条批量入队**的（1.4 的 ③），**单条调用拿不到这个收益** ——
+	//    它来自批量对 fsync 的摊薄，不是异步本身。
+	//    这里用 PublishAsync 的唯一理由是**不阻塞请求方**（请求路径上不等落盘）。
+	//    批量场景才用 <-js.PublishAsyncComplete() 等整批落盘（那是 ③ 的读数来源）。
+	f, err := js.PublishAsync(subjectOrderCreated, payload)
+	if err != nil {
+		return err // 只有「入队调用本身」的失败会走这里
+	}
+	// ⭐ 关键：`f` 是**落盘确认的句柄**，丢掉它 = 丢消息且**无任何信号**。
+	//    生产里必须二选一：
+	//      ① 注册回调/挂指标（下面示范 select 的写法，骨架里为省篇幅只留形状）；
+	//      ② 或干脆同步 Publish 等确认（代价：入队掉到几百条/秒，削峰失败）。
+	//    ⚠️ 只 return err 的写法会让「入队成功但落盘失败」静默消失，
+	//    而这一段代码整体已经在做「可能丢」的取舍 —— 丢要有信号，否则对账都无从下手。
+	go func() {
+		select {
+		case <-f.Ok():
+		case e := <-f.Err():
+			log.Printf("order enqueue failed: %v", e) // 兜底：告警 + 1.7 对账捞出
+		}
+	}()
+	return nil
 }
 ```
 
-⚠️ 这里的取舍要写进注释：**异步入队 = 用"可能重投"换吞吐**，
-所以消费者**必须幂等**（下一段就是它）。如果业务不能容忍重投，就退回同步加确认 ——
+⚠️ 这里的取舍要写进注释：**异步入队 = 用"可能重投 / 可能丢"换请求路径不阻塞**，
+所以消费者**必须幂等**（下一段就是它）。⚠️ **单条异步入队并不提升吞吐** ——
+真正的吞吐收益只在批量形态上（1.4 的 ③）；如果业务不能容忍重投或丢失，就退回同步 `Publish` 加确认 ——
 但要清楚：**同步意味着入队速率掉到几百条/秒，削峰会失败**（1.4 的 ②）。
 
 ### 第三段：消费落库 + 幂等
@@ -462,7 +564,10 @@ func Enqueue(js jetstream.JetStream, order Order) error {
 func Consume(ctx context.Context, msg jetstream.Msg, db *sql.DB) error {
 	var o Order
 	if err := json.Unmarshal(msg.Data(), &o); err != nil {
-		return nil // 脏消息直接丢弃，别无限重投
+		// 脏消息**显式 Ack 掉**：return nil 只是不报错，JetStream 照样按
+		// MaxDeliver 重投，N 次后才进 DLQ —— 那是「有限次重投」不是「丢弃」。
+		// 想保留重投机会就 return err（并把 MaxDeliver 设小）；这里选直接丢弃。
+		return msg.Term() // Term = 确认并停止重投，不再进 DLQ
 	}
 	// ⚠️ 示意（未单独实测）：幂等靠「唯一索引 + INSERT IGNORE」——
 	//    重投、重复提交都靠它兜住；真正的扣减在下面那条条件 UPDATE 上
@@ -477,14 +582,51 @@ func Consume(ctx context.Context, msg jetstream.Msg, db *sql.DB) error {
 		return msg.Ack()
 	}
 	// 真正的扣减：让数据库自己判断库存够不够（1.5 的 ③）
-	if _, err := db.ExecContext(ctx, `
+	ures, err := db.ExecContext(ctx, `
 		UPDATE sku_stock SET stock = stock - 1
-		WHERE sku_id = ? AND stock > 0`, o.SKU); err != nil {
+		WHERE sku_id = ? AND stock > 0`, o.SKU)
+	if err != nil {
 		return err
+	}
+	// ⭐ 必须看 RowsAffected（本机实测，见下）：**err 为 nil 不代表扣成功**。
+	//    DB 侧 stock 被另一个活动扣成 0 时，这条 UPDATE 匹配不到行、
+	//    **影响 0 行但不报错** —— 只判 err 就会 Ack 掉这条消息，
+	//    订单已落库、库存永远没扣，超卖一个身位。
+	if n, _ := ures.RowsAffected(); n == 0 {
+		// 不Ack：让这条**再被投递一次**。⚠️ 但**下一跳就会被确认掉、消息不留痕** ——
+		//    重投时 `INSERT IGNORE` 必然 n==0（订单已落库）→ 命中上面那个分支
+		//    直接 `return msg.Ack()`，`UPDATE` 再也不会执行。
+		//    实测（见下方读数）：5 条不 Ack 的消息重投一遍 → **5 条全被 Ack、0 条补扣**。
+		// ⛔ 所以**不要指望重投能自愈，也不要指望 MQ 侧留下线索**：
+		//    重投不产生 DLQ 记录、消息被确认后就没了，**补偿的唯一证据只在 DB 侧**
+		//    （订单在、`sku_stock` 未扣）。对账必须**从订单表出发**，
+		//    拿订单与库存的差集，而不是去 MQ 那边捞消息。
+		// 这段只保证「不静默丢」，真正的补偿落点是 1.7 的对账 + 告警。
+		return errors.New("扣库存影响 0 行：订单已落库，等待对账补偿")
 	}
 	return msg.Ack()
 }
 ```
+
+⚠️ **这段的 `RowsAffected` 不是"保险起见"，是本机实测到的真实故障**（MySQL 8.0.46，
+`stock` 被另一活动扣成 0 后，本活动消费者积压 5 条消息）：
+
+```text
+=== M3 DB 侧 stock 被另一活动扣成 0 后，本活动消费者的条件 UPDATE 影响 0 行===
+  只判 err（文档原骨架）：积压 5 条 → 确认掉 5 条；订单表 5 条；stock 0→0
+  ⛔ 5 条订单已落库但 stock 一条都没扣 —— 且消息被确认掉，永远不会重投（超卖一个身位）
+  判 RowsAffected（修法）：积压 5 条 → 确认掉 0 条、不 Ack 5 条；订单表 5 条；stock 0→0
+  把这 5 条重投一遍：确认掉 5 条（走INSERT IGNORE 的 n==0 分支直接 Ack）
+  ⛔ 补扣成功的条数 = 0 —— stock 仍是 0。重投**不会自愈**，只多绕一圈后被静默 Ack
+  → 补偿落点只能在 1.7 的对账：捞出「订单已落库但 sku_stock 未扣」，人工确认后补扣或撤单
+```
+
+⭐ **这组读数要同时说明两件事**，缺一件就变成另一个错误结论：
+① 不判 `RowsAffected` → 消息被静默确认，**超卖一个身位**；
+② 判了 `RowsAffected` 不 Ack 也**不等于修好了** —— 重投会走 `n == 0` 分支被 Ack 掉，
+**补扣不会发生**、而且**消息不留痕**（不进 DLQ、MQ 侧无线索）。
+真正的自愈需要订单状态机（`PENDING_PAY` → 扣成功才置 `STOCK_OK`），本骨架没做到，
+所以**只能把不一致交给对账，且对账要从订单表出发**（见上面注释）。
 
 ⭐ 三段连起来的顺序就是完整链路：
 **Lua 预扣（挡住 99% 的请求）→ 入队（17ms 吸走洪峰）→ 消费落库（按下游节奏慢慢做）**，
