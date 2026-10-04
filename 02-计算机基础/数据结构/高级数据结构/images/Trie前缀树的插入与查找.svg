@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 775" width="1000" height="775" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="775" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">字典树 Trie：路径即键，共享前缀即共享存储</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">拿到前缀匹配 / 最长前缀 / 字典序枚举 —— 这三件事散列表完全做不到；代价是每个结点背一张子指针表</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="600" height="470" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">把键按字符逐位展开成树：共享前缀 = 共享路径</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">绿色结点是「完整键的标记」—— 从根走到它，路径拼起来就是一个键</text>
+    <line x1="300" y1="112" x2="170" y2="132" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="300" y1="112" x2="430" y2="132" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="170" y1="164" x2="170" y2="184" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="170" y1="216" x2="110" y2="236" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="170" y1="216" x2="250" y2="236" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="430" y1="164" x2="430" y2="184" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="430" y1="216" x2="430" y2="236" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="430" y1="268" x2="430" y2="288" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="110" y1="268" x2="110" y2="288" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="250" y1="268" x2="250" y2="288" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="110" y1="320" x2="110" y2="340" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="110" y1="372" x2="110" y2="392" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="300" cy="96" r="16" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="300" y="96" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#f8fafc">·</text>
+    <circle cx="170" cy="148" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="170" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">g</text>
+    <circle cx="430" cy="148" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="430" y="148" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">j</text>
+    <circle cx="170" cy="200" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="170" y="200" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#14532d">o</text>
+    <circle cx="430" cy="200" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="430" y="200" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">a</text>
+    <circle cx="110" cy="252" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="110" y="252" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">l</text>
+    <circle cx="250" cy="252" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="250" y="252" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">o</text>
+    <circle cx="430" cy="252" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="430" y="252" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">v</text>
+    <circle cx="110" cy="304" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="110" y="304" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">a</text>
+    <circle cx="250" cy="304" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="250" y="304" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#14532d">d</text>
+    <circle cx="430" cy="304" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="430" y="304" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#14532d">a</text>
+    <circle cx="110" cy="356" r="16" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="110" y="356" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">n</text>
+    <circle cx="110" cy="408" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="110" y="408" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#14532d">g</text>
+    <text x="200" y="200" font-size="11.5" fill="#14532d">← 键「go」到此</text>
+    <text x="285" y="304" font-size="11.5" fill="#14532d">←「good」</text>
+    <text x="145" y="408" font-size="11.5" fill="#14532d">←「golang」</text>
+    <text x="465" y="304" font-size="11.5" fill="#14532d">←「java」</text>
+    <text x="16" y="442" font-size="12" fill="#334155">查找一个键：沿字符逐层走，走到标记结点 = 命中，走不下去 = 不存在</text>
+    <text x="16" y="462" font-size="12" fill="#b45309">前缀查询：走到「go」那个结点之后，它下面整棵子树就是以 go 开头的键</text>
+  </g>
+
+    <g transform="translate(640,70)">
+    <rect x="0" y="0" width="340" height="245" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">换来三种散列表给不了的能力</text>
+    <text x="16" y="84" font-size="13" font-weight="bold" fill="#334155">① 前缀匹配 / 最长前缀匹配</text>
+    <text x="16" y="104" font-size="13" fill="#334155">　散列表里改一个字符，</text>
+    <text x="16" y="122" font-size="13" fill="#334155">　桶位置就完全跳变</text>
+    <text x="16" y="148" font-size="13" font-weight="bold" fill="#334155">② 按字典序枚举全部键</text>
+    <text x="16" y="168" font-size="13" fill="#334155">　对树做一次 DFS 就是字典序</text>
+    <text x="16" y="194" font-size="13" font-weight="bold" fill="#334155">③ 存在性判断照旧</text>
+    <text x="16" y="214" font-size="13" fill="#334155">　比较次数 = 键长，与集合大小无关</text>
+    <text x="16" y="236" font-size="11.5" fill="#64748b">场景：搜索框补全、路由表最长前缀、敏感词、网关路由</text>
+  </g>
+
+    <g transform="translate(640,335)">
+    <rect x="0" y="0" width="340" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">代价：每个结点背一张子指针表</text>
+    <text x="16" y="84" font-size="13" font-weight="bold" fill="#334155">表大小与字符集相关</text>
+    <text x="16" y="104" font-size="13" fill="#334155">　小写字母 26 / ASCII 128 / Unicode 更大</text>
+    <text x="16" y="122" font-size="13" fill="#334155">　空位也照样占地方</text>
+    <text x="16" y="148" font-size="13" font-weight="bold" fill="#334155">稀疏时极度浪费</text>
+    <text x="16" y="168" font-size="13" fill="#334155">　前缀不共享的长键 = 每字符一结点</text>
+    <text x="16" y="186" font-size="13" fill="#334155">　每结点一张表</text>
+    <text x="16" y="212" font-size="13" font-weight="bold" fill="#334155">指针税</text>
+    <text x="16" y="232" font-size="13" fill="#334155">　结点小、数量多，分配与缓存都不友好</text>
+  </g>
+
+    <g transform="translate(20,580)">
+    <rect x="0" y="0" width="960" height="175" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">失效点与压缩变体（只记方向，别背数字）</text>
+    <text x="16" y="62" font-size="13" fill="#334155">⚠️ 收益全来自「前缀高度共享」：随机字符串（UUID、随机 ID）做键时退化成「每字符一结点」的纯开销，一点优势都没有。</text>
+    <text x="16" y="90" font-size="13" fill="#334155">压缩变体：把「只有一个孩子的链」合并成一段字符串 → 基数树 / Radix Trie；把公共子图合并去重 → DAWG / FST。</text>
+    <text x="16" y="114" font-size="13" fill="#334155">　两者都是用一次性构建成本换掉绝大部分空位；倒排索引的词字典就是这条路线上的工程化产物。</text>
+    <text x="16" y="148" font-size="13" fill="#b45309">Trie 的直接下游：AC 自动机 = Trie + fail 指针（多模式串匹配）。</text>
+  </g>
+
+</svg>

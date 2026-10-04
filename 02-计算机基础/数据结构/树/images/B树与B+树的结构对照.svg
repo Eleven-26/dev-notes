@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">B 树与 B+ 树：同一批主键，两种「数据落点」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">B 树的内部结点也存数据 → 命中层次不固定；B+ 树只在叶子存数据、叶子成链 → 层次恒定、范围扫描顺链走</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="470" height="255" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">B 树：内部结点的键也带着数据</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">★ = 这个键旁边存了数据 / 行指针；图中的 10 落在根上 → 在根就命中</text>
+    <line x1="232" y1="96" x2="82" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="232" y1="96" x2="232" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="232" y1="96" x2="351" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect x="170" y="66" width="124" height="30" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <line x1="232" y1="66" x2="232" y2="96" stroke="#dc2626" stroke-width="1"/>
+    <text x="201" y="81" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#7f1d1d">10 ★</text>
+    <text x="263" y="81" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#7f1d1d">30 ★</text>
+    <rect x="20" y="140" width="124" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="82" y1="140" x2="82" y2="170" stroke="#64748b" stroke-width="1"/>
+    <text x="51" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">3 ★</text>
+    <text x="113" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">7 ★</text>
+    <rect x="170" y="140" width="124" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="232" y1="140" x2="232" y2="170" stroke="#64748b" stroke-width="1"/>
+    <text x="201" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">15 ★</text>
+    <text x="263" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">22 ★</text>
+    <rect x="320" y="140" width="62" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="351" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">40 ★</text>
+    <text x="232" y="192" text-anchor="middle" font-size="11.5" fill="#94a3b8">（这一层既可能是索引层，也可能就是叶子层）</text>
+    <text x="16" y="214" font-size="13" fill="#334155">· 命中层次不固定：可能在第 1 层返回，也可能走到最后一层</text>
+    <text x="16" y="232" font-size="13" fill="#334155">· 键要连带数据 → 一页装得下的键更少 → 扇出小、树更高</text>
+    <text x="16" y="250" font-size="13" fill="#334155">· 范围查询得按中序在树里回溯，叶子之间没有链</text>
+  </g>
+
+    <g transform="translate(510,70)">
+    <rect x="0" y="0" width="470" height="255" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">B+ 树：数据只在叶子，叶子之间成链</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">非叶子只有「键 + 子页指针」，★ 只出现在最下面一层</text>
+    <line x1="232" y1="96" x2="76" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="232" y1="96" x2="231" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="232" y1="96" x2="386" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect x="170" y="66" width="124" height="30" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="232" y1="66" x2="232" y2="96" stroke="#2563eb" stroke-width="1"/>
+    <text x="201" y="81" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">10</text>
+    <text x="263" y="81" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">30</text>
+    <rect x="10" y="140" width="132" height="30" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <line x1="54" y1="140" x2="54" y2="170" stroke="#16a34a" stroke-width="1"/>
+    <line x1="98" y1="140" x2="98" y2="170" stroke="#16a34a" stroke-width="1"/>
+    <text x="32" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">1★</text>
+    <text x="76" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">5★</text>
+    <text x="120" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">7★</text>
+    <rect x="165" y="140" width="132" height="30" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <line x1="209" y1="140" x2="209" y2="170" stroke="#16a34a" stroke-width="1"/>
+    <line x1="253" y1="140" x2="253" y2="170" stroke="#16a34a" stroke-width="1"/>
+    <text x="187" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">10★</text>
+    <text x="231" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">15★</text>
+    <text x="275" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">22★</text>
+    <rect x="320" y="140" width="132" height="30" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <line x1="364" y1="140" x2="364" y2="170" stroke="#16a34a" stroke-width="1"/>
+    <line x1="408" y1="140" x2="408" y2="170" stroke="#16a34a" stroke-width="1"/>
+    <text x="342" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">30★</text>
+    <text x="386" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">40★</text>
+    <text x="430" y="155" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">55★</text>
+    <line x1="142" y1="155" x2="163" y2="155" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <line x1="297" y1="155" x2="318" y2="155" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <text x="232" y="192" text-anchor="middle" font-size="11.5" fill="#94a3b8">（非叶子是纯路由；叶子按主键大小从左到右串成链表）</text>
+    <text x="16" y="214" font-size="13" fill="#334155">· 每次查找都走到叶子 → 读页次数恒定，性能可预期</text>
+    <text x="16" y="232" font-size="13" fill="#334155">· 非叶子只有键 + 指针 → 一页装几百个路由项 → 扇出大、树更矮</text>
+    <text x="16" y="250" font-size="13" fill="#334155">· 范围查询：定位起始叶子后沿链向右扫，不回溯父结点</text>
+  </g>
+
+    <g transform="translate(20,345)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">差别一句话：数据落在哪，决定扇出、层数与范围扫描</text>
+    <text x="16" y="64" font-size="13" fill="#334155">数据落点：B 树 内部结点 + 叶子都存；B+ 树 只在叶子存，非叶子是纯键路由。</text>
+    <text x="16" y="88" font-size="13" fill="#334155">命中层次：B 树 不固定（可能在内部结点就命中）；B+ 树 恒定走到叶子 → 一次主键查找的读页次数可预期。</text>
+    <text x="16" y="112" font-size="13" fill="#334155">范围扫描：B 树 要中序回溯整棵树；B+ 树 叶子成链，顺序向右扫 —— 这是 InnoDB 选 B+ 树的关键一条。</text>
+    <text x="16" y="136" font-size="13" fill="#334155">扇出：B 树 的键连带数据 → 内部结点扇出小；B+ 树 非叶子只有「键 + 子页指针」→ InnoDB 一页 16 KB 能装约 500 个路由项。</text>
+    <text x="16" y="172" font-size="12" fill="#b45309">注：本图只用几个键画清形态。真实的 16 KB 页、扇出 ≈ 500 与「几层 = 几次读页」的推导见第二张图。</text>
+  </g>
+
+</svg>

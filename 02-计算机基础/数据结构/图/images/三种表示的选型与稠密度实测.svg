@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">图的表示怎么选型：稠密度 + 算法看「边」还是看「点」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">邻接表 O(V+E) / 邻接矩阵 O(V²) / 边列表 O(E) —— 判据是空间画像 + 随机访问能力，不是「哪个更通用」</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="470" height="400" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">怎么选：先问「边多不多」，再问「算法看什么」</text>
+    <rect x="16" y="66" width="438" height="54" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="30" y="88" font-size="13.5" font-weight="bold" fill="#92400e">要反复扫全部边？</text>
+    <text x="30" y="108" font-size="12" fill="#92400e">（Bellman-Ford / Kruskal）</text>
+    <line x1="235" y1="120" x2="235" y2="136" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="16" y="136" width="438" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="30" y="158" font-size="13.5" font-weight="bold" fill="#14532d">边列表 O(E)</text>
+    <text x="30" y="178" font-size="12" fill="#14532d">按边存、按边权排序都方便</text>
+    <line x1="235" y1="190" x2="235" y2="206" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="16" y="206" width="438" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="30" y="228" font-size="13.5" font-weight="bold" fill="#14532d">否则看稠密度：E ≪ V² → 稀疏</text>
+    <text x="30" y="248" font-size="12" fill="#14532d">邻接表 O(V + E)，遍历邻居 O(度)</text>
+    <line x1="235" y1="260" x2="235" y2="276" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="16" y="276" width="438" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="30" y="298" font-size="13.5" font-weight="bold" fill="#1e40af">E ≈ V² → 稠密</text>
+    <text x="30" y="318" font-size="12" fill="#1e40af">邻接矩阵 O(V²)，判相邻 O(1)</text>
+    <line x1="235" y1="330" x2="235" y2="346" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="16" y="346" width="438" height="54" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="30" y="368" font-size="13.5" font-weight="bold" fill="#7f1d1d">⚠️ V = 10⁵ 还想用矩阵？</text>
+    <text x="30" y="388" font-size="12" fill="#7f1d1d">10¹⁰ 个格子 → 内存超限，先想清楚</text>
+  </g>
+
+    <g transform="translate(510,70)">
+    <rect x="0" y="0" width="470" height="400" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">「稠密用矩阵、稀疏用链表」不是空话</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">同一场景在本机带权算法实测里反过来的那两次</text>
+    <text x="16" y="82" font-size="13" font-weight="bold" fill="#334155">稠密图：300 点 / 22819 条边</text>
+    <rect x="16" y="94" width="300" height="22" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="28" y="109" font-size="12" fill="#1e40af">Floyd（矩阵）比跑 V 次 Dijkstra 快 1.5~1.8 倍</text>
+    <text x="16" y="146" font-size="13" font-weight="bold" fill="#334155">稀疏图：同一批点、边稀疏</text>
+    <rect x="16" y="158" width="300" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="28" y="173" font-size="12" fill="#14532d">Dijkstra（邻接表 + 堆）快 1.5~2.2 倍</text>
+    <text x="16" y="214" font-size="13" fill="#334155">读法：两个数字都是「倍数区间」，时序类实测本身有波动；</text>
+    <text x="16" y="234" font-size="13" fill="#334155">　能断言的是方向 —— 换表示会换掉谁更快，而不只是换掉内存。</text>
+    <text x="16" y="268" font-size="13" fill="#334155">为什么矩阵上 Floyd 反而赢：三重循环顺序扫内存，</text>
+    <text x="16" y="288" font-size="13" fill="#334155">　而「跑 V 次 Dijkstra」在稀疏表上每轮都要跳指针、</text>
+    <text x="16" y="308" font-size="13" fill="#334155">　还要维护堆 —— 稠密时这些常数全被放大。</text>
+    <text x="16" y="344" font-size="13" fill="#b45309">⚠️ 表示选错最典型的症状不是慢，而是 OOM：</text>
+    <text x="16" y="364" font-size="12" fill="#b45309">　稀疏图（社交关系、路由表、调用图）用邻接矩阵存。</text>
+  </g>
+
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">B+ 树的查找路径与树高：层数就是磁盘 I/O 次数</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">扇出从 2 抬到约 500，靠的不是「更平衡」，而是把平衡单位从「一个结点」换成「一个 16 KB 的页」</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="470" height="405" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一次主键查找 = 沿路径逐层读页（查主键 60）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">每层就是一个 16 KB 的页；层数 = 读页次数</text>
+    <line x1="234" y1="110" x2="246" y2="168" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <line x1="246" y1="200" x2="246" y2="258" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="150" y="80" width="168" height="30" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="206" y1="80" x2="206" y2="110" stroke="#2563eb" stroke-width="1"/>
+    <line x1="262" y1="80" x2="262" y2="110" stroke="#2563eb" stroke-width="1"/>
+    <text x="178" y="95" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">10</text>
+    <text x="234" y="95" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">50</text>
+    <text x="290" y="95" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">90</text>
+    <rect x="190" y="170" width="112" height="30" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="246" y1="170" x2="246" y2="200" stroke="#2563eb" stroke-width="1"/>
+    <text x="218" y="185" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">50</text>
+    <text x="274" y="185" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">90</text>
+    <rect x="150" y="260" width="192" height="30" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <line x1="198" y1="260" x2="198" y2="290" stroke="#16a34a" stroke-width="1"/>
+    <line x1="246" y1="260" x2="246" y2="290" stroke="#16a34a" stroke-width="1"/>
+    <line x1="294" y1="260" x2="294" y2="290" stroke="#16a34a" stroke-width="1"/>
+    <text x="174" y="275" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">55★</text>
+    <text x="222" y="275" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">60★</text>
+    <text x="270" y="275" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">65★</text>
+    <text x="318" y="275" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">70★</text>
+    <rect x="198" y="260" width="48" height="30" rx="0" fill="none" stroke="#dc2626" stroke-width="2"/>
+    <text x="246" y="66" text-anchor="middle" font-size="11.5" fill="#64748b">第 1 层　根结点</text>
+    <text x="246" y="156" text-anchor="middle" font-size="11.5" fill="#64748b">第 2 层　内部结点（只有键 + 指针）</text>
+    <text x="246" y="308" text-anchor="middle" font-size="11.5" fill="#64748b">第 3 层　叶子（整行数据）</text>
+    <text x="330" y="140" font-size="11.5" fill="#b45309">比较后走 50~90 的指针</text>
+    <text x="330" y="232" font-size="11.5" fill="#b45309">叶子内二分，命中 60</text>
+    <text x="16" y="340" font-size="12.5" fill="#334155">层数 = ⌈log₅₀₀ N⌉（N = 行数）：10⁵ 行约 2 层、10⁷ 约 3 层、10⁹ 约 4 层</text>
+    <text x="16" y="362" font-size="13" fill="#334155">→ 一次主键查找 2~4 次读页，这个数字就是索引设计的成本</text>
+    <text x="16" y="384" font-size="13" fill="#334155">范围查询：走到起始叶子后沿叶子链向右扫，不回溯父结点</text>
+  </g>
+
+    <g transform="translate(510,70)">
+    <rect x="0" y="0" width="470" height="405" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">为什么换多路：同样 10⁷ 行，层数差一个量级</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">横条按「一层 = 10 px」画，只用于比较长短，不是刻度读数</text>
+    <text x="16" y="88" font-size="12.5" font-weight="bold" fill="#334155">B+ 树　扇出 ≈ 500 → ⌈log₅₀₀ 10⁷⌉</text>
+    <rect x="16" y="96" width="30" height="18" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="54" y="105" font-size="12" fill="#334155">≈ 3 层 → 主键查找约 3 次读页</text>
+    <text x="16" y="140" font-size="12.5" font-weight="bold" fill="#334155">红黑树 / AVL　二叉，扇出 2 → ⌈log₂ 10⁷⌉</text>
+    <rect x="16" y="148" width="240" height="18" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="264" y="157" font-size="12" fill="#334155">≈ 24 层 → 24 次比较、每次一个结点</text>
+    <text x="16" y="192" font-size="12.5" font-weight="bold" fill="#334155">普通 BST　有序插入退化成链</text>
+    <rect x="16" y="200" width="420" height="18" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="226" y="209" text-anchor="middle" font-size="12" fill="#7f1d1d">最坏 = n 层 → 查找退化成线性扫描</text>
+    <text x="16" y="246" font-size="12.5" fill="#334155">扇出从哪来：16 KB 页 ÷（8 字节 bigint 主键 + 子页指针）≈ 500</text>
+    <text x="16" y="268" font-size="13" fill="#334155">二叉结构每层只有一次分叉机会 → 每深一层就多读一页</text>
+    <text x="16" y="300" font-size="13" fill="#334155">跳表为什么不能落盘：层数由随机数决定 → 结点在内存里散落，</text>
+    <text x="16" y="320" font-size="13" fill="#334155">　没法按 16 KB 打包 → 它只在内存那一侧活着（LSM 的 memtable）</text>
+    <text x="16" y="352" font-size="13" fill="#334155">失效边界：数据全在内存 → 跳表 / 红黑树；写多读少 → LSM 树；</text>
+    <text x="16" y="372" font-size="13" fill="#334155">　键分布不均 → 前缀压缩。B+ 树的甜区是「要落盘 + 要范围查询」</text>
+  </g>
+
+</svg>

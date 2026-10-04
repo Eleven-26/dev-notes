@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">散列表怎么退化、工程上用哪四道闸门挡住</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">散列表把「比较」换成「算地址」，代价是永远无法排序、无法按范围查 —— 而 O(1) 本身还要靠闸门守住</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="470" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">负载因子 α = 元素数 ÷ 桶数</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">它是「O(1) 成立」的前提：决定平均链长 / 平均探测步数</text>
+    <line x1="50" y1="80" x2="50" y2="300" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="50" y1="300" x2="440" y2="300" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="50" y1="296" x2="120" y2="286" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="120" y1="286" x2="190" y2="270" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="190" y1="270" x2="250" y2="250" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="250" y1="250" x2="300" y2="224" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="300" y1="224" x2="340" y2="190" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="340" y1="190" x2="375" y2="148" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="375" y1="148" x2="405" y2="104" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="300" y1="300" x2="300" y2="90" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="300" y="84" text-anchor="middle" font-size="11.5" fill="#64748b">扩容阈值</text>
+    <text x="56" y="74" font-size="11.5" fill="#64748b">↑ 平均链长 / 探测步数</text>
+    <text x="245" y="320" text-anchor="middle" font-size="11.5" fill="#64748b">→ 负载因子 α（0 → 1）</text>
+    <text x="330" y="130" font-size="12" fill="#7f1d1d">接近装满时急剧变长</text>
+    <text x="16" y="344" font-size="13" fill="#334155">示意图：只画趋势，不标具体数值。阈值常见零点几到 1 之间，</text>
+    <text x="16" y="364" font-size="12" fill="#334155">　卡住它就是用空间买时间；具体值以各语言官方文档 / 源码为准。</text>
+  </g>
+
+    <g transform="translate(510,70)">
+    <rect x="0" y="0" width="470" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">四道闸门：各自用一类成本换回 O(1)</text>
+    <rect x="16" y="58" width="438" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="78" font-size="13.5" font-weight="bold" fill="#0f172a">① 控制负载因子</text>
+    <text x="28" y="98" font-size="12" fill="#334155">超过阈值就触发扩容</text>
+    <text x="28" y="116" font-size="12" fill="#b45309">代价：用一部分空间换查找长度</text>
+    <rect x="16" y="136" width="438" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="156" font-size="13.5" font-weight="bold" fill="#0f172a">② 扩容 + 再哈希</text>
+    <text x="28" y="176" font-size="12" fill="#334155">桶数变大（常按 2 的幂，取模换成掩码），</text>
+    <text x="28" y="194" font-size="12" fill="#b45309">　所有元素重新哈希搬迁。代价：单次 O(n)、瞬时内存接近翻倍</text>
+    <rect x="16" y="214" width="438" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="234" font-size="13.5" font-weight="bold" fill="#0f172a">③ 渐进式 rehash</text>
+    <text x="28" y="254" font-size="12" fill="#334155">新旧两张表并存，每次操作顺手搬几个桶，直到旧表清空</text>
+    <text x="28" y="272" font-size="12" fill="#b45309">　代价：期间查找要查两张表、写入只写新表</text>
+    <rect x="16" y="292" width="438" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="312" font-size="13.5" font-weight="bold" fill="#0f172a">④ 桶内结构升级</text>
+    <text x="28" y="332" font-size="12" fill="#334155">链太长时把链表换成平衡树，该桶从 O(m) 拉回 O(log m)</text>
+    <text x="28" y="350" font-size="12" fill="#b45309">　代价：小桶多背开销；元素需要可比较</text>
+    <text x="16" y="366" font-size="12" fill="#334155">落地：Redis dict 走 ③（ht[0]/ht[1] 并存），Java HashMap 走 ④（拉链+树化）</text>
+  </g>
+
+    <g transform="translate(20,470)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">退化只有两条路径 —— 以及闸门都救不了的那一种</text>
+    <text x="16" y="62" font-size="13" fill="#334155">路径 ① 冲突堆积：同一桶挂了 m 个元素 → 这个桶退化成 O(m) 顺序扫描；极端情况全部键撞一桶 → 整表 O(n)。</text>
+    <text x="16" y="86" font-size="13" fill="#334155">路径 ② 负载因子过高：空桶越少、链越长；开放寻址法的探测长度在表接近装满时急剧变长。</text>
+    <text x="16" y="116" font-size="13" fill="#334155">冲突还能被「故意制造」：构造大量哈希值相同的键灌进服务端，就把 O(1) 打成 O(n)（真实发生过的攻击）。</text>
+    <text x="16" y="140" font-size="13" fill="#334155">　防御方向是给哈希引入扰动 / 随机种子，让攻击者算不出碰撞键 —— 具体机制各语言实现不同。</text>
+    <text x="16" y="170" font-size="13" font-weight="bold" fill="#b45309">⚠️ 键本身分布不均（热点全压在一个桶 / 一个分片）时闸门全部失效 —— 那是分片与热点治理问题，不再是数据结构问题。</text>
+  </g>
+
+</svg>

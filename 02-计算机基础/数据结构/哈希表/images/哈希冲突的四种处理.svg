@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">哈希冲突的四种处理：拉链 / 开放寻址 / 再散列 / 公共溢出区</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">四者都在买同一件事：把「桶内顺序扫描」的代价压回去 —— 压不住就整表退化 O(n)</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">① 链地址法（拉链法）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">同桶的元素串成一条链表</text>
+    <rect x="30" y="76" width="56" height="28" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="58" y="90" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">桶 0</text>
+    <rect x="30" y="110" width="56" height="28" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="58" y="124" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">桶 1</text>
+    <rect x="30" y="144" width="56" height="28" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="58" y="158" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#7f1d1d">桶 2</text>
+    <rect x="30" y="178" width="56" height="28" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="58" y="192" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">桶 3</text>
+    <rect x="30" y="212" width="56" height="28" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="58" y="226" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">桶 4</text>
+    <line x1="86" y1="123" x2="120" y2="123" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="122" y="109" width="76" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="160" y="123" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">键 A</text>
+    <line x1="198" y1="123" x2="222" y2="123" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="222" y="109" width="76" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="260" y="123" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">键 B</text>
+    <line x1="298" y1="123" x2="322" y2="123" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="322" y="109" width="76" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="360" y="123" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">键 C</text>
+    <text x="230" y="90" font-size="11.5" fill="#7f1d1d">该桶退化成 O(m) 顺序扫描</text>
+    <text x="16" y="268" font-size="13" fill="#334155">· 桶数固定、链长随冲突增长：m 个元素撞同一桶 → 这个桶 O(m)</text>
+    <text x="16" y="288" font-size="13" fill="#334155">· 极端情况全部键撞一桶 → 整表 O(n)</text>
+    <text x="16" y="308" font-size="13" fill="#b45309">· Java HashMap 走的就是这条路：拉链 + 链太长时树化</text>
+  </g>
+
+    <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">② 开放寻址（线性 / 二次探测）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">冲突就按规则往后找空位，不额外挂链表</text>
+    <rect x="20" y="100" width="416" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="72" y1="100" x2="72" y2="134" stroke="#64748b" stroke-width="1"/>
+    <line x1="124" y1="100" x2="124" y2="134" stroke="#64748b" stroke-width="1"/>
+    <line x1="176" y1="100" x2="176" y2="134" stroke="#64748b" stroke-width="1"/>
+    <line x1="228" y1="100" x2="228" y2="134" stroke="#64748b" stroke-width="1"/>
+    <line x1="280" y1="100" x2="280" y2="134" stroke="#64748b" stroke-width="1"/>
+    <line x1="332" y1="100" x2="332" y2="134" stroke="#64748b" stroke-width="1"/>
+    <line x1="384" y1="100" x2="384" y2="134" stroke="#64748b" stroke-width="1"/>
+    <text x="46" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">空</text>
+    <text x="98" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">空</text>
+    <text x="150" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">键 X</text>
+    <text x="202" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">键 Y</text>
+    <text x="254" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">空</text>
+    <text x="306" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">空</text>
+    <text x="358" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">空</text>
+    <text x="410" y="117" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">空</text>
+    <text x="126" y="90" text-anchor="middle" font-size="11.5" fill="#1e40af">h(Y)=2</text>
+    <line x1="126" y1="140" x2="230" y2="140" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <text x="178" y="158" text-anchor="middle" font-size="11.5" fill="#b45309">2 号被占 → 探测 3 号</text>
+    <rect x="174" y="100" width="52" height="34" rx="4" fill="none" stroke="#dc2626" stroke-width="2"/>
+    <text x="16" y="200" font-size="13" fill="#334155">· 查找不再是「一条地址」，而是「从 h(k) 起探测到空位为止」</text>
+    <text x="16" y="222" font-size="13" fill="#334155">· 命门是负载因子：空桶越少、链越长，</text>
+    <text x="16" y="244" font-size="13" fill="#334155">　开放寻址的探测长度在表接近装满时急剧变长</text>
+    <text x="16" y="266" font-size="13" fill="#334155">· 线性探测与二次探测换的只是「往后找」的规则</text>
+    <text x="16" y="300" font-size="12" fill="#b45309">⚠️ 探测步数就是这里的「平均链长」→ 闸门①卡住负载因子</text>
+  </g>
+
+    <g transform="translate(20,420)">
+    <rect x="0" y="0" width="460" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">③ 再散列法</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">准备几个哈希函数，依次换着算地址，直到不冲突</text>
+    <rect x="30" y="90" width="60" height="30" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="60" y="105" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">键 Z</text>
+    <rect x="140" y="76" width="150" height="30" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="215" y="91" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#7f1d1d">h1 → 桶 2（占）</text>
+    <line x1="90" y1="105" x2="140" y2="91" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="140" y="120" width="150" height="30" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="215" y="135" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#7f1d1d">h2 → 桶 5（占）</text>
+    <line x1="90" y1="105" x2="140" y2="135" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="140" y="164" width="150" height="30" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="215" y="179" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#14532d">h3 → 桶 7（空）✓</text>
+    <line x1="90" y1="105" x2="140" y2="179" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <text x="16" y="226" font-size="13" fill="#334155">· 换的是哈希函数本身：一个算出来占着就换下一个再算</text>
+    <text x="16" y="248" font-size="13" fill="#334155">· 代价：多算几次哈希（哈希本身很便宜）</text>
+    <text x="16" y="270" font-size="13" fill="#334155">· 三种经典办法并列：再散列法、链表法（拉链）、</text>
+    <text x="16" y="290" font-size="13" fill="#334155">　建立公共溢出区 —— 见下一格的 ④</text>
+  </g>
+
+    <g transform="translate(520,420)">
+    <rect x="0" y="0" width="460" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">④ 公共溢出区（与「桶内结构升级」）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">主表保持紧凑，冲突的元素集中到一块溢出区</text>
+    <rect x="30" y="80" width="240" height="30" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <line x1="90" y1="80" x2="90" y2="110" stroke="#16a34a" stroke-width="1"/>
+    <line x1="150" y1="80" x2="150" y2="110" stroke="#16a34a" stroke-width="1"/>
+    <line x1="210" y1="80" x2="210" y2="110" stroke="#16a34a" stroke-width="1"/>
+    <text x="60" y="95" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#14532d">主表：0</text>
+    <text x="120" y="95" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#14532d">1</text>
+    <text x="180" y="95" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#14532d">2</text>
+    <text x="240" y="95" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#14532d">3</text>
+    <rect x="30" y="150" width="270" height="30" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <line x1="120" y1="150" x2="120" y2="180" stroke="#d97706" stroke-width="1"/>
+    <line x1="210" y1="150" x2="210" y2="180" stroke="#d97706" stroke-width="1"/>
+    <text x="75" y="165" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#92400e">溢出区：e1</text>
+    <text x="165" y="165" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#92400e">e2</text>
+    <text x="255" y="165" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#92400e">e3</text>
+    <line x1="210" y1="110" x2="210" y2="148" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <text x="226" y="130" font-size="11.5" fill="#b45309">冲突的都扔这里</text>
+    <text x="16" y="200" font-size="13" fill="#334155">· 主表只放「一次命中」的元素 → 常见查询仍是一条地址</text>
+    <text x="16" y="222" font-size="13" fill="#334155">· 冲突集中在溢出区顺序查 → 溢出区要小，否则退化成扫描</text>
+    <text x="16" y="254" font-size="13" font-weight="bold" fill="#334155">另一条升级路线（工程里更常见）：</text>
+    <text x="16" y="276" font-size="13" fill="#334155">链太长时把该桶的链表换成平衡树 → 该桶从 O(m) 拉回 O(log m)</text>
+    <text x="16" y="298" font-size="12" fill="#334155">　代价：小桶多背一棵树的开销，且元素必须可比较</text>
+  </g>
+
+</svg>

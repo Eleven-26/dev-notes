@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数组与链表：同为 O(1) / O(n)，成本为什么差一个量级</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">差别不在 Big-O，而在「地址是否连续」——它决定缓存行能不能整块命中、要不要为指针和分配额外付钱</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="265" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">数组：地址连续 → 缓存行整块命中、预取器提前拉下一块</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">下面 8 个格子在内存里是首尾相接的一整块（格子数量是示意，不按 64 ÷ 元素大小精确画）</text>
+    <rect x="30" y="90" width="432" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <line x1="84" y1="90" x2="84" y2="124" stroke="#16a34a" stroke-width="1"/>
+    <line x1="138" y1="90" x2="138" y2="124" stroke="#16a34a" stroke-width="1"/>
+    <line x1="192" y1="90" x2="192" y2="124" stroke="#16a34a" stroke-width="1"/>
+    <line x1="246" y1="90" x2="246" y2="124" stroke="#16a34a" stroke-width="1"/>
+    <line x1="300" y1="90" x2="300" y2="124" stroke="#16a34a" stroke-width="1"/>
+    <line x1="354" y1="90" x2="354" y2="124" stroke="#16a34a" stroke-width="1"/>
+    <line x1="408" y1="90" x2="408" y2="124" stroke="#16a34a" stroke-width="1"/>
+    <text x="57" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[0]</text>
+    <text x="111" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[1]</text>
+    <text x="165" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[2]</text>
+    <text x="219" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[3]</text>
+    <text x="273" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[4]</text>
+    <text x="327" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[5]</text>
+    <text x="381" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[6]</text>
+    <text x="435" y="107" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">a[7]</text>
+    <line x1="30" y1="134" x2="246" y2="134" stroke="#2563eb" stroke-width="2"/>
+    <line x1="30" y1="134" x2="30" y2="142" stroke="#2563eb" stroke-width="2"/>
+    <line x1="246" y1="134" x2="246" y2="142" stroke="#2563eb" stroke-width="2"/>
+    <text x="138" y="158" text-anchor="middle" font-size="11.5" fill="#1e40af">一个缓存行（常见 64 字节）整块搬进缓存</text>
+    <line x1="246" y1="170" x2="462" y2="170" stroke="#d97706" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="354" y="190" text-anchor="middle" font-size="11.5" fill="#b45309">预取器提前把后面几格一起拉进来</text>
+    <text x="500" y="100" font-size="12.5" fill="#334155">定位：地址 = 基址 + i × 元素大小 → 一条加法，不需要遍历</text>
+    <text x="500" y="124" font-size="13" fill="#334155">红利不是「O(1)」这个数字本身，而是「可预取」——</text>
+    <text x="500" y="144" font-size="13" fill="#334155">　顺序扫描时第一条 miss，同块后面的元素已在缓存里</text>
+    <text x="500" y="168" font-size="13" fill="#334155">代价：增删要搬移后续元素（中间插入 O(n)）</text>
+    <text x="500" y="192" font-size="13" fill="#334155">⚠️ 要求地址连续 → 元素很大或地址碎片化时，</text>
+    <text x="500" y="212" font-size="13" fill="#334155">　「要一大块连续内存」本身就成问题</text>
+    <text x="16" y="234" font-size="12" fill="#334155">只常用部分字段时：把「对象数组 AoS」拆成「每字段一个平行数组 SoA」；指针数组 T*[n] 换成元素内联存储。</text>
+    <text x="16" y="254" font-size="12" fill="#b45309">被替代的真实原因：分段 / 页式结构是「块内连续 + 块间离散」的折中（数据库页、arena 分配器都这么干）。</text>
+  </g>
+
+    <g transform="translate(20,355)">
+    <rect x="0" y="0" width="960" height="265" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">链表：结点散落 → 每次跳转都要先解引用才知道下一个地址（pointer chasing）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">几乎每个节点一次缓存 miss；「插入 O(1)」的前提是你已经拿到那个节点</text>
+    <rect x="30" y="110" width="110" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="85" y1="110" x2="85" y2="144" stroke="#2563eb" stroke-width="1"/>
+    <text x="57.5" y="127" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">7</text>
+    <text x="112.5" y="127" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">next</text>
+    <line x1="140" y1="127" x2="200" y2="182" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="200" y="165" width="110" height="34" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="255" y1="165" x2="255" y2="199" stroke="#64748b" stroke-width="1"/>
+    <text x="227.5" y="182" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">8</text>
+    <text x="282.5" y="182" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">next</text>
+    <line x1="310" y1="182" x2="370" y2="117" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="370" y="100" width="110" height="34" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="425" y1="100" x2="425" y2="134" stroke="#64748b" stroke-width="1"/>
+    <text x="397.5" y="117" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">9</text>
+    <text x="452.5" y="117" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">next</text>
+    <line x1="480" y1="117" x2="540" y2="192" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="540" y="175" width="110" height="34" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="595" y1="175" x2="595" y2="209" stroke="#64748b" stroke-width="1"/>
+    <text x="567.5" y="192" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">10</text>
+    <text x="622.5" y="192" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">next</text>
+    <line x1="650" y1="192" x2="700" y2="137" stroke="#b45309" stroke-width="2" marker-end="url(#arw)"/>
+    <rect x="700" y="120" width="110" height="34" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="755" y1="120" x2="755" y2="154" stroke="#64748b" stroke-width="1"/>
+    <text x="727.5" y="137" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">11</text>
+    <text x="782.5" y="137" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">next</text>
+    <text x="85" y="96" text-anchor="middle" font-size="11.5" fill="#1e40af">头指针</text>
+    <line x1="85" y1="100" x2="85" y2="108" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="820" y="110" font-size="12.5" font-weight="bold" fill="#334155">三笔钱：</text>
+    <text x="820" y="132" font-size="12" fill="#334155">① 定位 O(n)</text>
+    <text x="820" y="152" font-size="12" fill="#334155">② 指针税 8 字节</text>
+    <text x="820" y="172" font-size="12" fill="#334155">③ 每节点一次分配</text>
+    <text x="16" y="226" font-size="12" fill="#334155">64 位下 next 占 8 字节：存 4 字节整数等于空间翻倍；每节点一次独立内存分配 → 分配器锁竞争、碎片、地址离散。</text>
+    <text x="16" y="248" font-size="12" fill="#b45309">工程上很少用裸链表：要么 arena / 池化分配（大块内存里切节点），要么用数组下标模拟 next（flat 结构）——代价是不再能自由释放单个节点。</text>
+  </g>
+
+</svg>

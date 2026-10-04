@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 815" width="1000" height="815" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="815" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HyperLogLog 与 Count-Min Sketch：用精度换常数级内存</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">一个估「有多少个不同」、一个估「出现几次」，两者误差方向不同 —— 前者随机、后者只高不低</text>
+
+    <g transform="translate(20,70)">
+    <rect x="0" y="0" width="470" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">HyperLogLog：前导零位置 ↔ 有多少个不同元素</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">直觉：最长连续 k 次正面 → 大概抛了 2^k 次；把「硬币」换成哈希值</text>
+    <rect x="16" y="76" width="438" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="28" y="99" font-size="12.5" fill="#1e40af">元素 → 哈希成一个足够长的二进制串</text>
+    <line x1="235" y1="112" x2="235" y2="126" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="16" y="126" width="438" height="36" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="28" y="149" font-size="12.5" fill="#334155">低位定桶号（m 个桶）｜其余位算第一个 1 在第几位</text>
+    <line x1="235" y1="162" x2="235" y2="176" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="16" y="176" width="438" height="36" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="28" y="199" font-size="12.5" fill="#334155">每个桶只记录见过的最大前导零位置 M[j]</text>
+    <line x1="235" y1="212" x2="235" y2="226" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="16" y="226" width="438" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="28" y="249" font-size="12.5" fill="#14532d">调和平均汇总：E ≈ α_m · m² / Σ 2^(−M[j])</text>
+    <text x="16" y="286" font-size="12.5" fill="#334155">误差只与桶数有关：相对标准误 ≈ 1.04 / √m</text>
+    <text x="16" y="308" font-size="12.5" fill="#b45309">m=1024 → 768 B → 3.25%；m=16384（Redis 默认）→ 12 KB → 0.81%</text>
+  </g>
+
+    <g transform="translate(510,70)">
+    <rect x="0" y="0" width="470" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">Count-Min Sketch：d 行 × w 列，查询取最小值</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">第 i 行配一个独立哈希函数；插入 x 时把 d 行对应的格子都 +1</text>
+    <rect x="20" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="54" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="70" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="88" y="78" width="32" height="22" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="104" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#7f1d1d">12</text>
+    <rect x="122" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="138" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="156" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="172" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="190" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="206" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="224" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="240" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="258" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="274" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="292" y="78" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="308" y="89" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <text x="332" y="94" font-size="11.5" fill="#7f1d1d">h1(x) → 列 2</text>
+    <rect x="20" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="54" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="70" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="88" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="104" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="122" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="138" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="156" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="172" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="190" y="104" width="32" height="22" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="206" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#7f1d1d">15</text>
+    <rect x="224" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="240" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="258" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="274" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="292" y="104" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="308" y="115" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <text x="332" y="120" font-size="11.5" fill="#7f1d1d">h2(x) → 列 5</text>
+    <rect x="20" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="54" y="130" width="32" height="22" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="70" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#7f1d1d">11</text>
+    <rect x="88" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="104" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="122" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="138" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="156" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="172" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="190" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="206" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="224" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="240" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="258" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="274" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="292" y="130" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="308" y="141" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <text x="332" y="146" font-size="11.5" fill="#7f1d1d">h3(x) → 列 1</text>
+    <rect x="20" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="54" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="70" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="88" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="104" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="122" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="138" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="156" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="172" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="190" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="206" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="224" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="240" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="258" y="156" width="32" height="22" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="274" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#7f1d1d">17</text>
+    <rect x="292" y="156" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="308" y="167" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <text x="332" y="172" font-size="11.5" fill="#7f1d1d">h4(x) → 列 7</text>
+    <rect x="20" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="54" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="70" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="88" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="104" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="122" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="138" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="156" y="182" width="32" height="22" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="172" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#7f1d1d">13</text>
+    <rect x="190" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="206" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="224" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="240" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="258" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="274" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <rect x="292" y="182" width="32" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="308" y="193" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">·</text>
+    <text x="332" y="198" font-size="11.5" fill="#7f1d1d">h5(x) → 列 4</text>
+    <text x="16" y="224" font-size="12.5" font-weight="bold" fill="#334155">查询 x：取这 5 个格子的最小值 = 11</text>
+    <text x="16" y="246" font-size="13" fill="#334155">为什么取最小：每格 = 真实值 + 撞进来的其它元素的计数，</text>
+    <text x="16" y="266" font-size="13" fill="#334155">　每行都只会偏大；不同行噪声来源不同 → 取最小</text>
+    <text x="16" y="296" font-size="12.5" fill="#b45309">⭐ 误差方向确定：CMS 估计值 ≥ 真实值（只高不低）</text>
+    <text x="16" y="316" font-size="12" fill="#334155">要「只低不高」的重元素估计 → Space-Saving / Misra-Gries</text>
+  </g>
+
+    <g transform="translate(20,420)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">实测：一个误差是随机的、一个是系统性的（20 万次插入，真实基数 78798）</text>
+    <text x="16" y="58" font-size="13" fill="#334155">HLL（m = 1024，1 KB 量级内存）：真实基数 78798 → 第 1 轮估算 77713，相对误差 −1.38%；</text>
+    <text x="16" y="82" font-size="13" fill="#334155">　20 轮平均偏差 −2.05%、标准差 3.11% —— 与理论 3.25% 同量级，但单次偏 6% 也在 2σ 之内，不能拿单次结果判断实现对不对。</text>
+    <text x="16" y="116" font-size="13" fill="#334155">CMS（5 行 × 2000 列，uint32 共 40000 字节）：user:40 真实 1059 → 估 1100（+41）；user:17 1058 → 1102（+44）；</text>
+    <text x="16" y="140" font-size="13" fill="#334155">　user:26 1058 → 1085（+27）；user:61 1055 → 1095（+40）；user:56 1054 → 1101（+47）—— 偏差全是正号，是系统性的。</text>
+    <text x="16" y="172" font-size="12.5" fill="#64748b">Redis 侧：PFADD / PFCOUNT / PFMERGE（合并 = 取各桶最大值，能分片统计再合并）；但只能求并集基数，求交集得换结构。</text>
+  </g>
+
+    <g transform="translate(20,630)">
+    <rect x="0" y="0" width="960" height="165" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三种概率结构按「问什么问题」分工</text>
+    <text x="16" y="52" font-size="13" font-weight="bold" fill="#334155">布隆答「在不在」（只会假阳性，绝不假阴性）｜HLL 答「有多少个不同的」（有随机误差）｜CMS 答「出现几次」（只会高估）</text>
+    <text x="16" y="78" font-size="13" fill="#334155">误差方向决定用途：反垃圾 / 限流宁可多拦 → CMS 合适；统计 UV → HLL（12 KB 且可合并，精确方案要存下全部 ID）。</text>
+    <text x="16" y="104" font-size="13" fill="#334155">三者可以叠着用（漏斗式）：先用布隆挡住「肯定不存在」的请求 → 再用 CMS 找热点 → 最后用 HLL 出报表。</text>
+    <text x="16" y="138" font-size="13.5" font-weight="bold" fill="#b45309">⚠️ 铁律：凡涉及钱、配额、计费、对账、报表口径，一律用精确结构 —— 它们的「省」全部来自放弃精确性。</text>
+  </g>
+
+</svg>
