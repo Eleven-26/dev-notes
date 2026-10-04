@@ -157,16 +157,16 @@ db.users.updateOne({ _id: id, schemaVersion: { $lt: 2 } },
 ### "事务能开"不等于"可以照搬关系模型"
 把 ER 图 1:1 翻成"每类实体一个集合 + 外键 + 每次写开事务"，两头都输：**读输**——详情页要 5 次查询或一次 `$lookup`，而内嵌一次 IO 就够，往返次数与连接占用直接相乘；**写也输**——多文档事务要把全部写攒到最后一次性提交、期间持锁且 oplog 不能增量对外可见（见「事务与一致性边界」），事务越大越久，lag 与冲突率越难看。
 
-判据：如果一次业务操作**总**要跨 N 个文档开事务，先怀疑建模——不变量一般应该收在同一个文档里（单文档写天然原子）。事务是兜底，不是默认路径；真有大量跨表强一致需求，说明这数据本质是关系型的（对照 [事务与隔离级别.md](../关系型/MySQL/事务与隔离级别.md)）。
+判据：如果一次业务操作**总**要跨 N 个文档开事务，先怀疑建模——不变量一般应该收在同一个文档里（单文档写天然原子）。事务是兜底，不是默认路径；真有大量跨表强一致需求，说明这数据本质是关系型的（对照 [事务与隔离级别.md](../../关系型/MySQL/事务与隔离级别.md)）。
 
 ## 四、索引介绍
 
-### 什么是索引
-索引的本质是**用空间与写入开销换查询速度**：维护一份“字段值 → 记录位置”的有序映射，让查询从全表扫描（`COLLSCAN`）变成定点定位（`IXSCAN`）。
+⭐ **索引的完整体系已独立成篇**，见 [索引原理.md](索引原理.md)：B 树底层结构与索引条目构成、
+复合索引的字段顺序（ESR）与实测、覆盖索引为什么差一个 `_id` 就回表、部分/稀疏/唯一/TTL/地理空间索引、
+多键（数组）索引、planner 怎么选索引、索引的写代价与重建顺序，以及 `explain` 的完整读法。
 
-- 底层结构：B 树（WiredTiger 下的变体，不同于 InnoDB 的聚簇 B+ 树）。
-- 每个索引条目 = 索引键值 + 指向文档的 `RecordId`；复合索引的键按**声明顺序**拼接，顺序决定可用性。
-- ⚠️ 每个索引都占内存与磁盘，并让写入多维护一棵树——只建真正被查询用到的索引。
+一句话概括：索引是「字段值 → 记录位置」的**有序映射**，底层是 B 树（WiredTiger 变体），
+让查询从全表扫描（`COLLSCAN`）变成定点定位（`IXSCAN`）。
 
 ```javascript
 db.users.createIndex({ age: 1 })   // 1 升序，-1 降序
@@ -174,202 +174,18 @@ db.users.getIndexes()              // 查看索引
 db.users.dropIndex({ age: 1 })     // 删除索引
 ```
 
-### 单键、复合索引
-**单键索引**：对单个字段建索引。**复合索引**：对多个字段按顺序建一棵索引，形如 `{ a: 1, b: 1, c: 1 }`。
+只留两条最该记住的：
 
-⭐ **最左前缀原则**：复合索引可用于查询**从最左字段开始的任意前缀**。
-
-| 索引 `{a:1, b:1, c:1}` | 能否命中 |
+| 原则 | 含义 |
 | --- | --- |
-| `{a}` / `{a,b}` / `{a,b,c}` | ✅ 命中 |
-| `{b}` / `{c}` / `{b,c}` | ❌ 无法命中 |
-| `{a,c}` | ⚠️ 只用到 `a`，`c` 无法用于定位 |
+| **最左前缀** | 复合索引 `{a,b,c}` 可用于 `{a}` / `{a,b}` / `{a,b,c}`；`{b}` / `{b,c}` 用不上 |
+| **ESR** | 字段顺序按 **等值（E）→ 排序（S）→ 范围（R）** 排 |
 
-| 比较项 | MySQL | MongoDB |
-| --- | --- | --- |
-| 最左前缀原则 | 有 | ✅ 完全一致 |
-| 排序利用 | 索引有序可消除 filesort | 一致；⚠️ 支持混合方向，`{a:1,b:-1}` 可同时满足 `a ASC, b DESC` |
-| 覆盖索引 | Using index | 覆盖查询：`totalDocsExamined == 0` |
-| 选择率 | 重要 | 同样重要；数组索引的基数计算方式不同 |
+⭐ **为什么是 ESR**：索引是一棵**按键整体排序**的 B 树，**范围条件之后索引里剩下的字段就不再连续**，
+既不能定界也不能排序。本机实测（5000 条 `orders`，`status=PAID` + `amount>100` + 按 `createdAt` 倒序取 20 条）：
+E-S-R 只扫 **21** 个键、排序免费；E-R-S 必须 **SORT** 且要扫完全部 **1502** 个候选键。详见新篇第二节。
 
-⭐ **ESR 原则**（复合索引字段顺序口诀）：**Equality（等值）→ Sort（排序）→ Range（范围）**。
-
-### ESR 为什么是这个顺序 ⭐
-索引是一棵**按键整体排序**的 B 树。理解 ESR 只需要一句话：**范围条件之后，索引里剩下的字段就不再连续了**，因此既不能用来定界，也不能用来排序。拿 `orders` 举例：
-
-```javascript
-// 第一节：状态等值 + 时间倒序取前 20 条 → ✅ { status: 1, createdAt: -1 }
-//    E 定区间，S 就是区间内的自然顺序：反向扫到够 20 条就停，keysExamined ≈ 20，无 SORT
-db.orders.find({ status: "PAID", createdAt: { $lt: ISODate("2026-09-01") } })
-         .sort({ createdAt: -1 }).limit(20);
-// 第二节：范围条件换到 amount 上 → ✅ { status, createdAt, amount }（E-S-R）
-//                       ⚠️ { status, amount, createdAt }（E-R-S）会退化成内存排序
-db.orders.find({ status: "PAID", amount: { $gt: 100 } }).sort({ createdAt: -1 }).limit(20);
-```
-
-| 索引顺序 | 扫描行为 | 后果 |
-| --- | --- | --- |
-| `{status, createdAt, amount}`（E-S-R） | 区间锁在 `status="PAID"` 且 `createdAt < X`，按索引序输出；`amount` 在键里只能**边扫边过滤**（缩窄不了区间），但过滤发生在索引层，少回表 | 排序免费 + 靠 `limit` 提前停；命中几十万也只看 20 条左右 |
-| `{status, amount, createdAt}`（E-R-S） | `amount` 是范围 → 同一个 `amount` 段内 `createdAt` 才有序，跨段就乱，**排序无法用索引** | 必须把 `status+amount` 命中的**全部**键取完 → `SORT` stage 内存排序，32MB 超限直接报错；`limit` 省不掉扫描，`totalKeysExamined` ≈ 全部命中数 |
-| `{createdAt, status}`（S 在 E 前） | 最左字段没有等值约束，只能从最大 `createdAt` 开始全域反向扫，逐条比 `status` | 命中稀疏时扫几百万键才凑够 20 条，且每条都要回表 |
-
-推论：多个等值字段之间**谁前谁后不重要**（都能定界），但必须**整体排在 sort 字段之前**（`{city, status, createdAt}` 服务 `city=eq + status=eq + sort createdAt`）；单方向取反可以**反向扫描**同一索引（`{a:1,b:1}` 满足 `a DESC, b DESC`），**混合方向**（`a ASC, b DESC`）必须建 `{a: 1, b: -1}`，否则一定内存排序；range 字段放末尾只是"顺手过滤"，选择性差时多一个键只是让索引更大。
-
-### 覆盖索引与 projection：`_id` 是隐形字段 ⭐
-要出现 `PROJECTION_COVERED`（`totalDocsExamined == 0`，完全不回表），两个前提同时成立：① filter、sort、projection 里出现的**每一个字段**都在这同一个索引里；② projection 显式 `_id: 0`——不写 projection 时 `_id` 默认返回，它就成了"必须覆盖但索引里没有"的字段，整个查询退化成 `FETCH` 回表。
-
-```javascript
-db.users.createIndex({ city: 1, age: 1 })
-db.users.find({ city: "HZ" }, { city: 1, age: 1, _id: 0 })  // ✅ 覆盖
-db.users.find({ city: "HZ" }, { city: 1, age: 1 })          // ❌ 只差一个 _id，每条都回表
-```
-⚠️ 多键（数组）索引**永远不能覆盖**，一定要回表取原文档；含数组元素的索引也**不能用于满足排序**（同一文档会因不同数组元素出现在多个位置，顺序无定义），排了就是 `SORT`。
-
-### 部分索引 vs 稀疏索引
-
-| | `sparse: true` | `partialFilterExpression` |
-| --- | --- | --- |
-| 收录哪些文档 | 索引字段**存在**的文档（含显式写成 `null` 的） | 满足给定表达式的文档（可小到"活跃子集"，体积能小一个数量级） |
-| 表达能力 | 只有"字段存在与否"一种 | `$eq`/`$gt`/`$lt`/`$exists`/`$type` + 顶层 `$and`（可用操作符以官方文档为准） |
-| 典型用法 | 老代码里给缺失字段开唯一约束 | 只对 `deleted: false` 建唯一；只对 `status: "OPEN"` 建索引（绝大多数文档已是 CLOSED） |
-| ⚠️ 失效条件 | 无 | 查询 filter **推不出**部分条件时优化器根本不考虑它 → 意外 `COLLSCAN`，索引白建 |
-
-最后一行是最贵的坑：建了 `partial on {deleted:false}` 的 `{status:1}`，但查询只写 `{status:"PAID"}` 不带 `deleted:false`，就吃不到索引。要么查询固定带上该条件，要么退回全量索引。
-
-### 多个候选索引时，planner 怎么选 ⭐
-1. **生成候选**：只在"能匹配查询前缀"的索引里生成候选（完全对不上的不进入竞速，也不会出现在 `rejectedPlans`）；再并发跑各候选、按"返回多少条 / 扫了多少"择优，胜出进 `winningPlan`。所以"哪个索引更快"是**数据分布决定的经验结果**，不是静态规则。
-2. **计划缓存按 query shape**（与参数值无关的形状指纹）缓存，不是按参数缓存 → 典型故障"我明明建了更好的索引，老 shape 还在走旧计划"。用 `db.coll.getPlanCache().list()` 看、`clear()` 清。
-3. **排查手段**：`.hint({ status: 1, createdAt: -1 })` 强制走某索引，对比两次 explain 才能确认"是索引不好还是选错了"；`planCacheListFilters`/`indexFilter` 可临时屏蔽坏计划，属应急开关，别当长期方案。
-
-### 数组索引
-数组字段可建索引，即 **multikey index**：数组每个元素生成一个索引条目。
-
-```javascript
-db.articles.createIndex({ tags: 1 })
-db.articles.find({ tags: "go" })    // 命中 multikey 索引
-```
-- ⚠️ 一个复合索引中**最多只能有一个数组字段**，否则索引条目呈笛卡尔积式膨胀。
-- 支持嵌套字段索引：`{ "address.city": 1 }`；大数组建索引会显著放大索引体积。
-- 复合索引里那个唯一的数组字段，要匹配"同一个元素同时满足多个条件"必须用 `$elemMatch`，否则条件会被**不同元素分别满足**（假阳性）——这是多键索引最容易写错的一点。
-
-### 地理空间索引
-
-| 类型 | 索引声明 | 用途 |
-| --- | --- | --- |
-| `2dsphere` | `{ loc: "2dsphere" }` | ⭐ 球面坐标，GeoJSON 格式，支持真实地球距离 |
-| `2d` | `{ loc: "2d" }` | 平面坐标，legacy 用法，仅限小范围 |
-
-```javascript
-db.places.createIndex({ loc: "2dsphere" })
-db.places.find({ loc: { $near: {
-  $geometry: { type: "Point", coordinates: [120.15, 30.28] },
-  $maxDistance: 1000                       // 米
-} } })
-```
-操作符：`$near`（按距离排序）、`$geoWithin`（范围内）、`$geoIntersects`（相交）、`$geoNear`（聚合阶段，附带距离字段）。
-
-### 唯一索引
-
-```javascript
-db.users.createIndex({ email: 1 }, { unique: true })
-```
-⚠️ **坑**：字段缺失会被视为 `null`，多个缺失该字段的文档会互相冲突。解法：`sparse`（只对存在该字段的文档建索引）或 `partialFilterExpression`（只对满足条件的文档建唯一约束，更灵活，推荐）：
-
-```javascript
-db.users.createIndex({ email: 1 },
-  { unique: true, partialFilterExpression: { email: { $exists: true } } })
-```
-唯一索引无法保证数组字段的“全局唯一”，只能保证单文档内不重复；分片集合上唯一键必须包含完整分片键。
-
-### TTL 索引
-TTL（Time To Live）索引让文档**到点自动过期删除**，非常适合会话、验证码、临时日志、缓存。
-
-```javascript
-db.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 })
-db.tokens.createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 }) // 字段值即删除时刻
-db.runCommand({ collMod: "sessions",                               // 改过期时间只能走 collMod
-  index: { keyPattern: { createdAt: 1 }, expireAfterSeconds: 7200 } })
-```
-- 后台线程**每 60 秒**扫描一次，因此删除**不精确**（可能延迟 1 分钟以上）；TTL 字段必须是 **BSON Date**（或 Date 数组）。
-- ⚠️ TTL 索引必须是**单字段索引**，不能是复合索引；删除不可恢复。
-
-### 索引的写代价与重建 ⭐
-每个索引 = 每笔写要多维护一棵 B 树 + 一条要在副本集间复制的索引变更。集合上 6 个索引，一次 `insertOne` 实际就是 7 次树操作。
-
-| 写操作 | 代价来源 | 建模含义 |
-| --- | --- | --- |
-| 插入 | 所有索引各插一条 | 索引越多，写吞吐越接近线性下降 |
-| 更新**未被索引**的字段 | 只改数据，索引不动 | 便宜——这是"少建索引"最直接的收益 |
-| 更新**被索引**的字段 | 旧键删除 + 新键插入（数组字段是整组重算） | 高频翻转的状态字段 + 索引 = 写放大主力 |
-| 删除 | 所有索引各删一条 + 空间不立即归还 | 见「运维与常见坑」的空间回收 |
-
-- 单调追加的字段（时间戳、ObjectId）当索引键，写代价低于"会被反复改的字段"（只追加、不移动），但它把热点问题挪到了分片层（见「分片与架构管理」）。
-- 索引数量要有预算，不能"先建着再说"：它同时抬高写延迟、cache 占用、启动与追赶时间（机制见「索引过多为什么拖累启动、切换与追赶」）。
-
-重建/换索引的做法（定性）：
-1. ⚠️ 不要 `dropIndex` 之后再 `createIndex`——中间那段窗口查询在裸奔（`COLLSCAN`），高 QPS 接口能直接把实例打满。
-2. 正确顺序：**建新名字的索引 → explain / `$indexStats` 确认已被选中 → 再 drop 旧索引**，随时可回退。
-3. 大集合上建索引是持续的 IO + CPU + oplog 压力，从节点 lag 一定会抬头：低峰做、做完留观察窗口、别连着建多个。
-4. 构建方式与版本强相关（早期区分前台/后台构建、`background` 参数在后续版本被统一处理），**是否还生效以官方文档为准**；别靠"加个 background"来做在线变更的容量规划。
-
-### 分析工具 explain
-⭐ 判断索引是否生效的唯一可靠手段：`db.users.find({ age: { $gte: 20 } }).explain("executionStats")`
-
-第一步：看 `queryPlanner.winningPlan.stage`。
-
-| stage | 含义 | 判断 |
-| --- | --- | --- |
-| `COLLSCAN` | 集合全表扫描 | ⚠️ 坏，检查索引与最左前缀 |
-| `IXSCAN` | 使用索引扫描 | ✅ 好 |
-| `FETCH` | 回表取完整文档 | 正常；`totalDocsExamined` 远大于 `nReturned` 则需优化 |
-| `SORT` | 内存排序 | ⚠️ 排序未走索引；超 32MB 直接报错 |
-| `PROJECTION_COVERED` | 覆盖查询 | ✅ 最佳，无需回表 |
-
-第二步：看 `executionStats` 关键字段。
-
-| 字段 | 含义 | 理想值 |
-| --- | --- | --- |
-| `executionTimeMillis` | 查询总耗时 | 越低越好 |
-| `totalKeysExamined` | 扫描的索引键数 | 接近 `nReturned` |
-| `totalDocsExamined` | 扫描的文档数 | ⭐ 尽量等于 `nReturned` |
-| `nReturned` | 实际返回文档数 | 业务预期值 |
-| `rejectedPlans` | 被淘汰的候选计划 | 越少越好 |
-
-第三步：`db.users.aggregate([{ $indexStats: {} }])` 查看各索引使用次数，**长期为 0 的索引应删除**。
-
-### explain 进阶读法 ⭐
-三层各有分工，缺层的结论都不成立：`queryPlanner` 给**计划形状**（整条 `winningPlan.inputPipeline` 从叶子往根读：有没有 `SORT`、有没有 `FETCH`、`$or` 是否被拆成多路再 `OR`/`SORT_MERGE` 合并），`executionStats` 才有**真实计数**（默认 `explain()` 不给这一层），而回显的 `query` 才是服务端真正执行的形状（类型转换、正则、`$expr` 都可能改写你的意图）。
-
-两个**比值**比绝对值有用：
-- `totalKeysExamined / nReturned` ≫ 1 → 索引区间定得不准（前缀选错、范围字段排在前面），扫了大量用不上的键。
-- `totalDocsExamined / nReturned` ≫ 1 → 回表白干了：过滤条件里还有字段没进索引，考虑把过滤前移或做覆盖索引。
-- `hasCoveredStage: true` / 出现 `PROJECTION_COVERED` → 真的没回表；出现 `PROJECTION_FETCHED` 就是回了表，别被"用了索引"迷惑。
-
-⭐ 同样是顶层带 `LIMIT`，两条 stage 链的量级完全不同：`LIMIT → FETCH → PROJECTION_COVERED → IXSCAN`（扫一点、够 limit 就停）vs `SORT → LIMIT → FETCH → IXSCAN`（先把命中项全捞完再排序、再截断）。
-
-`executionTimeMillis` 的三点局限：
-1. 它只包含这一次服务端执行，**第一次跑要承担把数据读进 cache 的成本**；同一查询连跑两次第二次可能快得多。所以"要不要优化"看扫描量，不看单次耗时。
-2. 它是"执行完这批结果"的时间，不是端到端延迟：网络往返、驱动、游标后续批次（`getMore`）都不在里面。
-3. 分片集群上不带分片键的查询，耗时由**最慢的那个分片**决定，单机 explain 看不出倾斜。
-
-`rejectedPlans` 为什么值得看：`winningPlan` 只是"竞速赢了的"，不等于最优。如果 `rejectedPlans` 里躺着一个明显更合理的索引计划，通常是三种原因之一：① query shape 命中了**旧缓存计划**（换了索引但没清缓存）；② 新索引只部分可用（前缀对但方向/字段不全），竞速时被老计划赢；③ 数据分布偏斜让试跑阶段估计失真。处置手法见上文「多个候选索引时，planner 怎么选」，重点是：别直接下"这个索引没用"的结论。
-
-### 慢查询定位：profiler
-
-```javascript
-// level: 0 关闭 / 1 只记超过阈值的 / 2 全记（2 明显拖慢，只短时排查）
-db.setProfilingLevel(1, { slowms: 100 })      // 阈值随命令/配置下发，不要用默认值上线
-db.getProfilingStatus()
-db.system.profile.find({ millis: { $gt: 100 } }).sort({ ts: -1 }).limit(20).pretty()
-// 抓"正在跑"的，比事后翻 profile 更适合处理线上抖动
-db.currentOp({ "secs_running": { $gt: 5 }, active: true })
-db.killOp(<opid>)                             // ⚠️ 先确认不是长事务/迁移，杀之前想好补偿
-```
-阈值的思路（不给具体数字）：
-- 全局 `slowms` 设成**业务可接受延迟的上界**（P99 目标附近），不是"目前最慢的那条"；设高了日志里全是本来就该优化的，设低了 profile 被写满。
-- 想知道"谁在整体拖慢系统"，别按单条最慢排，要**按 `ns` + 查询形状聚合看总耗时**：偶发几条秒级批处理，远不如海量几十毫秒的接口查询重要。较新版本的 profile 记录带 query shape 指纹字段（字段名以官方文档为准），没有的话按 `ns` + filter 前缀聚合。
-- `system.profile` 是 **capped collection**，写满滚动覆盖，只在**本机**留痕：要长期分析就定期 `$merge` 到独立集合，或直接采 `currentOp`。
-- ⚠️ profiler 对每条操作都有判定与写盘开销，生产常开 level 1 + 较高阈值；开 level 2 排查完必须立刻回落到 0/1。
+⚠️ 慢查询的长期定位（profiler、`currentOp`、阈值怎么设）见本文档第十节「运维与常见坑」。
 
 ## 五、聚合管道
 ⭐ 聚合的执行模型是"文档流依次穿过 stage"，因此**优化只有两个方向：让更少的文档进入下游 stage；让每个 stage 少占内存**。
@@ -401,7 +217,7 @@ db.orders.aggregate([
 ```
 - 对驱动集合的**每一个**文档都要到被 join 集合查一次：被 join 侧的 `foreignField` **必须有索引**，否则代价是"驱动侧文档数 × 被 join 侧全表扫描"，这是 `$lookup` 最常见的事故。只有**等值** join 能自然用上索引；带表达式/非等值的 pipeline 形式更贵（内层管道对每个外部文档跑一遍）。
 - 什么时候该在**应用层 join**：① 驱动集合已被分页到几十上百条（先查页、再 `find({_id: {$in: ids}})` 批量取、内存里拼）；② 被 join 侧的结果可复用到缓存/其它请求；③ 分片集群上两个集合**没有按同一分片键共置**——这时 `$lookup` 只能广播到所有分片，而应用层按 `_id` 的批量 `$in` 可以定向。
-- 判据：`$lookup` 适合"一次聚合里顺带补齐维度"，不适合当 OLAP 的 join 引擎（多表统计应考虑 [ElasticSearch.md](../搜索与分析/Elasticsearch/ElasticSearch.md) 或离线链路）。
+- 判据：`$lookup` 适合"一次聚合里顺带补齐维度"，不适合当 OLAP 的 join 引擎（多表统计应考虑 [ElasticSearch.md](../../搜索与分析/Elasticsearch/ElasticSearch.md) 或离线链路）。
 
 ### `$unwind` 放大与内存限制
 `$unwind` 把 1 个文档变成 N 个（N = 数组长度；空数组默认整条消失），**下游 `$group` 处理的是放大后的流**：数组平均长度 20 时，"10 万订单"进入 `$group` 就是 200 万文档。
@@ -647,7 +463,7 @@ err := client.UseSession(ctx, func(sctx mongo.SessionContext) error {
 | 4 | **最终一致**：本地消息表 / 事务消息 + 消费幂等 + 定时对账修复 | 跨服务、跨库、跨消息队列 |
 | 5 | **多文档事务** | 同库跨文档且必须同时可见（A 扣 + B 加） |
 
-对照：MongoDB 多文档事务只解决"本库内 ACID"，跨服务仍需消息/Saga 的最终一致方案 → 见 [分布式事务.md](../../../04-架构与系统/分布式/理论/分布式事务.md)。
+对照：MongoDB 多文档事务只解决"本库内 ACID"，跨服务仍需消息/Saga 的最终一致方案 → 见 [分布式事务.md](../../../../04-架构与系统/分布式/理论/分布式事务.md)。
 
 ## 九、使用方法
 连接串速查：`mongodb://localhost:27017`（单机）；`mongodb://u:p@host:27017/?authSource=admin`（带认证库）；`mongodb://u:p@h1:27017,h2:27017,h3:27017/?replicaSet=rs0&w=majority`（副本集）；`mongodb+srv://u:p@cluster0.abcde.mongodb.net/`（Atlas，隐含 TLS）。
@@ -923,7 +739,7 @@ cache 目标大小按物理内存的一个比例算（默认量级约一半，�
 
 - OOM 的常见成因排序：索引总量远超 cache（工作集根本装不下）→ 大 sort/group → 连接数失控 → 无 `limit` 的全量查询把结果拉进应用进程。
 - 判据（定性）：cache 长期贴顶 + 缺页持续增长 + 读延迟长尾 → 该做的是**缩小工作集**（冷热分离、TTL 归档、把正文/二进制拆到独立集合或 GridFS、删无用索引），不是调 cache 参数。
-- 索引体积比想象中小/大有原因：WiredTiger 对索引做前缀压缩，重复前缀越多越省；高基数随机键（完整 ObjectId、UUID）几乎压不动。机制见 [压缩算法.md](../../../02-计算机基础/算法/压缩算法.md)。
+- 索引体积比想象中小/大有原因：WiredTiger 对索引做前缀压缩，重复前缀越多越省；高基数随机键（完整 ObjectId、UUID）几乎压不动。机制见 [压缩算法.md](../../../../02-计算机基础/算法/压缩算法.md)。
 
 ### 大量删除后空间不还给 OS
 `deleteMany` 删掉一半，磁盘占用**几乎不动**：空间被放进 WiredTiger 的空闲列表复用，不归还操作系统（归还意味着重写文件，代价更高）。检测碎片看 `db.coll.stats(1024 * 1024)` 的 `freeStorageSize`，以及 `db.coll.dataSize() / db.coll.storageSize()`（明显小于 1 = 空洞多）。
@@ -953,13 +769,13 @@ cache 目标大小按物理内存的一个比例算（默认量级约一半，�
 
 | 坑 | 为什么 | 处置 |
 | --- | --- | --- |
-| 非锚定 `$regex` | 无法用索引定界，只能扫全部键 | 前缀锚定 `^abc` 才能吃索引；全文检索走 [ElasticSearch.md](../搜索与分析/Elasticsearch/ElasticSearch.md) |
+| 非锚定 `$regex` | 无法用索引定界，只能扫全部键 | 前缀锚定 `^abc` 才能吃索引；全文检索走 [ElasticSearch.md](../../搜索与分析/Elasticsearch/ElasticSearch.md) |
 | 拿 `$ne`/`$nin`/`$not` 当主力过滤 | 选择性差（"不等于"命中绝大多数），索引帮不上 | 改写成"等于哪几个值"的 `$in` |
 | `$or` 某个分支没索引 | 各分支分别规划，**最差分支决定整体代价** | 保证每个分支都有可用索引 |
 | `countDocuments({})` 数全量 | 走覆盖索引也要把键数完 | 无 filter 用 `estimatedDocumentCount()`（读元数据，不能带条件） |
 | 无 `limit` 的 `find` | 结果集进应用内存 + 游标长时间占用连接 | 强制分页 + `projection` 裁字段 |
 | 用完整文档做替换式更新 | 丢字段 + 触发文档搬迁与全索引维护 | 一律用 `$set` 只碰必要字段 |
-| 把 TTL 当准点定时器 | 后台周期扫描 + 删除也要复制，不保证准点 | 需要准点触达用延迟消息（见 [Kafka.md](../../中间件/消息队列/Kafka.md)） |
+| 把 TTL 当准点定时器 | 后台周期扫描 + 删除也要复制，不保证准点 | 需要准点触达用延迟消息（见 [Kafka.md](../../../中间件/消息队列/Kafka.md)） |
 | 用 ObjectId 推业务时间 | 前 4 字节是**客户端**生成时间，时钟漂移会污染顺序 | 单独存 `createdAt`（服务端 `$currentDate`）并按它建索引 |
 
 ## 延伸追问
@@ -982,10 +798,11 @@ cache 目标大小按物理内存的一个比例算（默认量级约一半，�
 
 ## 关联
 
-- [ElasticSearch.md](../搜索与分析/Elasticsearch/ElasticSearch.md) — 检索型存储与文档库的边界
-- [缓存淘汰算法.md](../缓存/缓存淘汰算法.md) — WiredTiger 缓存淘汰的算法基础
-- [压缩算法.md](../../../02-计算机基础/算法/压缩算法.md) — 页面块压缩与「压缩不省缓存内存」
-- [事务与隔离级别.md](../关系型/MySQL/事务与隔离级别.md) — 单文档原子与跨文档事务的取舍
-- [存储选型.md](../存储选型.md) — 六类存储的横向对比，本篇「与 MySQL 的选型」在其中的位置
+- [索引原理.md](索引原理.md) — **本篇拆出的原理篇**：B 树索引条目、ESR 与密度对照实测、覆盖索引、多键索引、planner 选索引、explain 完整读法
+- [ElasticSearch.md](../../搜索与分析/Elasticsearch/ElasticSearch.md) — 检索型存储与文档库的边界
+- [缓存淘汰算法.md](../../缓存/缓存淘汰算法.md) — WiredTiger 缓存淘汰的算法基础
+- [压缩算法.md](../../../../02-计算机基础/算法/压缩算法.md) — 页面块压缩与「压缩不省缓存内存」
+- [事务与隔离级别.md](../../关系型/MySQL/事务与隔离级别.md) — 单文档原子与跨文档事务的取舍
+- [存储选型.md](../../存储选型.md) — 六类存储的横向对比，本篇「与 MySQL 的选型」在其中的位置
 
-> 反向引用（本篇被下列文档引到）：[深分页优化.md](../关系型/MySQL/深分页优化.md)、[海量数据存储设计.md](../../../04-架构与系统/系统设计/海量数据存储设计.md)
+> 反向引用（本篇被下列文档引到）：[应用与场景.md](应用与场景.md)、[深分页优化.md](../../关系型/MySQL/深分页优化.md)、[海量数据存储设计.md](../../../../04-架构与系统/系统设计/海量数据存储设计.md)

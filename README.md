@@ -58,8 +58,8 @@ dev-notes/
 ├── 数据存储/
 │   ├── 关系型/MySQL/
 │   ├── NoSQL/
-│   │   ├── Redis/
-│   │   └── MongoDB.md
+│   │   ├── MongoDB/
+│   │   └── Redis/
 │   ├── 缓存/
 │   ├── 搜索与分析/Elasticsearch/
 │   ├── 数据同步/            占位目录（空壳）
