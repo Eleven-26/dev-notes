@@ -231,7 +231,7 @@ public static List<User> removeDuplicatesByNameAndPhone(List<User> userList) {
 
 ## 关联
 
-- [JOIN与反范式.md](../../03-数据与中间件/数据存储/mysql/JOIN与反范式.md) — `groupingBy` 就是「应用层归并」的 Java 写法
+- [JOIN与反范式.md](../../03-数据与中间件/数据存储/关系型/MySQL/JOIN与反范式.md) — `groupingBy` 就是「应用层归并」的 Java 写法
 - [JVM与垃圾回收.md](运行时/JVM与垃圾回收.md) — 流式处理里的临时对象与 GC
 - [运行时数据区与栈帧.md](运行时/运行时数据区与栈帧.md) — lambda 与虚方法分派
 - [并发容器.md](并发/并发容器.md) — `parallelStream` 与 `Collectors.groupingByConcurrent` 才需要 `ConcurrentHashMap`；串行流**不要**用并发容器（没有并发，只多付开销）

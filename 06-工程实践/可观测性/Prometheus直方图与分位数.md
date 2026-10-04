@@ -400,3 +400,4 @@ avg by (instance) (gw_request_duration_ms{quantile="p95"})
 - [从零实现网关.md](../../01-编程语言/go/从零实现网关.md) — 第九节是「可观测性三个切面」的**简版**，并记下了本地分位不可聚合这个坑
 - [接入Skywalking.md](../../01-编程语言/go/接入Skywalking.md) — 引第三方探针的路线，与本篇「不引 SDK、自己输出文本格式」正好相反
 - [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) — OTel SDK + OTLP 路线，对比手写导出器的取舍
+> 反向引用（本篇被下列文档引到）：[观测与诊断.md](../../03-数据与中间件/数据存储/关系型/MySQL/观测与诊断.md)

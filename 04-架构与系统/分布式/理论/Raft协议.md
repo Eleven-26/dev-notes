@@ -353,7 +353,7 @@ func DeleteIfMatches(ctx context.Context, key, owner string) (bool, error) {
 > 所以**linearizable 读**才需要额外一轮确认，把"已提交"升级成"已应用到我的视图"。
 > 租约与续租的写法（`Grant` / `KeepAlive` / 为什么必须单条 stream）已在
 > [DHCP.md 使用一（租约状态机）](../../../02-计算机基础/网络/DHCP.md) 与
-> [缓存问题与方案.md](../../../03-数据与中间件/数据存储/redis/缓存问题与方案.md) 里给全，本篇不重复。
+> [缓存问题与方案.md](../../../03-数据与中间件/数据存储/缓存/缓存问题与方案.md) 里给全，本篇不重复。
 
 ### 2. 选举：把"强领导者"用成应用层的单写者
 
@@ -764,7 +764,7 @@ etcdctl get foo --consistency=s              # ⚠️ 该 flag 是否存在以 e
 
 - [一致性与CAP.md](一致性与CAP.md) — 为什么要强一致，linearizable 读的由来
 - [服务发现与负载均衡.md](../服务治理/服务发现与负载均衡.md) — 租约注册与 Watch 的生产用法
-- [Nacos.md](../../../03-数据与中间件/中间件/Nacos.md) — 另一套一致性协议（Distro + JRaft）
+- [Nacos.md](../../../03-数据与中间件/中间件/注册与配置中心/Nacos.md) — 另一套一致性协议（Distro + JRaft）
 - [分布式ID.md](分布式ID.md) — 多节点下的单调与唯一
 
-> 反向引用（本篇被下列文档引到）：[DHCP.md](../../../02-计算机基础/网络/DHCP.md)、[RocketMQ.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ.md)、[ElasticSearch.md](../../../03-数据与中间件/数据存储/elasticsearch/ElasticSearch.md)、[复制与高可用.md](../../../03-数据与中间件/数据存储/mysql/复制与高可用.md)、[并发限制器.md](../服务治理/并发限制器.md)、[服务注册与发现的Go实现.md](../服务治理/服务注册与发现的Go实现.md)
+> 反向引用（本篇被下列文档引到）：[DHCP.md](../../../02-计算机基础/网络/DHCP.md)、[RocketMQ.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ.md)、[ElasticSearch.md](../../../03-数据与中间件/数据存储/搜索与分析/Elasticsearch/ElasticSearch.md)、[复制与高可用.md](../../../03-数据与中间件/数据存储/关系型/MySQL/复制与高可用.md)、[并发限制器.md](../服务治理/并发限制器.md)、[服务注册与发现的Go实现.md](../服务治理/服务注册与发现的Go实现.md)
