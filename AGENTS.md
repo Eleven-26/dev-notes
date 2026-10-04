@@ -136,27 +136,45 @@
 
 ## 实测与可复现口径
 
-- ⭐ **三语言实测是核心方法**：PHP `D:/phpstudy_pro/Extensions/php/php8.0.2nts/php.exe`、
-  go1.26.5、JDK `D:/java/jdk1.8/`。同一场景各实现一份，**输出逐行对齐**；PHP 按 PHP 标准写法写，不照搬别的语言风格。
-- ⭐⭐ **凡是需要实测的代码，一律在本机 Docker Desktop 里执行**（2026-10-04 定，同日泛化到全部代码）：
-  判据只有一个 —— **这段代码要不要"跑起来看行为"**。要，就进容器，两类实验一视同仁：
-  ① 需要外部组件的（MySQL / Redis / MQ / ES / Mongo / ClickHouse / Prometheus / Jaeger / Nacos …）；
-  ② 不需要组件、只是语言自己的验证程序（Go / PHP / Java / Node 脚本）。
-  ⭐ **一律 `docker run` 起容器，不写「本机没环境所以未实测」** —— 标注「未实测」前先问能不能起个容器；
+- ⭐ **三语言实测是核心方法**：PHP 8.0 / Go 1.26 / JDK 1.8（另有 17、24）—— **三种运行时全部在容器里跑**（见下条）。
+  同一场景各实现一份，**输出逐行对齐**；PHP 按 PHP 标准写法写，不照搬别的语言风格。
+  ⚠️ 宿主机工具链（`D:/phpstudy_pro/Extensions/php/php8.0.2nts/php.exe`、`D:/java/jdk1.8/`）**只在容器不可用时兜底**
+  —— 它们是同语言同大版本的对照组，写读数时以**容器内版本**为准（补丁号不同，见下条）。
+- ⭐⭐⭐ **凡是需要实测的代码，一律在本机 Docker Desktop 里容器化执行**（2026-10-04 定，含语言运行时）：
+  判据只有一个 —— **这段代码要不要「跑起来看行为」**。要跑就进容器，**没有例外、不留宿主机口子**。
+  **语言运行时同样进容器**（Go / Java / PHP / Node），**中间件同样进容器**
+  （MySQL / Redis / 队列 / 搜索引擎 / 注册中心 / 可观测性栈）。
+  ⭐ **一律 `docker run`，不写「本机没环境所以未实测」** —— 标「未实测」前先问能不能起个容器；
   ⭐ **也不在 Windows 宿主机起长驻进程**（服务、网关、数据库都是容器）。
-  - **边界（用户确认过）**：编译、`go vet` / `php -l`、单测、`gofmt` 这类**不需要运行环境**的检查照旧在宿主机做。
-  - 起法：`docker run -d --name <名> -p <宿主端口>:<容器端口> <镜像:tag>`；容器内命令走 `docker exec`；
-    本机 Go / PHP / Python 程序直接 **connect 到映射在 127.0.0.1 的端口**。
-  - **纯语言脚本的容器跑法**：把仓库目录挂进容器再执行，例如
-    `docker run --rm -v D:/www/dev-notes:/w -w /w golang:1.26-alpine go run x.go`、
-    `docker run --rm -v D:/www/dev-notes:/w -w /w node:20-alpine node x.js`。
-  - ⚠️ **PHP / Java 运行时本机没有镜像**（`docker images` 实查：只有 `golang:1.26-alpine`、`node:20-alpine`，
-    无 `php*`、无 JDK）→ 要容器化就得先 `docker pull`；拉不动才退回宿主机工具链（见上一条与「三语言实测」），
-    并**在篇首引语里如实写明"跑在宿主机 + 原因"**，不冒充容器实测。
+  - **语言运行时跑法**（挂仓库目录 + `-w`；下面前缀不可省，见紧随的警告）：
+    - Go：`MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w golang:1.26-alpine go run x.go`
+    - PHP：`MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w php:8.0-cli php x.php`
+    - Java 8：`MSYS_NO_PATHCONV=1 docker run --rm -v <目录>:/w -w /w eclipse-temurin:8-jdk sh -c "javac X.java && java X"`
+    - Node：`MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w node:20-alpine node x.js`
+    ⚠️ **Git Bash 下必须加 `MSYS_NO_PATHCONV=1`** —— 否则 `-v D:/...` 的 `D:/` 被 MSYS 改写成 `/d/`，
+    容器里挂载点为空、程序报找不到文件（实测踩过，不是可选优化）。
+    ⚠️ **Java 8 不支持 `java X.java` 单文件模式**（Java 11+ 才有）→ 必须 `javac` + `java` 两步。
+  - **中间件跑法**：`docker run -d --name <名> -p <宿主端口>:<容器端口> <镜像:tag>`；容器内命令走 `docker exec`；
+    本机程序直接 **connect 到映射在 127.0.0.1 的端口**（沙箱限制的是 listen，不是 connect）。
+  - **已备好的镜像**（2026-10-04 实拉实跑，无需再拉）：
+    语言 —— `golang:1.26-alpine`、`php:8.0-cli`、`eclipse-temurin:8-jdk`、`eclipse-temurin:17-jdk`、
+    `eclipse-temurin:24-jdk`、`node:20-alpine`；
+    中间件 —— `redis:7-alpine`、`mysql:8.0`、`nats:2.10-alpine`、`mongo:7.0`、`elasticsearch:8.19.0`、
+    `clickhouse/clickhouse-server`、`nacos/nacos-server`、`xxl-job-admin`；
+    可观测性 —— `prom/prometheus`、`grafana/grafana`、`jaegertracing/jaeger`、`apache/skywalking-*`。
+    ⚠️ **kafka 没有**。拉新镜像走 `~/.docker/daemon.json` 已配的三个镜像源（实测 3 个镜像 5 分钟内拉完）。
+  - ⭐ **容器内版本与宿主机不同（实测）**：PHP `8.0.30`（本机 8.0.2）、JDK `1.8.0_504`（本机 1.8.0_321）、
+    Go `1.26.8`（本机 1.26.5）—— **同大版本、补丁号不同**，篇目里写清是哪个。
+  - ⭐⭐ **宿主机时代的坑在容器里全部消失**（实测）：classpath 改用 **Linux 风格**（`:` 分隔、`/m2/...` 路径）；
+    不再需要 `-Dstdout.encoding=UTF-8`（容器默认 UTF-8）；不再需要 `--release 17`（直接用 17 容器）；
+    换行是 `\n` 而非 `\r\n`（⚠️ 旧口径「Java `println` 输出 `\r\n` 要改 `print`」在容器里不适用）。
+  - **Spring 也能在容器里跑**（实测）：挂 `C:/Users/Administrator/.m2/repository` → `/m2:ro`，
+    用 `eclipse-temurin:17-jdk`（Spring 6.1.x / Boot 3.2.x 的基线，⚠️ JDK 8 跑不了 Spring 6）；
+    `javac -cp <CP>` + `java -cp ".:<CP>"`，CP 用 Linux 风格拼。实测输出 `Spring 容器实测 OK，spring-core 6.1.6`。
+  - **JDK 源码断言也能在容器里做**（实测）：⚠️ `eclipse-temurin:*-jdk` **不含 `src.zip`、也没有 `unzip`** →
+    挂宿主机 `D:/java/jdk1.8/src.zip` 到 `/src.zip:ro`，容器内用 JDK 自带的 `jar xf /src.zip <类路径>` 提取再 `grep` 断言。
+  - **边界（用户确认）**：**编译 / `go vet` / `php -l` / 单测 / `gofmt` 照旧在宿主机**（不需要运行环境）。
   - ⭐ **收尾用 `docker stop`（保留容器便于复跑），不要 `docker rm`**；下次复跑直接 `docker start`。
-  - ⚠️ **已缓存、无需拉取**：`redis:7-alpine`、`mysql:8.0`、`nats:2.10-alpine`、`mongo:7.0`、
-    `clickhouse-server`、`elasticsearch:8.19.0`、`prometheus`、`grafana`、`jaeger`、`nacos`、
-    `xxl-job-admin`、`golang:1.26-alpine`、`node:20-alpine`（**kafka、PHP、JDK 都没有**）。
   - ⚠️ 宿主端口会被占用（6379 / 3306 / 4222 …）—— 起之前先 `docker ps -a` 看有没有同名或同端口残留。
   - ⚠️ **只用自己新建的实例**：独立容器名 + 独立 volume + 独立端口；用户既有容器（不可复用/重启/删除）
     的清单在「本机环境约束」一节。
@@ -197,7 +215,7 @@ python .workbuddy/tmp/audit_full.py   # 全量体检
 
 1. 先 `grep` 全仓确认这个知识点是否已存在、边界在哪（**先盘点再动笔**）；
 2. 写正文：H2 中文序号 + 疑问句、`**本节要点**`、`## 使用`（有对外 API 的篇目）、`## 延伸追问`、`## 关联`；
-3. 实测证据来自本机真跑，输出抄进文档（时序类标波动）；
+3. 实测证据来自**容器真跑**（口径见「实测与可复现口径」一节，语言运行时也进容器），输出抄进文档（时序类标波动）；
 4. 同步四处：`目录.md` 加索引行、`素材清单.md` 登记（书籍 / 博客类）、
    **给相关旧篇补指向新篇的关联行**、`regen_backrefs.py` 重算反向引用（**只传受影响文件**）；
 5. 目录级 `README.md`（全仓 28 份：`01-编程语言/java/`、`02-计算机基础/网络/`、`02-计算机基础/算法/` 及其 9 个子目录、
@@ -237,16 +255,19 @@ python .workbuddy/tmp/audit_full.py   # 全量体检
 ## 本机环境约束（先探测再承诺）
 
 - ⚠️ **PowerShell 工具不可用**（ConPTY 拒绝访问，实测进程起不来）→ 只能靠文件工具与既有脚本。
-- ⚠️ **Docker Desktop 可用**（2026-10-03 实测：4.89.0 / engine 29.7.2，
-  `mysql:8.0`、`redis:7-alpine`、`nats:2.10-alpine`、`elasticsearch:8.19.0`、`mongo:7.0`、`clickhouse` 等镜像已在本地）→
-  需要中间件实证的篇目**优先起隔离实例**（自定义容器名 + 独立端口 + 独立 volume）。
+- ⭐⭐ **Docker Desktop 可用，且是所有实测的唯一落点**（2026-10-04 实测：引擎 29.7.2）→
+  **语言运行时 + 中间件 + 可观测性栈全部容器化**，清单见「实测与可复现口径」一节。
+  本地已有镜像（**语言**）`golang:1.26-alpine`、`php:8.0-cli`、`eclipse-temurin:8-jdk|17-jdk|24-jdk`、`node:20-alpine`；
+  （**中间件**）`mysql:8.0`、`redis:7-alpine`、`nats:2.10-alpine`、`mongo:7.0`、`elasticsearch:8.19.0`、
+  `clickhouse/clickhouse-server`、`nacos/nacos-server`、`xxl-job-admin`、`prometheus`、`grafana`、`jaeger`、
+  `apache/skywalking-*`。
   ⚠️ 本机已有 `seckill-*`、`deploy-*`、`photography-*`、`mongodb`、`elasticsearch-dev` 容器，
   分属用户秒杀 / 网关 / 摄影项目资产，**不复用、不重启、不删除**；
-  收尾只 stop / rm 自己创建的那个。旧结论「Docker daemon 不可用」已作废。
-- 可用：phpstudy 自带的 **nginx 1.15.11**（隔离实例可跑配置类实验）、SQLite（`modernc.org/sqlite`，纯 Go 无 cgo）、
-  Windows 自带 `pktmon`（抓包）、`gitlab-ci-local`（`npx`，可本地跑 `.gitlab-ci.yml`）。
+  收尾只 stop 自己创建的那个。旧结论「Docker daemon 不可用」已作废。
+- 可用：SQLite（`modernc.org/sqlite`，纯 Go 无 cgo）、Windows 自带 `pktmon`（抓包）、
+  `gitlab-ci-local`（`npx`，可本地跑 `.gitlab-ci.yml`）、phpstudy 自带 **nginx 1.15.11**
+  （⚠️ 新的 nginx 实验优先 `docker run --rm -p <端口>:80 nginx:alpine`；phpstudy 那个实例只在需要与 phpstudy 其他服务联动时用）。
   不可用：`pip`、**无 `protoc`**、**无 `tcpdump` / `tshark`**、无 OpenResty / Lua / LuaJIT。
-  Windows 自带 `pktmon`（抓包）、`gitlab-ci-local`（`npx`，可本地跑 `.gitlab-ci.yml`）。
 - 收尾**别用 `taskkill //IM nginx.exe //F`**（会杀掉用户 phpstudy 的全部 nginx 实例）→
   用 `nginx.exe -p <prefix> -c <conf> -s stop` 或 `taskkill /PID <master>`。
 - 环境探测的结论要写进篇首引语：**哪些真跑、哪些没跑**，一眼可见。
@@ -264,6 +285,8 @@ python .workbuddy/tmp/audit_full.py   # 全量体检
 | 改了代码块 | 回看它下面的**提示语 / 注释**是否还指向旧标识符 |
 | 拆分 / 重排后 | **块内交叉引用会失效**、`---` 分隔线会丢、拼接处会出现连续空行 → 三件都要查 |
 | 引用路径层级 | 新写段落按**当前目录深度**算，别沿用脑子里的旧层级（已踩多次） |
+| 容器挂载 | Git Bash 下 `-v D:/...` 会被改写成 `/d/...` → **必须加 `MSYS_NO_PATHCONV=1`** |
+| 容器内 JDK | `eclipse-temurin:*-jdk` 不含 `src.zip`、也没有 `unzip` → 挂宿主机源码 + 用自带 `jar xf` 提取 |
 | 校验口径写了 | 不等于跑透了 —— 曾出现"校验口径声称一致、实际中序写反"的案例 |
 
 ## 与用户协作的偏好
