@@ -379,3 +379,4 @@ sudo tcpdump -i eth0 -nn -c 20 'port 67 or port 68' -vv
 - [DNS解析.md](DNS解析.md) — 同为网络配置类问题的对照（TTL 与缓存）
 - [Raft协议.md](../../04-架构与系统/分布式/理论/Raft协议.md) — etcd 租约（Lease）、Election 与 KeepAlive
 - [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 四个网络参数从哪来，以及 DHCP 为何必须广播
+> 反向引用（本篇被下列文档引到）：[06-DHCP与NTP.md](../linux/鸟哥服务器架设篇/06-DHCP与NTP.md)
