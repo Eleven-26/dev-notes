@@ -554,7 +554,7 @@ Kafka 只保证 At Least Once，以下场景必然重复：消费者处理完但
 - [消息队列选型.md](消息队列选型.md) — 五款 MQ 的横向对比与决策
 - [Pulsar.md](Pulsar.md) — 存算分离的对照路线：把「分区 Leader + ISR 复制」换成「无状态 Broker + BookKeeper quorum」
 - [RocketMQ.md](RocketMQ.md) — 存储与可靠性设计的另一种路线
-- [日志与落盘.md](../../数据存储/关系型/MySQL/日志与落盘.md) — 顺序追加与页缓存
+- [日志与持久化.md](../../数据存储/关系型/MySQL/日志与持久化.md) — 顺序追加与页缓存
 - [一致性与CAP.md](../../../04-架构与系统/分布式/理论/一致性与CAP.md) — ISR 与多数派确认的区别
 
-> 反向引用（本篇被下列文档引到）：[零拷贝.md](../../../01-编程语言/go/运行时/零拷贝.md)、[栈与队列.md](../../../02-计算机基础/数据结构/线性结构/栈与队列.md)、[霍夫曼编码.md](../../../02-计算机基础/算法/贪心/霍夫曼编码.md)、[ActiveMQ.md](ActiveMQ.md)、[Nats.md](Nats.md)、[RabbitMQ.md](RabbitMQ.md)、[发布订阅.md](../../数据存储/NoSQL/Redis/发布订阅.md)、[ElasticSearch.md](../../数据存储/搜索与分析/Elasticsearch/ElasticSearch.md)、[ElasticSearch客户端.md](../../数据存储/搜索与分析/Elasticsearch/ElasticSearch客户端.md)、[ElasticSearch应用与DSL.md](../../数据存储/搜索与分析/Elasticsearch/ElasticSearch应用与DSL.md)、[支付系统设计.md](../../../04-架构与系统/系统设计/秒杀系统/支付系统设计.md)、[观察者模式.md](../../../05-设计模式/行为型/观察者模式.md)
+> 反向引用（本篇被下列文档引到）：[零拷贝.md](../../../01-编程语言/go/运行时/零拷贝.md)、[栈与队列.md](../../../02-计算机基础/数据结构/线性结构/栈与队列.md)、[霍夫曼编码.md](../../../02-计算机基础/算法/贪心/霍夫曼编码.md)、[ActiveMQ.md](ActiveMQ.md)、[Nats.md](Nats.md)、[RabbitMQ.md](RabbitMQ.md)、[发布订阅.md](../../数据存储/NoSQL/Redis/发布订阅.md)、[写入流程.md](../../数据存储/搜索与分析/Elasticsearch/写入流程.md)、[客户端.md](../../数据存储/搜索与分析/Elasticsearch/客户端.md)、[搜索流程与DSL.md](../../数据存储/搜索与分析/Elasticsearch/搜索流程与DSL.md)、[支付系统设计.md](../../../04-架构与系统/系统设计/秒杀系统/支付系统设计.md)、[观察者模式.md](../../../05-设计模式/行为型/观察者模式.md)
