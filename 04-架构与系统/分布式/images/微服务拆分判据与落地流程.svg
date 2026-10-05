@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">拆分流程：三条判据 → 一句话验收 → 每服务一库 → 落地四步</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">「按什么粒度拆」没有标准答案，但必须说清判据、拆错的后果，以及数据边界的硬要求</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="226" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 三条判据（优先级从高到低）</text>
+
+    <rect x="20" y="40" width="290" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="34" y="60" font-size="12" font-weight="bold" fill="#1e40af">① 业务能力 / 子域</text>
+    <text x="34" y="80" font-size="10.5" fill="#1e40af">按「业务上能独立完成一件事」切</text>
+    <text x="34" y="98" font-size="10.5" fill="#1e40af">例：订单、支付、库存、用户</text>
+
+    <rect x="335" y="40" width="290" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="349" y="60" font-size="12" font-weight="bold" fill="#1e40af">② DDD 限界上下文</text>
+    <text x="349" y="80" font-size="10.5" fill="#1e40af">同一个词在不同上下文含义不同就该是两个服务</text>
+    <text x="349" y="98" font-size="10.5" fill="#1e40af">交易里是「可售 SKU」，仓储里是「库存单元」</text>
+
+    <rect x="650" y="40" width="290" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="664" y="60" font-size="12" font-weight="bold" fill="#1e40af">③ 康威定律（组织）</text>
+    <text x="664" y="80" font-size="10.5" fill="#1e40af">系统结构趋同于组织沟通结构</text>
+    <text x="664" y="98" font-size="10.5" fill="#1e40af">两个团队共同维护一个服务，等于没拆</text>
+
+    <line x1="312" y1="76" x2="332" y2="76" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="627" y1="76" x2="647" y2="76" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="124" width="600" height="80" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="34" y="146" font-size="12" font-weight="bold" fill="#14532d">验收判据（拆完必须能回答）</text>
+    <text x="34" y="168" font-size="10.5" fill="#14532d">能不能只发布一个服务而让其他服务照常工作？不能，就不是微服务，只是分布式单体</text>
+    <text x="34" y="188" font-size="10.5" fill="#14532d">一个需求的改动是否只落在一个服务；组织上是否有一个团队能独立负责它</text>
+
+    <rect x="640" y="124" width="300" height="80" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="654" y="146" font-size="12" font-weight="bold" fill="#991b1b">⚠️ 典型错拆：按技术分层</text>
+    <text x="654" y="168" font-size="10.5" fill="#991b1b">所有 DAO 抽成一个服务、所有 controller 抽成一个</text>
+    <text x="654" y="188" font-size="10.5" fill="#991b1b">任何业务改动都要跨全部服务发版，比单体还难</text>
+  </g>
+
+  <g transform="translate(20,316)">
+    <rect x="0" y="0" width="470" height="240" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. database per service 的三个「不能」</text>
+
+    <rect x="16" y="40" width="438" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="30" y="64" font-size="10.5" fill="#92400e">不能跨服务 JOIN → 需要的数据要么冗余，要么由调用方组合</text>
+    <rect x="16" y="86" width="438" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="30" y="110" font-size="10.5" fill="#92400e">不能用本地事务保证跨服务一致 → 改用 Saga / TCC / 本地消息表</text>
+    <rect x="16" y="132" width="438" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="30" y="156" font-size="10.5" fill="#92400e">不能让两个服务写同一张表 → 否则「边界」只是画在代码里</text>
+
+    <text x="16" y="196" font-size="10.5" fill="#334155">硬要求：每个服务独占自己的数据存储，其他服务只能通过 API 访问</text>
+    <text x="16" y="216" font-size="10.5" fill="#334155">跨服务一致性的方案对比见 理论/分布式事务.md 第三节</text>
+  </g>
+
+  <g transform="translate(510,316)">
+    <rect x="0" y="0" width="470" height="240" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 现实里怎么落地（四个阶段）</text>
+
+    <rect x="16" y="40" width="438" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="30" y="56" font-size="11" font-weight="bold" fill="#1e40af">拆分前</text>
+    <text x="30" y="72" font-size="10.5" fill="#1e40af">先把单体内部模块边界理清：包结构 + 只通过接口调用</text>
+
+    <rect x="16" y="88" width="438" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="30" y="104" font-size="11" font-weight="bold" fill="#1e40af">拆分中：绞杀者模式</text>
+    <text x="30" y="120" font-size="10.5" fill="#1e40af">新功能写新服务，老功能逐步从单体剥出，两套并存、网关分流</text>
+
+    <rect x="16" y="136" width="438" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="30" y="152" font-size="11" font-weight="bold" fill="#1e40af">数据拆分（最痛的一步）</text>
+    <text x="30" y="168" font-size="10.5" fill="#1e40af">先垂直拆表（按服务归属分组），再考虑水平分片</text>
+
+    <rect x="16" y="184" width="438" height="40" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="30" y="200" font-size="11" font-weight="bold" fill="#334155">共享的东西</text>
+    <text x="30" y="216" font-size="10.5" fill="#334155">配置进配置中心；公共逻辑做成「库」（编译期）而非「服务」（运行期）</text>
+  </g>
+</svg>

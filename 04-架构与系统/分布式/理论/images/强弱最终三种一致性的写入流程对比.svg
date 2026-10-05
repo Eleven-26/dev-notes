@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">强一致 / 弱一致 / 最终一致：三条写入路径的流程对比</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">同一步「写」，三种做法的差别在于：什么时候把「写成功」返回给客户端</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="300" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="150" y="26" font-size="14" font-weight="bold" fill="#0f172a" text-anchor="middle">强一致性（以 etcd 为例）</text>
+    <text x="150" y="46" font-size="10.5" fill="#64748b" text-anchor="middle">写要等多数派确认</text>
+
+    <rect x="25" y="58" width="250" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="150" y="73" font-size="10.5" fill="#1e40af" text-anchor="middle">① 客户端写请求 → Leader 节点</text>
+    <text x="150" y="89" font-size="10.5" fill="#1e40af" text-anchor="middle">（写必须过 Leader）</text>
+    <line x1="150" y1="96" x2="150" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="108" width="250" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="150" y="131" font-size="10.5" fill="#1e40af" text-anchor="middle">② Leader 同步数据给所有 Follower</text>
+    <line x1="150" y1="146" x2="150" y2="158" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="158" width="250" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="150" y="181" font-size="10.5" fill="#92400e" text-anchor="middle">③ 半数以上节点同步成功了吗？</text>
+    <line x1="150" y1="196" x2="150" y2="208" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="208" width="250" height="38" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="150" y="223" font-size="10.5" fill="#14532d" text-anchor="middle">✅ 才认为「写成功」→ 返回客户端</text>
+    <text x="150" y="239" font-size="10.5" fill="#991b1b" text-anchor="middle">❌ 未过半：不返回成功（牺牲 A）</text>
+
+    <rect x="25" y="258" width="250" height="62" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="150" y="276" font-size="10.5" fill="#334155" text-anchor="middle">代价：写速度明显变慢</text>
+    <text x="150" y="296" font-size="10.5" fill="#334155" text-anchor="middle">结果：无论打到哪个节点</text>
+    <text x="150" y="316" font-size="10.5" fill="#334155" text-anchor="middle">要么都有，要么都没有</text>
+  </g>
+
+  <g transform="translate(340,74)">
+    <rect x="0" y="0" width="300" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="150" y="26" font-size="14" font-weight="bold" fill="#0f172a" text-anchor="middle">弱一致性（Redis Cluster）</text>
+    <text x="150" y="46" font-size="10.5" fill="#64748b" text-anchor="middle">先返回，后台再同步</text>
+
+    <rect x="25" y="58" width="250" height="38" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="150" y="73" font-size="10.5" fill="#14532d" text-anchor="middle">① 客户端写请求 → 主节点</text>
+    <text x="150" y="89" font-size="10.5" fill="#14532d" text-anchor="middle">（不是单实例 + 高可用那种）</text>
+    <line x1="150" y1="96" x2="150" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="108" width="250" height="38" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="150" y="131" font-size="10.5" fill="#14532d" text-anchor="middle">② 主节点写入成功 → 立即返回客户端</text>
+    <line x1="150" y1="146" x2="150" y2="158" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="158" width="250" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="150" y="173" font-size="10.5" fill="#1e40af" text-anchor="middle">③ 后台异步进程再同步</text>
+    <text x="150" y="189" font-size="10.5" fill="#1e40af" text-anchor="middle">到其他节点</text>
+    <line x1="150" y1="196" x2="150" y2="208" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="208" width="250" height="38" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2" rx="6"/>
+    <text x="150" y="223" font-size="10.5" fill="#991b1b" text-anchor="middle">⚠️ 窗口：写成功但还没同步完</text>
+    <text x="150" y="239" font-size="10.5" fill="#991b1b" text-anchor="middle">同时打到不同节点 ⇒ 结果不一样</text>
+
+    <rect x="25" y="258" width="250" height="62" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="150" y="276" font-size="10.5" fill="#334155" text-anchor="middle">收益：可用性 + 低延迟</text>
+    <text x="150" y="296" font-size="10.5" fill="#334155" text-anchor="middle">特征：有的节点已是最新值</text>
+    <text x="150" y="316" font-size="10.5" fill="#334155" text-anchor="middle">有的还没有</text>
+  </g>
+
+  <g transform="translate(660,74)">
+    <rect x="0" y="0" width="320" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="160" y="26" font-size="14" font-weight="bold" fill="#0f172a" text-anchor="middle">最终一致性（消息队列）</text>
+    <text x="160" y="46" font-size="10.5" fill="#64748b" text-anchor="middle">排队、串行消费后收敛</text>
+
+    <rect x="25" y="58" width="270" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="160" y="73" font-size="10.5" fill="#1e40af" text-anchor="middle">① 请求持续过来时先构建队列</text>
+    <text x="160" y="89" font-size="10.5" fill="#1e40af" text-anchor="middle">把请求放进队列</text>
+    <line x1="160" y1="96" x2="160" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="108" width="270" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="160" y="131" font-size="10.5" fill="#1e40af" text-anchor="middle">② 由专门的进程消费消息</text>
+    <line x1="160" y1="146" x2="160" y2="158" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="158" width="270" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="160" y="181" font-size="10.5" fill="#1e40af" text-anchor="middle">③ 按顺序逐个写入数据库</text>
+    <line x1="160" y1="196" x2="160" y2="208" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="25" y="208" width="270" height="38" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="160" y="223" font-size="10.5" fill="#14532d" text-anchor="middle">④ 后续请求停止、消息全部消费完</text>
+    <text x="160" y="239" font-size="10.5" fill="#14532d" text-anchor="middle">⇒ 数据最终达成一致</text>
+
+    <rect x="25" y="258" width="270" height="62" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="160" y="276" font-size="10.5" fill="#334155" text-anchor="middle">背景：跨实例的分布式事务</text>
+    <text x="160" y="296" font-size="10.5" fill="#334155" text-anchor="middle">复杂度高、性能慢</text>
+    <text x="160" y="316" font-size="10.5" fill="#334155" text-anchor="middle">典型载体：Kafka 这类消息队列</text>
+  </g>
+
+  <g transform="translate(20,420)">
+    <rect x="0" y="0" width="960" height="140" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">这一步在挡什么</text>
+    <text x="40" y="54" font-size="12" fill="#334155">判据：拿到「写成功」那一刻，数据已经在几台节点落了盘 —— 强一致要多数派已同步，弱一致只在主节点</text>
+    <text x="40" y="80" font-size="12" fill="#334155">「半数以上同步成功就返回」指已提交（多数派落盘），不代表已应用到某个特定节点 —— 所以 etcd 的 linearizable 读还要额外一轮确认</text>
+    <text x="40" y="106" font-size="12" fill="#b45309">最终一致性在分布式一致性里用得相对少，通常出现在数据库或消息队列场景（见 1.3 节）</text>
+  </g>
+</svg>

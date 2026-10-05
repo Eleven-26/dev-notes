@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">同一个 key 的两种读法：往返时序对比</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">强一致 vs 弱一致不只是「选哪个数据库」，在 etcd 里就是这一行传不传 option</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="235" y="26" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">linearizable 读（etcd 默认）</text>
+    <text x="235" y="46" font-size="10.5" fill="#64748b" text-anchor="middle">读之前先确认「我的数据不过期」（ReadIndex）</text>
+
+    <rect x="25" y="58" width="130" height="26" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="90" y="76" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">客户端</text>
+    <rect x="160" y="58" width="150" height="26" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="235" y="76" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">任一节点（打到谁读谁）</text>
+    <rect x="325" y="58" width="120" height="26" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="385" y="76" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">Leader + 多数派</text>
+
+    <line x1="90" y1="84" x2="90" y2="226" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="235" y1="84" x2="235" y2="226" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="385" y1="84" x2="385" y2="226" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="162" y="108" font-size="10.5" fill="#334155" text-anchor="middle">① Get(key)</text>
+    <line x1="90" y1="116" x2="227" y2="116" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="310" y="142" font-size="10.5" fill="#92400e" text-anchor="middle">② ReadIndex：一轮多数派确认</text>
+    <line x1="235" y1="150" x2="377" y2="150" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="310" y="176" font-size="10.5" fill="#334155" text-anchor="middle">③ 已提交的 index</text>
+    <line x1="385" y1="184" x2="243" y2="184" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="162" y="210" font-size="10.5" fill="#14532d" text-anchor="middle">④ 最新值 + Revision</text>
+    <line x1="235" y1="218" x2="98" y2="218" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <text x="235" y="246" font-size="10.5" fill="#b45309" text-anchor="middle">★ 慢：多一轮 quorum 往返</text>
+    <text x="235" y="268" font-size="10.5" fill="#334155" text-anchor="middle">★ 保证读到的不是过期数据</text>
+    <text x="235" y="290" font-size="10.5" fill="#334155" text-anchor="middle">★ 压力仍以 Leader 为主 —— 没有真正的读写分离</text>
+    <text x="235" y="312" font-size="10.5" fill="#991b1b" text-anchor="middle">★ 拿不到多数派 ⇒ 连读都读不出来（CP 牺牲 A 的实物）</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="230" y="26" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">serializable 读：本地读</text>
+    <text x="230" y="46" font-size="10.5" fill="#64748b" text-anchor="middle">要显式开 WithSerializable()</text>
+
+    <rect x="20" y="58" width="120" height="26" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="80" y="76" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">客户端</text>
+    <rect x="165" y="58" width="150" height="26" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="240" y="76" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">Follower（本地读）</text>
+    <rect x="325" y="58" width="120" height="26" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2" rx="6"/>
+    <text x="385" y="76" font-size="11" font-weight="bold" fill="#64748b" text-anchor="middle">Leader（被绕过）</text>
+
+    <line x1="80" y1="84" x2="80" y2="226" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="240" y1="84" x2="240" y2="226" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="385" y1="84" x2="385" y2="126" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="160" y="108" font-size="10.5" fill="#334155" text-anchor="middle">① Get(key, WithSerializable())</text>
+    <line x1="80" y1="116" x2="232" y2="116" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="385" y="112" font-size="10.5" fill="#991b1b" text-anchor="middle">✗ 全程不参与</text>
+
+    <rect x="165" y="130" width="150" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="240" y="145" font-size="10.5" fill="#92400e" text-anchor="middle">② 直接读本地状态机</text>
+    <text x="240" y="161" font-size="10.5" fill="#92400e" text-anchor="middle">不占 quorum</text>
+
+    <text x="160" y="190" font-size="10.5" fill="#92400e" text-anchor="middle">③ 值 + Revision（可能是旧值）</text>
+    <line x1="240" y1="198" x2="88" y2="198" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="230" y="246" font-size="10.5" fill="#334155" text-anchor="middle">★ 读压力真正落到 Follower</text>
+    <text x="230" y="268" font-size="10.5" fill="#334155" text-anchor="middle">★ 这才是 etcd 上可选的「读写分离」</text>
+    <text x="230" y="290" font-size="10.5" fill="#991b1b" text-anchor="middle">★ 代价：可能读到旧值</text>
+    <text x="230" y="312" font-size="10.5" fill="#b45309" text-anchor="middle">★ 把 Revision 一路传下去，「读到旧数据」才可观测</text>
+  </g>
+
+  <g transform="translate(20,430)">
+    <rect x="0" y="0" width="960" height="150" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">用法上的三条判断 + 一个观测前提</text>
+    <text x="40" y="54" font-size="12" fill="#334155">抢锁、读配置后马上执行、「读己之写」→ linearizable：旧值会直接导致业务错误</text>
+    <text x="40" y="80" font-size="12" fill="#334155">高频只读的列表 / 状态页、能容忍几十毫秒陈旧 → serializable：省一轮 quorum 往返，Leader 压力显著下降</text>
+    <text x="40" y="106" font-size="12" fill="#334155">缓存回填、限流计数 → 都行，但要写明容忍度；拿不准就用默认，别为了性能偷偷改语义</text>
+    <text x="40" y="132" font-size="12" fill="#b45309">★ 选 C 还是选 A，不是「选哪个数据库」的问题，而是「这一行传不传 option」的问题</text>
+  </g>
+</svg>

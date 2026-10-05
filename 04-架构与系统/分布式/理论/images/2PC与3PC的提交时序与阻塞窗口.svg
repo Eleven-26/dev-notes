@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">2PC 与 3PC 的提交时序：阻塞发生在哪一段</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">XA / DTP 模型里的三个角色：AP 发起业务、TM 协调全局事务、RM 管理资源</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="235" y="24" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">2PC：Prepare + Commit/Rollback</text>
+    <text x="235" y="42" font-size="10.5" fill="#64748b" text-anchor="middle">RM 需支持 prepare / commit / rollback 能力</text>
+
+    <rect x="25" y="50" width="130" height="26" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="90" y="68" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">TM（协调者）</text>
+    <rect x="185" y="50" width="130" height="26" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="250" y="68" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">RM1（参与者）</text>
+    <rect x="335" y="50" width="130" height="26" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="400" y="68" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">RM2（参与者）</text>
+
+    <line x1="90" y1="76" x2="90" y2="270" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="250" y1="76" x2="250" y2="270" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="400" y1="76" x2="400" y2="270" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="170" y="96" font-size="10.5" fill="#334155" text-anchor="middle">① Prepare：执行业务、写恢复日志</text>
+    <line x1="90" y1="104" x2="242" y2="104" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="90" y1="116" x2="392" y2="116" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="195" y="126" width="110" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="250" y="146" font-size="10.5" fill="#92400e" text-anchor="middle">持锁、不提交</text>
+    <rect x="345" y="126" width="110" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="400" y="146" font-size="10.5" fill="#92400e" text-anchor="middle">持锁、不提交</text>
+
+    <text x="170" y="176" font-size="10.5" fill="#334155" text-anchor="middle">② 全部 Yes ⇒ 决议先持久化为 Commit</text>
+    <line x1="250" y1="184" x2="98" y2="184" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="400" y1="196" x2="98" y2="196" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="170" y="214" font-size="10.5" fill="#14532d" text-anchor="middle">③ 下发最终决议 ⇒ RM 提交并释放锁</text>
+    <line x1="90" y1="222" x2="242" y2="222" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="90" y1="234" x2="392" y2="234" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <text x="235" y="258" font-size="10.5" fill="#334155" text-anchor="middle">④ 未确认分支：TM 按日志持续恢复，RM 重启后按 XA 状态继续</text>
+
+    <text x="235" y="284" font-size="10.5" font-weight="bold" fill="#991b1b" text-anchor="middle">⚠️ 协调者单点：TM 故障 ⇒ 全局事务失去决策者</text>
+    <text x="235" y="306" font-size="10.5" font-weight="bold" fill="#991b1b" text-anchor="middle">⚠️ 同步阻塞：Prepare 后 RM 一直持连接与锁等决议</text>
+    <text x="235" y="328" font-size="10.5" font-weight="bold" fill="#991b1b" text-anchor="middle">⚠️ 数据不一致：部分 RM 已 Commit、其余因宕机未执行</text>
+    <text x="235" y="352" font-size="10.5" fill="#334155" text-anchor="middle">已提交分支无法普通回滚，只能靠恢复重试；极端永久故障需人工修复</text>
+    <text x="235" y="376" font-size="10.5" fill="#334155" text-anchor="middle">适用：参与者都支持 XA、事务很短、并发可控、不接受补偿语义</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="230" y="24" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">3PC：CanCommit / PreCommit / DoCommit</text>
+    <text x="230" y="42" font-size="10.5" fill="#64748b" text-anchor="middle">在 2PC 之前加一次预询问，参与者可基于超时继续</text>
+
+    <rect x="15" y="50" width="130" height="26" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="80" y="68" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">协调者</text>
+    <rect x="165" y="50" width="130" height="26" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="230" y="68" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">参与者 1</text>
+    <rect x="315" y="50" width="130" height="26" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="380" y="68" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">参与者 2</text>
+
+    <line x1="80" y1="76" x2="80" y2="215" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="230" y1="76" x2="230" y2="215" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="380" y1="76" x2="380" y2="215" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="155" y="96" font-size="10.5" fill="#334155" text-anchor="middle">① CanCommit：只问能否执行</text>
+    <line x1="80" y1="104" x2="222" y2="104" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="80" y1="116" x2="372" y2="116" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="155" y="140" font-size="10.5" fill="#334155" text-anchor="middle">② PreCommit：执行并预提交</text>
+    <line x1="80" y1="148" x2="222" y2="148" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="80" y1="160" x2="372" y2="160" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="155" y="184" font-size="10.5" fill="#14532d" text-anchor="middle">③ DoCommit：下发提交</text>
+    <line x1="80" y1="192" x2="222" y2="192" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="80" y1="204" x2="372" y2="204" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <text x="230" y="234" font-size="10.5" fill="#334155" text-anchor="middle">任一阶段失败 ⇒ 按协议中止；也可基于超时策略继续</text>
+    <text x="230" y="260" font-size="10.5" fill="#334155" text-anchor="middle">★ 优点：参与者不必无限等待，阻塞时间缩短</text>
+    <text x="230" y="282" font-size="10.5" fill="#334155" text-anchor="middle">★ 代价：多一次网络往返 + 更多状态</text>
+    <text x="230" y="308" font-size="10.5" font-weight="bold" fill="#991b1b" text-anchor="middle">⚠️ 分区时不同节点基于超时判断 ⇒ 仍可能不一致</text>
+    <text x="230" y="332" font-size="10.5" fill="#334155" text-anchor="middle">适用：更多用于理解提交协议的演进</text>
+    <text x="230" y="356" font-size="10.5" fill="#b45309" text-anchor="middle">通用业务系统很少直接采用；实践中选 XA / TCC / Saga</text>
+  </g>
+
+  <g transform="translate(20,490)">
+    <rect x="0" y="0" width="960" height="110" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">两图对照着记</text>
+    <text x="40" y="54" font-size="12" fill="#334155">2PC：Prepare 只「写日志 + 持锁」不提交；决议先持久化；未确认靠日志恢复 —— 所以是「强一致倾向」而不是绝对一致</text>
+    <text x="40" y="80" font-size="12" fill="#b45309">3PC：加了「先问一句」和「超时自己也能决策」，减少无限等待；但分区下的判断分叉让一致性更难保证（见 3.3 节）</text>
+  </g>
+</svg>

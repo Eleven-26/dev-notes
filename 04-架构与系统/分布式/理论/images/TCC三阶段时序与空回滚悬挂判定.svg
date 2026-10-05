@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">TCC 的三阶段时序与三个必处理问题</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">Try 预留资源、Confirm 消费预留、Cancel 释放预留 —— 后两者都必须最终成功</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="235" y="24" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">TCC：Try / Confirm / Cancel</text>
+    <text x="235" y="42" font-size="10.5" fill="#64748b" text-anchor="middle">控制粒度在业务层，不长期持有数据库锁</text>
+
+    <rect x="20" y="50" width="110" height="26" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="75" y="68" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">TM 协调者</text>
+    <rect x="150" y="50" width="140" height="26" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="220" y="68" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">账务服务（冻结余额）</text>
+    <rect x="310" y="50" width="140" height="26" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="380" y="68" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">库存服务（预占额度）</text>
+
+    <line x1="75" y1="76" x2="75" y2="250" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="220" y1="76" x2="220" y2="250" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="380" y1="76" x2="380" y2="250" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="147" y="96" font-size="10.5" fill="#334155" text-anchor="middle">① Try：校验 + 预留资源</text>
+    <line x1="75" y1="104" x2="212" y2="104" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="75" y1="116" x2="372" y2="116" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="165" y="128" width="110" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="220" y="148" font-size="10.5" fill="#92400e" text-anchor="middle">已冻结（预留）</text>
+    <rect x="325" y="128" width="110" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="380" y="148" font-size="10.5" fill="#92400e" text-anchor="middle">已预占（预留）</text>
+
+    <text x="147" y="178" font-size="10.5" fill="#14532d" text-anchor="middle">② 全部 Try 成功 ⇒ Confirm</text>
+    <line x1="75" y1="186" x2="212" y2="186" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="75" y1="198" x2="372" y2="198" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <text x="147" y="220" font-size="10.5" fill="#991b1b" text-anchor="middle">③ 任一 Try 失败 / 全局超时 ⇒ Cancel</text>
+    <line x1="75" y1="228" x2="212" y2="228" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <line x1="75" y1="240" x2="372" y2="240" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+
+    <text x="235" y="276" font-size="10.5" fill="#334155" text-anchor="middle">Confirm 原则上不再做业务校验，且必须最终成功</text>
+    <text x="235" y="298" font-size="10.5" fill="#334155" text-anchor="middle">Cancel 恢复到 Try 前状态，同样必须最终成功</text>
+    <text x="235" y="320" font-size="10.5" fill="#334155" text-anchor="middle">★ 可跨数据库、缓存和外部服务，并发能力通常优于 XA</text>
+    <text x="235" y="344" font-size="10.5" font-weight="bold" fill="#991b1b" text-anchor="middle">⚠️ 每个动作要实现三套逻辑 + 冻结字段 + 流水 + 状态机</text>
+    <text x="235" y="368" font-size="10.5" fill="#991b1b" text-anchor="middle">Confirm / Cancel 失败需要持续重试与运维介入</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="230" y="24" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">三个必处理问题</text>
+    <text x="230" y="42" font-size="10.5" fill="#64748b" text-anchor="middle">都源于同一件事：响应会丢、请求会迟到、调用会重复</text>
+
+    <rect x="20" y="56" width="195" height="34" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="117" y="78" font-size="10.5" fill="#334155" text-anchor="middle">Cancel 请求到达</text>
+    <line x1="117" y1="90" x2="117" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="20" y="100" width="195" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="117" y="122" font-size="10.5" fill="#92400e" text-anchor="middle">有没有 Try 记录？</text>
+    <line x1="117" y1="134" x2="117" y2="144" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <rect x="20" y="144" width="195" height="70" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+    <text x="34" y="164" font-size="10.5" font-weight="bold" fill="#991b1b">空回滚（无 Try 记录）</text>
+    <text x="34" y="182" font-size="10.5" fill="#991b1b">不操作业务资源，但原子</text>
+    <text x="34" y="200" font-size="10.5" fill="#991b1b">写入「已回滚」标记并返回成功</text>
+
+    <rect x="245" y="56" width="195" height="34" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="342" y="78" font-size="10.5" fill="#334155" text-anchor="middle">迟到的 Try 到达</text>
+    <line x1="342" y1="90" x2="342" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="245" y="100" width="195" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="342" y="122" font-size="10.5" fill="#92400e" text-anchor="middle">栅栏有「已回滚」标记吗？</text>
+    <line x1="342" y1="134" x2="342" y2="144" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <rect x="245" y="144" width="195" height="70" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+    <text x="259" y="164" font-size="10.5" font-weight="bold" fill="#991b1b">悬挂：立即拒绝执行</text>
+    <text x="259" y="182" font-size="10.5" fill="#991b1b">否则迟到 Try 会再次冻结</text>
+    <text x="259" y="200" font-size="10.5" fill="#991b1b">栅栏检查与预留须同事务</text>
+
+    <rect x="20" y="228" width="420" height="64" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+    <text x="34" y="248" font-size="10.5" font-weight="bold" fill="#1e40af">幂等：Confirm / Cancel 响应丢失 ⇒ 协调者重复调用</text>
+    <text x="34" y="266" font-size="10.5" fill="#1e40af">解法：以 xid + branch_id + action 建唯一约束（事务栅栏）</text>
+    <text x="34" y="284" font-size="10.5" fill="#1e40af">已成功过，再次调用仍返回成功</text>
+
+    <rect x="20" y="306" width="420" height="54" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="8"/>
+    <text x="34" y="326" font-size="10.5" fill="#92400e">空回滚解决「没有 Try 却收到 Cancel」；</text>
+    <text x="34" y="344" font-size="10.5" fill="#92400e">悬挂解决「Cancel 之后又来了迟到的 Try」</text>
+    <text x="230" y="380" font-size="10.5" font-weight="bold" fill="#b45309" text-anchor="middle">都不能只靠内存标志：必须持久化，并与业务更新同事务提交</text>
+  </g>
+
+  <g transform="translate(20,490)">
+    <rect x="0" y="0" width="960" height="130" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">这一步在挡什么</text>
+    <text x="40" y="54" font-size="12" fill="#334155">TCC 的本质：把「数据库回滚」换成「业务反向操作」—— 所以它是一致性上的「业务层强一致倾向，最终完成 Confirm / Cancel」</text>
+    <text x="40" y="80" font-size="12" fill="#334155">三个问题按出现顺序记：先幂等（重复调用）、再空回滚（没有 Try 却来 Cancel）、最后悬挂（Cancel 之后迟到 Try）</text>
+    <text x="40" y="106" font-size="12" fill="#b45309">适用：高并发、短事务、资源可预留且一致性要求高的核心链路 —— 资金冻结、库存预占、优惠额度锁定</text>
+  </g>
+</svg>

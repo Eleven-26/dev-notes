@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">雪花算法的 64 位形态：位段布局与取值范围</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">纯内存位运算、不依赖任何中间件 —— 唯一性靠 (timestamp, workerId, sequence) 三元组</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="170" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="480" y="24" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">标准 Snowflake 的位段布局（矩形宽度按位数等比）</text>
+    <text x="480" y="42" font-size="10.5" fill="#64748b" text-anchor="middle">从左到右累计位数：1 + 41 + 10 + 12 = 64（高位在左）</text>
+
+    <text x="40" y="58" font-size="10" fill="#64748b" text-anchor="middle">0</text>
+    <text x="64" y="58" font-size="10" fill="#64748b" text-anchor="middle">1</text>
+    <text x="604" y="58" font-size="10" fill="#64748b" text-anchor="middle">42</text>
+    <text x="748" y="58" font-size="10" fill="#64748b" text-anchor="middle">52</text>
+    <text x="921" y="58" font-size="10" fill="#64748b" text-anchor="middle">64</text>
+
+    <rect x="40" y="64" width="24" height="50" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="52" y="93" font-size="11" fill="#334155" text-anchor="middle">0</text>
+    <rect x="64" y="64" width="540" height="50" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="334" y="84" font-size="11" fill="#1e40af" text-anchor="middle">41 bit 时间戳（ms）</text>
+    <text x="334" y="102" font-size="11" fill="#1e40af" text-anchor="middle">存相对值：now - epoch</text>
+    <rect x="604" y="64" width="144" height="50" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="676" y="84" font-size="11" fill="#14532d" text-anchor="middle">10 bit</text>
+    <text x="676" y="102" font-size="11" fill="#14532d" text-anchor="middle">workerId</text>
+    <rect x="748" y="64" width="173" height="50" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="834" y="84" font-size="11" fill="#92400e" text-anchor="middle">12 bit 序列号</text>
+    <text x="834" y="102" font-size="11" fill="#92400e" text-anchor="middle">同一毫秒内自增</text>
+
+    <text x="52" y="132" font-size="10.5" fill="#64748b" text-anchor="middle">符号位</text>
+    <text x="334" y="132" font-size="10.5" fill="#1e40af" text-anchor="middle">2^41 ms ≈ 69.7 年</text>
+    <text x="676" y="132" font-size="10.5" fill="#14532d" text-anchor="middle">2^10 = 1024 个节点</text>
+    <text x="834" y="132" font-size="10.5" fill="#92400e" text-anchor="middle">2^12 = 4096 个 / ms</text>
+
+    <text x="480" y="154" font-size="11" fill="#334155" text-anchor="middle">符号位恒为 0 ⇒ ID 一定是正数（Java long / Go int64 不溢出）；高位是时间 ⇒ 趋势递增，对 B+ 树友好</text>
+  </g>
+
+  <g transform="translate(20,260)">
+    <rect x="0" y="0" width="470" height="180" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="235" y="26" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">三条关键推论</text>
+    <text x="30" y="52" font-size="12" fill="#334155">单节点理论 QPS = 4096 × 1000 = 409.6 万/s</text>
+    <text x="30" y="78" font-size="12" fill="#334155">全局是趋势递增、非严格单调：</text>
+    <text x="30" y="104" font-size="12" fill="#334155">同一毫秒内由 workerId 定序</text>
+    <text x="30" y="130" font-size="12" fill="#334155">41 位会用完：以 2024 起算可用到 2093 年</text>
+    <text x="30" y="156" font-size="12" fill="#b45309">沿用 Twitter 起点（2010）则 2028 年前后要扩位</text>
+  </g>
+
+  <g transform="translate(520,260)">
+    <rect x="0" y="0" width="460" height="180" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="230" y="26" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">位分配不是死的：四种扩展做法</text>
+    <text x="30" y="52" font-size="12" fill="#334155">workerId 拆成 5 + 5：32 机房 × 32 节点</text>
+    <text x="30" y="78" font-size="12" fill="#334155">改成 8 + 14：256 节点 × 16384 个/ms</text>
+    <text x="30" y="104" font-size="12" fill="#334155">不够先加节点（1024 个）比改位分配安全</text>
+    <text x="30" y="130" font-size="12" fill="#334155">再换实现：sonyflake / UidGenerator</text>
+    <text x="30" y="156" font-size="12" fill="#334155">最后才是预生成：RingBuffer 约 600 万/s</text>
+  </g>
+</svg>

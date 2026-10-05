@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">时钟回拨的判定流程与分布式 ID 选型决策</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">左：雪花唯一的软肋「回拨」怎么处理；右：拿到需求后按什么顺序排除方案</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="420" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="235" y="26" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">发号前：时钟回拨怎么判</text>
+    <text x="235" y="46" font-size="10.5" fill="#64748b" text-anchor="middle">口诀：小回拨等一等，大回拨直接报错，别硬着头皮发号</text>
+
+    <rect x="85" y="58" width="300" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="235" y="80" font-size="10.5" fill="#1e40af" text-anchor="middle">① 取 now，与 lastTimestamp 比较</text>
+    <line x1="235" y1="94" x2="235" y2="106" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="85" y="106" width="300" height="36" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="235" y="128" font-size="10.5" fill="#92400e" text-anchor="middle">② now 小于 lastTimestamp 吗？（时钟回拨了）</text>
+    <line x1="235" y1="142" x2="235" y2="154" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="85" y="154" width="300" height="36" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="235" y="176" font-size="10.5" fill="#334155" text-anchor="middle">③ 回拨幅度 = lastTimestamp - now，与阈值比</text>
+
+    <polyline points="235,190 235,200 127,200 127,206" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <polyline points="235,190 235,200 342,200 342,206" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="206" width="215" height="76" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+    <text x="36" y="228" font-size="10.5" font-weight="bold" fill="#14532d">回拨 ≤ 阈值（如 100ms）</text>
+    <text x="36" y="248" font-size="10.5" fill="#14532d">sleep 等时钟追平再发号</text>
+    <text x="36" y="268" font-size="10.5" fill="#14532d">★ 首选：简单可靠、业务几乎无感</text>
+
+    <rect x="255" y="206" width="195" height="76" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+    <text x="271" y="228" font-size="10.5" font-weight="bold" fill="#991b1b">回拨 &gt; 阈值</text>
+    <text x="271" y="248" font-size="10.5" fill="#991b1b">抛异常 / 返回错误</text>
+    <text x="271" y="268" font-size="10.5" fill="#991b1b">宁可这次写入失败 + 告警</text>
+
+    <text x="20" y="306" font-size="11" fill="#334155">备用时钟：用单调时钟（nanoTime / time.Since）推算增量</text>
+    <text x="20" y="328" font-size="11" fill="#334155">扩展位：回拨时把 workerId 换成预留号段（如 +512）</text>
+    <text x="20" y="350" font-size="11" fill="#334155">历史上报：lastTimestamp 落盘，启动时发现更小的时间戳就拒绝</text>
+    <text x="20" y="376" font-size="11" font-weight="bold" fill="#991b1b">⚠️ workerId 重复 = 必然撞号，且撞号后无补救机制</text>
+    <text x="20" y="398" font-size="11" fill="#64748b">数据已写入 —— 这是雪花最容易踩的事故</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="420" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="230" y="26" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">选型：从上往下逐条问</text>
+    <text x="230" y="46" font-size="10.5" fill="#64748b" text-anchor="middle">命中哪一行就用哪一行的结论（见第四节决策清单）</text>
+
+    <rect x="20" y="58" width="200" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="120" y="82" font-size="10.5" fill="#1e40af" text-anchor="middle">① 允许完全无序？</text>
+    <rect x="230" y="58" width="210" height="40" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="240" y="74" font-size="10.5" fill="#334155">UUID 作对外标识；</text>
+    <text x="240" y="90" font-size="10.5" fill="#334155">主键可用 UUIDv7（时间有序）</text>
+    <line x1="120" y1="98" x2="120" y2="108" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="108" width="200" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="120" y="132" font-size="10.5" fill="#1e40af" text-anchor="middle">② 要数字、不想管时钟？</text>
+    <rect x="230" y="108" width="210" height="40" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="240" y="124" font-size="10.5" fill="#334155">号段模式（DB + 双 buffer）</text>
+    <text x="240" y="140" font-size="10.5" fill="#334155">或直接用 Tinyid</text>
+    <line x1="120" y1="148" x2="120" y2="158" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="158" width="200" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="120" y="182" font-size="10.5" fill="#14532d" text-anchor="middle">③ 大规模、要趋势递增？</text>
+    <rect x="230" y="158" width="210" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="240" y="182" font-size="10.5" font-weight="bold" fill="#14532d">⭐ 雪花 / Leaf-snowflake</text>
+    <line x1="120" y1="198" x2="120" y2="208" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="208" width="200" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="120" y="232" font-size="10.5" fill="#1e40af" text-anchor="middle">④ 已有 Redis 且量不大？</text>
+    <rect x="230" y="208" width="210" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="240" y="224" font-size="10.5" fill="#92400e">INCRBY 批量取号</text>
+    <text x="240" y="240" font-size="10.5" fill="#92400e">（务必配好 AOF，否则会重号）</text>
+    <line x1="120" y1="248" x2="120" y2="258" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="258" width="200" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="120" y="282" font-size="10.5" fill="#1e40af" text-anchor="middle">⑤ 想要现成的服务？</text>
+    <rect x="230" y="258" width="210" height="40" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+    <text x="240" y="282" font-size="10.5" fill="#334155">Leaf / Tinyid / UidGenerator</text>
+
+    <text x="20" y="320" font-size="11" font-weight="bold" fill="#b45309">口诀：要数字 + 趋势递增 + 高吞吐 → 雪花</text>
+    <text x="20" y="344" font-size="11" fill="#334155">不想管时钟和 workerId → 号段</text>
+    <text x="20" y="368" font-size="11" fill="#334155">不在意顺序 → UUID（对外标识，对内有 BIGINT 主键）</text>
+    <text x="20" y="396" font-size="11" fill="#991b1b">⚠️ UUID 做聚簇主键 ⇒ 页分裂 + 二级索引膨胀（16 字节）</text>
+  </g>
+</svg>

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 630" width="1000" height="630" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="630" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">CAP 三角形与 CP / AP 两条路线</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">P（分区容错）是分布式系统的前提 ⇒ 真正的取舍只发生在 C 与 A 之间</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="235" y="28" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">CAP：P 必选，C 与 A 二选一</text>
+    <text x="235" y="50" font-size="10.5" fill="#64748b" text-anchor="middle">分区期间保哪一个 —— 这就是 etcd 与 Redis Cluster 的分工</text>
+
+    <line x1="215" y1="98" x2="112" y2="288" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="255" y1="98" x2="358" y2="288" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="150" y1="302" x2="320" y2="302" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <rect x="185" y="70" width="100" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+    <text x="235" y="89" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">C 一致性</text>
+    <rect x="40" y="288" width="110" height="28" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="95" y="307" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">A 可用性</text>
+    <rect x="320" y="288" width="110" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+    <text x="375" y="307" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">P 分区容错</text>
+
+    <text x="400" y="170" font-size="10.5" fill="#1e40af" text-anchor="middle">CP：etcd</text>
+    <text x="400" y="190" font-size="10.5" fill="#1e40af" text-anchor="middle">分区期间拒绝写</text>
+
+    <text x="235" y="275" font-size="10.5" fill="#14532d" text-anchor="middle">AP：Redis Cluster</text>
+    <text x="235" y="340" font-size="10.5" fill="#14532d" text-anchor="middle">分区期间继续读写，可能读到旧值</text>
+
+    <text x="75" y="170" font-size="10.5" fill="#b45309" text-anchor="middle">网络分区 ≠ 进程崩溃</text>
+    <text x="75" y="190" font-size="10.5" fill="#b45309" text-anchor="middle">P 指消息丢失或延迟</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="230" y="28" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">两条路线的实际表现</text>
+    <text x="230" y="50" font-size="10.5" fill="#64748b" text-anchor="middle">同一份数据，两种取舍</text>
+
+    <rect x="20" y="70" width="200" height="280" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="10"/>
+    <text x="36" y="98" font-size="13" font-weight="bold" fill="#1e40af">etcd —— C + P</text>
+    <text x="36" y="124" font-size="10.5" fill="#64748b">牺牲的是 A</text>
+    <text x="36" y="144" font-size="11" fill="#1e40af">拿不到多数派就拒绝写</text>
+    <text x="36" y="172" font-size="10.5" fill="#64748b">一致性表现</text>
+    <text x="36" y="192" font-size="11" fill="#1e40af">所有节点结果相同：</text>
+    <text x="36" y="210" font-size="11" fill="#1e40af">要么都有，要么都没有</text>
+    <text x="36" y="238" font-size="10.5" fill="#64748b">数据分布</text>
+    <text x="36" y="258" font-size="11" fill="#1e40af">每个节点都保存完整数据</text>
+    <text x="36" y="276" font-size="11" fill="#1e40af">（全量复制）</text>
+    <text x="36" y="294" font-size="11" fill="#1e40af">一致性依赖全量同步</text>
+    <text x="36" y="322" font-size="11" font-weight="bold" fill="#92400e">代价：写速度明显变慢</text>
+
+    <rect x="240" y="70" width="200" height="280" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="10"/>
+    <text x="256" y="98" font-size="13" font-weight="bold" fill="#14532d">Redis Cluster —— A + P</text>
+    <text x="256" y="124" font-size="10.5" fill="#64748b">牺牲的是 C</text>
+    <text x="256" y="144" font-size="11" fill="#14532d">任一节点可写可读</text>
+    <text x="256" y="172" font-size="10.5" fill="#64748b">一致性表现</text>
+    <text x="256" y="192" font-size="11" fill="#14532d">同步窗口内不同节点</text>
+    <text x="256" y="210" font-size="11" fill="#14532d">可能给出不同结果</text>
+    <text x="256" y="238" font-size="10.5" fill="#64748b">数据分布</text>
+    <text x="256" y="258" font-size="11" fill="#14532d">3 节点各存 1/3 数据，</text>
+    <text x="256" y="276" font-size="11" fill="#14532d">并各备份另外 2/3</text>
+    <text x="256" y="294" font-size="11" fill="#14532d">（分片 + 副本，无中心）</text>
+    <text x="256" y="322" font-size="11" font-weight="bold" fill="#14532d">收益：可用性 + 低延迟</text>
+  </g>
+
+  <g transform="translate(20,490)">
+    <rect x="0" y="0" width="960" height="120" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">这一步在挡什么：三个易错点</text>
+    <text x="40" y="52" font-size="12" fill="#334155">P 不是可选项：网络分区客观存在，不做分区容错就无法作为分布式系统运行（见 1.4 节）</text>
+    <text x="40" y="76" font-size="12" fill="#334155">「选 CP 还是 AP」只在分区期间成立；绝大多数时候两者都能满足 —— 工程问题是分区期间怎么降级、降级多久</text>
+    <text x="40" y="100" font-size="12" fill="#b45309">MySQL 单实例（+ 主从 / 双机热备）是高可用架构而不是集群：数据集中在一个节点，所以必须做全量备份（见 1.5 节）</text>
+  </g>
+</svg>

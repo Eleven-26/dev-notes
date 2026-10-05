@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arwO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Raft 的三种角色与六条转换路径</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">正常集群只有 Leader 与 Follower，Candidate 只在选举期存在 —— ⑤⑥ 两条退路都只看「别人的任期是不是更高」</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="420" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">状态机：箭头编号 ①–⑥ 与正文 2.2 的表一一对应</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">③ 是「本轮没选出 Leader」的自我循环（递增任期后重来）；④ 除了多数票，还要求日志足够新</text>
+
+    <rect x="45" y="200" width="170" height="70" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="130" y="228" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">Follower</text>
+    <text x="130" y="252" text-anchor="middle" font-size="11.5" fill="#64748b">跟随者 · 默认状态</text>
+
+    <rect x="395" y="200" width="170" height="70" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="480" y="228" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">Candidate</text>
+    <text x="480" y="252" text-anchor="middle" font-size="11.5" fill="#92400e">候选者 · 只在选举期</text>
+
+    <rect x="745" y="200" width="170" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="830" y="228" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">Leader</text>
+    <text x="830" y="252" text-anchor="middle" font-size="11.5" fill="#1e40af">领导者 · 全集群只有一个</text>
+
+    <line x1="130" y1="176" x2="130" y2="196" stroke="#475569" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="150" y="170" font-size="11.5" fill="#64748b">① 服务器启动即 Follower</text>
+
+    <line x1="217" y1="214" x2="393" y2="214" stroke="#475569" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="305" y="202" text-anchor="middle" font-size="11.5" fill="#475569">② 选举超时</text>
+
+    <line x1="393" y1="258" x2="217" y2="258" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwO)"/>
+    <text x="305" y="284" text-anchor="middle" font-size="11.5" fill="#b45309">⑤ 已有 Leader，或别人任期更高</text>
+
+    <line x1="567" y1="214" x2="743" y2="214" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="655" y="202" text-anchor="middle" font-size="11.5" fill="#16a34a">④ 多数票 + 日志新</text>
+
+    <polyline points="455,200 455,158 505,158 505,200" fill="none" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwO)"/>
+    <text x="480" y="146" text-anchor="middle" font-size="11.5" fill="#92400e">③ 本轮没选出 → 递增任期重选</text>
+
+    <polyline points="830,272 830,340 130,340 130,277" fill="none" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwO)"/>
+    <text x="480" y="362" text-anchor="middle" font-size="11.5" fill="#b45309">⑥ Leader 发现更高任期 → 退回 Follower</text>
+
+    <text x="16" y="394" font-size="12" fill="#334155">⭐ 任期（term）像「届」一样单调递增：只要发现别人的任期比自己高，就立即放弃当前身份。</text>
+    <text x="16" y="416" font-size="12" fill="#b45309">⚠️ 防脑裂靠的是多数派而不是超时：同一任期里最多一个 Leader 能拿到多数票，少数派分区既选不出 Leader 也提交不了。</text>
+  </g>
+
+  <g transform="translate(20,510)">
+    <rect x="0" y="0" width="960" height="112" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="16" y="28" font-size="13" font-weight="bold" fill="#0f172a">多数派门槛与可容忍故障（正文「特点 1」的表 + 硬性约束）</text>
+    <text x="16" y="54" font-size="12" fill="#334155">3 节点 → 需 2 票 → 可容忍 1 台故障　｜　5 节点 → 需 3 票 → 可容忍 2 台　｜　2 节点 → 多数派是 2 → 不容忍任何故障</text>
+    <text x="16" y="78" font-size="12" fill="#334155">⚠️ 存活数 ≤ 半数 ⇒ 集群无法工作：put 会失败，默认 get 也一样失败（linearizable 读同样要 quorum）</text>
+    <text x="16" y="100" font-size="12" fill="#1e40af">⭐ 选举计时器取 150ms ~ 300ms 随机值（不同实现不同，etcd 可能到 1000ms）—— 见选举流程图</text>
+  </g>
+</svg>

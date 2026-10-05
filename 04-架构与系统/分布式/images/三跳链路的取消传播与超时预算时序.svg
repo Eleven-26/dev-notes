@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">三跳链路的调用时序：取消传播、超时预算、重试放大</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">三个独立 HTTP 服务 A → B → C（三个端口、真实网络往返），客户端总预算 1s；C 的活是 8 块 × 200ms = 1.6s</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+
+    <rect x="60" y="16" width="100" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="110" y="36" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">客户端</text>
+    <rect x="280" y="16" width="100" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="330" y="36" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">服务 A</text>
+    <rect x="510" y="16" width="100" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="560" y="36" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">服务 B</text>
+    <rect x="740" y="16" width="100" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="790" y="36" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">服务 C</text>
+
+    <line x1="110" y1="50" x2="110" y2="288" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="330" y1="50" x2="330" y2="288" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="560" y1="50" x2="560" y2="288" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="790" y1="50" x2="790" y2="288" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="220" y="70" font-size="10.5" fill="#334155" text-anchor="middle">① GET（客户端预算 1s）</text>
+    <line x1="112" y1="78" x2="326" y2="78" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="445" y="98" font-size="10.5" fill="#334155" text-anchor="middle">② 转发（A 预算 800ms，ctx 继续往下传）</text>
+    <line x1="332" y1="106" x2="556" y2="106" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="675" y="126" font-size="10.5" fill="#334155" text-anchor="middle">③ 转发（透传 r.Context()）</text>
+    <line x1="562" y1="134" x2="786" y2="134" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="700" y="146" width="190" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="710" y="167" font-size="10.5" fill="#92400e">④ 每 200ms 一块，共 8 块 = 1.6s</text>
+
+    <text x="220" y="192" font-size="10.5" fill="#991b1b" text-anchor="middle">⑤ A 800ms 放弃并返回（端到端 813ms）</text>
+    <line x1="328" y1="200" x2="114" y2="200" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="445" y="220" font-size="10.5" fill="#991b1b" text-anchor="middle">⑥ 取消沿 ctx 下传</text>
+    <line x1="332" y1="228" x2="556" y2="228" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwR)"/>
+    <text x="675" y="248" font-size="10.5" fill="#991b1b" text-anchor="middle">⑦ B 透传 → C 收到取消</text>
+    <line x1="562" y1="256" x2="786" y2="256" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwR)"/>
+
+    <rect x="700" y="266" width="190" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="710" y="285" font-size="10.5" fill="#14532d">⑧ C 立刻停手，省下 1.5s</text>
+  </g>
+
+  <g transform="translate(20,390)">
+    <rect x="0" y="0" width="470" height="210" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 超时预算：规矩与三种配法</text>
+
+    <rect x="16" y="36" width="438" height="46" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="28" y="54" font-size="10.5" fill="#14532d">规矩：A 的超时 &gt; B 的超时 &gt; C 的超时（逐跳递减，给下游留返程时间）</text>
+    <text x="28" y="72" font-size="10.5" fill="#14532d">并且每一跳都要把「剩余预算」往下传，而不是各跳独立设固定值</text>
+
+    <rect x="16" y="92" width="438" height="34" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="28" y="113" font-size="10.5" fill="#334155">各跳都不设预算：客户端 1s 超时，C 会不会停取决于取消有没有传播</text>
+    <rect x="16" y="132" width="438" height="34" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="28" y="153" font-size="10.5" fill="#334155">A 设 800ms：A 在 800ms 放弃并返回，但下游未必知道</text>
+    <rect x="16" y="172" width="438" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="28" y="193" font-size="10.5" fill="#1e40af">剩余预算传给下一跳：C 一看只剩 700ms 而要 1.6s → 直接不做</text>
+  </g>
+
+  <g transform="translate(510,390)">
+    <rect x="0" y="0" width="470" height="210" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 三条只有实测才看得见的结论</text>
+
+    <text x="16" y="46" font-size="10.5" fill="#334155">① 取消的载体：Go 用 ctx + 连接（框架自带）</text>
+    <text x="28" y="64" font-size="10.5" fill="#334155">Java 没有：只能自己带 X-Deadline-Ms 或换 gRPC</text>
+    <text x="16" y="82" font-size="10.5" fill="#334155">② 断开 TCP 连接当不了取消信号：FIN 只表示不再发送</text>
+    <text x="28" y="100" font-size="10.5" fill="#334155">实测 ④：B disconnect 之后，C 的 8 块照样全部写完</text>
+    <text x="16" y="118" font-size="10.5" fill="#334155">③ trace id 不会自动跟着走，漏一跳就断在异步与线程池</text>
+
+    <rect x="16" y="130" width="438" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="28" y="148" font-size="10.5" fill="#92400e">重试是相乘的：外层 3 次 × 内层 3 次 = 最底层 C 被打 9 次</text>
+    <text x="28" y="164" font-size="10.5" fill="#92400e">Go 与 Java 两侧完全一致（3 → 9）</text>
+
+    <rect x="16" y="176" width="438" height="32" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="28" y="196" font-size="10.5" fill="#14532d">所以只在外层重试，并配熔断与退避抖动，且只重试幂等操作</text>
+  </g>
+</svg>

@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arwO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Raft 选举：从心跳超时到三种结果</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">随机化计时器负责「错峰拉票」，日志新旧校验负责「当选者数据最新」—— 缺任何一个都选不出正确的 Leader</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">选举流程（正文 2.3 的第 1~5 步）</text>
+    <text x="16" y="50" font-size="11.5" fill="#64748b">第 4 步是判定：多数票 + 日志足够新，两个条件同时满足才算过</text>
+
+    <rect x="35" y="66" width="270" height="44" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="170" y="85" text-anchor="middle" font-size="11.5" fill="#334155">第 1 步　Follower 长时间收不到</text>
+    <text x="170" y="102" text-anchor="middle" font-size="11.5" fill="#334155">Leader 心跳 → 选举超时</text>
+
+    <line x1="170" y1="110" x2="170" y2="116" stroke="#475569" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="35" y="118" width="270" height="44" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="170" y="137" text-anchor="middle" font-size="11.5" fill="#334155">第 2 步　任期 term 递增 → 转 Candidate</text>
+    <text x="170" y="154" text-anchor="middle" font-size="11.5" fill="#334155">→ 投自己一票 → 重置选举计时器</text>
+
+    <line x1="170" y1="162" x2="170" y2="168" stroke="#475569" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="35" y="170" width="270" height="34" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="170" y="191" text-anchor="middle" font-size="11.5" fill="#334155">第 3 步　向其他所有节点发 RequestVote 拉票</text>
+
+    <line x1="170" y1="204" x2="170" y2="210" stroke="#475569" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="35" y="212" width="270" height="44" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="170" y="231" text-anchor="middle" font-size="11.5" fill="#92400e">第 4 步　统计票数：是否拿到多数？</text>
+    <text x="170" y="248" text-anchor="middle" font-size="11.5" fill="#92400e">（还要求日志 index 足够新）</text>
+
+    <line x1="110" y1="256" x2="125" y2="268" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="230" y1="256" x2="345" y2="268" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+    <rect x="25" y="270" width="200" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="125" y="292" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">① 拿到多数票 → 当选</text>
+    <text x="125" y="312" text-anchor="middle" font-size="11.5" fill="#14532d">立刻向所有节点发心跳</text>
+    <text x="125" y="328" text-anchor="middle" font-size="11.5" fill="#14532d">其余候选者退回 Follower</text>
+
+    <rect x="245" y="270" width="200" height="64" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="345" y="292" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">② 没拿到多数票</text>
+    <text x="345" y="312" text-anchor="middle" font-size="11.5" fill="#991b1b">已超时 → 任期 +1 重新发起</text>
+    <text x="345" y="328" text-anchor="middle" font-size="11.5" fill="#991b1b">别人已当选 → 退回 Follower</text>
+
+    <text x="16" y="360" font-size="11.5" fill="#334155">⭐ 拉票成败取决于三个因素：对方是什么身份（Candidate 已投自己）、</text>
+    <text x="16" y="382" font-size="11.5" fill="#334155">　先来后到（请求先到的拿到票）、日志 index 是否足够新。</text>
+    <text x="16" y="406" font-size="11.5" fill="#b45309">⚠️ 日志不够新的候选者直接拉不到票 → 当选者一定拥有最完整日志，</text>
+    <text x="16" y="426" font-size="11.5" fill="#b45309">　因为 Raft 的数据流向只能是 Leader → Follower，不能反向补数据。</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">随机计时器错峰 + 先到先得</text>
+    <text x="16" y="50" font-size="11.5" fill="#64748b">正文 2.3 第 3 步（随机区间）与第 4 步（5 节点拉票例子）</text>
+
+    <text x="14" y="86" font-size="11.5" fill="#14532d">n1 152ms</text>
+    <rect x="82" y="74" width="162" height="16" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="14" y="110" font-size="11.5" fill="#334155">n2 210ms</text>
+    <rect x="82" y="98" width="224" height="16" rx="3" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="14" y="134" font-size="11.5" fill="#334155">n3 300ms</text>
+    <rect x="82" y="122" width="320" height="16" rx="3" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <line x1="82" y1="144" x2="82" y2="152" stroke="#94a3b8" stroke-width="1"/>
+
+    <text x="16" y="170" font-size="11.5" fill="#1e40af">⭐ 随机区间 150~300ms：只有 n1 先超时 → 它先成为候选者去拉票，</text>
+    <text x="16" y="190" font-size="11.5" fill="#1e40af">　其余两台还在等；偶尔两台同时过期，仍能选出多数派 Leader。</text>
+
+    <line x1="16" y1="206" x2="444" y2="206" stroke="#e2e8f0" stroke-width="1"/>
+
+    <polyline points="230,241 230,226 52,226 52,240" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <polyline points="315,241 315,212 68,212 68,240" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <polyline points="400,275 400,292 145,292 145,277" fill="none" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+    <circle cx="60" cy="258" r="17" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="60" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#1e40af">1</text>
+    <circle cx="145" cy="258" r="17" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+    <text x="145" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#92400e">2</text>
+    <circle cx="230" cy="258" r="17" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="230" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">3</text>
+    <circle cx="315" cy="258" r="17" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="315" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">4</text>
+    <circle cx="400" cy="258" r="17" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="400" y="258" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">5</text>
+
+    <text x="16" y="318" font-size="11.5" fill="#334155">1、2 号同时成为候选者（都已投自己一票），3、4 号被 1 号的请求先到达</text>
+    <text x="16" y="342" font-size="11.5" fill="#1e40af">⭐ 1 号 = 自己 + 3 + 4 = 3 票 → 过半当选；2 号 = 自己 + 5 号 = 2 票 → 退回</text>
+    <text x="16" y="366" font-size="11.5" fill="#b45309">⚠️ 候选者之间互相拉不到票，所以「谁先发出 RequestVote」决定票数归属</text>
+    <text x="16" y="390" font-size="11.5" fill="#334155">⭐ 5 节点需 ≥3 票：自己 1 票 + 其他 4 台里拿到 2 票（正文 2.1 的门槛）</text>
+    <text x="16" y="414" font-size="11.5" fill="#64748b">　若候选者的最后 index 落后（自己 5、对方 6），对方直接拒投。</text>
+  </g>
+
+  <g transform="translate(20,530)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="16" y="28" font-size="13" font-weight="bold" fill="#0f172a">为什么必须随机化：计时器全一样就会死锁（正文「特点 2」）</text>
+    <text x="16" y="56" font-size="12" fill="#334155">所有 Follower 同时超时 → 全部转为 Candidate → 每个节点第一件事都是把票投给自己</text>
+    <text x="16" y="78" font-size="12" fill="#334155">→ 每人只有一票且都投给了自己 → 永远选不出 Leader（类比：人人都参选且都先投自己一票）</text>
+    <text x="16" y="104" font-size="12" fill="#1e40af">⭐ 解法：随机化选举超时时间 —— 每个节点的定时器不同，谁先超时谁先成为 Candidate，从而打破僵局</text>
+    <text x="16" y="130" font-size="12" fill="#b45309">⚠️ 随机区间是「Raft 能收敛」的关键工程细节，不是装饰；不随机就会反复重选进入活锁</text>
+  </g>
+</svg>
