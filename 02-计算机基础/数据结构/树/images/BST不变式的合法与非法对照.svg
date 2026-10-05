@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 710" width="1000" height="710" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="710" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">BST 的不变式：为什么「左 &lt; 根 &lt; 右」是全局约束</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">合法与非法只差一个节点 —— 逐条看父子关系全合法，中序遍历却当场判出非法</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="460" height="456" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#0f172a">① 非法：每条父子关系都合法，全局却违反</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">键集 {2, 5, 7, 8}，只是 7 挂错了位置（挂在 2 的右边）</text>
+
+    <line x1="230" y1="116" x2="110" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="230" y1="116" x2="350" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="110" y1="220" x2="180" y2="320" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <text x="20" y="150" font-size="11" fill="#1e40af">左子树：键全部 &lt; 5</text>
+    <text x="336" y="150" font-size="11" fill="#1e40af">右子树：键全部 &gt; 5</text>
+
+    <circle cx="230" cy="116" r="22" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="230" y="116" text-anchor="middle" dominant-baseline="central" font-size="17" font-weight="bold" fill="#1e40af">5</text>
+    <circle cx="110" cy="220" r="22" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="110" y="220" text-anchor="middle" dominant-baseline="central" font-size="17" fill="#334155">2</text>
+    <circle cx="350" cy="220" r="22" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="350" y="220" text-anchor="middle" dominant-baseline="central" font-size="17" fill="#334155">8</text>
+    <circle cx="180" cy="320" r="22" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="180" y="320" text-anchor="middle" dominant-baseline="central" font-size="17" font-weight="bold" fill="#b91c1c">7</text>
+    <text x="214" y="322" font-size="11" fill="#b91c1c">7 &gt; 5，却在左子树里</text>
+
+    <text x="16" y="378" font-size="12" fill="#334155">✓ 直接父子关系逐条检查全过：2 &lt; 5 &lt; 8、2 &lt; 7</text>
+    <text x="16" y="402" font-size="12" fill="#b91c1c">❌ 但 7 落在 5 的左子树里，且 7 &gt; 5</text>
+    <text x="16" y="428" font-size="13" font-weight="bold" fill="#b91c1c">中序 = 2 7 5 8  →  不升序 ⇒ 判出非法</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="456" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#0f172a">② 合法：把 7 挪到正确的位置即可</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">键集不变，只改了 7 的父节点（改挂到 8 的左边）</text>
+
+    <line x1="230" y1="116" x2="110" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="230" y1="116" x2="350" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="350" y1="220" x2="280" y2="320" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <text x="20" y="150" font-size="11" fill="#1e40af">左子树：键全部 &lt; 5</text>
+    <text x="336" y="150" font-size="11" fill="#1e40af">右子树：键全部 &gt; 5</text>
+
+    <circle cx="230" cy="116" r="22" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="230" y="116" text-anchor="middle" dominant-baseline="central" font-size="17" font-weight="bold" fill="#1e40af">5</text>
+    <circle cx="110" cy="220" r="22" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="110" y="220" text-anchor="middle" dominant-baseline="central" font-size="17" fill="#334155">2</text>
+    <circle cx="350" cy="220" r="22" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="350" y="220" text-anchor="middle" dominant-baseline="central" font-size="17" fill="#334155">8</text>
+    <circle cx="280" cy="320" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="280" y="320" text-anchor="middle" dominant-baseline="central" font-size="17" fill="#14532d">7</text>
+    <text x="312" y="322" font-size="11" fill="#14532d">7 &lt; 8，且在 5 的右子树里</text>
+
+    <text x="16" y="378" font-size="12" fill="#334155">✓ 每个节点的左右子树都满足各自的区间约束</text>
+    <text x="16" y="402" font-size="12" fill="#334155">✓ 「左 &lt; 根 &lt; 右」对整棵子树成立，不只是直接孩子</text>
+    <text x="16" y="428" font-size="13" font-weight="bold" fill="#14532d">中序 = 2 5 7 8  →  升序 ⇒ 合法</text>
+  </g>
+
+  <g transform="translate(20,540)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">③ 斜树也是合法 BST —— 不变式只看「次序」，不看「形状」</text>
+    <text x="16" y="50" font-size="12" fill="#64748b">把 {2, 5, 7, 8} 按升序插入 → 长成一条右斜链，但它仍然满足「左 &lt; 根 &lt; 右」</text>
+
+    <line x1="92" y1="102" x2="166" y2="102" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <line x1="212" y1="102" x2="286" y2="102" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <line x1="332" y1="102" x2="406" y2="102" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <circle cx="70" cy="102" r="20" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="70" y="102" text-anchor="middle" dominant-baseline="central" font-size="16" font-weight="bold" fill="#1e40af">2</text>
+    <circle cx="190" cy="102" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="190" y="102" text-anchor="middle" dominant-baseline="central" font-size="16" fill="#334155">5</text>
+    <circle cx="310" cy="102" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="310" y="102" text-anchor="middle" dominant-baseline="central" font-size="16" fill="#334155">7</text>
+    <circle cx="430" cy="102" r="20" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="430" y="102" text-anchor="middle" dominant-baseline="central" font-size="16" fill="#14532d">8</text>
+
+    <text x="16" y="138" font-size="11" fill="#64748b">右斜链：每个节点只有右孩子（4 个节点 → 树高 4）</text>
+
+    <text x="520" y="86" font-size="12" fill="#14532d">中序 = 2 5 7 8（仍然升序）⇒ 合法 BST ✅</text>
+    <text x="520" y="112" font-size="12" fill="#334155">形状坏掉了，次序没坏 —— 「性质」正是因此不等于「形态」</text>
+    <text x="520" y="138" font-size="12" fill="#b45309">⚠️ 合法性检查抓不出性能问题：这棵树查找已退化到 O(n)</text>
+  </g>
+</svg>

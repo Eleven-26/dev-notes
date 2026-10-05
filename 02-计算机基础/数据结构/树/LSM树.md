@@ -1,6 +1,6 @@
 # LSM 树
 
-> Log-Structured Merge Tree：**用「顺序写」换「读放大」**的存储引擎核心，
+> Log-Structured Merge Tree：**用「顺序写」换「读放大」** 的存储引擎核心，
 > 回答「B+ 树在写多读少的场景为什么会输、LSM 为此付出了什么代价」。
 >
 > ⭐ 边界先说清：本篇讲**存储引擎层的结构与代价**（MemTable / SSTable / Compaction / 三种放大）。
