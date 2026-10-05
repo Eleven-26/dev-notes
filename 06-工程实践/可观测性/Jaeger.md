@@ -74,6 +74,10 @@ Jaeger (v2 = Collector + Query + UI) ──▶ Storage(ClickHouse/ES) ──▶ 
 
 ⚠️ 混用坑：链路头格式必须端到端一致。上游注入 `traceparent`、下游只认 `sw8`，链路会断成两段独立 trace。
 
+## 四、Jaeger UI
+http://127.0.0.1:16686/
+![Jaeger 面板](images/jaeger-ui-面板.png)
+![Jaeger 链路](images/jaeger-ui-链路.png)
 ## 四、部署
 
 ### 4.1 快速起步（all-in-one，仅开发）
