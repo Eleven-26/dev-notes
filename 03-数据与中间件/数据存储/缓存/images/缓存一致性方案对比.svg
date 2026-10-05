@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a3" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">缓存一致性：四种方案的窗口与代价</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">强一致在「跨进程 + 跨存储」下无法用简单方案实现，目标是把不一致窗口压到业务能容忍的量级</text>
+
+  <g transform="translate(20,78)">
+    <rect x="0" y="0" width="460" height="186" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#14532d">① 先更新库、再删缓存  ⭐ 推荐</text>
+    <rect x="16" y="44" width="96" height="34" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+    <text x="64" y="65" text-anchor="middle" font-size="12" fill="#14532d">更新库</text>
+    <rect x="136" y="44" width="96" height="34" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+    <text x="184" y="65" text-anchor="middle" font-size="12" fill="#14532d">删缓存</text>
+    <rect x="256" y="44" width="96" height="34" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+    <text x="304" y="65" text-anchor="middle" font-size="12" fill="#14532d">异步补偿</text>
+    <line x1="112" y1="61" x2="132" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <line x1="232" y1="61" x2="252" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <text x="356" y="65" font-size="11.5" fill="#334155">兜底</text>
+    <text x="16" y="104" font-size="12.5" fill="#0f172a">窗口：删缓存失败 → 补偿成功之间（毫秒~秒级）</text>
+    <text x="16" y="126" font-size="12.5" fill="#0f172a">代价：最低 —— 业务侧就多一行 DEL</text>
+    <text x="16" y="148" font-size="12.5" fill="#334155">适用：绝大多数业务场景（默认选择）</text>
+    <text x="16" y="170" font-size="11.5" fill="#166534">⚠️ 前提：库必须写成功；删缓存失败要有 MQ / 重试兜底</text>
+  </g>
+
+  <g transform="translate(520,78)">
+    <rect x="0" y="0" width="460" height="186" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">② 延迟双删（先删 → 写库 → 再删）</text>
+    <rect x="16" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="60" y="65" text-anchor="middle" font-size="12" fill="#334155">删缓存</text>
+    <rect x="124" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="168" y="65" text-anchor="middle" font-size="12" fill="#334155">更新库</text>
+    <rect x="232" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="276" y="65" text-anchor="middle" font-size="12" fill="#334155">等 N ms</text>
+    <rect x="340" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="384" y="65" text-anchor="middle" font-size="12" fill="#334155">再删缓存</text>
+    <line x1="104" y1="61" x2="120" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <line x1="212" y1="61" x2="228" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <line x1="320" y1="61" x2="336" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <text x="16" y="104" font-size="12.5" fill="#0f172a">窗口：比①更小 —— 第二次删用来清掉「中间被回填的旧值」</text>
+    <text x="16" y="126" font-size="12.5" fill="#b91c1c">⚠️ 不是强一致：N 靠估算，第二次删仍可能失败</text>
+    <text x="16" y="148" font-size="12.5" fill="#334155">代价：中 —— 多一次删 + 一个延迟任务（别用 sleep 占线程）</text>
+    <text x="16" y="170" font-size="11.5" fill="#475569">适用：读回填很快、且对窗口敏感的场景</text>
+  </g>
+
+  <g transform="translate(20,282)">
+    <rect x="0" y="0" width="460" height="186" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#1e3a8a">③ 订阅 binlog 异步失效  ⭐ 生产首选</text>
+    <rect x="16" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="60" y="65" text-anchor="middle" font-size="12" fill="#1e3a8a">写库</text>
+    <rect x="124" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="168" y="65" text-anchor="middle" font-size="12" fill="#1e3a8a">binlog</text>
+    <rect x="232" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="276" y="65" text-anchor="middle" font-size="12" fill="#1e3a8a">CDC → MQ</text>
+    <rect x="340" y="44" width="88" height="34" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="384" y="65" text-anchor="middle" font-size="12" fill="#1e3a8a">删缓存</text>
+    <line x1="104" y1="61" x2="120" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <line x1="212" y1="61" x2="228" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <line x1="320" y1="61" x2="336" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <text x="16" y="104" font-size="12.5" fill="#0f172a">窗口：CDC 链路延迟（毫秒~秒级），与主从延迟无关</text>
+    <text x="16" y="126" font-size="12.5" fill="#334155">优点：业务代码零侵入、可重放、漏删可补</text>
+    <text x="16" y="148" font-size="12.5" fill="#b91c1c">⚠️ 代价：多一套 CDC 组件，且同 Key 变更必须有序消费</text>
+    <text x="16" y="170" font-size="11.5" fill="#1d4ed8">适用：服务多、缓存写入路径分散的中大型系统</text>
+  </g>
+
+  <g transform="translate(520,282)">
+    <rect x="0" y="0" width="460" height="186" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#7f1d1d">④ 强一致方案（一般不用）</text>
+    <rect x="16" y="44" width="130" height="34" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="81" y="65" text-anchor="middle" font-size="12" fill="#7f1d1d">读全部走库</text>
+    <rect x="166" y="44" width="130" height="34" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="231" y="65" text-anchor="middle" font-size="12" fill="#7f1d1d">或 分布式事务</text>
+    <line x1="146" y1="61" x2="162" y2="61" stroke="#475569" stroke-width="1.4" marker-end="url(#a3)"/>
+    <text x="316" y="65" font-size="11.5" fill="#b91c1c">二选一</text>
+    <text x="16" y="104" font-size="12.5" fill="#0f172a">窗口：0 —— 但缓存随之失去意义</text>
+    <text x="16" y="126" font-size="12.5" fill="#b91c1c">⚠️ 代价：极高（读走库 = 缓存白做；2PC = 性能差 + 复杂度高）</text>
+    <text x="16" y="148" font-size="12.5" fill="#334155">适用：金融级强一致场景，且通常要接受性能损失</text>
+    <text x="16" y="170" font-size="11.5" fill="#7f1d1d">⚠️ 别把它当"更安全的默认选项"：它是最后手段</text>
+  </g>
+
+  <text x="500" y="488" text-anchor="middle" font-size="12.5" fill="#0f172a">⭐ 生产上 99% 的场景目标是「最终一致 + 窗口秒级」——先选①，规模大了再上③；②是补丁，④是最后手段</text>
+</svg>

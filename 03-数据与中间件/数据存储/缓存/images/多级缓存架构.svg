@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">缓存的六层位置：一层请求漏斗</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">请求从最外层逐级向内试探，越靠外层越便宜；下方延迟为量级示意（非同机实测）</text>
+
+  <g>
+    <rect x="20" y="100" width="140" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="90" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">浏览器缓存</text>
+    <text x="90" y="148" text-anchor="middle" font-size="11.5" fill="#166534">HTTP Cache</text>
+
+    <rect x="180" y="100" width="140" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="250" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">CDN 边缘</text>
+    <text x="250" y="148" text-anchor="middle" font-size="11.5" fill="#166534">静态资源</text>
+
+    <rect x="340" y="100" width="140" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="410" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">网关缓存</text>
+    <text x="410" y="148" text-anchor="middle" font-size="11.5" fill="#1d4ed8">Nginx / OpenResty</text>
+
+    <rect x="500" y="100" width="140" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="570" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">应用本地</text>
+    <text x="570" y="148" text-anchor="middle" font-size="11.5" fill="#1d4ed8">Caffeine / BigCache</text>
+
+    <rect x="660" y="100" width="140" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+    <text x="730" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">分布式缓存</text>
+    <text x="730" y="148" text-anchor="middle" font-size="11.5" fill="#9a3412">Redis / Memcached</text>
+
+    <rect x="820" y="100" width="140" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+    <text x="890" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">数据库</text>
+    <text x="890" y="148" text-anchor="middle" font-size="11.5" fill="#475569">InnoDB Buffer Pool</text>
+  </g>
+
+  <line x1="160" y1="132" x2="176" y2="132" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="320" y1="132" x2="336" y2="132" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="480" y1="132" x2="496" y2="132" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="640" y1="132" x2="656" y2="132" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="800" y1="132" x2="816" y2="132" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <text x="90" y="190" text-anchor="middle" font-size="11.5" fill="#0f172a">约 0 ms</text>
+  <text x="250" y="190" text-anchor="middle" font-size="11.5" fill="#0f172a">10~50 ms</text>
+  <text x="410" y="190" text-anchor="middle" font-size="11.5" fill="#0f172a">亚毫秒</text>
+  <text x="570" y="190" text-anchor="middle" font-size="11.5" fill="#0f172a">百纳秒</text>
+  <text x="730" y="190" text-anchor="middle" font-size="11.5" fill="#0f172a">0.5~1 ms</text>
+  <text x="890" y="190" text-anchor="middle" font-size="11.5" fill="#0f172a">1~10 ms</text>
+
+  <text x="90" y="210" text-anchor="middle" font-size="11.5" fill="#64748b">单用户</text>
+  <text x="250" y="210" text-anchor="middle" font-size="11.5" fill="#64748b">全局回源</text>
+  <text x="410" y="210" text-anchor="middle" font-size="11.5" fill="#64748b">按 URL</text>
+  <text x="570" y="210" text-anchor="middle" font-size="11.5" fill="#64748b">按实例（要广播）</text>
+  <text x="730" y="210" text-anchor="middle" font-size="11.5" fill="#64748b">全局集中</text>
+  <text x="890" y="210" text-anchor="middle" font-size="11.5" fill="#64748b">引擎自动</text>
+
+  <line x1="20" y1="240" x2="960" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="20" y="268" font-size="13" fill="#0f172a">⭐ 每往上一层：延迟低一个数量级，但「一致性更难保证 + 失效粒度更粗」——这是同一条权衡的两面。</text>
+  <text x="20" y="292" font-size="13" fill="#0f172a">⚠️ 本地缓存是多副本：写一次要广播 N 个实例失效，否则各实例读数不一致（见 缓存一致性.md）。</text>
+  <text x="20" y="316" font-size="13" fill="#0f172a">💡 判据：只有「读远多于写」且「能容忍秒级旧数据」的数据，才值得往上面几层放；强一致数据只能走库。</text>
+  <text x="20" y="346" font-size="12" fill="#64748b">层级分工：CDN 扛静态资源、网关扛公共接口、本地缓存扛最热的 1%、Redis 扛全量业务缓存、数据库是唯一权威源。</text>
+  <text x="20" y="368" font-size="12" fill="#64748b">⚠️ 图内延迟为「量级示意」（按常见的同机房部署经验值），不是本机实测读数 —— 别当基准数字引用。</text>
+</svg>

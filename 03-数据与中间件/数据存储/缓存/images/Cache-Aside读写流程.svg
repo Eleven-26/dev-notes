@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Cache Aside（旁路缓存）：读一条链、写一条链</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">应用自己编排「缓存 + 数据库」两步；⚠️ 写路径的关键决定是「删缓存」而不是「更新缓存」</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">读路径：缓存未命中就回填</text>
+
+    <rect x="30" y="52" width="150" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="105" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 查缓存</text>
+    <text x="105" y="95" text-anchor="middle" font-size="11.5" fill="#1d4ed8">GET key</text>
+
+    <rect x="270" y="52" width="150" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+    <text x="345" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">② 查数据库</text>
+    <text x="345" y="95" text-anchor="middle" font-size="11.5" fill="#475569">只在未命中时发生</text>
+
+    <rect x="510" y="52" width="150" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="585" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">③ 回填缓存</text>
+    <text x="585" y="95" text-anchor="middle" font-size="11.5" fill="#1d4ed8">SETEX key ttl</text>
+
+    <rect x="750" y="52" width="150" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="825" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">④ 返回库值</text>
+    <text x="825" y="95" text-anchor="middle" font-size="11.5" fill="#166534">本次请求照常返回</text>
+
+    <line x1="180" y1="80" x2="266" y2="80" stroke="#475569" stroke-width="1.6" marker-end="url(#a2)"/>
+    <line x1="420" y1="80" x2="506" y2="80" stroke="#475569" stroke-width="1.6" marker-end="url(#a2)"/>
+    <line x1="660" y1="80" x2="746" y2="80" stroke="#475569" stroke-width="1.6" marker-end="url(#a2)"/>
+    <text x="223" y="70" text-anchor="middle" font-size="11.5" fill="#b91c1c">未命中</text>
+    <text x="463" y="70" text-anchor="middle" font-size="11.5" fill="#334155">拿到真值</text>
+    <text x="703" y="70" text-anchor="middle" font-size="11.5" fill="#334155">回填</text>
+
+    <path d="M105,52 L105,38 L500,38" fill="none" stroke="#16a34a" stroke-width="1.6" marker-end="url(#a2)"/>
+    <path d="M105,52 L105,38 L825,38 L825,50" fill="none" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="300" y="32" text-anchor="middle" font-size="11.5" fill="#15803d">命中 → 直接返回，不进②③</text>
+
+    <text x="30" y="140" font-size="12.5" fill="#0f172a">⚠️ 回填失败只打日志、不阻塞本次返回：缓存是派生物，读路径不能因为它挂掉而变慢。</text>
+    <text x="30" y="162" font-size="12.5" fill="#0f172a">⚠️ 回填要带 TTL（`SETEX`），否则冷数据永久占内存，把热数据挤出去。</text>
+    <text x="30" y="184" font-size="12.5" fill="#334155">⚠️ 未命中瞬间的高并发 = 缓存击穿：同一 Key 会有 N 个请求同时查库，要加单飞 / 互斥锁。</text>
+  </g>
+
+  <g transform="translate(20,296)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">写路径：先写库，再删缓存</text>
+
+    <rect x="30" y="52" width="150" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+    <text x="105" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">① 更新数据库</text>
+    <text x="105" y="95" text-anchor="middle" font-size="11.5" fill="#475569">必须成功（权威源）</text>
+
+    <rect x="270" y="52" width="150" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="345" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7f1d1d">② 删除缓存</text>
+    <text x="345" y="95" text-anchor="middle" font-size="11.5" fill="#b91c1c">DEL key（不是 SET）</text>
+
+    <rect x="510" y="52" width="150" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+    <text x="585" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">③ 失败补偿</text>
+    <text x="585" y="95" text-anchor="middle" font-size="11.5" fill="#9a3412">MQ / 重试 / binlog</text>
+
+    <rect x="750" y="52" width="150" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="825" y="76" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">④ 最终一致</text>
+    <text x="825" y="95" text-anchor="middle" font-size="11.5" fill="#166534">下次读自然回填</text>
+
+    <line x1="180" y1="80" x2="266" y2="80" stroke="#475569" stroke-width="1.6" marker-end="url(#a2)"/>
+    <line x1="420" y1="80" x2="506" y2="80" stroke="#475569" stroke-width="1.6" marker-end="url(#a2)"/>
+    <line x1="660" y1="80" x2="746" y2="80" stroke="#475569" stroke-width="1.6" marker-end="url(#a2)"/>
+    <text x="223" y="70" text-anchor="middle" font-size="11.5" fill="#334155">库先落地</text>
+    <text x="463" y="70" text-anchor="middle" font-size="11.5" fill="#b91c1c">删失败</text>
+    <text x="703" y="70" text-anchor="middle" font-size="11.5" fill="#334155">兜底</text>
+
+    <text x="30" y="140" font-size="12.5" fill="#0f172a">⭐ 为什么删而不是更新：两个并发写 + 都更新缓存时，后写的可能先落库却后落缓存 → 缓存留下旧值。</text>
+    <text x="30" y="162" font-size="12.5" fill="#0f172a">⭐ 删除让「缓存里没有」成为安全状态：读不到就回源，回源拿到的必然是库里的最新值。</text>
+    <text x="30" y="184" font-size="12.5" fill="#334155">⚠️ 仍有窗口：删缓存失败到补偿成功之间，读请求会命中旧缓存 —— 目标是把窗口压到秒级（见 缓存一致性.md）。</text>
+  </g>
+</svg>

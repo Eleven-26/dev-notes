@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="tA" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="tB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">限流的四种算法：结构、命令与各自的坑</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">限流 = 在 Redis 里维护「时间窗口 / 令牌数」这类共享状态；难点不在算法，而在「读改写」必须原子</text>
+
+  <rect x="20" y="84" width="225" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="112" font-size="14.5" font-weight="bold" fill="#0f172a">① 固定窗口</text>
+  <text x="36" y="132" font-size="11.5" fill="#64748b">结构：单 key 计数</text>
+  <rect x="40" y="160" width="88" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <circle cx="58" cy="178" r="5" fill="#2563eb"/><circle cx="78" cy="178" r="5" fill="#2563eb"/>
+  <circle cx="98" cy="178" r="5" fill="#2563eb"/><circle cx="118" cy="178" r="5" fill="#2563eb"/>
+  <circle cx="58" cy="198" r="5" fill="#2563eb"/><circle cx="78" cy="198" r="5" fill="#2563eb"/>
+  <circle cx="98" cy="198" r="5" fill="#2563eb"/><circle cx="118" cy="198" r="5" fill="#2563eb"/>
+  <rect x="137" y="160" width="88" height="52" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="181" y="192" text-anchor="middle" font-size="15" fill="#64748b">0</text>
+  <text x="84" y="228" text-anchor="middle" font-size="11" fill="#334155">第 1 秒（满）</text>
+  <text x="181" y="228" text-anchor="middle" font-size="11" fill="#334155">第 2 秒（空）</text>
+  <rect x="34" y="244" width="197" height="76" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="46" y="266" font-size="11.5" fill="#0f172a">INCR key</text>
+  <text x="46" y="286" font-size="11.5" fill="#0f172a">EXPIRE key 1</text>
+  <text x="46" y="308" font-size="11" fill="#64748b">O(1)，最简单</text>
+  <text x="36" y="344" font-size="13" font-weight="bold" fill="#15803d">特点：实现最简单</text>
+  <text x="36" y="370" font-size="11.5" fill="#b91c1c">⚠️ 坑：边界突发 —— 第 1 秒</text>
+  <text x="36" y="388" font-size="11.5" fill="#b91c1c">末 + 第 2 秒初，真实 200ms</text>
+  <text x="36" y="406" font-size="11.5" fill="#b91c1c">内放行 2 倍阈值</text>
+
+  <rect x="265" y="84" width="225" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="281" y="112" font-size="14.5" font-weight="bold" fill="#0f172a">② 滑动窗口</text>
+  <text x="281" y="132" font-size="11.5" fill="#64748b">结构：ZSet 存时间戳</text>
+  <line x1="285" y1="200" x2="470" y2="200" stroke="#94a3b8" stroke-width="1.4"/>
+  <rect x="345" y="162" width="90" height="46" rx="6" fill="#dbeafe" opacity="0.7" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <circle cx="305" cy="186" r="4" fill="#2563eb"/><circle cx="325" cy="176" r="4" fill="#2563eb"/>
+  <circle cx="360" cy="180" r="4" fill="#2563eb"/><circle cx="385" cy="172" r="4" fill="#2563eb"/>
+  <circle cx="410" cy="182" r="4" fill="#2563eb"/><circle cx="430" cy="176" r="4" fill="#2563eb"/>
+  <text x="390" y="222" text-anchor="middle" font-size="11" fill="#1d4ed8">窗口随当前时刻滑动</text>
+  <rect x="279" y="244" width="197" height="76" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="291" y="264" font-size="10.5" fill="#0f172a">ZADD key ts ts</text>
+  <text x="291" y="282" font-size="10.5" fill="#0f172a">ZREMRANGEBYSCORE …</text>
+  <text x="291" y="300" font-size="10.5" fill="#0f172a">ZCARD key</text>
+  <text x="291" y="316" font-size="10.5" fill="#64748b">窗口精确到毫秒</text>
+  <text x="281" y="344" font-size="13" font-weight="bold" fill="#15803d">特点：精确，无边界问题</text>
+  <text x="281" y="370" font-size="11.5" fill="#b91c1c">⚠️ 坑：每请求一次写 + 一个</text>
+  <text x="281" y="388" font-size="11.5" fill="#b91c1c">member；高 QPS 下内存与</text>
+  <text x="281" y="406" font-size="11.5" fill="#b91c1c">写放大都很大</text>
+
+  <rect x="510" y="84" width="225" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="526" y="112" font-size="14.5" font-weight="bold" fill="#0f172a">③ 令牌桶</text>
+  <text x="526" y="132" font-size="11.5" fill="#64748b">结构：桶 + 匀速补令牌</text>
+  <rect x="560" y="164" width="130" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <circle cx="590" cy="186" r="7" fill="#2563eb"/><circle cx="615" cy="186" r="7" fill="#2563eb"/>
+  <circle cx="640" cy="186" r="7" fill="#2563eb"/><circle cx="600" cy="206" r="7" fill="#2563eb"/>
+  <circle cx="625" cy="206" r="7" fill="#2563eb"/>
+  <line x1="625" y1="140" x2="625" y2="160" stroke="#2563eb" stroke-width="1.5" marker-end="url(#tB)"/>
+  <text x="625" y="134" text-anchor="middle" font-size="11" fill="#1d4ed8">匀速补 +r/s</text>
+  <line x1="692" y1="193" x2="726" y2="193" stroke="#334155" stroke-width="1.5" marker-end="url(#tA)"/>
+  <text x="714" y="184" text-anchor="middle" font-size="11" fill="#334155">取 1</text>
+  <text x="625" y="244" text-anchor="middle" font-size="11" fill="#334155">桶容量决定突发上限</text>
+  <rect x="524" y="256" width="197" height="64" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="536" y="277" font-size="10.5" fill="#0f172a">Lua 脚本（原子）：</text>
+  <text x="536" y="295" font-size="10.5" fill="#0f172a">按时间差补令牌 → 取</text>
+  <text x="536" y="313" font-size="10.5" fill="#64748b">不足则拒绝</text>
+  <text x="526" y="344" font-size="13" font-weight="bold" fill="#15803d">特点：允许突发</text>
+  <text x="526" y="370" font-size="11.5" fill="#b91c1c">⚠️ 坑：必须 Lua 原子，</text>
+  <text x="526" y="388" font-size="11.5" fill="#b91c1c">否则并发下超发；令牌数</text>
+  <text x="526" y="406" font-size="11.5" fill="#b91c1c">要持久化在 Redis 里</text>
+
+  <rect x="755" y="84" width="225" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="771" y="112" font-size="14.5" font-weight="bold" fill="#0f172a">④ 漏桶</text>
+  <text x="771" y="132" font-size="11.5" fill="#64748b">结构：队列 + 恒定出速</text>
+  <rect x="805" y="164" width="130" height="58" rx="8" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.6"/>
+  <rect x="805" y="164" width="130" height="30" rx="8" fill="#a7f3d0"/>
+  <line x1="870" y1="140" x2="870" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#tA)"/>
+  <text x="870" y="134" text-anchor="middle" font-size="11" fill="#334155">请求入桶（可堆积）</text>
+  <line x1="870" y1="222" x2="870" y2="244" stroke="#16a34a" stroke-width="1.5" marker-end="url(#tB)"/>
+  <text x="870" y="258" text-anchor="middle" font-size="11" fill="#15803d">匀速漏出（固定速率）</text>
+  <rect x="769" y="272" width="197" height="64" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="781" y="293" font-size="10.5" fill="#0f172a">Lua / 队列 + 时间戳：</text>
+  <text x="781" y="311" font-size="10.5" fill="#0f172a">入队不超容量，按固定</text>
+  <text x="781" y="329" font-size="10.5" fill="#0f172a">速率出队执行</text>
+  <text x="771" y="360" font-size="13" font-weight="bold" fill="#15803d">特点：输出最平滑</text>
+  <text x="771" y="386" font-size="11.5" fill="#b91c1c">⚠️ 坑：不允许突发 —— 突</text>
+  <text x="771" y="404" font-size="11.5" fill="#b91c1c">发请求要么排队要么被</text>
+  <text x="771" y="422" font-size="11.5" fill="#b91c1c">削掉，对延迟敏感的业务</text>
+  <text x="771" y="440" font-size="11.5" fill="#b91c1c">不友好</text>
+
+  <rect x="20" y="536" width="960" height="52" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="558" font-size="12.5" fill="#0f172a">⭐ 四种都要求「读改写」原子：先 GET 再 INCR、先 ZCARD 再 ZADD，分开做都会在并发下超发 ——</text>
+  <text x="36" y="578" font-size="12.5" fill="#0f172a">用 Lua 脚本，或改用本身就是单命令原子的 INCR / ZADD / SET NX。</text>
+</svg>

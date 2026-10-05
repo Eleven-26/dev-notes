@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="fA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">缓存故障排查路径：从现象到根因</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">顺序不能乱 —— 先拿指标定性，再定位到具体键，最后才动数据；跳过指标直接改配置是常见的返工来源</text>
+
+  <rect x="40" y="96" width="380" height="76" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="60" y="128" font-size="14" font-weight="bold" fill="#7f1d1d">① 现象</text>
+  <text x="60" y="152" font-size="12" fill="#7f1d1d">接口变慢 / 命中率下降 / 内存或连接数告警</text>
+
+  <rect x="40" y="200" width="380" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="232" font-size="14" font-weight="bold" fill="#1e3a8a">② 先看指标（不改任何东西）</text>
+  <text x="60" y="256" font-size="12" fill="#1e3a8a">INFO stats / INFO memory</text>
+
+  <rect x="40" y="304" width="380" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="336" font-size="14" font-weight="bold" fill="#1e3a8a">③ 定位异常键</text>
+  <text x="60" y="360" font-size="12" fill="#1e3a8a">大 key / 热 key / 高频键</text>
+
+  <rect x="40" y="408" width="380" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="60" y="440" font-size="14" font-weight="bold" fill="#7c2d12">④ 找阻塞源</text>
+  <text x="60" y="464" font-size="12" fill="#7c2d12">O(N) 命令 / 大 value / 慢命令</text>
+
+  <rect x="40" y="512" width="380" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="60" y="544" font-size="14" font-weight="bold" fill="#14532d">⑤ 处置与验证</text>
+  <text x="60" y="568" font-size="12" fill="#14532d">改完用同一套指标复测</text>
+
+  <line x1="230" y1="172" x2="230" y2="200" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fA)"/>
+  <line x1="230" y1="276" x2="230" y2="304" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fA)"/>
+  <line x1="230" y1="380" x2="230" y2="408" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fA)"/>
+  <line x1="230" y1="484" x2="230" y2="512" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#fA)"/>
+
+  <line x1="420" y1="238" x2="452" y2="238" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="420" y1="342" x2="452" y2="342" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="420" y1="446" x2="452" y2="446" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="420" y1="550" x2="452" y2="550" stroke="#cbd5e1" stroke-width="1.4"/>
+
+  <text x="460" y="222" font-size="11.5" fill="#0f172a">INFO stats → keyspace_hits / keyspace_misses</text>
+  <text x="460" y="242" font-size="11.5" fill="#b91c1c">⚠️ 必须用「两次采样的差值」算窗口命中率</text>
+  <text x="460" y="262" font-size="11.5" fill="#0f172a">INFO memory → used_memory / maxmemory / evicted_keys</text>
+
+  <text x="460" y="326" font-size="11.5" fill="#0f172a">大 key：`redis-cli --bigkeys` 粗筛 + MEMORY USAGE 精确定位</text>
+  <text x="460" y="346" font-size="11.5" fill="#0f172a">热 key：OBJECT FREQ（需先切 *-lfu）/ `--hotkeys`</text>
+  <text x="460" y="366" font-size="11.5" fill="#b91c1c">⚠️ 逐个量寸需要一次往返/键，10 万键全量不现实</text>
+
+  <text x="460" y="430" font-size="11.5" fill="#0f172a">`KEYS *` / `SMEMBERS` / `SORT` / 一次大 MGET → 单线程被独占</text>
+  <text x="460" y="450" font-size="11.5" fill="#b91c1c">实测：10 万键的 `KEYS *` 耗时 62 ms，期间 PING 最大延迟 40 ms</text>
+  <text x="460" y="470" font-size="11.5" fill="#0f172a">SLOWLOG 看服务端执行耗时（不含网络往返）</text>
+
+  <text x="460" y="534" font-size="11.5" fill="#15803d">换 SCAN 游标遍历 · 大 key 用 UNLINK 异步删 · 拆分大 value</text>
+  <text x="460" y="554" font-size="11.5" fill="#15803d">加本地缓存 / 前置限流 · 改完用同一套指标复测并留基线</text>
+</svg>

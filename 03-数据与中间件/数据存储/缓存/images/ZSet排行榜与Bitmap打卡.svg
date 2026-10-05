@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两个高频结构：ZSet 排行榜 与 Bitmap 打卡</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">一个用「有序 + 排名」解决 Top-N 与同分分页；一个用「位运算」把 N 天压缩成 N 个 bit</text>
+
+  <rect x="20" y="84" width="470" height="400" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="114" font-size="14" font-weight="bold" fill="#0f172a">ZSet 排行榜：哈希 + 跳表 双结构</text>
+  <text x="36" y="138" font-size="11" fill="#64748b">哈希：member → score（O(1) 查分）</text>
+  <rect x="36" y="146" width="190" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="48" y="166" font-size="12" fill="#0f172a">用户A → 9820</text>
+  <rect x="36" y="182" width="190" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="48" y="202" font-size="12" fill="#0f172a">用户B → 9820</text>
+  <rect x="36" y="218" width="190" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="48" y="238" font-size="12" fill="#0f172a">用户C → 7310</text>
+
+  <text x="280" y="138" font-size="11" fill="#64748b">跳表：按 score 有序（O(log n)）</text>
+  <rect x="280" y="146" width="190" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="292" y="166" font-size="12" fill="#1e3a8a">9820 ｜ 用户A</text>
+  <rect x="280" y="182" width="190" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="292" y="202" font-size="12" fill="#1e3a8a">9820 ｜ 用户B</text>
+  <rect x="280" y="218" width="190" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="292" y="238" font-size="12" fill="#1e3a8a">7310 ｜ 用户C</text>
+  <line x1="375" y1="176" x2="375" y2="181" stroke="#2563eb" stroke-width="1.6"/>
+  <line x1="375" y1="212" x2="375" y2="217" stroke="#2563eb" stroke-width="1.6"/>
+
+  <text x="36" y="268" font-size="11" fill="#334155">同一批 member 同时存在两个结构里：哈希负责「查分」，跳表负责「按分定位与排名」。</text>
+
+  <rect x="36" y="280" width="434" height="96" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="48" y="302" font-size="11" fill="#0f172a">ZADD board &lt;score&gt; &lt;member&gt;       ← 更新分数</text>
+  <text x="48" y="322" font-size="11" fill="#0f172a">ZINCRBY board 1 &lt;member&gt;          ← 点赞 +1</text>
+  <text x="48" y="342" font-size="11" fill="#0f172a">ZREVRANGE board 0 9 WITHSCORES    ← Top10</text>
+  <text x="48" y="362" font-size="11" fill="#0f172a">ZREVRANK board &lt;member&gt;           ← 查某人的排名</text>
+
+  <text x="36" y="400" font-size="11.5" fill="#b91c1c">⚠️ 同分（都为 9820）时按 member 字典序破平 →</text>
+  <text x="36" y="418" font-size="11.5" fill="#b91c1c">只按 score 续页会整页漏读（实测 5 人漏 3 人）。</text>
+  <text x="36" y="442" font-size="11.5" fill="#15803d">解法：score = 点赞数 × 10^10 + (10^10 − 时间戳)，</text>
+  <text x="36" y="460" font-size="11.5" fill="#15803d">让「分高且更早」唯一排前，分页才不重不漏。</text>
+
+  <rect x="510" y="84" width="470" height="400" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="526" y="114" font-size="14" font-weight="bold" fill="#0f172a">Bitmap 打卡：1 个 bit = 1 天</text>
+
+  <rect x="526" y="142" width="107" height="40" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <rect x="633" y="142" width="107" height="40" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <rect x="740" y="142" width="107" height="40" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <rect x="847" y="142" width="107" height="40" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <rect x="540" y="152" width="12" height="20" fill="#2563eb"/>
+  <rect x="567" y="152" width="12" height="20" fill="#2563eb"/>
+  <rect x="620" y="152" width="12" height="20" fill="#2563eb"/>
+  <rect x="633" y="152" width="12" height="20" fill="#2563eb"/>
+  <rect x="727" y="152" width="12" height="20" fill="#2563eb"/>
+  <rect x="820" y="152" width="12" height="20" fill="#2563eb"/>
+  <text x="526" y="200" font-size="10" fill="#94a3b8">字节 0</text>
+  <text x="633" y="200" font-size="10" fill="#94a3b8">字节 1</text>
+  <text x="740" y="200" font-size="10" fill="#94a3b8">字节 2</text>
+  <text x="847" y="200" font-size="10" fill="#94a3b8">字节 3</text>
+  <text x="526" y="220" font-size="11" fill="#334155">置 1 的位 = 这天打过卡（图示：32 天里打了 6 天）</text>
+
+  <rect x="526" y="232" width="438" height="96" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="538" y="254" font-size="11" fill="#0f172a">SETBIT sign:u1001 &lt;day&gt; 1        ← 打卡</text>
+  <text x="538" y="274" font-size="11" fill="#0f172a">GETBIT sign:u1001 &lt;day&gt;          ← 查某天是否打卡</text>
+  <text x="538" y="294" font-size="11" fill="#0f172a">BITCOUNT sign:u1001              ← 一共打了几天</text>
+  <text x="538" y="314" font-size="11" fill="#0f172a">BITCOUNT sign:u1001 0 3          ← 按字节范围统计（前 32 天）</text>
+
+  <text x="526" y="352" font-size="11.5" fill="#15803d">实测（1 用户打 300 天）：bitmap 120 B ｜ Set 存日期 696 B → 5.8 倍</text>
+  <text x="526" y="372" font-size="11.5" fill="#15803d">换算：1000 万用户 × 365 天 ≈ 435 MB（位运算天然适合「整段统计」）</text>
+  <text x="526" y="396" font-size="11.5" fill="#b91c1c">⚠️ offset 是「全局位偏移」（从 0 起），跨月 / 跨年要自己算</text>
+  <text x="526" y="414" font-size="11.5" fill="#b91c1c">   起始位；稀疏场景（一年只打几天）反而不如 Set 省。</text>
+</svg>
