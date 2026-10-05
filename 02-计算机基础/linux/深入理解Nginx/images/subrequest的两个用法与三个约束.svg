@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">subrequest 的两个内置用法，与三条源码级硬约束</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">它最常用的形态根本不用写 C 代码 —— auth_request 与 mirror 就是它的两个封装</text>
+
+  <!-- auth_request -->
+  <rect x="40" y="82" width="450" height="196" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="58" y="106" font-size="13.5" font-weight="bold" fill="#1e40af">① auth_request：子请求做鉴权</text>
+
+  <rect x="58" y="118" width="414" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="70" y="138" font-size="10" fill="#334155">location /protected {</text>
+  <text x="70" y="154" font-size="10" fill="#1e40af">　auth_request /authprobe;　　← 由子请求的返回值决定放行</text>
+  <text x="70" y="170" font-size="10" fill="#334155">　return 200 "protected-ok";</text>
+  <text x="70" y="186" font-size="10" fill="#334155">}</text>
+  <text x="70" y="202" font-size="10" fill="#b45309">location /authprobe { internal; proxy_pass http://鉴权后端/auth; }</text>
+
+  <text x="58" y="232" font-size="11.5" fill="#334155">⭐ 语义固定：<tspan font-weight="bold" fill="#14532d">2xx 放行</tspan> / <tspan font-weight="bold" fill="#b45309">401、403 原样返回</tspan> / 其他 500。</text>
+  <text x="58" y="252" font-size="11.5" fill="#334155">所以鉴权服务只要返回状态码即可，不必返回 body。</text>
+  <text x="58" y="270" font-size="11" fill="#64748b">⚠️ internal 必须写：否则 /authprobe 能被外部直接访问。</text>
+
+  <!-- mirror -->
+  <rect x="510" y="82" width="450" height="196" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="528" y="106" font-size="13.5" font-weight="bold" fill="#14532d">② mirror：子请求做流量复制</text>
+
+  <rect x="528" y="118" width="414" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="540" y="138" font-size="10" fill="#334155">location /mirrored {</text>
+  <text x="540" y="154" font-size="10" fill="#14532d">　mirror /mirror_sink;　　← 主请求照常返回，另发一份</text>
+  <text x="540" y="170" font-size="10" fill="#334155">　return 200 "main-response";</text>
+  <text x="540" y="186" font-size="10" fill="#334155">}</text>
+  <text x="540" y="202" font-size="10" fill="#b45309">location /mirror_sink { internal; proxy_pass http://新版本后端/; }</text>
+
+  <text x="528" y="232" font-size="11.5" fill="#334155">⭐ 主请求拿到 main-response，同时 sink 收到一份副本。</text>
+  <text x="528" y="252" font-size="11.5" fill="#334155">这是<tspan font-weight="bold" fill="#14532d">灰度验证与离线压测的标配</tspan>：把生产流量复制给新</text>
+  <text x="528" y="270" font-size="11.5" fill="#334155">版本，用户完全无感；⚠️ 但要评估复制带来的额外负载。</text>
+
+  <!-- 三个约束 -->
+  <text x="40" y="306" font-size="12.5" font-weight="bold" fill="#0f172a">三条硬约束 —— 它们都来自同一件事：子请求没有自己的生命周期</text>
+
+  <rect x="40" y="320" width="300" height="150" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="56" y="344" font-size="12.5" font-weight="bold" fill="#b91c1c">约束一：不能阻塞</text>
+  <text x="56" y="366" font-size="11" fill="#334155">子请求跑在<tspan font-weight="bold">同一个 worker 的事件循环</tspan></text>
+  <text x="56" y="383" font-size="11" fill="#334155">里，主请求正在等它。</text>
+  <text x="56" y="405" font-size="11" fill="#334155">一旦子请求的 handler 里做同步阻塞</text>
+  <text x="56" y="422" font-size="11" fill="#334155">（如自己 sleep），<tspan font-weight="bold" fill="#b91c1c">整个 worker 都停</tspan>。</text>
+  <text x="56" y="446" font-size="11" fill="#64748b">官方注释明确：子请求不适用于长耗</text>
+  <text x="56" y="462" font-size="11" fill="#64748b">时场景。</text>
+
+  <rect x="350" y="320" width="300" height="150" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="366" y="344" font-size="12.5" font-weight="bold" fill="#b45309">约束二：count 要管好</text>
+  <text x="366" y="366" font-size="11" fill="#334155">顺序：<tspan font-weight="bold">先 r-&gt;main-&gt;count++</tspan></text>
+  <text x="366" y="383" font-size="11" fill="#334155">→ 再发起子请求 → 回调里收尾。</text>
+  <text x="366" y="405" font-size="11" fill="#334155">回调里读 psr-&gt;out 拿子请求结果，</text>
+  <text x="366" y="422" font-size="11" fill="#334155">最后 ngx_http_finalize_request。</text>
+  <text x="366" y="446" font-size="11" fill="#b91c1c">⚠️ 顺序反了会在回调里访问已释放</text>
+  <text x="366" y="462" font-size="11" fill="#b91c1c">的 r。</text>
+
+  <rect x="660" y="320" width="300" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="676" y="344" font-size="12.5" font-weight="bold" fill="#0f172a">约束三：不能自己发响应</text>
+  <text x="676" y="366" font-size="11" fill="#334155">子请求的 headers_out 是<tspan font-weight="bold">给主请求</tspan></text>
+  <text x="676" y="383" font-size="11" fill="#334155">看的，不会直接发给客户端。</text>
+  <text x="676" y="405" font-size="11" fill="#334155">官方对子请求的处理是：<tspan font-weight="bold">丢弃</tspan></text>
+  <text x="676" y="422" font-size="11" fill="#334155"><tspan font-weight="bold">header、只看状态码与 body</tspan>。</text>
+  <text x="676" y="446" font-size="11" fill="#64748b">想让子请求的头传到客户端，必须在</text>
+  <text x="676" y="462" font-size="11" fill="#64748b">主请求 handler 里显式转写。</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="490" width="920" height="64" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="514" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 一句话理解</text>
+  <text x="58" y="536" font-size="12" fill="#334155">子请求是「借主请求的事件循环，去请求另一个 location」—— 它共享主请求的资源，因此必须靠调用者把生命周期管好。这也是它不能阻塞、不能自己发响应的根本原因。</text>
+</svg>

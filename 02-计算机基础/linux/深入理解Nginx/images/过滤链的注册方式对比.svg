@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="f1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">过滤链的注册方式：书里的数组 vs 1.31 的全局指针链</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两者不只是写法不同 —— 执行顺序的直觉正好相反，这是本目录对书里最重要的一处订正</text>
+
+  <!-- 左：数组版 -->
+  <rect x="40" y="82" width="450" height="176" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="58" y="106" font-size="13.5" font-weight="bold" fill="#334155">书里（1.9~1.17）：往数组里 push</text>
+
+  <rect x="58" y="118" width="414" height="70" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="70" y="138" font-size="10.5" fill="#334155">cmcf = ngx_http_conf_get_module_main_conf(cf, core);</text>
+  <text x="70" y="156" font-size="10.5" fill="#334155">h = ngx_array_push(&amp;cmcf-&gt;headers_filters.headers);</text>
+  <text x="70" y="174" font-size="10.5" fill="#334155">*h = ngx_http_my_header_filter;</text>
+
+  <text x="58" y="212" font-size="11.5" fill="#334155">数组下标 = 注册顺序，框架从头到尾遍历一遍。</text>
+  <text x="58" y="234" font-size="11.5" font-weight="bold" fill="#b91c1c">⚠️ 1.31 编译不过：这两个成员已被删除</text>
+
+  <!-- 右：指针链 -->
+  <rect x="510" y="82" width="450" height="176" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="528" y="106" font-size="13.5" font-weight="bold" fill="#b45309">1.31：头插式全局函数指针链</text>
+
+  <rect x="528" y="118" width="414" height="70" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="540" y="138" font-size="10.5" fill="#334155">ngx_http_next_header_filter = ngx_http_top_header_filter;</text>
+  <text x="540" y="156" font-size="10.5" fill="#b45309">ngx_http_top_header_filter　= ngx_http_my_header_filter;</text>
+  <text x="540" y="174" font-size="10.5" fill="#64748b">（自己声明一个 next 全局变量，类型必须与 top 一致）</text>
+
+  <text x="528" y="212" font-size="11.5" fill="#334155">链头是全局变量 top，<tspan font-weight="bold">谁最后注册谁当链头</tspan>。</text>
+  <text x="528" y="234" font-size="11.5" fill="#b45309">所以执行顺序与注册顺序<tspan font-weight="bold">相反</tspan>。</text>
+
+  <!-- 执行顺序对照 -->
+  <text x="40" y="288" font-size="12.5" font-weight="bold" fill="#0f172a">同样是「按 A、B、C 的顺序注册」，实际执行顺序却不一样</text>
+
+  <rect x="40" y="302" width="450" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="324" font-size="11" fill="#64748b">数组版：注册 A → B → C</text>
+  <text x="58" y="346" font-size="12" font-weight="bold" fill="#14532d">执行 A → B → C（正序，与注册一致）</text>
+
+  <rect x="510" y="302" width="450" height="58" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="528" y="324" font-size="11" fill="#64748b">指针链版：注册 A → B → C</text>
+  <text x="528" y="346" font-size="12" font-weight="bold" fill="#b45309">执行 C → B → A（倒序，后注册的先跑）</text>
+
+  <path d="M 265 362 V 384" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#f1)"/>
+  <text x="275" y="382" font-size="10.5" fill="#64748b">同一个需求，两种写法得到相反的顺序</text>
+
+  <!-- 判据 -->
+  <rect x="40" y="396" width="920" height="76" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="420" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 一条命令确认你手上的 nginx 属于哪一版</text>
+  <text x="58" y="442" font-size="11.5" fill="#334155">grep -rn "headers_filters\|body_filters" src/http/ngx_http_core_module.h</text>
+  <text x="58" y="462" font-size="11.5" fill="#334155">1.31.6 实测：<tspan font-weight="bold">无输出 = 已删除</tspan>，写书里的代码会直接编译失败（成员不存在）。</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="488" width="920" height="58" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="58" y="512" font-size="12.5" font-weight="bold" fill="#14532d">⭐ 迁移时的实际影响</text>
+  <text x="58" y="534" font-size="12" fill="#334155">如果你有两个 filter 且它们有先后依赖（例如一个写头、一个读头），从旧版迁到 1.31 时必须交换注册顺序，否则语义会静默反转 —— 不报错，只是结果不对。</text>
+</svg>

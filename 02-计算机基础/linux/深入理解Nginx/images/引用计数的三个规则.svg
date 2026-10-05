@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">引用计数：handler 返回 ≠ 请求结束</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">下发异步请求之前先 +1，回调处理完再 -1 —— 计数是模块唯一需要主动参与的地方</text>
+
+  <!-- 表头 -->
+  <rect x="60" y="88" width="880" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="110" font-size="11.5" font-weight="bold" fill="#334155">时刻与发生的事情</text>
+  <text x="870" y="110" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">r-&gt;main-&gt;count</text>
+
+  <rect x="60" y="126" width="880" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="152" font-size="11.5" fill="#334155">t0　请求进来，nginx 建好 r，计数从 1 开始</text>
+  <text x="870" y="152" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">1</text>
+
+  <rect x="60" y="172" width="880" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="76" y="198" font-size="11.5" fill="#14532d">t1　handler 要发起异步（上游 / 定时器 / 子请求 / 线程池）→ 动手前先 +1</text>
+  <text x="870" y="198" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">2</text>
+
+  <rect x="60" y="218" width="880" height="42" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="76" y="244" font-size="11.5" fill="#b91c1c">t2　handler 返回 NGX_OK 让出 CPU —— 此刻请求「并未结束」，全靠这个计数撑着</text>
+  <text x="870" y="244" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b91c1c">2</text>
+
+  <rect x="60" y="264" width="880" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="290" font-size="11.5" fill="#334155">t3　上游响应回来，回调里读数据、组装响应</text>
+  <text x="870" y="290" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">2</text>
+
+  <rect x="60" y="310" width="880" height="42" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="76" y="336" font-size="11.5" fill="#b45309">t4　回调里 -1，并用 ngx_http_finalize_request 收尾</text>
+  <text x="870" y="336" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">1</text>
+
+  <rect x="60" y="356" width="880" height="42" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="76" y="382" font-size="11.5" fill="#334155">t5　计数归零 → nginx 才真正回收 r 与 r-&gt;pool</text>
+  <text x="870" y="382" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">0</text>
+
+  <!-- 说明 -->
+  <rect x="60" y="416" width="430" height="96" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="76" y="440" font-size="12.5" font-weight="bold" fill="#b91c1c">不做 +1 会怎样</text>
+  <text x="76" y="462" font-size="11.5" fill="#334155">nginx 以为没人再用这个请求，立刻回收 r 与</text>
+  <text x="76" y="480" font-size="11.5" fill="#334155">r-&gt;pool；等上游回调回来时，读到的是已经</text>
+  <text x="76" y="498" font-size="11.5" fill="#334155">被回收的内存 —— 野指针，且现场极难复现。</text>
+
+  <rect x="510" y="416" width="430" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="526" y="440" font-size="12.5" font-weight="bold" fill="#0f172a">一个可观测的判据</text>
+  <text x="526" y="462" font-size="11.5" fill="#334155">stub_status 的 Waiting 只涨不落，八成就是</text>
+  <text x="526" y="480" font-size="11.5" fill="#334155">某个模块 +1 了却没 -1（计数不归零，请求</text>
+  <text x="526" y="498" font-size="11.5" fill="#334155">就一直挂着，连接也不会被回收）。</text>
+
+  <rect x="60" y="524" width="880" height="30" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="544" font-size="11.5" fill="#1e40af">⭐ 记法：凡是「handler 返回之后还会被调用」的回调，前面都必须有一个 +1，后面配套一个 -1。</text>
+</svg>

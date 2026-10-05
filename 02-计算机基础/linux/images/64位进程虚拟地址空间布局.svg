@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="up" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="dn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">64 位 Linux 进程的虚拟地址空间布局（低地址在上）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">各段高度是示意、不按真实比例；真正要记住的是「谁向哪边长」与内核空间的位置</text>
+
+  <!-- 刻度 -->
+  <text x="40" y="98" font-size="10" fill="#94a3b8">0x0000000000000000</text>
+
+  <rect x="150" y="82" width="340" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="170" y="107" font-size="12.5" fill="#334155">不可访问区（NULL 指针陷阱页）</text>
+  <text x="530" y="100" font-size="11.5" fill="#334155">解引用空指针立刻段错误，而不是落到某个</text>
+  <text x="530" y="116" font-size="11.5" fill="#334155">随机物理页 —— 这是「留白」换来的确定性。</text>
+
+  <rect x="150" y="128" width="340" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="170" y="153" font-size="12.5" fill="#1e40af">代码段 .text（只读可执行）</text>
+  <text x="530" y="146" font-size="11.5" fill="#334155">ELF 机器指令；同一份程序被多个进程共享，</text>
+  <text x="530" y="162" font-size="11.5" fill="#334155">物理内存里只有一份，靠页表指向同一页框。</text>
+
+  <rect x="150" y="174" width="340" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="170" y="199" font-size="12.5" fill="#1e40af">数据段 .data + .bss（全局 / 静态变量）</text>
+  <text x="530" y="192" font-size="11.5" fill="#334155">.data 存已初始化值，.bss 只占地址不占文件</text>
+  <text x="530" y="208" font-size="11.5" fill="#334155">（内核在缺页时补零页，所以不撑大可执行文件）。</text>
+
+  <rect x="150" y="220" width="340" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="170" y="240" font-size="12.5" font-weight="bold" fill="#14532d">堆 Heap：malloc 的地盘</text>
+  <text x="170" y="258" font-size="11" fill="#14532d">brk 扩缩 + mmap 大块</text>
+  <line x1="452" y1="256" x2="452" y2="230" stroke="#16a34a" stroke-width="2" marker-end="url(#up)"/>
+  <text x="530" y="238" font-size="11.5" fill="#334155">向上（高地址）增长，所以「堆增长」和</text>
+  <text x="530" y="254" font-size="11.5" fill="#334155">「栈增长」是相向而行的 —— 中间留 mmap 区</text>
+
+  <rect x="150" y="272" width="340" height="46" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="170" y="292" font-size="12.5" font-weight="bold" fill="#b45309">mmap 文件映射区</text>
+  <text x="170" y="310" font-size="11" fill="#b45309">动态库 · mmap 文件 · 匿名大块</text>
+  <text x="530" y="284" font-size="11.5" fill="#334155">当缓冲区用，避免堆栈撞上；⚠️ 大对象走 mmap</text>
+  <text x="530" y="300" font-size="11.5" fill="#334155">不在传统「堆」里 —— 这是 RSS 偏大的原因之一。</text>
+  <text x="530" y="318" font-size="11.5" fill="#64748b">注意它向下增长，方向与堆相反。</text>
+
+  <rect x="150" y="324" width="340" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="170" y="344" font-size="12.5" font-weight="bold" fill="#14532d">栈 Stack：局部变量与调用帧</text>
+  <text x="170" y="362" font-size="11" fill="#14532d">默认 8MB，ulimit -s 可调</text>
+  <line x1="452" y1="334" x2="452" y2="360" stroke="#b45309" stroke-width="2" marker-end="url(#dn)"/>
+  <text x="530" y="348" font-size="11.5" fill="#334155">向下（低地址）增长：好处是「栈顶」始终在</text>
+  <text x="530" y="364" font-size="11.5" fill="#334155">同一个方向，只需调栈指针，不必搬移数据。</text>
+
+  <text x="40" y="392" font-size="10" fill="#94a3b8">0x00007fffffffffff</text>
+  <text x="530" y="392" font-size="11.5" fill="#64748b">↑ 以上为用户空间（约 128TB 理论、常用 47 位）</text>
+
+  <rect x="150" y="404" width="340" height="56" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="170" y="426" font-size="12.5" font-weight="bold" fill="#0f172a">内核空间（高位地址）</text>
+  <text x="170" y="444" font-size="11" fill="#64748b">内核代码 / 页表 / ZONE 映射</text>
+  <text x="530" y="420" font-size="11.5" fill="#334155">每个进程的地址空间里都占了这一段，但所有进程</text>
+  <text x="530" y="436" font-size="11.5" fill="#334155">共享同一份物理内核代码 / 数据；⭐ 用户态访问不了</text>
+  <text x="530" y="452" font-size="11.5" fill="#334155">这段，必须陷入内核态才切到内核页表去看。</text>
+
+  <text x="40" y="484" font-size="10" fill="#94a3b8">0xffffffffffffffff</text>
+
+  <!-- 底部结论 -->
+  <rect x="40" y="502" width="930" height="94" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="526" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 三件容易被忽略的事</text>
+  <text x="58" y="546" font-size="12" fill="#334155">① 进程里「看到」的地址全都是虚拟地址，打印指针拿到的是 VA，不是物理地址；</text>
+  <text x="58" y="566" font-size="12" fill="#334155">② 同一段虚拟地址在不同进程里落到不同物理页 —— 隔离就建立在这一点上（A、B 各写 0x400000 互不影响）；</text>
+  <text x="58" y="586" font-size="12" fill="#334155">③ 堆向上、栈向下，中间靠 mmap 区缓冲 —— 「栈溢出」与「堆撞栈」本质是同一个方向上的两面。</text>
+</svg>

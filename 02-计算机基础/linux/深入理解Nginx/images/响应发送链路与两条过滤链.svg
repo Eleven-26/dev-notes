@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">响应是怎么发出去的：内容产出 → 两条过滤链 → 写出</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">CONTENT 阶段只是「产出缓冲区」，真正写出去还要经过头和体两条过滤链</text>
+
+  <!-- 1 -->
+  <rect x="80" y="92" width="560" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="98" y="114" font-size="12.5" font-weight="bold" fill="#14532d">content handler 产出 ngx_chain_t 缓冲区链</text>
+  <text x="98" y="134" font-size="11" fill="#14532d">index / autoindex / proxy_pass / return 都落在这里</text>
+
+  <line x1="360" y1="146" x2="360" y2="172" stroke="#2563eb" stroke-width="2" marker-end="url(#w1)"/>
+
+  <!-- 2 -->
+  <rect x="80" y="176" width="560" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="98" y="198" font-size="12.5" font-weight="bold" fill="#1e40af">header 过滤链：改响应头</text>
+  <text x="98" y="218" font-size="11" fill="#1e40af">add_header、headers 模块、sub_filter 的头改写……</text>
+
+  <line x1="360" y1="230" x2="360" y2="256" stroke="#2563eb" stroke-width="2" marker-end="url(#w1)"/>
+
+  <!-- 3 -->
+  <rect x="80" y="260" width="560" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="98" y="282" font-size="12.5" font-weight="bold" fill="#1e40af">body 过滤链：改响应体</text>
+  <text x="98" y="302" font-size="11" fill="#1e40af">gzip、sub_filter、addition —— 内容要进用户态才能改</text>
+
+  <line x1="360" y1="314" x2="360" y2="340" stroke="#2563eb" stroke-width="2" marker-end="url(#w1)"/>
+
+  <!-- 4 -->
+  <rect x="80" y="344" width="560" height="52" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="98" y="366" font-size="12.5" font-weight="bold" fill="#0f172a">write filter：真正写到 socket</text>
+  <text x="98" y="386" font-size="11" fill="#334155">sendfile 开启时，文件内容由内核直接送达，不经用户态</text>
+
+  <line x1="360" y1="398" x2="360" y2="424" stroke="#2563eb" stroke-width="2" marker-end="url(#w1)"/>
+
+  <!-- 5 -->
+  <rect x="80" y="428" width="560" height="46" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="98" y="456" font-size="12.5" fill="#14532d">客户端（或上游）收到响应</text>
+
+  <!-- 右侧说明 -->
+  <rect x="676" y="176" width="304" height="136" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="692" y="200" font-size="12.5" font-weight="bold" fill="#b45309">⚠️ 过滤链的顺序容易记反</text>
+  <text x="692" y="222" font-size="11" fill="#334155">多条 header filter 之间的执行顺序，与它们在</text>
+  <text x="692" y="239" font-size="11" fill="#334155">postconfiguration 里注册的顺序<tspan font-weight="bold" fill="#b45309">正好相反</tspan>：</text>
+  <text x="692" y="256" font-size="11" fill="#334155">后注册的<tspan font-weight="bold">先</tspan>执行（头插式）。</text>
+  <text x="692" y="278" font-size="11" fill="#64748b">1.31 已把旧的 headers_filters / body_filters 数组</text>
+  <text x="692" y="295" font-size="11" fill="#64748b">删除，改为全局函数指针链 —— 详见 09 篇。</text>
+
+  <rect x="676" y="326" width="304" height="148" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="692" y="350" font-size="12.5" font-weight="bold" fill="#0f172a">sendfile 的边界在哪</text>
+  <text x="692" y="372" font-size="11" fill="#334155">它的价值是<tspan font-weight="bold">文件内容不进用户态</tspan>：静态</text>
+  <text x="692" y="389" font-size="11" fill="#334155">大文件时把「读文件 + 写 socket」合成一次内核</text>
+  <text x="692" y="406" font-size="11" fill="#334155">内拷贝，省掉两次拷贝与两次上下文切换。</text>
+  <text x="692" y="428" font-size="11" fill="#b45309">⚠️ 但一旦响应要过过滤链（gzip、sub_filter），</text>
+  <text x="692" y="445" font-size="11" fill="#b45309">sendfile 就用不上了 —— 内容必须先进用户态。</text>
+  <text x="692" y="464" font-size="11" fill="#64748b">这也是「开了 gzip 反而慢」在某些场景下的原因。</text>
+
+  <!-- 结论 -->
+  <rect x="80" y="496" width="900" height="86" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="98" y="520" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 这条链解释了 add_header 的那个坑</text>
+  <text x="98" y="542" font-size="12" fill="#334155">header 过滤链里的模块会不会真正执行，取决于<tspan font-weight="bold">响应状态码</tspan>（例如只有 2xx / 3xx / 204 / 206 才加头）；</text>
+  <text x="98" y="562" font-size="12" fill="#334155">而父级的 add_header 还在不在，取决于<tspan font-weight="bold">配置的覆盖规则</tspan>。两个规则叠加，才解释得通「404 上一个自定义头都没有」。</text>
+  <text x="98" y="578" font-size="11.5" fill="#64748b">排障提示：响应头不对时，先分清是「模块没跑」还是「配置没生效」—— 前者看状态码，后者看继承规则。</text>
+</svg>

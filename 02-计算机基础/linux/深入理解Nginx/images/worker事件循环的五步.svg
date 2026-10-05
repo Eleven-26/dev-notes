@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="e1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">worker 的主循环：一轮里只做这五件事</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">对应源码里的 ngx_process_events_and_timers()；顺序即代码顺序，第 ①⑤ 步合起来解释了「空闲不占 CPU」</text>
+
+  <!-- ① -->
+  <rect x="180" y="96" width="700" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="198" y="118" font-size="13" font-weight="bold" fill="#1e40af">① 算超时：从定时器红黑树取最近一个到期时间，作为下面 epoll_wait 的等待上限</text>
+  <text x="198" y="139" font-size="11" fill="#1e40af">没有它就只能盲等或轮询；有了它，内核会在「下一个该醒的时刻」把进程叫醒。</text>
+
+  <line x1="530" y1="154" x2="530" y2="172" stroke="#2563eb" stroke-width="2" marker-end="url(#e1)"/>
+
+  <!-- ② -->
+  <rect x="180" y="176" width="700" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="198" y="198" font-size="13" font-weight="bold" fill="#0f172a">② 抢 accept 锁（仅当 accept_mutex on，默认开）</text>
+  <text x="198" y="219" font-size="11" fill="#334155">只有抢到锁的 worker 才去 accept 新连接 —— 这是用户态解惊群的办法（见第五节）。</text>
+
+  <line x1="530" y1="234" x2="530" y2="252" stroke="#2563eb" stroke-width="2" marker-end="url(#e1)"/>
+
+  <!-- ③ -->
+  <rect x="180" y="256" width="700" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="198" y="278" font-size="13" font-weight="bold" fill="#14532d">③ epoll_wait(超时)：拿到一批就绪事件</text>
+  <text x="198" y="299" font-size="11" fill="#14532d">阻塞在这里等内核通知；这一步是「单线程撑住万级连接」的关键 —— 等的时候不烧 CPU。</text>
+
+  <line x1="530" y1="314" x2="530" y2="332" stroke="#2563eb" stroke-width="2" marker-end="url(#e1)"/>
+
+  <!-- ④ -->
+  <rect x="180" y="336" width="700" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="198" y="358" font-size="13" font-weight="bold" fill="#0f172a">④ 逐个回调：读事件走 rev-&gt;handler，写事件走 wev-&gt;handler</text>
+  <text x="198" y="379" font-size="11" fill="#334155">业务代码基本都跑在这一步；一次要处理完这一轮拿到的所有事件，不能只处理一个。</text>
+
+  <line x1="530" y1="394" x2="530" y2="412" stroke="#2563eb" stroke-width="2" marker-end="url(#e1)"/>
+
+  <!-- ⑤ -->
+  <rect x="180" y="416" width="700" height="56" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="198" y="438" font-size="13" font-weight="bold" fill="#b45309">⑤ 处理定时器：把已到期的移出红黑树并执行回调</text>
+  <text x="198" y="459" font-size="11" fill="#b45309">连接读超时、代理超时都发生在这里，而不是在 epoll_wait 返回时。</text>
+
+  <!-- 回环 -->
+  <path d="M 180 444 H 100 V 124 H 174" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#e1)"/>
+  <text x="106" y="464" font-size="11" fill="#1e40af">回到 ①</text>
+
+  <!-- 结论 -->
+  <rect x="180" y="490" width="700" height="62" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="198" y="514" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 为什么空闲时 nginx 几乎不占 CPU</text>
+  <text x="198" y="536" font-size="12" fill="#334155">因为它把「下一次该醒来的时间」交给内核（第 ① 步），而不是自己定时轮询 —— 没有事件就一直是 0% CPU。</text>
+</svg>

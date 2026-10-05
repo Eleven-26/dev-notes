@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">QUIC 的两个独立条件，与一份能通过 nginx -t 的完整配置</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">「能跑 QUIC」和「能用 0-RTT」是两件事；同一端口上 TCP + UDP 双监听是标准做法</text>
+
+  <!-- 条件 A -->
+  <rect x="40" y="82" width="450" height="146" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="106" font-size="12.5" font-weight="bold" fill="#1e40af">条件一：跑通 QUIC / HTTP/3</text>
+  <text x="58" y="130" font-size="11.5" fill="#334155">① 编译时加<tspan font-weight="bold">　--with-http_v3_module</tspan></text>
+  <text x="58" y="150" font-size="11.5" fill="#b45309">　　（默认不编译；官方 Linux 二进制包已内置）</text>
+  <text x="58" y="172" font-size="11.5" fill="#334155">② 运行时需要 TLS 1.3 支持</text>
+  <text x="58" y="192" font-size="11.5" fill="#334155">③ OpenSSL <tspan font-weight="bold">1.1.1+</tspan> 即可，不足则走兼容层</text>
+  <text x="58" y="214" font-size="11" fill="#64748b">⚠️ 不能在 Windows 上编译；起始版本 1.25.0（实验性）</text>
+
+  <!-- 条件 B -->
+  <rect x="510" y="82" width="450" height="146" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="528" y="106" font-size="12.5" font-weight="bold" fill="#b45309">条件二：启用 0-RTT（early data）</text>
+  <text x="528" y="130" font-size="11.5" fill="#334155">要求 OpenSSL <tspan font-weight="bold" fill="#b45309">3.5.1 或更高</tspan></text>
+  <text x="528" y="152" font-size="11.5" fill="#334155">外加 nginx <tspan font-weight="bold">≥ 1.29.1</tspan></text>
+  <text x="528" y="176" font-size="11.5" fill="#334155">满足后写 <tspan font-weight="bold">ssl_early_data on;</tspan> 才有效</text>
+  <text x="528" y="198" font-size="11.5" fill="#b91c1c">⛔ 低版本：写了也不生效，且没有明显报错</text>
+  <text x="528" y="218" font-size="11" fill="#64748b">⭐ 两条条件必须分开验证：能跑 ≠ 能用 0-RTT</text>
+
+  <!-- 配置块 -->
+  <rect x="40" y="244" width="920" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="268" font-size="12.5" font-weight="bold" fill="#0f172a">一份完整的 HTTP/3 server（本机 nginx -t 实测通过）</text>
+
+  <text x="58" y="292" font-size="10.5" fill="#334155">server {</text>
+  <text x="58" y="309" font-size="10.5" fill="#1e40af">　　listen 19443 quic reuseport;　　　# UDP 侧：QUIC（reuseport 解惊群，见 03 篇）</text>
+  <text x="58" y="326" font-size="10.5" fill="#1e40af">　　listen 19443 ssl;　　　　　　　　# TCP 侧：HTTP/1.1 与 HTTP/2 —— 双监听缺一不可</text>
+  <text x="58" y="343" font-size="10.5" fill="#334155">　　http2 on;　http3 on;　http3_hq off;　　# hq 仅用于 QUIC 互通测试</text>
+  <text x="58" y="360" font-size="10.5" fill="#334155">　　http3_max_concurrent_streams 100;　http3_stream_buffer_size 64k;</text>
+  <text x="58" y="377" font-size="10.5" fill="#334155">　　quic_active_connection_id_limit 4;　quic_retry on;　quic_gso on;</text>
+  <text x="58" y="394" font-size="10.5" fill="#334155">　　ssl_protocols TLSv1.3;</text>
+  <text x="58" y="411" font-size="10.5" fill="#b45309">　　ssl_early_data on;　　　　　　　　# ⚠️ 需 nginx ≥1.29.1 且 OpenSSL ≥3.5.1</text>
+  <text x="58" y="428" font-size="10.5" fill="#334155">　　ssl_certificate /tmp/certs/c.pem;　ssl_certificate_key /tmp/certs/k.pem;</text>
+  <text x="58" y="445" font-size="10.5" fill="#14532d">　　location / { add_header Alt-Svc 'h3=":19443"; ma=86400' always; return 200 "h3 ok"; }</text>
+  <text x="58" y="462" font-size="10.5" fill="#334155">}</text>
+  <text x="58" y="483" font-size="11" fill="#64748b">⭐ 实测：上面 9 条 QUIC 相关指令全部「syntax is ok」，配置整体 test is successful。</text>
+
+  <!-- 反例 -->
+  <rect x="40" y="508" width="920" height="60" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="532" font-size="12" font-weight="bold" fill="#b91c1c">反例对照：写错一条指令，报错会指名道姓</text>
+  <text x="58" y="554" font-size="11.5" fill="#334155">quic_bogus on;　→　unknown directive "quic_bogus"　　所以「配置写错了」和「模块没编进去」是两类不同报错，可据此区分。</text>
+</svg>

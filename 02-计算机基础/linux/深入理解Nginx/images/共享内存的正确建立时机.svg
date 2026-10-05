@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="s1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">跨 worker 共享状态的唯一正规途径：shared_memory_add + init 回调</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">关键在时机：初始化必须发生在 fork 之前，否则每个 worker 会各拿到一份</text>
+
+  <!-- 正确链条 -->
+  <rect x="40" y="88" width="520" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="58" y="112" font-size="12.5" font-weight="bold" fill="#1e40af">① 配置解析期：登记 zone</text>
+  <text x="58" y="132" font-size="11" fill="#1e40af">ngx_shared_memory_add(cf, &amp;name, size, tag)</text>
+  <text x="58" y="150" font-size="11" fill="#1e40af">⭐ 登记三样东西：名字 + 大小 + <tspan font-weight="bold">init 回调</tspan>（回调是关键）</text>
+
+  <line x1="300" y1="164" x2="300" y2="186" stroke="#16a34a" stroke-width="2" marker-end="url(#s1)"/>
+
+  <rect x="40" y="190" width="520" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+  <text x="58" y="214" font-size="12.5" font-weight="bold" fill="#14532d">② master 初始化阶段：init 回调被调用</text>
+  <text x="58" y="234" font-size="11" fill="#14532d">⭐ 这一步发生在 <tspan font-weight="bold">fork worker 之前</tspan> —— 所以它分配的东西</text>
+  <text x="58" y="252" font-size="11" fill="#14532d">所有 worker 都能看到，这才叫「共享」。</text>
+
+  <line x1="300" y1="266" x2="300" y2="288" stroke="#16a34a" stroke-width="2" marker-end="url(#s1)"/>
+
+  <rect x="40" y="292" width="520" height="62" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="58" y="316" font-size="12.5" font-weight="bold" fill="#14532d">③ fork worker</text>
+  <text x="58" y="338" font-size="11" fill="#14532d">每个 worker 继承到同一块映射，直接用原子操作读写它。</text>
+
+  <!-- 错误做法 -->
+  <rect x="590" y="88" width="370" height="116" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="608" y="112" font-size="12.5" font-weight="bold" fill="#b91c1c">❌ 为什么不能在 init_process 里建</text>
+  <text x="608" y="136" font-size="11" fill="#334155">init_process 是「每个 worker fork 之后</text>
+  <text x="608" y="154" font-size="11" fill="#334155">各执行一次」的钩子 ——</text>
+  <text x="608" y="176" font-size="11" fill="#334155">在那里「创建」的内存<tspan font-weight="bold" fill="#b91c1c">每个 worker 各一份</tspan>，</text>
+  <text x="608" y="194" font-size="11" fill="#334155">根本达不到共享的目的。</text>
+
+  <!-- 实测证据 -->
+  <rect x="590" y="220" width="370" height="134" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="608" y="244" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 本机实测的两条证据</text>
+  <text x="608" y="268" font-size="10.5" fill="#334155">$ nginx -t -c /tmp/p1.conf</text>
+  <text x="608" y="286" font-size="10.5" fill="#b45309">[notice] prodemo: zone "pz" initialized,</text>
+  <text x="608" y="302" font-size="10.5" fill="#b45309">　　　　 size=65536　← 在 test 阶段就跑了</text>
+  <text x="608" y="324" font-size="11" fill="#334155">① init 回调早于 worker 启动，且<tspan font-weight="bold">在 -t 的</tspan></text>
+  <text x="608" y="341" font-size="11" fill="#334155">　<tspan font-weight="bold">完整解析流程里也会执行</tspan> → 配置错误能在</text>
+  <text x="608" y="352" font-size="11" fill="#334155">　部署前发现。</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="378" width="920" height="122" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="402" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 三句话记住这条时机链</text>
+  <text x="58" y="426" font-size="12" fill="#334155">① 登记在配置解析期（shared_memory_add），初始化在 master 阶段（init 回调），使用在 worker 运行期；</text>
+  <text x="58" y="448" font-size="12" fill="#334155">② init 回调里做的任何事都只做一次，且所有 worker 可见 —— 这是「共享」成立的全部依据；</text>
+  <text x="58" y="470" font-size="12" fill="#334155">③ reload 时 zone 会被复用（走 octx 分支拿旧 zone），所以初始化代码必须能处理「名字已存在」的情况。</text>
+  <text x="58" y="492" font-size="11.5" fill="#64748b">⚠️ 实测还发现：init 回调里的失败必须在配置期就暴露出来（否则运行期才炸，而那时已经在服务流量）。</text>
+</svg>

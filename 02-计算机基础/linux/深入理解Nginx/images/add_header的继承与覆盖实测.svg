@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">add_header 的继承与覆盖：三种情形的实测对照</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">实测环境 nginx 1.31.6；结论与「子级继承父级」的直觉相反</text>
+
+  <!-- 列1 -->
+  <text x="180" y="88" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">/both</text>
+  <rect x="30" y="100" width="300" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="120" font-size="11" font-weight="bold" fill="#64748b">server 级</text>
+  <text x="44" y="140" font-size="10" fill="#334155">add_header X-Server</text>
+  <text x="44" y="156" font-size="10" fill="#334155">　　"server-level" always;</text>
+
+  <rect x="30" y="174" width="300" height="66" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="44" y="194" font-size="11" font-weight="bold" fill="#b45309">location 级（也写了）</text>
+  <text x="44" y="214" font-size="10" fill="#334155">add_header X-Loc</text>
+  <text x="44" y="230" font-size="10" fill="#334155">　　"loc-level" always;</text>
+
+  <line x1="180" y1="244" x2="180" y2="262" stroke="#64748b" stroke-width="2"/>
+  <text x="190" y="258" font-size="10.5" fill="#64748b">实际响应</text>
+
+  <rect x="30" y="266" width="300" height="62" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="44" y="288" font-size="12" font-weight="bold" fill="#b91c1c">只返回 X-Loc</text>
+  <text x="44" y="308" font-size="10.5" fill="#334155">X-Server 整组消失，不是「两个都有」</text>
+
+  <text x="44" y="350" font-size="11.5" fill="#334155">⭐ 子级一旦出现 add_header，</text>
+  <text x="44" y="368" font-size="11.5" fill="#334155">父级的<tspan font-weight="bold" fill="#b91c1c">全部同类指令被丢弃</tspan>。</text>
+  <text x="44" y="390" font-size="11" fill="#64748b">这是「覆盖」而不是「合并」——</text>
+  <text x="44" y="407" font-size="11" fill="#64748b">想两边都有，就得在子级重复写一遍。</text>
+
+  <!-- 列2 -->
+  <text x="500" y="88" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">/only-server</text>
+  <rect x="350" y="100" width="300" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="364" y="120" font-size="11" font-weight="bold" fill="#64748b">server 级</text>
+  <text x="364" y="140" font-size="10" fill="#334155">add_header X-Server</text>
+  <text x="364" y="156" font-size="10" fill="#334155">　　"server-level" always;</text>
+
+  <rect x="350" y="174" width="300" height="66" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="364" y="194" font-size="11" font-weight="bold" fill="#14532d">location 级（没写）</text>
+  <text x="364" y="214" font-size="10" fill="#64748b">只有 return 200 "only-server";</text>
+  <text x="364" y="230" font-size="10" fill="#64748b">没有任何 add_header</text>
+
+  <line x1="500" y1="244" x2="500" y2="262" stroke="#64748b" stroke-width="2"/>
+  <text x="510" y="258" font-size="10.5" fill="#64748b">实际响应</text>
+
+  <rect x="350" y="266" width="300" height="62" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="364" y="288" font-size="12" font-weight="bold" fill="#14532d">返回 X-Server</text>
+  <text x="364" y="308" font-size="10.5" fill="#334155">这一次「继承」按直觉工作</text>
+
+  <text x="364" y="350" font-size="11.5" fill="#334155">⭐ 子级完全没提这条指令时，</text>
+  <text x="364" y="368" font-size="11.5" fill="#334155">才轮到父级的值生效。</text>
+  <text x="364" y="390" font-size="11" fill="#64748b">所以判断规则是「先看子级有没有</text>
+  <text x="364" y="407" font-size="11" fill="#64748b">写过」，而不是「两个值合起来」。</text>
+
+  <!-- 列3 -->
+  <text x="820" y="88" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">/loc-noalways-404</text>
+  <rect x="670" y="100" width="300" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="684" y="120" font-size="11" font-weight="bold" fill="#64748b">server 级</text>
+  <text x="684" y="140" font-size="10" fill="#334155">add_header X-Server</text>
+  <text x="684" y="156" font-size="10" fill="#334155">　　"server-level" always;</text>
+
+  <rect x="670" y="174" width="300" height="66" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="684" y="194" font-size="11" font-weight="bold" fill="#b45309">location 级（漏了 always）</text>
+  <text x="684" y="214" font-size="10" fill="#334155">add_header X-Loc3 "loc-not-always";</text>
+  <text x="684" y="230" font-size="10" fill="#334155">return 404;</text>
+
+  <line x1="820" y1="244" x2="820" y2="262" stroke="#64748b" stroke-width="2"/>
+  <text x="830" y="258" font-size="10.5" fill="#64748b">实际响应</text>
+
+  <rect x="670" y="266" width="300" height="62" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="684" y="288" font-size="12" font-weight="bold" fill="#b91c1c">一个自定义头都没有</text>
+  <text x="684" y="308" font-size="10.5" fill="#334155">X-Loc3 也没加上</text>
+
+  <text x="684" y="350" font-size="11.5" fill="#334155">⭐ 没写 always 时，add_header</text>
+  <text x="684" y="368" font-size="11.5" fill="#334155">只对 2xx / 3xx / 204 / 206 生效。</text>
+  <text x="684" y="390" font-size="11" fill="#64748b">404 / 500 这类错误响应上，</text>
+  <text x="684" y="407" font-size="11" fill="#64748b">必须显式写 always 才会出现。</text>
+
+  <!-- 底部结论 -->
+  <rect x="30" y="440" width="940" height="112" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="48" y="464" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 两条运维含义</text>
+  <text x="48" y="486" font-size="12" fill="#334155">① 在 location 里加响应头，会把 server 级加的全部挤掉 —— 想保留就得在 location 里一并重写（这是排障时「上线后某个安全头突然没了」的常见原因）。</text>
+  <text x="48" y="510" font-size="12" fill="#334155">② 要给错误响应加头（安全头、CORS、链路追踪 ID），必须写 always；否则越是你想排查的 500，越看不到那个头。</text>
+  <text x="48" y="536" font-size="12" fill="#64748b">同类「覆盖而非合并」的指令还有 proxy_set_header、proxy_hide_header 等，遇到响应头/请求头「莫名其妙少了一组」，先查这条规则。</text>
+</svg>

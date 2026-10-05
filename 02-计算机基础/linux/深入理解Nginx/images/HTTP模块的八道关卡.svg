@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一个 HTTP 模块要走过的八道关卡</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">它们在 ngx_http_module_t 里的位置是固定的，但「第几个被调用」和「第几个写在结构体里」不是一回事</text>
+
+  <!-- 8 个槽位 -->
+  <rect x="60" y="82" width="580" height="50" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="76" y="103" font-size="12.5" font-weight="bold" fill="#334155">1　preconfiguration</text>
+  <text x="76" y="122" font-size="11" fill="#64748b">配置解析开始前调用；绝大多数模块留 NULL</text>
+
+  <rect x="60" y="136" width="580" height="50" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="76" y="157" font-size="12.5" font-weight="bold" fill="#b91c1c">2　postconfiguration</text>
+  <text x="76" y="176" font-size="11" fill="#b91c1c">⭐ 所有模块的配置都解析完之后才调用：注册变量的唯一时机、挂 filter 链的唯一时机</text>
+
+  <rect x="60" y="190" width="580" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="211" font-size="12.5" font-weight="bold" fill="#0f172a">3　create_main_conf</text>
+  <text x="76" y="230" font-size="11" fill="#334155">解析 main 级配置时分配结构体（常用来放共享内存 zone 的描述）</text>
+
+  <rect x="60" y="244" width="580" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="265" font-size="12.5" font-weight="bold" fill="#0f172a">4　init_main_conf</text>
+  <text x="76" y="284" font-size="11" fill="#334155">紧跟 create_main_conf；⚠️ 返回值是 char *，不是 ngx_int_t</text>
+
+  <rect x="60" y="298" width="580" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="319" font-size="12.5" font-weight="bold" fill="#0f172a">5　create_srv_conf</text>
+  <text x="76" y="338" font-size="11" fill="#334155">每遇到一个 server 块就调一次</text>
+
+  <rect x="60" y="352" width="580" height="50" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="76" y="373" font-size="12.5" font-weight="bold" fill="#b45309">6　merge_srv_conf</text>
+  <text x="76" y="392" font-size="11" fill="#b45309">继承与覆盖就发生在这里：从上一级取值填进下级的空洞</text>
+
+  <rect x="60" y="406" width="580" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="427" font-size="12.5" font-weight="bold" fill="#0f172a">7　create_loc_conf</text>
+  <text x="76" y="446" font-size="11" fill="#334155">每遇到一个 location 块就调一次；初始化成 NGX_CONF_UNSET_* 才能让 merge 认出「没配」</text>
+
+  <rect x="60" y="460" width="580" height="50" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="76" y="481" font-size="12.5" font-weight="bold" fill="#b45309">8　merge_loc_conf</text>
+  <text x="76" y="500" font-size="11" fill="#b45309">同样是 char * 返回值；漏判 NGX_CONF_UNSET 会让「继承」静默失效</text>
+
+  <!-- 右侧说明 -->
+  <rect x="664" y="82" width="310" height="140" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="680" y="106" font-size="12.5" font-weight="bold" fill="#1e40af">⚠️ 位置 ≠ 调用顺序</text>
+  <text x="680" y="128" font-size="11" fill="#334155">postconfiguration 在结构体里排第 2，</text>
+  <text x="680" y="145" font-size="11" fill="#334155">却是<tspan font-weight="bold">最后一个</tspan>被调用的（等所有模块</text>
+  <text x="680" y="162" font-size="11" fill="#334155">的配置都解析完）。</text>
+  <text x="680" y="184" font-size="11" fill="#64748b">1.31 实测：放错槽位会被 -Werror 判成</text>
+  <text x="680" y="201" font-size="11" fill="#64748b">不兼容指针类型，编译直接失败。</text>
+
+  <rect x="664" y="236" width="310" height="140" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="680" y="260" font-size="12.5" font-weight="bold" fill="#b91c1c">签名必须分清楚</text>
+  <text x="680" y="282" font-size="11" fill="#334155">postconfiguration：ngx_int_t (*)()</text>
+  <text x="680" y="299" font-size="11" fill="#334155">　　返回 NGX_OK / NGX_ERROR</text>
+  <text x="680" y="320" font-size="11" fill="#334155">init_main_conf / merge_*：char *</text>
+  <text x="680" y="337" font-size="11" fill="#334155">　　返回 NGX_CONF_OK / NGX_CONF_ERROR</text>
+  <text x="680" y="361" font-size="11" fill="#b45309">两者写反，编译期就报错（这是好事）。</text>
+
+  <rect x="664" y="390" width="310" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="680" y="414" font-size="12.5" font-weight="bold" fill="#0f172a">返回值三段语义</text>
+  <text x="680" y="436" font-size="11" fill="#334155">NGX_OK / NGX_CONF_OK：过了</text>
+  <text x="680" y="456" font-size="11" fill="#334155">NGX_DECLINED：本模块不处理，</text>
+  <text x="680" y="473" font-size="11" fill="#334155">　交给同阶段的下一个模块</text>
+  <text x="680" y="494" font-size="11" fill="#b45309">NGX_ERROR：配置有错，nginx 拒绝启动</text>
+
+  <!-- 底部：content handler -->
+  <rect x="60" y="524" width="914" height="80" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="78" y="548" font-size="12.5" font-weight="bold" fill="#14532d">⭐ 到运行期，content handler 里只有这四件事</text>
+  <text x="78" y="570" font-size="11.5" fill="#334155">① 校验方法　② 填 r-&gt;headers_out（状态码 / Content-Type / 长度）　③ 构造 ngx_buf_t 与 chain　④ 发响应头并 output_filter 写出</text>
+  <text x="78" y="592" font-size="11.5" fill="#64748b">⚠️ 内存一律从 r-&gt;pool 分配：请求结束整池销毁，不必、也不能自己 free。</text>
+</svg>

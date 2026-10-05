@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">nginx.conf 的嵌套结构：指令写在哪一层，决定它能起什么作用</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">每开一层块，就多一个独立作用域 —— 「继承与覆盖」的规则只在同一份 context 内生效</text>
+
+  <!-- main -->
+  <rect x="50" y="88" width="500" height="392" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="66" y="112" font-size="14" font-weight="bold" fill="#0f172a">main（全局块）</text>
+  <text x="196" y="112" font-size="11" fill="#64748b">worker_processes · user · pid · error_log</text>
+
+  <!-- events -->
+  <rect x="72" y="128" width="220" height="62" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="88" y="150" font-size="12.5" font-weight="bold" fill="#0f172a">events</text>
+  <text x="88" y="170" font-size="11" fill="#334155">worker_connections</text>
+  <text x="88" y="184" font-size="10.5" fill="#64748b">事件模型与单 worker 连接上限</text>
+
+  <!-- http -->
+  <rect x="72" y="208" width="456" height="252" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="88" y="232" font-size="12.5" font-weight="bold" fill="#1e40af">http</text>
+  <text x="130" y="232" font-size="11" fill="#64748b">mime · log_format · sendfile · gzip · upstream</text>
+
+  <!-- upstream -->
+  <rect x="92" y="244" width="416" height="52" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="106" y="264" font-size="12" font-weight="bold" fill="#b45309">upstream backend</text>
+  <text x="106" y="282" font-size="11" fill="#334155">server 127.0.0.1:8080; 权重 / ip_hash / least_conn</text>
+
+  <!-- server -->
+  <rect x="92" y="308" width="416" height="140" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="106" y="328" font-size="12" font-weight="bold" fill="#14532d">server</text>
+  <text x="152" y="328" font-size="11" fill="#64748b">listen · server_name · ssl · add_header</text>
+
+  <rect x="112" y="338" width="376" height="46" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="124" y="356" font-size="11.5" fill="#14532d">location /api/</text>
+  <text x="124" y="374" font-size="11" fill="#334155">proxy_pass http://backend;</text>
+
+  <rect x="112" y="392" width="376" height="46" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1.5"/>
+  <text x="124" y="410" font-size="11.5" fill="#14532d">location /static/</text>
+  <text x="124" y="428" font-size="11" fill="#334155">root /var/www; expires 30d;</text>
+
+  <!-- 右侧说明 -->
+  <rect x="580" y="88" width="370" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="596" y="112" font-size="13" font-weight="bold" fill="#0f172a">读配置的三个问题</text>
+  <text x="596" y="136" font-size="11.5" fill="#334155">① 这条指令属于哪一层？</text>
+  <text x="596" y="154" font-size="11" fill="#64748b">　（官方文档每条指令都标了 Context）</text>
+  <text x="596" y="178" font-size="11.5" fill="#334155">② 下层写了、上层也写了，谁生效？</text>
+  <text x="596" y="196" font-size="11" fill="#64748b">　（就近原则，但「覆盖」与「合并」不同）</text>
+  <text x="596" y="220" font-size="11.5" fill="#334155">③ 下层没写，会继承上层的吗？</text>
+  <text x="596" y="238" font-size="11" fill="#64748b">　（多数会，但 add_header 等有例外）</text>
+
+  <rect x="580" y="280" width="370" height="200" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="596" y="304" font-size="13" font-weight="bold" fill="#b91c1c">⚠️ 最容易踩的一条</text>
+  <text x="596" y="328" font-size="11.5" fill="#334155">同一个块里同名指令可以写多行（如多个</text>
+  <text x="596" y="346" font-size="11.5" fill="#334155">add_header），但在<tspan font-weight="bold">不同层级</tspan>之间，</text>
+  <text x="596" y="364" font-size="11.5" fill="#334155">下层一旦出现该指令，上层的就<tspan font-weight="bold" fill="#b91c1c">整组失效</tspan>，</text>
+  <text x="596" y="382" font-size="11.5" fill="#334155">而不是「两边都留下」。</text>
+  <text x="596" y="408" font-size="11.5" fill="#64748b">这类「覆盖而非合并」的指令不止一个，</text>
+  <text x="596" y="426" font-size="11.5" fill="#64748b">add_header / proxy_set_header 都属于，</text>
+  <text x="596" y="444" font-size="11.5" fill="#64748b">下一张图是它的实测对照。</text>
+
+  <!-- 底部结论 -->
+  <rect x="50" y="500" width="900" height="58" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="66" y="524" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 记法</text>
+  <text x="66" y="546" font-size="12" fill="#334155">配置就是「块 + 指令 + 分号」；块嵌套 = 作用域嵌套。所有配置层面的疑难，几乎都能归结为「这条指令在哪一层、继承还是覆盖」。</text>
+</svg>

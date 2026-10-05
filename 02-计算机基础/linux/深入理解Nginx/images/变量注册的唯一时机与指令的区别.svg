@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">变量注册只有一个合法时机，而且「指令 ≠ 变量」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">把这两件事分开，变量相关的绝大多数困惑都会消失</text>
+
+  <!-- 时间轴 -->
+  <line x1="120" y1="104" x2="120" y2="286" stroke="#cbd5e1" stroke-width="2"/>
+
+  <rect x="160" y="92" width="560" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="176" y="114" font-size="11.5" fill="#334155">create_main_conf / init_main_conf</text>
+
+  <rect x="160" y="132" width="560" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="176" y="154" font-size="11.5" fill="#334155">create_srv_conf / merge_srv_conf</text>
+
+  <rect x="160" y="172" width="560" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="176" y="194" font-size="11.5" fill="#334155">create_loc_conf / merge_loc_conf</text>
+
+  <rect x="160" y="212" width="560" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2.5"/>
+  <text x="176" y="237" font-size="12.5" font-weight="bold" fill="#b91c1c">★ postconfiguration —— 变量只能在这里注册</text>
+
+  <rect x="160" y="258" width="560" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="176" y="280" font-size="11.5" fill="#14532d">运行期：每个请求到来时，get_handler 被调用来取值</text>
+
+  <text x="740" y="114" font-size="11" fill="#64748b">配置解析期</text>
+  <text x="740" y="240" font-size="11" fill="#b91c1c">写在这里</text>
+  <text x="740" y="257" font-size="11" fill="#b91c1c">才有效</text>
+  <text x="740" y="280" font-size="11" fill="#14532d">请求处理期</text>
+
+  <text x="40" y="320" font-size="11.5" fill="#334155">为什么必须是这个时机：变量表要等所有模块的配置都解析完才能统一建 hash —— 提前注册，后注册的模块就覆盖不到；</text>
+  <text x="40" y="340" font-size="11.5" fill="#334155">另外 register 的顺序决定了同名变量谁生效，这也是「先注册者优先」的原因。</text>
+
+  <!-- 指令 vs 变量 -->
+  <rect x="40" y="360" width="450" height="140" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="384" font-size="12.5" font-weight="bold" fill="#1e40af">指令：给配置用</text>
+  <text x="58" y="406" font-size="11.5" fill="#334155">写在 nginx.conf 里，由 ngx_command_t 的 set 函数</text>
+  <text x="58" y="424" font-size="11.5" fill="#334155">接收，结果存进 loc_conf。</text>
+  <text x="58" y="446" font-size="11.5" fill="#334155">它只在「解析配置」时起作用。</text>
+  <text x="58" y="470" font-size="11" fill="#64748b">示例：demo_num 7;　→ 存进 lcf-&gt;num</text>
+  <text x="58" y="490" font-size="11" fill="#64748b">　　　demo_str from-server;　→ 存进 lcf-&gt;str</text>
+
+  <rect x="510" y="360" width="450" height="140" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="528" y="384" font-size="12.5" font-weight="bold" fill="#14532d">变量：给运行期用</text>
+  <text x="528" y="406" font-size="11.5" fill="#334155">以 $name 出现在配置字符串里，由 get_handler</text>
+  <text x="528" y="424" font-size="11.5" fill="#334155">在请求处理时计算出来。</text>
+  <text x="528" y="446" font-size="11.5" fill="#334155">它和指令<b>没有自动联系</b>。</text>
+  <text x="528" y="470" font-size="11" fill="#b45309">⚠️ 配了 demo_num 就直接写 $demo_num，</text>
+  <text x="528" y="490" font-size="11" fill="#b45309">　 会报 unknown "demo_num" variable。</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="518" width="920" height="44" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="58" y="546" font-size="11.5" fill="#b45309">⭐ 官方模块的通行做法：指令负责配置，同时在 postconfiguration 里注册一个同名变量去读它 —— 这正是本轮实验补上的那一课。</text>
+</svg>

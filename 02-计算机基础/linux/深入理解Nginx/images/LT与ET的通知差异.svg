@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">LT 与 ET 的差别：一次没读完，谁还会提醒你</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个场景：内核缓冲区里到了 2 KB，应用这一次只读了 512 B</text>
+
+  <!-- 场景 -->
+  <rect x="40" y="88" width="920" height="42" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="58" y="114" font-size="12" fill="#334155">场景：缓冲区里还有 <tspan font-weight="bold">1536 B</tspan> 没被读走，此时应用回到了 epoll_wait —— 接下来会发生什么？</text>
+
+  <!-- LT -->
+  <rect x="40" y="146" width="450" height="164" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="58" y="172" font-size="14" font-weight="bold" fill="#1e40af">LT（水平触发，Level Trigger）</text>
+  <text x="58" y="196" font-size="11.5" fill="#334155">只要「缓冲区里还有数据」这个<tspan font-weight="bold">状态</tspan>还在，</text>
+  <text x="58" y="215" font-size="11.5" fill="#334155">下一次 epoll_wait 就<tspan font-weight="bold" fill="#1e40af">继续通知</tspan>你。</text>
+  <text x="58" y="244" font-size="11.5" fill="#334155">→ 这次没读完也没关系，下次还会被提醒，</text>
+  <text x="58" y="263" font-size="11.5" fill="#334155">　 语义上更接近「轮询」，写错的空间小。</text>
+  <text x="58" y="291" font-size="11.5" fill="#b45309">代价：同一条连接可能被反复唤醒。</text>
+
+  <!-- ET -->
+  <rect x="510" y="146" width="450" height="164" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="528" y="172" font-size="14" font-weight="bold" fill="#b45309">ET（边缘触发，nginx 在 Linux 上用）</text>
+  <text x="528" y="196" font-size="11.5" fill="#334155">只在「从无数据 → 有数据」这个<tspan font-weight="bold">瞬间</tspan>通知一次，</text>
+  <text x="528" y="215" font-size="11.5" fill="#334155">之后状态没再变化，<tspan font-weight="bold" fill="#b45309">就再也不通知</tspan>了。</text>
+  <text x="528" y="244" font-size="11.5" fill="#334155">→ 这次没读完，剩下 1536 B 会一直躺在缓冲区；</text>
+  <text x="528" y="263" font-size="11.5" fill="#334155">　 表现为「请求卡住不返回」，而小包却一切正常。</text>
+  <text x="528" y="291" font-size="11.5" font-weight="bold" fill="#b91c1c">所以必须在一次回调里读到 EAGAIN。</text>
+
+  <!-- 读循环三出口 -->
+  <text x="40" y="340" font-size="12.5" font-weight="bold" fill="#0f172a">ET 下的读循环，三种返回值分别对应什么</text>
+
+  <rect x="40" y="352" width="300" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="54" y="374" font-size="12.5" font-weight="bold" fill="#14532d">读到 n &gt; 0</text>
+  <text x="54" y="394" font-size="11" fill="#334155">还有数据，继续读 —— 不能只读一次</text>
+  <text x="54" y="409" font-size="11" fill="#334155">就走。这里漏了就是「大包卡住」。</text>
+
+  <rect x="356" y="352" width="300" height="62" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="370" y="374" font-size="12.5" font-weight="bold" fill="#0f172a">读到 n == 0</text>
+  <text x="370" y="394" font-size="11" fill="#334155">对端正常关闭（EOF），走收尾流程</text>
+  <text x="370" y="409" font-size="11" fill="#334155">这与「读完」不同，要区分开。</text>
+
+  <rect x="672" y="352" width="288" height="62" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="686" y="374" font-size="12.5" font-weight="bold" fill="#b45309">errno == EAGAIN</text>
+  <text x="686" y="394" font-size="11" fill="#334155">本轮真的读完了，把事件重新挂上、</text>
+  <text x="686" y="409" font-size="11" fill="#334155">退出循环。这是唯一的正常出口。</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="432" width="920" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="456" font-size="12.5" font-weight="bold" fill="#0f172a">⚠️ 三个常见误解</text>
+  <text x="58" y="478" font-size="12" fill="#334155">① 「ET 比 LT 快」—— ET 省的是<tspan font-weight="bold">事件通知次数</tspan>（内核↔用户态的唤醒次数），不是拷贝次数；该拷多少数据还是多少。</text>
+  <text x="58" y="500" font-size="12" fill="#334155">② 「ET 下读一次就够」—— 上面那个循环是<tspan font-weight="bold">必须</tspan>的，漏了就会出现「小包正常、大包卡住」这种极具迷惑性的现象。</text>
+  <text x="58" y="522" font-size="12" fill="#334155">③ 「ET 必须配非阻塞」—— 是的，而且这点是硬要求：否则最后一次读会在没数据时把整个 worker 阻塞住，比 LT 的重复通知严重得多。</text>
+  <text x="58" y="542" font-size="11.5" fill="#64748b">延伸：nginx 用 ET，是因为它每个连接只挂一次事件、靠循环读干净来保证不漏；这套写法的前提是 fd 必须非阻塞。</text>
+</svg>

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="v1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">变量机制里最难的一环：值放在哪，就决定它什么时候失效</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个变量的求值可能发生在两个相隔很远的阶段 —— 中间 r-&gt;pool 会被大量复用</text>
+
+  <!-- 左：三条出口 -->
+  <rect x="40" y="82" width="450" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="106" font-size="12.5" font-weight="bold" fill="#0f172a">get_handler 必须交代清楚的三条出口</text>
+
+  <rect x="58" y="118" width="414" height="28" rx="4" fill="#f1f5f9"/>
+  <text x="70" y="137" font-size="10.5" font-weight="bold" fill="#334155">valid</text>
+  <text x="140" y="137" font-size="10.5" font-weight="bold" fill="#334155">not_found</text>
+  <text x="240" y="137" font-size="10.5" font-weight="bold" fill="#334155">含义</text>
+  <text x="390" y="137" font-size="10.5" font-weight="bold" fill="#334155">日志里显示</text>
+
+  <text x="70" y="166" font-size="11" fill="#14532d">1</text>
+  <text x="150" y="166" font-size="11" fill="#14532d">0</text>
+  <text x="240" y="166" font-size="11" fill="#334155">正常</text>
+  <text x="390" y="166" font-size="11" fill="#14532d">值</text>
+
+  <text x="70" y="192" font-size="11" fill="#334155">0</text>
+  <text x="150" y="192" font-size="11" fill="#334155">1</text>
+  <text x="240" y="192" font-size="11" fill="#334155">变量未设置</text>
+  <text x="390" y="192" font-size="11" fill="#b45309">−</text>
+
+  <text x="70" y="218" font-size="11" fill="#334155">0</text>
+  <text x="150" y="218" font-size="11" fill="#334155">0</text>
+  <text x="240" y="218" font-size="11" fill="#334155">值无效（有变量但不该取值）</text>
+  <text x="390" y="218" font-size="11" fill="#334155">空</text>
+
+  <text x="70" y="244" font-size="11" fill="#b91c1c">1</text>
+  <text x="150" y="244" font-size="11" fill="#64748b">—</text>
+  <text x="240" y="244" font-size="11" fill="#b91c1c">正常但 data = NULL</text>
+  <text x="390" y="244" font-size="11" fill="#b91c1c">空</text>
+
+  <text x="58" y="270" font-size="11" fill="#64748b">⚠️ 最后一行是「自相矛盾」的状态：它比配置错误更</text>
+  <text x="58" y="288" font-size="11" fill="#64748b">难排查 —— 日志里什么都看不到，也不报错。</text>
+  <text x="58" y="314" font-size="11" fill="#334155">⭐ 出口要写全：正常 / 未设置 / 无效，三者语义不同。</text>
+
+  <!-- 右：值的生命周期 -->
+  <rect x="510" y="82" width="450" height="252" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="528" y="106" font-size="12.5" font-weight="bold" fill="#b91c1c">⚠️ 真实事故：值进了 r-&gt;pool，log 阶段读到垃圾</text>
+
+  <rect x="528" y="118" width="180" height="46" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="538" y="138" font-size="10.5" font-weight="bold" fill="#1e40af">求值阶段</text>
+  <text x="538" y="155" font-size="10" fill="#334155">CONTENT / return</text>
+
+  <rect x="748" y="118" width="196" height="46" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="758" y="138" font-size="10.5" font-weight="bold" fill="#b45309">写日志阶段</text>
+  <text x="758" y="155" font-size="10" fill="#334155">LOG，又一次求值</text>
+
+  <line x1="618" y1="166" x2="618" y2="184" stroke="#64748b" stroke-width="1.5" marker-end="url(#v1)"/>
+  <line x1="846" y1="166" x2="846" y2="184" stroke="#64748b" stroke-width="1.5" marker-end="url(#v1)"/>
+
+  <rect x="528" y="188" width="180" height="70" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="538" y="208" font-size="10" fill="#334155">ngx_pnalloc(r-&gt;pool, ..)</text>
+  <text x="538" y="226" font-size="10" fill="#334155">写进刚分配的内存</text>
+  <text x="538" y="246" font-size="10" fill="#b45309">v-&gt;data 指向它</text>
+
+  <rect x="748" y="188" width="196" height="70" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="758" y="208" font-size="10" fill="#334155">读同一块内存</text>
+  <text x="758" y="226" font-size="10" font-weight="bold" fill="#b91c1c">实测 len=13 first=0</text>
+  <text x="758" y="246" font-size="10" fill="#b91c1c">内容恰好像变量名</text>
+
+  <text x="528" y="278" font-size="11" fill="#334155">中间那段代码大量复用 r-&gt;pool，原来的内容早被覆盖。</text>
+  <text x="528" y="296" font-size="11" fill="#334155">⭐ 结论：<tspan font-weight="bold">值的生命周期必须覆盖到 log 阶段</tspan>，</text>
+  <text x="528" y="314" font-size="11" fill="#334155">不能只在「这次用得到」的那个阶段里合法。</text>
+
+  <!-- 三种做法 -->
+  <rect x="40" y="348" width="920" height="118" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="58" y="372" font-size="12.5" font-weight="bold" fill="#14532d">⭐ 三种正确做法</text>
+  <text x="58" y="394" font-size="11.5" fill="#334155">① 值指向<tspan font-weight="bold">请求生命周期内不会被改写的数据</tspan>：官方 $server_name 直接指 r-&gt;headers_in.server.data。</text>
+  <text x="58" y="416" font-size="11.5" fill="#334155">② 需要格式化时，分配进<tspan font-weight="bold">生命周期明确、不参与临时复用的结构</tspan>：官方 $upstream_addr 用 r-&gt;upstream_states。</text>
+  <text x="58" y="438" font-size="11.5" fill="#b45309">③ 反面：worker 级静态缓冲只适合单请求演示 —— 同一 worker 的并发请求会互相覆盖。</text>
+  <text x="58" y="458" font-size="11" fill="#64748b">判据：问「这个指针在 LOG 阶段还指向同一个东西吗」，答不上来就不要用它。</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="482" width="920" height="60" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="506" font-size="12" fill="#1e40af">⭐ 一个能直接对上的现象：$demo_num 与 $demo_str（值来自 loc_conf，生命周期与连接同长）实测输出完全正确；</text>
+  <text x="58" y="528" font-size="12" fill="#1e40af">而写进 r-&gt;pool 的 $demo_counter 在日志里读到垃圾 —— 同一份代码，只差「值放在哪」。</text>
+</svg>

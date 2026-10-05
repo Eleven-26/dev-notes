@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">lua-resty-* 不是一堆平级的库，而是三层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">搞清层次才不会「用错工具」：上面两层都建立在最底层的 cosocket 之上</text>
+
+  <!-- 上层 -->
+  <rect x="60" y="82" width="880" height="104" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="78" y="106" font-size="12.5" font-weight="bold" fill="#1e40af">上层：编排与治理 —— 网关能力，不是协议客户端</text>
+
+  <rect x="80" y="118" width="200" height="54" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="92" y="140" font-size="10.5" font-weight="bold" fill="#1e40af">lua-resty-limit-traffic</text>
+  <text x="92" y="158" font-size="10" fill="#334155">限流：req / conn / count</text>
+
+  <rect x="292" y="118" width="200" height="54" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="304" y="140" font-size="10.5" font-weight="bold" fill="#1e40af">lua-resty-lock</text>
+  <text x="304" y="158" font-size="10" fill="#334155">跨 worker 锁（共享内存）</text>
+
+  <rect x="504" y="118" width="200" height="54" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="516" y="140" font-size="10.5" font-weight="bold" fill="#1e40af">…upstream-healthcheck</text>
+  <text x="516" y="158" font-size="10" fill="#334155">上游主动健康检查</text>
+
+  <rect x="716" y="118" width="204" height="54" rx="6" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="728" y="140" font-size="10.5" font-weight="bold" fill="#1e40af">lua-resty-balancer</text>
+  <text x="728" y="158" font-size="10" fill="#334155">一致性哈希 / 轮询</text>
+
+  <!-- 中层 -->
+  <rect x="60" y="198" width="880" height="104" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="78" y="222" font-size="12.5" font-weight="bold" fill="#14532d">中层：协议客户端 —— 全部建立在 cosocket 之上</text>
+
+  <rect x="80" y="234" width="200" height="54" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
+  <text x="92" y="256" font-size="10.5" font-weight="bold" fill="#14532d">lua-resty-mysql</text>
+  <text x="92" y="274" font-size="10" fill="#334155">非阻塞 MySQL 客户端</text>
+
+  <rect x="292" y="234" width="200" height="54" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
+  <text x="304" y="256" font-size="10.5" font-weight="bold" fill="#14532d">lua-resty-redis</text>
+  <text x="304" y="274" font-size="10" fill="#334155">非阻塞 Redis 客户端</text>
+
+  <rect x="504" y="234" width="200" height="54" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
+  <text x="516" y="256" font-size="10.5" font-weight="bold" fill="#14532d">lua-resty-memcached</text>
+  <text x="516" y="274" font-size="10" fill="#334155">非阻塞 Memcached</text>
+
+  <rect x="716" y="234" width="204" height="54" rx="6" fill="#ffffff" stroke="#86efac" stroke-width="1"/>
+  <text x="728" y="256" font-size="10.5" font-weight="bold" fill="#14532d">lua-resty-http</text>
+  <text x="728" y="274" font-size="10" fill="#334155">HTTP 客户端（含 keepalive）</text>
+
+  <!-- 底层 -->
+  <rect x="60" y="314" width="880" height="124" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="78" y="338" font-size="12.5" font-weight="bold" fill="#b45309">底层：核心绑定 —— 这一层才是「能力」本身</text>
+
+  <rect x="80" y="350" width="260" height="74" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <text x="92" y="372" font-size="10.5" font-weight="bold" fill="#b45309">lua-resty-core</text>
+  <text x="92" y="390" font-size="10" fill="#334155">cosocket / ngx.semaphore / ngx.re</text>
+  <text x="92" y="408" font-size="10" fill="#334155">/ ngx.ssl 的 FFI 实现</text>
+
+  <rect x="352" y="350" width="180" height="74" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <text x="364" y="372" font-size="10.5" font-weight="bold" fill="#b45309">lua-resty-lrucache</text>
+  <text x="364" y="390" font-size="10" fill="#334155">纯 Lua 的 LRU</text>
+  <text x="364" y="408" font-size="10" fill="#64748b">（不带 FFI）</text>
+
+  <rect x="544" y="350" width="180" height="74" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <text x="556" y="372" font-size="10.5" font-weight="bold" fill="#b45309">lua-cjson</text>
+  <text x="556" y="390" font-size="10" fill="#334155">JSON 编解码</text>
+  <text x="556" y="408" font-size="10" fill="#64748b">（C 实现）</text>
+
+  <rect x="736" y="350" width="184" height="74" rx="6" fill="#ffffff" stroke="#fcd34d" stroke-width="1"/>
+  <text x="748" y="372" font-size="10.5" font-weight="bold" fill="#b45309">lua-resty-string</text>
+  <text x="748" y="390" font-size="10" fill="#334155">摘要 / 编解码 / session</text>
+  <text x="748" y="408" font-size="10" fill="#64748b">Cookie 会话管理</text>
+
+  <!-- C 层 -->
+  <rect x="60" y="450" width="880" height="46" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="78" y="478" font-size="12" fill="#334155">再往下就是 lua-nginx-module（C 层）—— 它提供 cosocket 原语，是上面所有东西的地基</text>
+
+  <!-- 判据 -->
+  <rect x="60" y="510" width="880" height="60" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="78" y="532" font-size="12" font-weight="bold" fill="#0f172a">⭐ 判据</text>
+  <text x="78" y="554" font-size="11.5" fill="#334155">要连一个「从未有人支持过的协议」→ 用 cosocket 自己写；连 MySQL / Redis → 用中层现成的；做限流、锁、健康检查 → 用上层的。</text>
+</svg>

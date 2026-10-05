@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mg1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三级继承只靠两个 merge 函数：http → server → location</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">嵌套两次，就得到了三级的继承效果；每次 merge 的语义完全一样</text>
+
+  <!-- 三层 -->
+  <rect x="60" y="92" width="240" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="180" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">http 级</text>
+  <text x="180" y="140" text-anchor="middle" font-size="10.5" fill="#1e40af">main_conf（作为 prev）</text>
+
+  <line x1="304" y1="124" x2="376" y2="124" stroke="#2563eb" stroke-width="2" marker-end="url(#mg1)"/>
+  <text x="340" y="114" text-anchor="middle" font-size="10.5" fill="#1e40af">merge_srv_conf</text>
+
+  <rect x="380" y="92" width="240" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="500" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">server 级</text>
+  <text x="500" y="140" text-anchor="middle" font-size="10.5" fill="#1e40af">srv_conf（既收也传）</text>
+
+  <line x1="624" y1="124" x2="696" y2="124" stroke="#2563eb" stroke-width="2" marker-end="url(#mg1)"/>
+  <text x="660" y="114" text-anchor="middle" font-size="10.5" fill="#1e40af">merge_loc_conf</text>
+
+  <rect x="700" y="92" width="240" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="820" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">location 级</text>
+  <text x="820" y="140" text-anchor="middle" font-size="10.5" fill="#14532d">loc_conf（终点）</text>
+
+  <!-- merge 语义 -->
+  <text x="60" y="190" font-size="12.5" font-weight="bold" fill="#0f172a">每次 merge 都在问同一个问题</text>
+
+  <rect x="60" y="204" width="280" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="74" y="226" font-size="11.5" font-weight="bold" fill="#0f172a">① 子级显式设置了吗？</text>
+  <text x="74" y="248" font-size="11" fill="#14532d">设了 → 就用子级的（覆盖）</text>
+
+  <rect x="360" y="204" width="280" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="374" y="226" font-size="11.5" font-weight="bold" fill="#0f172a">② 没设呢？</text>
+  <text x="374" y="248" font-size="11" fill="#1e40af">取父级的（这才是继承）</text>
+
+  <rect x="660" y="204" width="280" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="674" y="226" font-size="11.5" font-weight="bold" fill="#0f172a">③ 父级也没设？</text>
+  <text x="674" y="248" font-size="11" fill="#64748b">用宏里给的默认值</text>
+
+  <text x="60" y="292" font-size="11.5" fill="#334155">ngx_conf_merge_value(conf-&gt;num, prev-&gt;num, -1) 展开后就是上面三步，「-1」是兜底默认值。</text>
+
+  <!-- UNSET 的坑 -->
+  <rect x="60" y="308" width="880" height="96" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="76" y="332" font-size="12.5" font-weight="bold" fill="#b91c1c">⚠️ 整套机制的前提：create_*_conf 必须把字段置成 NGX_CONF_UNSET</text>
+  <text x="76" y="354" font-size="11.5" fill="#334155">因为 ngx_pcalloc 分配出来的结构体全是 0 —— 如果漏了 UNSET，那么「用户没配这个指令」和「用户配成 0」</text>
+  <text x="76" y="374" font-size="11.5" fill="#334155">在 merge 眼里长得一模一样，子级会用 0 把父级的有效值<tspan font-weight="bold">静默顶掉</tspan>。</text>
+  <text x="76" y="396" font-size="11.5" fill="#b45309">表现：不报错、能启动，只是「明明在 http 里配了，到了 location 却不生效」。</text>
+
+  <!-- 实测 -->
+  <rect x="60" y="420" width="880" height="82" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="76" y="444" font-size="12.5" font-weight="bold" fill="#14532d">⭐ 实测对照（本目录自写模块，num / str 两个字段）</text>
+  <text x="76" y="468" font-size="11.5" fill="#334155">http 级配 num=7 / str=from-server，只在 location 里配 num=9：</text>
+  <text x="76" y="490" font-size="11.5" fill="#334155">→ <tspan font-family="monospace">/demo</tspan> 得到 num=7 str=from-server（两个字段都是继承）； <tspan font-family="monospace">/demo/override</tspan> 得到 num=9 str=from-location（覆盖）。</text>
+
+  <!-- 结论 -->
+  <rect x="60" y="514" width="880" height="44" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="542" font-size="11.5" fill="#1e40af">⚠️ 另外实测到一条：nginx -T 只回显配置原文，看不到 merge 之后的值 —— 要验证继承是否正确，只能运行期把值输出出来。</text>
+</svg>

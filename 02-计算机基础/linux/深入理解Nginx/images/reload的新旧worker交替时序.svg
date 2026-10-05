@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">nginx -s reload（HUP）到底做了什么：先起新的，再让旧的退</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">按实测日志的时间顺序排列；「不掉连接」不是口号，而是下面第 ②④⑤ 步合起来的效果</text>
+
+  <!-- 1 -->
+  <rect x="40" y="88" width="920" height="52" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="52" y="98" width="140" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="122" y="119" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">master</text>
+  <text x="205" y="110" font-size="11.5" fill="#334155">收到 HUP：重新读取配置文件并校验语法</text>
+  <text x="205" y="129" font-size="11" fill="#64748b">⚠️ 配置有错时不会动现有的 worker —— 旧进程继续按老配置服务，这是 reload 安全的基础。</text>
+
+  <!-- 2 -->
+  <rect x="40" y="148" width="920" height="52" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="52" y="158" width="140" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="122" y="179" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">master → 新 worker</text>
+  <text x="205" y="170" font-size="11.5" fill="#334155">先起 4 个新 worker（实测 1566~1569）</text>
+  <text x="205" y="189" font-size="11" fill="#64748b">⭐ 此刻新旧 worker 并存、都在监听：新连接可以马上被新 worker 接走，服务没有空窗期。</text>
+
+  <!-- 3 -->
+  <rect x="40" y="208" width="920" height="52" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="52" y="218" width="140" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="122" y="239" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">新 worker</text>
+  <text x="205" y="230" font-size="11.5" fill="#334155">开始 accept 新连接，按新配置处理</text>
+  <text x="205" y="249" font-size="11" fill="#64748b">此时线上最坏情况是「新老配置各服务一部分请求」，而不是「全部拒绝」。</text>
+
+  <!-- 4 -->
+  <rect x="40" y="268" width="920" height="52" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="52" y="278" width="140" height="32" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1"/>
+  <text x="122" y="299" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b45309">master → 旧 worker</text>
+  <text x="205" y="290" font-size="11.5" fill="#334155">通知旧 worker 退出</text>
+  <text x="205" y="309" font-size="11" fill="#64748b">旧 worker 收到后先做一件事：<tspan font-weight="bold">关闭自己的 listen socket</tspan>，从此不再接受任何新连接。</text>
+
+  <!-- 5 -->
+  <rect x="40" y="328" width="920" height="56" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <rect x="52" y="338" width="140" height="36" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1"/>
+  <text x="122" y="361" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b45309">旧 worker</text>
+  <text x="205" y="351" font-size="11.5" fill="#334155">处理完手头在飞的连接 → 自行退出（日志：worker process 1523 exited with code 0）</text>
+  <text x="205" y="371" font-size="11" fill="#64748b">⭐ 退出码 0 是「优雅退完」的判据；如果日志里始终没有 exited，说明还有连接没结束。</text>
+
+  <!-- 6 -->
+  <rect x="40" y="392" width="920" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="52" y="402" width="140" height="36" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="122" y="425" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b91c1c">旧 worker 1522</text>
+  <text x="205" y="415" font-size="11.5" fill="#334155">比别人晚 2 秒才退出</text>
+  <text x="205" y="435" font-size="11" fill="#334155">⚠️ 因为那一轮实验里有一条一直挂着的在飞连接。<tspan font-weight="bold" fill="#b91c1c">连接不结束，旧 worker 就永不退出。</tspan></text>
+
+  <!-- 结论 -->
+  <rect x="40" y="462" width="920" height="82" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="486" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 两个直接可用的结论</text>
+  <text x="58" y="508" font-size="12" fill="#334155">① reload 期间内存会短暂升高（新旧 worker 并存），worker 越多、峰值越明显 —— 容量规划要按「一个 reload 周期的双倍 worker」留余量。</text>
+  <text x="58" y="530" font-size="12" fill="#334155">② 长连接（WebSocket / SSE / gRPC streaming）会拖住旧 worker：要么在业务侧设最大连接时长，要么接受「reload 后旧进程仍在」不一定代表故障。</text>
+</svg>

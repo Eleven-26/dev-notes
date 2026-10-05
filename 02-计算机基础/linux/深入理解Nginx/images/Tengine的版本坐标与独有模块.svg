@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" width="1000" height="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Tengine：一个二进制里有两个版本号</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">它是 nginx 的分支而不是插件；「100% 兼容」的第一层体现是连可执行文件的名字都没改</text>
+
+  <!-- 左：版本号 -->
+  <rect x="40" y="82" width="450" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="106" font-size="12.5" font-weight="bold" fill="#0f172a">实测：-v 同时回显两行</text>
+  <rect x="58" y="116" width="414" height="66" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="70" y="136" font-size="10.5" fill="#64748b">$ /opt/tengine/sbin/nginx -v</text>
+  <text x="70" y="154" font-size="11" font-weight="bold" fill="#b45309">Tengine version: Tengine/3.1.0</text>
+  <text x="70" y="172" font-size="11" font-weight="bold" fill="#1e40af">nginx version: nginx/1.24.0</text>
+  <text x="58" y="202" font-size="11.5" fill="#334155">⭐ 3.1.0 基于 <tspan font-weight="bold">nginx 1.24.0</tspan> —— 比当前主线<tspan font-weight="bold" fill="#b45309">慢一个身位</tspan>；</text>
+  <text x="58" y="216" font-size="11" fill="#64748b">基线之外的 Nginx 新特性与 CVE 回补，都要等 Tengine 自己跟进。</text>
+
+  <!-- 右：兼容性 -->
+  <rect x="510" y="82" width="450" height="140" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="528" y="106" font-size="12.5" font-weight="bold" fill="#14532d">「100% 兼容」体现在三个地方</text>
+  <text x="528" y="130" font-size="11.5" fill="#334155">① 可执行文件名：<tspan font-weight="bold">nginx</tspan>（不是 tengine）</text>
+  <text x="528" y="152" font-size="11.5" fill="#334155">② 配置文件仍叫：<tspan font-weight="bold">nginx.conf</tspan></text>
+  <text x="528" y="174" font-size="11.5" fill="#334155">③ 进程名仍是：<tspan font-weight="bold">nginx: master process</tspan></text>
+  <text x="528" y="200" font-size="11.5" fill="#14532d">→ 运维脚本、systemd unit、pidfile 路径都不用动。</text>
+  <text x="528" y="216" font-size="11" fill="#64748b">⚠️ 但这条在 HTTP/3 上不成立（见下一张图）。</text>
+
+  <!-- A 组：开源版没有 -->
+  <text x="40" y="252" font-size="12.5" font-weight="bold" fill="#0f172a">独有模块（A 组）：开源 Nginx 没有的</text>
+
+  <rect x="40" y="264" width="290" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="54" y="284" font-size="10.5" font-weight="bold" fill="#1e40af">ngx_http_concat_module</text>
+  <text x="54" y="302" font-size="10" fill="#334155">合并多个 JS/CSS 成一次响应</text>
+
+  <rect x="355" y="264" width="290" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="369" y="284" font-size="10.5" font-weight="bold" fill="#1e40af">ngx_http_trim_filter_module</text>
+  <text x="369" y="302" font-size="10" fill="#334155">自动压掉 HTML 空白与注释</text>
+
+  <rect x="670" y="264" width="290" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="684" y="284" font-size="10.5" font-weight="bold" fill="#1e40af">ngx_http_footer_filter_module</text>
+  <text x="684" y="302" font-size="10" fill="#334155">响应末尾插版权 / 时间戳</text>
+
+  <rect x="40" y="320" width="290" height="48" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="54" y="340" font-size="10.5" font-weight="bold" fill="#b91c1c">ngx_http_upstream_check_module</text>
+  <text x="54" y="358" font-size="10" fill="#b91c1c">主动健康检查（开源版只有被动）</text>
+
+  <rect x="355" y="320" width="290" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="369" y="340" font-size="10.5" font-weight="bold" fill="#1e40af">ngx_http_sysguard_module</text>
+  <text x="369" y="358" font-size="10" fill="#334155">按负载 / 内存自动降级</text>
+
+  <rect x="670" y="320" width="290" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="684" y="340" font-size="10.5" font-weight="bold" fill="#1e40af">ngx_http_reqstat_module</text>
+  <text x="684" y="358" font-size="10" fill="#334155">按 location 维度统计请求量</text>
+
+  <rect x="40" y="376" width="290" height="48" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="54" y="396" font-size="10.5" font-weight="bold" fill="#b91c1c">ngx_http_lua_module</text>
+  <text x="54" y="414" font-size="10" fill="#b91c1c">内置 Lua（不必上 OpenResty）</text>
+
+  <rect x="355" y="376" width="290" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="369" y="396" font-size="10.5" font-weight="bold" fill="#1e40af">ngx_http_proxy_connect_module</text>
+  <text x="369" y="414" font-size="10" fill="#334155">支持 CONNECT（正向代理）</text>
+
+  <rect x="670" y="376" width="290" height="48" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="684" y="396" font-size="10.5" font-weight="bold" fill="#1e40af">ngx_http_tfs_module / mod_dubbo</text>
+  <text x="684" y="414" font-size="10" fill="#334155">阿里内部文件系统与 Dubbo 代理</text>
+
+  <!-- B 组 -->
+  <text x="40" y="452" font-size="12.5" font-weight="bold" fill="#0f172a">B 组：名字像独有，其实开源版也有</text>
+
+  <rect x="40" y="464" width="440" height="48" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="54" y="484" font-size="10.5" font-weight="bold" fill="#334155">ngx_http_upstream_consistent_hash_module</text>
+  <text x="54" y="502" font-size="10" fill="#334155">开源版有：hash ... consistent（1.7.2+）</text>
+
+  <rect x="520" y="464" width="440" height="48" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="534" y="484" font-size="10.5" font-weight="bold" fill="#334155">ngx_http_slice_module</text>
+  <text x="534" y="502" font-size="10" fill="#334155">开源版有：1.9.8+ 已内置（大响应切片回源）</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="524" width="920" height="52" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="58" y="546" font-size="11.5" fill="#b45309">⚠️ 独有能力的真实形态是「模块」，需要 <tspan font-weight="bold">--add-module</tspan> 显式编入；</text>
+  <text x="58" y="566" font-size="11.5" fill="#b45309">实测 configure --help 里唯一的 Tengine 专属开关是 <tspan font-weight="bold">--without-procs</tspan> —— 也就是说默认只编了 procs 一个。</text>
+</svg>

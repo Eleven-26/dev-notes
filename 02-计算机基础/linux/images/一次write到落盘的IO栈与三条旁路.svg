@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mo" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 write() 到落盘的完整路径：write 返回 ≠ 数据落盘</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">数据在 ② 页缓存就「成功」了，此后由内核异步回写；要断电不丢，必须在 ② 之后显式 fsync</text>
+
+  <!-- 主链 ① -->
+  <rect x="40" y="92" width="360" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="58" y="112" font-size="13" font-weight="bold" fill="#0f172a">① 用户缓冲区</text>
+  <text x="58" y="128" font-size="11" fill="#64748b">bufio.Writer / BufferedWriter（用户态内存）</text>
+
+  <line x1="220" y1="136" x2="220" y2="172" stroke="#2563eb" stroke-width="2" marker-end="url(#mb)"/>
+  <text x="232" y="150" font-size="11" fill="#1e40af">write(fd, buf, n)</text>
+  <text x="232" y="164" font-size="11" fill="#1e40af">系统调用陷入内核</text>
+
+  <!-- 用户/内核分界 -->
+  <line x1="30" y1="156" x2="550" y2="156" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="6 4"/>
+  <text x="40" y="152" font-size="11" fill="#94a3b8">用户态</text>
+  <text x="470" y="152" font-size="11" fill="#94a3b8">内核态</text>
+
+  <!-- 主链 ② -->
+  <rect x="40" y="176" width="360" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="58" y="198" font-size="13" font-weight="bold" fill="#1e40af">② Page Cache 页缓存</text>
+  <text x="58" y="216" font-size="11" fill="#1e40af">拷贝到此就返回，页被标记 dirty，等内核异步回写</text>
+
+  <line x1="220" y1="230" x2="220" y2="268" stroke="#2563eb" stroke-width="2" marker-end="url(#mb)"/>
+  <text x="232" y="246" font-size="11" fill="#1e40af">异步回写</text>
+  <text x="232" y="260" font-size="11" fill="#1e40af">不阻塞 write 调用</text>
+
+  <!-- 主链 ③ -->
+  <rect x="40" y="272" width="360" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="294" font-size="13" font-weight="bold" fill="#0f172a">③ 块层 Generic Block Layer</text>
+  <text x="58" y="312" font-size="11" fill="#64748b">合并 / 排序请求 → IO 调度 mq-deadline · kyber · bfq</text>
+
+  <line x1="220" y1="324" x2="220" y2="352" stroke="#2563eb" stroke-width="2" marker-end="url(#mb)"/>
+
+  <!-- 主链 ④⑤ -->
+  <rect x="40" y="356" width="360" height="42" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="382" font-size="13" fill="#0f172a">④ 设备驱动（SCSI / NVMe）</text>
+
+  <line x1="220" y1="398" x2="220" y2="424" stroke="#2563eb" stroke-width="2" marker-end="url(#mb)"/>
+
+  <rect x="40" y="428" width="360" height="42" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="58" y="454" font-size="13" font-weight="bold" fill="#14532d">⑤ 磁盘 / SSD（只有到这里才持久）</text>
+
+  <!-- 右侧三条旁路 -->
+  <rect x="570" y="92" width="400" height="190" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="586" y="116" font-size="14" font-weight="bold" fill="#b45309">三条旁路：何时算真的落盘</text>
+
+  <text x="586" y="140" font-size="12" font-weight="bold" fill="#0f172a">fsync / fdatasync</text>
+  <text x="586" y="158" font-size="11" fill="#334155">把 ② 的脏页（fsync 还含元数据）推到底并</text>
+  <text x="586" y="173" font-size="11" fill="#334155">等磁盘确认。返回 0 才算断电不丢 —— 数据库</text>
+  <text x="586" y="188" font-size="11" fill="#334155">WAL 靠的就是它；msync 负责 mmap 映射区。</text>
+
+  <text x="586" y="214" font-size="12" font-weight="bold" fill="#0f172a">O_DIRECT</text>
+  <text x="586" y="232" font-size="11" fill="#334155">绕过页缓存，直接在用户缓冲与设备间传输。</text>
+  <text x="586" y="247" font-size="11" fill="#334155">适合自带缓存的数据库；免费午餐没有：</text>
+  <text x="586" y="262" font-size="11" fill="#b45309">必须自己保证地址 / 长度 / 偏移全部按块对齐。</text>
+
+  <rect x="570" y="300" width="400" height="170" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="586" y="324" font-size="12" font-weight="bold" fill="#1e40af">mmap：把文件映射成一段内存</text>
+  <text x="586" y="344" font-size="11" fill="#334155">读写像操作字节数组，省掉 read/write 的系统</text>
+  <text x="586" y="359" font-size="11" fill="#334155">调用与一次用户 / 内核拷贝，随机访问友好。</text>
+  <text x="586" y="378" font-size="11" fill="#334155">⚠️ 但仍走 ② 的脏页：回写时机不可控（要</text>
+  <text x="586" y="393" font-size="11" fill="#334155">msync）、大文件首次访问有缺页抖动、占 RSS。</text>
+  <text x="586" y="418" font-size="12" font-weight="bold" fill="#b45309">它不消灭代价，只把代价从「拷贝」换成「缺页」。</text>
+  <text x="586" y="440" font-size="11" fill="#64748b">⭐ 若只是「读大文件 + 顺序扫描」，sendfile /</text>
+  <text x="586" y="455" font-size="11" fill="#64748b">splice 这类零拷贝路径比 mmap 更合适。</text>
+
+  <!-- 底部结论 -->
+  <rect x="40" y="486" width="930" height="86" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="512" font-size="13" font-weight="bold" fill="#0f172a">⚠️ 三句话记住这张图</text>
+  <text x="58" y="534" font-size="12" fill="#334155">① write() 返回 0 只代表「数据进了页缓存」，机器此刻断电照样丢；</text>
+  <text x="58" y="554" font-size="12" fill="#334155">② 只有 fsync() / fdatasync() 返回 0 才代表「落盘」，这是 WAL、刷盘策略的判据；</text>
+  <text x="58" y="574" font-size="12" fill="#334155">③ O_DIRECT 与 mmap 都是在「拷贝成本」和「一致性 / 对齐责任」之间做交换，不是纯优化。</text>
+</svg>

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" width="1000" height="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="m2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ngx_pool_t：一个大池子，一次释放，不留零头</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">它解决的不是「分配得快」，而是「按生命周期批量释放」—— 请求结束销毁整池</text>
+
+  <!-- 池头 -->
+  <rect x="60" y="96" width="380" height="126" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="76" y="120" font-size="13.5" font-weight="bold" fill="#1e40af">ngx_pool_t（池头）</text>
+  <text x="76" y="142" font-size="11" fill="#1e40af">d 当前块（max 小块上限、current 可用位置）</text>
+  <text x="76" y="161" font-size="11" fill="#1e40af">large 大块链表头</text>
+  <text x="76" y="180" font-size="11" fill="#1e40af">chain 所有池内块串成的链</text>
+  <text x="76" y="199" font-size="11" fill="#1e40af">cleanup 清理回调链表</text>
+
+  <!-- 连到小块链 -->
+  <path d="M 250 222 V 284" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#m1)"/>
+  <text x="258" y="248" font-size="11" fill="#1e40af">小块从这里切</text>
+
+  <!-- 连到大块链 -->
+  <path d="M 440 150 H 660 V 284" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#m2)"/>
+  <text x="452" y="142" font-size="11" fill="#b45309">large 指向大块链</text>
+
+  <!-- 小块链 -->
+  <rect x="60" y="290" width="140" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="72" y="312" font-size="11.5" font-weight="bold" fill="#14532d">池内块 1</text>
+  <text x="72" y="332" font-size="10" fill="#334155">已切出的小块</text>
+  <text x="72" y="348" font-size="10" fill="#334155">未分配区</text>
+  <text x="72" y="364" font-size="10" fill="#64748b">挪指针即分配</text>
+
+  <line x1="202" y1="333" x2="216" y2="333" stroke="#16a34a" stroke-width="2" marker-end="url(#m1)"/>
+
+  <rect x="220" y="290" width="140" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="232" y="312" font-size="11.5" font-weight="bold" fill="#14532d">池内块 2</text>
+  <text x="232" y="332" font-size="10" fill="#334155">块用完了</text>
+  <text x="232" y="348" font-size="10" fill="#334155">就再 malloc 一块</text>
+  <text x="232" y="364" font-size="10" fill="#64748b">挂到 chain 上</text>
+
+  <line x1="362" y1="333" x2="376" y2="333" stroke="#16a34a" stroke-width="2" marker-end="url(#m1)"/>
+
+  <rect x="380" y="290" width="140" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="392" y="312" font-size="11.5" font-weight="bold" fill="#334155">池内块 3 …</text>
+  <text x="392" y="332" font-size="10" fill="#334155">块内小块之间</text>
+  <text x="392" y="348" font-size="10" fill="#334155">没有独立链表：</text>
+  <text x="392" y="364" font-size="10" fill="#b45309">整池一起释放</text>
+
+  <!-- 大块链 -->
+  <rect x="580" y="290" width="160" height="86" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="594" y="312" font-size="11.5" font-weight="bold" fill="#b45309">大块 1</text>
+  <text x="594" y="332" font-size="10" fill="#334155">超过 max 的请求</text>
+  <text x="594" y="348" font-size="10" fill="#334155">直接单独 malloc，</text>
+  <text x="594" y="364" font-size="10" fill="#334155">不切池内的块</text>
+
+  <line x1="742" y1="333" x2="756" y2="333" stroke="#b45309" stroke-width="2" marker-end="url(#m2)"/>
+
+  <rect x="760" y="290" width="160" height="86" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="774" y="312" font-size="11.5" font-weight="bold" fill="#b45309">大块 2 …</text>
+  <text x="774" y="332" font-size="10" fill="#334155">销毁池时一并 free</text>
+  <text x="774" y="348" font-size="10" fill="#334155">不必逐个记录在业务侧</text>
+  <text x="774" y="364" font-size="10" fill="#64748b">这是「统一释放」的一半</text>
+
+  <!-- 说明 -->
+  <rect x="60" y="398" width="420" height="82" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="422" font-size="12.5" font-weight="bold" fill="#0f172a">小块：为什么快</text>
+  <text x="76" y="444" font-size="11.5" fill="#334155">从当前块的 current 往后挪指针即可，不维护空闲链表、</text>
+  <text x="76" y="462" font-size="11.5" fill="#334155">不做合并。代价就是「不能单独回收」。</text>
+
+  <rect x="520" y="398" width="400" height="82" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="536" y="422" font-size="12.5" font-weight="bold" fill="#0f172a">cleanup：关 fd、删临时文件</text>
+  <text x="536" y="444" font-size="11.5" fill="#334155">需要「池销毁时顺手做」的动作挂在这里，</text>
+  <text x="536" y="462" font-size="11.5" fill="#334155">避免业务代码到处写 finally 去清理。</text>
+
+  <!-- 结论 -->
+  <rect x="60" y="496" width="860" height="76" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="78" y="520" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 关键取舍</text>
+  <text x="78" y="542" font-size="12" fill="#334155">池适合「请求级短命数据」（解析出的 header、临时字符串）；不适合「要活很久、且会被逐个释放」的对象 ——</text>
+  <text x="78" y="562" font-size="12" fill="#334155">后者要么走大块（单独 malloc），要么走 slab。⚠️ 判断标准是「释放时机能否统一」，不是「分配频率高不高」。</text>
+</svg>

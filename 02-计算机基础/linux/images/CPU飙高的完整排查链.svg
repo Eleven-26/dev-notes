@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="r1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">CPU 飙高的完整排查链：从进程落到某一行的栈帧</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">四步里前三步都只是「缩小范围」，真正产出结论的是第 ④ 步</text>
+
+  <!-- 四步 -->
+  <rect x="50" y="96" width="205" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="152" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e40af">① 找进程</text>
+  <text x="152" y="142" text-anchor="middle" font-size="12" fill="#1e40af">top → 记下 PID</text>
+  <line x1="257" y1="128" x2="277" y2="128" stroke="#2563eb" stroke-width="2" marker-end="url(#r1)"/>
+
+  <rect x="280" y="96" width="205" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="382" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e40af">② 找线程</text>
+  <text x="382" y="142" text-anchor="middle" font-size="12" fill="#1e40af">top -Hp 12345 → TID</text>
+  <line x1="487" y1="128" x2="507" y2="128" stroke="#2563eb" stroke-width="2" marker-end="url(#r1)"/>
+
+  <rect x="510" y="96" width="205" height="64" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2.5"/>
+  <text x="612" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">③ 转十六进制</text>
+  <text x="612" y="142" text-anchor="middle" font-size="12" fill="#b45309">printf '%x' 12350 → 303e</text>
+  <line x1="717" y1="128" x2="737" y2="128" stroke="#2563eb" stroke-width="2" marker-end="url(#r1)"/>
+
+  <rect x="740" y="96" width="205" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="842" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">④ 抓栈比对</text>
+  <text x="842" y="142" text-anchor="middle" font-size="12" fill="#14532d">grep 'nid=0x303e'</text>
+
+  <!-- 提示 -->
+  <rect x="50" y="178" width="895" height="46" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="66" y="198" font-size="12" font-weight="bold" fill="#b91c1c">⚠️ ③ 是最容易漏的一步</text>
+  <text x="66" y="216" font-size="11.5" fill="#334155">top -H 给的是<tspan font-weight="bold">十进制</tspan> TID，而 jstack 栈里的 nid 是<tspan font-weight="bold">十六进制</tspan>。不换算，grep 永远空手而归 —— 而它「看起来一切正常」，最难自查。</text>
+
+  <!-- 判据区 -->
+  <rect x="50" y="240" width="430" height="122" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="66" y="264" font-size="12.5" font-weight="bold" fill="#0f172a">为什么必须连抓 3 次栈</text>
+  <text x="66" y="286" font-size="11.5" fill="#334155">一次 jstack 可能恰好抓到线程「正在跑」的瞬间，</text>
+  <text x="66" y="304" font-size="11.5" fill="#334155">它未必是问题所在。连抓 3 次、间隔 2 秒：</text>
+  <text x="66" y="324" font-size="11.5" fill="#334155">for i in 1 2 3; do jstack 12345 &gt; s$i.txt; sleep 2; done</text>
+  <text x="66" y="346" font-size="11.5" font-weight="bold" fill="#14532d">三次都停在同一行，才是真凶。</text>
+
+  <rect x="515" y="240" width="430" height="122" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="531" y="264" font-size="12.5" font-weight="bold" fill="#14532d">Go 服务对应什么</text>
+  <text x="531" y="286" font-size="11.5" fill="#334155">同样四步，只是第 ④ 步换成 pprof：</text>
+  <text x="531" y="306" font-size="11.5" fill="#334155">/debug/pprof/profile?seconds=30 → CPU 火焰图</text>
+  <text x="531" y="326" font-size="11.5" fill="#334155">goroutine 泄漏则看 /debug/pprof/goroutine。</text>
+  <text x="531" y="348" font-size="11.5" fill="#64748b">⭐ 火焰图直接把「哪一行」画出来了，比手工比对更省事。</text>
+
+  <!-- 结论 -->
+  <rect x="50" y="380" width="895" height="88" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="66" y="404" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 这条链能成立的前提</text>
+  <text x="66" y="426" font-size="12" fill="#334155">① CPU 高但负载不高 → 是单线程忙，值得往下抓；若负载（r 队列）也高，说明是「排队」而不是「算得慢」，该先扩并发度。</text>
+  <text x="66" y="446" font-size="12" fill="#334155">② 线程在 RUNNABLE 且停在业务代码 → 是 CPU 型热点；停在 socketRead / futex 之类 → 其实是等 IO 或等锁，别去优化算法。</text>
+</svg>

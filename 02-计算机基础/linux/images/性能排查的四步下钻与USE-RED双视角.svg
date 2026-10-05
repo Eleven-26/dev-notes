@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" width="1000" height="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="q1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">排查的四步下钻：从「哪类资源」到「哪一行代码」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">每一步都在缩小范围；顺序的价值在于「第 ④ 步的花费比第 ① 步高两个数量级」</text>
+
+  <!-- 四列步骤 -->
+  <rect x="30" y="112" width="220" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="140" y="141" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">① 看整体</text>
+  <line x1="252" y1="135" x2="276" y2="135" stroke="#2563eb" stroke-width="2" marker-end="url(#q1)"/>
+
+  <rect x="278" y="112" width="220" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="388" y="141" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">② 分资源</text>
+  <line x1="500" y1="135" x2="524" y2="135" stroke="#2563eb" stroke-width="2" marker-end="url(#q1)"/>
+
+  <rect x="526" y="112" width="220" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="636" y="141" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">③ 定进程</text>
+  <line x1="748" y1="135" x2="772" y2="135" stroke="#2563eb" stroke-width="2" marker-end="url(#q1)"/>
+
+  <rect x="774" y="112" width="196" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="872" y="141" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">④ 定线程与代码</text>
+
+  <!-- 细节 -->
+  <rect x="30" y="170" width="220" height="110" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="46" y="194" font-size="11.5" font-weight="bold" fill="#0f172a">判断是哪一类资源</text>
+  <text x="46" y="216" font-size="11" fill="#334155">uptime　平均负载</text>
+  <text x="46" y="235" font-size="11" fill="#334155">top　　谁在吃 CPU</text>
+  <text x="46" y="254" font-size="11" fill="#334155">vmstat 1　全局快照</text>
+
+  <rect x="278" y="170" width="220" height="110" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="294" y="194" font-size="11.5" font-weight="bold" fill="#0f172a">USE 四项，逐项过</text>
+  <text x="294" y="216" font-size="11" fill="#334155">CPU　　mpstat -P ALL 1</text>
+  <text x="294" y="235" font-size="11" fill="#334155">内存　　free -h / sar -r 1</text>
+  <text x="294" y="254" font-size="11" fill="#334155">磁盘 IO　iostat -x 1</text>
+  <text x="294" y="273" font-size="11" fill="#334155">网络　　sar -n DEV 1</text>
+
+  <rect x="526" y="170" width="220" height="110" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="542" y="194" font-size="11.5" font-weight="bold" fill="#0f172a">落到具体进程</text>
+  <text x="542" y="216" font-size="11" fill="#334155">pidstat -u 1　按进程</text>
+  <text x="542" y="235" font-size="11" fill="#334155">iotop　　谁在写盘</text>
+  <text x="542" y="254" font-size="11" fill="#334155">ss -s / netstat　连接</text>
+
+  <rect x="774" y="170" width="196" height="110" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="790" y="194" font-size="11.5" font-weight="bold" fill="#14532d">落到线程与代码</text>
+  <text x="790" y="216" font-size="11" fill="#334155">top -Hp &lt;pid&gt;</text>
+  <text x="790" y="235" font-size="11" fill="#334155">printf '%x' 转十六进制</text>
+  <text x="790" y="254" font-size="11" fill="#334155">jstack | grep nid=0x…</text>
+  <text x="790" y="273" font-size="11" fill="#334155">Go 侧走 pprof</text>
+
+  <!-- USE / RED -->
+  <rect x="30" y="300" width="455" height="86" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="48" y="324" font-size="13" font-weight="bold" fill="#1e40af">USE：看「我的机器怎么了」</text>
+  <text x="48" y="346" font-size="11.5" fill="#334155">U 使用率 · S 饱和度 · E 错误数 —— 对每个资源过一遍。</text>
+  <text x="48" y="366" font-size="11.5" fill="#b45309">⚠️ 使用率 100% 不等于饱和：SSD 的 %util 100% 而 await 很低</text>
+  <text x="48" y="382" font-size="11.5" fill="#b45309">（并行度高、并没排队）—— 饱和度才代表「真的忙不过来」。</text>
+
+  <rect x="515" y="300" width="455" height="86" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="533" y="324" font-size="13" font-weight="bold" fill="#14532d">RED：看「用户感受到了什么」</text>
+  <text x="533" y="346" font-size="11.5" fill="#334155">Rate 请求量 · Errors 错误数 · Duration 耗时分布（看 P99）。</text>
+  <text x="533" y="366" font-size="11.5" fill="#334155">线上一般是 RED 先告警 —— 用户先难受，资源指标才跟上；</text>
+  <text x="533" y="382" font-size="11.5" fill="#334155">然后用 USE 从资源层往下钻，定位到底是谁把机器吃满了。</text>
+
+  <!-- 警告 -->
+  <rect x="30" y="402" width="940" height="62" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="48" y="426" font-size="12.5" font-weight="bold" fill="#b91c1c">⚠️ 不要在 ① 就开 strace / tcpdump</text>
+  <text x="48" y="448" font-size="11.5" fill="#334155">它们能精确到系统调用与报文，但作用范围是全机器：全局抓取会把机器压垮、把现场搅乱。必须先靠 ①②③ 缩小范围，再精准抓。</text>
+
+  <!-- 结论 -->
+  <rect x="30" y="480" width="940" height="84" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="48" y="504" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 每一步都要产出一个「可验证的结论」，而不是攒一堆数字</text>
+  <text x="48" y="526" font-size="12" fill="#334155">① 「负载高但 CPU 不高」→ 说明堵在 IO 或内存；② 「哪一项饱和度先满」→ 锁定资源；</text>
+  <text x="48" y="546" font-size="12" fill="#334155">③ 「就这一个进程」→ 排除系统性问题；④ 「三次抓栈都停在同一行」→ 才能下结论说要改哪里。</text>
+</svg>

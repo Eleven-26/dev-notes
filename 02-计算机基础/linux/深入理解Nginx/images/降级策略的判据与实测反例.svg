@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" width="1000" height="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">降级：三个降级点，以及 fail-open / fail-close 的判据</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">这条判据比实现更重要：选错了，等于把一个「小故障」升级成「全站不可用」</text>
+
+  <!-- 三类降级点 -->
+  <text x="40" y="88" font-size="12.5" font-weight="bold" fill="#0f172a">三个降级点（都要预先想好怎么退）</text>
+
+  <rect x="40" y="98" width="300" height="94" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="56" y="122" font-size="12" font-weight="bold" fill="#1e40af">① 配置层</text>
+  <text x="56" y="144" font-size="11" fill="#334155">根本没配 zone</text>
+  <text x="56" y="164" font-size="11" fill="#334155">→ 模块空转，但服务照常</text>
+  <text x="56" y="184" font-size="10.5" fill="#64748b">判据：配置期只 NOTICE，不阻断部署</text>
+
+  <rect x="350" y="98" width="300" height="94" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="366" y="122" font-size="12" font-weight="bold" fill="#1e40af">② 初始化层</text>
+  <text x="366" y="144" font-size="11" fill="#334155">zone 建失败 / slab 分配失败</text>
+  <text x="366" y="164" font-size="11" fill="#334155">→ 指针为 NULL</text>
+  <text x="366" y="184" font-size="10.5" fill="#64748b">判据：入口判 NULL，直接走降级分支</text>
+
+  <rect x="660" y="98" width="300" height="94" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="676" y="122" font-size="12" font-weight="bold" fill="#b45309">③ 运行层</text>
+  <text x="676" y="144" font-size="11" fill="#334155">slab 满（动态分配时）</text>
+  <text x="676" y="164" font-size="11" fill="#334155">→ 分配返回 NULL</text>
+  <text x="676" y="184" font-size="10.5" fill="#64748b">判据：同上，绝不能因此回 500</text>
+
+  <!-- 判据 -->
+  <rect x="40" y="208" width="450" height="146" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="58" y="232" font-size="12.5" font-weight="bold" fill="#14532d">fail-open：出问题就放行</text>
+  <text x="58" y="256" font-size="11.5" fill="#334155">适用：<tspan font-weight="bold">限流、统计、日志、缓存</tspan>这类组件。</text>
+  <text x="58" y="280" font-size="11.5" fill="#334155">代价是「功能没生效」，服务本身可用 ——</text>
+  <text x="58" y="300" font-size="11.5" fill="#334155">对这类组件，<tspan font-weight="bold">可用性 &gt; 功能正确性</tspan>。</text>
+  <text x="58" y="324" font-size="11.5" fill="#334155">写法：<tspan font-weight="bold">return NGX_DECLINED</tspan>（交给下一个 handler），</text>
+  <text x="58" y="342" font-size="11.5" fill="#334155">而不是 return NGX_HTTP_INTERNAL_SERVER_ERROR。</text>
+
+  <rect x="510" y="208" width="450" height="146" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="528" y="232" font-size="12.5" font-weight="bold" fill="#b91c1c">fail-close：出问题就拒绝</text>
+  <text x="528" y="256" font-size="11.5" fill="#334155">适用：<tspan font-weight="bold">鉴权、风控、访问控制</tspan>这类组件。</text>
+  <text x="528" y="280" font-size="11.5" fill="#334155">代价是「服务暂时不可用」，但安全边界保住了</text>
+  <text x="528" y="300" font-size="11.5" fill="#334155">—— 对这类组件，<tspan font-weight="bold">安全 &gt; 可用性</tspan>。</text>
+  <text x="528" y="324" font-size="11.5" fill="#b45309">⚠️ 把鉴权做成 fail-open，等于一次抖动就</text>
+  <text x="528" y="342" font-size="11.5" fill="#b45309">把内网接口全暴露出去。</text>
+
+  <!-- 实测反例 -->
+  <rect x="40" y="372" width="920" height="102" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="58" y="396" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 本机实测的反例：故意不配 prodemo_zone</text>
+  <text x="58" y="420" font-size="11" fill="#334155">$ nginx -t -c /tmp/p2.conf → <tspan font-weight="bold" fill="#14532d">syntax is ok</tspan>（不报错，只是降级）</text>
+  <text x="58" y="440" font-size="11" fill="#b45309">[notice] prodemo: no prodemo_zone configured, disabled</text>
+  <text x="58" y="460" font-size="11" fill="#334155">连发 3 次（limit=1，本应第 2 次起 503）：<tspan font-weight="bold" fill="#14532d">200 200 200</tspan>　⭐ 全部放行，没有 503；同时每次都有 <tspan font-weight="bold">[error] zone not ready, fail-open</tspan></text>
+
+  <!-- 姿态 -->
+  <rect x="40" y="490" width="920" height="86" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="514" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 正确的降级姿态 = 三种日志级别分工</text>
+  <text x="58" y="536" font-size="11.5" fill="#334155">① 配置期只想 <tspan font-weight="bold">NOTICE</tspan>（不阻断部署）　② 运行期每次记 <tspan font-weight="bold">ERR</tspan>（能观测到「模块在空转」）</text>
+  <text x="58" y="558" font-size="11.5" fill="#334155">③ 行为上放行（可悲的是「限流没生效」，而不是「服务不可用」）。<tspan fill="#64748b">反面：默默放行且不打日志 —— 出问题时你连「它没生效」都不知道。</tspan></text>
+</svg>

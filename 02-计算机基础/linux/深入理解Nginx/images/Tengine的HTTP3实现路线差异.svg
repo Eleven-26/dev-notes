@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTP/3 的实现路线：Tengine 走的是另一条路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">这是一处容易被忽略的本质差异 —— 它同时带来一个好处和一个代价</text>
+
+  <!-- 表头 -->
+  <rect x="60" y="88" width="880" height="40" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="114" font-size="11.5" font-weight="bold" fill="#334155">对比项</text>
+  <text x="420" y="114" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">Nginx（1.25+）</text>
+  <text x="790" y="114" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">Tengine 3.x</text>
+
+  <!-- 行1 -->
+  <rect x="60" y="132" width="880" height="42" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="76" y="158" font-size="11" fill="#64748b">QUIC 实现</text>
+  <text x="420" y="158" text-anchor="middle" font-size="11" fill="#334155">ngx_http_v3_module</text>
+  <text x="790" y="158" text-anchor="middle" font-size="11" font-weight="bold" fill="#b45309">xquic（阿里的 QUIC 实现）</text>
+
+  <!-- 行2 -->
+  <rect x="60" y="178" width="880" height="42" rx="4" fill="#f0fdf4" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="76" y="204" font-size="11" fill="#64748b">TLS 依赖</text>
+  <text x="420" y="204" text-anchor="middle" font-size="11" fill="#334155">OpenSSL 3.5.1+（或 BoringSSL / QuicTLS）</text>
+  <text x="790" y="204" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">不依赖 OpenSSL 的 QUIC API</text>
+
+  <!-- 行3 -->
+  <rect x="60" y="224" width="880" height="42" rx="4" fill="#f0fdf4" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="76" y="250" font-size="11" fill="#64748b">拥塞控制</text>
+  <text x="420" y="250" text-anchor="middle" font-size="11" fill="#334155">可配置</text>
+  <text x="790" y="250" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">默认 BBR</text>
+
+  <!-- 行4 -->
+  <rect x="60" y="270" width="880" height="42" rx="4" fill="#fef2f2" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="76" y="296" font-size="11" fill="#64748b">配置指令</text>
+  <text x="420" y="296" text-anchor="middle" font-size="11" fill="#334155">listen ... quic / http3 on / quic_retry</text>
+  <text x="790" y="296" text-anchor="middle" font-size="11" fill="#b91c1c">xquic 模块自己的指令集</text>
+
+  <!-- 两层含义 -->
+  <rect x="60" y="330" width="430" height="126" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="76" y="354" font-size="12.5" font-weight="bold" fill="#14532d">① 好处：绕过了一道硬门槛</text>
+  <text x="76" y="378" font-size="11.5" fill="#334155">因为它不依赖 OpenSSL 的 QUIC API，也就</text>
+  <text x="76" y="396" font-size="11.5" fill="#334155">不受「必须 OpenSSL ≥ 3.5.1 才能开 0-RTT」</text>
+  <text x="76" y="414" font-size="11.5" fill="#334155">这条限制约束（见 11 篇 1.2）。</text>
+  <text x="76" y="438" font-size="11" fill="#64748b">在本机这条尤其有用：自建镜像的 OpenSSL</text>
+  <text x="76" y="452" font-size="11" fill="#64748b">是 3.3.7，够不到那个门槛。</text>
+
+  <rect x="510" y="330" width="430" height="126" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="526" y="354" font-size="12.5" font-weight="bold" fill="#b91c1c">② 代价：这一块不能照搬</text>
+  <text x="526" y="378" font-size="11.5" fill="#334155">配置指令与 Nginx 不同 —— <tspan font-weight="bold">迁移时这部分</tspan></text>
+  <text x="526" y="396" font-size="11.5" fill="#334155"><tspan font-weight="bold">要重写</tspan>，不能把 nginx 的 QUIC 配置抄过来。</text>
+  <text x="526" y="418" font-size="11.5" fill="#b45309">⭐ 也就是说：「100% 兼容 Nginx 配置」</text>
+  <text x="526" y="436" font-size="11.5" fill="#b45309">这条，<tspan font-weight="bold">在 HTTP/3 上不成立</tspan>。</text>
+
+  <!-- 结论 -->
+  <rect x="60" y="472" width="880" height="72" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="78" y="496" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 顺带一条版本纪律</text>
+  <text x="78" y="518" font-size="11.5" fill="#334155">3.2.0 把核心升到 nginx 1.31.3、HTTP/3 换成 xquic、默认 BBR —— 但<tspan font-weight="bold" fill="#b91c1c">目前只有 rc3</tspan>，官方明确写「不要上生产」。</text>
+  <text x="78" y="536" font-size="11.5" fill="#334155">生产应留在 3.1.0（基于 nginx 1.24.0），并清楚它比主线慢的身位。</text>
+</svg>

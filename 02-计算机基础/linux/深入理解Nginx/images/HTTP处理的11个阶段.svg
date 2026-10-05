@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTP 请求处理的 11 个阶段：顺序固定，谁挂上去谁被执行</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">阶段是「注册表」而不是顺序写的代码 —— 每个模块把 handler 挂到某个阶段，框架按序调用</text>
+
+  <!-- 阶段 1-3 -->
+  <rect x="60" y="96" width="600" height="34" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="76" y="118" font-size="11.5" fill="#0f172a">1　POST_READ</text>
+  <text x="210" y="118" font-size="11" fill="#334155">realip：从 X-Forwarded-For 还原客户端真实 IP</text>
+
+  <rect x="60" y="134" width="600" height="34" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="76" y="156" font-size="11.5" fill="#0f172a">2　SERVER_REWRITE</text>
+  <text x="210" y="156" font-size="11" fill="#334155">rewrite（server 级）</text>
+
+  <rect x="60" y="172" width="600" height="34" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="76" y="194" font-size="11.5" fill="#b45309">3　FIND_CONFIG</text>
+  <text x="210" y="194" font-size="11" fill="#b45309">框架自身：在这里完成 location 匹配</text>
+
+  <!-- 阶段 4-5 -->
+  <rect x="60" y="210" width="600" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="232" font-size="11.5" fill="#1e40af">4　REWRITE</text>
+  <text x="210" y="232" font-size="11" fill="#1e40af">rewrite（location 级）、return、set</text>
+
+  <rect x="60" y="248" width="600" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="270" font-size="11.5" fill="#1e40af">5　POST_REWRITE</text>
+  <text x="210" y="270" font-size="11" fill="#1e40af">处理 rewrite 的结果（框架自身）</text>
+
+  <!-- 阶段 6-8 -->
+  <rect x="60" y="286" width="600" height="34" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="76" y="308" font-size="11.5" fill="#b91c1c">6　PREACCESS</text>
+  <text x="210" y="308" font-size="11" fill="#b91c1c">limit_req（限速）/ limit_conn（限连）</text>
+
+  <rect x="60" y="324" width="600" height="34" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="76" y="346" font-size="11.5" fill="#b91c1c">7　ACCESS</text>
+  <text x="210" y="346" font-size="11" fill="#b91c1c">allow / deny、auth_basic（鉴权）</text>
+
+  <rect x="60" y="362" width="600" height="34" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="76" y="384" font-size="11.5" fill="#b91c1c">8　POST_ACCESS</text>
+  <text x="210" y="384" font-size="11" fill="#b91c1c">通常没有模块使用，预留给第三方模块</text>
+
+  <!-- 阶段 9-11 -->
+  <rect x="60" y="400" width="600" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="76" y="422" font-size="11.5" fill="#14532d">9　PRECONTENT</text>
+  <text x="210" y="422" font-size="11" fill="#14532d">try_files、mirror —— 内容生成前的最后调整</text>
+
+  <rect x="60" y="438" width="600" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+  <text x="76" y="460" font-size="11.5" font-weight="bold" fill="#14532d">10　CONTENT</text>
+  <text x="210" y="460" font-size="11" fill="#14532d">index / autoindex / proxy_pass / return 的兜底</text>
+
+  <rect x="60" y="476" width="600" height="34" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="76" y="498" font-size="11.5" fill="#14532d">11　LOG</text>
+  <text x="210" y="498" font-size="11" fill="#14532d">access_log、log_by_lua* —— 请求结束后仍会执行</text>
+
+  <!-- 右侧分组说明 -->
+  <rect x="700" y="119" width="280" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="714" y="140" font-size="12" font-weight="bold" fill="#0f172a">① 早期解析（1~3）</text>
+  <text x="714" y="158" font-size="10.5" fill="#334155">拿到请求、定 server、匹配 location。</text>
+  <text x="714" y="174" font-size="10.5" fill="#334155">XFF 还原与 server 级 rewrite 都在这里。</text>
+
+  <rect x="700" y="214" width="280" height="64" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="714" y="235" font-size="12" font-weight="bold" fill="#1e40af">② URI 改写（4~5）</text>
+  <text x="714" y="253" font-size="10.5" fill="#334155">真正改 uri 与 args 的阶段。</text>
+  <text x="714" y="269" font-size="10.5" fill="#b45309">last 会重跑 location 匹配，break 只停本层。</text>
+
+  <rect x="700" y="309" width="280" height="64" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="714" y="330" font-size="12" font-weight="bold" fill="#b91c1c">③ 准入控制（6~8）</text>
+  <text x="714" y="348" font-size="10.5" fill="#334155">限流、限连、鉴权三步串在一起。</text>
+  <text x="714" y="364" font-size="10.5" fill="#334155">⭐ 拒绝请求最便宜的位置：还没生成内容。</text>
+
+  <rect x="700" y="423" width="280" height="64" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="714" y="444" font-size="12" font-weight="bold" fill="#14532d">④ 产出与收尾（9~11）</text>
+  <text x="714" y="462" font-size="10.5" fill="#334155">内容在这里生成；到 11 阶段请求已结束，</text>
+  <text x="714" y="478" font-size="10.5" fill="#334155">但日志仍会写 —— 所以日志变量要能取到上游数据。</text>
+
+  <!-- 结论 -->
+  <rect x="60" y="530" width="920" height="72" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="78" y="554" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 三条判据</text>
+  <text x="78" y="576" font-size="12" fill="#334155">① 同一阶段内多个模块按注册顺序执行；某一阶段返回 NGX_OK 就跳到下一阶段，返回 NGX_DECLINED 就交给同阶段的下一个模块。</text>
+  <text x="78" y="596" font-size="12" fill="#334155">② 到 10 阶段必须有东西产出内容，否则 404；③ 11 阶段即使在 10 阶段提前结束时也会执行 —— 这解释了「在 CONTENT 里改了变量，日志里看到的却是另一个值」。</text>
+</svg>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">header filter 与 body filter：改的东西不同，约束也不同</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两者的骨架都是「调 next → 处理 → 再转发」，但一个改列表、一个改链，出错的形态也完全不同</text>
+
+  <!-- header filter -->
+  <rect x="40" y="82" width="450" height="252" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="58" y="106" font-size="13.5" font-weight="bold" fill="#1e40af">header filter：改响应头</text>
+
+  <rect x="58" y="118" width="414" height="126" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="70" y="138" font-size="10" fill="#334155">flcf = ngx_http_get_module_loc_conf(r, module);</text>
+  <text x="70" y="155" font-size="10" fill="#b45309">if (!flcf-&gt;enabled) return ngx_http_next_header_filter(r);</text>
+  <text x="70" y="172" font-size="10" fill="#64748b">　　↑ 不处理也必须原样转发，否则链断在这里</text>
+  <text x="70" y="192" font-size="10" fill="#1e40af">h = ngx_list_push(&amp;r-&gt;headers_out.headers);</text>
+  <text x="70" y="209" font-size="10" fill="#334155">h-&gt;key.data = (u_char *) "X-Filter-Count";</text>
+  <text x="70" y="226" font-size="10" fill="#b91c1c">h-&gt;key.len　= 14;　　← ⭐ 不含冒号与空格</text>
+  <text x="70" y="240" font-size="10" fill="#334155">h-&gt;value.data = p; h-&gt;value.len = n;</text>
+
+  <text x="58" y="268" font-size="11.5" fill="#334155">返回 NGX_OK / NGX_ERROR；<tspan font-weight="bold">照常返回 next 的返回值</tspan>。</text>
+  <text x="58" y="290" font-size="11.5" fill="#334155">改的是 r-&gt;headers_out 里的 header 列表。</text>
+  <text x="58" y="312" font-size="11" fill="#64748b">⚠️ 它是否真正执行，还取决于响应状态码（2xx/3xx/204/206）。</text>
+
+  <!-- body filter -->
+  <rect x="510" y="82" width="450" height="252" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="528" y="106" font-size="13.5" font-weight="bold" fill="#14532d">body filter：改响应体</text>
+
+  <rect x="528" y="118" width="414" height="126" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="540" y="138" font-size="10" fill="#334155">for (cl = in; cl; cl = cl-&gt;next) {</text>
+  <text x="540" y="155" font-size="10" fill="#64748b">　　/* 遍历 ngx_chain_t，可能要往链里插新 buf */</text>
+  <text x="540" y="172" font-size="10" fill="#64748b">　　/* ⚠️ 插进来的节点由插入者管生命周期 */</text>
+  <text x="540" y="189" font-size="10" fill="#334155">}</text>
+  <text x="540" y="209" font-size="10" fill="#14532d">return ngx_http_next_body_filter(r, out);</text>
+  <text x="540" y="226" font-size="10" fill="#b91c1c">　　　　↑ 注意是 (r, out) 两个参数</text>
+  <text x="540" y="240" font-size="10" fill="#64748b">　　　（header filter 只传 r 一个参数）</text>
+
+  <text x="528" y="268" font-size="11.5" fill="#334155">收到的是 <tspan font-weight="bold">in / out 两个链指针</tspan>，自己只往 out 里写。</text>
+  <text x="528" y="290" font-size="11.5" fill="#334155">gzip、sub_filter、addition 都在这一步工作。</text>
+  <text x="528" y="312" font-size="11" fill="#64748b">⚠️ 它一参与，sendfile 就用不上（内容必须进用户态）。</text>
+
+  <!-- 两个事故 -->
+  <text x="40" y="366" font-size="12.5" font-weight="bold" fill="#0f172a">本轮实测踩到的两个真实事故</text>
+
+  <rect x="40" y="380" width="450" height="102" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="404" font-size="12.5" font-weight="bold" fill="#b91c1c">事故一：header key 里含了「: 」</text>
+  <text x="58" y="426" font-size="11" fill="#334155">把 "X-Filter-Count: " 整个当成 key、长度取 16，</text>
+  <text x="58" y="444" font-size="11" fill="#334155">序列化出的头就是畸形的 —— 后果是<tspan font-weight="bold">响应体整块丢失</tspan>，</text>
+  <text x="58" y="462" font-size="11" fill="#334155">而 filter 本身照常返回 NGX_OK、<tspan font-weight="bold">没有任何报错</tspan>。</text>
+
+  <rect x="510" y="380" width="450" height="102" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="528" y="404" font-size="12.5" font-weight="bold" fill="#b45309">事故二：body filter 没生效</text>
+  <text x="528" y="426" font-size="11" fill="#334155">响应头有了，响应体字节数却没变化（896 → 896）。</text>
+  <text x="528" y="444" font-size="11" fill="#334155">诊断结论是：<tspan font-weight="bold">必须把模块类型声明成 HTTP_FILTER</tspan>，</text>
+  <text x="528" y="462" font-size="11" fill="#334155">混进 HTTP_MODULES 会让它静默不生效（见 06 篇）。</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="498" width="920" height="70" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="522" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 一句话区分</text>
+  <text x="58" y="544" font-size="12" fill="#334155">改头是「往列表里加一个节点」，比较独立、出错多是「位置/格式不对」；改体是「在链上搬运数据」，出错多是「生命周期与所有权」——</text>
+  <text x="58" y="562" font-size="12" fill="#334155">后者涉及内存释放责任，审查代码时应重点看这里。</text>
+</svg>

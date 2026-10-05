@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="b1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="b2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="b3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">VFS 四层对象链，以及硬链接 / 软链接差在哪一层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个 inode 可以被多个 dentry 指着（硬链接）；软链接则是「多插一个 inode 做跳板」</text>
+
+  <!-- 上半：四层对象链 -->
+  <rect x="20" y="76" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="102" font-size="15" font-weight="bold" fill="#0f172a">一次 open() 之后内核里多出了什么</text>
+  <text x="40" y="122" font-size="12" fill="#64748b">同一文件多次 open：每层各生成独立实例（各自 offset），最终指向同一个 inode —— 这就是「读写偏移互不干扰」的原因</text>
+
+  <rect x="40" y="142" width="140" height="62" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="110" y="164" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">进程</text>
+  <text x="110" y="184" text-anchor="middle" font-size="10.5" fill="#64748b">task_struct</text>
+
+  <line x1="182" y1="173" x2="204" y2="173" stroke="#64748b" stroke-width="1.5" marker-end="url(#b1)"/>
+  <rect x="206" y="142" width="140" height="62" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="276" y="164" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">fd 表</text>
+  <text x="276" y="184" text-anchor="middle" font-size="10.5" fill="#64748b">files_struct 数组下标</text>
+
+  <line x1="348" y1="173" x2="370" y2="173" stroke="#64748b" stroke-width="1.5" marker-end="url(#b1)"/>
+  <rect x="372" y="142" width="140" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="442" y="164" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e40af">file</text>
+  <text x="442" y="184" text-anchor="middle" font-size="10.5" fill="#1e40af">一次打开实例 + f_pos</text>
+
+  <line x1="514" y1="173" x2="536" y2="173" stroke="#64748b" stroke-width="1.5" marker-end="url(#b1)"/>
+  <rect x="538" y="142" width="140" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="608" y="164" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e40af">dentry</text>
+  <text x="608" y="184" text-anchor="middle" font-size="10.5" fill="#1e40af">路径名→inode 缓存</text>
+
+  <line x1="680" y1="173" x2="702" y2="173" stroke="#64748b" stroke-width="1.5" marker-end="url(#b1)"/>
+  <rect x="704" y="142" width="140" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="774" y="164" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">inode</text>
+  <text x="774" y="184" text-anchor="middle" font-size="10.5" fill="#14532d">元数据 + 块指针</text>
+
+  <line x1="846" y1="173" x2="856" y2="173" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="858" y="142" width="102" height="62" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="909" y="170" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">数据块</text>
+  <text x="909" y="188" text-anchor="middle" font-size="10.5" fill="#64748b">文件内容</text>
+
+  <text x="40" y="238" font-size="11.5" fill="#334155">⚠️ inode 只存元数据与指针，<tspan font-weight="bold" fill="#b45309">不存文件名、不存文件内容</tspan>；文件名在 dentry / 目录文件里，内容在数据块里。</text>
+  <text x="40" y="256" font-size="11.5" fill="#334155">dentry 由 Slab 缓存分配；路径 /var/log/app.log 要逐分量解析，解析结果进 dcache，下次访问直接命中、不碰磁盘。</text>
+
+  <!-- 左下：硬链接 -->
+  <rect x="20" y="282" width="472" height="286" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="308" font-size="15" font-weight="bold" fill="#0f172a">硬链接：多一个名字，指同一个 inode</text>
+  <text x="40" y="328" font-size="11.5" fill="#64748b">ln src.txt hard.txt → 目录里多一条 <tspan fill="#334155">名字→inode</tspan> 的记录</text>
+
+  <rect x="46" y="348" width="122" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="107" y="366" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">dentry</text>
+  <text x="107" y="382" text-anchor="middle" font-size="11" fill="#1e40af">src.txt</text>
+
+  <rect x="46" y="410" width="122" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="107" y="428" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">dentry</text>
+  <text x="107" y="444" text-anchor="middle" font-size="11" fill="#1e40af">hard.txt</text>
+
+  <line x1="170" y1="369" x2="216" y2="384" stroke="#16a34a" stroke-width="1.8" marker-end="url(#b2)"/>
+  <line x1="170" y1="431" x2="216" y2="416" stroke="#16a34a" stroke-width="1.8" marker-end="url(#b2)"/>
+
+  <rect x="218" y="358" width="252" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="234" y="382" font-size="12.5" font-weight="bold" fill="#14532d">同一个 inode（Links = 2）</text>
+  <text x="234" y="402" font-size="11" fill="#14532d">权限 / UID / 大小 / 时间戳 / 块指针</text>
+  <text x="234" y="420" font-size="11" fill="#14532d">inode 号在同一个 fs 内唯一</text>
+
+  <line x1="344" y1="436" x2="344" y2="458" stroke="#64748b" stroke-width="1.5" marker-end="url(#b1)"/>
+  <rect x="248" y="460" width="192" height="40" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="344" y="485" text-anchor="middle" font-size="12" fill="#0f172a">数据块（内容只有一份）</text>
+
+  <text x="46" y="524" font-size="11.5" fill="#334155">删掉 src.txt：Links 2→1，<tspan font-weight="bold" fill="#14532d">hard.txt 照常可用</tspan>；</text>
+  <text x="46" y="544" font-size="11.5" fill="#334155">⚠️ 不能跨文件系统（inode 号只在同一 fs 内唯一），也不能对目录创建。</text>
+
+  <!-- 右下：软链接 -->
+  <rect x="508" y="282" width="472" height="286" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="528" y="308" font-size="15" font-weight="bold" fill="#0f172a">软链接：多插一个 inode 当跳板</text>
+  <text x="528" y="328" font-size="11.5" fill="#64748b">ln -s src.txt soft.txt → 新文件，<tspan fill="#334155">内容是「src.txt」这串字符</tspan></text>
+
+  <rect x="534" y="348" width="122" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="595" y="366" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">dentry</text>
+  <text x="595" y="382" text-anchor="middle" font-size="11" fill="#1e40af">soft.txt</text>
+
+  <line x1="658" y1="369" x2="686" y2="369" stroke="#b45309" stroke-width="1.8" marker-end="url(#b3)"/>
+
+  <rect x="688" y="340" width="272" height="58" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="702" y="362" font-size="12" font-weight="bold" fill="#b45309">独立的新 inode（lrwxrwxrwx）</text>
+  <text x="702" y="382" font-size="11" fill="#334155">内容是路径字符串「src.txt」</text>
+
+  <line x1="824" y1="400" x2="824" y2="436" stroke="#b45309" stroke-width="1.8" marker-end="url(#b3)"/>
+  <text x="834" y="422" font-size="11" fill="#b45309">解析时再走一遍路径</text>
+
+  <rect x="688" y="438" width="272" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="702" y="460" font-size="12" font-weight="bold" fill="#0f172a">src.txt 的 inode</text>
+  <text x="702" y="480" font-size="11" fill="#64748b">软链接的最终落点，可跨 fs、可指向不存在的路径</text>
+
+  <text x="534" y="524" font-size="11.5" fill="#334155">删掉 src.txt：<tspan font-weight="bold" fill="#b45309">soft.txt 断链（ls 闪红）</tspan>，</text>
+  <text x="534" y="544" font-size="11.5" fill="#334155">因为它存的是名字，名字没了就找不到 —— 硬链接存的是 inode，不受影响。</text>
+
+  <!-- 底部结论 -->
+  <rect x="20" y="582" width="960" height="46" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="40" y="610" font-size="12.5" fill="#1e40af">⭐ rm 的真实语义：解除一个 dentry 链接，inode 的 Links 减 1。<tspan font-weight="bold">只有 Links 归 0 且无进程持有打开的文件时，数据块才真正释放。</tspan></text>
+</svg>

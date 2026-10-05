@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">njs 是「写 C 模块」和「上 OpenResty」之间的第三条路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">它是跑在 nginx 进程内的 JS 解释器 —— 注意「解释器」三个字，它不编译、也没有服务端运行时</text>
+
+  <!-- 四列 -->
+  <rect x="40" y="86" width="220" height="186" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="56" y="110" font-size="12.5" font-weight="bold" fill="#0f172a">写 C 模块</text>
+  <text x="56" y="134" font-size="11" fill="#14532d">能力：最强</text>
+  <text x="56" y="156" font-size="11" fill="#334155">可以拿到 nginx 的全部</text>
+  <text x="56" y="173" font-size="11" fill="#334155">内部结构，没有边界。</text>
+  <text x="56" y="199" font-size="11" fill="#b45309">代价：要编译、有崩溃风险、</text>
+  <text x="56" y="216" font-size="11" fill="#b45309">开发与迭代都慢。</text>
+  <text x="56" y="244" font-size="10.5" fill="#64748b">适合：框架级扩展</text>
+
+  <rect x="280" y="86" width="220" height="186" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="296" y="110" font-size="12.5" font-weight="bold" fill="#14532d">njs</text>
+  <text x="296" y="134" font-size="11" fill="#14532d">能力：中</text>
+  <text x="296" y="156" font-size="11" fill="#334155">HTTP 各阶段的读写、</text>
+  <text x="296" y="173" font-size="11" fill="#334155">ngx.fetch() 发外部请求。</text>
+  <text x="296" y="199" font-size="11" fill="#b45309">代价：生态小、调试弱、</text>
+  <text x="296" y="216" font-size="11" fill="#b45309">性能低于 LuaJIT。</text>
+  <text x="296" y="244" font-size="10.5" fill="#64748b">适合：改头改体、简单路由</text>
+
+  <rect x="520" y="86" width="220" height="186" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="536" y="110" font-size="12.5" font-weight="bold" fill="#1e40af">OpenResty / Lua</text>
+  <text x="536" y="134" font-size="11" fill="#14532d">能力：强</text>
+  <text x="536" y="156" font-size="11" fill="#334155">cosocket 异步网络、</text>
+  <text x="536" y="173" font-size="11" fill="#334155">生态成熟、可连 DB/Redis。</text>
+  <text x="536" y="199" font-size="11" fill="#b45309">代价：引入另一套运行时</text>
+  <text x="536" y="216" font-size="11" fill="#b45309">与调试方式。</text>
+  <text x="536" y="244" font-size="10.5" fill="#64748b">适合：网关层做业务逻辑</text>
+
+  <rect x="760" y="86" width="200" height="186" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="776" y="110" font-size="12.5" font-weight="bold" fill="#0f172a">外部服务</text>
+  <text x="776" y="134" font-size="11" fill="#14532d">能力：不受限</text>
+  <text x="776" y="156" font-size="11" fill="#334155">用任意语言实现，可长驻、</text>
+  <text x="776" y="173" font-size="11" fill="#334155">可做后台任务。</text>
+  <text x="776" y="199" font-size="11" fill="#b45309">代价：多一跳网络，多一份</text>
+  <text x="776" y="216" font-size="11" fill="#b45309">部署与运维成本。</text>
+  <text x="776" y="244" font-size="10.5" fill="#64748b">适合：复杂业务</text>
+
+  <!-- njs 不是什么 -->
+  <text x="40" y="304" font-size="12.5" font-weight="bold" fill="#0f172a">⚠️ 四个常见误解（都来自「把 njs 当 Node」）</text>
+
+  <rect x="40" y="316" width="920" height="38" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="56" y="340" font-size="11.5" fill="#334155">「能跑 Node 代码」→ <tspan font-weight="bold" fill="#b91c1c">不是 Node.js</tspan>：没有 npm 生态的 require，也没有完整的 process（只有 process.env 等少量）</text>
+
+  <rect x="40" y="358" width="920" height="38" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="56" y="382" font-size="11.5" fill="#334155">「库文件可以直接用」→ 只支持 <tspan font-weight="bold" fill="#b45309">ES module（import / export）</tspan>，且必须用 js_import 显式加载</text>
+
+  <rect x="40" y="400" width="920" height="38" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="56" y="424" font-size="11.5" fill="#334155">「能开监听、跑服务」→ <tspan font-weight="bold" fill="#b91c1c">不能</tspan>：它只能挂在 nginx 的请求生命周期里，随请求生灭</text>
+
+  <rect x="40" y="442" width="920" height="38" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="56" y="466" font-size="11.5" fill="#334155">「能替代后端」→ <tspan font-weight="bold" fill="#b91c1c">不行</tspan>：单请求处理模型，没有长驻后台任务（js_periodic 是后来补的定时能力）</text>
+
+  <!-- 判据 -->
+  <rect x="40" y="496" width="920" height="66" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="520" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 一句话选型判据</text>
+  <text x="58" y="542" font-size="12" fill="#334155">问「要不要在网关层做网络 IO（连数据库 / Redis / 上游）」—— 要，就走 Lua（cosocket 就是为此而生）；</text>
+  <text x="58" y="560" font-size="12" fill="#334155">只做「改头、改体、简单路由、调一个 HTTP 接口」，njs 够用且更轻，不必引入 OpenResty。</text>
+</svg>
