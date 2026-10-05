@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">四叉树：把空间递归四等分；它和 R 树的分工靠「数据是点还是矩形」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：四叉树的空间划分与分裂条件；右：四类空间索引的分工与工程落地</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">递归四等分：点落在哪个象限是确定的</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">不需要「选插入路径」的贪心 —— 这正是它比 R 树简单的地方</text>
+
+    <rect x="60" y="76" width="320" height="320" fill="#ffffff" stroke="#2563eb" stroke-width="1.8"/>
+    <line x1="220" y1="76" x2="220" y2="396" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="60" y1="236" x2="380" y2="236" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="140" y1="76" x2="140" y2="236" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="60" y1="156" x2="220" y2="156" stroke="#cbd5e1" stroke-width="1"/>
+
+    <circle cx="110" cy="112" r="3.5" fill="#16a34a"/>
+    <circle cx="172" cy="134" r="3.5" fill="#16a34a"/>
+    <circle cx="96" cy="196" r="3.5" fill="#16a34a"/>
+    <circle cx="186" cy="204" r="3.5" fill="#16a34a"/>
+    <circle cx="160" cy="88" r="3.5" fill="#16a34a"/>
+
+    <circle cx="286" cy="120" r="3.5" fill="#b45309"/>
+    <circle cx="340" cy="164" r="3.5" fill="#b45309"/>
+    <circle cx="256" cy="184" r="3.5" fill="#b45309"/>
+    <circle cx="356" cy="108" r="3.5" fill="#b45309"/>
+
+    <circle cx="120" cy="292" r="3.5" fill="#7c3aed"/>
+    <circle cx="196" cy="342" r="3.5" fill="#7c3aed"/>
+    <circle cx="88" cy="360" r="3.5" fill="#7c3aed"/>
+    <circle cx="250" cy="300" r="3.5" fill="#7c3aed"/>
+    <circle cx="318" cy="352" r="3.5" fill="#7c3aed"/>
+    <circle cx="360" cy="288" r="3.5" fill="#7c3aed"/>
+    <circle cx="290" cy="374" r="3.5" fill="#7c3aed"/>
+    <circle cx="200" cy="256" r="3.5" fill="#7c3aed"/>
+
+    <text x="66" y="70" font-size="11.5" fill="#334155">已细分到第 2 层</text>
+    <text x="246" y="70" font-size="11.5" fill="#334155">桶未满 → 不再细分</text>
+
+    <text x="16" y="424" font-size="12.5" fill="#1e40af">分裂条件：一个桶里的点数超过容量（本图取 8）→ 就地四等分</text>
+    <text x="16" y="446" font-size="12.5" fill="#1e40af">终止条件：再加一个「深度上限」，防止点高度重合时无限细分</text>
+    <text x="16" y="472" font-size="12" fill="#334155">插入：算出点属于哪个象限 → 递归下去，O(深度)</text>
+    <text x="16" y="494" font-size="12" fill="#334155">查询：只走「边界与查询矩形相交」的象限 —— 与 R 树的剪枝同理</text>
+    <text x="16" y="518" font-size="12" fill="#b45309">⚠️ 数据分布极不均匀时，空象限照样占节点；R 树靠 MBR 自适应，没这问题</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">四类空间索引的分工</text>
+
+    <rect x="16" y="46" width="428" height="76" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="30" y="68" font-size="12.5" font-weight="bold" fill="#14532d">R 树 / R* 树 —— 矩形与任意几何体</text>
+    <text x="30" y="88" font-size="12" fill="#334155">支持范围查询与 kNN；对象可以是点 / 矩形 / 多边形</text>
+    <text x="30" y="108" font-size="12" fill="#64748b">落地：PostGIS、MongoDB 2dsphere、Oracle Spatial</text>
+
+    <rect x="16" y="132" width="428" height="76" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="30" y="154" font-size="12.5" font-weight="bold" fill="#5b21b6">四叉树 —— 点数据，尤其分布均匀</text>
+    <text x="30" y="174" font-size="12" fill="#334155">实现最简、插入最便宜；实测在均匀点集上候选点少 2.6 倍</text>
+    <text x="30" y="194" font-size="12" fill="#64748b">落地：地图瓦片切分、图像压缩、游戏碰撞检测</text>
+
+    <rect x="16" y="218" width="428" height="76" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="30" y="240" font-size="12.5" font-weight="bold" fill="#1e40af">k-d 树 —— 静态点集、低维</text>
+    <text x="30" y="260" font-size="12" fill="#334155">按维度轮流切分，构建快、内存省</text>
+    <text x="30" y="280" font-size="12" fill="#b45309">⚠️ 频繁增删会失衡，适合「建好就不动」的场景</text>
+
+    <rect x="16" y="304" width="428" height="76" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="1.2"/>
+    <text x="30" y="326" font-size="12.5" font-weight="bold" fill="#92400e">GeoHash / 网格 —— 粗筛的第一层</text>
+    <text x="30" y="346" font-size="12" fill="#334155">把二维编码成一维前缀，可直接复用 B+ 树 / 有序集合</text>
+    <text x="30" y="366" font-size="12" fill="#64748b">落地：Redis Geo（GEOADD / GEOSEARCH）、附近的人</text>
+
+    <text x="16" y="408" font-size="13" font-weight="bold" fill="#0f172a">为什么「附近的车」常用网格而不是 R 树</text>
+    <text x="16" y="432" font-size="12" fill="#334155">① 车的位置每秒都在变 → R 树的删除 + 重插要维护 MBR，代价高；</text>
+    <text x="16" y="454" font-size="12" fill="#334155">② 网格/GeoHash 更新是 O(1)（改一个格子的集合）；</text>
+    <text x="16" y="476" font-size="12" fill="#334155">③ 流程：GeoHash 粗筛出邻近格子 → 格内精确算球面距离 → 排序 TopK。</text>
+    <text x="16" y="502" font-size="12" fill="#1e40af">⭐ 判据：对象「动得频繁」→ 网格/GeoHash；「动得少但要范围/几何」→ R 树。</text>
+  </g>
+</svg>

@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">R 树：用「最小外接矩形」把二维数据装进一棵可剪枝的树</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：MBR 嵌套结构；右：一次范围查询怎么被剪枝（含本机容器实测的候选点数）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">MBR：父矩形必须抱得住所有子矩形</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">MBR = Minimum Bounding Rectangle，最小外接矩形</text>
+
+    <rect x="36" y="70" width="384" height="242" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <text x="44" y="88" font-size="11.5" fill="#1e40af">根 MBR（内部节点，只存矩形）</text>
+
+    <rect x="48" y="100" width="172" height="92" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="54" y="116" font-size="11.5" fill="#14532d">MBR-A</text>
+    <circle cx="80" cy="140" r="3.5" fill="#16a34a"/>
+    <circle cx="108" cy="158" r="3.5" fill="#16a34a"/>
+    <circle cx="140" cy="132" r="3.5" fill="#16a34a"/>
+    <circle cx="170" cy="166" r="3.5" fill="#16a34a"/>
+    <circle cx="196" cy="128" r="3.5" fill="#16a34a"/>
+    <circle cx="120" cy="176" r="3.5" fill="#16a34a"/>
+
+    <rect x="230" y="100" width="172" height="92" fill="#ffffff" stroke="#b45309" stroke-width="1.4"/>
+    <text x="236" y="116" font-size="11.5" fill="#92400e">MBR-B</text>
+    <circle cx="262" cy="146" r="3.5" fill="#b45309"/>
+    <circle cx="296" cy="130" r="3.5" fill="#b45309"/>
+    <circle cx="330" cy="164" r="3.5" fill="#b45309"/>
+    <circle cx="364" cy="138" r="3.5" fill="#b45309"/>
+    <circle cx="386" cy="172" r="3.5" fill="#b45309"/>
+
+    <rect x="48" y="202" width="354" height="98" fill="#ffffff" stroke="#7c3aed" stroke-width="1.4"/>
+    <text x="54" y="218" font-size="11.5" fill="#5b21b6">MBR-C</text>
+    <circle cx="86" cy="250" r="3.5" fill="#7c3aed"/>
+    <circle cx="126" cy="234" r="3.5" fill="#7c3aed"/>
+    <circle cx="168" cy="272" r="3.5" fill="#7c3aed"/>
+    <circle cx="214" cy="240" r="3.5" fill="#7c3aed"/>
+    <circle cx="262" cy="268" r="3.5" fill="#7c3aed"/>
+    <circle cx="310" cy="238" r="3.5" fill="#7c3aed"/>
+    <circle cx="352" cy="274" r="3.5" fill="#7c3aed"/>
+    <circle cx="384" cy="246" r="3.5" fill="#7c3aed"/>
+
+    <text x="16" y="342" font-size="12.5" fill="#334155">叶子节点存「空间对象」（点 / 矩形 / 多边形），</text>
+    <text x="16" y="364" font-size="12.5" fill="#334155">内部节点只存「包住所有子节点的最小矩形」—— 不存数据本身。</text>
+    <text x="16" y="392" font-size="12.5" fill="#1e40af">插入：选「扩张面积最小」的子树往下走（贪心，不改已有划分）</text>
+    <text x="16" y="414" font-size="12.5" fill="#1e40af">分裂：节点塞满（&gt; M 条）→ 按策略一分为二，矩形随之收紧</text>
+    <text x="16" y="442" font-size="12" fill="#334155">⭐ R 树的价值：给「本来没有全序」的二维数据造出一套可比较、</text>
+    <text x="16" y="462" font-size="12" fill="#334155">可打包的层级 —— 这正是 B+ 树在磁盘上做的事，只不过对象换成了矩形。</text>
+    <text x="16" y="490" font-size="12" fill="#b45309">⚠️ 关键代价：MBR 之间一定会重叠。重叠越多，一次查询要下钻的</text>
+    <text x="16" y="510" font-size="12" fill="#b45309">分支越多 —— R 树的全部优化都在「怎么把重叠压小」。</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">范围查询：不相交的 MBR 整棵子树跳过</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">先比矩形（4 次比较），比逐个点判断便宜得多</text>
+
+    <rect x="36" y="70" width="384" height="242" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <rect x="48" y="100" width="172" height="92" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="54" y="116" font-size="11.5" fill="#14532d">MBR-A ✅ 相交</text>
+    <circle cx="80" cy="140" r="3.5" fill="#16a34a"/>
+    <circle cx="108" cy="158" r="3.5" fill="#16a34a"/>
+    <circle cx="140" cy="132" r="3.5" fill="#16a34a"/>
+    <circle cx="170" cy="166" r="3.5" fill="#16a34a"/>
+    <circle cx="196" cy="128" r="3.5" fill="#16a34a"/>
+    <circle cx="120" cy="176" r="3.5" fill="#16a34a"/>
+    <rect x="72" y="124" width="96" height="62" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="120" y="200" text-anchor="middle" font-size="11" fill="#7f1d1d">查询矩形</text>
+
+    <rect x="230" y="100" width="172" height="92" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text x="236" y="116" font-size="11.5" fill="#94a3b8">MBR-B ✂️ 不相交</text>
+    <circle cx="262" cy="146" r="3.5" fill="#cbd5e1"/>
+    <circle cx="296" cy="130" r="3.5" fill="#cbd5e1"/>
+    <circle cx="330" cy="164" r="3.5" fill="#cbd5e1"/>
+    <circle cx="364" cy="138" r="3.5" fill="#cbd5e1"/>
+    <circle cx="386" cy="172" r="3.5" fill="#cbd5e1"/>
+
+    <rect x="48" y="202" width="354" height="98" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text x="54" y="218" font-size="11.5" fill="#94a3b8">MBR-C ✂️ 不相交</text>
+    <circle cx="86" cy="250" r="3.5" fill="#cbd5e1"/>
+    <circle cx="126" cy="234" r="3.5" fill="#cbd5e1"/>
+    <circle cx="168" cy="272" r="3.5" fill="#cbd5e1"/>
+    <circle cx="214" cy="240" r="3.5" fill="#cbd5e1"/>
+    <circle cx="262" cy="268" r="3.5" fill="#cbd5e1"/>
+    <circle cx="310" cy="238" r="3.5" fill="#cbd5e1"/>
+    <circle cx="352" cy="274" r="3.5" fill="#cbd5e1"/>
+    <circle cx="384" cy="246" r="3.5" fill="#cbd5e1"/>
+
+    <text x="16" y="342" font-size="12.5" fill="#1e40af">下钻路径：根 → 只进 MBR-A 这一支 → 只检查 A 里的点</text>
+    <text x="16" y="364" font-size="12.5" fill="#14532d">B、C 两支连同它们的全部对象被整体跳过（剪枝）</text>
+
+    <text x="16" y="394" font-size="13" font-weight="bold" fill="#0f172a">本机容器实测（20000 个均匀点，查询 100×100）</text>
+    <rect x="16" y="406" width="428" height="104" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="30" y="430" font-size="12.5" fill="#1e40af">R 树：检查 1099 个候选点 → 剪掉 94.5%（树高 11、7015 节点）</text>
+    <text x="30" y="452" font-size="12.5" fill="#1e40af">四叉树：检查 424 个（深度 7、5401 节点）</text>
+    <text x="30" y="474" font-size="12" fill="#334155">暴力扫描：20000 个全查；三方命中结果完全一致 ✅</text>
+    <text x="30" y="496" font-size="12" fill="#b45309">⚠️ 均匀「点」数据上四叉树反而更省 —— 印证「R 树适合矩形、四叉树适合点」</text>
+
+    <text x="16" y="530" font-size="12" fill="#b45309">⚠️ 我的分裂策略是「按中心 x 排序对半切」，MBR 重叠偏大；真实 R 树</text>
+  </g>
+</svg>

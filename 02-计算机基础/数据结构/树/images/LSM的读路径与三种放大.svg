@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">LSM 的读路径与三种放大：省下的写，是拿读和空间换来的</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：一次点查要从新到旧逐层找，布隆过滤器负责「先说不在」；右：写 / 读 / 空间三种放大与 Compaction 策略</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">点查顺序：新 → 旧，命中即返回</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">越新的数据越靠近上层；旧版本在新文件里被覆盖，但旧文件还在</text>
+
+    <rect x="36" y="72" width="330" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="48" y="90" font-size="12" font-weight="bold" fill="#14532d">① MemTable（内存，有序）</text>
+    <text x="48" y="106" font-size="11" fill="#334155">命中概率最高，代价最低</text>
+    <text x="380" y="98" font-size="11" fill="#64748b">← 不需要布隆</text>
+
+    <line x1="201" y1="114" x2="201" y2="128" stroke="#94a3b8" stroke-width="1.6"/>
+    <rect x="36" y="128" width="330" height="40" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="48" y="146" font-size="12" font-weight="bold" fill="#92400e">② Immutable MemTable</text>
+    <text x="48" y="162" font-size="11" fill="#334155">只读，内容与刚刷下去的那份相同</text>
+
+    <line x1="201" y1="170" x2="201" y2="184" stroke="#94a3b8" stroke-width="1.6"/>
+    <rect x="36" y="184" width="330" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="48" y="202" font-size="12" font-weight="bold" fill="#1e40af">③ L0：多个文件，从新到旧逐个查</text>
+    <rect x="48" y="210" width="70" height="20" rx="4" fill="#ffffff" stroke="#2563eb" stroke-width="1"/>
+    <text x="83" y="220" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#1e40af">最新</text>
+    <rect x="126" y="210" width="70" height="20" rx="4" fill="#ffffff" stroke="#93c5fd" stroke-width="1"/>
+    <text x="161" y="220" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#1e40af">中间</text>
+    <rect x="204" y="210" width="70" height="20" rx="4" fill="#ffffff" stroke="#bfdbfe" stroke-width="1"/>
+    <text x="239" y="220" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#1e40af">最旧</text>
+    <text x="286" y="220" font-size="10.5" fill="#b45309">← 每个都要过布隆</text>
+
+    <line x1="201" y1="238" x2="201" y2="252" stroke="#94a3b8" stroke-width="1.6"/>
+    <rect x="36" y="252" width="330" height="42" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="48" y="270" font-size="12" font-weight="bold" fill="#92400e">④ L1：合并后的大文件</text>
+    <text x="48" y="286" font-size="11" fill="#334155">L0 里没有的键，最后落在这里</text>
+
+    <text x="16" y="322" font-size="12.5" fill="#1e40af">⭐ 读放大的定义：一次点查要「碰到几个文件」，而不是读多少字节</text>
+    <rect x="16" y="338" width="428" height="92" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="30" y="360" font-size="12.5" fill="#1e40af">本机实测（边写边读 400 次抽样）：</text>
+    <text x="30" y="382" font-size="12.5" fill="#1e40af">平均探查 2.58 个文件 → 真正读取只有 1.00 个</text>
+    <text x="30" y="404" font-size="12.5" fill="#14532d">⭐ 布隆过滤器挡掉了 61.1% 的文件读</text>
+    <text x="30" y="424" font-size="11.5" fill="#b45309">⚠️ 采样必须「边写边读」：全部写完时 L0 已被合并清空，读只有 1 个文件</text>
+
+    <text x="16" y="458" font-size="12" fill="#334155">为什么布隆有效：它只能说「肯定不在」或「可能在」。</text>
+    <text x="16" y="480" font-size="12" fill="#334155">说「不在」的文件直接跳过 → 把 N 次随机读压成常数次。</text>
+    <text x="16" y="504" font-size="12" fill="#b45309">⚠️ 代价：布隆有假阳性（说「在」其实不在）→ 最坏情况仍然要扫完全部层。</text>
+    <text x="16" y="524" font-size="12" fill="#64748b">所以 LSM 的读延迟是「平均很快、尾延迟抖」的典型。</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三种放大：不可能同时压到最小</text>
+
+    <rect x="16" y="46" width="428" height="60" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="1.2"/>
+    <text x="30" y="68" font-size="12.5" font-weight="bold" fill="#92400e">写放大 = 实际写盘字节 / 逻辑数据字节</text>
+    <text x="30" y="90" font-size="12" fill="#334155">本机实测 7.04；主因是 Compaction 反复重写（占写盘量 69%）</text>
+
+    <rect x="16" y="114" width="428" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="30" y="136" font-size="12.5" font-weight="bold" fill="#1e40af">读放大 = 一次点查要碰几个文件</text>
+    <text x="30" y="158" font-size="12" fill="#334155">本机实测平均探查 2.53；靠布隆过滤器与分层策略压下来</text>
+
+    <rect x="16" y="182" width="428" height="60" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="30" y="204" font-size="12.5" font-weight="bold" fill="#5b21b6">空间放大 = 磁盘占用 / 逻辑数据量</text>
+    <text x="30" y="226" font-size="12" fill="#334155">同一键的多个版本、已删除但未清理的墓碑都还在占地方</text>
+
+    <text x="16" y="266" font-size="13" font-weight="bold" fill="#0f172a">Compaction 策略就是这三者的调节旋钮</text>
+    <rect x="16" y="280" width="428" height="76" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="30" y="302" font-size="12.5" font-weight="bold" fill="#14532d">size-tiered（按大小分层）</text>
+    <text x="30" y="322" font-size="12" fill="#334155">把大小相近的文件一批合并：写放大低、空间放大高</text>
+    <text x="30" y="342" font-size="12" fill="#64748b">适合「写多读少」——LSM 最初就是为这个场景设计的</text>
+
+    <rect x="16" y="364" width="428" height="76" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="30" y="386" font-size="12.5" font-weight="bold" fill="#1e40af">leveled（分级，每层键范围不重叠）</text>
+    <text x="30" y="406" font-size="12" fill="#334155">查一层就能定位：读放大低、空间放大低，但写放大高</text>
+    <text x="30" y="426" font-size="12" fill="#64748b">RocksDB 默认走这条；适合「读延迟敏感」</text>
+
+    <text x="16" y="466" font-size="12" fill="#334155">⭐ 一句话判据：</text>
+    <text x="16" y="488" font-size="12" fill="#334155">写多读少、能接受读延迟抖 → size-tiered；</text>
+    <text x="16" y="508" font-size="12" fill="#334155">读延迟稳定优先（在线业务）→ leveled。</text>
+    <text x="16" y="528" font-size="11.5" fill="#64748b">⚠️ 具体参数与默认值以各引擎官方文档为准，本篇只给判据。</text>
+  </g>
+</svg>

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">树上的两类经典算法：LCA 的分支判断、树形 DP 的自底向上</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两者都靠「后序遍历」把子树结论往上汇总 —— 返回值语义不同，一个是「祖先」，一个是「最大贡献」</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">LCA：后序递归，三种情况</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">求 LCA(4, 6)：红线是命中回传的路径</text>
+
+    <line x1="230" y1="120" x2="160" y2="195" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="230" y1="120" x2="300" y2="195" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="160" y1="195" x2="125" y2="270" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="160" y1="195" x2="195" y2="270" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="300" y1="195" x2="335" y2="270" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="230" y1="120" x2="160" y2="195" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="160" y1="195" x2="125" y2="270" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="230" y1="120" x2="300" y2="195" stroke="#dc2626" stroke-width="2.5"/>
+    <line x1="300" y1="195" x2="335" y2="270" stroke="#dc2626" stroke-width="2.5"/>
+
+    <circle cx="230" cy="120" r="17" fill="#fee2e2" stroke="#dc2626" stroke-width="2.4"/>
+    <text x="230" y="120" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#7f1d1d">1</text>
+    <circle cx="160" cy="195" r="17" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="160" y="195" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">2</text>
+    <circle cx="300" cy="195" r="17" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="300" y="195" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">3</text>
+    <circle cx="125" cy="270" r="17" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="125" y="270" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#1e40af">4</text>
+    <circle cx="195" cy="270" r="17" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="195" y="270" text-anchor="middle" dominant-baseline="central" font-size="14" fill="#334155">5</text>
+    <circle cx="335" cy="270" r="17" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="335" y="270" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#1e40af">6</text>
+
+    <text x="16" y="322" font-size="12.5" fill="#1e40af">情况① 左右两边都返回了非空 → 当前节点就是 LCA（图里的 1）</text>
+    <text x="16" y="344" font-size="12.5" fill="#334155">情况② 只有一边非空 → 把那一侧的结果原样往上抛</text>
+    <text x="16" y="366" font-size="12.5" fill="#334155">情况③ 当前节点就是 p 或 q → 直接返回自己（不用再往下找）</text>
+    <text x="16" y="392" font-size="12" fill="#334155">复杂度：每个节点访问一次，O(n) 时间 / O(h) 递归栈，不需要父指针</text>
+
+    <rect x="16" y="410" width="428" height="86" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="30" y="432" font-size="12" fill="#1e40af">本机实测（同一棵树 1/2/4/5/3/6）：</text>
+    <text x="30" y="454" font-size="12" fill="#1e40af">LCA(4,5)=2　LCA(4,6)=1　LCA(2,3)=1　LCA(5,3)=1</text>
+    <text x="30" y="476" font-size="12" fill="#14532d">BST 版 LCA(1,4)=3 —— 用大小关系一路往下，不用回溯</text>
+    <text x="30" y="492" font-size="11.5" fill="#64748b">进阶：倍增法（预处理 O(n log n) 支持在线查询）、Tarjan 离线</text>
+
+    <text x="16" y="520" font-size="12" fill="#b45309">⚠️ 若节点可能不在树中，「情况③直接返回」会给出错误答案 —— 要先确认存在性。</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">树形 DP：gain 自底向上汇总</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">二叉树最大路径和：树 [−10, 9, 20, null, null, 15, 7]</text>
+
+    <line x1="230" y1="120" x2="170" y2="195" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="230" y1="120" x2="290" y2="195" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="290" y1="195" x2="255" y2="270" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="290" y1="195" x2="325" y2="270" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="290" y1="195" x2="255" y2="270" stroke="#16a34a" stroke-width="2.5"/>
+    <line x1="290" y1="195" x2="325" y2="270" stroke="#16a34a" stroke-width="2.5"/>
+
+    <circle cx="230" cy="120" r="18" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="230" y="120" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">-10</text>
+    <circle cx="170" cy="195" r="18" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="170" y="195" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">9</text>
+    <circle cx="290" cy="195" r="18" fill="#dcfce7" stroke="#16a34a" stroke-width="2.4"/>
+    <text x="290" y="195" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#14532d">20</text>
+    <circle cx="255" cy="270" r="18" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="255" y="270" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">15</text>
+    <circle cx="325" cy="270" r="18" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="325" y="270" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#14532d">7</text>
+
+    <text x="16" y="322" font-size="12.5" fill="#1e40af">状态：gain(n) = 「以 n 为端点、只向下走」能贡献的最大值</text>
+    <text x="16" y="344" font-size="12.5" fill="#334155">转移：gain(n) = n.val + max(0, gain(left), gain(right))</text>
+    <text x="16" y="366" font-size="12.5" fill="#334155">答案在每个「拐点」处更新：n.val + max(0,left) + max(0,right)</text>
+
+    <rect x="16" y="384" width="428" height="112" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="30" y="406" font-size="12" fill="#14532d">自底向上算：gain(9)=9　gain(15)=15　gain(7)=7</text>
+    <text x="30" y="428" font-size="12" fill="#14532d">gain(20) = 20 + max(15, 7) = 35</text>
+    <text x="30" y="450" font-size="12" fill="#14532d">在 20 处更新答案：15 + 20 + 7 = 42（绿线就是这条路径）</text>
+    <text x="30" y="472" font-size="12" fill="#14532d">gain(−10) = −10 + max(9, 35) = 25（根被丢弃）</text>
+    <text x="30" y="490" font-size="11.5" fill="#334155">本机实测：最大路径和 = 42 ✅</text>
+
+    <text x="16" y="520" font-size="12" fill="#b45309">⚠️ 关键：向上只能带「一侧」（路径不能分叉），分叉只允许发生在拐点处。</text>
+  </g>
+</svg>

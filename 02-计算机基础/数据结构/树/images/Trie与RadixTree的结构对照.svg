@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Trie 与 Radix Tree：共享前缀写到哪儿，节点就有多少</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一组词 app / apple / api / bat：左边每个字符一个节点，右边把单链压成一条边（Nginx 路由匹配用的就是右图）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">Trie（前缀树）：每个字符一个节点</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">从根往下走一条路径 = 一个前缀；⦿ 表示这里是一个完整单词</text>
+
+    <line x1="110" y1="95" x2="190" y2="150" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="110" y1="95" x2="60" y2="150" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="190" y1="150" x2="220" y2="205" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="220" y1="205" x2="270" y2="260" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="220" y1="205" x2="175" y2="260" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="270" y1="260" x2="310" y2="315" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="310" y1="315" x2="345" y2="370" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="60" y1="150" x2="45" y2="205" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="45" y1="205" x2="60" y2="260" stroke="#94a3b8" stroke-width="1.3"/>
+
+    <circle cx="110" cy="95" r="15" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="110" y="95" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#1e40af">根</text>
+    <circle cx="190" cy="150" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="190" y="150" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">a</text>
+    <circle cx="60" cy="150" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="60" y="150" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">b</text>
+    <circle cx="220" cy="205" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="220" y="205" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">p</text>
+    <circle cx="270" cy="260" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="270" y="260" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">p</text>
+    <circle cx="175" cy="260" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="175" y="260" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">i</text>
+    <circle cx="310" cy="315" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="310" y="315" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">l</text>
+    <circle cx="345" cy="370" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="345" y="370" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">e</text>
+    <circle cx="45" cy="205" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="45" y="205" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">a</text>
+    <circle cx="60" cy="260" r="15" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="60" y="260" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">t</text>
+
+    <circle cx="284" cy="246" r="5" fill="#16a34a"/>
+    <circle cx="359" cy="356" r="5" fill="#16a34a"/>
+    <circle cx="189" cy="246" r="5" fill="#16a34a"/>
+    <circle cx="74" cy="246" r="5" fill="#16a34a"/>
+    <text x="296" y="243" font-size="11.5" fill="#14532d">app</text>
+    <text x="371" y="353" font-size="11.5" fill="#14532d">apple</text>
+    <text x="201" y="243" font-size="11.5" fill="#14532d">api</text>
+    <text x="86" y="243" font-size="11.5" fill="#14532d">bat</text>
+
+    <text x="16" y="410" font-size="12.5" fill="#334155">节点 = 一个字符，路径 = 一个前缀，⦿ = 这里是一个完整单词</text>
+    <text x="16" y="432" font-size="12.5" fill="#1e40af">⭐ 共享前缀只存一份：app / apple / api 共用 根→a→p 这两步</text>
+    <text x="16" y="454" font-size="12" fill="#334155">优点：前缀查询、自动补全、敏感词过滤都是「沿树往下走」，O(键长)</text>
+    <text x="16" y="476" font-size="12" fill="#b45309">⚠️ 缺点：节点又多又小 —— 每个节点挂一个子指针表，指针税很重；</text>
+    <text x="16" y="496" font-size="12" fill="#b45309">长键尤其浪费（patricia 就是为了解决这个才出现的）。</text>
+    <text x="16" y="520" font-size="12" fill="#64748b">⚠️ 与哈希表的分界：哈希只能等值命中，给不出「所有以 xx 开头的键」。</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">Radix Tree：把「独苗链」压成一条边</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">同四个词，节点数从 9 个降到 6 个；边上的标签是「一整段字符串」</text>
+
+    <line x1="70" y1="110" x2="200" y2="110" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="200" y1="110" x2="200" y2="200" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="200" y1="200" x2="200" y2="290" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="200" y1="110" x2="330" y2="110" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="70" y1="110" x2="70" y2="240" stroke="#94a3b8" stroke-width="1.3"/>
+
+    <circle cx="70" cy="110" r="15" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="70" y="110" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#1e40af">根</text>
+    <circle cx="200" cy="110" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="200" y="110" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#92400e">A</text>
+    <circle cx="200" cy="200" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="200" y="200" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#92400e">B</text>
+    <circle cx="200" cy="290" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="200" y="290" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#92400e">C</text>
+    <circle cx="330" cy="110" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="330" y="110" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#92400e">D</text>
+    <circle cx="70" cy="240" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="70" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#92400e">E</text>
+
+    <rect x="112" y="96" width="44" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="134" y="106" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">ap</text>
+    <rect x="206" y="140" width="34" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="223" y="150" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">p</text>
+    <rect x="206" y="230" width="42" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="227" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">le</text>
+    <rect x="252" y="96" width="46" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="275" y="106" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">i</text>
+    <rect x="40" y="160" width="50" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="65" y="170" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">bat</text>
+
+    <circle cx="214" cy="186" r="5" fill="#16a34a"/>
+    <text x="226" y="183" font-size="11.5" fill="#14532d">app（B 是词尾）</text>
+    <circle cx="214" cy="276" r="5" fill="#16a34a"/>
+    <text x="226" y="273" font-size="11.5" fill="#14532d">apple（C 是词尾）</text>
+    <circle cx="344" cy="96" r="5" fill="#16a34a"/>
+    <text x="356" y="93" font-size="11.5" fill="#14532d">api</text>
+    <circle cx="84" cy="226" r="5" fill="#16a34a"/>
+    <text x="96" y="223" font-size="11.5" fill="#14532d">bat</text>
+
+    <text x="16" y="352" font-size="12.5" fill="#1e40af">⭐ 一次比较「吃掉一整段公共前缀」，而不是逐字符走</text>
+    <text x="16" y="374" font-size="12.5" fill="#14532d">节点数由「分段数」决定，不再由「字符数」决定 —— 长键收益最大</text>
+
+    <rect x="16" y="390" width="428" height="96" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="30" y="412" font-size="12.5" fill="#1e40af">Nginx / 网关路由匹配的底层就是 Radix Tree：</text>
+    <text x="30" y="432" font-size="12" fill="#334155">一条 location /api/ 前缀 = 树上的一个节点，最长前缀匹配 = 沿树走到底</text>
+    <text x="30" y="452" font-size="12" fill="#334155">对比哈希：哈希要「整键相等」才知道命中，前缀路由天然做不到</text>
+    <text x="30" y="472" font-size="11.5" fill="#b45309">⚠️ 代价：插入 / 删除要处理「边的分裂与合并」，实现比 Trie 复杂</text>
+
+    <text x="16" y="506" font-size="12" fill="#334155">⭐ 判据：只做等值查找 → 哈希表；</text>
+    <text x="16" y="524" font-size="12" fill="#334155">需要前缀 / 范围 / 最长匹配 → Trie 或 Radix。</text>
+  </g>
+</svg>

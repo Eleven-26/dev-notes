@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">线段树与树状数组：同一个「区间统计」问题的两条路线</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：线段树按区间二分，代码长但通用；右：树状数组靠 lowbit 定位，代码短、常数小（附本机实测）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">线段树：每个节点负责一个区间</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">数组 [5, 3, 8, 1, 9, 2, 7, 4]，节点里存的就是它那段的和</text>
+
+    <line x1="219" y1="103" x2="129" y2="127" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="219" y1="103" x2="309" y2="127" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="129" y1="153" x2="84" y2="177" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="129" y1="153" x2="174" y2="177" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="309" y1="153" x2="264" y2="177" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="309" y1="153" x2="354" y2="177" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="84" y1="203" x2="62" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="84" y1="203" x2="107" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="174" y1="203" x2="152" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="174" y1="203" x2="197" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="264" y1="203" x2="242" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="264" y1="203" x2="287" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="354" y1="203" x2="332" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+    <line x1="354" y1="203" x2="377" y2="227" stroke="#94a3b8" stroke-width="1.2"/>
+
+    <rect x="182" y="77" width="75" height="26" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="219" y="90" text-anchor="middle" dominant-baseline="central" font-size="10.5" fill="#1e40af">[0..7] = 39</text>
+    <rect x="92" y="127" width="75" height="26" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="129" y="140" text-anchor="middle" dominant-baseline="central" font-size="10.5" fill="#1e40af">[0..3] = 17</text>
+    <rect x="272" y="127" width="75" height="26" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="309" y="140" text-anchor="middle" dominant-baseline="central" font-size="10.5" fill="#1e40af">[4..7] = 22</text>
+
+    <rect x="47" y="177" width="75" height="26" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="84" y="190" text-anchor="middle" dominant-baseline="central" font-size="10.5" fill="#92400e">[0..1] = 8</text>
+    <rect x="137" y="177" width="75" height="26" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="174" y="190" text-anchor="middle" dominant-baseline="central" font-size="10.5" fill="#92400e">[2..3] = 9</text>
+    <rect x="227" y="177" width="75" height="26" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="264" y="190" text-anchor="middle" dominant-baseline="central" font-size="10.5" fill="#92400e">[4..5] = 11</text>
+    <rect x="317" y="177" width="75" height="26" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="354" y="190" text-anchor="middle" dominant-baseline="central" font-size="10.5" fill="#92400e">[6..7] = 11</text>
+
+    <rect x="42" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="62" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">5</text>
+    <rect x="87" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="107" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">3</text>
+    <rect x="132" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="152" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">8</text>
+    <rect x="177" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="197" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">1</text>
+    <rect x="222" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="242" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">9</text>
+    <rect x="267" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="287" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">2</text>
+    <rect x="312" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="332" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">7</text>
+    <rect x="357" y="227" width="40" height="26" rx="5" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="377" y="240" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#334155">4</text>
+
+    <text x="16" y="284" font-size="12.5" fill="#1e40af">查询 sum(1, 6) 的分解：只需 4 个节点拼出来，不必碰 6 个叶子</text>
+    <text x="16" y="306" font-size="12.5" fill="#334155">[1..1] + [2..3] + [4..5] + [6..6] = 3 + 9 + 11 + 7 = 30</text>
+    <text x="16" y="332" font-size="12" fill="#334155">⭐ 一次区间查询 / 修改都只碰 O(log n) 个节点（因为每层最多拆成 2 段）</text>
+    <text x="16" y="354" font-size="12" fill="#b45309">⚠️ 区间「修改」要打懒标记（lazy）：整段被覆盖时先记账、不往下递归，</text>
+    <text x="16" y="374" font-size="12" fill="#b45309">下次真的下探时再把标记推给孩子 —— 这是线段树实现最容易写错的地方。</text>
+    <text x="16" y="402" font-size="12" fill="#334155">适用：区间和 / 区间最值 / 区间加、区间赋值等「需要区间合并」的场景</text>
+    <text x="16" y="424" font-size="12" fill="#334155">存法：用数组模拟完全二叉树，节点 p 的孩子是 2p 与 2p+1（开 4n 空间）</text>
+    <text x="16" y="454" font-size="12" fill="#64748b">另：树状数组、线段树这类「区间结构」的完整用法在正文第四节展开；</text>
+    <text x="16" y="474" font-size="12" fill="#64748b">这里只画结构，不重复实现。</text>
+    <text x="16" y="504" font-size="12" fill="#1e40af">⭐ 记忆点：线段树是「把区间树化」，每个节点天然代表一段连续区间。</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="530" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">树状数组：lowbit 决定「管多长」</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">格子 i 负责的范围长度 = i &amp; -i（i 的二进制里最低位的 1）</text>
+
+    <text x="20" y="80" font-size="11" fill="#64748b">i</text>
+    <text x="44" y="80" font-size="11" fill="#64748b">lowbit</text>
+    <text x="92" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">1</text>
+    <text x="136" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">2</text>
+    <text x="180" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">3</text>
+    <text x="224" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">4</text>
+    <text x="268" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">5</text>
+    <text x="312" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">6</text>
+    <text x="356" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">7</text>
+    <text x="400" y="80" text-anchor="middle" font-size="10.5" fill="#64748b">8</text>
+
+    <text x="20" y="105" font-size="11.5" fill="#334155">1</text>
+    <text x="44" y="105" font-size="11" fill="#94a3b8">1</text>
+    <rect x="70" y="94" width="44" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+
+    <text x="20" y="139" font-size="11.5" fill="#334155">2</text>
+    <text x="44" y="139" font-size="11" fill="#94a3b8">2</text>
+    <rect x="70" y="128" width="88" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+
+    <text x="20" y="173" font-size="11.5" fill="#334155">3</text>
+    <text x="44" y="173" font-size="11" fill="#94a3b8">1</text>
+    <rect x="158" y="162" width="44" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+
+    <text x="20" y="207" font-size="11.5" fill="#334155">4</text>
+    <text x="44" y="207" font-size="11" fill="#94a3b8">4</text>
+    <rect x="70" y="196" width="176" height="20" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+
+    <text x="20" y="241" font-size="11.5" fill="#334155">5</text>
+    <text x="44" y="241" font-size="11" fill="#94a3b8">1</text>
+    <rect x="246" y="230" width="44" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+
+    <text x="20" y="275" font-size="11.5" fill="#334155">6</text>
+    <text x="44" y="275" font-size="11" fill="#94a3b8">2</text>
+    <rect x="246" y="264" width="88" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+
+    <text x="20" y="309" font-size="11.5" fill="#334155">7</text>
+    <text x="44" y="309" font-size="11" fill="#94a3b8">1</text>
+    <rect x="334" y="298" width="44" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+
+    <text x="20" y="343" font-size="11.5" fill="#334155">8</text>
+    <text x="44" y="343" font-size="11" fill="#94a3b8">8</text>
+    <rect x="70" y="332" width="352" height="20" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+
+    <text x="16" y="384" font-size="12" fill="#334155">单点更新：i += i &amp; -i，一路向上改 O(log n) 个格子</text>
+    <text x="16" y="406" font-size="12" fill="#334155">前缀和：i -= i &amp; -i，一路向下累加 O(log n) 个格子</text>
+    <text x="16" y="428" font-size="12" fill="#334155">区间和 [l, r] = sum(r) − sum(l−1) —— 靠「可差分」把区间拆成两个前缀</text>
+
+    <rect x="16" y="444" width="428" height="72" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="30" y="466" font-size="12.5" fill="#1e40af">本机实测 n = 100000、10 万次区间和 [1234..98765]：</text>
+    <text x="30" y="486" font-size="12.5" fill="#1e40af">线段树 17.57 ms　vs　树状数组 1.59 ms（结果一致：4835082）</text>
+    <text x="30" y="506" font-size="11.5" fill="#b45309">⚠️ 时序只断言「同量级」；树状数组常数更小的主因是循环更短、无递归</text>
+  </g>
+</svg>
