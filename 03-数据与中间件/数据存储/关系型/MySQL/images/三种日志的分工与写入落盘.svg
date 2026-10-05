@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 694" width="1000" height="694" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="694" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三种日志的分工与一次写入的落盘顺序</text>
+  <text x="500" y="50" text-anchor="middle" font-size="13" fill="#64748b">redo 管「改过的别丢」、undo 管「没提交的撤掉」、binlog 管「让别人也有」</text>
+
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="228" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">三份不同的账：各在哪一层、性质是什么、保什么</text>
+
+    <rect x="16" y="44" width="296" height="170" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="164" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">redo log</text>
+    <text x="32" y="96" font-size="11.5" fill="#334155">所在层：InnoDB 引擎层</text>
+    <text x="32" y="120" font-size="11.5" fill="#334155">性质：物理日志（页的修改）</text>
+    <text x="32" y="144" font-size="11.5" fill="#334155">写入：循环写，空间固定</text>
+    <text x="32" y="168" font-size="11.5" fill="#334155">作用：崩溃恢复 → 保证 D</text>
+    <text x="32" y="196" font-size="11" fill="#1d4ed8">⭐ 持久性靠它先写日志再刷页（WAL）</text>
+
+    <rect x="332" y="44" width="296" height="170" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="480" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#047857">undo log</text>
+    <text x="348" y="96" font-size="11.5" fill="#334155">所在层：InnoDB 引擎层</text>
+    <text x="348" y="120" font-size="11.5" fill="#334155">性质：逻辑日志（反向操作）</text>
+    <text x="348" y="144" font-size="11.5" fill="#334155">写入：随版本链增长，purge 回收</text>
+    <text x="348" y="168" font-size="11.5" fill="#334155">作用：回滚 + MVCC 读旧版本 → 保证 A</text>
+    <text x="348" y="196" font-size="11" fill="#047857">⭐ 不只是回滚，还是快照读的版本来源</text>
+
+    <rect x="648" y="44" width="296" height="170" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="796" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c3aed">binlog</text>
+    <text x="664" y="96" font-size="11.5" fill="#334155">所在层：MySQL Server 层</text>
+    <text x="664" y="120" font-size="11.5" fill="#334155">性质：逻辑日志（语句/行变更）</text>
+    <text x="664" y="144" font-size="11.5" fill="#334155">写入：追加写，可长期归档</text>
+    <text x="664" y="168" font-size="11.5" fill="#334155">作用：主从复制 + 数据恢复</text>
+    <text x="664" y="196" font-size="11" fill="#7c3aed">⭐ 全量备份 + binlog 重放 = 时点恢复</text>
+  </g>
+
+  <g transform="translate(20,318)">
+    <rect x="0" y="0" width="960" height="356" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">一次 UPDATE 提交后的 8 步：数据其实还没落盘</text>
+
+    <rect x="16" y="40" width="217" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="124" y="64" text-anchor="middle" font-size="11.5" fill="#0f172a">① SQL 解析与优化</text>
+    <text x="124" y="84" text-anchor="middle" font-size="11" fill="#334155">得到执行计划</text>
+
+    <line x1="235" y1="68" x2="251" y2="68" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="253" y="40" width="217" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="361" y="64" text-anchor="middle" font-size="11.5" fill="#0f172a">② 开启事务</text>
+    <text x="361" y="84" text-anchor="middle" font-size="11" fill="#334155">每次操作都开事务</text>
+
+    <line x1="472" y1="68" x2="488" y2="68" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="490" y="40" width="217" height="56" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="598" y="64" text-anchor="middle" font-size="11.5" fill="#047857">③ 记录 Undo Log</text>
+    <text x="598" y="84" text-anchor="middle" font-size="11" fill="#047857">回滚素材 + 旧版本</text>
+
+    <line x1="709" y1="68" x2="725" y2="68" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="727" y="40" width="217" height="56" rx="6" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="835" y="64" text-anchor="middle" font-size="11.5" fill="#1d4ed8">④ 记录 Redo Log</text>
+    <text x="835" y="84" text-anchor="middle" font-size="11" fill="#1d4ed8">WAL：先写日志</text>
+
+    <polyline points="835,96 835,112 124,112 124,124" fill="none" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="16" y="126" width="217" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="124" y="150" text-anchor="middle" font-size="11.5" fill="#0f172a">⑤ 改 Buffer Pool</text>
+    <text x="124" y="170" text-anchor="middle" font-size="11" fill="#334155">打上「脏页」标记</text>
+
+    <line x1="235" y1="154" x2="251" y2="154" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="253" y="126" width="217" height="56" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="361" y="150" text-anchor="middle" font-size="11.5" fill="#7c3aed">⑥ 记录 Binlog（可选）</text>
+    <text x="361" y="170" text-anchor="middle" font-size="11" fill="#7c3aed">复制 + 恢复</text>
+
+    <line x1="472" y1="154" x2="488" y2="154" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="490" y="126" width="217" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="598" y="150" text-anchor="middle" font-size="11.5" fill="#0f172a">⑦ 提交事务</text>
+    <text x="598" y="170" text-anchor="middle" font-size="11" fill="#334155">redo 与 binlog 落盘</text>
+
+    <line x1="709" y1="154" x2="725" y2="154" stroke="#dc2626" stroke-width="1.4" marker-end="url(#arwR)"/>
+
+    <rect x="727" y="126" width="217" height="56" rx="6" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+    <text x="835" y="150" text-anchor="middle" font-size="11.5" fill="#b45309">⑧ 数据仍未落盘</text>
+    <text x="835" y="170" text-anchor="middle" font-size="11" fill="#b45309">还在 Buffer Pool 里</text>
+
+    <text x="16" y="212" font-size="11.5" fill="#b45309">⚠️ 提交成功 ≠ 数据落盘：提交只保证 redo / binlog 落盘，数据页要等「脏页刷回」才写进表空间。</text>
+    <text x="16" y="240" font-size="12" font-weight="bold" fill="#0f172a">脏页刷回的五个触发时机</text>
+
+    <rect x="16" y="252" width="172" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="102" y="275" text-anchor="middle" font-size="11" fill="#334155">定期后台刷</text>
+
+    <rect x="204" y="252" width="172" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="290" y="275" text-anchor="middle" font-size="11" fill="#334155">Buffer Pool 不足</text>
+
+    <rect x="392" y="252" width="172" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="478" y="275" text-anchor="middle" font-size="11" fill="#334155">Redo 写满</text>
+
+    <rect x="580" y="252" width="172" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="666" y="275" text-anchor="middle" font-size="11" fill="#334155">手动 FLUSH</text>
+
+    <rect x="768" y="252" width="176" height="36" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="856" y="275" text-anchor="middle" font-size="11" fill="#334155">数据库正常关闭</text>
+
+    <text x="16" y="314" font-size="11.5" fill="#334155">⭐ 淘汰脏页时不能直接丢 —— 必须先把脏页刷回磁盘；而刷页要先写双写缓冲区，</text>
+    <text x="16" y="334" font-size="11.5" fill="#334155">再写数据文件，这样即使发生「半页写」也能从双写区恢复出完整的页。</text>
+  </g>
+</svg>

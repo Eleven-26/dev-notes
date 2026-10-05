@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">混合持久化：文件前半段是 RDB 快照，后半段是增量命令</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一份 20 万 key 数据，两种配置各生成一次 AOF，看目录里的文件与文件头</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">同一个 AOF 目录（appendonlydir/），两种配置的产物</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">7.0 起 AOF 是多部件的：base + incr + manifest，文件名里的数字是「第几代」</text>
+
+    <rect x="16" y="66" width="452" height="214" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.6"/>
+    <text x="30" y="90" font-size="13" font-weight="bold" fill="#047857">① 混合持久化　aof-use-rdb-preamble yes</text>
+    <text x="30" y="122" font-size="12" font-family="Consolas, monospace" fill="#334155">appendonly.aof.7.base.rdb</text>
+    <text x="452" y="122" text-anchor="end" font-size="12" font-family="Consolas, monospace" fill="#047857">4509038 B</text>
+    <text x="30" y="148" font-size="12" font-family="Consolas, monospace" fill="#334155">appendonly.aof.7.incr.aof</text>
+    <text x="452" y="148" text-anchor="end" font-size="12" font-family="Consolas, monospace" fill="#64748b">0 B</text>
+    <text x="30" y="174" font-size="12" font-family="Consolas, monospace" fill="#334155">appendonly.aof.7.manifest</text>
+    <text x="452" y="174" text-anchor="end" font-size="12" font-family="Consolas, monospace" fill="#64748b">88 B</text>
+    <line x1="30" y1="190" x2="452" y2="190" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="30" y="212" font-size="11" font-family="Consolas, monospace" fill="#7c3aed">52 45 44 49 53 30 30 31 32 fa 09 72 65 64 69 73</text>
+    <text x="30" y="236" font-size="12" fill="#334155">→ 前 6 字节 ASCII <tspan font-family="Consolas, monospace" fill="#047857">REDIS</tspan>（二进制快照魔数）</text>
+    <text x="30" y="262" font-size="12.5" fill="#047857">⭐ 同一份数据只有 4.30 MB</text>
+
+    <rect x="492" y="66" width="452" height="214" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.6"/>
+    <text x="506" y="90" font-size="13" font-weight="bold" fill="#b45309">② 纯 AOF　aof-use-rdb-preamble no</text>
+    <text x="506" y="122" font-size="12" font-family="Consolas, monospace" fill="#334155">appendonly.aof.8.base.aof</text>
+    <text x="928" y="122" text-anchor="end" font-size="12" font-family="Consolas, monospace" fill="#dc2626">18918964 B</text>
+    <text x="506" y="148" font-size="12" font-family="Consolas, monospace" fill="#334155">appendonly.aof.8.incr.aof</text>
+    <text x="928" y="148" text-anchor="end" font-size="12" font-family="Consolas, monospace" fill="#64748b">0 B</text>
+    <text x="506" y="174" font-size="12" font-family="Consolas, monospace" fill="#334155">appendonly.aof.8.manifest</text>
+    <text x="928" y="174" text-anchor="end" font-size="12" font-family="Consolas, monospace" fill="#64748b">88 B</text>
+    <line x1="506" y1="190" x2="928" y2="190" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="506" y="212" font-size="11" font-family="Consolas, monospace" fill="#7c3aed">2a 32 0d 0a 24 36 0d 0a 53 45 4c 45 43 54</text>
+    <text x="506" y="236" font-size="12" fill="#334155">→ <tspan font-family="Consolas, monospace">*2\r\n$6</tspan> 是 RESP 数组 + 命令名 SELECT</text>
+    <text x="506" y="262" font-size="12.5" fill="#b45309">⚠️ 同一份数据 18.04 MB，是混合的 4.2 倍</text>
+  </g>
+
+  <g transform="translate(20,390)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">恢复顺序：先读快照段，再重放增量段</text>
+    <rect x="16" y="46" width="920" height="96" rx="6" fill="#0f172a"/>
+    <text x="32" y="72" font-size="12" font-family="Consolas, monospace" fill="#e2e8f0">* DB loaded from base file appendonly.aof.6.base.rdb: 0.647 seconds</text>
+    <text x="32" y="98" font-size="12" font-family="Consolas, monospace" fill="#e2e8f0">* DB loaded from incr file appendonly.aof.6.incr.aof: 0.747 seconds</text>
+    <text x="32" y="124" font-size="12" font-family="Consolas, monospace" fill="#86efac">* DB loaded from append only file: 1.395 seconds</text>
+    <text x="16" y="164" font-size="12.5" fill="#047857">⭐ 二进制直读快照（0.647s）+ 只重放重写之后的新命令（0.747s）—— 这就是它比纯 AOF 恢复快的原理。</text>
+  </g>
+
+  <g transform="translate(20,590)">
+    <rect x="0" y="0" width="960" height="116" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#b45309">备份 / 迁移时要注意的两件事</text>
+    <text x="16" y="58" font-size="12.5" fill="#334155">⚠️ AOF 在 7.0 之后是多文件（MP-AOF）：<tspan font-family="Consolas, monospace" fill="#b45309">appendonlydir/</tspan> 下是 base + incr.aof + manifest —— <tspan fill="#dc2626">必须整个目录一起拿</tspan>，只拷一个文件会丢数据。</text>
+    <text x="16" y="84" font-size="12.5" fill="#334155">⭐ 同一份数据：纯 AOF <tspan fill="#dc2626">18.04 MB</tspan>，混合持久化 <tspan fill="#047857">4.30 MB</tspan>（4.2 倍）；文件头一个以 <tspan font-family="Consolas, monospace">REDIS</tspan> 魔数开头、一个以 <tspan font-family="Consolas, monospace">*2\r\n$6\r\nSELECT</tspan> 开头。</text>
+  </g>
+
+</svg>

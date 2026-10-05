@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 950" width="1000" height="950" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#047857"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="950" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">GDS 把子图复制进内存，才对全图反复迭代得起来</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ Cypher 擅长「按模式找子图」，GDS 擅长「反复迭代全图」—— 投影与释放是 GDS 用法的骨架</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="290" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">图投影：算法不在磁盘存储上跑</text>
+
+    <rect x="30" y="44" width="250" height="70" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="155" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">Neo4j 存储</text>
+    <text x="155" y="90" text-anchor="middle" font-size="11" fill="#64748b">磁盘记录（nodestore / relstore）</text>
+
+    <line x1="284" y1="79" x2="344" y2="79" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="314" y="72" text-anchor="middle" font-size="10.5" fill="#b45309">project</text>
+
+    <rect x="350" y="44" width="250" height="70" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="475" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">内存投影（GDS 持有）</text>
+    <text x="475" y="90" text-anchor="middle" font-size="11" fill="#334155">压缩邻接表 + 权重</text>
+
+    <line x1="604" y1="79" x2="664" y2="79" stroke="#047857" stroke-width="1.6" marker-end="url(#arwB)"/>
+    <text x="634" y="72" text-anchor="middle" font-size="10.5" fill="#047857">stream / write</text>
+
+    <rect x="670" y="44" width="260" height="70" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.3"/>
+    <text x="800" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">算法输出</text>
+    <text x="800" y="90" text-anchor="middle" font-size="11" fill="#334155">分数 / 社区号 / 路径 / 向量</text>
+
+    <line x1="475" y1="114" x2="475" y2="134" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="488" y="130" font-size="11" fill="#dc2626">drop —— 释放内存（必须显式）</text>
+
+    <text x="20" y="158" font-size="12" fill="#334155">Cypher 多跳：起点 → 展开 → 展开，只碰「走到的那部分」，子图越大越慢。</text>
+    <text x="20" y="182" font-size="12" fill="#334155">GDS 算法：把整张图搬进内存，对（全部节点 × 全部边）反复迭代，图越大越慢，但与查询起点无关。</text>
+    <text x="20" y="206" font-size="12" fill="#047857">⭐ 一句话分界：知道「某个点 3 跳内连到了谁」→ Cypher；知道「全图里谁最重要、能切成几个圈子」→ GDS。</text>
+    <text x="20" y="230" font-size="12" fill="#b45309">⚠️ GDS 是插件、不是内置于内核：jar 放进 plugins/ 后重启生效（社区版也能装，本仓即社区版）。</text>
+    <text x="20" y="254" font-size="12" fill="#64748b">投影是快照：源库的写不会自动同步进去，要用 gds.graph.writeRelationship 做增量，别指望它「实时」。</text>
+  </g>
+
+  <g transform="translate(20,375)">
+    <rect x="0" y="0" width="960" height="310" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">投影的三个决定，以及它的代价（本机实测）</text>
+
+    <rect x="30" y="42" width="290" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="175" y="64" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">① 选节点</text>
+    <text x="175" y="86" text-anchor="middle" font-size="11" fill="#334155">哪些标签进来，或 Cypher 过滤的子集</text>
+
+    <rect x="335" y="42" width="290" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="480" y="64" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">② 选关系</text>
+    <text x="480" y="86" text-anchor="middle" font-size="11" fill="#334155">类型 / 方向 / 哪个属性当权重</text>
+
+    <rect x="640" y="42" width="290" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="785" y="64" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">③ 命名与生命周期</text>
+    <text x="785" y="86" text-anchor="middle" font-size="11" fill="#334155">重名报错；用完 gds.graph.drop</text>
+
+    <rect x="20" y="110" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="130" font-size="12.5" font-weight="bold" fill="#0f172a">观测</text>
+    <text x="600" y="130" font-size="12.5" font-weight="bold" fill="#1d4ed8">读数</text>
+
+    <rect x="20" y="140" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="158" font-size="12" fill="#334155">gds.graph.project.estimate('User','FOLLOWS') 估算</text>
+    <text x="600" y="158" font-size="12" fill="#334155">7576 KiB ... 13052 KiB（下界 ~ 上界）</text>
+
+    <rect x="20" y="166" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="184" font-size="12" fill="#334155">100000 点 / 300000 边 原生投影耗时</text>
+    <text x="600" y="184" font-size="12" fill="#334155">2932 ms（另一次 3671 ms，区间 2.9 ~ 3.7 s）</text>
+
+    <rect x="20" y="192" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="210" font-size="12" fill="#334155">投影常驻内存（gds.graph.list 的 memoryUsage）</text>
+    <text x="600" y="210" font-size="12" fill="#334155">9157 KiB</text>
+
+    <rect x="20" y="218" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="236" font-size="12" fill="#334155">子图 2000 点 / 1101 边 投影耗时</text>
+    <text x="600" y="236" font-size="12" fill="#334155">75 ms（另一次 309 ms）</text>
+
+    <text x="20" y="270" font-size="12" fill="#334155">⭐ 先 estimate 再 project：估算返回的是一个区间，用来判断这台机器的堆放不放得下；投影常驻内存是从堆里扣的。</text>
+    <text x="20" y="294" font-size="12" fill="#b45309">⚠️ 给 GDS 留堆、和给内核留页缓存，是两笔独立预算 —— 投影占的是堆，不 drop 就一直在。</text>
+  </g>
+
+  <g transform="translate(20,710)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">中心性算法：都在回答「谁重要」，但定义不同</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">算法</text>
+    <text x="240" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">回答的问题</text>
+    <text x="700" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">代价量级</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155">PageRank</text>
+    <text x="240" y="90" font-size="12" fill="#334155">谁被「重要的人」指向（投票加权）</text>
+    <text x="700" y="90" font-size="12" fill="#334155">每轮扫全边，迭代到收敛</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">度中心性</text>
+    <text x="240" y="116" font-size="12" fill="#334155">谁连接最多（数邻居）</text>
+    <text x="700" y="116" font-size="12" fill="#047857">单遍</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">介数中心性</text>
+    <text x="240" y="142" font-size="12" fill="#334155">谁在最短路上被经过最多（桥梁 / 咽喉）</text>
+    <text x="700" y="142" font-size="12" fill="#dc2626">全对最短路，贵</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="12" fill="#334155">接近中心性</text>
+    <text x="240" y="168" font-size="12" fill="#334155">谁到别人的平均距离最短（传播效率高）</text>
+    <text x="700" y="168" font-size="12" fill="#dc2626">需全对距离，贵</text>
+
+    <text x="20" y="200" font-size="12" fill="#b45309">⚠️ 实测反面教材：本仓规则图 PageRank 前五名分数全相等（0.9612）—— 规则图没有区分度，真实幂律图才拉开差距。</text>
+    <text x="20" y="224" font-size="12" fill="#047857">⭐ 反欺诈用法：PageRank 找头部可疑节点 + 社区发现圈团伙 + 度中心性找异常高连接，三者交叉验证。</text>
+  </g>
+</svg>

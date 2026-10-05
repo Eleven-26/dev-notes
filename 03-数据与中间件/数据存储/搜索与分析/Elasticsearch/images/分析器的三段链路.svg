@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 735" width="1000" height="735" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="735" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">分析链只有三段：字符过滤 → 分词 → 分词过滤</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">写入与查询各跑一遍同一个分析器（所以索引与检索的分析器必须一致）；实测标准分词器把中文逐字切</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、三段链：原始字符流 → token 流 → 进倒排</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">前一段的输出是后一段的输入，顺序固定，不能颠倒</text>
+
+    <rect x="20" y="74" width="280" height="142" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="34" y="98" font-size="13.5" font-weight="bold" fill="#1d4ed8">① 字符过滤器</text>
+    <text x="34" y="120" font-size="12" fill="#64748b">char filter</text>
+    <text x="34" y="144" font-size="12" fill="#334155">html_strip / mapping</text>
+    <text x="34" y="166" font-size="12" fill="#334155">pattern_replace</text>
+    <text x="34" y="192" font-size="12" fill="#dc2626">⚠️ 只改字符，不改分词边界</text>
+
+    <rect x="350" y="74" width="280" height="142" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="364" y="98" font-size="13.5" font-weight="bold" fill="#047857">② 分词器</text>
+    <text x="364" y="120" font-size="12" fill="#64748b">tokenizer</text>
+    <text x="364" y="144" font-size="12" fill="#334155">standard / simple</text>
+    <text x="364" y="166" font-size="12" fill="#334155">whitespace / keyword / ik</text>
+    <text x="364" y="192" font-size="12" fill="#334155">定边界；保留 position / offset</text>
+
+    <rect x="680" y="74" width="260" height="142" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="694" y="98" font-size="13.5" font-weight="bold" fill="#b45309">③ 分词过滤器</text>
+    <text x="694" y="120" font-size="12" fill="#64748b">token filter</text>
+    <text x="694" y="144" font-size="12" fill="#334155">lowercase / stop</text>
+    <text x="694" y="166" font-size="12" fill="#334155">stemmer / synonym</text>
+    <text x="694" y="192" font-size="12" fill="#334155">作用在 token 流上</text>
+
+    <line x1="302" y1="145" x2="346" y2="145" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="632" y1="145" x2="676" y2="145" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+  </g>
+
+  <g transform="translate(20,320)">
+    <rect x="0" y="0" width="960" height="205" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、实测：标准分词器对中文是逐字切</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">POST /_analyze {"analyzer":"standard","text":"Elasticsearch 倒排索引原理 Inverted Index"}</text>
+
+    <rect x="20" y="72" width="450" height="84" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="96" font-size="12.5" fill="#334155">Elasticsearch 倒排索引原理</text>
+    <text x="36" y="120" font-size="12.5" fill="#334155">Inverted Index</text>
+    <text x="36" y="144" font-size="12" fill="#64748b">↑ 原文（写入时进分析链）</text>
+
+    <rect x="490" y="72" width="450" height="84" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="96" font-size="12.5" fill="#334155">elasticsearch／inverted／index　（英文按词 + 小写化）</text>
+    <text x="506" y="120" font-size="12.5" fill="#dc2626">倒 排 索 引 原 理　（中文逐字切 → 6 个单字 term）</text>
+    <text x="506" y="144" font-size="12" fill="#64748b">↑ 切出来的 term（存进倒排表）</text>
+
+    <text x="36" y="180" font-size="12.5" fill="#dc2626">⚠️ 后果：搜「倒排」会被拆成「倒」+「排」两个单字组合匹配，召回与精度都不可控</text>
+    <text x="36" y="200" font-size="12.5" fill="#334155">中文场景必须换 IK 之类的分词器，或把字段设成 keyword 走精确匹配</text>
+  </g>
+
+  <g transform="translate(20,545)">
+    <rect x="0" y="0" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、ik 的两种模式：索引多切、查询粗切</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">同一份数据可以给索引与检索配不同分析器 —— 这是 ik 两个模式的用途所在</text>
+
+    <rect x="20" y="70" width="450" height="84" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="94" font-size="13" font-weight="bold" fill="#1d4ed8">ik_max_word　（索引时）</text>
+    <text x="36" y="118" font-size="12.5" fill="#334155">最细粒度，穷尽所有可能的词</text>
+    <text x="36" y="140" font-size="12.5" fill="#334155">分词多 → 召回高、索引体积大</text>
+
+    <rect x="490" y="70" width="450" height="84" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="94" font-size="13" font-weight="bold" fill="#047857">ik_smart　（全文检索时）</text>
+    <text x="506" y="118" font-size="12.5" fill="#334155">粗粒度，做最少切分</text>
+    <text x="506" y="140" font-size="12.5" fill="#334155">分词少 → 更准、召回略低</text>
+  </g>
+
+</svg>

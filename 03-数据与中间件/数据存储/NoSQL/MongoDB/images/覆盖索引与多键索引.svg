@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 770" width="1000" height="770" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="770" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">覆盖索引的两个前提，与多键索引的硬边界</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">要出现 PROJECTION_COVERED（totalDocsExamined == 0）两个前提缺一不可；数组字段建的索引则是另一套规则</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">要出现 PROJECTION_COVERED，两个前提必须同时成立</text>
+    <rect x="24" y="44" width="24" height="24" rx="4" fill="#1d4ed8"/>
+    <text x="36" y="61" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">1</text>
+    <text x="58" y="61" font-size="12.5" fill="#334155">filter / sort / projection 里出现的每一个字段，都在这同一个索引里</text>
+    <rect x="24" y="76" width="24" height="24" rx="4" fill="#1d4ed8"/>
+    <text x="36" y="93" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">2</text>
+    <text x="58" y="93" font-size="12.5" fill="#334155">projection 显式写 _id: 0 —— 不写时 _id 默认返回，就成了「必须覆盖但索引里没有」的字段，整个查询退化成 FETCH 回表</text>
+    <rect x="24" y="112" width="912" height="70" rx="6" fill="#0f172a"/>
+    <text x="40" y="134" font-size="12" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">db.users.createIndex({ city: 1, age: 1 })</text>
+    <text x="40" y="156" font-size="12" font-family="Consolas, Menlo, monospace" fill="#86efac">db.users.find({ city: "HZ" }, { city: 1, age: 1, _id: 0 })  // ✅ 覆盖</text>
+    <text x="40" y="176" font-size="12" font-family="Consolas, Menlo, monospace" fill="#fca5a5">db.users.find({ city: "HZ" }, { city: 1, age: 1 })         // ❌ 只差一个 _id，每条都回表</text>
+  </g>
+
+  <g transform="translate(20,290)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">实测：差别只在 _id: 0 三个字符</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">本机 mongo:7.0，3 条文档、命中 2 条</text>
+
+    <rect x="20" y="62" width="450" height="118" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.4"/>
+    <text x="36" y="86" font-size="11.5" font-family="Consolas, Menlo, monospace" fill="#334155">find({ city: "HZ" }, { city: 1, age: 1, _id: 0 })</text>
+    <line x1="36" y1="96" x2="454" y2="96" stroke="#a7f3d0" stroke-width="1"/>
+    <text x="36" y="120" font-size="13" font-weight="bold" fill="#047857">docsExamined = 0</text>
+    <text x="36" y="142" font-size="12.5" fill="#047857">stage = PROJECTION_COVERED</text>
+    <text x="36" y="164" font-size="12" fill="#475569">完全不回表</text>
+
+    <rect x="490" y="62" width="450" height="118" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="506" y="86" font-size="11.5" font-family="Consolas, Menlo, monospace" fill="#334155">find({ city: "HZ" }, { city: 1, age: 1 })</text>
+    <line x1="506" y1="96" x2="924" y2="96" stroke="#fecaca" stroke-width="1"/>
+    <text x="506" y="120" font-size="13" font-weight="bold" fill="#dc2626">docsExamined = 2</text>
+    <text x="506" y="142" font-size="12.5" fill="#dc2626">stage = FETCH（回表）</text>
+    <text x="506" y="164" font-size="12" fill="#475569">命中每一条都回表</text>
+
+    <text x="20" y="194" font-size="12" fill="#334155">⭐ 三个字符的差别，回表次数从 0 变成「命中每一条」。</text>
+  </g>
+
+  <g transform="translate(20,510)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">多键（数组）索引：一个文档在索引里占多个位置</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">数组每个元素各生成一条索引条目 —— 这决定了它不能覆盖、不能排序</text>
+
+    <rect x="30" y="72" width="170" height="86" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="115" y="98" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">文档</text>
+    <text x="115" y="120" text-anchor="middle" font-size="11.5" fill="#64748b">tags: [ "go",</text>
+    <text x="115" y="138" text-anchor="middle" font-size="11.5" fill="#64748b">"db", "net" ]</text>
+    <line x1="204" y1="115" x2="246" y2="115" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <rect x="250" y="76" width="210" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="262" y="94" font-size="11" font-family="Consolas, Menlo, monospace" fill="#334155">go   → RecordId 7f3a</text>
+    <rect x="250" y="110" width="210" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="262" y="128" font-size="11" font-family="Consolas, Menlo, monospace" fill="#334155">db   → RecordId 7f3a</text>
+    <rect x="250" y="144" width="210" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="262" y="162" font-size="11" font-family="Consolas, Menlo, monospace" fill="#334155">net  → RecordId 7f3a</text>
+
+    <text x="500" y="90" font-size="12" fill="#334155">⚠️ 一个复合索引里最多只能有一个数组字段，否则条目呈</text>
+    <text x="500" y="108" font-size="12" fill="#334155">　　笛卡尔积式膨胀。</text>
+    <text x="500" y="136" font-size="12" fill="#dc2626">⚠️ 多键索引永远不能覆盖，一定回表取原文档。</text>
+    <text x="500" y="164" font-size="12" fill="#dc2626">⚠️ 含数组的索引不能用于排序（同一文档位置无定义）</text>
+    <text x="500" y="182" font-size="12" fill="#dc2626">　　→ 排了就是 SORT。</text>
+    <text x="500" y="210" font-size="12" fill="#b45309">⭐ 同一元素多条件必须 $elemMatch，否则被不同元素分别</text>
+    <text x="500" y="228" font-size="12" fill="#b45309">　　满足（假阳性）—— 多键索引最易写错的一点。</text>
+  </g>
+</svg>

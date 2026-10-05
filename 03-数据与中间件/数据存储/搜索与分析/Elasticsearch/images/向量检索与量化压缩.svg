@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 707" width="1000" height="707" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="707" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">向量检索：从「词项匹配」换到「向量相似」，再用量化压小</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">384 / 768 维定长浮点数组 + cosine / dot_product / l2_norm 度量；ANN 靠 HNSW 图索引</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、两种检索角色：ANN 近似 vs 精确暴力</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">倒排回答「含不含这个词」；向量回答「意思像不像」—— 最相关变成距离最近</text>
+
+    <rect x="20" y="70" width="450" height="106" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="94" font-size="13.5" font-weight="bold" fill="#1d4ed8">ANN（近似）</text>
+    <text x="36" y="118" font-size="12.5" fill="#334155">index:true + "knn"：靠 HNSW 图索引，亚线性</text>
+    <text x="36" y="140" font-size="12.5" fill="#334155">规模越大优势越明显；召回 &lt; 100%</text>
+    <text x="36" y="164" font-size="12.5" fill="#64748b">num_candidates 是召回与延迟的旋钮（= efSearch）</text>
+
+    <rect x="490" y="70" width="450" height="106" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="94" font-size="13.5" font-weight="bold" fill="#b45309">精确暴力</text>
+    <text x="506" y="118" font-size="12.5" fill="#334155">index:false / flat / script_score 逐条算</text>
+    <text x="506" y="140" font-size="12.5" fill="#334155">O(N) 全扫，召回 = 100%</text>
+    <text x="506" y="164" font-size="12.5" fill="#64748b">独立价值：评估 ANN 召回率的基准</text>
+  </g>
+
+  <g transform="translate(20,280)">
+    <rect x="0" y="0" width="960" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、量化：用更少的位表示每一维（官方口径）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">768 维 float32 = 768 × 4 = 3KB；1 亿条 ≈ 286GB —— 这还没算 HNSW 的图结构</text>
+
+    <rect x="20" y="66" width="920" height="112" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="20" y1="94" x2="940" y2="94" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="20" y1="120" x2="940" y2="120" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="20" y1="146" x2="940" y2="146" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="40" y="88" font-size="12.5" font-weight="bold" fill="#334155">float32</text>
+    <text x="200" y="88" font-size="12.5" fill="#334155">32 bit</text>
+    <text x="340" y="88" font-size="12.5" fill="#334155">D × 4 字节</text>
+    <text x="640" y="88" font-size="12.5" fill="#334155">1×</text>
+
+    <text x="40" y="114" font-size="12.5" font-weight="bold" fill="#334155">int8_*（标量量化）</text>
+    <text x="200" y="114" font-size="12.5" fill="#334155">8 bit</text>
+    <text x="340" y="114" font-size="12.5" fill="#334155">D × 1 + 4 字节</text>
+    <text x="640" y="114" font-size="12.5" fill="#047857">≈ 1/4</text>
+
+    <text x="40" y="140" font-size="12.5" font-weight="bold" fill="#334155">int4_*（半字节）</text>
+    <text x="200" y="140" font-size="12.5" fill="#334155">4 bit</text>
+    <text x="340" y="140" font-size="12.5" fill="#334155">D × 0.5 + 4 字节</text>
+    <text x="640" y="140" font-size="12.5" fill="#047857">≈ 1/8</text>
+
+    <text x="40" y="166" font-size="12.5" font-weight="bold" fill="#334155">bbq_*（二值量化）</text>
+    <text x="200" y="166" font-size="12.5" fill="#334155">1 bit</text>
+    <text x="340" y="166" font-size="12.5" fill="#334155">D × 0.125 + 4 字节</text>
+    <text x="640" y="166" font-size="12.5" font-weight="bold" fill="#047857">≈ 1/32</text>
+
+    <text x="36" y="200" font-size="12.5" fill="#64748b">⚠️ 上表是官方给出的每向量开销口径，+4 字节是量化参数（分位数 / 校正项）</text>
+    <text x="36" y="222" font-size="12.5" fill="#64748b">本机索引级存储体积不可复现（同配置两次差约 1.7 倍），所以只讲机制与口径</text>
+  </g>
+
+  <g transform="translate(20,532)">
+    <rect x="0" y="0" width="960" height="155" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、oversample + rescore：量化掉的召回靠重打分补回来</text>
+
+    <text x="36" y="62" font-size="12.5" fill="#334155">第一次筛用的是压缩后的向量，分数必然有偏差 → 过采样再重打分</text>
+    <text x="36" y="86" font-size="12.5" fill="#334155">oversample: 3 = 先取 3 × k 个候选，再用原始向量精排取前 k（8.18 起简化为 rescore_vector.oversample）</text>
+    <text x="36" y="114" font-size="12.5" fill="#047857">本机实测：int8_hnsw 不加 rescore 只有 0.620，加 oversample: 3 直接回到 1.000</text>
+    <text x="36" y="138" font-size="12.5" fill="#64748b">这也是 bbq_hnsw 的 mapping 默认就带 oversample: 3 的原因</text>
+  </g>
+
+</svg>

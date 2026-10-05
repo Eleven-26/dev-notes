@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 905" width="1000" height="905" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="905" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">五类索引各管一段谓词，dbHits 是它们用没用上的唯一判据</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ 数值全部实测于 Docker neo4j:5.26-community，数据集 10 万用户 / 30 万关注边</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">5.26 上的五类索引（SHOW INDEXES 输出，状态全为 ONLINE）</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">索引</text>
+    <text x="210" y="62" font-size="12.5" font-weight="bold" fill="#334155">type</text>
+    <text x="370" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">管什么</text>
+    <text x="710" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">本仓实例</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155">令牌查找索引</text>
+    <text x="210" y="90" font-size="12" fill="#b45309">LOOKUP</text>
+    <text x="370" y="90" font-size="12" fill="#334155">按标签 / 关系类型找入口</text>
+    <text x="710" y="90" font-size="12" fill="#334155">自动创建（节点 + 关系各一）</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">范围索引</text>
+    <text x="210" y="116" font-size="12" fill="#047857">RANGE</text>
+    <text x="370" y="116" font-size="12" fill="#334155">= &lt; &gt; IN STARTS WITH（前缀）</text>
+    <text x="710" y="116" font-size="12" fill="#334155">user_id(id)、user_name_id(name,id)</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">文本索引</text>
+    <text x="210" y="142" font-size="12" fill="#047857">TEXT</text>
+    <text x="370" y="142" font-size="12" fill="#334155">子串：CONTAINS / ENDS WITH</text>
+    <text x="710" y="142" font-size="12" fill="#334155">user_bio_txt(bio)</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="12" fill="#334155">全文索引</text>
+    <text x="210" y="168" font-size="12" fill="#047857">FULLTEXT</text>
+    <text x="370" y="168" font-size="12" fill="#334155">Lucene 分词 + 打分（score）</text>
+    <text x="710" y="168" font-size="12" fill="#334155">user_name_ft(name)</text>
+
+    <rect x="20" y="176" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="194" font-size="12" fill="#334155">向量索引</text>
+    <text x="210" y="194" font-size="12" fill="#047857">VECTOR</text>
+    <text x="370" y="194" font-size="12" fill="#334155">高维向量近似最近邻（HNSW）</text>
+    <text x="710" y="194" font-size="12" fill="#334155">user_emb_vec(embedding) dim4/cosine</text>
+
+    <text x="20" y="226" font-size="12" fill="#b45309">⚠️ 两个最容易搞混的点：LOOKUP 不是「你的索引」但绝不能删（标签 → 节点的入口）；TEXT 管子串、FULLTEXT 走分词并打分，是两回事。</text>
+  </g>
+
+  <g transform="translate(20,335)">
+    <rect x="0" y="0" width="960" height="315" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">什么谓词用得上：实测 dbHits 对照</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">查询谓词</text>
+    <text x="490" y="62" font-size="12.5" font-weight="bold" fill="#334155">生成的算子</text>
+    <text x="790" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">dbHits</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">u.id = 50000</text>
+    <text x="490" y="90" font-size="11.5" fill="#334155">NodeIndexSeek</text>
+    <text x="790" y="90" font-size="12" font-weight="bold" fill="#047857">2</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">u.id IN [1,2,3]</text>
+    <text x="490" y="116" font-size="11.5" fill="#334155">NodeIndexSeek</text>
+    <text x="790" y="116" font-size="12" font-weight="bold" fill="#047857">6</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">u.id &gt; 99990</text>
+    <text x="490" y="142" font-size="11.5" fill="#334155">NodeIndexSeekByRange</text>
+    <text x="790" y="142" font-size="12" font-weight="bold" fill="#047857">10</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">u.name STARTS WITH 'u50000'（无其他条件）</text>
+    <text x="490" y="168" font-size="11.5" fill="#334155">NodeByLabelScan + Filter</text>
+    <text x="790" y="168" font-size="12" font-weight="bold" fill="#dc2626">200001</text>
+
+    <rect x="20" y="176" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="194" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">u.id = 50000 AND u.name STARTS WITH 'u5'</text>
+    <text x="490" y="194" font-size="11.5" fill="#334155">NodeIndexSeek + Filter</text>
+    <text x="790" y="194" font-size="12" font-weight="bold" fill="#047857">3</text>
+
+    <rect x="20" y="202" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="220" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">u.name = 'u50000' AND u.id = 50000（复合索引）</text>
+    <text x="490" y="220" font-size="11.5" fill="#334155">NodeIndexSeek</text>
+    <text x="790" y="220" font-size="12" font-weight="bold" fill="#047857">2</text>
+
+    <rect x="20" y="228" width="920" height="26" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="246" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">u.name = 'u50000'（复合索引只给前导列）</text>
+    <text x="490" y="246" font-size="11.5" fill="#334155">NodeByLabelScan + Filter</text>
+    <text x="790" y="246" font-size="12" font-weight="bold" fill="#dc2626">200002</text>
+
+    <rect x="20" y="254" width="920" height="26" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="272" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">toString(u.id) = '50000'</text>
+    <text x="490" y="272" font-size="11.5" fill="#334155">NodeByLabelScan + Filter</text>
+    <text x="790" y="272" font-size="12" font-weight="bold" fill="#dc2626">200001</text>
+
+    <text x="20" y="298" font-size="12" fill="#334155">⭐ dbHits = 与存储层交互的次数，是最不受缓存影响的指标；判「查询写得好不好」看它，判「这次快不快」看 Time。</text>
+  </g>
+
+  <g transform="translate(20,665)">
+    <rect x="0" y="0" width="960" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">三条可直接背下来的结论</text>
+
+    <rect x="30" y="44" width="290" height="84" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+    <text x="175" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">STARTS WITH 单独用不划算</text>
+    <text x="175" y="88" text-anchor="middle" font-size="11" fill="#334155">前 3 位相同的名字有 3 万个</text>
+    <text x="175" y="106" text-anchor="middle" font-size="11" fill="#334155">单独用 → 200001（≈ 全表）</text>
+    <text x="175" y="122" text-anchor="middle" font-size="11" fill="#047857">等值收窄后再当过滤 → 3</text>
+
+    <rect x="335" y="44" width="290" height="84" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+    <text x="480" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">复合索引必须从头用</text>
+    <text x="480" y="88" text-anchor="middle" font-size="11" fill="#334155">只约束第二列 id → 完全用不上</text>
+    <text x="480" y="106" text-anchor="middle" font-size="11" fill="#334155">只约束第一列 name → 200002</text>
+    <text x="480" y="122" text-anchor="middle" font-size="11" fill="#047857">列序：等值列在前、范围/前缀在后</text>
+
+    <rect x="640" y="44" width="290" height="84" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="785" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#dc2626">函数包裹一律失效</text>
+    <text x="785" y="88" text-anchor="middle" font-size="11" fill="#334155" font-family="Consolas, Menlo, monospace">toString / toLower / substring</text>
+    <text x="785" y="106" text-anchor="middle" font-size="11" fill="#334155">都会让范围索引失效</text>
+    <text x="785" y="122" text-anchor="middle" font-size="11" fill="#dc2626">→ 退回 NodeByLabelScan 全扫</text>
+
+    <text x="20" y="152" font-size="12" fill="#334155">⭐ 需要「中间子串 / 后缀」匹配时必须建 TEXT 索引：CONTAINS 12 dbHits、ENDS WITH 3、STARTS WITH 21（同样条件放范围索引上是 200001）。</text>
+    <text x="20" y="176" font-size="12" fill="#64748b">对照实验：把 CONTAINS 放到只有范围索引的 name 上 → NodeByLabelScan(100001) + Filter(100000) = 200001 dbHits。</text>
+    <text x="20" y="200" font-size="12" fill="#047857">⭐ 范围索引管「能定区间」的谓词，TEXT 管子串，FULLTEXT 管分词打分，VECTOR 管语义近邻 —— 四者不可互相替代。</text>
+  </g>
+</svg>

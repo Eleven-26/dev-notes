@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 668" width="1000" height="668" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="668" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">AOF 写入三步：write 交给操作系统，fsync 才真正落盘</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">appendfsync 控制的正是第 ③ 步；下表延迟为本机实测区间（2000 条 SET 逐条等响应，连跑 3 轮）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">命令执行之后，数据要经过四段路才落到盘上</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">前两步在每个写命令后都会发生；真正决定「丢多少」的是第 ③ 步的时机</text>
+
+    <rect x="30" y="80" width="200" height="72" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.6"/>
+    <text x="130" y="106" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">① 追加 aof_buf</text>
+    <text x="130" y="128" text-anchor="middle" font-size="12" fill="#334155">命令执行后写进</text>
+    <text x="130" y="145" text-anchor="middle" font-size="12" fill="#334155">内存缓冲（进程内）</text>
+
+    <line x1="230" y1="116" x2="262" y2="116" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="266" y="80" width="200" height="72" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.6"/>
+    <text x="366" y="106" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">② write()</text>
+    <text x="366" y="128" text-anchor="middle" font-size="12" fill="#334155">把缓冲交给</text>
+    <text x="366" y="145" text-anchor="middle" font-size="12" fill="#334155">内核页缓存（仍在内存）</text>
+
+    <line x1="466" y1="116" x2="498" y2="116" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="502" y="80" width="200" height="72" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.8"/>
+    <text x="602" y="106" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">③ fsync() ⭐</text>
+    <text x="602" y="128" text-anchor="middle" font-size="12" fill="#334155">时机由</text>
+    <text x="602" y="145" text-anchor="middle" font-size="12" fill="#334155">appendfsync 决定</text>
+
+    <line x1="702" y1="116" x2="734" y2="116" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="738" y="80" width="192" height="72" rx="8" fill="#ffffff" stroke="#047857" stroke-width="1.6"/>
+    <text x="834" y="106" text-anchor="middle" font-size="13" font-weight="bold" fill="#047857">④ 磁盘</text>
+    <text x="834" y="128" text-anchor="middle" font-size="12" fill="#334155">断电 / 进程被杀</text>
+    <text x="834" y="145" text-anchor="middle" font-size="12" fill="#334155">都不会丢这一段</text>
+
+    <text x="16" y="182" font-size="12.5" fill="#b45309">⭐ write 只是把数据交给操作系统，fsync 才真正落盘 —— 所以「最多丢多少」完全取决于第 ③ 步多久做一次。</text>
+  </g>
+
+  <g transform="translate(20,310)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">appendfsync 三档：拿延迟换安全</text>
+
+    <rect x="20" y="46" width="920" height="30" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="36" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">档位</text>
+    <text x="186" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">落盘时机</text>
+    <text x="470" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">最坏丢多少</text>
+    <text x="676" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">本机实测延迟（2000 条）</text>
+
+    <rect x="20" y="76" width="920" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="36" y="97" font-size="12" font-family="Consolas, monospace" fill="#7c3aed">always</text>
+    <text x="186" y="97" font-size="12" fill="#334155">每条命令都 fsync</text>
+    <text x="470" y="97" font-size="12" fill="#334155">不丢</text>
+    <text x="676" y="97" font-size="12" fill="#334155">2508 ~ 2762 µs/条（约 362 ~ 398 条/秒）</text>
+
+    <rect x="20" y="110" width="920" height="32" rx="4" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4"/>
+    <text x="36" y="131" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#047857">everysec ⭐</text>
+    <text x="186" y="131" font-size="12" fill="#334155">每秒 fsync 一次</text>
+    <text x="470" y="131" font-size="12" fill="#334155">最多 1 秒</text>
+    <text x="676" y="131" font-size="12" fill="#334155">215 ~ 245 µs/条（约 4086 ~ 4652 条/秒）</text>
+
+    <rect x="20" y="144" width="920" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="36" y="165" font-size="12" font-family="Consolas, monospace" fill="#7c3aed">no</text>
+    <text x="186" y="165" font-size="12" fill="#334155">交给操作系统</text>
+    <text x="470" y="165" font-size="12" fill="#334155">不可控（可能几十秒）</text>
+    <text x="676" y="165" font-size="12" fill="#334155">299 ~ 534 µs/条（约 1871 ~ 3350 条/秒）</text>
+  </g>
+
+  <g transform="translate(20,530)">
+    <rect x="0" y="0" width="960" height="116" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#b45309">两条不能背的结论</text>
+    <text x="16" y="56" font-size="12.5" fill="#334155">⭐ always 比 everysec 慢约一个数量级 —— 差的就是「每条命令后面多等一次磁盘同步」。这是能用钱（换 NVMe、配好写缓存）</text>
+    <text x="16" y="76" font-size="12.5" fill="#334155">　缩小的延迟，但量级差摆在那里；always 的 QPS 上限 = 磁盘 fsync 速度，和 Redis 本身无关。</text>
+    <text x="16" y="100" font-size="12.5" fill="#b45309">⚠️ everysec 与 no 在本机几乎一样（甚至 no 波动更大）：容器写宿主机磁盘很快，差距要真正慢的设备才显出来 —— 别背结论，看自己环境的读数。</text>
+  </g>
+
+</svg>

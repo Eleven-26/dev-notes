@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 895" width="1000" height="895" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="895" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">分片集群的三个角色、chunk 迁移与查询路由</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">mongos 只管路由，配置服务器存元数据，分片才是存数据的地方；chunk 是片键上的左闭右开区间</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="235" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">分片集群由哪些角色组成</text>
+
+    <rect x="30" y="86" width="240" height="86" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="150" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">mongos（路由）</text>
+    <text x="150" y="132" text-anchor="middle" font-size="11.5" fill="#334155">无状态，多实例 + LB</text>
+    <text x="150" y="152" text-anchor="middle" font-size="11.5" fill="#334155">用 chunk 映射剪枝</text>
+
+    <path d="M270,100 L320,100 L320,88 L356,88" fill="none" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="322" y="134" font-size="11" fill="#b45309">读元数据</text>
+
+    <rect x="360" y="50" width="260" height="76" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="490" y="76" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">配置服务器 CSRS</text>
+    <text x="490" y="98" text-anchor="middle" font-size="11.5" fill="#334155">chunk 路由表、分片与集合注册</text>
+    <text x="490" y="116" text-anchor="middle" font-size="11.5" fill="#b45309">⭐ 独立三节点副本集，不与分片混用</text>
+
+    <line x1="274" y1="150" x2="682" y2="150" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="420" y="166" font-size="11" fill="#b45309">命中 chunk 映射后路由到目标分片</text>
+
+    <rect x="690" y="86" width="250" height="86" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="815" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#047857">分片 Shard</text>
+    <text x="815" y="132" text-anchor="middle" font-size="11.5" fill="#334155">真正存数据</text>
+    <text x="815" y="152" text-anchor="middle" font-size="11.5" fill="#334155">每个分片本身都是副本集</text>
+
+    <text x="20" y="200" font-size="12" fill="#b45309">⚠️ CSRS 不可用时 split / migrate 与所有元数据写停止；已缓存路由的读通常还能继续。</text>
+    <text x="20" y="224" font-size="12" fill="#64748b">⚠️ 单节点分片只用于测试。</text>
+  </g>
+
+  <g transform="translate(20,330)">
+    <rect x="0" y="0" width="960" height="245" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">chunk 是分片键上的左闭右开区间，balancer 搬的是整块</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">触发依据是各分片 chunk 数量的不均衡，不是磁盘 GB</text>
+
+    <rect x="40" y="88" width="220" height="44" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="150" y="115" text-anchor="middle" font-size="12" font-family="Consolas, Menlo, monospace" fill="#1d4ed8">[-∞, 100)</text>
+    <rect x="260" y="88" width="220" height="44" rx="4" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="370" y="115" text-anchor="middle" font-size="12" font-family="Consolas, Menlo, monospace" fill="#1d4ed8">[100, 200)</text>
+    <rect x="480" y="88" width="220" height="44" rx="4" fill="#dcfce7" stroke="#047857" stroke-width="1.3"/>
+    <text x="590" y="115" text-anchor="middle" font-size="12" font-family="Consolas, Menlo, monospace" fill="#047857">[200, 300)</text>
+    <rect x="700" y="88" width="220" height="44" rx="4" fill="#dcfce7" stroke="#047857" stroke-width="1.3"/>
+    <text x="810" y="115" text-anchor="middle" font-size="12" font-family="Consolas, Menlo, monospace" fill="#047857">[300, +∞)</text>
+
+    <text x="260" y="152" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">分片 A 持有</text>
+    <text x="700" y="152" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">分片 B 持有</text>
+    <line x1="170" y1="162" x2="350" y2="162" stroke="#1d4ed8" stroke-width="1.2"/>
+    <line x1="610" y1="162" x2="790" y2="162" stroke="#047857" stroke-width="1.2"/>
+
+    <text x="20" y="192" font-size="12" fill="#334155">⚠️ 数据量最大的分片不一定是热点 —— 「新写全撞在它最后一个 chunk」才最危险，而那时 chunk 数看着还挺均衡。</text>
+    <text x="20" y="216" font-size="12" fill="#334155">⚠️ 单 chunk 或 chunk 数很少的集合不会被均衡 → balancer 修不了「片键选错」，倾斜是建模问题不是调度问题。</text>
+    <text x="20" y="238" font-size="12" fill="#64748b">可控手段：预分片（split points）、限定 balancer 窗口、必要时手工合并 / 拆分 chunk。</text>
+  </g>
+
+  <g transform="translate(20,600)">
+    <rect x="0" y="0" width="960" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">查询侧：带片键定向 vs 不带片键广播</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">不带片键 = scatter-gather，代价随分片数线性增长</text>
+
+    <rect x="20" y="64" width="450" height="124" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="36" y="84" font-size="12.5" font-weight="bold" fill="#047857">✅ 带片键：定向（命中 1 个分片）</text>
+    <rect x="40" y="98" width="80" height="36" rx="5" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="80" y="121" text-anchor="middle" font-size="12" fill="#1d4ed8">mongos</text>
+    <line x1="124" y1="116" x2="176" y2="116" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="180" y="98" width="120" height="36" rx="5" fill="#dcfce7" stroke="#047857" stroke-width="1.2"/>
+    <text x="240" y="121" text-anchor="middle" font-size="12" fill="#047857">分片 A</text>
+    <text x="36" y="164" font-size="11.5" fill="#334155">等值 / 范围能映射到有限分片 → 只查它一个</text>
+    <text x="36" y="182" font-size="11.5" fill="#334155">stage 里不会出现 SHARDING_FILTER 的多分片路径</text>
+
+    <rect x="490" y="64" width="450" height="124" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="506" y="84" font-size="12.5" font-weight="bold" fill="#dc2626">⚠️ 不带片键：广播 + 归并</text>
+    <rect x="500" y="98" width="80" height="36" rx="5" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="540" y="121" text-anchor="middle" font-size="12" fill="#1d4ed8">mongos</text>
+    <line x1="584" y1="106" x2="636" y2="88" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+    <line x1="584" y1="116" x2="636" y2="116" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+    <line x1="584" y1="126" x2="636" y2="144" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="640" y="74" width="90" height="28" rx="5" fill="#dcfce7" stroke="#047857" stroke-width="1.1"/>
+    <text x="685" y="93" text-anchor="middle" font-size="11.5" fill="#047857">分片 A</text>
+    <rect x="640" y="102" width="90" height="28" rx="5" fill="#dcfce7" stroke="#047857" stroke-width="1.1"/>
+    <text x="685" y="121" text-anchor="middle" font-size="11.5" fill="#047857">分片 B</text>
+    <rect x="640" y="130" width="90" height="28" rx="5" fill="#dcfce7" stroke="#047857" stroke-width="1.1"/>
+    <text x="685" y="149" text-anchor="middle" font-size="11.5" fill="#047857">分片 C</text>
+    <rect x="770" y="98" width="150" height="36" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="845" y="121" text-anchor="middle" font-size="11.5" fill="#b45309">归并排序再汇总</text>
+    <line x1="734" y1="116" x2="766" y2="116" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="506" y="164" font-size="11.5" fill="#334155">每个分片各跑一遍 + mongos 归并 → 代价随分片数</text>
+    <text x="506" y="182" font-size="11.5" fill="#334155">线性增长；出现 SHARDING_FILTER（丢弃孤儿文档）</text>
+
+    <text x="20" y="216" font-size="12" fill="#334155">⚠️ updateMany(filter) 不带片键会在所有分片上跑并各自加锁；分片集合的 unique 索引必须包含完整片键。</text>
+    <text x="20" y="240" font-size="12" fill="#334155">⚠️ 迁移期间：落在搬迁区间的写被当可重试错误 → 写延迟毛刺；未清完的孤儿文档让广播查询多扫 → totalDocsExamined 偏高。</text>
+    <text x="20" y="262" font-size="12" fill="#b45309">结论：迁移不是「免费的负载均衡」，它在被搬的那段键区间上制造一个短暂的写抖动窗口。</text>
+  </g>
+</svg>

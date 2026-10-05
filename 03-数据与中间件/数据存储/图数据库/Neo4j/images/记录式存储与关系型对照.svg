@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 950" width="1000" height="950" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="950" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">记录式存储：定长记录怎么落盘，删了为什么不还空间</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">用「受控增长」反推记录大小；每个 store 都配一个 .id 伙伴文件管高水位与空闲链</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="305" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">存储文件清单：图被拆成几类定长记录分别落盘</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">文件</text>
+    <text x="380" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">作用</text>
+
+    <rect x="20" y="72" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="89" font-size="11" fill="#1d4ed8">neostore.nodestore.db</text>
+    <text x="380" y="89" font-size="11" fill="#334155">节点记录：标签 + 关系链头指针 + 属性指针</text>
+
+    <rect x="20" y="96" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="113" font-size="11" fill="#1d4ed8">neostore.relationshipstore.db</text>
+    <text x="380" y="113" font-size="11" fill="#334155">关系记录：起点 / 终点 / 类型 / 双向链指针 / 属性指针</text>
+
+    <rect x="20" y="120" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="137" font-size="11" fill="#1d4ed8">neostore.propertystore.db（+ .strings / .arrays）</text>
+    <text x="380" y="137" font-size="11" fill="#334155">属性记录；长字符串与数组走溢出文件</text>
+
+    <rect x="20" y="144" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="161" font-size="11" fill="#1d4ed8">labeltokenstore / relationshiptypestore</text>
+    <text x="380" y="161" font-size="11" fill="#334155">标签 / 关系类型 token ↔ 名字（数字 ↔ 字符串）</text>
+
+    <rect x="20" y="168" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="185" font-size="11" fill="#1d4ed8">neostore.counts.db</text>
+    <text x="380" y="185" font-size="11" fill="#334155">计数缓存：按标签 / 类型 / 起止标签组合，count(*) 免全扫</text>
+
+    <rect x="20" y="192" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="209" font-size="11" fill="#1d4ed8">neostore.schemastore.db</text>
+    <text x="380" y="209" font-size="11" fill="#334155">索引 / 约束的定义</text>
+
+    <rect x="20" y="216" width="920" height="24" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="233" font-size="11" fill="#b45309">⭐ 每个 store 的 .id 伙伴文件</text>
+    <text x="380" y="233" font-size="11" fill="#334155">高水位标记 + 空闲记录链表 —— 删数据文件不变小的原因</text>
+
+    <text x="20" y="264" font-size="12" fill="#334155">⭐ 每个 store 都有一个同名 .id 伙伴文件（如 neostore.nodestore.db.id），里面是「高水位标记 + 空闲记录链表」。</text>
+    <text x="20" y="288" font-size="12" fill="#64748b">另有 .labels 标签位图、relationshipgroupstore 及其 degrees、propertystore.db.index 等，都按同一规律成对存在。</text>
+  </g>
+
+  <g transform="translate(20,390)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">每条记录到底多少字节：受控增长反推（同一高水位上追加已知数量）</text>
+
+    <rect x="30" y="42" width="900" height="66" rx="6" fill="#0f172a"/>
+    <text x="48" y="68" font-size="12.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">节点增量 = 12025856 - 10518528 = 1507328 B ÷ 100000 = 15.07 B/条</text>
+    <text x="48" y="92" font-size="12.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">关系增量 = 18776064 - 17072128 = 1703936 B ÷  50000 = 34.08 B/条</text>
+
+    <text x="20" y="132" font-size="12" fill="#334155">步骤：起点 701000 节点 / 500000 关系 → 追加 10 万节点、5 万关系 → 等落盘后量文件增量（文件字节数按 8192 的整数倍分配）。</text>
+    <text x="20" y="156" font-size="12" fill="#b45309">⭐ 两个数正好落在经典记录布局的 节点 15 B / 关系 34 B 上 —— 字段拆解来自官方文档，只有这两个总量是本机实测。</text>
+    <text x="20" y="180" font-size="12" fill="#334155">节点 15 B = inUse(1) + 关系链头指针(5) + 标签字段(5) + 属性指针(4)</text>
+    <text x="20" y="204" font-size="12" fill="#334155">关系 34 B = 起点(4) + 终点(4) + 类型(2) + 起端前/后指针(4+4) + 末端前/后指针(4+4) + 属性指针(4+4)</text>
+  </g>
+
+  <g transform="translate(20,635)">
+    <rect x="0" y="0" width="960" height="295" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">和关系型存储比：各自赢在哪</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="230" y="62" font-size="12.5" font-weight="bold" fill="#b45309">MySQL（InnoDB）</text>
+    <text x="620" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">Neo4j</text>
+
+    <rect x="20" y="72" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="89" font-size="12" fill="#334155">组织单位</text>
+    <text x="230" y="89" font-size="12" fill="#334155">页（默认 16 KB）</text>
+    <text x="620" y="89" font-size="12" fill="#334155">定长记录（节点 15 B / 关系 34 B）</text>
+
+    <rect x="20" y="96" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="113" font-size="12" fill="#334155">主结构</text>
+    <text x="230" y="113" font-size="12" fill="#334155">B+ 树聚簇索引，行按主键有序</text>
+    <text x="620" y="113" font-size="12" fill="#334155">记录数组，按 ID 直接寻址</text>
+
+    <rect x="20" y="120" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="137" font-size="12" fill="#334155">找一条</text>
+    <text x="230" y="137" font-size="12" fill="#334155">从根到叶 2~4 次页访问</text>
+    <text x="620" y="137" font-size="12" fill="#047857">算偏移，一次读</text>
+
+    <rect x="20" y="144" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="161" font-size="12" fill="#334155">走一跳关系</text>
+    <text x="230" y="161" font-size="12" fill="#b45309">需要索引 + 回表</text>
+    <text x="620" y="161" font-size="12" fill="#047857">⭐ 顺指针，零索引</text>
+
+    <rect x="20" y="168" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="185" font-size="12" fill="#334155">深跳</text>
+    <text x="230" y="185" font-size="12" fill="#b45309">每跳都可能重新走一次索引</text>
+    <text x="620" y="185" font-size="12" fill="#047857">每跳固定开销，与全图规模无关</text>
+
+    <rect x="20" y="192" width="920" height="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="209" font-size="12" fill="#334155">擅长</text>
+    <text x="230" y="209" font-size="12" fill="#334155">点查、范围扫、聚合、宽表统计</text>
+    <text x="620" y="209" font-size="12" fill="#334155">多跳路径、模式匹配、连通性</text>
+
+    <text x="20" y="238" font-size="12" fill="#334155">⭐ MySQL 把「按主键 / 二级键查找」做到极致，Neo4j 把「顺着关系走」做到极致 —— 两者没有强弱，只有访问形态不同。</text>
+    <text x="20" y="260" font-size="12" fill="#b45309">⚠️ 图库的「删除」是逻辑删除 + 空间复用：实测删掉 60 万节点后，nodestore 仍 12025856 B —— 一个字节都没还。</text>
+    <text x="20" y="282" font-size="12" fill="#64748b">想真正瘦身只能 neo4j-admin database 重建 / 重新导入 —— 批量导入失败重灌等于把库灌大一轮。</text>
+  </g>
+</svg>

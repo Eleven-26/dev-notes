@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次写入在等什么：可见点在 refresh，不丢点在 flush</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">返回 200 只保证进了 in-memory buffer + translog；「能搜到」≠「已落盘」</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="272" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、代价链：translog → refresh → flush → merge</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">四个动作各有各的「点」，混淆它们就会把「能搜到」当成「不丢」</text>
+
+    <rect x="20" y="70" width="920" height="40" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="36" y="96" font-size="12.5" fill="#334155">① 写 in-memory buffer + 追加 translog（顺序写）　← 请求返回前发生</text>
+
+    <rect x="20" y="120" width="920" height="40" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1.5"/>
+    <text x="36" y="146" font-size="12.5" fill="#334155">② refresh（默认 1s）：buffer 生成新 segment 进 OS page cache，打开新 searcher　←「能被搜到」</text>
+
+    <rect x="20" y="170" width="920" height="40" rx="6" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+    <text x="36" y="196" font-size="12.5" fill="#334155">③ flush：commit + fsync 数据文件 + 截断 translog　←「不会丢」（持久化点）</text>
+
+    <rect x="20" y="220" width="920" height="40" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="246" font-size="12.5" fill="#334155">④ merge：小段合成大段，顺带物理清除被标记删除的文档</text>
+
+    <line x1="480" y1="110" x2="480" y2="116" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="480" y1="160" x2="480" y2="166" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="480" y1="210" x2="480" y2="216" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+  </g>
+
+  <g transform="translate(20,360)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、两个「点」分属两个问题</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">可见性问「能不能搜到」，持久性问「宕机丢不丢」—— 两者由不同动作决定</text>
+
+    <rect x="20" y="68" width="450" height="118" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="92" font-size="13.5" font-weight="bold" fill="#047857">可见点 = ② refresh</text>
+    <text x="36" y="116" font-size="12.5" fill="#334155">段生成在 page cache 里，不是磁盘</text>
+    <text x="36" y="138" font-size="12.5" fill="#334155">返回 200 ≠ 能搜到；默认最迟约 1s</text>
+    <text x="36" y="160" font-size="12.5" fill="#334155">要写后立即可查 → ?refresh=wait_for</text>
+    <text x="36" y="180" font-size="12.5" fill="#64748b">⚠️ 每次强制 refresh 会造空段 → 段数暴涨</text>
+
+    <rect x="490" y="68" width="450" height="118" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="92" font-size="13.5" font-weight="bold" fill="#dc2626">不丢点 = ③ flush</text>
+    <text x="506" y="116" font-size="12.5" fill="#334155">fsync 数据文件 + 截断 translog</text>
+    <text x="506" y="138" font-size="12.5" fill="#334155">durability=request（默认）每请求 fsync 一次</text>
+    <text x="506" y="160" font-size="12.5" fill="#334155">durability=async 按 sync_interval 周期 fsync</text>
+    <text x="506" y="180" font-size="12.5" fill="#64748b">async 最多丢一个同步间隔（业务可容忍度决策）</text>
+  </g>
+
+  <g transform="translate(20,580)">
+    <rect x="0" y="0" width="960" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、合并与副本：两笔容易被忽略的代价</text>
+    <text x="36" y="62" font-size="12.5" fill="#334155">merge：把 K 个段全部读出、重写成一个新段 → 累计写盘量远大于原始文档体积（写放大）</text>
+    <text x="36" y="86" font-size="12.5" fill="#334155">副本：先写主分片，再并行同步副本；全部 in-sync 副本成功才返回（不是 Raft 多数派）</text>
+    <text x="36" y="110" font-size="12.5" fill="#64748b">删除只是标记 live-docs 位图；更新 = 标记删除旧文档 + 追加一个新文档（新 _seq_no）</text>
+  </g>
+
+</svg>

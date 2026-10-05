@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 855" width="1000" height="855" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#047857"/></marker>
+    <marker id="arwO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="855" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">副本集的组成、选主与故障转移</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">写入只走 Primary，Secondary 拉 oplog 回放；主挂掉后由多数派投票选出新主</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">拓扑：一个 Primary + 多个 Secondary（可选 Arbiter）</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">三件事：选主 → 实时复制 → 故障转移</text>
+
+    <rect x="390" y="66" width="180" height="52" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="480" y="88" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">Primary（主）</text>
+    <text x="480" y="108" text-anchor="middle" font-size="11.5" fill="#334155">接受读写</text>
+
+    <line x1="430" y1="118" x2="300" y2="158" stroke="#047857" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="530" y1="118" x2="660" y2="158" stroke="#047857" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="300" y="146" font-size="11.5" fill="#047857">oplog 拉取（pull）</text>
+
+    <rect x="180" y="160" width="180" height="52" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="270" y="182" text-anchor="middle" font-size="13" font-weight="bold" fill="#047857">Secondary</text>
+    <text x="270" y="202" text-anchor="middle" font-size="11.5" fill="#334155">拉 oplog 并回放</text>
+
+    <rect x="600" y="160" width="180" height="52" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="690" y="182" text-anchor="middle" font-size="13" font-weight="bold" fill="#047857">Secondary</text>
+    <text x="690" y="202" text-anchor="middle" font-size="11.5" fill="#334155">可承接从库读</text>
+
+    <rect x="810" y="160" width="140" height="52" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="880" y="182" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#475569">Arbiter</text>
+    <text x="880" y="202" text-anchor="middle" font-size="11.5" fill="#64748b">只投票、不存数据</text>
+
+    <text x="20" y="230" font-size="12" fill="#64748b">⚠️ 复制是异步的：主节点宕机时未被多数派确认的数据可能被回滚。</text>
+  </g>
+
+  <g transform="translate(20,330)">
+    <rect x="0" y="0" width="960" height="235" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">故障转移的四步</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">从节点判定主下线后自荐候选人，拿到多数派票数才当选</text>
+
+    <rect x="30" y="66" width="200" height="72" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="130" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">① 持续收主心跳</text>
+    <text x="130" y="112" text-anchor="middle" font-size="11.5" fill="#64748b">heartbeatIntervalMillis</text>
+    <text x="130" y="128" text-anchor="middle" font-size="11.5" fill="#64748b">默认每 2 秒</text>
+    <line x1="234" y1="102" x2="266" y2="102" stroke="#b45309" stroke-width="1.6" marker-end="url(#arwO)"/>
+
+    <rect x="270" y="66" width="200" height="72" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="370" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">② 超时判定下线</text>
+    <text x="370" y="112" text-anchor="middle" font-size="11.5" fill="#64748b">electionTimeoutMillis</text>
+    <text x="370" y="128" text-anchor="middle" font-size="11.5" fill="#64748b">默认 10 秒</text>
+    <line x1="474" y1="102" x2="506" y2="102" stroke="#b45309" stroke-width="1.6" marker-end="url(#arwO)"/>
+
+    <rect x="510" y="66" width="200" height="72" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="610" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">③ 自荐候选人拉票</text>
+    <text x="610" y="112" text-anchor="middle" font-size="11.5" fill="#64748b">向有投票权的成员</text>
+    <text x="610" y="128" text-anchor="middle" font-size="11.5" fill="#64748b">请求投票</text>
+    <line x1="714" y1="102" x2="746" y2="102" stroke="#b45309" stroke-width="1.6" marker-end="url(#arwO)"/>
+
+    <rect x="750" y="66" width="200" height="72" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.4"/>
+    <text x="850" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">④ 多数派当选</text>
+    <text x="850" y="112" text-anchor="middle" font-size="11.5" fill="#334155">majority =</text>
+    <text x="850" y="128" text-anchor="middle" font-size="11.5" fill="#334155">floor(投票成员数 / 2) + 1</text>
+
+    <text x="20" y="176" font-size="12" fill="#334155">⭐ 投票排序：priority 高者优先 → oplog 更全（更靠后）者优先 → 否则维持原主。</text>
+    <text x="20" y="200" font-size="12" fill="#334155">选举对应用透明：驱动自动重连新主（serverSelectionTimeout 默认 30 秒）。</text>
+    <text x="20" y="224" font-size="12" fill="#b45309">⚠️ 应用需容忍切换窗口内的短暂写失败（建议开启 retryable writes）。</text>
+  </g>
+
+  <g transform="translate(20,585)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">为什么投票节点要奇数：奇数最大化容错比，并避免脑裂</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">选举需要多数派：majority = floor(N / 2) + 1</text>
+
+    <rect x="20" y="64" width="920" height="32" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="85" font-size="12.5" font-weight="bold" fill="#0f172a">投票成员数 N</text>
+    <text x="334" y="85" font-size="12.5" font-weight="bold" fill="#0f172a">majority</text>
+    <text x="654" y="85" font-size="12.5" font-weight="bold" fill="#0f172a">容忍故障数</text>
+
+    <rect x="20" y="96" width="920" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="117" font-size="12.5" fill="#334155">3（PSS / PSA）</text>
+    <text x="334" y="117" font-size="12.5" fill="#334155">2</text>
+    <text x="654" y="117" font-size="12.5" fill="#047857">1</text>
+
+    <rect x="20" y="128" width="920" height="32" fill="#fef2f2" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="149" font-size="12.5" fill="#dc2626">4</text>
+    <text x="334" y="149" font-size="12.5" fill="#dc2626">3</text>
+    <text x="654" y="149" font-size="12.5" fill="#dc2626">1（与 3 相同）</text>
+
+    <rect x="20" y="160" width="920" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="181" font-size="12.5" fill="#334155">5</text>
+    <text x="334" y="181" font-size="12.5" fill="#334155">3</text>
+    <text x="654" y="181" font-size="12.5" fill="#047857">2</text>
+
+    <text x="20" y="216" font-size="12" fill="#334155">⭐ 4 个投票成员 majority=3，同样只容忍 1 个故障 —— 多花的钱没换来容错，故推荐 3 或 5，不要 4。</text>
+    <text x="20" y="240" font-size="12" fill="#b45309">⚠️ Arbiter 不存数据：一旦一个数据节点故障，剩余节点可能凑不齐多数派，w: majority 也可能永久阻塞。</text>
+  </g>
+</svg>

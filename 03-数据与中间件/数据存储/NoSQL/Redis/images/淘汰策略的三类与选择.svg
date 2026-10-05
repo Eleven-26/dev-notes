@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 636" width="1000" height="636" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="636" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">淘汰策略：内存不足时的兜底，不是清理过期 key 的手段</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">八种策略分三类，区别只在「淘汰范围」与「淘汰谁」；RSS 与 maxmemory 的差集见下一张图</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">什么时候才触发淘汰</text>
+
+    <rect x="20" y="42" width="440" height="68" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.4"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#047857">内存充足 → 不触发淘汰</text>
+    <text x="34" y="84" font-size="11.5" fill="#334155">过期 key 另有两条路径：惰性删除（访问时查）、定期删除（后台抽样）</text>
+    <text x="34" y="102" font-size="11.5" fill="#334155">做内存碎片整理时也会顺带清理</text>
+
+    <line x1="468" y1="76" x2="500" y2="76" stroke="#b45309" stroke-width="1.8" marker-end="url(#arw)"/>
+
+    <rect x="508" y="42" width="432" height="68" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="522" y="62" font-size="12.5" font-weight="bold" fill="#dc2626">达到 maxmemory → 才触发淘汰</text>
+    <text x="522" y="84" font-size="11.5" fill="#334155">腾空间给后续写入；淘汰在「命令执行之前」判断</text>
+    <text x="522" y="102" font-size="11.5" fill="#b45309">⚠️ 单条命令执行中不再淘汰 → 正在写的大 key 不会被淘汰</text>
+  </g>
+
+  <g transform="translate(20,194)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">三类八种：先按「淘汰范围」分，再按「淘汰谁」分</text>
+
+    <rect x="20" y="42" width="296" height="140" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="34" y="64" font-size="13" font-weight="bold" fill="#dc2626">一类：不淘汰</text>
+    <text x="34" y="88" font-size="12.5" fill="#334155">noeviction</text>
+    <text x="34" y="112" font-size="11.5" fill="#334155">内存满 → 新写入直接报错</text>
+    <text x="34" y="130" font-size="11.5" fill="#334155">但删除操作仍可用</text>
+    <text x="34" y="154" font-size="11.5" fill="#b45309">适用于「数据不允许丢」（当存储用）</text>
+    <text x="34" y="172" font-size="11.5" fill="#b45309">解法是扩容 / 升配，不是淘汰</text>
+
+    <rect x="332" y="42" width="296" height="140" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="1.6"/>
+    <text x="346" y="64" font-size="13" font-weight="bold" fill="#b45309">二类：只在设了 TTL 的 key 里淘汰</text>
+    <text x="346" y="88" font-size="12" fill="#334155">volatile-ttl　　剩余存活最短优先</text>
+    <text x="346" y="108" font-size="12" fill="#334155">volatile-random　随机</text>
+    <text x="346" y="128" font-size="12" fill="#334155">volatile-lru　　最久未使用</text>
+    <text x="346" y="148" font-size="12" fill="#334155">volatile-lfu　　最不经常使用</text>
+    <text x="346" y="172" font-size="11.5" fill="#64748b">缩小淘汰范围，避免动到无 TTL 的常驻 key</text>
+
+    <rect x="644" y="42" width="296" height="140" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.6"/>
+    <text x="658" y="64" font-size="13" font-weight="bold" fill="#1d4ed8">三类：全库范围淘汰</text>
+    <text x="658" y="88" font-size="12" fill="#334155">allkeys-lru</text>
+    <text x="658" y="108" font-size="12" fill="#334155">allkeys-random</text>
+    <text x="658" y="128" font-size="12" fill="#334155">allkeys-lfu</text>
+    <text x="658" y="152" font-size="11.5" fill="#64748b">不区分有没有设过期时间</text>
+    <text x="658" y="172" font-size="11.5" fill="#64748b">适用于「这些数据都可以丢」</text>
+  </g>
+
+  <g transform="translate(20,402)">
+    <rect x="0" y="0" width="960" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">选择逻辑：三步问下去</text>
+
+    <rect x="20" y="42" width="300" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="34" y="64" font-size="12.5" font-weight="bold" fill="#0f172a">① 数据能不能丢？</text>
+    <text x="34" y="86" font-size="12" fill="#334155">不能丢 → noeviction</text>
+    <text x="34" y="106" font-size="12" fill="#334155">+ 业务层主动删除 + 扩容</text>
+
+    <line x1="324" y1="82" x2="352" y2="82" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="360" y="42" width="300" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="374" y="64" font-size="12.5" font-weight="bold" fill="#0f172a">② 能丢 → 冷热区分明显吗？</text>
+    <text x="374" y="86" font-size="12" fill="#334155">频率差异大 → LFU（抗批量扫描）</text>
+    <text x="374" y="106" font-size="12" fill="#334155">只看最近是否访问 → LRU</text>
+
+    <line x1="664" y1="82" x2="692" y2="82" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="700" y="42" width="240" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="714" y="64" font-size="12.5" font-weight="bold" fill="#0f172a">③ 只管设了 TTL 的？</text>
+    <text x="714" y="86" font-size="12" fill="#334155">是 → 用 volatile-* 系列</text>
+    <text x="714" y="106" font-size="12" fill="#334155">缩小淘汰范围</text>
+
+    <rect x="20" y="134" width="920" height="62" rx="6" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+    <text x="34" y="156" font-size="12.5" font-weight="bold" fill="#b45309">⚠️ 最易错：把淘汰策略当成「清理过期 key 的机制」。</text>
+    <text x="34" y="180" font-size="12.5" fill="#b45309">过期 = 到点必须删（expired_keys）；淘汰 = 内存不够挑一个删（evicted_keys）—— 两个指标要分开看。</text>
+  </g>
+</svg>

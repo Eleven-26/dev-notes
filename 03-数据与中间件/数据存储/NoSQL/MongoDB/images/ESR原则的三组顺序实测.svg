@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 850" width="1000" height="850" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="850" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">复合索引的字段顺序：ESR 与三组顺序实测</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一份 5000 条 orders、同一查询（status=PAID + amount&gt;100，按 createdAt 倒序取 20 条），只换索引顺序的代价对比</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">ESR：Equality（等值）→ Sort（排序）→ Range（范围）</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">索引按键整体排序 —— 范围条件之后，索引里剩下的字段不再连续，既不能定界也不能排序</text>
+
+    <text x="40" y="72" font-size="12" font-weight="bold" fill="#334155">索引 {status:1, createdAt:-1, amount:1} 的键序：</text>
+    <rect x="40" y="80" width="120" height="46" rx="5" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="100" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">E</text>
+    <text x="100" y="117" text-anchor="middle" font-size="11.5" fill="#1d4ed8">status=PAID</text>
+    <rect x="164" y="80" width="520" height="46" rx="5" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="424" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">S</text>
+    <text x="424" y="117" text-anchor="middle" font-size="11.5" fill="#047857">createdAt 倒序 —— 区间内天然有序，反向扫够 limit 就停</text>
+    <rect x="688" y="80" width="200" height="46" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="788" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">R</text>
+    <text x="788" y="117" text-anchor="middle" font-size="11.5" fill="#b45309">amount&gt;100</text>
+
+    <text x="40" y="146" font-size="11.5" fill="#1d4ed8">E 定区间</text>
+    <text x="300" y="146" font-size="11.5" fill="#047857">区间内有序 → 排序免费</text>
+    <text x="688" y="146" font-size="11.5" fill="#b45309">范围之后不再连续</text>
+    <text x="40" y="172" font-size="12" fill="#334155">写成 E-R-S（把 amount 放在 createdAt 前）时，同一个 amount 段内才有序、跨段就乱 → 排序无法用索引，必须把命中项全捞完再内存排序。</text>
+  </g>
+
+  <g transform="translate(20,280)">
+    <rect x="0" y="0" width="960" height="260" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">三组顺序的 executionStats 实测</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">nReturned 都是 20；差别全在「扫了多少」与「排没排序」</text>
+
+    <rect x="20" y="64" width="920" height="34" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">索引</text>
+    <text x="454" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">排序 stage</text>
+    <text x="584" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">keysExamined</text>
+    <text x="724" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">docsExamined</text>
+    <text x="854" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">nReturned</text>
+
+    <rect x="20" y="98" width="920" height="36" fill="#ecfdf5" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="121" font-size="12" font-family="Consolas, Menlo, monospace" fill="#047857">{status:1, createdAt:-1, amount:1}  E-S-R</text>
+    <text x="454" y="121" font-size="12.5" fill="#047857">no SORT</text>
+    <text x="584" y="121" font-size="12.5" font-weight="bold" fill="#047857">21</text>
+    <text x="724" y="121" font-size="12.5" fill="#334155">20</text>
+    <text x="854" y="121" font-size="12.5" fill="#334155">20</text>
+
+    <rect x="20" y="134" width="920" height="36" fill="#fef2f2" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="157" font-size="12" font-family="Consolas, Menlo, monospace" fill="#dc2626">{status:1, amount:1, createdAt:-1}  E-R-S</text>
+    <text x="454" y="157" font-size="12.5" font-weight="bold" fill="#dc2626">SORT</text>
+    <text x="584" y="157" font-size="12.5" font-weight="bold" fill="#dc2626">1502</text>
+    <text x="724" y="157" font-size="12.5" fill="#334155">20</text>
+    <text x="854" y="157" font-size="12.5" fill="#334155">20</text>
+
+    <rect x="20" y="170" width="920" height="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="193" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">{createdAt:-1, status:1}  S 在 E 前</text>
+    <text x="454" y="193" font-size="12.5" fill="#334155">no SORT</text>
+    <text x="584" y="193" font-size="12.5" fill="#334155">61</text>
+    <text x="724" y="193" font-size="12.5" fill="#334155">61</text>
+    <text x="854" y="193" font-size="12.5" fill="#334155">20</text>
+
+    <rect x="20" y="206" width="920" height="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="229" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">不 hint（planner 自选）</text>
+    <text x="454" y="229" font-size="12.5" fill="#334155">no SORT</text>
+    <text x="584" y="229" font-size="12.5" fill="#334155">21</text>
+    <text x="724" y="229" font-size="12.5" fill="#334155">20</text>
+    <text x="854" y="229" font-size="12.5" fill="#334155">20</text>
+  </g>
+
+  <g transform="translate(20,560)">
+    <rect x="0" y="0" width="960" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">密度决定「排序字段在前」的代价：扫描量与 limit 无关</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">把 PAID 的密度从 1/3 一路降到 1/1000，同一查询、同一索引 —— E-S-R 恒定，S 在 E 前越扫越多</text>
+
+    <rect x="20" y="60" width="920" height="32" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="81" font-size="12.5" font-weight="bold" fill="#0f172a">PAID 密度</text>
+    <text x="214" y="81" font-size="12.5" font-weight="bold" fill="#0f172a">候选数（PAID 且 amount&gt;100）</text>
+    <text x="494" y="81" font-size="12.5" font-weight="bold" fill="#0f172a">E-S-R 的 keysExamined</text>
+    <text x="754" y="81" font-size="12.5" font-weight="bold" fill="#0f172a">S 在 E 前的 keysExamined</text>
+
+    <rect x="20" y="92" width="920" height="34" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="114" font-size="12.5" fill="#334155">1/3</text>
+    <text x="214" y="114" font-size="12.5" fill="#334155">1502</text>
+    <text x="494" y="114" font-size="12.5" font-weight="bold" fill="#047857">21</text>
+    <text x="754" y="114" font-size="12.5" fill="#334155">61</text>
+
+    <rect x="20" y="126" width="920" height="34" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="148" font-size="12.5" fill="#334155">1/10</text>
+    <text x="214" y="148" font-size="12.5" fill="#334155">445</text>
+    <text x="494" y="148" font-size="12.5" font-weight="bold" fill="#047857">23</text>
+    <text x="754" y="148" font-size="12.5" fill="#334155">221</text>
+
+    <rect x="20" y="160" width="920" height="34" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="182" font-size="12.5" fill="#334155">1/100</text>
+    <text x="214" y="182" font-size="12.5" fill="#334155">40</text>
+    <text x="494" y="182" font-size="12.5" font-weight="bold" fill="#047857">26</text>
+    <text x="754" y="182" font-size="12.5" font-weight="bold" fill="#dc2626">2501</text>
+
+    <rect x="20" y="194" width="920" height="34" fill="#fef2f2" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="216" font-size="12.5" fill="#334155">1/1000</text>
+    <text x="214" y="216" font-size="12.5" fill="#334155">0</text>
+    <text x="494" y="216" font-size="12.5" font-weight="bold" fill="#047857">6</text>
+    <text x="754" y="216" font-size="12.5" font-weight="bold" fill="#dc2626">5000（全表扫完）</text>
+
+    <text x="20" y="252" font-size="12" fill="#334155">⭐ E-S-R 的扫描量恒为 21~26（由 limit 锁死，与密度无关）；排序字段在前则密度越低扫得越多，最坏扫穿整张表。</text>
+  </g>
+</svg>

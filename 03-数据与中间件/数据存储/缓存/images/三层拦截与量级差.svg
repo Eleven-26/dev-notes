@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" width="1000" height="820" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="820" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">MySQL 与 Redis：量级差多少，缓存该放哪一层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">给出数字比形容词有说服力 —— 三层拦截 + 一个必须主动交代的代价</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="205" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">① 量级差：MySQL 与 Redis 不是一个量级</text>
+
+    <rect x="24" y="44" width="912" height="28" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="234" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#1d4ed8">MySQL</text>
+    <text x="590" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#047857">Redis</text>
+
+    <rect x="24" y="72" width="912" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="88" dominant-baseline="central" font-size="12" fill="#334155">单连接 QPS（简单操作）</text>
+    <text x="234" y="88" dominant-baseline="central" font-size="12" fill="#334155">约 500 ~ 2000</text>
+    <text x="590" y="88" dominant-baseline="central" font-size="12" fill="#047857">约 10000 ~ 100000</text>
+
+    <rect x="24" y="104" width="912" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="120" dominant-baseline="central" font-size="12" fill="#334155">存储介质</text>
+    <text x="234" y="120" dominant-baseline="central" font-size="12" fill="#334155">磁盘，受磁盘 IO 限制</text>
+    <text x="590" y="120" dominant-baseline="central" font-size="12" fill="#047857">内存，纯内存操作</text>
+
+    <rect x="24" y="136" width="912" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="152" dominant-baseline="central" font-size="12" fill="#334155">额外开销</text>
+    <text x="234" y="152" dominant-baseline="central" font-size="12" fill="#334155">还要 SQL 解析 / 优化 / 事务 / 锁</text>
+    <text x="590" y="152" dominant-baseline="central" font-size="12" fill="#047857">单线程无锁竞争模型</text>
+
+    <text x="24" y="190" font-size="12" fill="#334155">⭐ 两者差 1~2 个数量级（约 10 ~ 50 倍）—— 记住区间比说「Redis 很快」有效得多。</text>
+  </g>
+
+  <g transform="translate(20,295)">
+    <rect x="0" y="0" width="960" height="290" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">② 三层拦截：尽量别让请求打到数据库</text>
+
+    <rect x="210" y="48" width="180" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="300" y="65" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">用户请求</text>
+    <line x1="300" y1="82" x2="300" y2="96" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="180" y="96" width="240" height="44" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="300" y="118" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">① CDN 页面 / 内容缓存</text>
+    <line x1="300" y1="140" x2="300" y2="154" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="150" y="154" width="300" height="44" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="300" y="176" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">② Redis 热点数据缓存</text>
+    <line x1="300" y1="198" x2="300" y2="212" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="120" y="212" width="360" height="44" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.2"/>
+    <text x="300" y="234" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">③ MySQL 持久化存储</text>
+
+    <text x="520" y="118" dominant-baseline="central" font-size="12" fill="#1d4ed8">① CDN：静态页面在这里就被拦下了</text>
+    <text x="520" y="176" dominant-baseline="central" font-size="12" fill="#b45309">② Redis：商品 / 订单等热点查询被拦下</text>
+    <text x="520" y="234" dominant-baseline="central" font-size="12" fill="#047857">③ MySQL：只承担真正需要落库的请求</text>
+    <text x="520" y="270" dominant-baseline="central" font-size="12" fill="#0f172a">⭐ 一万个请求进来，打到 DB 的可能不到 100 个。</text>
+  </g>
+
+  <g transform="translate(20,605)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">③ 引入缓存的代价：加了缓存，就必须为它的失效准备兜底</text>
+
+    <text x="24" y="70" font-size="12.5" fill="#334155">加了一层缓存后，应用的请求量本身已远超 MySQL 的承受能力 ——</text>
+    <text x="24" y="98" font-size="12.5" fill="#334155">一旦缓存层出问题，所有请求会直接砸到 MySQL，数据库会立刻崩溃。</text>
+    <text x="24" y="134" font-size="12.5" fill="#b45309">⭐ 所以必须同时考虑三大经典问题：缓存穿透 / 缓存击穿 / 缓存雪崩。</text>
+    <text x="24" y="170" font-size="12.5" fill="#0f172a">这就是「用缓存」和「会缓存」的区别 —— 加缓存必须配兜底方案。</text>
+  </g>
+</svg>

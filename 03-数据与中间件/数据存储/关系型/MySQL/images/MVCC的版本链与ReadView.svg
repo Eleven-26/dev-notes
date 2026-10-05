@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 666" width="1000" height="666" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="666" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">MVCC：隐藏列 + undo 版本链 + Read View</text>
+  <text x="500" y="50" text-anchor="middle" font-size="13" fill="#64748b">读的时候沿版本链找到第一个「对本事务可见」的版本，全程不加锁</text>
+
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#047857"/>
+    </marker>
+  </defs>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">版本链：DB_ROLL_PTR 把「当前行」串到 undo 里的旧版本</text>
+
+    <rect x="16" y="44" width="200" height="64" rx="6" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="116" y="68" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1d4ed8">当前行（最新）</text>
+    <text x="116" y="90" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#1d4ed8">trx_id=105  k=30</text>
+
+    <line x1="218" y1="76" x2="248" y2="76" stroke="#047857" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="256" y="44" width="200" height="64" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="356" y="68" text-anchor="middle" font-size="11.5" fill="#047857">undo 版本 1</text>
+    <text x="356" y="90" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#047857">trx_id=103  k=20</text>
+
+    <line x1="458" y1="76" x2="488" y2="76" stroke="#047857" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="496" y="44" width="200" height="64" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="596" y="68" text-anchor="middle" font-size="11.5" fill="#047857">undo 版本 2</text>
+    <text x="596" y="90" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#047857">trx_id=101  k=10</text>
+
+    <line x1="698" y1="76" x2="728" y2="76" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+
+    <rect x="736" y="44" width="200" height="64" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="836" y="76" text-anchor="middle" font-size="11.5" fill="#64748b">… 更早的版本</text>
+
+    <text x="16" y="132" font-size="11.5" fill="#334155">每行有两个隐藏列：DB_TRX_ID（最后改这行的事务 ID）+ DB_ROLL_PTR（回滚指针，指向 undo 里的旧版本）。</text>
+    <text x="16" y="152" font-size="11.5" fill="#334155">⭐ DB_ROLL_PTR 把一个个旧版本串成「版本链」—— 这条链既是回滚素材，也是快照读要翻的历史。</text>
+  </g>
+
+  <g transform="translate(20,260)">
+    <rect x="0" y="0" width="960" height="216" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">Read View 的可见性判定：三分支</text>
+
+    <rect x="16" y="38" width="928" height="40" rx="4" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+    <text x="32" y="63" font-size="11.5" font-family="Consolas, monospace" fill="#047857">DB_TRX_ID &lt; min_trx_id</text>
+    <text x="440" y="63" font-size="11.5" fill="#047857">可见（在我开始之前就已提交）</text>
+    <text x="800" y="63" font-size="11.5" font-weight="bold" fill="#047857">→ 用这个版本</text>
+
+    <rect x="16" y="84" width="928" height="40" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+    <text x="32" y="109" font-size="11.5" font-family="Consolas, monospace" fill="#dc2626">DB_TRX_ID &gt;= max_trx_id</text>
+    <text x="440" y="109" font-size="11.5" fill="#dc2626">不可见（是之后才开始的事务写的）</text>
+    <text x="800" y="109" font-size="11.5" font-weight="bold" fill="#dc2626">→ 沿链往下找</text>
+
+    <rect x="16" y="130" width="928" height="40" rx="4" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+    <text x="32" y="155" font-size="11.5" font-family="Consolas, monospace" fill="#b45309">min_trx_id &lt;= DB_TRX_ID &lt; max_trx_id</text>
+    <text x="440" y="155" font-size="11.5" fill="#b45309">在活跃列表 m_ids 中 → 不可见；不在 → 可见</text>
+    <text x="800" y="155" font-size="11.5" font-weight="bold" fill="#b45309">→ 逐个判</text>
+
+    <text x="16" y="194" font-size="11.5" fill="#334155">⭐ 三步都不通过就顺着版本链取下一个旧版本，直到找到可见的那个 —— 这就是「快照读不加锁」的实现。</text>
+  </g>
+
+  <g transform="translate(20,496)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">RC 与 RR 的差别，只在 Read View 什么时候生成</text>
+
+    <rect x="16" y="42" width="456" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="68" font-size="12.5" font-weight="bold" fill="#1d4ed8">读已提交（RC）</text>
+    <text x="32" y="94" font-size="11.5" fill="#334155">每次 SELECT 都重新生成 Read View</text>
+    <text x="32" y="118" font-size="11.5" fill="#334155">→ 能读到别的事务刚提交的新数据</text>
+
+    <rect x="488" y="42" width="456" height="92" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="504" y="68" font-size="12.5" font-weight="bold" fill="#047857">可重复读（RR，默认）</text>
+    <text x="504" y="94" font-size="11.5" fill="#334155">事务内第一次 SELECT 生成一次，之后复用</text>
+    <text x="504" y="118" font-size="11.5" fill="#334155">→ 整个事务看到同一个快照</text>
+  </g>
+</svg>

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 840" width="1000" height="840" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="840" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">分片键的三个目标互相冲突，range 与 hashed 各有取舍</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">写吞吐摊平、查询可剪枝、不产生热点三者不能同时最优 —— 实操顺序是先列访问模式再查基数</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="215" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">三个目标与彼此的冲突</text>
+
+    <rect x="20" y="44" width="920" height="34" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">目标</text>
+    <text x="234" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">想要什么</text>
+    <text x="534" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">倾向的键</text>
+    <text x="734" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">与谁冲突</text>
+
+    <rect x="20" y="78" width="920" height="42" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="104" font-size="12" fill="#334155">写吞吐摊平</text>
+    <text x="234" y="104" font-size="12" fill="#334155">新写均匀落到所有分片</text>
+    <text x="534" y="104" font-size="12" fill="#334155">高基数、近随机</text>
+    <text x="734" y="104" font-size="12" fill="#b45309">与「查询可剪枝」冲突</text>
+
+    <rect x="20" y="120" width="920" height="42" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="146" font-size="12" fill="#334155">查询可剪枝</text>
+    <text x="234" y="146" font-size="12" fill="#334155">查询带片键 → 命中 1 个分片</text>
+    <text x="534" y="146" font-size="12" fill="#334155">查询主维度做前缀</text>
+    <text x="734" y="146" font-size="12" fill="#b45309">单调增长 → 热点</text>
+
+    <rect x="20" y="162" width="920" height="42" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="188" font-size="12" fill="#334155">不产生热点 / 可迁移</text>
+    <text x="234" y="188" font-size="12" fill="#334155">单个 chunk 不是写单点也不无限膨胀</text>
+    <text x="534" y="188" font-size="12" fill="#334155">分散且基数高的组合键</text>
+    <text x="734" y="188" font-size="12" fill="#b45309">与「按时间归档扫」冲突</text>
+  </g>
+
+  <g transform="translate(20,300)">
+    <rect x="0" y="0" width="960" height="185" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">实操顺序：先列访问模式，再查基数</text>
+
+    <rect x="24" y="44" width="24" height="24" rx="4" fill="#1d4ed8"/>
+    <text x="36" y="61" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">1</text>
+    <text x="58" y="61" font-size="12.5" fill="#334155">列出访问最频繁的 2~3 类查询，看哪个字段几乎每次都出现在 filter 里</text>
+
+    <rect x="24" y="76" width="24" height="24" rx="4" fill="#1d4ed8"/>
+    <text x="36" y="93" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">2</text>
+    <text x="58" y="93" font-size="12.5" fill="#334155">检查它是否单调 / 低基数（是 → 加打散维度或改 hash）</text>
+
+    <rect x="24" y="108" width="24" height="24" rx="4" fill="#1d4ed8"/>
+    <text x="36" y="125" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">3</text>
+    <text x="58" y="125" font-size="12.5" fill="#334155">确认单个 chunk 不会塞下「无限增长的一个用户 / 租户」—— 片键基数低就会倾斜且 balancer 搬不动</text>
+
+    <text x="20" y="166" font-size="12" fill="#64748b">一句话：片键是建模决策 —— 改了要换集合，所以「未来两年主要查询维度」要在建模时就想好。</text>
+  </g>
+
+  <g transform="translate(20,510)">
+    <rect x="0" y="0" width="960" height="310" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">range（默认）与 hashed 的取舍</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">hashed 打散最彻底，代价是范围查询全广播</text>
+
+    <rect x="20" y="62" width="920" height="32" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="83" font-size="12.5" font-weight="bold" fill="#0f172a">对比</text>
+    <text x="234" y="83" font-size="12.5" font-weight="bold" fill="#1d4ed8">range（默认）</text>
+    <text x="594" y="83" font-size="12.5" font-weight="bold" fill="#047857">hashed</text>
+
+    <rect x="20" y="94" width="920" height="34" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">范围查询</text>
+    <text x="234" y="116" font-size="12" fill="#047857">✅ 定向到区间覆盖的分片</text>
+    <text x="594" y="116" font-size="12" fill="#dc2626">❌ 广播（键相邻在 hash 空间无意义）</text>
+
+    <rect x="20" y="128" width="920" height="34" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="150" font-size="12" fill="#334155">等值查询</text>
+    <text x="234" y="150" font-size="12" fill="#047857">✅ 定向</text>
+    <text x="594" y="150" font-size="12" fill="#047857">✅ 定向（hash 值确定 → 单分片）</text>
+
+    <rect x="20" y="162" width="920" height="34" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="184" font-size="12" fill="#334155">写入分布</text>
+    <text x="234" y="184" font-size="12" fill="#dc2626">单调键 → 尾部热点</text>
+    <text x="594" y="184" font-size="12" fill="#047857">✅ 均匀，但须建 { key: "hashed" } 索引 + 预分片</text>
+
+    <rect x="20" y="196" width="920" height="34" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="218" font-size="12" fill="#334155">chunk 语义</text>
+    <text x="234" y="218" font-size="12" fill="#334155">真实业务键区间，可按区间预分片</text>
+    <text x="594" y="218" font-size="12" fill="#334155">hash 空间区间，手工合并 / 拆分意义不大</text>
+
+    <rect x="20" y="240" width="920" height="44" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+    <text x="36" y="260" font-size="12" fill="#dc2626">⚠️ ObjectId / 时间戳 / 自增 ID 做片键 = 所有新写落在最大区间的同一个 chunk，该分片独扛写入并不断 split + 迁移。</text>
+    <text x="36" y="278" font-size="12" fill="#dc2626">现象是「一个分片磁盘 IO 打满、其余空闲、balancer 日志刷不停」—— 这是建模错误，不是调度参数能治的。</text>
+
+    <text x="20" y="302" font-size="12" fill="#334155">打散手段按侵入性排序：hashed 片键 → 复合片键带高基数维度（{city, createdAt}）→ 加盐 / 后缀（查询侧必须能算出同一个键）。</text>
+  </g>
+</svg>

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Redis 分布式锁：加锁 → 续期 → 释放的时序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">原理一句话就讲完（SETNX + 过期 + Lua 释放），真正要覆盖的是下面六个真实故障点</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="280" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一次正常的加锁—续期—释放</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">左：持锁节点；右：Redis（key 就是锁，value 是节点唯一标识 uid）</text>
+
+    <rect x="170" y="68" width="160" height="30" rx="6" fill="#1d4ed8"/>
+    <text x="250" y="88" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">节点 A</text>
+    <rect x="670" y="68" width="160" height="30" rx="6" fill="#dc2626"/>
+    <text x="750" y="88" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">Redis</text>
+    <line x1="250" y1="98" x2="250" y2="238" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <line x1="750" y1="98" x2="750" y2="238" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4"/>
+
+    <line x1="254" y1="124" x2="746" y2="124" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="262" y="118" font-size="12" fill="#334155">① SET key ⟨uid⟩ NX PX 5000 → OK（一次调用完成加锁 + 过期）</text>
+
+    <line x1="254" y1="156" x2="746" y2="156" stroke="#047857" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="262" y="150" font-size="12" fill="#334155">② 看门狗每 ttl/2 发 PEXPIRE 续期（剩余不足一半就续回）</text>
+
+    <line x1="254" y1="188" x2="746" y2="188" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="262" y="182" font-size="12" fill="#334155">③ 临界区结束 → Lua：GET==uid ? DEL : 0（判断 + 删除原子）</text>
+
+    <line x1="746" y1="220" x2="254" y2="220" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arwR)"/>
+    <text x="262" y="214" font-size="12" fill="#334155">④ 节点 B 抢锁：SET NX → nil（锁在 A 手上）→ 随机 50~200ms 后重试</text>
+
+    <text x="16" y="262" font-size="12.5" fill="#b45309">⭐ 若 A 宕机：续期协程随之消失 → TTL 自然到期释放锁 ——「宕机节点不会长期占锁」正是续期设计的良性副作用。</text>
+  </g>
+
+  <g transform="translate(20,370)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#dc2626">⚠️ 最经典的坑：解锁误删了别人的锁（问题⑤）</text>
+
+    <text x="16" y="64" font-size="12.5" fill="#334155">① A 加锁，TTL 到期被自动删除</text>
+    <text x="16" y="90" font-size="12.5" fill="#334155">② B 加锁成功（此刻锁属于 B）</text>
+    <text x="16" y="116" font-size="12.5" fill="#dc2626">③ A 才「反应过来」执行 DEL → 删了 B 的锁 ❌</text>
+    <text x="16" y="150" font-size="12.5" fill="#047857">⭐ 解法：value 存节点唯一标识（UID），删除前先比对</text>
+    <text x="16" y="174" font-size="12" fill="#64748b">⚠️ 先 GET 再 DEL 两步会被并发插入 → 必须用 Lua 保证原子</text>
+
+    <rect x="500" y="52" width="444" height="122" rx="6" fill="#0f172a"/>
+    <text x="516" y="78" font-size="11.5" font-family="Consolas, monospace" fill="#e2e8f0">if redis.call('get', KEYS[1]) == ARGV[1] then</text>
+    <text x="516" y="102" font-size="11.5" font-family="Consolas, monospace" fill="#e2e8f0">    return redis.call('del', KEYS[1])</text>
+    <text x="516" y="126" font-size="11.5" font-family="Consolas, monospace" fill="#e2e8f0">else</text>
+    <text x="516" y="150" font-size="11.5" font-family="Consolas, monospace" fill="#86efac">    return 0        -- 不是自己的锁，绝不删</text>
+  </g>
+
+  <g transform="translate(20,580)">
+    <rect x="0" y="0" width="960" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">必须考虑的六个问题（按重要度取舍，不必全上）</text>
+
+    <rect x="16" y="46" width="300" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="30" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">① 重试要有间隔</text>
+    <text x="30" y="88" font-size="11.5" fill="#334155">随机 50~200ms 打散，</text>
+    <text x="30" y="106" font-size="11.5" fill="#334155">否则失败节点狂轰 Redis</text>
+
+    <rect x="326" y="46" width="300" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="340" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">② 必须设 TTL</text>
+    <text x="340" y="88" font-size="11.5" fill="#334155">否则持锁节点宕机</text>
+    <text x="340" y="106" font-size="11.5" fill="#334155">→ 锁永远不释放</text>
+
+    <rect x="636" y="46" width="300" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="650" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">③ TTL 不够要续期</text>
+    <text x="650" y="88" font-size="11.5" fill="#334155">watchdog 续租；续期线程</text>
+    <text x="650" y="106" font-size="11.5" fill="#334155">随进程消失是良性副作用</text>
+
+    <rect x="16" y="124" width="300" height="70" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="30" y="144" font-size="12.5" font-weight="bold" fill="#1d4ed8">④ 业务要设超时</text>
+    <text x="30" y="166" font-size="11.5" fill="#334155">第三方一直无响应时</text>
+    <text x="30" y="184" font-size="11.5" fill="#334155">停止续期，避免锁永不放</text>
+
+    <rect x="326" y="124" width="300" height="70" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="340" y="144" font-size="12.5" font-weight="bold" fill="#dc2626">⑤ 解锁防误删</text>
+    <text x="340" y="166" font-size="11.5" fill="#334155">value 存 uid + Lua 校验，</text>
+    <text x="340" y="184" font-size="11.5" fill="#334155">只能删自己的锁</text>
+
+    <rect x="636" y="124" width="300" height="70" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.6"/>
+    <text x="650" y="144" font-size="12.5" font-weight="bold" fill="#b45309">⑥ 主从防脑裂</text>
+    <text x="650" y="166" font-size="11.5" fill="#334155">RedLock 多独立节点多数派；</text>
+    <text x="650" y="184" font-size="11.5" fill="#334155">时钟漂移/GC 使其有争议</text>
+  </g>
+
+</svg>

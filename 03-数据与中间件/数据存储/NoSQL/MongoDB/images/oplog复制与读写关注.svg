@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 925" width="1000" height="925" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="925" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">oplog 复制与读写关注：w 与 j 是两个维度</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">从节点存的是「幂等化之后的结果」；「写成功」由写关注决定，与读关注 / 读偏好是两回事</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">oplog 里存的是「结果」不是「操作」</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">主节点写本地数据后写 oplog，从节点按 ts 拉取回放；保证成序、幂等</text>
+
+    <rect x="30" y="72" width="190" height="52" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="125" y="94" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">Primary</text>
+    <text x="125" y="113" text-anchor="middle" font-size="11.5" fill="#334155">写数据 + 写 oplog</text>
+    <line x1="224" y1="98" x2="286" y2="98" stroke="#1d4ed8" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="255" y="88" text-anchor="middle" font-size="11" fill="#1d4ed8">oplog</text>
+    <rect x="290" y="72" width="190" height="52" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="385" y="94" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">Secondary</text>
+    <text x="385" y="113" text-anchor="middle" font-size="11.5" fill="#334155">按 ts 拉取并重放</text>
+
+    <rect x="530" y="68" width="400" height="60" rx="6" fill="#0f172a"/>
+    <text x="546" y="90" font-size="12" font-family="Consolas, Menlo, monospace" fill="#fca5a5">$inc: { n: 1 }   →   $set: { n: 37 }</text>
+    <text x="546" y="112" font-size="11.5" fill="#e2e8f0">非幂等操作被转成幂等形式再写入 oplog</text>
+
+    <text x="20" y="152" font-size="12" fill="#b45309">⚠️ 因此从节点是「结果一致」而非「操作一致」；oplog 是 local 库里固定大小的 capped collection，落后超过窗口只能全量重同步。</text>
+  </g>
+
+  <g transform="translate(20,260)">
+    <rect x="0" y="0" width="960" height="285" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">写关注（Write Concern）决定「写成功」的含义</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">写关注说的是「几个节点确认了这笔写」，与是否落盘（j）是两个正交维度</text>
+
+    <rect x="20" y="62" width="920" height="32" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="83" font-size="12.5" font-weight="bold" fill="#0f172a">取值</text>
+    <text x="234" y="83" font-size="12.5" font-weight="bold" fill="#0f172a">含义</text>
+    <text x="614" y="83" font-size="12.5" font-weight="bold" fill="#0f172a">取舍</text>
+
+    <rect x="20" y="94" width="920" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="115" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">w: 0</text>
+    <text x="234" y="115" font-size="12.5" fill="#334155">不等待确认</text>
+    <text x="614" y="115" font-size="12.5" fill="#334155">最快，最不安全</text>
+
+    <rect x="20" y="126" width="920" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="147" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">w: 1（默认）</text>
+    <text x="234" y="147" font-size="12.5" fill="#334155">主节点内存确认</text>
+    <text x="614" y="147" font-size="12.5" fill="#b45309">快；主节点宕机可能丢数据</text>
+
+    <rect x="20" y="158" width="920" height="32" fill="#ecfdf5" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="179" font-size="12" font-family="Consolas, Menlo, monospace" fill="#047857">w: majority ⭐</text>
+    <text x="234" y="179" font-size="12.5" fill="#047857">多数节点确认</text>
+    <text x="614" y="179" font-size="12.5" fill="#047857">抗切换、不会回滚；生产推荐</text>
+
+    <rect x="20" y="190" width="920" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="211" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">j: true</text>
+    <text x="234" y="211" font-size="12.5" fill="#334155">等待 Journal 落盘</text>
+    <text x="614" y="211" font-size="12.5" fill="#334155">抗断电，可与 w 叠加</text>
+
+    <rect x="20" y="222" width="920" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="243" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">wtimeout</text>
+    <text x="234" y="243" font-size="12.5" fill="#334155">超时时间</text>
+    <text x="614" y="243" font-size="12.5" fill="#334155">避免无限等待</text>
+
+    <text x="20" y="274" font-size="12" fill="#b45309">⚠️ 典型「读己之写」问题：写用 w:1、读走 secondary，会读到比刚写入更旧的数据。</text>
+  </g>
+
+  <g transform="translate(20,565)">
+    <rect x="0" y="0" width="960" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">读关注 / 读偏好，以及 w 与 j 的正交</text>
+
+    <text x="20" y="50" font-size="12.5" font-weight="bold" fill="#1d4ed8">Read Concern（读关注）</text>
+    <rect x="20" y="60" width="450" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="82" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">local</text>
+    <text x="214" y="82" font-size="12" fill="#b45309">默认；可能读到随后被回滚的数据</text>
+    <rect x="20" y="94" width="450" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">majority</text>
+    <text x="214" y="116" font-size="12" fill="#334155">只读已被多数派确认的数据</text>
+    <rect x="20" y="128" width="450" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="150" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">snapshot</text>
+    <text x="214" y="150" font-size="12" fill="#334155">快照隔离，配合事务使用</text>
+
+    <text x="490" y="50" font-size="12.5" font-weight="bold" fill="#047857">Read Preference（读偏好）</text>
+    <rect x="490" y="60" width="450" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="504" y="78" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">primary</text>
+    <text x="674" y="78" font-size="12" fill="#334155">默认，强一致</text>
+    <rect x="490" y="88" width="450" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="504" y="106" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">primaryPreferred</text>
+    <text x="674" y="106" font-size="12" fill="#334155">主优先，主不可用时读从</text>
+    <rect x="490" y="116" width="450" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="504" y="134" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">secondary</text>
+    <text x="674" y="134" font-size="12" fill="#b45309">从节点读；有复制延迟</text>
+    <rect x="490" y="144" width="450" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="504" y="162" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">secondaryPreferred</text>
+    <text x="674" y="162" font-size="12" fill="#334155">从优先，从不可用时读主</text>
+    <rect x="490" y="172" width="450" height="26" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="504" y="190" font-size="12" font-family="Consolas, Menlo, monospace" fill="#334155">nearest</text>
+    <text x="674" y="190" font-size="12" fill="#334155">按网络延迟就近选择</text>
+
+    <rect x="20" y="222" width="450" height="56" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="34" y="244" font-size="12.5" font-weight="bold" fill="#1d4ed8">w 管复制维度</text>
+    <text x="34" y="266" font-size="11.5" fill="#334155">几个节点应用了这笔写 → 抗「主宕机回滚」</text>
+
+    <rect x="490" y="222" width="450" height="56" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="504" y="244" font-size="12.5" font-weight="bold" fill="#b45309">j 管持久化维度</text>
+    <text x="504" y="266" font-size="11.5" fill="#334155">是否进了 journal → 抗「单机断电丢未刷盘」</text>
+
+    <text x="20" y="302" font-size="12" fill="#334155">⭐ 两者正交：w: majority 抗不住「多数成员同时断电」，j: true 也抗不住「主宕机时这笔写还没复制出去」→ 都抗住就是 w: majority, j: true。</text>
+    <text x="20" y="326" font-size="12" fill="#334155">因果一致性：会话记住写的 operationTime，读时带 afterClusterTime → 从节点须应用过该时间点才返回（保证「不比自己旧」，非「全局最新」）。</text>
+  </g>
+</svg>

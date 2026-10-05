@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 925" width="1000" height="925" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#047857"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="925" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">因果集群：Core 管写、Read Replica 管读，职责不重叠</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ 写走 Core 的 Raft 多数派；Read Replica 异步追上，扩的是读、不提升写</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">Causal Clustering 拓扑（3.1 起；替代 3.5 起弃用的 HA 集群）</text>
+
+    <text x="30" y="72" font-size="12.5" font-weight="bold" fill="#b45309">写请求</text>
+    <line x1="86" y1="68" x2="196" y2="68" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="200" y="46" width="560" height="86" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="480" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">Core 集群（奇数台，Raft 共识，多数派确认才提交）</text>
+    <rect x="220" y="80" width="160" height="38" rx="5" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="300" y="104" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">C1</text>
+    <rect x="400" y="80" width="160" height="38" rx="5" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="480" y="104" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">C2</text>
+    <rect x="580" y="80" width="160" height="38" rx="5" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="660" y="104" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">C3</text>
+
+    <line x1="300" y1="132" x2="300" y2="166" stroke="#047857" stroke-width="1.4" marker-end="url(#arwG)"/>
+    <line x1="480" y1="132" x2="480" y2="166" stroke="#047857" stroke-width="1.4" marker-end="url(#arwG)"/>
+    <line x1="660" y1="132" x2="660" y2="166" stroke="#047857" stroke-width="1.4" marker-end="url(#arwG)"/>
+    <text x="690" y="152" font-size="11" fill="#64748b">事务日志（异步复制）</text>
+
+    <rect x="180" y="170" width="200" height="52" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1.2"/>
+    <text x="280" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">Read Replica</text>
+    <text x="280" y="212" text-anchor="middle" font-size="11" fill="#334155">只读，随时可加</text>
+    <rect x="400" y="170" width="200" height="52" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1.2"/>
+    <text x="500" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">Read Replica</text>
+    <text x="500" y="212" text-anchor="middle" font-size="11" fill="#334155">只读，随时可加</text>
+    <rect x="620" y="170" width="200" height="52" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1.2"/>
+    <text x="720" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">Read Replica</text>
+    <text x="720" y="212" text-anchor="middle" font-size="11" fill="#334155">只读，随时可加</text>
+
+    <line x1="300" y1="222" x2="300" y2="244" stroke="#b45309" stroke-width="1.4"/>
+    <line x1="300" y1="244" x2="120" y2="244" stroke="#b45309" stroke-width="1.4"/>
+    <line x1="120" y1="244" x2="120" y2="258" stroke="#b45309" stroke-width="1.4" marker-end="url(#arw)"/>
+    <text x="140" y="262" font-size="11.5" fill="#b45309">读请求（driver 路由）</text>
+
+    <text x="20" y="284" font-size="12" fill="#334155">⭐ 写请求只进 Core，多数派（N/2+1）确认后才算提交；Read Replica 异步追上，可水平扩读、不阻塞提交。</text>
+  </g>
+
+  <g transform="translate(20,385)">
+    <rect x="0" y="0" width="960" height="265" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">Core 与 Read Replica 的职责划分</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="280" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">Core</text>
+    <text x="620" y="62" font-size="12.5" font-weight="bold" fill="#047857">Read Replica</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155">读写</text>
+    <text x="280" y="90" font-size="12" fill="#334155">读 + 写</text>
+    <text x="620" y="90" font-size="12" fill="#334155">只读</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">参与投票</text>
+    <text x="280" y="116" font-size="12" fill="#1d4ed8">✅ 参与 Raft 共识</text>
+    <text x="620" y="116" font-size="12" fill="#334155">❌ 不投票</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">阻塞提交</text>
+    <text x="280" y="142" font-size="12" fill="#334155">✅ 多数派确认才算提交</text>
+    <text x="620" y="142" font-size="12" fill="#334155">❌ 异步追上即可，不阻塞</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="12" fill="#334155">数量建议</text>
+    <text x="280" y="168" font-size="12" fill="#b45309">3 或 5（奇数）</text>
+    <text x="620" y="168" font-size="12" fill="#334155">任意，按读 QPS 加</text>
+
+    <rect x="20" y="176" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="194" font-size="12" fill="#334155">故障影响</text>
+    <text x="280" y="194" font-size="12" fill="#dc2626">失去多数派则不可写</text>
+    <text x="620" y="194" font-size="12" fill="#334155">只影响读容量，写不受影响</text>
+
+    <text x="20" y="226" font-size="12" fill="#334155">两种角色职责不重叠：Core 读 + 写 + 投票，Read Replica 只读、不投票、不阻塞提交确认。</text>
+    <text x="20" y="250" font-size="12" fill="#b45309">⚠️ 扩读加 Read Replica 最简单；扩写可用性要加 Core，法定人数会变（3 → 5 容忍 2 台），须一次性规划。</text>
+  </g>
+
+  <g transform="translate(20,665)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">Core 数量为什么推荐奇数？</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">台数</text>
+    <text x="280" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">多数派 N/2+1</text>
+    <text x="560" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">容忍故障</text>
+    <text x="760" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">结论</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155">3 台</text>
+    <text x="280" y="90" font-size="12" fill="#334155">2</text>
+    <text x="560" y="90" font-size="12" fill="#334155">1 台</text>
+    <text x="760" y="90" font-size="12" fill="#047857">✅ 推荐</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">4 台</text>
+    <text x="280" y="116" font-size="12" fill="#334155">3</text>
+    <text x="560" y="116" font-size="12" fill="#334155">1 台</text>
+    <text x="760" y="116" font-size="12" fill="#b45309">⚠️ 与 3 台一样，但更贵</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">5 台</text>
+    <text x="280" y="142" font-size="12" fill="#334155">3</text>
+    <text x="560" y="142" font-size="12" fill="#334155">2 台</text>
+    <text x="760" y="142" font-size="12" fill="#047857">✅ 推荐</text>
+
+    <text x="20" y="174" font-size="12" fill="#334155">⭐ 「推荐 3 或 5」的全部理由就是这条：4 台和 3 台同样只容忍 1 台故障，多花的钱没换来容错。</text>
+    <text x="20" y="198" font-size="12" fill="#b45309">⚠️ 脑裂防护靠多数派：少数派分区里的 Core 拿不到 N/2+1 确认，因此停止接受写，而不是各写各的。</text>
+    <text x="20" y="222" font-size="12" fill="#64748b">代价是「少数派整体不可写」—— 这正是 CAP 里选择 CP 的表现。</text>
+  </g>
+</svg>

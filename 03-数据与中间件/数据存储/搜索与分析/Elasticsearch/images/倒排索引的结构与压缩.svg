@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">倒排索引的两件套：词典定位词项，倒排表给出文档</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">结构是「词 → 文档」；下方倒排表项来自本机 elasticsearch:8.19.0 的 _termvectors 实测</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、方向反了，代价就反了</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">要回答「哪些文档含有 index」：正排只能逐篇扫；倒排直接取出 index 的文档列表</text>
+
+    <rect x="20" y="70" width="450" height="126" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="94" font-size="13.5" font-weight="bold" fill="#b45309">正排索引　文档 → 内容</text>
+    <text x="36" y="118" font-size="12.5" fill="#334155">doc1 → "inverted index inverted index 倒排索引"</text>
+    <text x="36" y="140" font-size="12.5" fill="#334155">doc2 → "… 倒排表压缩 …"</text>
+    <text x="36" y="166" font-size="12.5" fill="#dc2626">判断「哪些文档含 index」→ 逐篇扫全文 O(N)</text>
+
+    <rect x="490" y="70" width="450" height="126" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="94" font-size="13.5" font-weight="bold" fill="#047857">倒排索引　词 → 文档列表</text>
+    <text x="506" y="118" font-size="12.5" fill="#334155">index　　 → doc1（tf=2，pos 1,3）</text>
+    <text x="506" y="140" font-size="12.5" fill="#334155">inverted　→ doc1（tf=2，pos 0,2）</text>
+    <text x="506" y="166" font-size="12.5" fill="#047857">定位词项 → 取列表 → 多条件求交 / 求并</text>
+  </g>
+
+  <g transform="translate(20,300)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、词典（term dictionary）+ 倒排表（posting list）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">词典管「词项在不在、在哪」，倒排表管「这个词项命中了哪些文档」</text>
+
+    <rect x="20" y="70" width="450" height="112" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="94" font-size="13.5" font-weight="bold" fill="#1d4ed8">词典：有序 + FST</text>
+    <text x="36" y="118" font-size="12.5" fill="#334155">把有序词表压成最小无环有限状态机</text>
+    <text x="36" y="140" font-size="12.5" fill="#334155">公共前后缀只存一份，前缀查询可直接沿着跑</text>
+    <text x="36" y="164" font-size="12.5" fill="#64748b">FST 形态见「并查集、Trie与一致性哈希.md」</text>
+
+    <rect x="490" y="70" width="450" height="112" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="94" font-size="13.5" font-weight="bold" fill="#047857">倒排表：term → 有序 docId 列表</text>
+    <text x="506" y="118" font-size="12.5" fill="#334155">每一项还记 tf、position、字符偏移</text>
+    <text x="506" y="140" font-size="12.5" fill="#334155">inverted → doc1，tf=2，pos [0,2]</text>
+    <text x="506" y="164" font-size="12.5" fill="#64748b">位置用于 match_phrase 判断词序</text>
+  </g>
+
+  <g transform="translate(20,520)">
+    <rect x="0" y="0" width="960" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、长倒排表：先压小，再让求交能整块跳</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">倒排表是递增的文档 ID 序列 —— 直接存 4 字节整数很浪费</text>
+
+    <rect x="20" y="70" width="290" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="34" y="92" font-size="13" font-weight="bold" fill="#1d4ed8">① 差分编码 delta</text>
+    <text x="34" y="114" font-size="12" fill="#334155">1 7 20 21 100</text>
+    <text x="34" y="134" font-size="12" fill="#334155">→ 1 6 13 1 79（差值更小）</text>
+
+    <rect x="330" y="70" width="300" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="344" y="92" font-size="13" font-weight="bold" fill="#1d4ed8">② 分块位压缩 FoR</text>
+    <text x="344" y="114" font-size="12" fill="#334155">一整块按该块最大值的位宽</text>
+    <text x="344" y="134" font-size="12" fill="#334155">统一编码（Frame of Reference）</text>
+
+    <rect x="650" y="70" width="290" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="664" y="92" font-size="13" font-weight="bold" fill="#b45309">③ 跳表式跳转</text>
+    <text x="664" y="114" font-size="12" fill="#334155">每 128 个文档一块存跳转信息</text>
+    <text x="664" y="134" font-size="12" fill="#334155">求交可整块跳过（结构不是跳表）</text>
+  </g>
+
+</svg>

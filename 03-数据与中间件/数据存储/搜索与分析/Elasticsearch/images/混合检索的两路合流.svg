@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">混合检索：关键词一路 + 向量一路，再合流</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">纯向量会在 SKU / 订单号 / 错误码上翻车；纯关键词处理不了同义词与语义泛化</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、为什么必须混合：两路各有硬伤</text>
+
+    <rect x="20" y="56" width="450" height="90" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="80" font-size="13" font-weight="bold" fill="#dc2626">纯向量：精确串会被「语义化」</text>
+    <text x="36" y="104" font-size="12.5" fill="#334155">查商品 SKU / 订单号 / 错误码</text>
+    <text x="36" y="126" font-size="12.5" fill="#334155">可能给出「意思相近但不对」的结果</text>
+
+    <rect x="490" y="56" width="450" height="90" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="80" font-size="13" font-weight="bold" fill="#1d4ed8">纯关键词：处理不了语义泛化</text>
+    <text x="506" y="104" font-size="12.5" fill="#334155">同义词、错别字、跨语言都会漏</text>
+    <text x="506" y="126" font-size="12.5" fill="#334155">量化掉的召回只能靠它这一路补</text>
+  </g>
+
+  <g transform="translate(20,250)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、三种合流方式与 license 边界</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">rrf 只看排名不看分数，两路分数尺度不同也不用归一化 —— 这是它最大的工程价值，也是它按 license 计费的原因</text>
+
+    <rect x="20" y="66" width="920" height="104" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="20" y1="100" x2="940" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="20" y1="134" x2="940" y2="134" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="40" y="90" font-size="12.5" font-weight="bold" fill="#334155">bool + 顶层 knn</text>
+    <text x="340" y="90" font-size="12.5" fill="#047857">✅ 免费</text>
+    <text x="480" y="90" font-size="12.5" fill="#334155">最省事：两路各取一部分，按加权分合并</text>
+
+    <text x="40" y="124" font-size="12.5" font-weight="bold" fill="#334155">linear retriever</text>
+    <text x="340" y="124" font-size="12.5" fill="#b45309">⚠️ 需订阅</text>
+    <text x="480" y="124" font-size="12.5" fill="#334155">需要显式控制两路权重</text>
+
+    <text x="40" y="158" font-size="12.5" font-weight="bold" fill="#334155">rrf retriever</text>
+    <text x="340" y="158" font-size="12.5" fill="#b45309">⚠️ 需订阅</text>
+    <text x="480" y="158" font-size="12.5" fill="#334155">只看排名融合，不用调分数归一化</text>
+
+    <text x="36" y="192" font-size="12.5" fill="#dc2626">本机实测：basic license 上 retriever.rrf 直接 403（license is non-compliant for [RRF]）</text>
+  </g>
+
+  <g transform="translate(20,470)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、免费版的写法与召回实测</text>
+
+    <rect x="20" y="48" width="920" height="64" rx="8" fill="#0f172a"/>
+    <text x="36" y="74" font-size="12" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">{ "size": 5, "query": { "match": { "t": "keyword7" } },</text>
+    <text x="36" y="98" font-size="12" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">  "knn": { "field": "v", "query_vector": [...], "k": 10, "num_candidates": 100, "boost": 0.5 } }</text>
+
+    <text x="36" y="140" font-size="12.5" fill="#334155">召回实测（3000 条 × 384 维、32 簇、30 次查询）：</text>
+    <text x="52" y="164" font-size="12.5" fill="#334155">flat 1.000 / 16.12ms　｜　hnsw 1.000 / 15.82ms　｜　int8_hnsw 无 rescore 0.620 → 加 oversample:3 为 1.000</text>
+    <text x="52" y="186" font-size="12.5" fill="#334155">bbq_hnsw 默认 oversample:3 → 0.997　｜　⚠️ 3000 条量不出 ANN 的性能收益（12~20ms 都在噪声内）</text>
+  </g>
+
+</svg>

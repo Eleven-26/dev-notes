@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两阶段提交：redo 与 binlog 怎么保持一致</text>
+  <text x="500" y="50" text-anchor="middle" font-size="13" fill="#64748b">两套独立日志必须「要么都写、要么都不写」，否则下游会多出或少掉事务</text>
+
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">一次 COMMIT 被拆成三步</text>
+
+    <rect x="16" y="44" width="928" height="46" rx="6" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="32" y="73" font-size="12" fill="#1d4ed8">① prepare：写 redo log，并在其中打上 prepare 标记</text>
+    <text x="600" y="73" font-size="12" fill="#1d4ed8">此刻：已准备好但未提交</text>
+
+    <line x1="480" y1="94" x2="480" y2="106" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="16" y="108" width="928" height="46" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="32" y="137" font-size="12" fill="#7c3aed">② 写 binlog：把事务的 binlog 完整写入磁盘</text>
+    <text x="600" y="137" font-size="12" fill="#7c3aed">此刻：binlog 已完整</text>
+
+    <line x1="480" y1="158" x2="480" y2="170" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="16" y="172" width="928" height="46" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="32" y="201" font-size="12" fill="#047857">③ commit：在 redo log 中写入 commit 标记</text>
+    <text x="600" y="201" font-size="12" fill="#047857">此刻：事务真正提交</text>
+  </g>
+
+  <g transform="translate(20,318)">
+    <rect x="0" y="0" width="960" height="202" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">崩溃恢复的判据只有一条：binlog 完不完整</text>
+
+    <rect x="16" y="38" width="928" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">redo 的状态</text>
+    <text x="300" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">binlog 的状态</text>
+    <text x="560" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">结论</text>
+    <text x="660" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">为什么</text>
+
+    <rect x="16" y="64" width="928" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="86" font-size="11.5" fill="#334155">有 prepare、无 commit</text>
+    <text x="300" y="86" font-size="11.5" fill="#047857">完整</text>
+    <text x="560" y="86" font-size="11.5" font-weight="bold" fill="#047857">提交</text>
+    <text x="660" y="86" font-size="11" fill="#334155">binlog 已落地，回滚会让从库多一个事务</text>
+
+    <rect x="16" y="98" width="928" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="120" font-size="11.5" fill="#334155">有 prepare、无 commit</text>
+    <text x="300" y="120" font-size="11.5" fill="#dc2626">不完整 / 缺失</text>
+    <text x="560" y="120" font-size="11.5" font-weight="bold" fill="#dc2626">回滚</text>
+    <text x="660" y="120" font-size="11" fill="#334155">下游没收到，提交了也没人知道</text>
+
+    <rect x="16" y="132" width="928" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="154" font-size="11.5" fill="#334155">有 commit 标记</text>
+    <text x="300" y="154" font-size="11.5" fill="#64748b">无所谓</text>
+    <text x="560" y="154" font-size="11.5" font-weight="bold" fill="#047857">提交</text>
+    <text x="660" y="154" font-size="11" fill="#334155">已经是终态</text>
+
+    <text x="16" y="190" font-size="11.5" fill="#b45309">⚠️ 生产（尤其金融、订单）一律配「双 1」：innodb_flush_log_at_trx_commit=1 + sync_binlog=1；</text>
+  </g>
+</svg>

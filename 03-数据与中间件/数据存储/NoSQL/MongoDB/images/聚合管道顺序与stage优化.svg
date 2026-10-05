@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 795" width="1000" height="795" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="795" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">聚合管道的执行模型与 stage 顺序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">文档流依次穿过 stage，所以优化只有两个方向：让更少的文档进入下游、让每个 stage 少占内存</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">聚合的执行模型：文档流依次穿过 stage</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">下面标注的是「流到该 stage 时的文档量」—— $unwind 会把量放大，$limit 会截断</text>
+
+    <rect x="30" y="80" width="150" height="52" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="105" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">$match</text>
+    <text x="105" y="122" text-anchor="middle" font-size="11" fill="#334155">命中索引的入口</text>
+    <line x1="184" y1="106" x2="206" y2="106" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <rect x="210" y="80" width="150" height="52" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="285" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">$unwind</text>
+    <text x="285" y="122" text-anchor="middle" font-size="11" fill="#334155">1 个 → N 个</text>
+    <line x1="364" y1="106" x2="386" y2="106" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <rect x="390" y="80" width="150" height="52" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="465" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">$group</text>
+    <text x="465" y="122" text-anchor="middle" font-size="11" fill="#334155">阻塞型，攒内存</text>
+    <line x1="544" y1="106" x2="566" y2="106" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <rect x="570" y="80" width="150" height="52" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="645" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">$sort</text>
+    <text x="645" y="122" text-anchor="middle" font-size="11" fill="#334155">阻塞型</text>
+    <line x1="724" y1="106" x2="746" y2="106" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <rect x="750" y="80" width="150" height="52" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="825" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">$limit</text>
+    <text x="825" y="122" text-anchor="middle" font-size="11" fill="#334155">截断</text>
+
+    <text x="105" y="152" text-anchor="middle" font-size="11.5" fill="#334155">10 万</text>
+    <text x="285" y="152" text-anchor="middle" font-size="11.5" fill="#dc2626">200 万</text>
+    <text x="465" y="152" text-anchor="middle" font-size="11.5" fill="#dc2626">200 万</text>
+    <text x="645" y="152" text-anchor="middle" font-size="11.5" fill="#334155">top-k</text>
+    <text x="825" y="152" text-anchor="middle" font-size="11.5" fill="#334155">50</text>
+
+    <text x="20" y="182" font-size="12" fill="#334155">⭐ 数组平均长度 20 时，「10 万订单」进入 $group 就是 200 万文档 —— 放大发生在 $unwind 之后。</text>
+    <text x="20" y="206" font-size="12" fill="#b45309">⚠️ 阻塞型 stage（$group / $sort / $lookup 缓冲）有单 stage 内存上限，超了直接报错而不是变慢。</text>
+  </g>
+
+  <g transform="translate(20,315)">
+    <rect x="0" y="0" width="960" height="245" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">顺序自己写对：跨 $unwind / $group / $lookup 的过滤，优化器不会硬推</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">优化器只在能证明语义等价时才下推 $match / $project</text>
+
+    <rect x="20" y="64" width="450" height="160" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="34" y="86" font-size="12.5" font-weight="bold" fill="#dc2626">❌ 反例：$unwind 在前、$match 在后</text>
+    <rect x="32" y="96" width="426" height="76" rx="5" fill="#0f172a"/>
+    <text x="44" y="116" font-size="11" font-family="Consolas, Menlo, monospace" fill="#fca5a5">{ $unwind: "$items" }</text>
+    <text x="44" y="136" font-size="11" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">{ $match: { status:"PAID", "items.qty":{$gt:5} } }</text>
+    <text x="44" y="156" font-size="11" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">{ $group: { _id:"$items.sku", n:{$sum:1} } }</text>
+    <text x="34" y="196" font-size="11.5" fill="#dc2626">全集合先进管道再筛，索引完全接不上。</text>
+    <text x="34" y="214" font-size="11.5" fill="#64748b">$match 里 $unwind 之后才有意义的字段条件，前移就改变结果。</text>
+
+    <rect x="490" y="64" width="450" height="160" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1.4"/>
+    <text x="504" y="86" font-size="12.5" font-weight="bold" fill="#047857">✅ 正例：先落索引过滤 → 收窄字段 → 再展开</text>
+    <rect x="502" y="96" width="426" height="76" rx="5" fill="#0f172a"/>
+    <text x="514" y="116" font-size="11" font-family="Consolas, Menlo, monospace" fill="#86efac">{ $match: { status:"PAID", createdAt:{$gte:...} } }</text>
+    <text x="514" y="136" font-size="11" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">{ $project: { status:1, "items.sku":1, "items.qty":1 } }</text>
+    <text x="514" y="156" font-size="11" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">{ $unwind } → { $match } → { $group } → { $sort }</text>
+    <text x="504" y="196" font-size="11.5" fill="#047857">命中 {status, createdAt} 索引，展开的只是筛后的小部分。</text>
+    <text x="504" y="214" font-size="11.5" fill="#64748b">$project 只留必要字段 → 减少每文档体积。</text>
+  </g>
+
+  <g transform="translate(20,580)">
+    <rect x="0" y="0" width="960" height="195" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">能被索引接住的入口 stage 很有限</text>
+
+    <rect x="30" y="44" width="200" height="56" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="130" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">$match</text>
+    <text x="130" y="88" text-anchor="middle" font-size="11" fill="#334155">等价于 find 的 filter</text>
+    <rect x="250" y="44" width="230" height="56" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="365" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">$geoNear</text>
+    <text x="365" y="88" text-anchor="middle" font-size="11" fill="#334155">必须在管道最前</text>
+    <rect x="500" y="44" width="230" height="56" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="615" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">$sort</text>
+    <text x="615" y="88" text-anchor="middle" font-size="11" fill="#334155">与 $match 组合成 ESR 时</text>
+    <rect x="750" y="44" width="180" height="56" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.4"/>
+    <text x="840" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">$limit</text>
+    <text x="840" y="88" text-anchor="middle" font-size="11" fill="#334155">可提前截断</text>
+
+    <text x="20" y="130" font-size="12" fill="#b45309">⚠️ 放在 $group 之后的任何过滤都只发生在内存里。</text>
+    <text x="20" y="154" font-size="12" fill="#334155">$sort + $limit 会被优化器合成 top-k（有索引顺序时不真的排序）；$sort 必须带唯一兜底字段（通常 _id）才稳定。</text>
+    <text x="20" y="178" font-size="12" fill="#64748b">报表类聚合的正解是预聚合：{ $out } 定时全量重建，或 { $merge } 按 key 增量刷新，读侧永远读得到。</text>
+  </g>
+</svg>

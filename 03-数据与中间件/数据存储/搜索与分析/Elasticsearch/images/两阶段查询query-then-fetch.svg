@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 675" width="1000" height="675" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="675" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次搜索分两阶段：query 定候选，fetch 才回捞内容</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">每个分片先本地出前 (from + size) 条 → 协调节点归并 → 只对最终一批文档回捞 _source</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="215" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、阶段 1 query：各分片只回 docId + 排序值</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">分片本地维护一个大小 (from + size) 的优先队列；协调节点归并后重排，截出真正的 size 条</text>
+
+    <rect x="40" y="72" width="270" height="56" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="56" y="96" font-size="12.5" fill="#334155">P0 本地 top-(from+size)</text>
+    <text x="56" y="116" font-size="12" fill="#64748b">只回 docId + 排序值</text>
+
+    <rect x="365" y="72" width="270" height="56" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="381" y="96" font-size="12.5" fill="#334155">P1 本地 top-(from+size)</text>
+    <text x="381" y="116" font-size="12" fill="#64748b">只回 docId + 排序值</text>
+
+    <rect x="690" y="72" width="270" height="56" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="706" y="96" font-size="12.5" fill="#334155">P2 本地 top-(from+size)</text>
+    <text x="706" y="116" font-size="12" fill="#64748b">只回 docId + 排序值</text>
+
+    <line x1="175" y1="128" x2="452" y2="158" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="500" y1="128" x2="500" y2="158" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="825" y1="128" x2="548" y2="158" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="370" y="164" width="260" height="36" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="500" y="187" text-anchor="middle" font-size="12.5" fill="#1d4ed8">协调节点：归并 + 重排 + 截断</text>
+  </g>
+
+  <g transform="translate(20,305)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、阶段 2 fetch 与成本模型</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">深分页为什么贵、聚合的 doc_count 为什么会错，都能从这个两阶段模型推出来</text>
+
+    <text x="36" y="86" font-size="12.5" fill="#334155">阶段 2 fetch：只对最终这一批文档，按分片分组回捞 _source / 高亮片段（可能是随机 IO）</text>
+    <text x="36" y="110" font-size="12.5" fill="#334155">分片侧：堆占用与比较次数 ∝ (from + size)；协调节点归并量 ∝ 分片数 × (from + size)</text>
+    <text x="36" y="134" font-size="12.5" fill="#dc2626">⚠️ 前 from 条是纯白算的 —— 每个分片为它们维护队列，协调节点排完再丢掉</text>
+    <text x="36" y="158" font-size="12.5" fill="#64748b">只要 ID 就 "size": 0；只要部分字段用 _source: ["a","b"]（过滤发生在返回之后）</text>
+  </g>
+
+  <g transform="translate(20,505)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、一次搜索走哪几个分片</text>
+
+    <rect x="20" y="58" width="450" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="82" font-size="13" font-weight="bold" fill="#b45309">不带 routing</text>
+    <text x="36" y="106" font-size="12.5" fill="#334155">所有分片的主副二选一轮询 → 分片数不减</text>
+    <text x="36" y="128" font-size="12.5" fill="#64748b">副本提高并发上限，但不提升单次搜索性能</text>
+
+    <rect x="490" y="58" width="450" height="80" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="82" font-size="13" font-weight="bold" fill="#047857">带 routing</text>
+    <text x="506" y="106" font-size="12.5" fill="#334155">直接算出目标分片 → 跳过无关分片</text>
+    <text x="506" y="128" font-size="12.5" fill="#64748b">明显提升性能（复用写入的路由规则）</text>
+  </g>
+
+</svg>

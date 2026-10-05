@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 624" width="1000" height="624" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="624" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">隔离级别与三大并发问题</text>
+  <text x="500" y="50" text-anchor="middle" font-size="13" fill="#64748b">同一个级别还有两副面孔：一致性读走快照，锁定读走加锁</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="204" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">四种隔离级别各自放行哪些并发问题</text>
+
+    <rect x="16" y="38" width="928" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">隔离级别</text>
+    <text x="330" y="56" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">脏读</text>
+    <text x="500" y="56" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">不可重复读</text>
+    <text x="670" y="56" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">幻读</text>
+    <text x="770" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">说明</text>
+
+    <rect x="16" y="64" width="928" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="85" font-size="11.5" fill="#334155">读未提交（RU）</text>
+    <text x="330" y="85" text-anchor="middle" font-size="11.5" fill="#dc2626">可能</text>
+    <text x="500" y="85" text-anchor="middle" font-size="11.5" fill="#dc2626">可能</text>
+    <text x="670" y="85" text-anchor="middle" font-size="11.5" fill="#dc2626">可能</text>
+    <text x="770" y="85" font-size="11" fill="#64748b">数据不可信任</text>
+
+    <rect x="16" y="96" width="928" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="117" font-size="11.5" fill="#334155">读已提交（RC）</text>
+    <text x="330" y="117" text-anchor="middle" font-size="11.5" fill="#047857">不存在</text>
+    <text x="500" y="117" text-anchor="middle" font-size="11.5" fill="#dc2626">可能</text>
+    <text x="670" y="117" text-anchor="middle" font-size="11.5" fill="#dc2626">可能</text>
+    <text x="770" y="117" font-size="11" fill="#64748b">互联网常用，锁更少</text>
+
+    <rect x="16" y="128" width="928" height="32" rx="4" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+    <text x="32" y="149" font-size="11.5" font-weight="bold" fill="#047857">可重复读（RR，默认）</text>
+    <text x="330" y="149" text-anchor="middle" font-size="11.5" fill="#047857">不存在</text>
+    <text x="500" y="149" text-anchor="middle" font-size="11.5" fill="#047857">不存在</text>
+    <text x="670" y="149" text-anchor="middle" font-size="11.5" fill="#b45309">基本规避</text>
+    <text x="770" y="149" font-size="11" fill="#64748b">靠 MVCC + Gap Lock</text>
+
+    <rect x="16" y="160" width="928" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="181" font-size="11.5" fill="#334155">串行化（SERIALIZABLE）</text>
+    <text x="330" y="181" text-anchor="middle" font-size="11.5" fill="#047857">不存在</text>
+    <text x="500" y="181" text-anchor="middle" font-size="11.5" fill="#047857">不存在</text>
+    <text x="670" y="181" text-anchor="middle" font-size="11.5" fill="#047857">不存在</text>
+    <text x="770" y="181" font-size="11" fill="#64748b">并发性完全丧失</text>
+  </g>
+
+  <g transform="translate(20,294)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">同一事务里的两副面孔</text>
+
+    <rect x="16" y="40" width="456" height="66" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="32" y="64" font-size="12" font-weight="bold" fill="#1d4ed8">一致性读（普通 SELECT）</text>
+    <text x="32" y="90" font-size="11.5" fill="#334155">走 MVCC 快照，不加锁（RR 下是事务级快照）</text>
+
+    <rect x="488" y="40" width="456" height="66" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+    <text x="504" y="64" font-size="12" font-weight="bold" fill="#b45309">锁定读（FOR UPDATE / UPDATE）</text>
+    <text x="504" y="90" font-size="11.5" fill="#334155">读最新已提交版本，并加锁（RR 还带间隙锁）</text>
+
+    <text x="16" y="132" font-size="11.5" fill="#b45309">⚠️ 两者读到的可能不是同一份数据 —— 这正是「为什么我查到的和更新到的不一样」的根因。</text>
+  </g>
+
+  <g transform="translate(20,464)">
+    <rect x="0" y="0" width="960" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">ACID 四个字母分别落在哪个机制上</text>
+
+    <rect x="16" y="40" width="220" height="52" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="126" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">A 原子性</text>
+    <text x="126" y="82" text-anchor="middle" font-size="11" fill="#334155">undo log 反向执行</text>
+
+    <rect x="252" y="40" width="220" height="52" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="362" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">C 一致性</text>
+    <text x="362" y="82" text-anchor="middle" font-size="11" fill="#334155">A + I + D + 应用约束</text>
+
+    <rect x="488" y="40" width="220" height="52" rx="6" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="598" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">I 隔离性</text>
+    <text x="598" y="82" text-anchor="middle" font-size="11" fill="#334155">锁 + MVCC</text>
+
+    <rect x="724" y="40" width="220" height="52" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+    <text x="834" y="62" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c3aed">D 持久性</text>
+    <text x="834" y="82" text-anchor="middle" font-size="11" fill="#334155">redo log（WAL）</text>
+
+    <text x="16" y="122" font-size="11.5" fill="#334155">⭐ C 不是独立机制：数据库保证的是 A、I、D，业务一致性还要靠约束（外键 / 唯一索引 / CHECK）与代码。</text>
+  </g>
+</svg>

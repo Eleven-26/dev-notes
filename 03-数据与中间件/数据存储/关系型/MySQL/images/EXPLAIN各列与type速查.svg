@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 830" width="1000" height="830" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="830" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">EXPLAIN 怎么读：12 列里真正要看的是这 8 个</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">type 与 key_len 是最硬的两个证据；Extra 坑最多，rows 只用来看量级（别抠小数位）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="286" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">左：8 个关键列　｜　右：type 从好到坏</text>
+
+    <text x="16" y="58" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">type</text>
+    <text x="150" y="58" font-size="12" fill="#334155">访问类型，最重要的列（见右）</text>
+    <text x="16" y="86" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">possible_keys</text>
+    <text x="150" y="86" font-size="12" fill="#334155">有值但 key 为 NULL → 考虑过又放弃了</text>
+    <text x="16" y="114" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">key</text>
+    <text x="150" y="114" font-size="12" fill="#334155">实际用的索引；NULL = 没走索引</text>
+    <text x="16" y="142" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">key_len</text>
+    <text x="150" y="142" font-size="12" fill="#334155">索引用了多少字节 → 反推用了几列</text>
+    <text x="16" y="170" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">ref</text>
+    <text x="150" y="170" font-size="12" fill="#334155">与索引列比较的对象；const 最好</text>
+    <text x="16" y="198" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">rows</text>
+    <text x="150" y="198" font-size="12" fill="#334155">估算要扫多少行，越小越好</text>
+    <text x="16" y="226" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">filtered</text>
+    <text x="150" y="226" font-size="12" fill="#334155">扫描后剩余比例（%）</text>
+    <text x="16" y="254" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">Extra</text>
+    <text x="150" y="254" font-size="12" fill="#334155">附加信息，坑最多（见下）</text>
+
+    <line x1="482" y1="46" x2="482" y2="272" stroke="#cbd5e1" stroke-width="1"/>
+
+    <text x="516" y="58" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#0f172a">type</text>
+    <text x="680" y="58" font-size="12" font-weight="bold" fill="#0f172a">含义</text>
+    <text x="516" y="86" font-size="12" font-family="Consolas, monospace" fill="#047857">system</text>
+    <text x="680" y="86" font-size="12" fill="#334155">表只有一行</text>
+    <text x="516" y="114" font-size="12" font-family="Consolas, monospace" fill="#047857">const</text>
+    <text x="680" y="114" font-size="12" fill="#334155">主键 / 唯一索引常量等值</text>
+    <text x="516" y="142" font-size="12" font-family="Consolas, monospace" fill="#047857">eq_ref</text>
+    <text x="680" y="142" font-size="12" fill="#334155">JOIN 被驱动表用主键匹配</text>
+    <text x="516" y="170" font-size="12" font-family="Consolas, monospace" fill="#047857">ref</text>
+    <text x="680" y="170" font-size="12" fill="#334155">普通索引的等值查询</text>
+    <text x="516" y="198" font-size="12" font-family="Consolas, monospace" fill="#b45309">range</text>
+    <text x="680" y="198" font-size="12" fill="#334155">索引范围扫描（红线）</text>
+    <text x="516" y="226" font-size="12" font-family="Consolas, monospace" fill="#b45309">index</text>
+    <text x="680" y="226" font-size="12" fill="#334155">扫整个索引树</text>
+    <text x="516" y="254" font-size="12" font-family="Consolas, monospace" font-weight="bold" fill="#dc2626">ALL</text>
+    <text x="680" y="254" font-size="12" fill="#334155">全表扫描</text>
+  </g>
+
+  <g transform="translate(20,380)">
+    <rect x="0" y="0" width="960" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">key_len：反推复合索引用了几列</text>
+
+    <text x="16" y="58" font-size="12" fill="#334155">公式：<tspan font-family="Consolas, monospace" fill="#7c3aed">int/bigint 4/8</tspan>　<tspan font-family="Consolas, monospace" fill="#7c3aed">tinyint 1</tspan>　<tspan font-family="Consolas, monospace" fill="#7c3aed">datetime 5</tspan>　<tspan font-family="Consolas, monospace" fill="#7c3aed">varchar(n) utf8mb4 = 4n+2</tspan>　<tspan font-family="Consolas, monospace" fill="#7c3aed">char(n) = 4n</tspan>　<tspan fill="#dc2626">可空列再 +1</tspan></text>
+
+    <rect x="16" y="72" width="920" height="28" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="91" font-size="12.5" font-weight="bold" fill="#0f172a">实测：idx_city_age (city varchar(16) NULL, age int NULL)</text>
+    <text x="920" y="91" text-anchor="end" font-size="12.5" font-weight="bold" fill="#0f172a">key_len</text>
+
+    <rect x="16" y="102" width="920" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="121" font-size="12" fill="#334155">只用 city　→　4×16 + 2 + 1 = 67</text>
+    <text x="920" y="121" text-anchor="end" font-size="12.5" font-weight="bold" fill="#047857">67</text>
+
+    <rect x="16" y="132" width="920" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="151" font-size="12" fill="#334155">city + age 都用　→　67 + (4 + 1) = 72（ref 同步从 const 变成 const,const）</text>
+    <text x="920" y="151" text-anchor="end" font-size="12.5" font-weight="bold" fill="#047857">72</text>
+
+    <text x="16" y="182" font-size="12.5" fill="#b45309">⚠️ 可空的 int 是 4+1=5，不是 4 —— 这一格差最容易让手算对不上实测。key_len 突然变小 = 某个条件没进索引。</text>
+  </g>
+
+  <g transform="translate(20,606)">
+    <rect x="0" y="0" width="960" height="204" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">Extra 常见值速查</text>
+
+    <text x="16" y="60" font-size="12" font-family="Consolas, monospace" fill="#047857">Using index</text>
+    <text x="300" y="60" font-size="12" fill="#334155">覆盖索引，不回表 ✅ 最好</text>
+    <text x="16" y="86" font-size="12" font-family="Consolas, monospace" fill="#047857">Using index condition</text>
+    <text x="300" y="86" font-size="12" fill="#334155">用上 ICP，先在索引上过滤 ✅</text>
+    <text x="16" y="112" font-size="12" font-family="Consolas, monospace" fill="#64748b">Using where</text>
+    <text x="300" y="112" font-size="12" fill="#334155">Server 层还要过滤 ⚠️ 看情况</text>
+    <text x="16" y="138" font-size="12" font-family="Consolas, monospace" fill="#dc2626">Using filesort</text>
+    <text x="300" y="138" font-size="12" fill="#334155">需要额外排序 ❌ 大表要消除</text>
+    <text x="16" y="164" font-size="12" font-family="Consolas, monospace" fill="#dc2626">Using temporary</text>
+    <text x="300" y="164" font-size="12" fill="#334155">用了临时表（GROUP BY / DISTINCT / UNION）❌</text>
+    <text x="16" y="190" font-size="12" font-family="Consolas, monospace" fill="#dc2626">Using join buffer</text>
+    <text x="300" y="190" font-size="12" fill="#334155">被驱动表没用上索引 ❌ 常意味缺索引</text>
+  </g>
+
+</svg>

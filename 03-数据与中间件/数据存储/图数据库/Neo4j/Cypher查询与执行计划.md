@@ -87,6 +87,8 @@ RETURN u.id;
 
 ---
 
+![Cypher 与 SQL 的思维差异](images/Cypher与SQL的思维差异.svg)
+
 ## 二、Cypher 和 SQL 的思维差异在哪？
 
 **本节要点**：SQL 说"**从哪些表里筛出满足条件的行**"；Cypher 说"**找一张长什么样的子图**"。前者每一步都要显式指定连接关系（`JOIN ... ON`），后者把"怎么连"写在了模式里，由优化器决定遍历顺序。
@@ -126,6 +128,8 @@ PROFILE MATCH (u:User {id: 0})-[:FOLLOWS]->(f) RETURN count(f);   // 执行并�
 Y 那一段就包含真实执行）。所以**看绝对耗时要以第二次为准**，第一次往往含冷缓存。
 
 ---
+
+![执行计划算子与 dbHits 改写对比](images/执行计划算子与dbHits.svg)
 
 ## 四、执行计划算子怎么看？
 

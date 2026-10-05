@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 910" width="1000" height="910" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="910" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Cypher 是把「要找什么样的子图」画出来</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ 写 Cypher 先问自己「第一跳从哪个点开始」—— 起点能靠索引定位，整条查询就快</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="295" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">五类子句：读写骨架 + 路径模式</text>
+
+    <rect x="30" y="42" width="900" height="140" rx="6" fill="#0f172a"/>
+    <text x="46" y="64" font-size="11.5" fill="#94a3b8" font-family="Consolas, Menlo, monospace">// 写：CREATE 建、MERGE「有则匹配无则建」、SET 改、DELETE 删</text>
+    <text x="46" y="86" font-size="11.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">CREATE (u:User {id: 1, name: 'u1'});</text>
+    <text x="46" y="108" font-size="11.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">MERGE (u:User {id: 1}) ON CREATE SET u.created = datetime() SET u.name = 'u1';</text>
+    <text x="46" y="130" font-size="11.5" fill="#fca5a5" font-family="Consolas, Menlo, monospace">MATCH (u:User {id: 1}) DETACH DELETE u;   // 有关系的节点必须先 DETACH</text>
+    <text x="46" y="152" font-size="11.5" fill="#94a3b8" font-family="Consolas, Menlo, monospace">// 读：MATCH 找模式、WHERE 过滤、RETURN 输出</text>
+    <text x="46" y="174" font-size="11.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">MATCH (u:User {id: 0})-[:FOLLOWS]-&gt;(f:User) RETURN f.id LIMIT 10;</text>
+
+    <text x="20" y="208" font-size="12" fill="#334155">定长（有向）：MATCH (a:User {id:0})-[:FOLLOWS]-&gt;(b) 　无向：-[:FOLLOWS]- （两个方向都看，通常配 DISTINCT）</text>
+    <text x="20" y="232" font-size="12" fill="#047857">变长：-[:FOLLOWS*1..3]-&gt; 一句顶三层嵌套 JOIN，且不会因此变慢 —— 底层就是「沿指针走三跳」。</text>
+    <text x="20" y="256" font-size="12" fill="#b45309">⚠️ 变长务必给上界：写成 * 不写上界会退化成「无限深」，在大图上极易失控。</text>
+    <text x="20" y="280" font-size="12" fill="#334155">⚠️ DELETE 删不掉还有关系的节点，必须先 DETACH DELETE —— 从关系型带过来的直觉最容易踩的坑。</text>
+  </g>
+
+  <g transform="translate(20,380)">
+    <rect x="0" y="0" width="960" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">和 SQL 的思维差异在哪</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="230" y="62" font-size="12.5" font-weight="bold" fill="#b45309">SQL</text>
+    <text x="620" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">Cypher</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155">核心动作</text>
+    <text x="230" y="90" font-size="12" fill="#334155">连接（JOIN）+ 过滤</text>
+    <text x="620" y="90" font-size="12" fill="#334155">模式匹配 + 展开</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">起点</text>
+    <text x="230" y="116" font-size="12" fill="#334155">FROM 表，优化器选驱动表</text>
+    <text x="620" y="116" font-size="12" fill="#334155">模式里最先能定位的节点（索引 / 标签 / 全扫）</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">关系表达</text>
+    <text x="230" y="142" font-size="12" fill="#334155">JOIN ON a.id = b.a_id，跳数写死</text>
+    <text x="620" y="142" font-size="12" fill="#334155">-[:REL]-&gt; 一跳一段，变长用 *1..n</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="12" fill="#334155">跳数不确定</text>
+    <text x="230" y="168" font-size="12" fill="#334155">只能递归 CTE / 应用层循环</text>
+    <text x="620" y="168" font-size="12" fill="#047857">*1..n 直接表达</text>
+
+    <rect x="20" y="176" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="194" font-size="12" fill="#334155">最怕</text>
+    <text x="230" y="194" font-size="12" fill="#334155">无索引的大表连接、笛卡尔积</text>
+    <text x="620" y="194" font-size="12" fill="#334155">无索引起点（全标签扫描）、笛卡尔积</text>
+
+    <text x="20" y="226" font-size="12" fill="#334155">SQL 说「从哪些表里筛出满足条件的行」；Cypher 说「找一张长什么样的子图」—— 后者把「怎么连」写进模式里，遍历顺序交给优化器。</text>
+    <text x="20" y="250" font-size="12" fill="#b45309">⭐ 判据：若起点只能靠 NodeByLabelScan 扫出来，后面每一步都在为这个错误买单。</text>
+  </g>
+
+  <g transform="translate(20,665)">
+    <rect x="0" y="0" width="960" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">参数化 $param 不只是防注入</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">写法</text>
+    <text x="400" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">注入风险</text>
+    <text x="640" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">计划复用</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155" font-family="Consolas, Menlo, monospace">$uid 绑参</text>
+    <text x="400" y="90" font-size="12" fill="#047857">无（值永远当值）</text>
+    <text x="640" y="90" font-size="12" fill="#047857">✅ 同一段文本复用同一份已编译计划</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155" font-family="Consolas, Menlo, monospace">字符串拼接</text>
+    <text x="400" y="116" font-size="12" fill="#dc2626">⚠️ 有</text>
+    <text x="640" y="116" font-size="12" fill="#dc2626">❌ 每变一次文本就是一次全新解析 + 编译</text>
+
+    <text x="20" y="150" font-size="12" fill="#334155">⭐ 参数化查询在 PROFILE 里显示为 WHERE id = $autoint_0，优化器能当常量做索引 Seek；</text>
+    <text x="20" y="174" font-size="12" fill="#dc2626">而 toString(u.id) = $s 这种「值被函数包住」的写法会把索引直接废掉（200001 dbHits）。</text>
+    <text x="20" y="198" font-size="12" fill="#b45309">⚠️ WITH 会「截断」作用域：上一步的变量若不写进 WITH，下一步就用不了 —— 新手最常见的报错来源。</text>
+  </g>
+</svg>

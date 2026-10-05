@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 575" width="1000" height="575" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#047857"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="575" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">索引是一份「字段值 → 记录位置」的有序映射</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">把查询从全表扫描（COLLSCAN）变成定点定位（IXSCAN）；复合索引按声明顺序拼接，顺序决定「能用哪一段」</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">没有索引 vs 有索引：底层都是 B 树，差别在「能不能定点」</text>
+
+    <rect x="20" y="44" width="450" height="140" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="36" y="68" font-size="13.5" font-weight="bold" fill="#b45309">无索引：COLLSCAN 全表扫描</text>
+    <rect x="40" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <rect x="90" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <rect x="140" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <rect x="190" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <rect x="240" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <rect x="290" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <rect x="340" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <rect x="390" y="84" width="42" height="30" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <text x="61" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d1</text>
+    <text x="111" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d2</text>
+    <text x="161" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d3</text>
+    <text x="211" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d4</text>
+    <text x="261" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d5</text>
+    <text x="311" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d6</text>
+    <text x="361" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d7</text>
+    <text x="411" y="99" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#475569">d8</text>
+    <line x1="40" y1="130" x2="432" y2="130" stroke="#dc2626" stroke-width="2"/>
+    <text x="36" y="152" font-size="11.5" fill="#dc2626">逐条读出比对 → O(N)，与数据量线性增长</text>
+    <text x="36" y="172" font-size="11.5" fill="#64748b">没有区间可界、也没有顺序可借</text>
+
+    <rect x="490" y="44" width="450" height="140" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="506" y="68" font-size="13.5" font-weight="bold" fill="#047857">有索引：B 树 IXSCAN 定点定位</text>
+    <text x="524" y="90" font-size="12" font-weight="bold" fill="#334155">键值</text>
+    <text x="720" y="90" font-size="12" font-weight="bold" fill="#334155">RecordId</text>
+    <line x1="506" y1="98" x2="934" y2="98" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="524" y="118" font-size="12.5" fill="#334155">10</text>
+    <text x="720" y="118" font-size="12.5" fill="#334155">A3</text>
+    <text x="524" y="136" font-size="12.5" fill="#334155">20</text>
+    <text x="720" y="136" font-size="12.5" fill="#334155">B7</text>
+    <rect x="508" y="140" width="424" height="22" rx="3" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+    <text x="524" y="155" font-size="12.5" font-weight="bold" fill="#047857">40</text>
+    <text x="720" y="155" font-size="12.5" font-weight="bold" fill="#047857">C1  ← 命中</text>
+    <text x="524" y="174" font-size="12.5" fill="#334155">50</text>
+    <text x="720" y="174" font-size="12.5" fill="#334155">D4</text>
+    <text x="856" y="118" font-size="11.5" fill="#64748b">按键有序</text>
+    <text x="856" y="136" font-size="11.5" fill="#64748b">O(log N)</text>
+  </g>
+
+  <g transform="translate(20,290)">
+    <rect x="0" y="0" width="960" height="265" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">单键 vs 复合：最左前缀决定「能用哪一段」</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">复合索引 {a:1, b:1, c:1} 是一棵按键整体排序的 B 树，可用于「从最左字段开始的任意前缀」</text>
+
+    <rect x="20" y="64" width="920" height="32" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="40" y="85" font-size="13" font-weight="bold" fill="#0f172a">查询用到的字段</text>
+    <text x="490" y="85" font-size="13" font-weight="bold" fill="#0f172a">能否命中索引 {a:1, b:1, c:1}</text>
+
+    <rect x="20" y="96" width="920" height="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="40" y="119" font-size="12.5" fill="#334155">{a} / {a,b} / {a,b,c}</text>
+    <text x="490" y="119" font-size="12.5" font-weight="bold" fill="#047857">✅ 命中（最左前缀）</text>
+
+    <rect x="20" y="132" width="920" height="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="40" y="155" font-size="12.5" fill="#334155">{b} / {c} / {b,c}</text>
+    <text x="490" y="155" font-size="12.5" font-weight="bold" fill="#dc2626">❌ 无法命中（缺最左字段）</text>
+
+    <rect x="20" y="168" width="920" height="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="40" y="191" font-size="12.5" fill="#334155">{a,c}</text>
+    <text x="490" y="191" font-size="12.5" font-weight="bold" fill="#b45309">⚠️ 只用到 a，c 无法用于定位</text>
+
+    <text x="20" y="228" font-size="12" fill="#334155">与 MySQL 一致；差别在 MongoDB 支持混合方向 {a:1, b:-1} 同时满足 a ASC, b DESC。</text>
+    <text x="20" y="250" font-size="12" fill="#334155">覆盖索引的判据也不同：看 totalDocsExamined == 0（stage 出现 PROJECTION_COVERED），而非 MySQL 的 Using index。</text>
+  </g>
+</svg>

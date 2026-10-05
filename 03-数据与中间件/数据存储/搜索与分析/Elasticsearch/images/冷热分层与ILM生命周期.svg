@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">冷热分层与 ILM：索引沿时间变冷，节点按能力分层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">rollover 滚出新索引 + ILM phase 划分 + 节点属性路由，三件套把两者绑起来</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、四层：用 index.routing.allocation.require.* 把「索引冷热」与「节点能力」绑起来</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">新索引在热节点扛写入与最近查询；老索引逐步迁到大磁盘低配节点</text>
+
+    <rect x="20" y="74" width="210" height="110" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="34" y="98" font-size="13.5" font-weight="bold" fill="#dc2626">hot 热</text>
+    <text x="34" y="122" font-size="11.5" fill="#334155">SSD、大堆、多核</text>
+    <text x="34" y="142" font-size="11.5" fill="#334155">扛写入与最近查询</text>
+    <text x="34" y="166" font-size="11.5" fill="#64748b">新索引先落这里</text>
+
+    <rect x="270" y="74" width="210" height="110" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+    <text x="284" y="98" font-size="13.5" font-weight="bold" fill="#b45309">warm 温</text>
+    <text x="284" y="122" font-size="11.5" fill="#334155">shrink 降分片数</text>
+    <text x="284" y="142" font-size="11.5" fill="#334155">force_merge 降段数</text>
+    <text x="284" y="166" font-size="11.5" fill="#64748b">副本降到 1（省一半存储）</text>
+
+    <rect x="520" y="74" width="210" height="110" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="534" y="98" font-size="13.5" font-weight="bold" fill="#1d4ed8">cold 冷</text>
+    <text x="534" y="122" font-size="11.5" fill="#334155">read_only 只读</text>
+    <text x="534" y="142" font-size="11.5" fill="#334155">迁到低配节点</text>
+    <text x="534" y="166" font-size="11.5" fill="#64748b">偶尔查</text>
+
+    <rect x="770" y="74" width="190" height="110" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text x="784" y="98" font-size="13.5" font-weight="bold" fill="#7c3aed">frozen 冻</text>
+    <text x="784" y="122" font-size="11.5" fill="#334155">可搜索快照</text>
+    <text x="784" y="142" font-size="11.5" fill="#334155">数据放对象存储</text>
+    <text x="784" y="166" font-size="11.5" fill="#64748b">首查慢但极便宜</text>
+
+    <line x1="232" y1="129" x2="266" y2="129" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="482" y1="129" x2="516" y2="129" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="732" y1="129" x2="766" y2="129" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+  </g>
+
+  <g transform="translate(20,290)">
+    <rect x="0" y="0" width="960" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、rollover 与 ILM 的常见坑</text>
+
+    <text x="36" y="62" font-size="12.5" fill="#334155">rollover：按 max_docs / max_age / 主分片大小阈值滚出新索引，别名 write index 始终指向最新</text>
+    <text x="36" y="86" font-size="12.5" fill="#dc2626">⚠️ min_age 从「索引创建时间」起算，不是从写入结束 —— 按天分索引与按 rollover 分，同一 min_age 语义完全不同</text>
+    <text x="36" y="110" font-size="12.5" fill="#334155">rollover 的触发条件比 min_age 更可靠：它直接约束「单个分片别长太大」</text>
+    <text x="36" y="134" font-size="12.5" fill="#64748b">分片过碎的热索引在 rollover 后会制造海量小分片，靠 warm 阶段的 shrink 收口</text>
+  </g>
+
+  <g transform="translate(20,470)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、data stream 与索引状态管理</text>
+
+    <text x="36" y="62" font-size="12.5" fill="#334155">只追加的日志 / 时序数据用 data stream：隐藏后端索引 + 自动 rollover + 只能 append 的语义</text>
+    <text x="36" y="86" font-size="12.5" fill="#64748b">业务主数据不要用 data stream —— 它的更新 / 删除语义不友好</text>
+
+    <rect x="20" y="106" width="450" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="128" font-size="13" font-weight="bold" fill="#334155">_close 关闭</text>
+    <text x="36" y="150" font-size="12" fill="#334155">不再接收读写请求，相关内部数据销毁</text>
+    <text x="36" y="170" font-size="12" fill="#64748b">减少集群负担，可再 _open</text>
+
+    <rect x="490" y="106" width="450" height="76" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="128" font-size="13" font-weight="bold" fill="#334155">_freeze 冻结</text>
+    <text x="506" y="150" font-size="12" fill="#334155">变只读；查询时实时构建瞬态结构</text>
+    <text x="506" y="170" font-size="12" fill="#64748b">查完即弃 → 旧索引不占缓存</text>
+  </g>
+
+</svg>

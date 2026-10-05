@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 830" width="1000" height="830" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="830" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">$lookup 的嵌套循环、$unwind 的放大与特殊 stage</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">$lookup 本质是嵌套循环；$unwind 把 1 个文档变 N 个；$facet / $sample / $bucket 各解决一类多路统计问题</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">$lookup 的代价：本质是嵌套循环</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">驱动集合的每一个文档都要到被 join 集合查一次</text>
+
+    <rect x="30" y="64" width="230" height="124" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="44" y="86" font-size="12.5" font-weight="bold" fill="#1d4ed8">orders（驱动侧）</text>
+    <rect x="44" y="94" width="202" height="24" rx="3" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="54" y="111" font-size="11" font-family="Consolas, Menlo, monospace" fill="#334155">{ uid: 9, ... }</text>
+    <rect x="44" y="122" width="202" height="24" rx="3" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="54" y="139" font-size="11" font-family="Consolas, Menlo, monospace" fill="#334155">{ uid: 4, ... }</text>
+    <rect x="44" y="150" width="202" height="24" rx="3" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="54" y="167" font-size="11" font-family="Consolas, Menlo, monospace" fill="#334155">{ uid: 7, ... }</text>
+
+    <line x1="264" y1="126" x2="316" y2="126" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="290" y="118" text-anchor="middle" font-size="10.5" fill="#b45309">每个文档查一次</text>
+
+    <rect x="320" y="64" width="230" height="124" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="334" y="86" font-size="12.5" font-weight="bold" fill="#047857">users（被 join 侧）</text>
+    <rect x="334" y="94" width="202" height="24" rx="3" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="344" y="111" font-size="11" fill="#dc2626">foreignField 必须有索引</text>
+    <rect x="334" y="122" width="202" height="24" rx="3" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="344" y="139" font-size="11" fill="#334155">否则 = 每个文档全表扫一次</text>
+    <rect x="334" y="150" width="202" height="24" rx="3" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="344" y="167" font-size="11" fill="#334155">只有等值 join 能用索引</text>
+
+    <rect x="572" y="64" width="368" height="124" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="588" y="90" font-size="12" font-weight="bold" fill="#dc2626">代价 ≈ 驱动文档数 × 被 join 侧扫描量</text>
+    <text x="588" y="116" font-size="11.5" fill="#334155">❌ 被 join 侧没索引 = 代价直接爆炸（最常见的 $lookup 事故）</text>
+    <text x="588" y="142" font-size="11.5" fill="#334155">⚠️ 带表达式 / 非等值的 pipeline 形式更贵（每个文档跑一遍）</text>
+    <text x="588" y="168" font-size="11.5" fill="#334155">判据：适合「顺带补齐维度」，不适合当 OLAP 的 join 引擎</text>
+
+    <text x="20" y="208" font-size="12" fill="#334155">⭐ 该在应用层 join 的三种情形：① 驱动侧已分页到几十条；② 被 join 侧结果可被复用 / 缓存；③ 分片集群上两集合没按同一分片键共置（$lookup 只能广播）。</text>
+  </g>
+
+  <g transform="translate(20,315)">
+    <rect x="0" y="0" width="960" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">$unwind 放大后内存超限怎么办</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">不改语义的三种缓解手段，按优先级排</text>
+
+    <rect x="30" y="64" width="290" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="175" y="86" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">① 先 $match 缩小输入</text>
+    <text x="175" y="106" text-anchor="middle" font-size="11" fill="#64748b">让更少的文档进管道</text>
+    <rect x="345" y="64" width="290" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="490" y="86" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">② 先 $project 收窄字段</text>
+    <text x="490" y="106" text-anchor="middle" font-size="11" fill="#64748b">减少每文档体积</text>
+    <rect x="660" y="64" width="270" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="795" y="86" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">③ 拆成两段 $group</text>
+    <text x="795" y="106" text-anchor="middle" font-size="11" fill="#64748b">按父文档先聚合一次</text>
+
+    <text x="20" y="138" font-size="12" fill="#b45309">⚠️ allowDiskUse: true 溢写临时文件只救「内存超限」，救不了「逻辑上把全表拉进管道」—— 那种先修 $match。</text>
+
+    <rect x="20" y="152" width="920" height="58" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="36" y="174" font-size="12.5" font-weight="bold" fill="#047857">报表类聚合的正解是预聚合（读侧永远读得到）</text>
+    <text x="36" y="198" font-size="11.5" fill="#334155">$out: "daily_stats" —— 定时全量重建、替换语义　｜　$merge: { into, on, whenMatched, whenNotMatched } —— 按 key 增量刷新</text>
+  </g>
+
+  <g transform="translate(20,560)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">多路统计、取样与深分页</text>
+
+    <rect x="30" y="48" width="290" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="175" y="70" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">$facet</text>
+    <text x="175" y="90" text-anchor="middle" font-size="11" fill="#334155">一个输入并行喂多条子管道</text>
+    <text x="175" y="108" text-anchor="middle" font-size="11" fill="#334155">只扫一遍拿「本页 + 总数 + 分布」</text>
+    <text x="175" y="128" text-anchor="middle" font-size="11" fill="#b45309">⚠️ 各路结果要在内存攒齐（16MB）</text>
+
+    <rect x="345" y="48" width="290" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="490" y="70" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">$sample</text>
+    <text x="490" y="90" text-anchor="middle" font-size="11" fill="#334155">随机抽 size 条：体检、抽检、推荐</text>
+    <text x="490" y="108" text-anchor="middle" font-size="11" fill="#334155">随机定位读取</text>
+    <text x="490" y="128" text-anchor="middle" font-size="11" fill="#b45309">⚠️ 分片各取 size 再归并 → 偏多</text>
+
+    <rect x="660" y="48" width="270" height="90" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="795" y="70" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">$bucket / $bucketAuto</text>
+    <text x="795" y="90" text-anchor="middle" font-size="11" fill="#334155">直方图、金额 / 时长分布</text>
+    <text x="795" y="108" text-anchor="middle" font-size="11" fill="#334155">只扫一遍</text>
+    <text x="795" y="128" text-anchor="middle" font-size="11" fill="#047857">✅ 比堆 $cond 清晰</text>
+
+    <line x1="30" y1="156" x2="930" y2="156" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="30" y="180" font-size="12" font-weight="bold" fill="#0f172a">深分页：$skip 不是「跳过」，是「扫过并丢弃」</text>
+    <text x="30" y="204" font-size="11.5" fill="#334155">翻到第 1000 页，前面 2 万条键与文档都被处理过 —— 游标只解决网络分批，不解决服务端仍要扫过 skip 的部分。</text>
+    <text x="30" y="228" font-size="11.5" fill="#334155">出路：① 范围分页（记住上一页末条 {createdAt, _id}，下一页用 $match: {createdAt: {$lt: X}}）；② 只要「下一页」就别给总数。</text>
+  </g>
+</svg>

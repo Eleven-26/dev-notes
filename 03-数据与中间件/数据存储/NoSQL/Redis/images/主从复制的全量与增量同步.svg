@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#047857"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">主从复制：全量同步与增量同步的时序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">从节点一行 replicaof 就开始；首次必然全量，断线重连能否只补增量取决于 repl-backlog（全部本机容器实测）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="320" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一次同步里主从之间发生了什么</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">左边是主节点、右边是从节点；箭头方向就是消息方向</text>
+
+    <rect x="170" y="68" width="160" height="30" rx="6" fill="#1d4ed8"/>
+    <text x="250" y="88" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">主节点 master</text>
+    <rect x="670" y="68" width="160" height="30" rx="6" fill="#047857"/>
+    <text x="750" y="88" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">从节点 replica</text>
+    <line x1="250" y1="98" x2="250" y2="272" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <line x1="750" y1="98" x2="750" y2="272" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4"/>
+
+    <line x1="746" y1="120" x2="254" y2="120" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="262" y="114" font-size="12" fill="#334155">① 从 → 主：PSYNC（带上自己的 replid 与 offset）</text>
+
+    <line x1="254" y1="152" x2="746" y2="152" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="262" y="146" font-size="12" fill="#334155">② 主 → 从：+FULLRESYNC（首次全量）或 +CONTINUE（断线增量）</text>
+
+    <line x1="254" y1="184" x2="746" y2="184" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="262" y="178" font-size="12" fill="#334155">③ 主 → 从：BGSAVE 出的 RDB；传输期间的写入先攒进「复制缓冲区」</text>
+
+    <line x1="254" y1="216" x2="746" y2="216" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="262" y="210" font-size="12" fill="#334155">④ 主 → 从：RDB 传完后，把缓冲区里攒下的命令补发过去</text>
+
+    <line x1="254" y1="248" x2="746" y2="248" stroke="#047857" stroke-width="1.8" marker-end="url(#arwG)"/>
+    <text x="262" y="242" font-size="12" fill="#334155">⑤ 主 → 从：此后每条写命令<tspan font-weight="bold" fill="#047857">异步</tspan>传播 —— 主库写完立刻返回客户端，不等副本确认</text>
+
+    <text x="16" y="298" font-size="12.5" fill="#b45309">⭐ master_repl_offset 在没有副本时恒为 0（没有消费者就不生产）；全量同步传的就是 RDB，所以主从全量 = 一次 fork + 一次整库传输。</text>
+  </g>
+
+  <g transform="translate(20,410)">
+    <rect x="0" y="0" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">全量同步的耗时可能全花在「等」上（5 万 key 实测）</text>
+
+    <rect x="16" y="46" width="452" height="66" rx="8" fill="#ffffff" stroke="#86efac" stroke-width="1.6"/>
+    <text x="32" y="70" font-size="12.5" fill="#334155">repl-diskless-sync-delay = 0</text>
+    <text x="32" y="98" font-size="14" font-weight="bold" fill="#047857">全量同步耗时 ≈ 173 ms</text>
+
+    <rect x="492" y="46" width="452" height="66" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.6"/>
+    <text x="508" y="70" font-size="12.5" fill="#334155">repl-diskless-sync-delay = 5（默认值）</text>
+    <text x="508" y="98" font-size="14" font-weight="bold" fill="#b45309">全量同步耗时 ≈ 5.86 s</text>
+
+    <text x="16" y="140" font-size="12.5" fill="#334155">⭐ 默认这 5 秒是「攒批」用的：主库收到第一个 PSYNC 后先等一等，若还有别的副本也要全量，就用同一份 RDB 服务所有副本，省一次 fork 与带宽。</text>
+  </g>
+
+  <g transform="translate(20,600)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">backlog 是「增量 / 全量」的分界线</text>
+
+    <text x="16" y="58" font-size="12.5" fill="#047857">✅ 增量：断线窗口内主库新产生 15113 字节 ≪ backlog(1mb) → sync_partial_ok +1，副本 12ms 重连即补上</text>
+    <text x="16" y="84" font-size="12.5" fill="#dc2626">❌ 全量：冻结副本 + 灌 30 万 key，repl_backlog_histlen 达上限 19097 → sync_full:1 / partial_err:1，退回整库重传</text>
+    <text x="16" y="110" font-size="12.5" fill="#b45309">⚠️ 异步代价：主库 500000 key / 3.271s 期间采样 697 次，主从 offset 最大落后 442014 字节（0.42 MB）—— 这就是此刻主库宕机会丢的量</text>
+    <text x="16" y="140" font-size="12.5" fill="#334155">⭐ 判据：「副本离线时长 × 期间写入速率 &gt; repl-backlog-size」就退化成全量；三个 sync_ 计数器在 INFO stats 里，不在 INFO replication。</text>
+    <text x="16" y="164" font-size="12" fill="#64748b">想「写进去就不丢」：WAIT 1 100（显式等确认）或 min-replicas-to-write（副本不足就拒写）—— 都是用可用性换一致性。</text>
+  </g>
+
+</svg>

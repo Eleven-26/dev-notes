@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 746" width="1000" height="746" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="746" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">健康三色与分片分配：yellow 少的是副本，red 少的是主分片</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">排查第一步统一是 GET _cluster/allocation/explain —— 它直接点名「这个分片为什么不分配」</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="195" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、green / yellow / red：少的是什么，影响是什么</text>
+
+    <rect x="20" y="62" width="920" height="118" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="20" y1="101" x2="940" y2="101" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="20" y1="140" x2="940" y2="140" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="40" y="88" font-size="13" font-weight="bold" fill="#047857">green</text>
+    <text x="180" y="88" font-size="12.5" fill="#334155">什么都不缺：所有主分片 + 副本分片都是 started</text>
+
+    <text x="40" y="127" font-size="13" font-weight="bold" fill="#b45309">yellow</text>
+    <text x="180" y="127" font-size="12.5" fill="#334155">副本分片没分配上 —— 读写都正常，但容错降级（主分片节点再挂就 red）</text>
+
+    <text x="40" y="166" font-size="13" font-weight="bold" fill="#dc2626">red</text>
+    <text x="180" y="166" font-size="12.5" fill="#334155">至少一个主分片没分配 —— 这部分数据完全不可用，查询 partial failure、写入失败</text>
+  </g>
+
+  <g transform="translate(20,285)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、分配硬条件与「分片不是越多越好」</text>
+
+    <text x="36" y="64" font-size="12.5" fill="#334155">硬条件：同一分片的主分片与副本分片不能在同一节点；多个副本也不能在同一节点</text>
+    <text x="36" y="88" font-size="12.5" fill="#334155">分配感知：把节点划分到不同区域，副本不允许放到主分片所在区域 → 整区故障也不丢</text>
+
+    <text x="36" y="120" font-size="12.5" font-weight="bold" fill="#0f172a">每个分片都是独立 Lucene 索引，它的固定开销与数据量无关：</text>
+    <text x="52" y="146" font-size="12.5" fill="#64748b">词典 / FST 与文件句柄、段元数据、keyword 聚合用的 global ordinals、一份 translog、至少一个段</text>
+    <text x="52" y="170" font-size="12.5" fill="#64748b">搜索侧：不带 routing 的查询在每个分片各执行一次 → 端到端延迟由最慢分片决定</text>
+    <text x="52" y="194" font-size="12.5" fill="#64748b">集群侧：cluster state 体积随分片数增长，主节点每次发布都要全集群同步</text>
+    <text x="36" y="220" font-size="12.5" fill="#b45309">经验方向：按数据量与查询延迟倒推分片数（先定单分片目标规模，再算需要几个）</text>
+  </g>
+
+  <g transform="translate(20,535)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、unassigned 的高频原因与处理顺序</text>
+
+    <text x="36" y="60" font-size="12.5" fill="#334155">① 节点离开且超过 delayed_timeout → 正在重建副本（属于正常恢复，等）</text>
+    <text x="36" y="84" font-size="12.5" fill="#334155">② 磁盘水位：超过 high 不再迁入；到 flood 给索引挂只读块 → 「写入全失败」其实是磁盘问题</text>
+    <text x="36" y="108" font-size="12.5" fill="#334155">③ 副本数 ≥ 可用节点数（主副不能同节点）</text>
+    <text x="36" y="132" font-size="12.5" fill="#334155">④ 分配感知 / 过滤规则 / total_shards_per_node 把候选节点排空</text>
+    <text x="36" y="162" font-size="12.5" fill="#dc2626">处理顺序：先解决「为什么不能分配」→ 再 POST /_cluster/reroute?retry_failed=true</text>
+    <text x="36" y="186" font-size="12.5" fill="#dc2626">⚠️ 别一上来用 allocate_* 强制分配 —— 可能把分片分配到空目录或过期副本上</text>
+  </g>
+
+</svg>

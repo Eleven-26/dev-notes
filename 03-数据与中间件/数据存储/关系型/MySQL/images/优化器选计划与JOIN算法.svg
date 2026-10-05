@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 778" width="1000" height="778" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="778" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">优化器怎么选计划，以及排序与 JOIN 的算法</text>
+  <text x="500" y="50" text-anchor="middle" font-size="13" fill="#64748b">基于成本、不是基于规则；选错有五个常见原因</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="248" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">优化器：枚举可行计划，挑成本最低的那个</text>
+
+    <rect x="16" y="40" width="456" height="150" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="32" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">成本 = IO 成本 + CPU 成本</text>
+    <text x="32" y="86" font-size="11.5" fill="#334155">IO：要读多少个页（数据页 + 索引页）</text>
+    <text x="32" y="108" font-size="11.5" fill="#334155">CPU：比较多少行、排序多大结果集</text>
+    <text x="32" y="130" font-size="11" font-family="Consolas, monospace" fill="#334155">SHOW STATUS LIKE 'Last_query_cost'</text>
+    <text x="32" y="152" font-size="11.5" fill="#334155">实测走 idx_city_age 的查询：0.553630（约半页）</text>
+    <text x="32" y="174" font-size="11.5" fill="#b45309">⚠️ 只是估算，且是「上一条被优化的语句」的</text>
+
+    <rect x="488" y="40" width="456" height="150" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+    <text x="504" y="62" font-size="12.5" font-weight="bold" fill="#dc2626">为什么会选错</text>
+    <text x="504" y="86" font-size="11.5" fill="#334155">统计信息不准确（Cardinality 是采样估算）</text>
+    <text x="504" y="108" font-size="11.5" fill="#334155">估算模型简化（假设均匀分布、索引都在内存）</text>
+    <text x="504" y="130" font-size="11.5" fill="#334155">条件之间有相关性（优化器当它们相互独立）</text>
+    <text x="504" y="152" font-size="11.5" fill="#334155">没考虑 ORDER BY / LIMIT 带来的收益</text>
+    <text x="504" y="174" font-size="11.5" fill="#334155">多表 JOIN 组合爆炸 → 放弃穷举、改启发式</text>
+
+    <text x="16" y="214" font-size="11.5" fill="#334155">对策：ANALYZE TABLE 刷新统计（会隐式提交事务）｜8.0 直方图 UPDATE HISTOGRAM｜改写 SQL 引导优化器。</text>
+    <text x="16" y="234" font-size="11.5" fill="#334155">⭐ FORCE INDEX 是兜底手段：它锁死计划，后续数据分布一变反而可能更差。</text>
+  </g>
+
+  <g transform="translate(20,338)">
+    <rect x="0" y="0" width="960" height="214" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">filesort 的两种算法，以及什么时候不用 filesort</text>
+
+    <rect x="16" y="40" width="456" height="96" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="64" font-size="12" font-weight="bold" fill="#1d4ed8">全字段排序</text>
+    <text x="32" y="88" font-size="11.5" fill="#334155">SELECT 需要的所有列都放进排序缓冲区</text>
+    <text x="32" y="110" font-size="11.5" fill="#334155">内存占用大，但排完直接返回</text>
+    <text x="32" y="130" font-size="11.5" fill="#64748b">代价：无额外回表</text>
+
+    <rect x="488" y="40" width="456" height="96" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="504" y="64" font-size="12" font-weight="bold" fill="#b45309">rowid 排序</text>
+    <text x="504" y="88" font-size="11.5" fill="#334155">只放排序键 + 主键，排完再按主键回表</text>
+    <text x="504" y="110" font-size="11.5" fill="#334155">内存占用小</text>
+    <text x="504" y="130" font-size="11.5" fill="#64748b">代价：多一次随机 IO</text>
+
+    <text x="16" y="162" font-size="11.5" fill="#334155">选择依据：单行长度超过 max_length_for_sort_data（实测 8.0.46 = 4096，不是老文章里的 1024）就走 rowid 排序。</text>
+    <text x="16" y="184" font-size="11.5" fill="#047857">索引排序的三个条件：① 列顺序与索引一致 ② 排序方向一致 ③ WHERE 是该索引的最左前缀等值条件。</text>
+    <text x="16" y="204" font-size="11.5" fill="#047857">⚠️ 一旦 WHERE 出现范围条件，后面的列就不再有序 —— 排序会退回 filesort。</text>
+  </g>
+
+  <g transform="translate(20,572)">
+    <rect x="0" y="0" width="960" height="186" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">四种 JOIN 算法：复杂度差一个数量级</text>
+
+    <rect x="16" y="40" width="220" height="84" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="126" y="64" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#047857">NLJ 嵌套循环</text>
+    <text x="126" y="86" text-anchor="middle" font-size="11" fill="#334155">被驱动表连接列有索引</text>
+    <text x="126" y="108" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#047857">N × log M</text>
+
+    <rect x="252" y="40" width="220" height="84" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+    <text x="362" y="64" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#dc2626">BNL 块嵌套循环</text>
+    <text x="362" y="86" text-anchor="middle" font-size="11" fill="#334155">被驱动表连接列无索引</text>
+    <text x="362" y="108" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#dc2626">N × M</text>
+
+    <rect x="488" y="40" width="220" height="84" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="598" y="64" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1d4ed8">BKA 批量键访问</text>
+    <text x="598" y="86" text-anchor="middle" font-size="11" fill="#334155">NLJ + MRR</text>
+    <text x="598" y="108" text-anchor="middle" font-size="11" fill="#334155">少一些随机 IO</text>
+
+    <rect x="724" y="40" width="220" height="84" rx="6" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="834" y="64" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1d4ed8">Hash Join（8.0.18+）</text>
+    <text x="834" y="86" text-anchor="middle" font-size="11" fill="#334155">等值连接且无可用索引时自动启用</text>
+    <text x="834" y="108" text-anchor="middle" font-size="11" fill="#047857">显著快于 BNL</text>
+
+    <text x="16" y="148" font-size="11.5" fill="#334155">⭐ 实测（t_x 2500 行 × t_y 500 行，连接列都无索引）：8.0.46 上 Extra 直接是 hash join，</text>
+    <text x="16" y="168" font-size="11.5" fill="#334155">建哈希的是小表 t_y（500 行）—— 「小表驱动大表」在哈希连接里的形态是「谁进哈希表」。</text>
+  </g>
+</svg>

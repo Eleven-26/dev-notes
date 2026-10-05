@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 484" width="1000" height="484" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="484" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条 SQL 从连接到返回的完整链路</text>
+  <text x="500" y="50" text-anchor="middle" font-size="13" fill="#64748b">7 步；MySQL 8.0 把第 ① 步整环移除了</text>
+
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">七步链路：每一步的职责与失效点</text>
+
+    <rect x="16" y="44" width="110" height="56" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="71" y="68" text-anchor="middle" font-size="11.5" fill="#94a3b8">① 查询缓存</text>
+    <text x="71" y="88" text-anchor="middle" font-size="11" fill="#dc2626">8.0 已移除</text>
+
+    <line x1="128" y1="72" x2="144" y2="72" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="148" y="44" width="110" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="203" y="68" text-anchor="middle" font-size="11.5" fill="#0f172a">② 解析器</text>
+    <text x="203" y="88" text-anchor="middle" font-size="11" fill="#334155">词法 + 语法</text>
+
+    <line x1="260" y1="72" x2="276" y2="72" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="280" y="44" width="110" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="335" y="68" text-anchor="middle" font-size="11.5" fill="#0f172a">③ 预处理器</text>
+    <text x="335" y="88" text-anchor="middle" font-size="11" fill="#334155">权限 · 对象校验</text>
+
+    <line x1="392" y1="72" x2="408" y2="72" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="412" y="44" width="110" height="56" rx="6" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="467" y="68" text-anchor="middle" font-size="11.5" fill="#1d4ed8">④ 优化器</text>
+    <text x="467" y="88" text-anchor="middle" font-size="11" fill="#1d4ed8">生成执行计划</text>
+
+    <line x1="524" y1="72" x2="540" y2="72" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="544" y="44" width="110" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="599" y="68" text-anchor="middle" font-size="11.5" fill="#0f172a">⑤ 执行引擎</text>
+    <text x="599" y="88" text-anchor="middle" font-size="11" fill="#334155">调引擎 API</text>
+
+    <line x1="656" y1="72" x2="672" y2="72" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="676" y="44" width="110" height="56" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="731" y="68" text-anchor="middle" font-size="11.5" fill="#047857">⑥ 存储引擎</text>
+    <text x="731" y="88" text-anchor="middle" font-size="11" fill="#047857">Buffer Pool</text>
+
+    <line x1="788" y1="72" x2="804" y2="72" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="808" y="44" width="110" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="863" y="68" text-anchor="middle" font-size="11.5" fill="#0f172a">⑦ 返回结果</text>
+    <text x="863" y="88" text-anchor="middle" font-size="11" fill="#334155">结果集回传</text>
+
+    <text x="16" y="126" font-size="11.5" fill="#334155">⭐ 8.0 移除查询缓存的理由：表上任何一次写都会让该表相关的缓存全部失效 —— 有效期极短、命中率极低，</text>
+    <text x="16" y="146" font-size="11.5" fill="#334155">维护成本反超收益。所以现在缓存放应用层（Redis），不再由 Server 层承担。</text>
+  </g>
+
+  <g transform="translate(20,250)">
+    <rect x="0" y="0" width="960" height="214" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">连接层：连接池四个参数（Go / HikariCP 一一对应）</text>
+
+    <rect x="16" y="38" width="928" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">Go *sql.DB</text>
+    <text x="240" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">HikariCP</text>
+    <text x="430" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">管什么</text>
+    <text x="640" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">配错的典型症状</text>
+
+    <rect x="16" y="64" width="928" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="84" font-size="10.5" font-family="Consolas, monospace" fill="#1d4ed8">SetMaxOpenConns</text>
+    <text x="240" y="84" font-size="11" font-family="Consolas, monospace" fill="#334155">maximumPoolSize</text>
+    <text x="430" y="84" font-size="11" fill="#334155">池里最多的活连接</text>
+    <text x="640" y="84" font-size="11" fill="#dc2626">太小排队；太大打爆服务端</text>
+
+    <rect x="16" y="98" width="928" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="118" font-size="10.5" font-family="Consolas, monospace" fill="#1d4ed8">SetMaxIdleConns</text>
+    <text x="240" y="118" font-size="11" font-family="Consolas, monospace" fill="#334155">minimumIdle</text>
+    <text x="430" y="118" font-size="11" fill="#334155">最多保留的空闲连接</text>
+    <text x="640" y="118" font-size="11" fill="#dc2626">默认仅 2 → 退化成反复建销</text>
+
+    <rect x="16" y="132" width="928" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="152" font-size="10.5" font-family="Consolas, monospace" fill="#1d4ed8">SetConnMaxLifetime</text>
+    <text x="240" y="152" font-size="11" font-family="Consolas, monospace" fill="#334155">maxLifetime</text>
+    <text x="430" y="152" font-size="11" fill="#334155">一条连接最长活多久</text>
+    <text x="640" y="152" font-size="11" fill="#dc2626">不设 → 被 LB 掐断后报错</text>
+
+    <rect x="16" y="166" width="928" height="32" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="186" font-size="10.5" font-family="Consolas, monospace" fill="#1d4ed8">SetConnMaxIdleTime</text>
+    <text x="240" y="186" font-size="11" font-family="Consolas, monospace" fill="#334155">idleTimeout</text>
+    <text x="430" y="186" font-size="11" fill="#334155">空闲多久后关闭</text>
+    <text x="640" y="186" font-size="11" fill="#dc2626">不设 → 空闲连接长期占线程</text>
+  </g>
+</svg>

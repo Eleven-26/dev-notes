@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 710" width="1000" height="710" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="710" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">InnoDB 的锁体系与加锁范围</text>
+  <text x="500" y="50" text-anchor="middle" font-size="13" fill="#64748b">一条 FOR UPDATE 打出四把锁；锁多少行，完全由索引决定</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="238" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">SELECT * FROM t WHERE k = 20 FOR UPDATE（RR 下实测 data_locks）</text>
+
+    <rect x="16" y="38" width="540" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">idx</text>
+    <text x="150" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">LOCK_MODE</text>
+    <text x="340" y="56" font-size="11.5" font-weight="bold" fill="#0f172a">LOCK_DATA</text>
+
+    <rect x="16" y="64" width="540" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="84" font-size="11.5" font-family="Consolas, monospace" fill="#334155">NULL</text>
+    <text x="150" y="84" font-size="11.5" font-family="Consolas, monospace" fill="#334155">IX</text>
+    <text x="340" y="84" font-size="11.5" font-family="Consolas, monospace" fill="#334155">NULL</text>
+    <text x="416" y="84" font-size="11" fill="#64748b">意向排他（表级）</text>
+
+    <rect x="16" y="96" width="540" height="30" rx="4" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+    <text x="32" y="116" font-size="11.5" font-family="Consolas, monospace" fill="#b45309">idx_k</text>
+    <text x="150" y="116" font-size="11.5" font-family="Consolas, monospace" fill="#b45309">X,GAP</text>
+    <text x="340" y="116" font-size="11.5" font-family="Consolas, monospace" fill="#b45309">30, 3</text>
+    <text x="416" y="116" font-size="11" fill="#64748b">间隙 (20,30)</text>
+
+    <rect x="16" y="128" width="540" height="30" rx="4" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+    <text x="32" y="148" font-size="11.5" font-family="Consolas, monospace" fill="#1d4ed8">idx_k</text>
+    <text x="150" y="148" font-size="11.5" font-family="Consolas, monospace" fill="#1d4ed8">X</text>
+    <text x="340" y="148" font-size="11.5" font-family="Consolas, monospace" fill="#1d4ed8">20, 2</text>
+    <text x="416" y="148" font-size="11" fill="#64748b">临键锁（记录 + 前间隙）</text>
+
+    <rect x="16" y="160" width="540" height="30" rx="4" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+    <text x="32" y="180" font-size="11.5" font-family="Consolas, monospace" fill="#047857">PRIMARY</text>
+    <text x="150" y="180" font-size="11.5" font-family="Consolas, monospace" fill="#047857">X,REC_NOT_GAP</text>
+    <text x="340" y="180" font-size="11.5" font-family="Consolas, monospace" fill="#047857">2</text>
+    <text x="416" y="180" font-size="11" fill="#64748b">回表后的纯行锁</text>
+
+    <text x="16" y="214" font-size="11.5" fill="#334155">⭐ 一条语句、四种锁：IX 是表锁与行锁之间的协调标记，GAP 防插入（RR 防幻读的手段），</text>
+    <text x="16" y="232" font-size="11.5" fill="#334155">临键锁是 RR 下的默认加锁单位，REC_NOT_GAP 才是真正锁住那一行。</text>
+
+    <text x="580" y="60" font-size="12" font-weight="bold" fill="#0f172a">索引 idx_k 上的加锁范围</text>
+    <line x1="580" y1="130" x2="940" y2="130" stroke="#cbd5e1" stroke-width="1.5"/>
+    <rect x="600" y="120" width="100" height="20" rx="3" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <rect x="700" y="120" width="100" height="20" rx="3" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+    <circle cx="600" cy="130" r="5" fill="#1d4ed8"/>
+    <circle cx="700" cy="130" r="5" fill="#1d4ed8"/>
+    <circle cx="800" cy="130" r="5" fill="#94a3b8"/>
+    <circle cx="900" cy="130" r="5" fill="#94a3b8"/>
+    <text x="600" y="152" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#334155">10</text>
+    <text x="700" y="152" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#1d4ed8">20</text>
+    <text x="800" y="152" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#334155">30</text>
+    <text x="900" y="152" text-anchor="middle" font-size="11" font-family="Consolas, monospace" fill="#334155">50</text>
+    <text x="600" y="178" text-anchor="middle" font-size="10.5" fill="#1d4ed8">临键锁 (10,20]</text>
+    <text x="730" y="178" text-anchor="middle" font-size="10.5" fill="#b45309">间隙锁 (20,30)</text>
+  </g>
+
+  <g transform="translate(20,328)">
+    <rect x="0" y="0" width="960" height="158" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">同一句换成 RC：少两把锁</text>
+
+    <rect x="16" y="40" width="456" height="104" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+    <text x="32" y="64" font-size="12" font-weight="bold" fill="#b45309">RR（默认）：临键锁 + 间隙锁</text>
+    <text x="32" y="88" font-size="11" font-family="Consolas, monospace" fill="#334155">idx_k    X        20, 2</text>
+    <text x="32" y="108" font-size="11" font-family="Consolas, monospace" fill="#334155">idx_k    X,GAP    30, 3</text>
+    <text x="32" y="128" font-size="11" fill="#64748b">并发插入会被间隙锁挡住 → 幻读被防住</text>
+
+    <rect x="488" y="40" width="456" height="104" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+    <text x="504" y="64" font-size="12" font-weight="bold" fill="#047857">RC：只剩记录锁</text>
+    <text x="504" y="88" font-size="11" font-family="Consolas, monospace" fill="#334155">idx_k    X,REC_NOT_GAP  20, 2</text>
+    <text x="504" y="108" font-size="11" font-family="Consolas, monospace" fill="#334155">PRIMARY  X,REC_NOT_GAP  2</text>
+    <text x="504" y="128" font-size="11" fill="#64748b">可以插 → 幻读；但并发度更高、死锁更少</text>
+  </g>
+
+  <g transform="translate(20,506)">
+    <rect x="0" y="0" width="960" height="184" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#b45309">条件没走索引：锁直接失控到整表</text>
+
+    <text x="16" y="56" font-size="11.5" fill="#334155">SELECT * FROM t WHERE v = 200 FOR UPDATE（v 上无索引）实测锁列表：</text>
+
+    <rect x="16" y="70" width="928" height="26" rx="4" fill="#ffffff" stroke="#fdba74" stroke-width="1"/>
+    <text x="32" y="88" font-size="11" font-family="Consolas, monospace" fill="#334155">NULL      IX        NULL</text>
+    <text x="360" y="88" font-size="11" font-family="Consolas, monospace" fill="#dc2626">PRIMARY   X         supremum pseudo-record</text>
+
+    <rect x="16" y="100" width="928" height="26" rx="4" fill="#ffffff" stroke="#fdba74" stroke-width="1"/>
+    <text x="32" y="118" font-size="11" font-family="Consolas, monospace" fill="#334155">PRIMARY   X         1</text>
+    <text x="360" y="118" font-size="11" font-family="Consolas, monospace" fill="#334155">PRIMARY   X         2 / 3 / 5</text>
+
+    <text x="16" y="150" font-size="11.5" fill="#b45309">本该只锁 id=2 一行，结果四行全锁 + supremum —— 后者是「最后一条记录之后的无穷远」，</text>
+    <text x="16" y="170" font-size="11.5" fill="#b45309">锁住它等于整表连同后面的所有间隙一起锁住。⚠️ 锁列表里出现 supremum，就是加锁范围失控的直读证据。</text>
+  </g>
+</svg>

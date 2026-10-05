@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" width="1000" height="820" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="820" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">内嵌还是引用：口诀加三条轴，再用 16MB 当预警线</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ 口诀：一对少用内嵌，一对多用引用；内嵌让「一次读」变便宜，引用让「一次写」变便宜</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="275" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">内嵌 Embedding vs 引用 Referencing</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">对比维度</text>
+    <text x="234" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">内嵌 Embedding</text>
+    <text x="594" y="62" font-size="12.5" font-weight="bold" fill="#047857">引用 Referencing</text>
+
+    <rect x="20" y="72" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="91" font-size="12" fill="#334155">适用关系</text>
+    <text x="234" y="91" font-size="12" fill="#334155">1:1、1:少（子文档数量有界）</text>
+    <text x="594" y="91" font-size="12" fill="#334155">1:多、多:多，无界增长的从属集合</text>
+
+    <rect x="20" y="100" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="119" font-size="12" fill="#334155">读取成本</text>
+    <text x="234" y="119" font-size="12" fill="#047857">⭐ 一次查询拿到完整文档</text>
+    <text x="594" y="119" font-size="12" fill="#334155">需二次查询或 $lookup</text>
+
+    <rect x="20" y="128" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="147" font-size="12" fill="#334155">写入成本</text>
+    <text x="234" y="147" font-size="12" fill="#b45309">子文档膨胀可能触发文档搬迁</text>
+    <text x="594" y="147" font-size="12" fill="#047857">各自独立更新，互不影响</text>
+
+    <rect x="20" y="156" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="175" font-size="12" fill="#334155">原子性</text>
+    <text x="234" y="175" font-size="12" fill="#047857">⭐ 单文档写入天然原子，无需事务</text>
+    <text x="594" y="175" font-size="12" fill="#b45309">跨文档，需事务保证</text>
+
+    <rect x="20" y="184" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="203" font-size="12" fill="#334155">数据冗余</text>
+    <text x="234" y="203" font-size="12" fill="#b45309">可能重复，更新要多处改</text>
+    <text x="594" y="203" font-size="12" fill="#047857">无冗余，单一数据源</text>
+
+    <rect x="20" y="212" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="231" font-size="12" fill="#334155">典型场景</text>
+    <text x="234" y="231" font-size="12" fill="#334155">收货地址、标签、订单明细、配置项</text>
+    <text x="594" y="231" font-size="12" fill="#334155">用户↔文章、日志、评论、好友关系</text>
+
+    <text x="20" y="262" font-size="12" fill="#334155">用内嵌：子数据总与主文档一起读，且数量有明确上界；用引用：会无界增长、需独立查询 / 分页，或多处共享同一份。</text>
+  </g>
+
+  <g transform="translate(20,395)">
+    <rect x="0" y="0" width="960" height="185" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">口诀之外还要看哪三条轴</text>
+
+    <rect x="30" y="44" width="290" height="68" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="175" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">访问模式</text>
+    <text x="175" y="90" text-anchor="middle" font-size="11" fill="#334155">子数据有没有独立入口、</text>
+    <text x="175" y="106" text-anchor="middle" font-size="11" fill="#334155">独立分页</text>
+
+    <rect x="335" y="44" width="290" height="68" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="480" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">原子性边界</text>
+    <text x="480" y="90" text-anchor="middle" font-size="11" fill="#334155">更新是否必须与父文档同批生效</text>
+    <text x="480" y="106" text-anchor="middle" font-size="11" fill="#334155">→ 决定要不要开事务</text>
+
+    <rect x="640" y="44" width="290" height="68" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="785" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">复用与冗余</text>
+    <text x="785" y="90" text-anchor="middle" font-size="11" fill="#334155">一份数据是否被多个父文档共享</text>
+    <text x="785" y="106" text-anchor="middle" font-size="11" fill="#334155">→ 冗余会不会变一致性负担</text>
+
+    <text x="20" y="142" font-size="12" fill="#334155">⭐ 一句话：内嵌让「一次读」变便宜，引用让「一次写」变便宜 —— 写多、且读时经常不带上父文档的关联数据，几乎总是该引用。</text>
+    <text x="20" y="168" font-size="12" fill="#64748b">第一条决定读成本，第二条决定要不要事务，第三条决定冗余会不会变成一致性负担。</text>
+  </g>
+
+  <g transform="translate(20,600)">
+    <rect x="0" y="0" width="960" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">基数关系能往哪个方向压，以及 16MB 的用法</text>
+
+    <rect x="30" y="44" width="440" height="92" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="46" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">expanded：把「一」复制进「多」</text>
+    <text x="46" y="88" font-size="11.5" fill="#334155">order_items[] 每条内嵌一份商品快照</text>
+    <text x="46" y="108" font-size="11.5" fill="#334155">读订单列表零关联；价格天然是「下单时快照」</text>
+    <text x="46" y="128" font-size="11.5" fill="#047857">✅ 订单本就不该随商品改价而变</text>
+
+    <rect x="490" y="44" width="440" height="92" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+    <text x="506" y="66" font-size="12.5" font-weight="bold" fill="#b45309">contracted：把「多」压进「一」</text>
+    <text x="506" y="88" font-size="11.5" fill="#334155">products 内嵌 orders: [_id ...]</text>
+    <text x="506" y="108" font-size="11.5" fill="#334155">商品维度一次拿到它全部订单 ID</text>
+    <text x="506" y="128" font-size="11.5" fill="#dc2626">⚠️ 数组随销量无界增长直到撞 16MB</text>
+
+    <text x="20" y="160" font-size="12" fill="#b45309">⚠️ 两个方向同时存（既内嵌快照又维护反向数组）= 双写一致性自己扛，只有两侧都有真实读需求才做。</text>
+    <text x="20" y="186" font-size="12" fill="#334155">⭐ 16MB 不是容量参数，是预警线：撞墙前每一次文档增长都在付写放大（删旧 + 插新，该集合每个索引条目都要挪）。</text>
+    <text x="20" y="208" font-size="12" fill="#64748b">给内嵌数组找一个业务上不可能突破的上界（不是「目前看够用」）；找不到就用引用、别赌。</text>
+  </g>
+</svg>

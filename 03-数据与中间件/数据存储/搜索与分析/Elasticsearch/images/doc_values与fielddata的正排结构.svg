@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 735" width="1000" height="735" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="735" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两份独立的开销：倒排（词→文档）与正排（文档→值）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">四份完全相同的数据、只改索引开关，都 _forcemerge 到 1 段后比 store.size —— 本机 8.19.0 实测</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、同一个字段，两套方向：倒排查「命中」，正排供「排序 / 聚合」</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">倒排的方向（词→文档）和聚合需要的方向（文档→值）是反的 —— 这是硬限制，不是约定</text>
+
+    <rect x="20" y="70" width="450" height="112" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="94" font-size="13.5" font-weight="bold" fill="#1d4ed8">倒排索引　index: true</text>
+    <text x="36" y="118" font-size="12.5" fill="#334155">词项 → 命中的文档 ID 列表</text>
+    <text x="36" y="140" font-size="12.5" fill="#334155">服务 term / match / match_phrase / 高亮</text>
+    <text x="36" y="164" font-size="12.5" fill="#64748b">按「词组」组织，答不了「某文档某字段的值」</text>
+
+    <rect x="490" y="70" width="450" height="112" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="94" font-size="13.5" font-weight="bold" fill="#047857">正排 doc_values: true</text>
+    <text x="506" y="118" font-size="12.5" fill="#334155">文档 → 值，列式 + 按文档顺序排列</text>
+    <text x="506" y="140" font-size="12.5" fill="#334155">服务 sort / aggs / script（顺序扫一列）</text>
+    <text x="506" y="164" font-size="12.5" fill="#64748b">text 默认关闭且无法开启（分词后不成列）</text>
+  </g>
+
+  <g transform="translate(20,290)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、体积加性：两套结构确实同时存在</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">四份完全相同的数据（各 3000 条），只改索引开关，都 _forcemerge?max_num_segments=1 消除段数差异</text>
+
+    <rect x="20" y="70" width="540" height="145" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="96" font-size="12.5" fill="#334155">lab_base　　 keyword：倒排 + doc_values 都开　　132827 B</text>
+    <text x="36" y="124" font-size="12.5" fill="#334155">lab_nodv　　 doc_values:false → 只剩倒排　　　　 120683 B</text>
+    <text x="36" y="152" font-size="12.5" fill="#334155">lab_noindex　 index:false → 只剩正排　　　　　　109318 B</text>
+    <text x="36" y="180" font-size="12.5" fill="#334155">lab_text　　 text：倒排 + norms（无 doc_values）　126072 B</text>
+
+    <rect x="580" y="70" width="360" height="145" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="596" y="96" font-size="12.5" fill="#047857">正排 = 132827 − 120683 = 12144 B（约 9.1%）</text>
+    <text x="596" y="124" font-size="12.5" fill="#047857">倒排 = 132827 − 109318 = 23509 B（约 17.7%）</text>
+    <text x="596" y="152" font-size="12.5" fill="#334155">固定开销 = 97174 B（_source、元数据等）</text>
+    <text x="596" y="180" font-size="12.5" fill="#b45309">交叉验算：120683 + 109318 − 97174 = 132827 ✅</text>
+  </g>
+
+  <g transform="translate(20,535)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、doc_values 与 fielddata：一个建索引时写好，一个运行时现场反转</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">两者都是为了拿到「文档 → 值」，区别在存不存</text>
+
+    <rect x="20" y="68" width="450" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="92" font-size="13" font-weight="bold" fill="#047857">doc_values：写索引时随倒排一起落盘</text>
+    <text x="36" y="116" font-size="12.5" fill="#334155">排序 / 聚合是「读现成的」→ 稳定、可预期</text>
+    <text x="36" y="138" font-size="12.5" fill="#334155">除 text 外的字段默认开启</text>
+    <text x="36" y="160" font-size="12.5" fill="#64748b">关掉则省磁盘，但该字段不能再排序 / 聚合</text>
+
+    <rect x="490" y="68" width="450" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="92" font-size="13" font-weight="bold" fill="#dc2626">fielddata：运行时 uninverting 倒排 → 进堆</text>
+    <text x="506" y="116" font-size="12.5" fill="#334155">text 聚合报 Fielddata is disabled</text>
+    <text x="506" y="138" font-size="12.5" fill="#334155">全量加载进堆、且不落盘 → 基数高就 OOM</text>
+    <text x="506" y="160" font-size="12.5" fill="#64748b">正解是加 keyword 子字段，不是开 fielddata</text>
+  </g>
+
+</svg>

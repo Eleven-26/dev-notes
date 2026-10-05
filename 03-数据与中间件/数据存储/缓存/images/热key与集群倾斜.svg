@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" width="1000" height="820" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="820" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">热 key / 大 key：会引发哪些问题，怎么拆</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先分清三个问题，再给方案 —— 尤其别漏掉「集群倾斜」这个最容易被忽略的</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">① 热点 key 除了击穿，还会带来三个问题</text>
+
+    <rect x="24" y="48" width="296" height="130" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="40" y="72" font-size="12.5" font-weight="bold" fill="#dc2626">① 单线程阻塞</text>
+    <text x="40" y="98" font-size="11" fill="#334155">所有命令进同一个队列逐个执行</text>
+    <text x="40" y="120" font-size="11" fill="#334155">巨量请求排队 → 整体延迟上升</text>
+    <text x="40" y="150" font-size="11" fill="#64748b">→ 只能升配或加节点</text>
+
+    <rect x="332" y="48" width="296" height="130" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="348" y="72" font-size="12.5" font-weight="bold" fill="#b45309">② 网络带宽过载</text>
+    <text x="348" y="98" font-size="11" fill="#334155">value 很大且访问量又高</text>
+    <text x="348" y="120" font-size="11" fill="#334155">每次访问都是一次网络请求</text>
+    <text x="348" y="150" font-size="11" fill="#64748b">→ 带宽被打满</text>
+
+    <rect x="640" y="48" width="296" height="130" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="656" y="72" font-size="12.5" font-weight="bold" fill="#7c3aed">③ 集群倾斜（最易忽略）</text>
+    <text x="656" y="98" font-size="11" fill="#334155">按 key 哈希分片，同 key 必落同分片</text>
+    <text x="656" y="120" font-size="11" fill="#334155">热点全压一个节点，其他节点很闲</text>
+    <text x="656" y="150" font-size="11" fill="#64748b">→ 集群白做了</text>
+
+    <text x="24" y="206" font-size="12" fill="#334155">⭐ 做集群本是为了扩展并发，结果热点全打在单个节点上 —— 一个特别忙、其余的闲。</text>
+  </g>
+
+  <g transform="translate(20,315)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">② 集群倾斜与它的解法：多副本打散</text>
+
+    <rect x="24" y="44" width="440" height="160" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="40" y="66" font-size="12" font-weight="bold" fill="#dc2626">集群倾斜：热点全压一个节点</text>
+    <rect x="40" y="84" width="126" height="70" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="103" y="110" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">节点①</text>
+    <text x="103" y="132" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#dc2626">特别忙</text>
+    <rect x="174" y="84" width="126" height="70" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="237" y="110" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">节点②</text>
+    <text x="237" y="132" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">很闲</text>
+    <rect x="308" y="84" width="126" height="70" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="371" y="110" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">节点③</text>
+    <text x="371" y="132" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#64748b">很闲</text>
+    <text x="40" y="182" font-size="11" fill="#64748b">同一 key 永远落同一分片 → 加出来的节点帮不上忙</text>
+
+    <rect x="490" y="44" width="446" height="160" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="506" y="66" font-size="12" font-weight="bold" fill="#047857">解法：多副本打散</text>
+    <text x="506" y="96" font-size="11.5" fill="#334155">把同一个 value 复制成 N 个内容相同的 key，</text>
+    <text x="506" y="120" font-size="11.5" fill="#334155">读请求随机挑一个 → 压力摊到 N 个节点上</text>
+    <text x="506" y="152" font-size="11.5" fill="#b45309">⚠️ 副本后缀必须写在 {tag} 之外，</text>
+    <text x="506" y="176" font-size="11.5" fill="#b45309">否则会被强制分到同一个槽，打散直接失效</text>
+  </g>
+
+  <g transform="translate(20,560)">
+    <rect x="0" y="0" width="960" height="235" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">③ 另两个解法：大 value 拆 key、本地缓存 + 熔断降级</text>
+
+    <rect x="24" y="44" width="912" height="28" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">使用频率</text>
+    <text x="204" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">数据</text>
+    <text x="534" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">建议 key</text>
+
+    <rect x="24" y="72" width="912" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="88" dominant-baseline="central" font-size="12" fill="#334155">高频（每次请求都用）</text>
+    <text x="204" y="88" dominant-baseline="central" font-size="12" fill="#334155">用户名、token、昵称</text>
+    <text x="534" y="88" dominant-baseline="central" font-size="12" fill="#1d4ed8">user:base:{uid}</text>
+
+    <rect x="24" y="104" width="912" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="120" dominant-baseline="central" font-size="12" fill="#334155">低频</text>
+    <text x="204" y="120" dominant-baseline="central" font-size="12" fill="#334155">收货地址、联系人、通讯录</text>
+    <text x="534" y="120" dominant-baseline="central" font-size="12" fill="#1d4ed8">user:addr:{uid}</text>
+
+    <text x="24" y="164" font-size="12" fill="#334155">⭐ 大 value 拆 key（内容不同）≠ 多副本（内容相同）：前者减少单次传输量，后者打散集群压力 —— 别混。</text>
+    <text x="24" y="192" font-size="12" fill="#334155">③ 单线程阻塞的解：加一层进程内本地缓存，把 Redis 的过期时间作为数据一起缓存，不依赖本层 TTL。</text>
+    <text x="24" y="218" font-size="12" fill="#b45309">⚠️ 代价：引入本地缓存后一致性链路变长 —— 本地↔Redis、Redis↔DB 两段都要一并考虑。</text>
+  </g>
+</svg>

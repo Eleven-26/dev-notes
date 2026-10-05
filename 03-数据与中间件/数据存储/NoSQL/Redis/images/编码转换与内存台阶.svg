@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 862" width="1000" height="862" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="862" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一份数据，编码不同能差一个数量级</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">五条类型各有「省内存 / 通用」两档；阈值与转换点均由 redis:7-alpine（7.4.11）容器实测抄录</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="16" font-weight="bold" fill="#0f172a">五种类型的编码路线与触发配置</text>
+
+    <text x="24" y="58" font-size="12.5" font-weight="bold" fill="#475569">类型</text>
+    <text x="120" y="58" font-size="12.5" font-weight="bold" fill="#475569">小 / 省内存</text>
+    <text x="330" y="58" font-size="12.5" font-weight="bold" fill="#475569">大 / 通用</text>
+    <text x="500" y="58" font-size="12.5" font-weight="bold" fill="#475569">触发转换的配置</text>
+    <line x1="20" y1="66" x2="940" y2="66" stroke="#cbd5e1" stroke-width="1"/>
+
+    <text x="24" y="90" font-size="12.5" fill="#334155">String</text>
+    <text x="120" y="90" font-size="12.5" fill="#047857">int / embstr</text>
+    <text x="330" y="90" font-size="12.5" fill="#334155">raw</text>
+    <text x="500" y="90" font-size="12.5" fill="#334155">44 字节（硬编码，不可配）</text>
+
+    <text x="24" y="116" font-size="12.5" fill="#334155">Hash</text>
+    <text x="120" y="116" font-size="12.5" fill="#047857">listpack</text>
+    <text x="330" y="116" font-size="12.5" fill="#334155">hashtable</text>
+    <text x="500" y="116" font-size="12.5" fill="#334155">hash-max-listpack-entries / -value</text>
+
+    <text x="24" y="142" font-size="12.5" fill="#334155">List</text>
+    <text x="120" y="142" font-size="12.5" fill="#047857">listpack / quicklist</text>
+    <text x="330" y="142" font-size="12.5" fill="#334155">——</text>
+    <text x="500" y="142" font-size="12.5" fill="#334155">list-max-listpack-size</text>
+
+    <text x="24" y="168" font-size="12.5" fill="#334155">Set</text>
+    <text x="120" y="168" font-size="12.5" fill="#047857">intset / listpack</text>
+    <text x="330" y="168" font-size="12.5" fill="#334155">hashtable</text>
+    <text x="500" y="168" font-size="12.5" fill="#334155">set-max-intset-entries / set-max-listpack-entries</text>
+
+    <text x="24" y="196" font-size="12.5" fill="#334155">ZSet</text>
+    <text x="120" y="196" font-size="12.5" fill="#047857">listpack</text>
+    <text x="330" y="196" font-size="12.5" fill="#334155">skiplist</text>
+    <text x="500" y="196" font-size="12.5" fill="#334155">zset-max-listpack-entries / zset-max-listpack-value</text>
+  </g>
+
+  <g transform="translate(20,294)">
+    <rect x="0" y="0" width="960" height="236" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="16" font-weight="bold" fill="#0f172a">转换点实测：越过阈值内存直接跳档</text>
+    <text x="16" y="50" font-size="12" fill="#b45309">⚠️ 网上说 hash 上限 128 —— 本机 7.4.11 是 512（必须 CONFIG GET 为准）</text>
+
+    <rect x="20" y="62" width="300" height="156" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="34" y="84" font-size="13" font-weight="bold" fill="#0f172a">Hash：512 → 513</text>
+    <text x="34" y="108" font-size="12.5" fill="#334155">512 个字段　listpack　　<tspan font-weight="bold">5176 B</tspan></text>
+    <line x1="42" y1="118" x2="298" y2="118" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="34" y="138" font-size="12.5" fill="#334155">513 个字段　hashtable　<tspan font-weight="bold" fill="#dc2626">28824 B</tspan></text>
+    <text x="34" y="164" font-size="12.5" font-weight="bold" fill="#dc2626">内存 ×5.6</text>
+    <text x="34" y="188" font-size="12" fill="#64748b">512 仍在阈值上（还是 listpack）</text>
+    <text x="34" y="206" font-size="12" fill="#64748b">越过即转，且不会转回来</text>
+
+    <rect x="334" y="62" width="300" height="156" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="348" y="84" font-size="13" font-weight="bold" fill="#0f172a">Set：128 → 129</text>
+    <text x="348" y="108" font-size="12.5" fill="#334155">128 个短串　listpack　　<tspan font-weight="bold">1592 B</tspan></text>
+    <line x1="356" y1="118" x2="612" y2="118" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="348" y="138" font-size="12.5" fill="#334155">129 个短串　hashtable　<tspan font-weight="bold" fill="#dc2626">7320 B</tspan></text>
+    <text x="348" y="164" font-size="12.5" font-weight="bold" fill="#dc2626">内存 ×4.6</text>
+    <text x="348" y="188" font-size="12" fill="#64748b">全整数另有 intset 路线：</text>
+    <text x="348" y="206" font-size="12" fill="#64748b">100 个 → 280 B，512 个 → 1336 B</text>
+
+    <rect x="648" y="62" width="292" height="156" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="662" y="84" font-size="13" font-weight="bold" fill="#0f172a">ZSet：128 → 129</text>
+    <text x="662" y="108" font-size="12.5" fill="#334155">128 个成员　listpack　　<tspan font-weight="bold">1080 B</tspan></text>
+    <line x1="670" y1="118" x2="926" y2="118" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="662" y="138" font-size="12.5" fill="#334155">129 个成员　skiplist　　<tspan font-weight="bold" fill="#dc2626">13580 B</tspan></text>
+    <text x="662" y="164" font-size="12.5" font-weight="bold" fill="#dc2626">内存 ×12.6</text>
+    <text x="662" y="188" font-size="12" fill="#64748b">跳表节点 + 哈希表 entry</text>
+    <text x="662" y="206" font-size="12" fill="#64748b">同一个 member 存了两份</text>
+  </g>
+
+  <g transform="translate(20,542)">
+    <rect x="0" y="0" width="960" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">差在哪：每元素内存一算就清楚</text>
+    <text x="24" y="52" font-size="12.5" fill="#334155">Set 512 个整数　　intset　　1336 B　（ <tspan font-weight="bold" fill="#047857">2.6 B/元素</tspan> ）　　　Set 512 个短串　hashtable　24688 B　（ <tspan font-weight="bold" fill="#dc2626">48.2 B/元素</tspan> ）</text>
+    <text x="24" y="76" font-size="12.5" fill="#334155">ZSet 128 个成员　listpack　1080 B　（ <tspan font-weight="bold" fill="#047857">8.4 B/元素</tspan> ）　　　ZSet 512 个成员　skiplist　41760 B　（ <tspan font-weight="bold" fill="#dc2626">92.8 B/元素</tspan> ）</text>
+    <text x="24" y="100" font-size="12.5" fill="#b45309">⭐ 紧凑编码把元素首尾相连放在一块内存里，没有 dictEntry 指针、没有每元素独立的 redisObject —— 几倍到十几倍的差距全在这里。</text>
+  </g>
+
+  <g transform="translate(20,666)">
+    <rect x="0" y="0" width="960" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">ZSet 为什么是「跳表 + 哈希表」两个索引并存</text>
+
+    <text x="30" y="58" font-size="12.5" fill="#334155">L3　1 ──────────────────────────────→ 12</text>
+    <text x="30" y="80" font-size="12.5" fill="#334155">L2　1 ──────→ 5 ──────────────────→ 12</text>
+    <text x="30" y="102" font-size="12.5" fill="#334155">L1　1 ──→ 3 ──→ 5 ────→ 9 ──────→ 12</text>
+    <text x="30" y="124" font-size="12.5" fill="#334155">L0　1 → 2 → 3 → 5 → 7 → 9 → 11 → 12　　（backward 指针支持逆序）</text>
+    <text x="30" y="150" font-size="12" fill="#64748b">层高由 zslRandomLevel() 随机定：每层 25% 概率再上一层，最高 32 层；平均每节点 1.33 个指针。</text>
+
+    <line x1="620" y1="44" x2="620" y2="164" stroke="#cbd5e1" stroke-width="1"/>
+
+    <text x="640" y="58" font-size="12.5" fill="#334155"><tspan font-weight="bold" fill="#1d4ed8">跳表</tspan> → 范围 / 排名类问题</text>
+    <text x="640" y="78" font-size="12" fill="#64748b">ZRANGE、ZRANGEBYSCORE、ZRANK</text>
+    <text x="640" y="100" font-size="12" fill="#64748b">span 让 ZRANK 也是 O(logN)</text>
+    <text x="640" y="126" font-size="12.5" fill="#334155"><tspan font-weight="bold" fill="#047857">哈希表</tspan> → 点查类问题</text>
+    <text x="640" y="146" font-size="12" fill="#64748b">ZSCORE member 是 O(1)</text>
+    <text x="640" y="166" font-size="12" fill="#b45309">代价：member 存两份 → 换编码时内存跳量级</text>
+  </g>
+</svg>

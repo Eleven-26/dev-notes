@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 765" width="1000" height="765" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="765" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">哨兵自动选新主，Cluster 用重定向分流</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">上：一次真实故障转移的五步与耗时；下：Cluster 的 16384 个槽与 MOVED / ASK 的区别（本机容器实测）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">哨兵故障转移的五个阶段（1 主 2 从 + 3 哨兵，quorum 2）</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">注入故障用 docker pause：进程还在、心跳停止 → 会被判 sdown，但 TCP 连接不断</text>
+
+    <rect x="16" y="72" width="164" height="76" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="98" y="94" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#dc2626">① sdown</text>
+    <text x="98" y="116" text-anchor="middle" font-size="11.5" fill="#334155">超 down-after-</text>
+    <text x="98" y="134" text-anchor="middle" font-size="11.5" fill="#334155">ms 没收心跳</text>
+
+    <line x1="180" y1="110" x2="200" y2="110" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="205" y="72" width="164" height="76" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.6"/>
+    <text x="287" y="94" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">② odown</text>
+    <text x="287" y="116" text-anchor="middle" font-size="11.5" fill="#334155">询问其他哨兵</text>
+    <text x="287" y="134" text-anchor="middle" font-size="11.5" fill="#334155">达到 quorum 票</text>
+
+    <line x1="369" y1="110" x2="389" y2="110" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="394" y="72" width="164" height="76" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.6"/>
+    <text x="476" y="94" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">③ 选举 leader</text>
+    <text x="476" y="116" text-anchor="middle" font-size="11.5" fill="#334155">哨兵间基于</text>
+    <text x="476" y="134" text-anchor="middle" font-size="11.5" fill="#334155">Raft 变体投票</text>
+
+    <line x1="558" y1="110" x2="578" y2="110" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="583" y="72" width="164" height="76" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.6"/>
+    <text x="665" y="94" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c3aed">④ 选新主</text>
+    <text x="665" y="116" text-anchor="middle" font-size="11.5" fill="#334155">priority → offset</text>
+    <text x="665" y="134" text-anchor="middle" font-size="11.5" fill="#334155">最大 → runid 最小</text>
+
+    <line x1="747" y1="110" x2="767" y2="110" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="772" y="72" width="164" height="76" rx="8" fill="#ffffff" stroke="#047857" stroke-width="1.6"/>
+    <text x="854" y="94" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">⑤ 提升并通知</text>
+    <text x="854" y="116" text-anchor="middle" font-size="11.5" fill="#334155">REPLICAOF NO ONE</text>
+    <text x="854" y="134" text-anchor="middle" font-size="11.5" fill="#334155">其余副本改指向它</text>
+
+    <text x="16" y="178" font-size="12.5" fill="#334155">⏱ 冻结 → sdown：<tspan font-weight="bold" fill="#dc2626">5.27s</tspan>（≈ down-after-milliseconds 5s + 心跳检测周期）　　sdown → switch-master：<tspan font-weight="bold" fill="#047857">2.15s</tspan></text>
+    <text x="16" y="204" font-size="12.5" fill="#334155">⭐ 客户端必须走 <tspan font-family="Consolas, monospace" fill="#1d4ed8">sentinel get-master-addr-by-name mymaster</tspan> 拿主节点地址，不能写死 IP —— 否则切换后还在打旧主（写入会报 READONLY）。</text>
+    <text x="16" y="230" font-size="12.5" fill="#b45309">⚠️ 哨兵必须 ≥3 且为奇数：quorum 决定「客观下线」，而选 leader 还需要多数派 —— 2 个哨兵在一台机器上挂了 1 个就失效。</text>
+  </g>
+
+  <g transform="translate(20,340)">
+    <rect x="0" y="0" width="960" height="195" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一手日志与转移后的自检</text>
+
+    <rect x="16" y="46" width="560" height="132" rx="6" fill="#0f172a"/>
+    <text x="30" y="70" font-size="11" font-family="Consolas, monospace" fill="#e2e8f0">10:38:40.271 # +sdown master mymaster redis-ha-master 6379</text>
+    <text x="30" y="92" font-size="11" font-family="Consolas, monospace" fill="#e2e8f0">10:38:40.373 # +odown master ... #quorum 2/2</text>
+    <text x="30" y="114" font-size="11" font-family="Consolas, monospace" fill="#e2e8f0">10:38:40.442 # +elected-leader master ...</text>
+    <text x="30" y="136" font-size="11" font-family="Consolas, monospace" fill="#86efac">10:38:41.407 # +promoted-slave slave 172.25.0.10:6379</text>
+    <text x="30" y="158" font-size="11" font-family="Consolas, monospace" fill="#86efac">10:38:42.522 # +switch-master ... 172.25.0.10 6379</text>
+
+    <rect x="590" y="46" width="354" height="132" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="604" y="68" font-size="12" fill="#334155">转移后拓扑自检：</text>
+    <text x="604" y="92" font-size="12" fill="#b45309">redis-ha-master → role:slave（自动降级）</text>
+    <text x="604" y="114" font-size="12" fill="#047857">redis-ha-replica → role:master（被提升）</text>
+    <text x="604" y="136" font-size="12" fill="#334155">redis-ha-replica2 → role:slave</text>
+    <text x="604" y="160" font-size="11.5" fill="#b45309">⭐ 旧主恢复后没「复活成主」，避免了脑裂</text>
+  </g>
+
+  <g transform="translate(20,555)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">Cluster：16384 个槽与 MOVED / ASK 的区别</text>
+    <text x="16" y="54" font-size="12.5" fill="#334155">slot = <tspan font-family="Consolas, monospace" fill="#7c3aed">CRC16(key) mod 16384</tspan>　｜　实测 3 主：<tspan font-weight="bold">0-5460 / 5461-10922 / 10923-16383</tspan>（每主约 5461 槽）</text>
+
+    <rect x="16" y="68" width="928" height="28" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="87" font-size="12.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="188" y="87" font-size="12.5" font-weight="bold" fill="#dc2626">MOVED（槽永久换主）</text>
+    <text x="568" y="87" font-size="12.5" font-weight="bold" fill="#1d4ed8">ASK（槽正在迁移）</text>
+
+    <rect x="16" y="96" width="928" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="116" font-size="12" fill="#334155">含义</text>
+    <text x="188" y="116" font-size="12" fill="#334155">槽已经彻底归了别人</text>
+    <text x="568" y="116" font-size="12" fill="#334155">槽在迁移，这个 key 恰好已被搬走</text>
+
+    <rect x="16" y="128" width="928" height="30" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="148" font-size="12" fill="#334155">客户端动作</text>
+    <text x="188" y="148" font-size="12" fill="#dc2626">更新本地槽位映射，以后直连新主</text>
+    <text x="568" y="148" font-size="12" fill="#1d4ed8">只对本次加 ASKING 转发，不改映射</text>
+
+    <text x="16" y="180" font-size="12" fill="#b45309">⚠️ 多 key 操作（MGET / 事务 / Lua）要求同槽 → 用 hash tag：只对 {} 里的部分做 CRC16，如 user:{1001}:* 天然同槽；但 tag 过热会把整个槽压成热点。</text>
+  </g>
+
+</svg>

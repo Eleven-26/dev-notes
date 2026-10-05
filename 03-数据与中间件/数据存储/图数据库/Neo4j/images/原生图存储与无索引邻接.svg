@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 920" width="1000" height="920" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="920" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">原生图存储：把「下一跳在哪」直接写进记录</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ 差别不在「能不能存图」，而在遍历一跳要不要做一次查找：指针解引用 vs 一次索引查找</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">原生图存储 vs 非原生图存储</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="250" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">原生图存储（Neo4j）</text>
+    <text x="600" y="62" font-size="12.5" font-weight="bold" fill="#b45309">非原生（JanusGraph / HBase 之上）</text>
+
+    <rect x="20" y="72" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="91" font-size="12" fill="#334155">边怎么存</text>
+    <text x="250" y="91" font-size="12" fill="#334155">独立的定长关系记录，与节点记录物理相邻</text>
+    <text x="600" y="91" font-size="12" fill="#334155">存成 KV 行，按 key 取出后反序列化</text>
+
+    <rect x="20" y="100" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="119" font-size="12" fill="#334155">一跳遍历</text>
+    <text x="250" y="119" font-size="12" fill="#047857">⭐ 顺记录里的指针读下一条，常数次 I/O</text>
+    <text x="600" y="119" font-size="12" fill="#334155">至少一次 KV get（可能跨分区 / 跨节点）</text>
+
+    <rect x="20" y="128" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="147" font-size="12" fill="#334155">数据切分</text>
+    <text x="250" y="147" font-size="12" fill="#334155">早期以单机为主，边不跨机器</text>
+    <text x="600" y="147" font-size="12" fill="#047857">天然分片，规模上限高</text>
+
+    <rect x="20" y="156" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="175" font-size="12" fill="#334155">代价</text>
+    <text x="250" y="175" font-size="12" fill="#b45309">十亿级以上要靠 Infinigraph 等新架构</text>
+    <text x="600" y="175" font-size="12" fill="#b45309">每跳都有 KV 层固定开销，常数因子占主导</text>
+
+    <text x="20" y="212" font-size="12" fill="#334155">Neo4j 选原生存储的理由是查询形态：典型查询是「从几个起点出发，沿某种模式走若干跳」，跳数越深，每跳固定开销被乘得越大。</text>
+    <text x="20" y="236" font-size="12" fill="#64748b">把它压到「读一条记录」级别，深跳代价才随访问到的子图增长，而不是随总边数增长。</text>
+  </g>
+
+  <g transform="translate(20,335)">
+    <rect x="0" y="0" width="960" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">记录里存着「下一条在哪」：节点 15 B / 关系 34 B</text>
+
+    <text x="30" y="52" font-size="12" font-weight="bold" fill="#1d4ed8">节点记录（定长，约 15 B）</text>
+    <rect x="30" y="60" width="900" height="42" rx="4" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.2"/>
+    <line x1="90" y1="60" x2="90" y2="102" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="390" y1="60" x2="390" y2="102" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="690" y1="60" x2="690" y2="102" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="60" y="86" text-anchor="middle" font-size="11" fill="#334155">inUse(1)</text>
+    <text x="240" y="86" text-anchor="middle" font-size="11" fill="#b45309">关系链头指针(5)</text>
+    <text x="540" y="86" text-anchor="middle" font-size="11" fill="#334155">标签字段(5)</text>
+    <text x="810" y="86" text-anchor="middle" font-size="11" fill="#334155">属性指针(4)</text>
+
+    <line x1="240" y1="102" x2="240" y2="140" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="252" y="116" font-size="11" fill="#1d4ed8">第一条关系</text>
+
+    <text x="30" y="138" font-size="12" font-weight="bold" fill="#047857">关系记录（定长，约 34 B）—— 同一条链上的关系用前后指针串成双向链表</text>
+    <rect x="30" y="146" width="900" height="42" rx="4" fill="#ffffff" stroke="#047857" stroke-width="1.2"/>
+    <line x1="150" y1="146" x2="150" y2="188" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="270" y1="146" x2="270" y2="188" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="330" y1="146" x2="330" y2="188" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="450" y1="146" x2="450" y2="188" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="570" y1="146" x2="570" y2="188" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="690" y1="146" x2="690" y2="188" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="810" y1="146" x2="810" y2="188" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="90" y="172" text-anchor="middle" font-size="10.5" fill="#334155">startNode(4)</text>
+    <text x="210" y="172" text-anchor="middle" font-size="10.5" fill="#334155">endNode(4)</text>
+    <text x="300" y="172" text-anchor="middle" font-size="10.5" fill="#334155">type(2)</text>
+    <text x="390" y="172" text-anchor="middle" font-size="10.5" fill="#b45309">sPrev(4)</text>
+    <text x="510" y="172" text-anchor="middle" font-size="10.5" fill="#b45309">sNext(4)</text>
+    <text x="630" y="172" text-anchor="middle" font-size="10.5" fill="#b45309">ePrev(4)</text>
+    <text x="750" y="172" text-anchor="middle" font-size="10.5" fill="#b45309">eNext(4)</text>
+    <text x="870" y="172" text-anchor="middle" font-size="10.5" fill="#334155">属性指针(4)</text>
+
+    <text x="20" y="216" font-size="12" fill="#334155">⭐ 遍历就是顺着 sNext / sPrev 走：每跳一次指针解引用，没有 B+ 树、没有索引查找 —— 与全图有多少点、多少边无关。</text>
+    <text x="20" y="240" font-size="12" fill="#b45309">⚠️ 关系记录里的「起点 / 终点」存的是节点记录编号，不是内存地址 —— 寻址靠「记录号 × 定长」直接算文件偏移。</text>
+    <text x="20" y="262" font-size="12" fill="#64748b">对比：关系型是「先查索引拿主键、再回表」，每跳都要过一次 B+ 树（从根到叶 2~4 次页访问）。</text>
+  </g>
+
+  <g transform="translate(20,620)">
+    <rect x="0" y="0" width="960" height="280" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">实测：每跳代价随「访问到的子图」增长，不随「全图规模」增长</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">跳数</text>
+    <text x="180" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">可达节点数</text>
+    <text x="380" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">Neo4j DbHits</text>
+    <text x="560" y="62" font-size="12.5" font-weight="bold" fill="#334155">Neo4j Time(µs)</text>
+    <text x="760" y="62" font-size="12.5" font-weight="bold" fill="#b45309">MySQL actual(ms)</text>
+
+    <rect x="20" y="72" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="89" font-size="12" fill="#334155">1</text>
+    <text x="180" y="89" font-size="12" fill="#334155">3</text>
+    <text x="380" y="89" font-size="12" fill="#1d4ed8">6</text>
+    <text x="560" y="89" font-size="12" fill="#334155">221</text>
+    <text x="760" y="89" font-size="12" fill="#b45309">0.073</text>
+
+    <rect x="20" y="97" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="114" font-size="12" fill="#334155">2</text>
+    <text x="180" y="114" font-size="12" fill="#334155">12</text>
+    <text x="380" y="114" font-size="12" fill="#1d4ed8">30</text>
+    <text x="560" y="114" font-size="12" fill="#334155">253</text>
+    <text x="760" y="114" font-size="12" fill="#b45309">0.078</text>
+
+    <rect x="20" y="122" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="139" font-size="12" fill="#334155">3</text>
+    <text x="180" y="139" font-size="12" fill="#334155">39</text>
+    <text x="380" y="139" font-size="12" fill="#1d4ed8">93</text>
+    <text x="560" y="139" font-size="12" fill="#334155">265</text>
+    <text x="760" y="139" font-size="12" fill="#b45309">0.348</text>
+
+    <rect x="20" y="147" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="164" font-size="12" fill="#334155">4</text>
+    <text x="180" y="164" font-size="12" fill="#334155">120</text>
+    <text x="380" y="164" font-size="12" fill="#1d4ed8">282</text>
+    <text x="560" y="164" font-size="12" fill="#334155">348</text>
+    <text x="760" y="164" font-size="12" fill="#b45309">0.418</text>
+
+    <rect x="20" y="172" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="189" font-size="12" fill="#334155">5</text>
+    <text x="180" y="189" font-size="12" fill="#334155">363</text>
+    <text x="380" y="189" font-size="12" fill="#1d4ed8">849</text>
+    <text x="560" y="189" font-size="12" fill="#334155">277</text>
+    <text x="760" y="189" font-size="12" fill="#b45309">4.37</text>
+
+    <rect x="20" y="197" width="920" height="25" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="214" font-size="12" fill="#334155">6</text>
+    <text x="180" y="214" font-size="12" fill="#334155">1086</text>
+    <text x="380" y="214" font-size="12" font-weight="bold" fill="#dc2626">2550</text>
+    <text x="560" y="214" font-size="12" fill="#334155">230</text>
+    <text x="760" y="214" font-size="12" font-weight="bold" fill="#dc2626">16.9</text>
+
+    <text x="20" y="246" font-size="12" fill="#334155">数据集：10 万用户 / 30 万关注边（每人固定关注 3 人），从 User{id:0} 出发做 1~6 跳遍历，用 PROFILE 读每个算子的 dbHits。</text>
+    <text x="20" y="268" font-size="12" fill="#b45309">⭐ DbHits 只跟「访问到的点 / 边」同阶增长（第 6 跳 1086 个可达点、2550 次访问），30 万条边一次也没被扫过。</text>
+  </g>
+</svg>

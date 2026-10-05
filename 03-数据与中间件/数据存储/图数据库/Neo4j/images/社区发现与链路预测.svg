@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 950" width="1000" height="950" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="950" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">社区发现、路径、相似度：调用与读结果的判据</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ 算法含随机性处只断言量级 / 趋势，需要可复现就设 randomSeed —— 与全仓「时序只断言趋势」同一条纪律</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="290" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">社区发现：把图切成「内部连接密、彼此连接疏」的块</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">算法</text>
+    <text x="260" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">切的是什么</text>
+    <text x="620" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">特点</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155">Louvain</text>
+    <text x="260" y="90" font-size="12" fill="#334155">模块度最优的社区</text>
+    <text x="620" y="90" font-size="12" fill="#334155">效果好、可解释（有模块度），有随机性</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">标签传播 LPA</text>
+    <text x="260" y="116" font-size="12" fill="#334155">标签扩散出的社区</text>
+    <text x="620" y="116" font-size="12" fill="#334155">更快、结果更不稳定</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">弱连通分量 WCC</text>
+    <text x="260" y="142" font-size="12" fill="#334155">无向意义下「连通」的块</text>
+    <text x="620" y="142" font-size="12" fill="#334155">只要连通就算一个，通常切得很大</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="12" fill="#334155">强连通分量 SCC</text>
+    <text x="260" y="168" font-size="12" fill="#334155">有向意义下「互相可达」的块</text>
+    <text x="620" y="168" font-size="12" fill="#334155">有向图专用，找环状强耦合</text>
+
+    <text x="20" y="200" font-size="12" fill="#334155">⭐ 实测（10 万点 / 30 万边）：louvain 62 ~ 68 个社区 / 100000（有随机性）；wcc = 1 个连通分量（整体连通）。</text>
+    <text x="20" y="224" font-size="12" fill="#b45309">⚠️ Louvain 的社区数不是定值：含随机初始化与层次合并，同一张图不同次运行略有差异 —— 设 randomSeed 才可复现。</text>
+    <text x="20" y="248" font-size="12" fill="#334155">⭐ WCC = 1 说明这张随机图整体连通，「弱连通分量」没有切分价值 —— 必须上 Louvain 这种按密度切的算法。</text>
+    <text x="20" y="272" font-size="12" fill="#64748b">真实反欺诈里，社区检测把「互相转账密集的一伙人」圈成一个社区，一眼看出团伙边界。</text>
+  </g>
+
+  <g transform="translate(20,375)">
+    <rect x="0" y="0" width="960" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">路径、相似度与嵌入：在 GDS 里怎么调用、结果怎么读</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">场景</text>
+    <text x="300" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">GDS 过程 / 度量</text>
+    <text x="650" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">实测</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155">单源到单点最短路</text>
+    <text x="300" y="90" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">gds.shortestPath.dijkstra.stream</text>
+    <text x="650" y="90" font-size="12" fill="#047857">totalCost 10.0、hops 11（无权重=边数）</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">加权最短路</text>
+    <text x="300" y="116" font-size="12" fill="#334155">边权来自关系属性</text>
+    <text x="650" y="116" font-size="12" fill="#334155">本仓关系没设权重，默认每条为 1</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">带启发式</text>
+    <text x="300" y="142" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">gds.shortestPath.astar</text>
+    <text x="650" y="142" font-size="12" fill="#334155">需一个启发坐标（如经纬度）</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="12" fill="#334155">全对最短路</text>
+    <text x="300" y="168" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">gds.allShortestPaths.dijkstra</text>
+    <text x="650" y="168" font-size="12" fill="#334155">小图才用，O(n²) 起步</text>
+
+    <rect x="20" y="176" width="920" height="26" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="194" font-size="12" fill="#334155">链路预测</text>
+    <text x="300" y="194" font-size="12" fill="#334155">Jaccard / 余弦 / Adamic-Adar</text>
+    <text x="650" y="194" font-size="12" fill="#b45309">子图 top1 similarity 0.5；全图 7 分钟未返回</text>
+
+    <rect x="20" y="202" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="220" font-size="12" fill="#334155">图嵌入</text>
+    <text x="300" y="220" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">gds.fastRP.stream</text>
+    <text x="650" y="220" font-size="12" fill="#047857">dim 4，返回 4 维向量（randomSeed 42）</text>
+
+    <text x="20" y="254" font-size="12" fill="#334155">⭐ totalCost 10.0 / hops 11 表示 10 条边（11 个节点），顺带印证这张图直径很小（0 号 → 5 万号只用 10 跳），典型小世界。</text>
+    <text x="20" y="278" font-size="12" fill="#b45309">⚠️ nodeSimilarity 本质是两两比较（O(n²)）：10 万点全图跑不完，必须先缩小候选（topK / similarityCutoff / 子图）。</text>
+  </g>
+
+  <g transform="translate(20,705)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">判据表：观察什么，判什么</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">观察</text>
+    <text x="520" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">判</text>
+
+    <rect x="20" y="72" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="90" font-size="12" fill="#334155" font-family="Consolas, Menlo, monospace">gds.version() 有输出</text>
+    <text x="520" y="90" font-size="12" fill="#047857">插件装载成功</text>
+
+    <rect x="20" y="98" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="116" font-size="12" fill="#334155">projectMillis 与图规模成正比</text>
+    <text x="520" y="116" font-size="12" fill="#334155">投影耗时是一次性成本，可接受</text>
+
+    <rect x="20" y="124" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="142" font-size="12" fill="#334155">PageRank 头部分数全相等</text>
+    <text x="520" y="142" font-size="12" fill="#b45309">图是规则图，换真实图才有区分度</text>
+
+    <rect x="20" y="150" width="920" height="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="168" font-size="12" fill="#334155">Louvain 社区数每次略有出入</text>
+    <text x="520" y="168" font-size="12" fill="#b45309">算法有随机性，设 randomSeed 才可复现</text>
+
+    <rect x="20" y="176" width="920" height="26" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="194" font-size="12" fill="#334155">nodeSimilarity 长时间不返回</text>
+    <text x="520" y="194" font-size="12" fill="#b45309">图太大，必须先限候选（topK / 子图）</text>
+
+    <rect x="20" y="202" width="920" height="26" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="220" font-size="12" fill="#334155" font-family="Consolas, Menlo, monospace">gds.graph.list() 里投影还在</text>
+    <text x="520" y="220" font-size="12" fill="#dc2626">忘了 drop，堆内存一直被占</text>
+  </g>
+</svg>

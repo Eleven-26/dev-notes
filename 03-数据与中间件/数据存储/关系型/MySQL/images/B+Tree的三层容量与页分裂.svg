@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三层 B+Tree 撑约 2000 万行，查一行只要 2~3 次磁盘 IO</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">页 16KB（SELECT @@innodb_page_size = 16384）；主键 bigint 8B + 页指针 6B = 每键 14B</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="296" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">矮胖多路：非叶子节点只存键 + 页指针，叶子节点用双向链表串起来</text>
+
+    <rect x="180" y="52" width="200" height="34" rx="6" fill="#1d4ed8"/>
+    <text x="280" y="74" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">根节点（常驻内存）</text>
+
+    <rect x="30" y="120" width="140" height="32" rx="5" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="100" y="141" text-anchor="middle" font-size="11.5" fill="#334155">非叶子页（约 1170 键）</text>
+    <rect x="210" y="120" width="140" height="32" rx="5" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="280" y="141" text-anchor="middle" font-size="11.5" fill="#334155">非叶子页（约 1170 键）</text>
+    <rect x="390" y="120" width="140" height="32" rx="5" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="460" y="141" text-anchor="middle" font-size="11.5" fill="#64748b">… 共约 1170 个</text>
+
+    <line x1="240" y1="86" x2="110" y2="118" stroke="#b45309" stroke-width="1.4" marker-end="url(#arw)"/>
+    <line x1="280" y1="86" x2="280" y2="118" stroke="#b45309" stroke-width="1.4" marker-end="url(#arw)"/>
+    <line x1="320" y1="86" x2="455" y2="118" stroke="#b45309" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="30" y="196" width="140" height="34" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1.4"/>
+    <text x="100" y="217" text-anchor="middle" font-size="11.5" fill="#047857">叶子页（约 16 行）</text>
+    <rect x="210" y="196" width="140" height="34" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1.4"/>
+    <text x="280" y="217" text-anchor="middle" font-size="11.5" fill="#047857">叶子页（约 16 行）</text>
+    <rect x="390" y="196" width="140" height="34" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1.4"/>
+    <text x="460" y="217" text-anchor="middle" font-size="11.5" fill="#64748b">… 约 1170² 个</text>
+
+    <line x1="100" y1="152" x2="100" y2="194" stroke="#b45309" stroke-width="1.4" marker-end="url(#arw)"/>
+    <line x1="280" y1="152" x2="280" y2="194" stroke="#b45309" stroke-width="1.4" marker-end="url(#arw)"/>
+    <line x1="460" y1="152" x2="460" y2="194" stroke="#b45309" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <line x1="172" y1="246" x2="208" y2="246" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="208" y1="236" x2="172" y2="236" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="352" y1="246" x2="388" y2="246" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="388" y1="236" x2="352" y2="236" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <text x="30" y="272" font-size="12" fill="#047857">叶子节点间双向链表 → 范围扫描找到起点后顺着链表走</text>
+
+    <line x1="556" y1="44" x2="556" y2="280" stroke="#cbd5e1" stroke-width="1"/>
+
+    <rect x="588" y="52" width="356" height="30" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="602" y="72" font-size="12.5" font-weight="bold" fill="#0f172a">容量推导（一行按 1KB 估）</text>
+    <text x="880" y="72" text-anchor="end" font-size="12.5" font-weight="bold" fill="#0f172a">容量</text>
+
+    <text x="602" y="106" font-size="12" fill="#334155">单个非叶子页　16384 / 14</text>
+    <text x="928" y="106" text-anchor="end" font-size="12" font-weight="bold" fill="#1d4ed8">约 1170 键</text>
+    <text x="602" y="134" font-size="12" fill="#334155">单个叶子页　　16384 / 1024</text>
+    <text x="928" y="134" text-anchor="end" font-size="12" font-weight="bold" fill="#047857">约 16 行</text>
+    <text x="602" y="162" font-size="12" fill="#334155">两层（1 根 + 1170 叶子）</text>
+    <text x="928" y="162" text-anchor="end" font-size="12" font-weight="bold" fill="#334155">约 1.8 万行</text>
+    <rect x="588" y="174" width="356" height="30" rx="4" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+    <text x="602" y="194" font-size="12" fill="#334155">三层（1 + 1170 + 1170²）</text>
+    <text x="928" y="194" text-anchor="end" font-size="12.5" font-weight="bold" fill="#dc2626">约 2180 万行</text>
+
+    <text x="602" y="230" font-size="12" fill="#b45309">⭐ 根节点几乎一定常驻内存 → 查一行通常</text>
+    <text x="602" y="250" font-size="12" fill="#b45309">　 只要 2~3 次磁盘 IO；树高每加一层，行数乘 1000+。</text>
+    <text x="602" y="272" font-size="12" fill="#334155">「表大了就慢」的主因不是树高，而是缓存命中率与随机 IO。</text>
+  </g>
+
+  <g transform="translate(20,386)">
+    <rect x="0" y="0" width="960" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">页分裂：主键该不该单调递增</text>
+
+    <rect x="16" y="46" width="452" height="94" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.6"/>
+    <text x="32" y="70" font-size="13" font-weight="bold" fill="#047857">自增 / 趋势递增（AUTO_INCREMENT、雪花 ID）</text>
+    <text x="32" y="94" font-size="12" fill="#334155">永远追加到「最右叶子页」→ 顺序写</text>
+    <text x="32" y="116" font-size="12" fill="#334155">页分裂极少，页内填充率高</text>
+
+    <rect x="492" y="46" width="452" height="94" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="508" y="70" font-size="13" font-weight="bold" fill="#dc2626">随机（UUID v4、无序字符串）</text>
+    <text x="508" y="94" font-size="12" fill="#334155">插到中间 → 分裂 + 数据搬移</text>
+    <text x="508" y="116" font-size="12" fill="#334155">分裂频繁、页碎片化（有的页满有的页空）、随机 IO</text>
+
+    <text x="16" y="172" font-size="12.5" fill="#334155">⭐ 主键应尽量单调递增 —— 这不是「风格」，而是直接影响写入吞吐与索引体积的工程决策。</text>
+    <text x="16" y="196" font-size="12.5" fill="#b45309">⚠️ 二级索引的叶子存的是「主键值」：主键越长，所有二级索引都跟着变大 —— 这是 UUID 当主键最易被忽略的代价。</text>
+  </g>
+
+</svg>

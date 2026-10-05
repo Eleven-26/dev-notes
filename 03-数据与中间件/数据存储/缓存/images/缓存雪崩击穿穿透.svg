@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="1000" height="790" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="790" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">缓存三大问题：雪崩是「面」、击穿是「点」、穿透是「无」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">难点不在给招式，而在讲清「故障链路」与「缓存失效后的兜底」</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="215" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">① 三个问题：成因不同，表现不同</text>
+
+    <rect x="24" y="44" width="912" height="28" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">问题</text>
+    <text x="194" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">成因</text>
+    <text x="594" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">特征</text>
+
+    <rect x="24" y="72" width="912" height="34" fill="#fee2e2" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="89" dominant-baseline="central" font-size="12" font-weight="bold" fill="#dc2626">缓存雪崩</text>
+    <text x="194" y="89" dominant-baseline="central" font-size="12" fill="#334155">大量 key 同一时间集中过期 / 缓存服务宕机</text>
+    <text x="594" y="89" dominant-baseline="central" font-size="12" fill="#334155">请求大面积回源，数据库整体被打垮</text>
+
+    <rect x="24" y="106" width="912" height="34" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="123" dominant-baseline="central" font-size="12" font-weight="bold" fill="#b45309">缓存击穿</text>
+    <text x="194" y="123" dominant-baseline="central" font-size="12" fill="#334155">单个热点 key 过期</text>
+    <text x="594" y="123" dominant-baseline="central" font-size="12" fill="#334155">单点高并发绕过缓存直接打库，后果与雪崩类似</text>
+
+    <rect x="24" y="140" width="912" height="34" fill="#dbeafe" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="157" dominant-baseline="central" font-size="12" font-weight="bold" fill="#1d4ed8">缓存穿透</text>
+    <text x="194" y="157" dominant-baseline="central" font-size="12" fill="#334155">查询根本不存在的数据</text>
+    <text x="594" y="157" dominant-baseline="central" font-size="12" fill="#334155">缓存永远加载不上，每次请求都落到库，形同虚设</text>
+
+    <text x="24" y="198" font-size="12" fill="#334155">⭐ 一句话区分：雪崩是「面」（大量 key），击穿是「点」（单个热点 key），穿透是「库里也没有」。</text>
+  </g>
+
+  <g transform="translate(20,305)">
+    <rect x="0" y="0" width="960" height="260" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">② 雪崩的故障链路：集中过期把 1 万 QPS 直接砸给数据库</text>
+
+    <rect x="24" y="50" width="446" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.1"/>
+    <text x="247" y="70" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">正常：Redis 消化 99% 流量（10000 QPS 进去）</text>
+    <line x1="247" y1="90" x2="247" y2="100" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="24" y="102" width="446" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.1"/>
+    <text x="247" y="122" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">只有约 100 QPS 需要落库</text>
+    <line x1="247" y1="142" x2="247" y2="152" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="24" y="154" width="446" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.1"/>
+    <text x="247" y="174" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">数据库上限约 1000 QPS</text>
+    <line x1="247" y1="194" x2="247" y2="204" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="24" y="206" width="446" height="40" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.1"/>
+    <text x="247" y="226" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#047857">✅ 余量充足，运行平稳</text>
+
+    <rect x="490" y="50" width="446" height="40" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.1"/>
+    <text x="713" y="70" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">雪崩：goods:* 等 key 在 1~2 秒内集中过期</text>
+    <line x1="713" y1="90" x2="713" y2="100" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <rect x="490" y="102" width="446" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="713" y="122" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#dc2626">10000 QPS 全部砸向数据库</text>
+    <line x1="713" y1="142" x2="713" y2="152" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <rect x="490" y="154" width="446" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="713" y="174" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">数据库每秒仅 1000 → 积压至少 10 秒</text>
+    <line x1="713" y1="194" x2="713" y2="204" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <rect x="490" y="206" width="446" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="713" y="226" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#dc2626">❌ 响应超时 / 连接池耗尽 / 服务不可用</text>
+  </g>
+
+  <g transform="translate(20,585)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">③ 解法两层：先把失效点摊平，再给数据库兜底</text>
+
+    <rect x="24" y="48" width="446" height="120" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="40" y="70" font-size="12.5" font-weight="bold" fill="#1d4ed8">① 分散过期（最直观）</text>
+    <text x="40" y="94" font-size="11.5" fill="#334155">在 [0,12h) 内取随机 TTL，把集中失效摊平</text>
+    <text x="40" y="116" font-size="11.5" fill="#334155">代价：缓存利用率下降 + 与库短暂不一致</text>
+    <text x="40" y="142" font-size="11.5" fill="#b45309">⚠️ 随机区间别开太大，按业务容忍度取值</text>
+
+    <rect x="490" y="48" width="446" height="120" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="506" y="70" font-size="12.5" font-weight="bold" fill="#dc2626">② 兜底：限流 + 熔断降级</text>
+    <text x="506" y="94" font-size="11.5" fill="#334155">超过 DB 处理能力的请求直接拒绝</text>
+    <text x="506" y="116" font-size="11.5" fill="#334155">牺牲部分体验，保住 DB 与整体可用性</text>
+    <text x="506" y="142" font-size="11.5" fill="#b45309">⚠️ DB 挂掉后恢复可能半小时到一小时</text>
+  </g>
+</svg>

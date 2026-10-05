@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 795" width="1000" height="795" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="795" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">planner 怎么选索引，以及索引的写代价</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">候选只从「能匹配查询前缀」的索引里生成；每个索引都是一棵要维护的树加一条要复制的变更</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="215" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">多个候选索引时，planner 怎么定胜负</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">完全对不上的索引不进入竞速，也就不会出现在 rejectedPlans 里</text>
+
+    <rect x="30" y="66" width="170" height="56" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.4"/>
+    <text x="115" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">查询</text>
+    <text x="115" y="108" text-anchor="middle" font-size="11.5" fill="#334155">query shape 指纹</text>
+    <line x1="204" y1="94" x2="226" y2="94" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="230" y="66" width="200" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="330" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">能匹配前缀的索引</text>
+    <text x="330" y="108" text-anchor="middle" font-size="11.5" fill="#64748b">→ 成为候选</text>
+    <line x1="434" y1="94" x2="456" y2="94" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="460" y="66" width="180" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="550" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">并发试跑各候选</text>
+    <text x="550" y="108" text-anchor="middle" font-size="11.5" fill="#64748b">按返回数 / 扫描量比</text>
+    <line x1="644" y1="94" x2="666" y2="94" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="670" y="66" width="260" height="56" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.4"/>
+    <text x="800" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">胜出 → winningPlan</text>
+    <text x="800" y="108" text-anchor="middle" font-size="11.5" fill="#dc2626">其余 → rejectedPlans</text>
+
+    <text x="20" y="152" font-size="12" fill="#334155">计划按 query shape（与参数值无关的形状指纹）缓存，不是按参数缓存。</text>
+    <text x="20" y="174" font-size="12" fill="#b45309">典型故障「建了更好的索引，老 shape 还在走旧计划」→ getPlanCache().list() / clear()。</text>
+    <text x="20" y="196" font-size="12" fill="#334155">排查：.hint(...) 强制走某索引，对比两次 explain，才能分清「是索引不好还是选错了」。</text>
+  </g>
+
+  <g transform="translate(20,300)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">写代价：集合上 6 个索引，一次 insertOne 实际是 7 次树操作</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">每个索引 = 每笔写多维护一棵 B 树 + 一条要在副本集间复制的索引变更</text>
+
+    <rect x="20" y="64" width="920" height="34" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">写操作</text>
+    <text x="194" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">代价来源</text>
+    <text x="654" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">建模含义</text>
+
+    <rect x="20" y="98" width="920" height="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="121" font-size="12.5" fill="#334155">插入</text>
+    <text x="194" y="121" font-size="12.5" fill="#334155">所有索引各插一条</text>
+    <text x="654" y="121" font-size="12.5" fill="#334155">索引越多，写吞吐越接近线性下降</text>
+
+    <rect x="20" y="134" width="920" height="36" fill="#ecfdf5" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="157" font-size="12.5" fill="#047857">更新未被索引的字段</text>
+    <text x="194" y="157" font-size="12.5" fill="#047857">只改数据，索引不动</text>
+    <text x="654" y="157" font-size="12.5" fill="#047857">便宜 —— 「少建索引」最直接的收益</text>
+
+    <rect x="20" y="170" width="920" height="36" fill="#fef2f2" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="193" font-size="12.5" fill="#dc2626">更新被索引的字段</text>
+    <text x="194" y="193" font-size="12.5" fill="#dc2626">旧键删除 + 新键插入（数组整组重算）</text>
+    <text x="654" y="193" font-size="12.5" fill="#dc2626">高频翻转字段 + 索引 = 写放大主力</text>
+
+    <rect x="20" y="206" width="920" height="36" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="229" font-size="12.5" fill="#334155">删除</text>
+    <text x="194" y="229" font-size="12.5" fill="#334155">所有索引各删一条 + 空间不立即归还</text>
+    <text x="654" y="229" font-size="12.5" fill="#334155">见运维与监控的空间回收与「删了不还空间」</text>
+  </g>
+
+  <g transform="translate(20,570)">
+    <rect x="0" y="0" width="960" height="205" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">重建 / 换索引：正确顺序是「先建新的，再删旧的」</text>
+    <text x="16" y="48" font-size="12" fill="#64748b">drop 与 create 之间的窗口里查询在裸奔（COLLSCAN），高 QPS 接口能把实例直接打满</text>
+
+    <rect x="24" y="64" width="24" height="24" rx="4" fill="#047857"/>
+    <text x="36" y="81" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">1</text>
+    <text x="58" y="81" font-size="12.5" fill="#334155">建新名字的索引（旧索引仍在，随时可回退）</text>
+
+    <rect x="24" y="96" width="24" height="24" rx="4" fill="#047857"/>
+    <text x="36" y="113" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">2</text>
+    <text x="58" y="113" font-size="12.5" fill="#334155">explain / $indexStats 确认新索引已被选中</text>
+
+    <rect x="24" y="128" width="24" height="24" rx="4" fill="#047857"/>
+    <text x="36" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">3</text>
+    <text x="58" y="145" font-size="12.5" fill="#334155">再 drop 旧索引</text>
+
+    <rect x="20" y="162" width="920" height="34" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="36" y="184" font-size="12" fill="#b45309">⚠️ 大集合建索引是持续的 IO + CPU + oplog 压力 → 从节点 lag 一定抬头：低峰做、留观察窗口、别连着建多个。</text>
+  </g>
+</svg>

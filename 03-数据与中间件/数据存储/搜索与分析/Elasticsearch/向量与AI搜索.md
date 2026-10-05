@@ -99,6 +99,8 @@ illegal_argument_exception: unknown value for [index.codec] must be one of [defa
 
 ---
 
+![向量检索的两种角色与量化压缩](images/向量检索与量化压缩.svg)
+
 ## 三、语义搜索
 
 ### 3.1 `semantic_text`：把推理端点藏进 mapping
@@ -164,6 +166,8 @@ security_exception: current license is non-compliant for [Reciprocal Rank Fusion
 ⚠️ RRF 的直觉：**它只看排名不看分数**，所以两路分数尺度不同也不用归一化——这是它最大的工程价值，也是它必须按 license 计费的原因。
 
 ---
+
+![混合检索的两路合流与 license 边界](images/混合检索的两路合流.svg)
 
 ## 使用：起一个容器，量一遍量化与召回
 

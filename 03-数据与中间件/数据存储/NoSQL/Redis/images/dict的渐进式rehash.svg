@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arw2" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">dict：键空间这个「索引」是怎么做出来的</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两张哈希表 + 渐进式 rehash；下面数字由 DEBUG HTSTATS 在 redis:7-alpine（7.4.11）容器实测抄录</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="16" font-weight="bold" fill="#0f172a">一个 dict 里有什么：两张表，平时只用 ht[0]</text>
+
+    <rect x="20" y="44" width="520" height="118" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.6"/>
+    <text x="34" y="66" font-size="13" font-weight="bold" fill="#1d4ed8">struct dict</text>
+    <text x="46" y="88" font-size="12.5" fill="#334155">dictType *type;</text>
+    <text x="46" y="108" font-size="12.5" fill="#334155">dictht　 ht[2];　　 ⭐ 两张哈希表</text>
+    <text x="46" y="128" font-size="12.5" fill="#334155">long　　rehashidx;　 −1 = 没在搬</text>
+    <text x="46" y="150" font-size="12" fill="#64748b">dictht = dictEntry **table（桶数组）+ size + sizemask + used</text>
+
+    <text x="562" y="60" font-size="12.5" fill="#334155">冲突用链地址法：</text>
+    <text x="562" y="82" font-size="12.5" fill="#334155">index = hash &amp; sizemask</text>
+    <text x="562" y="104" font-size="12" fill="#64748b">同一桶里挂链表；7.0 起把 next 指针</text>
+    <text x="562" y="122" font-size="12" fill="#64748b">并进 dictEntry 的联合体以省内存。</text>
+    <text x="562" y="148" font-size="12" fill="#b45309">这个 dict 就是「键空间」本体。</text>
+  </g>
+
+  <g transform="translate(20,278)">
+    <rect x="0" y="0" width="960" height="228" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="16" font-weight="bold" fill="#0f172a">渐进式 rehash：把「几百万个桶」摊到每次增删改查里</text>
+
+    <rect x="20" y="44" width="220" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="34" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">① 给 ht[1] 分新容量</text>
+    <text x="34" y="88" font-size="12" fill="#334155">扩容 = 第一个 ≥ used×2</text>
+    <text x="34" y="106" font-size="12" fill="#334155">的 2 的幂</text>
+    <text x="34" y="124" font-size="12" fill="#64748b">一次性搬完会卡死几秒</text>
+
+    <line x1="244" y1="87" x2="270" y2="87" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="274" y="44" width="220" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="288" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">② 每次增删改查顺带搬</text>
+    <text x="288" y="88" font-size="12" fill="#334155">搬 ht[0] 的一个非空桶</text>
+    <text x="288" y="106" font-size="12" fill="#334155">（_dictRehashStep）</text>
+    <text x="288" y="124" font-size="12" fill="#64748b">查找要先 ht[0] 再 ht[1]</text>
+
+    <line x1="498" y1="87" x2="524" y2="87" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="528" y="44" width="220" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="542" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">③ serverCron 也帮着搬</text>
+    <text x="542" y="88" font-size="12" fill="#334155">每 100ms 抽 100 个桶</text>
+    <text x="542" y="106" font-size="12" fill="#334155">（activerehashing）</text>
+    <text x="542" y="124" font-size="12" fill="#64748b">新写入一律进 ht[1]</text>
+
+    <line x1="752" y1="87" x2="778" y2="87" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="782" y="44" width="158" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="796" y="66" font-size="12.5" font-weight="bold" fill="#0f172a">④ 搬完对调</text>
+    <text x="796" y="88" font-size="12" fill="#334155">ht[1] 变 ht[0]</text>
+    <text x="796" y="106" font-size="12" fill="#334155">rehashidx 回 −1</text>
+    <text x="796" y="124" font-size="12" fill="#64748b">缩容同理</text>
+
+    <rect x="20" y="142" width="920" height="72" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+    <text x="34" y="164" font-size="12.5" font-weight="bold" fill="#b45309">实测（DEBUG HTSTATS）：写满 2¹⁷ 个 key 再多写 1 个，刚触发扩容的瞬间</text>
+    <text x="34" y="186" font-size="12.5" fill="#334155">ht[0]：table size 131072，elements 131072　　ht[1]：table size 262144，elements <tspan fill="#dc2626" font-weight="bold">1</tspan></text>
+    <text x="34" y="206" font-size="12.5" fill="#334155">⭐ ht[1] 只有刚写的这 1 个元素 → 13 万个还没搬，此刻查询要查两张表；稳态（20 万 key）只剩一张表、size 262144，负载因子 ≈ 0.76。</text>
+  </g>
+
+  <g transform="translate(20,520)">
+    <rect x="0" y="0" width="960" height="162" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">触发条件与代价</text>
+
+    <text x="24" y="56" font-size="12.5" font-weight="bold" fill="#475569">操作</text>
+    <text x="150" y="56" font-size="12.5" font-weight="bold" fill="#475569">条件</text>
+    <line x1="20" y1="64" x2="940" y2="64" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="24" y="86" font-size="12.5" fill="#334155">扩容</text>
+    <text x="150" y="86" font-size="12.5" fill="#334155">负载因子 ≥ 1（used ≥ size）；或 used/size &gt; 5 且允许 resizing</text>
+    <text x="24" y="110" font-size="12.5" fill="#334155">缩容</text>
+    <text x="150" y="110" font-size="12.5" fill="#334155">负载因子 &lt; 0.1 时触发（避免抖动）</text>
+    <text x="24" y="134" font-size="12.5" fill="#334155">禁止自动 resize</text>
+    <text x="150" y="134" font-size="12.5" fill="#334155">正在 BGSAVE / BGREWRITEAOF 子进程时，除非因子已 &gt; 5</text>
+
+    <text x="24" y="156" font-size="12" fill="#b45309">⚠️ 搬迁期间两张表并存：查找查两遍、内存双份 —— 判据要看「峰值内存」；fork 期间禁扩容是为了不让 COW 成倍放大。</text>
+  </g>
+</svg>

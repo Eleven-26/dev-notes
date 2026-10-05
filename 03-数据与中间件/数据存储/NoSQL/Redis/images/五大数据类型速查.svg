@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 566" width="1000" height="566" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="566" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">五大数据类型：底层实现 · 命令 · 场景</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">命令只是表层；「小对象走紧凑编码、越过阈值换通用结构」这条线贯穿全部五种类型（阈值与转换实测见 底层结构.md）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="310" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+    <text x="30" y="30" font-size="12.5" font-weight="bold" fill="#475569">结构</text>
+    <text x="130" y="30" font-size="12.5" font-weight="bold" fill="#475569">底层实现（小 → 大）</text>
+    <text x="390" y="30" font-size="12.5" font-weight="bold" fill="#475569">常用命令</text>
+    <text x="650" y="30" font-size="12.5" font-weight="bold" fill="#475569">典型场景</text>
+    <line x1="24" y1="40" x2="936" y2="40" stroke="#cbd5e1" stroke-width="1"/>
+
+    <text x="30" y="66" font-size="13" font-weight="bold" fill="#0f172a">String</text>
+    <text x="130" y="66" font-size="11.5" fill="#334155">SDS（简单动态字符串）</text>
+    <text x="130" y="86" font-size="11.5" fill="#047857">int / embstr → raw（&gt; 44 B）</text>
+    <text x="390" y="66" font-size="11.5" fill="#334155">SET GET INCR SETNX</text>
+    <text x="390" y="86" font-size="11.5" fill="#334155">SETEX MSET</text>
+    <text x="650" y="66" font-size="11.5" fill="#334155">计数器、分布式锁、Session</text>
+    <text x="650" y="86" font-size="11.5" fill="#334155">缓存对象（序列化后整体存）</text>
+    <line x1="30" y1="98" x2="930" y2="98" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="30" y="120" font-size="13" font-weight="bold" fill="#0f172a">Hash</text>
+    <text x="130" y="120" font-size="11.5" fill="#334155">listpack（小）</text>
+    <text x="130" y="140" font-size="11.5" fill="#047857">→ hashtable（大，512 字段为界）</text>
+    <text x="390" y="120" font-size="11.5" fill="#334155">HSET HGET HGETALL</text>
+    <text x="390" y="140" font-size="11.5" fill="#334155">HINCRBY</text>
+    <text x="650" y="120" font-size="11.5" fill="#334155">对象属性存储</text>
+    <text x="650" y="140" font-size="11.5" fill="#334155">用户资料 / 商品字段，可单字段读写</text>
+    <line x1="30" y1="152" x2="930" y2="152" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="30" y="174" font-size="13" font-weight="bold" fill="#0f172a">List</text>
+    <text x="130" y="174" font-size="11.5" fill="#334155">quicklist</text>
+    <text x="130" y="194" font-size="11.5" fill="#047857">双向链表 + listpack（7.2 起小 List 直接 listpack）</text>
+    <text x="390" y="174" font-size="11.5" fill="#334155">LPUSH RPUSH LPOP BRPOP</text>
+    <text x="390" y="194" font-size="11.5" fill="#334155">LRANGE LTRIM</text>
+    <text x="650" y="174" font-size="11.5" fill="#334155">消息队列、最新 N 条列表</text>
+    <text x="650" y="194" font-size="11.5" fill="#334155">时间线</text>
+    <line x1="30" y1="206" x2="930" y2="206" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="30" y="228" font-size="13" font-weight="bold" fill="#0f172a">Set</text>
+    <text x="130" y="228" font-size="11.5" fill="#334155">intset（全整数小集合）</text>
+    <text x="130" y="248" font-size="11.5" fill="#047857">listpack → hashtable</text>
+    <text x="390" y="228" font-size="11.5" fill="#334155">SADD SREM SMEMBERS</text>
+    <text x="390" y="248" font-size="11.5" fill="#334155">SINTER SISMEMBER</text>
+    <text x="650" y="228" font-size="11.5" fill="#334155">去重、共同好友、标签</text>
+    <text x="650" y="248" font-size="11.5" fill="#334155">判断存在 O(1)，集合运算在服务端</text>
+    <line x1="30" y1="260" x2="930" y2="260" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="30" y="282" font-size="13" font-weight="bold" fill="#0f172a">ZSet</text>
+    <text x="130" y="282" font-size="11.5" fill="#334155">listpack（小）</text>
+    <text x="130" y="302" font-size="11.5" fill="#047857">→ 跳表 + 哈希表（大，128 成员为界）</text>
+    <text x="390" y="282" font-size="11.5" fill="#334155">ZADD ZRANGE ZREVRANGE</text>
+    <text x="390" y="302" font-size="11.5" fill="#334155">ZSCORE ZRANGEBYSCORE</text>
+    <text x="650" y="282" font-size="11.5" fill="#334155">排行榜、延迟队列</text>
+    <text x="650" y="302" font-size="11.5" fill="#334155">按分数范围查询</text>
+  </g>
+
+  <g transform="translate(20,392)">
+    <rect x="0" y="0" width="960" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">四种补充结构：不在五大类型里，但各有不可替代的位置</text>
+
+    <rect x="20" y="44" width="220" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="34" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">Bitmap</text>
+    <text x="34" y="88" font-size="11.5" fill="#334155">位操作：签到打卡、活跃统计</text>
+    <text x="34" y="108" font-size="11.5" fill="#334155">SETBIT / BITCOUNT</text>
+    <text x="34" y="130" font-size="11.5" fill="#b45309">1 亿用户仅约 12 MB</text>
+
+    <rect x="252" y="44" width="220" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="266" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">HyperLogLog</text>
+    <text x="266" y="88" font-size="11.5" fill="#334155">基数估算：UV 统计</text>
+    <text x="266" y="108" font-size="11.5" fill="#334155">不能取回元素</text>
+    <text x="266" y="130" font-size="11.5" fill="#b45309">12 KB 估上亿基数，误差约 0.81%</text>
+
+    <rect x="484" y="44" width="220" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="498" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">GEO</text>
+    <text x="498" y="88" font-size="11.5" fill="#334155">地理坐标：附近的人 / 门店</text>
+    <text x="498" y="108" font-size="11.5" fill="#334155">GEOSEARCH 等</text>
+    <text x="498" y="130" font-size="11.5" fill="#b45309">底层就是 ZSet，score = geohash</text>
+
+    <rect x="716" y="44" width="224" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="730" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">Stream</text>
+    <text x="730" y="88" font-size="11.5" fill="#334155">可持久化消息队列</text>
+    <text x="730" y="108" font-size="11.5" fill="#334155">自带消费者组与 XACK</text>
+    <text x="730" y="130" font-size="11.5" fill="#b45309">定位接近 Kafka（见 发布订阅.md）</text>
+  </g>
+</svg>

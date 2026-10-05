@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">bool 的四个子句与 filter 的 bitset 缓存</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">能表达成 filter 的过滤条件就优先用 filter：不掉分、可缓存、更快</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、四个子句：计分与否决定它能不能被缓存</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">子句名决定「是否影响得分」，得分参与与否决定「能否退化成布尔位运算」</text>
+
+    <rect x="20" y="66" width="920" height="116" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="20" y1="95" x2="940" y2="95" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="20" y1="124" x2="940" y2="124" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="20" y1="153" x2="940" y2="153" stroke="#e2e8f0" stroke-width="1"/>
+
+    <text x="40" y="88" font-size="12.5" font-weight="bold" fill="#334155">must</text>
+    <text x="200" y="88" font-size="12.5" fill="#047857">✅ 计分</text>
+    <text x="330" y="88" font-size="12.5" fill="#334155">必须匹配（AND）</text>
+
+    <text x="40" y="117" font-size="12.5" font-weight="bold" fill="#334155">should</text>
+    <text x="200" y="117" font-size="12.5" fill="#047857">✅ 计分</text>
+    <text x="330" y="117" font-size="12.5" fill="#334155">应该匹配（OR），minimum_should_match 控制至少匹配数</text>
+
+    <text x="40" y="146" font-size="12.5" font-weight="bold" fill="#334155">must_not</text>
+    <text x="200" y="146" font-size="12.5" fill="#dc2626">❌ 不计分</text>
+    <text x="330" y="146" font-size="12.5" fill="#334155">必须不匹配（NOT）</text>
+
+    <text x="40" y="175" font-size="12.5" font-weight="bold" fill="#334155">filter</text>
+    <text x="200" y="175" font-size="12.5" fill="#dc2626">❌ 不计分</text>
+    <text x="330" y="175" font-size="12.5" fill="#334155">必须匹配但不参与打分，可命中缓存　⭐</text>
+  </g>
+
+  <g transform="translate(20,290)">
+    <rect x="0" y="0" width="960" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、filter 为什么能缓存、什么时候缓存失效</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">filter 只回答「匹配吗」，答案是布尔 —— Lucene 用 bitset 按段缓存</text>
+
+    <text x="36" y="86" font-size="12.5" fill="#334155">命中缓存：下次同样的 filter 直接位运算，不重新逐文档算分</text>
+    <text x="36" y="110" font-size="12.5" fill="#334155">放进 must：变成「每个文档算一次分」，既不能复用 bitset，也无法只取命中集合</text>
+    <text x="36" y="140" font-size="12.5" fill="#dc2626">⚠️ 失效① 值分布高基数（每个值只命中几条）→ 没有复用价值，还占堆并频繁淘汰</text>
+    <text x="36" y="164" font-size="12.5" fill="#dc2626">⚠️ 失效② 随时间滑动的 range: {now-1h} 每次都不同 → 几乎不命中缓存</text>
+    <text x="36" y="192" font-size="12.5" fill="#64748b">对策：粗粒度条件（租户 / 状态 / 日期分桶）放 filter；滑动的精确条件留在 must 之外，或改成按天 filter</text>
+  </g>
+
+  <g transform="translate(20,520)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、match 与 term：分词与否决定「用哪个」</text>
+
+    <rect x="20" y="58" width="450" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="36" y="82" font-size="13" font-weight="bold" fill="#047857">text 字段 → match</text>
+    <text x="36" y="106" font-size="12.5" fill="#334155">先对查询串分词，再逐个匹配（会打分）</text>
+
+    <rect x="490" y="58" width="450" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="82" font-size="13" font-weight="bold" fill="#1d4ed8">keyword 字段 → term</text>
+    <text x="506" y="106" font-size="12.5" fill="#334155">不对查询串分词，整串比对词典</text>
+
+    <text x="36" y="142" font-size="12.5" fill="#dc2626">⚠️ 对 text 用 term 查「Elasticsearch 入门」几乎查不到 —— 词典里是两个分词，整串这个 term 不存在</text>
+  </g>
+
+</svg>

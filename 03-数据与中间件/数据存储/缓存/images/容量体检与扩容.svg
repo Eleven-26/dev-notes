@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="1000" height="790" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="790" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">内存放不下了：先做数据体检，再谈扩容</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">最容易走偏的是惯性思路 —— 直奔「换哪个淘汰策略」，而淘汰策略在使用时就已确定</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">① 先排除惯性答案：改淘汰策略解决不了「数据量本来就大」</text>
+
+    <text x="24" y="70" font-size="12.5" fill="#334155">淘汰策略（LRU / LFU / Random）在搭建缓存时就已经选定，本质都是「淘汰不常用的数据」。</text>
+    <text x="24" y="98" font-size="12.5" fill="#334155">无论选哪个，都改变不了「数据量很大」这个事实 —— 容量问题是设计问题，不是策略问题。</text>
+    <text x="24" y="134" font-size="12.5" fill="#b45309">⭐ 淘汰策略的正确定位：只是「写满后的缓冲」，为扩容争取时间，不是救命稻草。</text>
+    <text x="24" y="162" font-size="12.5" fill="#334155">⚠️ 唯一的例外：压根没配（noeviction）→ 内存写满后写入直接报错，影响应用可用性。</text>
+  </g>
+
+  <g transform="translate(20,270)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">② 数据体检三步：先问「为什么这些都在缓存里」</text>
+
+    <rect x="24" y="52" width="296" height="110" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="40" y="78" font-size="12" font-weight="bold" fill="#1d4ed8">① 都该进缓存吗？</text>
+    <text x="40" y="106" font-size="11" fill="#334155">剔除大 value、可直接查库的、</text>
+    <text x="40" y="126" font-size="11" fill="#334155">一次性结果</text>
+
+    <rect x="332" y="52" width="296" height="110" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="348" y="78" font-size="12" font-weight="bold" fill="#1d4ed8">② 是否都设了 TTL？</text>
+    <text x="348" y="106" font-size="11" fill="#334155">找出「本该设 TTL 却设成永久」</text>
+    <text x="348" y="126" font-size="11" fill="#334155">的长命数据</text>
+
+    <rect x="640" y="52" width="296" height="110" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="656" y="78" font-size="12" font-weight="bold" fill="#1d4ed8">③ 已设的 TTL 合理吗？</text>
+    <text x="656" y="106" font-size="11" fill="#334155">本该 3~5 秒的设成 3~5 分钟，</text>
+    <text x="656" y="126" font-size="11" fill="#334155">本该 30 分钟的设成 2~3 小时 → 收紧</text>
+
+    <text x="24" y="200" font-size="12" fill="#334155">⭐ 先解决「为什么大」「为什么这些都在缓存里」，而不是讨论「满了以后淘汰谁」—— 三步做完再谈策略。</text>
+  </g>
+
+  <g transform="translate(20,520)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">③ 扩容四手段 + 别把「减量」做成「雪崩」</text>
+
+    <rect x="24" y="52" width="440" height="76" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="40" y="76" font-size="12" font-weight="bold" fill="#1d4ed8">垂直扩容（升配）</text>
+    <text x="40" y="102" font-size="11" fill="#334155">加大单机内存；最简单，但单机有上限、成本非线性</text>
+
+    <rect x="496" y="52" width="440" height="76" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="512" y="76" font-size="12" font-weight="bold" fill="#1d4ed8">水平扩容（分片 / 集群）</text>
+    <text x="512" y="102" font-size="11" fill="#334155">按 key 哈希摊到多节点；容量与吞吐同步线性提升</text>
+
+    <rect x="24" y="136" width="440" height="76" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="40" y="160" font-size="12" font-weight="bold" fill="#1d4ed8">冷热数据分离</text>
+    <text x="40" y="186" font-size="11" fill="#334155">热数据留 Redis，冷数据下沉 DB / 对象存储，按需回源</text>
+
+    <rect x="496" y="136" width="440" height="76" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="512" y="160" font-size="12" font-weight="bold" fill="#1d4ed8">压缩与序列化优化</text>
+    <text x="512" y="186" font-size="11" fill="#334155">Protobuf / MessagePack 替代 JSON，同样内存装更多</text>
+
+    <text x="24" y="236" font-size="12" fill="#b45309">⭐ 防副作用：TTL 分级 + 随机抖动 + 热点 key 逻辑过期（物理不设 TTL，value 里带过期时间戳）。</text>
+  </g>
+</svg>

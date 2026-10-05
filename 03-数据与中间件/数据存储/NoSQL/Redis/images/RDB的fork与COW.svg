@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 648" width="1000" height="648" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="arwR" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="648" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RDB 的 fork + COW：fork 很便宜，贵的是被改写的页</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">BGSAVE 调 fork() 得到子进程；两边先共享物理页，父进程改哪一页就复制哪一页 —— 下面数字来自 redis:7-alpine（7.4.11）实测</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="284" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="16" font-weight="bold" fill="#0f172a">两个阶段：只多出「被父进程改写的那一页」</text>
+
+    <rect x="20" y="44" width="440" height="222" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="34" y="66" font-size="12.5" font-weight="bold" fill="#1d4ed8">① fork 刚完成</text>
+    <text x="34" y="86" font-size="11.5" fill="#64748b">页表副本；两边指向同一批物理页 —— 谁都不改就不占额外内存</text>
+
+    <rect x="34" y="100" width="80" height="30" rx="4" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="74" y="119" text-anchor="middle" font-size="12" fill="#334155">父进程</text>
+    <rect x="34" y="150" width="80" height="30" rx="4" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.3"/>
+    <text x="74" y="169" text-anchor="middle" font-size="12" fill="#334155">子进程</text>
+
+    <line x1="120" y1="115" x2="176" y2="115" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arw)"/>
+    <line x1="120" y1="165" x2="176" y2="165" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="182" y="96" width="262" height="88" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+    <rect x="192" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="210" y="144" text-anchor="middle" font-size="11" fill="#334155">P0</text>
+    <rect x="232" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="250" y="144" text-anchor="middle" font-size="11" fill="#334155">P1</text>
+    <rect x="272" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="290" y="144" text-anchor="middle" font-size="11" fill="#334155">P2</text>
+    <rect x="312" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="330" y="144" text-anchor="middle" font-size="11" fill="#334155">P3</text>
+    <rect x="352" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="370" y="144" text-anchor="middle" font-size="11" fill="#334155">P4</text>
+    <rect x="392" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="410" y="144" text-anchor="middle" font-size="11" fill="#334155">P5</text>
+    <text x="313" y="184" text-anchor="middle" font-size="11" fill="#64748b">共享的物理内存页</text>
+    <text x="313" y="204" text-anchor="middle" font-size="11" fill="#047857">rdb_last_cow_size = 640.0 KB</text>
+
+    <line x1="470" y1="155" x2="494" y2="155" stroke="#b45309" stroke-width="1.8" marker-end="url(#arwR)"/>
+    <text x="482" y="142" text-anchor="middle" font-size="11" fill="#b45309">父写</text>
+
+    <rect x="500" y="44" width="440" height="222" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="514" y="66" font-size="12.5" font-weight="bold" fill="#dc2626">② 父进程改写了 P3</text>
+    <text x="514" y="86" font-size="11.5" fill="#64748b">COPY-ON-WRITE：复制一页给子进程，父进程改自己那份</text>
+
+    <rect x="514" y="100" width="80" height="30" rx="4" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="554" y="119" text-anchor="middle" font-size="12" fill="#334155">父进程</text>
+    <rect x="514" y="150" width="80" height="30" rx="4" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.3"/>
+    <text x="554" y="169" text-anchor="middle" font-size="12" fill="#334155">子进程</text>
+
+    <line x1="600" y1="115" x2="656" y2="115" stroke="#dc2626" stroke-width="1.4" marker-end="url(#arwR)"/>
+    <line x1="600" y1="165" x2="656" y2="165" stroke="#1d4ed8" stroke-width="1.4" marker-end="url(#arw)"/>
+
+    <rect x="662" y="96" width="262" height="88" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+    <rect x="672" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="690" y="144" text-anchor="middle" font-size="11" fill="#334155">P0</text>
+    <rect x="712" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="730" y="144" text-anchor="middle" font-size="11" fill="#334155">P1</text>
+    <rect x="752" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="770" y="144" text-anchor="middle" font-size="11" fill="#334155">P2</text>
+    <rect x="792" y="112" width="36" height="56" rx="3" fill="#fef2f2" stroke="#dc2626" stroke-width="1.8"/>
+    <text x="810" y="144" text-anchor="middle" font-size="11" fill="#dc2626">P3′</text>
+    <rect x="832" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="850" y="144" text-anchor="middle" font-size="11" fill="#334155">P4</text>
+    <rect x="872" y="112" width="36" height="56" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="890" y="144" text-anchor="middle" font-size="11" fill="#334155">P5</text>
+    <rect x="672" y="176" width="36" height="20" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="690" y="190" text-anchor="middle" font-size="10" fill="#334155">P3</text>
+    <text x="756" y="191" font-size="11" fill="#7c3aed">子进程仍指向旧的 P3</text>
+
+    <text x="514" y="222" font-size="11" fill="#b45309">⚠️ 写压力越大、快照拖得越久，被复制的页越多 → 峰值内存越高</text>
+    <text x="514" y="244" font-size="11" fill="#dc2626">used_memory: 29.01M → 44.68M（峰值涨 54%）</text>
+  </g>
+
+  <g transform="translate(20,366)">
+    <rect x="0" y="0" width="960" height="156" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">实测对照（20 万 key ≈ 29 MB 数据）</text>
+
+    <text x="30" y="58" font-size="12.5" font-weight="bold" fill="#475569">场景</text>
+    <text x="300" y="58" font-size="12.5" font-weight="bold" fill="#475569">latest_fork_usec</text>
+    <text x="520" y="58" font-size="12.5" font-weight="bold" fill="#475569">rdb_last_cow_size</text>
+    <text x="760" y="58" font-size="12.5" font-weight="bold" fill="#475569">used_memory</text>
+    <line x1="24" y1="66" x2="936" y2="66" stroke="#cbd5e1" stroke-width="1"/>
+
+    <text x="30" y="90" font-size="12.5" fill="#334155">无写入压力</text>
+    <text x="300" y="90" font-size="12.5" fill="#334155">1627 µs（1.6 ms）</text>
+    <text x="520" y="90" font-size="12.5" fill="#334155">640.0 KB</text>
+    <text x="760" y="90" font-size="12.5" fill="#64748b">——</text>
+
+    <text x="30" y="118" font-size="12.5" fill="#334155">BGSAVE 期间持续写入</text>
+    <text x="300" y="118" font-size="12.5" fill="#334155">1477 µs（还是 1.5 ms）</text>
+    <text x="520" y="118" font-size="12.5" font-weight="bold" fill="#dc2626">2.95 MB（×4.6）</text>
+    <text x="760" y="118" font-size="12.5" font-weight="bold" fill="#dc2626">29.01M → 44.68M</text>
+
+    <text x="30" y="142" font-size="11.5" fill="#64748b">期间写入 90000 个 key，耗时 497 ms</text>
+
+    <text x="30" y="142" font-size="11.5" fill="#64748b"> </text>
+  </g>
+
+  <g transform="translate(20,534)">
+    <rect x="0" y="0" width="960" height="98" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">两条结论</text>
+    <text x="16" y="50" font-size="12.5" fill="#334155">⭐ fork 本身很便宜（1.6 ms），贵的是「快照期间被改写的页」—— 所以扩容/缩容会刻意避开 fork 期间。</text>
+    <text x="16" y="74" font-size="12.5" fill="#b45309">⚠️ used_memory 涨了不等于泄漏：COW 页在子进程结束后释放；但若宿主机已有压力，进程可能先被 OOM Killer 干掉 —— 要按「BGSAVE 峰值」规划内存。</text>
+  </g>
+</svg>

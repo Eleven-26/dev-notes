@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 970" width="1000" height="970" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="970" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">执行计划：算子树从下往上读，判性能只看三件事</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">⭐ 起点算子是不是 Seek、有没有不该出现的 CartesianProduct / Eager、dbHits 集中在哪个算子</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">一份真实的 PROFILE 计划（2 跳、排除回到起点）</text>
+
+    <rect x="30" y="42" width="900" height="166" rx="6" fill="#0f172a"/>
+    <text x="46" y="64" font-size="11.5" fill="#86efac" font-family="Consolas, Menlo, monospace">+ProduceResults          0 | 0 DB Hits      &lt;- 输出</text>
+    <text x="46" y="86" font-size="11.5" fill="#86efac" font-family="Consolas, Menlo, monospace">+EagerAggregation        0 | 0 DB Hits      &lt;- count()</text>
+    <text x="46" y="108" font-size="11.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">+Filter                  0 | 0 DB Hits      &lt;- NOT anon_2 = anon_0</text>
+    <text x="46" y="130" font-size="11.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">+Expand(All)            21 | 21 DB Hits     &lt;- 第 2 跳：走 9 条边，访问 21 次</text>
+    <text x="46" y="152" font-size="11.5" fill="#e2e8f0" font-family="Consolas, Menlo, monospace">+Expand(All)             7 | 7 DB Hits      &lt;- 第 1 跳：走 3 条边，访问 7 次</text>
+    <text x="46" y="174" font-size="11.5" fill="#fca5a5" font-family="Consolas, Menlo, monospace">+NodeIndexSeek           2 | 2 DB Hits      &lt;- 起点：RANGE INDEX u:User(id)</text>
+    <text x="46" y="196" font-size="11.5" fill="#94a3b8" font-family="Consolas, Menlo, monospace">Total database accesses: 30, total allocated memory: 88</text>
+
+    <text x="20" y="232" font-size="12" fill="#334155">⭐ 从下往上读：下面的算子是上游、先跑。一句 2 跳查询总 30 dbHits，起点只占 2，其余全在两次 Expand 上。</text>
+    <text x="20" y="256" font-size="12" fill="#b45309">⚠️ Expand(All) 的 dbHits ≈ 展开出的边数 + 节点数；它特别大就说明「从一个大起点展开」—— 先收窄起点或反向往回走。</text>
+    <text x="20" y="280" font-size="12" fill="#64748b">EXPLAIN 只编译不执行（给估算），PROFILE 真跑一遍并记录实际行数 / dbHits / 时间 / 内存 —— 排查性能只用 PROFILE。</text>
+  </g>
+
+  <g transform="translate(20,385)">
+    <rect x="0" y="0" width="960" height="335" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">四类算子：扫描 / 展开 / 连接 / 过滤与阻塞</text>
+
+    <rect x="20" y="42" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">算子</text>
+    <text x="280" y="62" font-size="12.5" font-weight="bold" fill="#0f172a">含义</text>
+    <text x="700" y="62" font-size="12.5" font-weight="bold" fill="#1d4ed8">评价</text>
+
+    <rect x="20" y="72" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="89" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">NodeIndexSeek</text>
+    <text x="280" y="89" font-size="12" fill="#334155">用索引直接定位起点（WHERE id = $p）</text>
+    <text x="700" y="89" font-size="12" fill="#047857">⭐ 最好，dbHits ≈ 命中数</text>
+
+    <rect x="20" y="97" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="114" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">NodeIndexScan</text>
+    <text x="280" y="114" font-size="12" fill="#334155">范围扫索引（id &gt; 99990、IN [...]）</text>
+    <text x="700" y="114" font-size="12" fill="#334155">尚可，代价与命中区间同阶</text>
+
+    <rect x="20" y="122" width="920" height="25" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="139" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">NodeByLabelScan</text>
+    <text x="280" y="139" font-size="12" fill="#334155">扫某个标签的全部节点</text>
+    <text x="700" y="139" font-size="12" fill="#b45309">⚠️ 10 万节点就是 10 万次访问</text>
+
+    <rect x="20" y="147" width="920" height="25" fill="#fee2e2" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="164" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">AllNodesScan</text>
+    <text x="280" y="164" font-size="12" fill="#334155">扫全库节点（连标签都没给）</text>
+    <text x="700" y="164" font-size="12" fill="#dc2626">❌ 最差，绝不要出现在大库上</text>
+
+    <rect x="20" y="172" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="189" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">Expand(All)</text>
+    <text x="280" y="189" font-size="12" fill="#334155">沿某类 / 某方向关系展开，保留原节点</text>
+    <text x="700" y="189" font-size="12" fill="#334155">dbHits ≈ 展开出的边数 + 节点数</text>
+
+    <rect x="20" y="197" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="214" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">Expand(Into)</text>
+    <text x="280" y="214" font-size="12" fill="#334155">两端都已存在、判断它们之间有没有边</text>
+    <text x="700" y="214" font-size="12" fill="#334155">等价于「半连接」</text>
+
+    <rect x="20" y="222" width="920" height="25" fill="#fee2e2" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="239" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">CartesianProduct</text>
+    <text x="280" y="239" font-size="12" fill="#334155">两个互不相关的模式做笛卡尔积</text>
+    <text x="700" y="239" font-size="12" fill="#dc2626">❌ 出现它几乎一定是查询写错了</text>
+
+    <rect x="20" y="247" width="920" height="25" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="264" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">Eager</text>
+    <text x="280" y="264" font-size="12" fill="#334155">阻塞算子：先把上游全部结果收下来</text>
+    <text x="700" y="264" font-size="12" fill="#b45309">⚠️ 读写混在一条语句时出现，易撑爆堆</text>
+
+    <rect x="20" y="272" width="920" height="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="289" font-size="11.5" fill="#334155" font-family="Consolas, Menlo, monospace">Filter / EagerAggregation</text>
+    <text x="280" y="289" font-size="12" fill="#334155">流式过滤 / 分组聚合（count / sum / collect）</text>
+    <text x="700" y="289" font-size="12" fill="#334155">Filter 不阻塞；聚合内存看聚合前行数</text>
+
+    <text x="20" y="321" font-size="12" fill="#b45309">⚠️ Eager 的解法：把「先 CREATE 再 MATCH 刚建的数据」拆成两条语句，或在写之前完成所有读。</text>
+  </g>
+
+  <g transform="translate(20,735)">
+    <rect x="0" y="0" width="960" height="215" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">dbHits 怎么用：改写一句谓词，差 10 万倍</text>
+
+    <rect x="30" y="42" width="900" height="66" rx="6" fill="#0f172a"/>
+    <text x="46" y="64" font-size="11.5" fill="#fca5a5" font-family="Consolas, Menlo, monospace">X toString(u.id) = '50000'  -&gt; NodeByLabelScan(100001)+Filter(100000) = 200001 dbHits, Time 840 us</text>
+    <text x="46" y="92" font-size="11.5" fill="#86efac" font-family="Consolas, Menlo, monospace">V u.id = 50000             -&gt; NodeIndexSeek(2)                          =      2 dbHits, Time 145 us</text>
+
+    <text x="20" y="132" font-size="12" fill="#334155">⭐ 10 万倍的 dbHits 差（200001 → 2），这就是「改写一句谓词」的收益量级。</text>
+    <text x="20" y="156" font-size="12" fill="#b45309">⚠️ dbHits 高但耗时低？数据全在页缓存里时一次 dbHit 只是一次内存访问：判结构化看 dbHits，判这次快不快看 Time。</text>
+    <text x="20" y="180" font-size="12" fill="#64748b">⭐ PROFILE 要跑两次：第一次含冷页缓冲（实测冷启 1370 ms → 热了之后 186 ms，差约 7 倍），第二次才反映真实性能。</text>
+  </g>
+</svg>

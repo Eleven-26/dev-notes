@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 840" width="1000" height="840" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="840" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">本地缓存与中心化缓存：先判断，再选型</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">关键是讲清「什么场景根本不需要中心化缓存」，而不是一听到缓存就默认 Redis</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">① 本地缓存 vs 中心化缓存：不是二选一，是「什么场景用什么」</text>
+
+    <rect x="24" y="44" width="912" height="28" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="214" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#b45309">本地缓存（bigcache / Caffeine）</text>
+    <text x="574" y="58" dominant-baseline="central" font-size="12.5" font-weight="bold" fill="#047857">Redis（中心化）</text>
+
+    <rect x="24" y="72" width="912" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="87" dominant-baseline="central" font-size="12" fill="#334155">访问延迟</text>
+    <text x="214" y="87" dominant-baseline="central" font-size="12" fill="#334155">纳秒~微秒（进程内，无网络）</text>
+    <text x="574" y="87" dominant-baseline="central" font-size="12" fill="#334155">百微秒~毫秒（一次网络往返 + 序列化）</text>
+
+    <rect x="24" y="102" width="912" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="117" dominant-baseline="central" font-size="12" fill="#334155">容量</text>
+    <text x="214" y="117" dominant-baseline="central" font-size="12" fill="#334155">受单机内存限制</text>
+    <text x="574" y="117" dominant-baseline="central" font-size="12" fill="#334155">可独立扩容 / 集群，容量大得多</text>
+
+    <rect x="24" y="132" width="912" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="147" dominant-baseline="central" font-size="12" fill="#334155">一致性</text>
+    <text x="214" y="147" dominant-baseline="central" font-size="12" fill="#b45309">多实例之间天然不一致</text>
+    <text x="574" y="147" dominant-baseline="central" font-size="12" fill="#047857">多节点共享同一份，天然一致</text>
+
+    <rect x="24" y="162" width="912" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="177" dominant-baseline="central" font-size="12" fill="#334155">进程隔离</text>
+    <text x="214" y="177" dominant-baseline="central" font-size="12" fill="#334155">进程挂了缓存就没了（可重建）</text>
+    <text x="574" y="177" dominant-baseline="central" font-size="12" fill="#334155">独立进程，与应用生命周期解耦</text>
+
+    <rect x="24" y="192" width="912" height="30" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="207" dominant-baseline="central" font-size="12" fill="#334155">GC 友好性</text>
+    <text x="214" y="207" dominant-baseline="central" font-size="12" fill="#b45309">map 小对象加剧 GC，bigcache 用 ring buffer</text>
+    <text x="574" y="207" dominant-baseline="central" font-size="12" fill="#334155">数据不在 Go 堆上，对业务 GC 无影响</text>
+  </g>
+
+  <g transform="translate(20,340)">
+    <rect x="0" y="0" width="960" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">② 为什么需要中心化缓存，以及多级缓存长什么样</text>
+
+    <rect x="24" y="44" width="290" height="80" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="40" y="68" font-size="12" font-weight="bold" fill="#1d4ed8">① 持久化</text>
+    <text x="40" y="94" font-size="11" fill="#334155">数据不能丢</text>
+
+    <rect x="330" y="44" width="290" height="80" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="346" y="68" font-size="12" font-weight="bold" fill="#1d4ed8">② 跨节点可见（关键）</text>
+    <text x="346" y="94" font-size="11" fill="#334155">数据不能只属于提交它的那个节点</text>
+
+    <rect x="636" y="44" width="300" height="80" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="652" y="68" font-size="12" font-weight="bold" fill="#b45309">反例：Session</text>
+    <text x="652" y="94" font-size="11" fill="#334155">换节点就丢 → 必须放 Redis 做中心</text>
+
+    <rect x="24" y="150" width="200" height="64" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="124" y="182" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">请求</text>
+    <line x1="224" y1="182" x2="240" y2="182" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="244" y="150" width="200" height="64" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="344" y="182" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">L1 本地缓存（纳秒）</text>
+    <line x1="444" y1="182" x2="460" y2="182" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="464" y="150" width="200" height="64" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="564" y="182" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">L2 Redis（毫秒）</text>
+    <line x1="664" y1="182" x2="680" y2="182" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="684" y="150" width="200" height="64" rx="6" fill="#dcfce7" stroke="#047857" stroke-width="1.2"/>
+    <text x="784" y="182" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">DB 回源 → 逐层回填</text>
+
+    <text x="24" y="250" font-size="12" fill="#334155">⭐ L1 扛「极热几乎不变」（配置 / 榜单 / 字典），L2 扛「热但可能变」的共享数据；代价是一致性链路从 1 段变 2 段。</text>
+  </g>
+
+  <g transform="translate(20,630)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">③ L1 的真实难点：A 节点改了库，B 节点的本地缓存还是旧值</text>
+
+    <text x="24" y="62" font-size="12.5" fill="#334155">① 短 TTL（首选）—— 给 L1 设 1~5 秒，用「能容忍的最大延迟」换实现简单。</text>
+    <text x="24" y="94" font-size="12.5" fill="#334155">② 主动失效（广播）—— 写后发 Pub/Sub，各节点删本地 key；⚠️ Pub/Sub 不持久化，必须配 ① 兜底。</text>
+    <text x="24" y="126" font-size="12.5" fill="#334155">③ 版本号 / 逻辑过期 —— value 带版本号，本地发现版本落后就丢弃重取。</text>
+    <text x="24" y="164" font-size="12.5" fill="#b45309">⭐ 纪律：强一致 / 频繁变更 / 涉及金额库存的数据只走 Redis，不进 L1。</text>
+  </g>
+</svg>

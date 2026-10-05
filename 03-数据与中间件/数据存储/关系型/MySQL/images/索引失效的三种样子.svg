@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="1000" height="790" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="790" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">「索引失效」在 8.0 上长出三种完全不同的样子</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">夹具 doca3.t_a2（5 万行，索引 idx_title / idx_created / idx_cat_created(category, created_at) / idx_views），本机 8.0.46 实测</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">只看 key 是不是 NULL 会判错 —— 要看 possible_keys 与 type</text>
+
+    <rect x="16" y="46" width="300" height="112" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="1.6"/>
+    <text x="30" y="70" font-size="12.5" font-weight="bold" fill="#b45309">形态① 退化成覆盖索引全扫</text>
+    <text x="30" y="94" font-size="11.5" fill="#334155">possible_keys = NULL，但 key 有值</text>
+    <text x="30" y="114" font-size="11.5" fill="#334155">type = index，扫整个索引树</text>
+    <text x="30" y="138" font-size="11.5" fill="#334155">函数包裹 / 前置通配 / 隐式类型转换</text>
+
+    <rect x="326" y="46" width="300" height="112" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.6"/>
+    <text x="340" y="70" font-size="12.5" font-weight="bold" fill="#dc2626">形态② 真·全表扫描</text>
+    <text x="340" y="94" font-size="11.5" fill="#334155">type = ALL，key = NULL</text>
+    <text x="340" y="114" font-size="11.5" fill="#334155">没有任何可用索引，或优化器</text>
+    <text x="340" y="138" font-size="11.5" fill="#334155">认为全扫更便宜（小表就是这样）</text>
+
+    <rect x="636" y="46" width="300" height="112" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.6"/>
+    <text x="650" y="70" font-size="12.5" font-weight="bold" fill="#1d4ed8">形态③ 索引在，但只当覆盖用</text>
+    <text x="650" y="94" font-size="11.5" fill="#334155">possible_keys 有、key 也有</text>
+    <text x="650" y="114" font-size="11.5" fill="#334155">但 type 不是 ref / range →</text>
+    <text x="650" y="138" font-size="11.5" fill="#334155">没用于定位（隐式类型转换典型）</text>
+
+    <text x="16" y="182" font-size="12.5" fill="#b45309">⭐ 判据：<tspan font-weight="bold">key 有值不等于走了索引</tspan> —— 必须同时看 possible_keys（是否放弃）与 type（是否真用于定位）。</text>
+  </g>
+
+  <g transform="translate(20,286)">
+    <rect x="0" y="0" width="960" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">五条背下来的口径，逐条实测后长这样</text>
+
+    <rect x="16" y="46" width="928" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="64" font-size="12" font-weight="bold" fill="#0f172a">场景</text>
+    <text x="340" y="64" font-size="12" font-weight="bold" fill="#0f172a">实测计划</text>
+    <text x="730" y="64" font-size="12" font-weight="bold" fill="#0f172a">关键读数</text>
+
+    <rect x="16" y="72" width="928" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="91" font-size="12" fill="#334155">① 函数 DATE(created_at)</text>
+    <text x="340" y="91" font-size="12" font-family="Consolas, monospace" fill="#334155">type=index, possible_keys=NULL, key=idx_created</text>
+    <text x="730" y="91" font-size="12" fill="#dc2626">rows=49220</text>
+
+    <rect x="16" y="100" width="928" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="119" font-size="12" fill="#334155">①' 改成范围条件</text>
+    <text x="340" y="119" font-size="12" font-family="Consolas, monospace" fill="#334155">type=range, key=idx_cat_created</text>
+    <text x="730" y="119" font-size="12" fill="#047857">rows≈5467</text>
+
+    <rect x="16" y="128" width="928" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="147" font-size="12" fill="#334155">② LIKE '%kw7%'</text>
+    <text x="340" y="147" font-size="12" font-family="Consolas, monospace" fill="#334155">type=index, possible_keys=NULL</text>
+    <text x="730" y="147" font-size="12" fill="#dc2626">扫 49177 条（'kw7%' → range 1100）</text>
+
+    <rect x="16" y="156" width="928" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="175" font-size="12" fill="#334155">③ OR 里有无索引列</text>
+    <text x="340" y="175" font-size="12" font-family="Consolas, monospace" fill="#334155">type=ALL, key=NULL</text>
+    <text x="714" y="175" font-size="12" fill="#dc2626">rows=49177，17.8ms → 补索引 0.96ms</text>
+
+    <rect x="16" y="184" width="928" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="203" font-size="12" fill="#334155">④ 联合索引只用第 2 列</text>
+    <text x="340" y="203" font-size="12" font-family="Consolas, monospace" fill="#b45309">type=range, Using index for skip scan</text>
+    <text x="730" y="203" font-size="12" fill="#b45309">关 skip_scan → type=index</text>
+
+    <rect x="16" y="212" width="928" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="231" font-size="12" fill="#334155">⑤ 隐式类型 title=12345</text>
+    <text x="340" y="231" font-size="12" font-family="Consolas, monospace" fill="#334155">type=index, key=idx_title</text>
+    <text x="730" y="231" font-size="12" fill="#dc2626">rows=49177（列被转成数字）</text>
+  </g>
+
+  <g transform="translate(20,556)">
+    <rect x="0" y="0" width="960" height="214" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#b45309">两条必须写清的修正</text>
+
+    <text x="16" y="58" font-size="12.5" fill="#334155">⭐ ④ 最左前缀不再绝对：前导列基数低（<tspan font-family="Consolas, monospace">category</tspan> 只有 20 个不同值）时，8.0.13+ 的 <tspan font-weight="bold">Skip Scan</tspan> 会把前导列的每个值各做一次 range 再合并，</text>
+    <text x="16" y="80" font-size="12.5" fill="#334155">　 <tspan font-family="Consolas, monospace">Extra</tspan> 写 <tspan font-family="Consolas, monospace">Using index for skip scan</tspan>。代价是前导列基数的函数：实测 0.46~0.71ms，比正常走 <tspan font-family="Consolas, monospace">idx_created</tspan> 的 0.34ms 慢约一倍。</text>
+
+    <text x="16" y="112" font-size="12.5" fill="#334155">⚠️ ① 函数包裹的真实代价是<tspan font-weight="bold">扫描量</tspan>（49220 行 vs 一条 range），不是「一定全表扫描」—— 会不会变成用户能感知的慢，取决于这个条件的<tspan font-weight="bold">选择率</tspan>：</text>
+    <text x="16" y="134" font-size="12.5" fill="#334155">　 命中 20160 行时，两种写法都在 13~25ms 区间互相咬住（代价被「交付 2 万行」淹没）；换成命中 0 行的日期重测，</text>
+    <text x="16" y="156" font-size="12.5" fill="#dc2626">　 差值立刻拉成 11.6ms vs 0.41ms（约 28 倍）。</text>
+
+    <text x="16" y="188" font-size="12" fill="#64748b">⚠️ 别拿 rows 的小数位当证据：同一张表在两次 ANALYZE TABLE 之间估算本身就会飘，49177 与 49220 都是本机实读，差别在 0.1% 以内。</text>
+  </g>
+
+</svg>

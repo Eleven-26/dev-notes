@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 795" width="1000" height="795" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="795" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三种建模模式、灰度迁移与「能开事务」的误区</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">动态字段、热点子集、时序分桶三种形状各解决一类难题；改模型要先打版本号，四步顺序错一步就有一段读不到的窗口</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="245" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">attribute / subset / buckets 三种模式各自解决什么</text>
+
+    <rect x="20" y="62" width="920" height="30" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="82" font-size="12.5" font-weight="bold" fill="#0f172a">模式</text>
+    <text x="194" y="82" font-size="12.5" font-weight="bold" fill="#0f172a">形状</text>
+    <text x="494" y="82" font-size="12.5" font-weight="bold" fill="#0f172a">解决什么</text>
+    <text x="714" y="82" font-size="12.5" font-weight="bold" fill="#0f172a">代价</text>
+
+    <rect x="20" y="92" width="920" height="46" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="113" font-size="11.5" fill="#1d4ed8">attribute-pattern</text>
+    <text x="194" y="110" font-size="11" fill="#334155">动态字段收进一个子文档、</text>
+    <text x="194" y="127" font-size="11" fill="#334155">键当字段名：metrics: {cpu_idle:12}</text>
+    <text x="494" y="110" font-size="11" fill="#334155">字段名本身也是数据 →</text>
+    <text x="494" y="127" font-size="11" fill="#334155">避免顶层字段无限增长</text>
+    <text x="714" y="110" font-size="11" fill="#334155">按某指标过滤要单独建索引；</text>
+    <text x="714" y="127" font-size="11" fill="#334155">字段名在每份文档里重复存</text>
+
+    <rect x="20" y="138" width="920" height="46" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="159" font-size="11.5" fill="#1d4ed8">subset-pattern</text>
+    <text x="194" y="156" font-size="11" fill="#334155">主文档只留最热一小撮</text>
+    <text x="194" y="173" font-size="11" fill="#334155">（recentComments 截断，全量在 comments）</text>
+    <text x="494" y="156" font-size="11" fill="#334155">首屏一次读 +</text>
+    <text x="494" y="173" font-size="11" fill="#334155">子集合无限增长</text>
+    <text x="714" y="156" font-size="11" fill="#334155">两处要同步（插全量 + $push 截断），</text>
+    <text x="714" y="173" font-size="11" fill="#334155">非原子：容忍短暂不一致或开事务</text>
+
+    <rect x="20" y="184" width="920" height="46" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="205" font-size="11.5" fill="#1d4ed8">buckets（分桶）</text>
+    <text x="194" y="202" font-size="11" fill="#334155">按时间窗把高频小文档攒成</text>
+    <text x="194" y="219" font-size="11" fill="#334155">「一个桶文档 + 内嵌数组」</text>
+    <text x="494" y="202" font-size="11" fill="#334155">时序数据不留几亿小文档、</text>
+    <text x="494" y="219" font-size="11" fill="#334155">又不撑爆单文档</text>
+    <text x="714" y="202" font-size="11" fill="#334155">最新桶是写热点；桶边界要预先</text>
+    <text x="714" y="219" font-size="11" fill="#334155">可算，否则查一段时间要扫多个桶</text>
+  </g>
+
+  <g transform="translate(20,335)">
+    <rect x="0" y="0" width="960" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">改模型怎么灰度：先给文档打版本号，顺序错一步就有读不到的窗口</text>
+
+    <rect x="30" y="48" width="200" height="80" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="130" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">① 先只上「读兼容」</text>
+    <text x="130" y="92" text-anchor="middle" font-size="10.5" fill="#334155">新字段优先、为空回落旧字段</text>
+    <text x="130" y="110" text-anchor="middle" font-size="10.5" fill="#334155">线上先能吃下两种形状</text>
+    <line x1="234" y1="88" x2="266" y2="88" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="270" y="48" width="200" height="80" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="370" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">② 写侧双写 + 对账</text>
+    <text x="370" y="92" text-anchor="middle" font-size="10.5" fill="#334155">新数据两种形状都完整</text>
+    <text x="370" y="110" text-anchor="middle" font-size="10.5" fill="#334155">随时可回滚代码</text>
+    <line x1="474" y1="88" x2="506" y2="88" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="510" y="48" width="200" height="80" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.3"/>
+    <text x="610" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">③ 后台限速迁移存量</text>
+    <text x="610" y="92" text-anchor="middle" font-size="10.5" fill="#334155">① 的回落逻辑仍在兜底</text>
+    <text x="610" y="110" text-anchor="middle" font-size="10.5" fill="#334155">find + batchSize，可断点续跑</text>
+    <line x1="714" y1="88" x2="746" y2="88" stroke="#b45309" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="750" y="48" width="180" height="80" rx="6" fill="#ecfdf5" stroke="#047857" stroke-width="1.3"/>
+    <text x="840" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">④ 删回落 → 收尾</text>
+    <text x="840" y="92" text-anchor="middle" font-size="10.5" fill="#334155">每步只依赖「上一步已全量」</text>
+    <text x="840" y="110" text-anchor="middle" font-size="10.5" fill="#334155">回滚只是退回一版代码</text>
+
+    <text x="20" y="156" font-size="12" fill="#334155">⭐ 迁移脚本的条件里带版本 → 已迁移的文档天然被排除，脚本可中断可重放（幂等）：{ _id: id, schemaVersion: { $lt: 2 } }。</text>
+    <text x="20" y="180" font-size="12" fill="#b45309">⚠️ 不要拿 updateMany 对全量存量一把梭：瞬时写放大 + oplog 洪峰 → 从节点 lag 抬头；中途失败也没有断点。</text>
+    <text x="20" y="204" font-size="12" fill="#64748b">文档没有强制 schema，代价是同一集合会长期共存多种形状的文档 —— 打版本号迁移才有「做到哪了」的抓手。</text>
+  </g>
+
+  <g transform="translate(20,580)">
+    <rect x="0" y="0" width="960" height="195" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">为什么「能开事务」不等于可以照搬关系模型</text>
+
+    <rect x="30" y="44" width="440" height="80" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="46" y="66" font-size="12.5" font-weight="bold" fill="#dc2626">❌ 读输</text>
+    <text x="46" y="90" font-size="11.5" fill="#334155">详情页要 5 次查询或一次 $lookup</text>
+    <text x="46" y="112" font-size="11.5" fill="#334155">内嵌一次 IO 就够，往返次数与连接占用相乘</text>
+
+    <rect x="490" y="44" width="440" height="80" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="506" y="66" font-size="12.5" font-weight="bold" fill="#dc2626">❌ 写也输</text>
+    <text x="506" y="90" font-size="11.5" fill="#334155">多文档事务把全部写攒到最后一次性提交</text>
+    <text x="506" y="112" font-size="11.5" fill="#334155">期间持锁、oplog 不能增量可见，越大越久</text>
+
+    <text x="20" y="148" font-size="12" fill="#334155">判据：一次业务操作总要跨 N 个文档开事务，先怀疑建模 —— 不变量一般应收在同一个文档里（单文档写天然原子）。</text>
+    <text x="20" y="172" font-size="12" fill="#64748b">事务是兜底不是默认路径；真有大量跨表强一致需求，说明这数据本质是关系型的。</text>
+  </g>
+</svg>

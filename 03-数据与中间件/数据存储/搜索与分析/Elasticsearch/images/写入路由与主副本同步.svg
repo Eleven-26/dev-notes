@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条文档落在哪个分片：hash(routing) % 主分片数</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">主分片数建完不能改；写入总是「先主分片、再副本分片」，两者都成功才返回</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="192" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">一、路由公式：文档落在哪个主分片</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">路由结果只依赖主分片数，所以它是「建完就锁死」的静态设置</text>
+
+    <rect x="20" y="68" width="920" height="44" rx="8" fill="#0f172a"/>
+    <text x="36" y="96" font-size="14" font-family="Consolas, Menlo, monospace" fill="#e2e8f0">shard = hash(routing) % number_of_primary_shards</text>
+
+    <text x="36" y="138" font-size="12.5" fill="#334155">routing 默认是文档 _id，也可用 ?routing=xxx 自定义</text>
+    <text x="36" y="160" font-size="12.5" fill="#334155">副本不参与路由：先写主分片，再同步到该主分片的所有副本</text>
+    <text x="36" y="182" font-size="12.5" fill="#dc2626">⚠️ 改了主分片数，同一 _id 算出的编号就变了 → 旧文档「找不到」= 等同丢数据</text>
+  </g>
+
+  <g transform="translate(20,282)">
+    <rect x="0" y="0" width="960" height="258" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">二、写入时序：3 节点、3 主分片、每主 1 副本</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">请求发给谁，谁就是协调节点；路由算出目标主分片后，由它转发</text>
+
+    <rect x="24" y="72" width="180" height="36" rx="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="114" y="95" text-anchor="middle" font-size="12.5" fill="#1d4ed8">node-1（收到请求）</text>
+
+    <rect x="24" y="140" width="180" height="36" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1.5"/>
+    <text x="114" y="163" text-anchor="middle" font-size="12.5" fill="#047857">node-3：P1（主分片）</text>
+
+    <rect x="24" y="208" width="180" height="36" rx="6" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+    <text x="114" y="231" text-anchor="middle" font-size="12.5" fill="#b45309">node-2：R1（副本）</text>
+
+    <line x1="114" y1="112" x2="114" y2="136" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <line x1="114" y1="180" x2="114" y2="204" stroke="#b45309" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="130" y="130" font-size="12" fill="#334155">② 路由到 P1 → 转发</text>
+    <text x="130" y="198" font-size="12" fill="#334155">③ 写副本 R1</text>
+
+    <text x="330" y="86" font-size="12.5" fill="#334155">① node-1 接到一个文档写入请求，成为协调节点</text>
+    <text x="330" y="118" font-size="12.5" fill="#334155">② 按路由算出目标主分片 P1（在 node-3），用传输模块转发过去</text>
+    <text x="330" y="150" font-size="12.5" fill="#334155">③ P1 写成功后转发 node-2 写副本 R1，使 P1 与 R1 数据保持一致</text>
+    <text x="330" y="182" font-size="12.5" fill="#047857">④ 主分片与副本都成功，才向客户端报告成功</text>
+    <text x="330" y="214" font-size="12.5" fill="#dc2626">⚠️ 主分片写入失败 → 直接返回 False，不再写副本</text>
+    <text x="330" y="244" font-size="12" fill="#64748b">bulk 批量同理：先按路由分组，每组内仍是「先主后副」</text>
+  </g>
+
+  <g transform="translate(20,560)">
+    <rect x="0" y="0" width="960" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">三、批量写入 bulk：四类操作 + NDJSON 约束</text>
+    <text x="16" y="54" font-size="12" fill="#64748b">一次请求提交多条、减少往返 → 生产环境推荐</text>
+
+    <rect x="20" y="68" width="222" height="56" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="34" y="92" font-size="12.5" font-weight="bold" fill="#1d4ed8">index</text>
+    <text x="34" y="112" font-size="12" fill="#334155">覆盖已有文档</text>
+
+    <rect x="256" y="68" width="222" height="56" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="270" y="92" font-size="12.5" font-weight="bold" fill="#047857">create</text>
+    <text x="270" y="112" font-size="12" fill="#334155">已存在则报错</text>
+
+    <rect x="492" y="68" width="222" height="56" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="506" y="92" font-size="12.5" font-weight="bold" fill="#b45309">update</text>
+    <text x="506" y="112" font-size="12" fill="#334155">部分更新</text>
+
+    <rect x="728" y="68" width="222" height="56" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="742" y="92" font-size="12.5" font-weight="bold" fill="#dc2626">delete</text>
+    <text x="742" y="112" font-size="12" fill="#334155">删除</text>
+
+    <text x="36" y="136" font-size="12.5" fill="#dc2626">⚠️ bulk 请求体是 NDJSON：每行一个 JSON，行尾必须换行，不能用格式化过的多行 JSON</text>
+  </g>
+
+</svg>
