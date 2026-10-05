@@ -244,3 +244,4 @@ curl -s --noproxy '*' -X POST "localhost:19210/v_bbq/_search" -H 'Content-Type: 
 - [基数与频率估计.md](../../../../02-计算机基础/数据结构/高级数据结构/基数与频率估计.md) — 另一种「用近似换空间」的结构
 - [存储选型.md](../../存储选型.md) — 向量库与全文检索库的分工
 - [README.md](../../NoSQL/MongoDB/README.md) — 另一类存储（文档库）的能力对照
+> 反向引用（本篇被下列文档引到）：[向量索引与GraphRAG.md](../../图数据库/Neo4j/向量索引与GraphRAG.md)
