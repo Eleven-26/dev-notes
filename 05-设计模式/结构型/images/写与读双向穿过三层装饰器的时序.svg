@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">写时逐层加工、读时逐层还原：三层装饰器的一次完整往返</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">栈是 Counting(Encryption(Compression(Plain)))，数据穿过三层落到最内层，再原路剥回来</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="660" height="480" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 一次 write 与一次 read 的调用时序</text>
+
+    <rect x="1" y="40" width="118" height="30" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="60" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">调用方</text>
+    <rect x="127" y="40" width="118" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="186" y="60" text-anchor="middle" font-size="10" font-weight="bold" fill="#14532d">CountingDecorator</text>
+    <rect x="253" y="40" width="118" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="312" y="60" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">EncryptionDecorator</text>
+    <rect x="379" y="40" width="118" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="438" y="60" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">CompressionDecorator</text>
+    <rect x="511" y="40" width="118" height="30" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="570" y="60" text-anchor="middle" font-size="10" font-weight="bold" fill="#334155">PlainDataSource</text>
+
+    <line x1="60" y1="70" x2="60" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="186" y1="70" x2="186" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="312" y1="70" x2="312" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="438" y1="70" x2="438" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="570" y1="70" x2="570" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <line x1="60" y1="104" x2="184" y2="104" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="123" y="98" text-anchor="middle" font-size="10" fill="#334155">① write('hello')</text>
+    <line x1="186" y1="132" x2="310" y2="132" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="249" y="126" text-anchor="middle" font-size="10" fill="#334155">② writes++，原样转发</text>
+    <line x1="312" y1="160" x2="436" y2="160" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="375" y="154" text-anchor="middle" font-size="10" fill="#334155">③ 加 enc() 并 strrev</text>
+    <line x1="438" y1="188" x2="568" y2="188" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="504" y="182" text-anchor="middle" font-size="10" fill="#334155">④ 加 zlib() 后写下去</text>
+    <text x="504" y="220" text-anchor="middle" font-size="10" fill="#14532d">落盘 $stored = zlib(enc(olleh))</text>
+
+    <line x1="60" y1="252" x2="184" y2="252" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="123" y="246" text-anchor="middle" font-size="10" fill="#1e40af">⑤ read()</text>
+    <line x1="186" y1="280" x2="310" y2="280" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="249" y="274" text-anchor="middle" font-size="10" fill="#1e40af">⑥ read()</text>
+    <line x1="312" y1="308" x2="436" y2="308" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="375" y="302" text-anchor="middle" font-size="10" fill="#1e40af">⑦ read()</text>
+    <line x1="438" y1="336" x2="568" y2="336" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="504" y="330" text-anchor="middle" font-size="10" fill="#1e40af">⑧ read()</text>
+
+    <line x1="570" y1="368" x2="440" y2="368" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwG)"/>
+    <text x="504" y="362" text-anchor="middle" font-size="10" fill="#14532d">⑨ zlib(enc(olleh))</text>
+    <line x1="438" y1="396" x2="314" y2="396" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwG)"/>
+    <text x="375" y="390" text-anchor="middle" font-size="10" fill="#14532d">⑩ 剥 zlib() → enc(olleh)</text>
+    <line x1="312" y1="424" x2="188" y2="424" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwG)"/>
+    <text x="249" y="418" text-anchor="middle" font-size="10" fill="#14532d">⑪ 剥壳 strrev → hello</text>
+    <line x1="186" y1="452" x2="62" y2="452" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwG)"/>
+    <text x="123" y="446" text-anchor="middle" font-size="10" fill="#14532d">⑫ 'hello'</text>
+  </g>
+
+  <g transform="translate(690,74)">
+    <rect x="0" y="0" width="290" height="480" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 顺序即语义</text>
+
+    <text x="14" y="60" font-size="11" font-weight="bold" fill="#1e40af">叠法 A：Encryption(Compression)</text>
+    <text x="14" y="78" font-size="10.5" fill="#334155">落盘 zlib(enc(olleh))</text>
+    <text x="14" y="104" font-size="11" font-weight="bold" fill="#1e40af">叠法 B：Compression(Encryption)</text>
+    <text x="14" y="122" font-size="10.5" fill="#334155">落盘 enc()olleh(bilz)</text>
+    <text x="14" y="148" font-size="10.5" fill="#14532d">3_两者读回来相同吗 : true</text>
+    <text x="14" y="166" font-size="10.5" fill="#334155">因为每层的读路径与写路径对称</text>
+
+    <rect x="14" y="180" width="262" height="130" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="145" y="202" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#92400e">那顺序为什么还重要？</text>
+    <text x="28" y="226" font-size="10.5" fill="#92400e">对称只在自己这一栈内成立：</text>
+    <text x="28" y="246" font-size="10.5" fill="#92400e">① 别处读数据必须知道先解哪个；</text>
+    <text x="28" y="266" font-size="10.5" fill="#92400e">② 某层实现变了（zlib→gzip），</text>
+    <text x="28" y="286" font-size="10.5" fill="#92400e">旧数据能否读出取决于哪层在最外。</text>
+
+    <text x="14" y="332" font-size="10.5" font-weight="bold" fill="#92400e">⭐ 装饰顺序要作为契约固定下来</text>
+    <text x="14" y="352" font-size="10.5" fill="#92400e">（如"加密永远在最外层"）写进文档。</text>
+    <text x="14" y="372" font-size="10.5" fill="#334155">排错时也要能从日志一眼看出层次。</text>
+
+    <text x="14" y="402" font-size="11" font-weight="bold" fill="#1e40af">三层叠加的实测读数</text>
+    <text x="14" y="424" font-size="10.5" fill="#334155">4_三层叠加·写入次数 : 2</text>
+    <text x="14" y="444" font-size="10.5" fill="#334155">5_三层叠加·读回原值 : b</text>
+    <text x="14" y="464" font-size="10.5" fill="#334155">Java / Go 输出逐行一致</text>
+  </g>
+
+  <g transform="translate(20,566)">
+    <rect x="0" y="0" width="960" height="96" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">边界：与代理、适配器、继承的分判据</text>
+    <text x="14" y="48" font-size="11.5" fill="#334155">装饰器 vs 代理：接口都相同，意图不同 —— 装饰器加行为（对象由调用方传入、天生可叠加），代理控访问（真实对象由代理自己决定）。</text>
+    <text x="14" y="68" font-size="11.5" fill="#334155">装饰器 vs 适配器：适配器改接口形状，装饰器保持接口不变。装饰器 vs 继承：多个可叠加维度用装饰器，运行时组装继承做不到。</text>
+    <text x="14" y="88" font-size="11.5" fill="#92400e">原文那种 beforeDo/afterDo 是钩子列表，不是标准装饰器 —— 结构差别见另一张对比图。</text>
+  </g>
+</svg>

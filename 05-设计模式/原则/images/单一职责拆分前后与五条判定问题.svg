@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">单一职责：判据是「变更原因」，不是方法个数</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">左：一个方法挤三个变更原因 → 拆成三个各司其职的协作者、由用例类编排；右：五条「该不该改」的判定问题</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="540" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 拆分前后的结构与调用顺序</text>
+
+    <rect x="20" y="38" width="500" height="56" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="34" y="58" font-size="11" font-weight="bold" fill="#991b1b">反例：BadRegisterService.register(email)</text>
+    <text x="34" y="78" font-size="10.5" fill="#991b1b">校验邮箱 + 持久化 + 发信，三件事挤在一个方法里 → 三个变更原因</text>
+
+    <line x1="270" y1="94" x2="270" y2="126" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="284" y="116" font-size="10.5" fill="#991b1b">按「谁会因为这个原因来改它」拆开</text>
+
+    <rect x="150" y="130" width="240" height="48" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="164" y="150" font-size="11" font-weight="bold" fill="#1e40af">用例：RegisterUser.handle(email)</text>
+    <text x="164" y="168" font-size="10.5" fill="#1e40af">构造注入三个协作者，只负责编排</text>
+
+    <line x1="200" y1="178" x2="96" y2="228" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="270" y1="178" x2="270" y2="228" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="340" y1="178" x2="444" y2="228" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="120" y="204" font-size="10.5" fill="#334155">① validate</text>
+    <text x="278" y="208" font-size="10.5" fill="#334155">② save</text>
+    <text x="392" y="204" font-size="10.5" fill="#334155">③ send</text>
+
+    <rect x="20" y="232" width="152" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="34" y="250" font-size="11" font-weight="bold" fill="#14532d">EmailValidator</text>
+    <text x="34" y="268" font-size="10.5" fill="#14532d">validate()：只校验</text>
+    <rect x="194" y="232" width="152" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="208" y="250" font-size="11" font-weight="bold" fill="#14532d">UserRepository</text>
+    <text x="208" y="268" font-size="10.5" fill="#14532d">save()：只落库</text>
+    <rect x="368" y="232" width="152" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="382" y="250" font-size="11" font-weight="bold" fill="#14532d">WelcomeMailer</text>
+    <text x="382" y="268" font-size="10.5" fill="#14532d">send()：只发信</text>
+
+    <text x="16" y="306" font-size="10.5" fill="#334155">handle() 里先调 validate()，再把 save() 与 send() 的结果拼接返回</text>
+    <text x="16" y="328" font-size="10.5" fill="#14532d">邮箱规则变了 → 只改 EmailValidator；存储方式变了 → 只改 UserRepository</text>
+    <text x="16" y="350" font-size="10.5" fill="#334155">原文说的「代码粒度降低、可读性提高、可维护性提高」，落点就在这</text>
+    <text x="16" y="378" font-size="10.5" font-weight="bold" fill="#0f172a">判据不是数方法个数，而是数「改它的原因」有几个</text>
+  </g>
+
+  <g transform="translate(570,74)">
+    <rect x="0" y="0" width="410" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 原则不可证伪，反例才是判据</text>
+
+    <rect x="14" y="38" width="382" height="64" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="26" y="58" font-size="11" font-weight="bold" fill="#92400e">Q1 这个类会因为几个原因被改？</text>
+    <text x="26" y="78" font-size="10.5" fill="#92400e">超过 1 个 → 违反 SRP：改邮箱规则要动注册逻辑</text>
+
+    <rect x="14" y="108" width="382" height="64" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="26" y="128" font-size="11" font-weight="bold" fill="#92400e">Q2 新增一种类型，要不要改同一个方法？</text>
+    <text x="26" y="148" font-size="10.5" fill="#92400e">要 → 违反 OCP：每加一种折扣就再加一个 if</text>
+
+    <rect x="14" y="178" width="382" height="64" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="26" y="198" font-size="11" font-weight="bold" fill="#92400e">Q3 换成子类后，原来能跑的边界值还通吗？</text>
+    <text x="26" y="218" font-size="10.5" fill="#92400e">不通 → 违反 LSP：前置条件被收紧（见实测 3b）</text>
+
+    <rect x="14" y="248" width="382" height="64" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="26" y="268" font-size="11" font-weight="bold" fill="#92400e">Q4 调用方要不要穿过你去找别人的对象？</text>
+    <text x="26" y="288" font-size="10.5" fill="#92400e">要 → 违反 LoD：$c-&gt;address()-&gt;city 同时耦合了 Address</text>
+
+    <rect x="14" y="318" width="382" height="64" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="26" y="338" font-size="11" font-weight="bold" fill="#92400e">Q5 实现类里有没有空方法或抛异常的方法？</text>
+    <text x="26" y="358" font-size="10.5" fill="#92400e">有 → 违反 ISP：接口被多个不同角色共用</text>
+  </g>
+</svg>

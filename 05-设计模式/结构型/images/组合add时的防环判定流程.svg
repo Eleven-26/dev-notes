@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">add() 时的防环判定：方向写反就只剩直接环被挡住</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">第四节：间接环（祖先被塞进后代）才是最危险的那一种</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+
+    <rect x="20" y="20" width="290" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="34" y="41" font-size="11.5" font-weight="bold" fill="#92400e">① 要加进来的 node 就是 $this？</text>
+    <text x="34" y="59" font-size="10.5" fill="#92400e">root-&gt;add(root)：自己装自己</text>
+    <line x1="310" y1="46" x2="328" y2="46" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="20" width="200" height="52" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="346" y="41" font-size="11.5" font-weight="bold" fill="#991b1b">直接环：当场拒绝</text>
+    <text x="346" y="59" font-size="10.5" fill="#991b1b">抛 RuntimeException</text>
+    <line x1="532" y1="46" x2="550" y2="46" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="20" width="386" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="568" y="41" font-size="10.5" fill="#334155">$node === $this —— 这一条最省，写在 || 前面</text>
+    <text x="568" y="59" font-size="10.5" fill="#334155">实测 5_直接成环被拒 : 不允许成环：project</text>
+
+    <rect x="20" y="92" width="290" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="34" y="113" font-size="11.5" font-weight="bold" fill="#92400e">② node 的子树里已经包含 $this？</text>
+    <text x="34" y="131" font-size="10.5" fill="#92400e">src-&gt;add(root)：把祖先塞进后代</text>
+    <line x1="310" y1="118" x2="328" y2="118" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="92" width="200" height="52" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="346" y="113" font-size="11.5" font-weight="bold" fill="#991b1b">间接环：一样拒绝</text>
+    <text x="346" y="131" font-size="10.5" fill="#991b1b">形成 root → src → root</text>
+    <line x1="532" y1="118" x2="550" y2="118" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="92" width="386" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="568" y="113" font-size="10.5" fill="#334155">$node instanceof self &amp;&amp; $node-&gt;contains($this)</text>
+    <text x="568" y="131" font-size="10.5" fill="#334155">实测 6_间接成环也被拒 : 不允许成环：project</text>
+
+    <rect x="20" y="164" width="290" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="34" y="185" font-size="11.5" font-weight="bold" fill="#92400e">③ 判据方向写反了会怎样？</text>
+    <text x="34" y="203" font-size="10.5" fill="#92400e">改成问「$this 里有没有 $node」</text>
+    <line x1="310" y1="190" x2="328" y2="190" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="164" width="200" height="52" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="346" y="185" font-size="11.5" font-weight="bold" fill="#991b1b">只剩直接环被挡住</text>
+    <text x="346" y="203" font-size="10.5" fill="#991b1b">间接环照样进树</text>
+    <line x1="532" y1="190" x2="550" y2="190" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="164" width="386" height="52" fill="#fff7ed" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="568" y="185" font-size="10.5" fill="#92400e">本篇作者第一版就写反了，实测发现 src-&gt;add(root) 没被拦住</text>
+    <text x="568" y="203" font-size="10.5" fill="#92400e">「把祖先塞进后代」的本质：要加进来的节点，祖先链里已经有我</text>
+
+    <rect x="20" y="236" width="290" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="34" y="257" font-size="11.5" font-weight="bold" fill="#92400e">④ 检查代价 O(子树大小) 值吗？</text>
+    <text x="34" y="275" font-size="10.5" fill="#92400e">contains() 要递归下探整棵子树</text>
+    <line x1="310" y1="262" x2="328" y2="262" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="236" width="200" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="346" y="257" font-size="11.5" font-weight="bold" fill="#14532d">值：一次换永久的安心</text>
+    <text x="346" y="275" font-size="10.5" fill="#14532d">建树低频，遍历高频</text>
+    <line x1="532" y1="262" x2="550" y2="262" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="236" width="386" height="52" fill="#f0fdf4" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="568" y="257" font-size="10.5" fill="#14532d">换来的保证：size() / 遍历 / 序列化不会无限递归、栈溢出、耗尽内存</text>
+    <text x="568" y="275" font-size="10.5" fill="#14532d">确有特殊需要时用构造参数 $allowCycle = true 显式放行</text>
+
+    <text x="20" y="312" font-size="11.5" font-weight="bold" fill="#0f172a">命中任意一条即抛 RuntimeException("不允许成环：{$node-&gt;name()}")，孩子数组保持不变</text>
+    <text x="20" y="336" font-size="11" fill="#334155">两种环后果相同（无限递归），区别只在「一眼能看出来」与「藏到运行时才暴露」</text>
+  </g>
+
+  <g transform="translate(20,446)">
+    <rect x="0" y="0" width="960" height="100" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">另外两件容易一起问到的事</text>
+    <text x="14" y="48" font-size="11.5" fill="#334155">透明型 vs 安全型：add() 放进 Component 接口 → 叶子被迫空实现或抛异常（违反接口隔离）；本篇只在 DirectoryNode 上给 add()，FileNode 根本没有这个方法</text>
+    <text x="14" y="72" font-size="11.5" fill="#334155">组合 vs 装饰器：树（一对多，父 → 所有子）vs 链（恰好一个，外 → 内）；两者都靠「实现同一接口」，但一个在求和、一个在转发</text>
+    <text x="14" y="92" font-size="11" fill="#92400e">Java 用 List&lt;Node&gt; + 同样的判空方向；Go 的环检测要靠接口类型断言回容器才能递归 contains</text>
+  </g>
+</svg>

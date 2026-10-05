@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">build() 时到底要不要复制：数组安全、对象必须拷</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">建造者内部一定有可变状态；把这份状态直接交给产物，就产生了共享 —— 共享什么要看类型</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. builder 持标量 / 数组（PHP 天然安全）</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">数组赋值是写时复制的值语义</text>
+
+    <rect x="20" y="58" width="190" height="70" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="115" y="78" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">QueryBuilder</text>
+    <text x="115" y="98" text-anchor="middle" font-size="10.5" fill="#1e40af">private array $wheres</text>
+    <text x="115" y="116" text-anchor="middle" font-size="10.5" fill="#1e40af">['paid = 1']</text>
+
+    <line x1="210" y1="93" x2="256" y2="93" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="233" y="84" text-anchor="middle" font-size="10" fill="#14532d">build()</text>
+
+    <rect x="258" y="58" width="190" height="70" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="353" y="78" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">Query</text>
+    <text x="353" y="98" text-anchor="middle" font-size="10.5" fill="#14532d">private array $wheres</text>
+    <text x="353" y="116" text-anchor="middle" font-size="10.5" fill="#14532d">['paid = 1']（独立副本）</text>
+
+    <text x="14" y="152" font-size="11.5" font-weight="bold" fill="#14532d">✅ 直接传就安全：build() 之后再 $this->wheres[] = ...</text>
+    <text x="14" y="172" font-size="11.5" fill="#14532d">不会影响已经交出去的数组 —— 实测 2c_第一个产物未变 : true</text>
+
+    <rect x="14" y="188" width="440" height="96" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="210" font-size="11.5" font-weight="bold" fill="#92400e">但别把这条当规律：</text>
+    <text x="28" y="232" font-size="11" fill="#92400e">它成立只因为 PHP 的数组是值语义，换语言就不成立；</text>
+    <text x="28" y="252" font-size="11" fill="#92400e">而且一旦数组里装的是对象，复制的只是"句柄"，</text>
+    <text x="28" y="272" font-size="11" fill="#991b1b">对象本体仍然是共享的 —— 见右边 B。</text>
+  </g>
+
+  <g transform="translate(500,74)">
+    <rect x="0" y="0" width="480" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. builder 持对象集合（必须 clone）</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">对象是句柄共享，与原型篇的核心结论同一条</text>
+
+    <rect x="20" y="58" width="180" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="110" y="76" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">QueryBuilder</text>
+    <text x="110" y="96" text-anchor="middle" font-size="10.5" fill="#1e40af">$wheres = [Condition 对象]</text>
+
+    <line x1="200" y1="86" x2="278" y2="86" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="239" y="76" text-anchor="middle" font-size="10" fill="#991b1b">直接传 = 交句柄</text>
+
+    <rect x="280" y="58" width="180" height="56" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="370" y="76" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#991b1b">Query</text>
+    <text x="370" y="96" text-anchor="middle" font-size="10.5" fill="#991b1b">同一个 Condition 对象</text>
+
+    <rect x="150" y="130" width="180" height="34" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+    <text x="240" y="151" text-anchor="middle" font-size="10.5" fill="#334155">Condition（本体只有一份）</text>
+    <line x1="110" y1="114" x2="180" y2="128" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="370" y1="114" x2="300" y2="128" stroke="#dc2626" stroke-width="1.5"/>
+
+    <text x="14" y="190" font-size="11.5" font-weight="bold" fill="#991b1b">⚠️ builder 后续改这个对象，已交出去的产物跟着变</text>
+    <text x="14" y="214" font-size="11" fill="#334155">正解：build() 里对集合逐个 clone ——</text>
+    <text x="14" y="234" font-size="11" fill="#14532d">array_map(static fn ($c) =&gt; clone $c, $this-&gt;wheres)</text>
+    <text x="14" y="262" font-size="11.5" fill="#92400e">Java / Go 没有"数组免费午餐"：集合是引用类型，</text>
+    <text x="14" y="282" font-size="11.5" fill="#92400e">build() 不复制就一定共享（见第七节 Java 实现注释）。</text>
+  </g>
+
+  <g transform="translate(20,386)">
+    <rect x="0" y="0" width="960" height="134" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 边界：这四件事经常被人混成一个"建造者"</text>
+    <text x="14" y="50" font-size="11.5" fill="#334155">直接构造 / 命名参数：参数 ≤3 个、都必填 —— 别上模式。</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">参数对象（一个 DTO）：参数多但都是<tspan font-weight="bold">数据</tspan>、没有构造顺序与校验。</text>
+    <text x="14" y="90" font-size="11.5" fill="#334155">工厂：要按输入<tspan font-weight="bold">选类型</tspan>。建造者：参数多、部分可选、<tspan font-weight="bold">构造过程有校验或顺序要求</tspan>。</text>
+    <text x="14" y="118" font-size="11.5" font-weight="bold" fill="#92400e">现实判据：如果 build() 里没有校验、也没有"由分步推导出的字段"，那多半只需要一个参数对象。</text>
+  </g>
+</svg>

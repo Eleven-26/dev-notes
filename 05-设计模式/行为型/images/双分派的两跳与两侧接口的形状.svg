@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">双分派的两跳：一次调用怎么落到「对的 visitor 处理对的元素」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">单分派只能定一头 —— 要么定元素、要么定操作；两跳合起来才同时定了这两件事</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="640" height="436" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 一次 $doc-&gt;export(new HtmlVisitor()) 的五步</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">左边写代码，就是本篇 PHP 实现里的那几行</text>
+
+    <rect x="14" y="54" width="612" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="72" font-size="10.5" font-weight="bold" fill="#1e40af">调用方：只交出 visitor，不判断元素类型</text>
+    <text x="28" y="92" font-size="10" fill="#1e40af">$doc-&gt;export(new HtmlVisitor());</text>
+
+    <rect x="14" y="122" width="612" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="140" font-size="10.5" font-weight="bold" fill="#14532d">Document::export()（ObjectStructure：只负责遍历）</text>
+    <text x="28" y="160" font-size="10" fill="#14532d">implode("\n\n", array_map(static fn ($e) =&gt; $e-&gt;accept($visitor), $this-&gt;elements))</text>
+
+    <rect x="14" y="190" width="612" height="58" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="208" font-size="10.5" font-weight="bold" fill="#92400e">第一跳：$element-&gt;accept($visitor) —— 运行时按元素的真实类选中 Heading::accept</text>
+    <text x="28" y="228" font-size="10" fill="#92400e">元素类里没有任何 if，它只认识 visitor 的类型（DocumentVisitor）</text>
+
+    <rect x="14" y="258" width="612" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="276" font-size="10.5" font-weight="bold" fill="#1e40af">第二跳：accept() 里写死 return $visitor-&gt;visitHeading($this);</text>
+    <text x="28" y="296" font-size="10" fill="#1e40af">把「我是 Heading」交给 visitor —— 参数 $this 的类型又反过来约束了元素</text>
+
+    <rect x="14" y="326" width="612" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="344" font-size="10.5" font-weight="bold" fill="#14532d">HtmlVisitor::visitHeading(Heading $element): string</text>
+    <text x="28" y="364" font-size="10" fill="#14532d">return '&lt;h1&gt;' . $element-&gt;text() . '&lt;/h1&gt;'　// 实测第 1) 组 HTML 的第一行</text>
+
+    <line x1="320" y1="112" x2="320" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="320" y1="180" x2="320" y2="188" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="320" y1="248" x2="320" y2="256" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="320" y1="316" x2="320" y2="324" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="14" y="406" font-size="10.5" fill="#334155">实测（逐字）：6_双分派入口 : Heading::accept 只做一件事 —— 把自己交给 visitor（1 个参数）</text>
+    <text x="14" y="424" font-size="10.5" font-weight="bold" fill="#991b1b">PHP / Java / Go 都没有多方法重载，所以这两跳必须手工搭出来 —— 这就是本模式"难懂"的根源</text>
+  </g>
+
+  <g transform="translate(680,74)">
+    <rect x="0" y="0" width="300" height="436" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 两侧接口的形状</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">元素一侧 1 个方法，visitor 一侧每种元素 1 个</text>
+
+    <rect x="14" y="54" width="272" height="84" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="26" y="72" font-size="10.5" font-weight="bold" fill="#1e40af">interface DocumentElement</text>
+    <text x="26" y="90" font-size="9.5" fill="#1e40af">accept(DocumentVisitor $visitor)</text>
+    <text x="26" y="106" font-size="9.5" fill="#1e40af">: string　← 唯一要元素配合的入口</text>
+    <text x="26" y="126" font-size="9.5" fill="#1e40af">元素只提供读方法，不提供写方法</text>
+
+    <rect x="14" y="150" width="272" height="112" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="26" y="168" font-size="10.5" font-weight="bold" fill="#14532d">interface DocumentVisitor</text>
+    <text x="26" y="186" font-size="9.5" fill="#14532d">visitHeading(Heading $e): string</text>
+    <text x="26" y="202" font-size="9.5" fill="#14532d">visitParagraph(Paragraph $e): string</text>
+    <text x="26" y="218" font-size="9.5" fill="#14532d">visitImage(Image $e): string</text>
+    <text x="26" y="234" font-size="9.5" fill="#14532d">visitTable(Table $e): string</text>
+    <text x="26" y="252" font-size="9.5" font-weight="bold" fill="#14532d">方法数 = 元素种类数</text>
+
+    <rect x="14" y="274" width="272" height="76" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="26" y="292" font-size="10.5" font-weight="bold" fill="#92400e">实测第 4、5 行</text>
+    <text x="26" y="310" font-size="9.5" fill="#92400e">4_Visitor 接口方法数 : 4</text>
+    <text x="26" y="326" font-size="9.5" fill="#92400e">5_元素种类数 : 4（Heading, Paragraph, …）</text>
+    <text x="26" y="342" font-size="9.5" font-weight="bold" fill="#92400e">→ 两者必须相等</text>
+
+    <rect x="14" y="362" width="272" height="64" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="26" y="380" font-size="10.5" font-weight="bold" fill="#991b1b">代价：封装被打破（第 7 行）</text>
+    <text x="26" y="398" font-size="9.5" fill="#991b1b">7_Table 暴露给 Visitor : rows</text>
+    <text x="26" y="414" font-size="9.5" fill="#991b1b">访问者必须能读到内部数据</text>
+  </g>
+
+  <g transform="translate(20,522)">
+    <rect x="0" y="0" width="960" height="160" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">一次 export 之后：三种产出与两条语言线</text>
+    <text x="14" y="48" font-size="11" fill="#334155">同一份文档三种导出（实测节选）：HTML 的 &lt;h1&gt;设计模式&lt;/h1&gt;｜Markdown 的 # 设计模式｜纯文本的 设计模式 + ==== —— 元素类一行没改，只换了 Visitor</text>
+    <text x="14" y="68" font-size="11" fill="#334155">最能体现差异的是表格那一行：HTML &lt;table&gt;&lt;tr&gt;&lt;td&gt;…｜Markdown「| 元素 | Visitor 方法 |」再加一行分隔线｜纯文本 制表符分隔</text>
+    <text x="14" y="88" font-size="11" fill="#334155">第 4 个细节：块之间的空白由 Visitor 决定（implode("\n\n")）—— HTML 无所谓，Markdown 缺空行就不成块</text>
+    <text x="14" y="108" font-size="11" fill="#334155">第五节分界：策略接口只有 1 个方法（一个算法可替换），访问者接口有 N 个（N = 元素种类，一组对象 × 多种操作）；迭代器只管怎么遍历，访问者管遍历时对每种元素做什么</text>
+    <text x="14" y="128" font-size="11" fill="#334155">第七节三语言：漏实现方法 PHP fatal error（加载时）｜Java 编译错误｜Go 类型 switch 无检查，容易静默漏掉；现代替代是 Java 17+ sealed + switch、Go 类型 switch</text>
+    <text x="14" y="148" font-size="11" font-weight="bold" fill="#0f172a">⭐ go/ast 就是 Go 官方的访问者：ast.Visitor 只有一个 Visit(node Node) (w Visitor) —— AST 节点几十种，逐个写 visitXxx 接口大到没法维护</text>
+  </g>
+</svg>

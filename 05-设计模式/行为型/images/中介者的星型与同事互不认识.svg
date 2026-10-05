@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">中介者的星型：连线全部经过中心，同事之间一条线都没有</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判据是反射出来的属性清单：同事手里只有「自己的值 + mediator」，没有任何别的组件</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="600" height="420" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 注册表单的四个同事与一个中介者</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">abstract class Component 只有 protected ?Mediator $mediator，值变了就 changed() 上报</text>
+
+    <rect x="16" y="64" width="176" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="104" y="84" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">CountrySelect</text>
+    <text x="104" y="102" text-anchor="middle" font-size="10" fill="#14532d">select('中国') → changed()</text>
+
+    <rect x="408" y="64" width="176" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="496" y="84" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">ProvinceSelect</text>
+    <text x="496" y="102" text-anchor="middle" font-size="10" fill="#14532d">const MAP：国家 → 省份</text>
+
+    <line x1="192" y1="92" x2="408" y2="92" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="300" y="86" text-anchor="middle" font-size="10" font-weight="bold" fill="#991b1b">禁止互引：没有 $province 字段</text>
+
+    <rect x="196" y="180" width="208" height="86" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" rx="8"/>
+    <text x="300" y="202" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">RegistrationForm</text>
+    <text x="300" y="220" text-anchor="middle" font-size="10" fill="#1e40af">implements Mediator</text>
+    <text x="300" y="238" text-anchor="middle" font-size="10" fill="#1e40af">notify(sender, event) → sync()</text>
+    <text x="300" y="256" text-anchor="middle" font-size="10" fill="#1e40af">联动规则只在这里出现一次</text>
+
+    <line x1="192" y1="120" x2="238" y2="180" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="150" y="150" font-size="10" fill="#14532d">notify('changed')</text>
+    <line x1="408" y1="120" x2="362" y2="180" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="392" y="150" font-size="10" fill="#14532d">notify('changed')</text>
+    <line x1="362" y1="266" x2="408" y2="300" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="430" y="286" font-size="10" fill="#1e40af">province-&gt;load()</text>
+    <line x1="238" y1="266" x2="192" y2="300" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="96" y="286" font-size="10" fill="#1e40af">message-&gt;show()</text>
+
+    <rect x="16" y="302" width="176" height="52" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="104" y="322" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">SubmitButton</text>
+    <text x="104" y="340" text-anchor="middle" font-size="10" fill="#334155">setEnabled()：只被中介者写</text>
+    <rect x="408" y="302" width="176" height="52" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="496" y="322" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">MessageLabel</text>
+    <text x="496" y="340" text-anchor="middle" font-size="10" fill="#334155">show()：只被中介者写</text>
+
+    <text x="14" y="376" font-size="10.5" fill="#14532d">实测 8_CountrySelect 的属性 : value, mediator　｜　9_ProvinceSelect 的属性: value, options, mediator</text>
+    <text x="14" y="396" font-size="10.5" fill="#334155">只有自己的值 + 中介者，没有任何别的组件 —— 这两行反射输出就是「同事互不认识」的证据</text>
+    <text x="14" y="414" font-size="10.5" fill="#991b1b">实测 10_没有中介者时 : 先看它的省份选项 —— 空，它不知道该去问谁（new ProvinceSelect() 裸奔）</text>
+  </g>
+
+  <g transform="translate(640,74)">
+    <rect x="0" y="0" width="340" height="420" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 连线数：O(N²) 降到 O(N)</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">连线在代码里的表现就是「字段 / 依赖」</text>
+
+    <rect x="20" y="56" width="94" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="67" y="76" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1e40af">组件数</text>
+    <rect x="120" y="56" width="100" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="170" y="76" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">两两通信</text>
+    <rect x="226" y="56" width="94" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="273" y="76" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">用中介者</text>
+
+    <text x="67" y="110" text-anchor="middle" font-size="11" fill="#334155">4</text>
+    <text x="170" y="110" text-anchor="middle" font-size="11" fill="#991b1b">6 条（4×3÷2）</text>
+    <text x="273" y="110" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">4 条</text>
+    <text x="67" y="142" text-anchor="middle" font-size="11" fill="#334155">10</text>
+    <text x="170" y="142" text-anchor="middle" font-size="11" fill="#991b1b">45 条</text>
+    <text x="273" y="142" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">10 条</text>
+    <text x="67" y="174" text-anchor="middle" font-size="11" fill="#334155">20</text>
+    <text x="170" y="174" text-anchor="middle" font-size="11" fill="#991b1b">190 条</text>
+    <text x="273" y="174" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">20 条</text>
+
+    <rect x="20" y="194" width="300" height="62" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="34" y="216" font-size="11.5" font-weight="bold" fill="#991b1b">⚠️ 「值没变不通知」不足以防环</text>
+    <text x="34" y="236" font-size="10" fill="#991b1b">A 变触发 B 变再触发 A 变时，入口去重挡不住</text>
+    <text x="34" y="252" font-size="10" fill="#991b1b">生产代码还要重入保护（$syncing）或单向传播</text>
+
+    <rect x="20" y="266" width="300" height="66" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="34" y="288" font-size="11.5" font-weight="bold" fill="#14532d">实测 7_再选一次「美国」: 通知数 4 → 4</text>
+    <text x="34" y="308" font-size="10" fill="#14532d">select() 入口 if ($value === $this-&gt;value) return;</text>
+    <text x="34" y="326" font-size="10" fill="#14532d">没有这条，组件之间会互相触发成环（联动抖动）</text>
+
+    <rect x="20" y="342" width="300" height="62" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="34" y="364" font-size="11.5" font-weight="bold" fill="#334155">第四节：固有风险是「上帝对象」</text>
+    <text x="34" y="384" font-size="10" fill="#334155">一张表单一个中介者，不要建全局中介者</text>
+    <text x="34" y="400" font-size="10" fill="#334155">规则拆 sync()/validate()/reset()，别写 300 行 notify()</text>
+  </g>
+
+  <g transform="translate(20,506)">
+    <rect x="0" y="0" width="960" height="120" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="12" font-weight="bold" fill="#0f172a">第三节判据：信息「往外流」是中介者，「只有调用方往里调」是外观</text>
+    <text x="14" y="46" font-size="11" fill="#334155">中介者是双向的 —— 同事回调它，API 形如 notify(sender, event)；外观是单向的 —— 子系统不知道外观存在，API 形如 placeOrder()。见 [外观模式.md]</text>
+    <text x="14" y="68" font-size="11" fill="#334155">中介者 vs 观察者看「要不要做判断」：要判断谁受影响、按什么顺序就是中介者；只是「一律广播给订阅者」就是观察者</text>
+    <text x="14" y="92" font-size="11" fill="#14532d">实测 6_通知日志 : CountrySelect.changed &gt; ProvinceSelect.changed &gt; CountrySelect.changed &gt; ProvinceSelect.changed（顺序就是联动顺序）</text>
+    <text x="14" y="112" font-size="11" fill="#991b1b">判据：notify() 里若出现「SMS 网关怎么调」这类细节，说明它越界了 —— 那是子系统知识泄漏</text>
+  </g>
+</svg>

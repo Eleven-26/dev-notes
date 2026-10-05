@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">适配器三角色：谁定义接口、谁做翻译、谁被隔离</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">改的是「接口形状」，不动任何一方 —— 被适配者一行不改，调用方也不改</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 通知渠道适配：两家 SDK 供一个接口</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">调用方只认 Notifier，Adapter 把两家 SDK 翻译成这个形状</text>
+
+    <rect x="20" y="60" width="130" height="48" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="85" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">调用方</text>
+    <text x="85" y="98" text-anchor="middle" font-size="10" fill="#334155">notifyAll(...)</text>
+
+    <rect x="180" y="60" width="140" height="48" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="250" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">Target 接口</text>
+    <text x="250" y="98" text-anchor="middle" font-size="10" fill="#1e40af">Notifier::send</text>
+
+    <rect x="360" y="52" width="120" height="48" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="420" y="72" text-anchor="middle" font-size="10" font-weight="bold" fill="#14532d">LegacySmsAdapter</text>
+    <text x="420" y="90" text-anchor="middle" font-size="9.5" fill="#14532d">implements Notifier</text>
+
+    <rect x="360" y="112" width="120" height="48" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="420" y="132" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">SlackAdapter</text>
+    <text x="420" y="150" text-anchor="middle" font-size="9.5" fill="#14532d">implements Notifier</text>
+
+    <rect x="500" y="52" width="110" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="555" y="72" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">LegacySmsClient</text>
+    <text x="555" y="90" text-anchor="middle" font-size="9.5" fill="#92400e">dispatchMessage()</text>
+
+    <rect x="500" y="112" width="110" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="555" y="132" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">SlackWebhook</text>
+    <text x="555" y="150" text-anchor="middle" font-size="9.5" fill="#92400e">post(payload)</text>
+
+    <line x1="150" y1="84" x2="178" y2="84" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="320" y1="80" x2="358" y2="74" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="320" y1="90" x2="358" y2="136" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="480" y1="76" x2="498" y2="76" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="480" y1="136" x2="498" y2="136" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <text x="14" y="182" font-size="11" fill="#14532d">翻译发生在适配器里：send(to, message) → dispatchMessage(text, phone)</text>
+    <text x="14" y="202" font-size="11" fill="#334155">返回值也从 array 翻回 string：sms:13800000000(21)</text>
+    <text x="14" y="222" font-size="11" fill="#334155">第 1 组与第 2 组跑的是同一个 notifyAll()，只换传进去的适配器</text>
+    <text x="14" y="242" font-size="11" fill="#14532d">-&gt; sms:13800000000(21)　　-&gt; slack:13800000000: 您的订单已发货</text>
+    <text x="14" y="266" font-size="10.5" fill="#92400e">适配器不是必经关卡：3_被适配者可单独使用 {"phone":"138","len":2,"urgent":false}</text>
+    <text x="14" y="290" font-size="10.5" fill="#991b1b">⚠️ 原文两个坑：MySQLiAdapter 没 implements Target；new $type 用字符串拼类名</text>
+    <text x="14" y="312" font-size="10.5" fill="#334155">第三方接口升级（mysql_* 在 PHP 7 被移除）时，只改适配器这一处</text>
+  </g>
+
+  <g transform="translate(650,74)">
+    <rect x="0" y="0" width="330" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 别和策略模式混</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">原文特别提醒的一组对比</text>
+
+    <rect x="14" y="58" width="302" height="120" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">适配器：接口形状不一致</text>
+    <text x="28" y="102" font-size="10.5" fill="#1e40af">接口由调用方定义，适配器去迎合</text>
+    <text x="28" y="122" font-size="10.5" fill="#1e40af">对方不配合（第三方 / 遗留代码）</text>
+    <text x="28" y="142" font-size="10.5" fill="#1e40af">换适配器，调用方不动</text>
+    <text x="28" y="164" font-size="10.5" font-weight="bold" fill="#1e40af">判据：形状不对，压根调不到</text>
+
+    <rect x="14" y="188" width="302" height="106" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="210" font-size="11.5" font-weight="bold" fill="#14532d">策略：算法可替换</text>
+    <text x="28" y="232" font-size="10.5" fill="#14532d">接口由模式自己定义，实现都配合</text>
+    <text x="28" y="252" font-size="10.5" fill="#14532d">换策略对象，调用方不动</text>
+    <text x="28" y="274" font-size="10.5" font-weight="bold" fill="#14532d">判据：形状都对，只是选哪个</text>
+
+    <text x="14" y="312" font-size="10.5" fill="#92400e">两者常一起出现：策略要先有统一接口，</text>
+    <text x="14" y="330" font-size="10.5" fill="#92400e">各实现形状不一时，中间就要加适配器。</text>
+  </g>
+
+  <g transform="translate(20,426)">
+    <rect x="0" y="0" width="960" height="134" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 度量口径也是适配器要翻译的东西（三语言实测）</text>
+    <text x="14" y="48" font-size="11.5" fill="#334155">PHP strlen('您的订单已发货') = 21（UTF-8 字节数）｜ Go len = 21（字节数）｜ Java String.length() = 7（UTF-16 代码单元数）</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">三种都「对」，只是口径不同。要按字符数算：mb_strlen / utf8.RuneCountInString / codePointCount。</text>
+    <text x="14" y="92" font-size="11.5" fill="#92400e">实测读数：PHP 与 Go 都是 sms:13800000000(21)，Java 是 sms:13800000000(7) —— 同一个适配器骨架，读数不同。</text>
+    <text x="14" y="116" font-size="11.5" font-weight="bold" fill="#14532d">一句话记法：适配器换形状，代理控访问，装饰器加行为，外观收入口（判据见下一张图）。</text>
+  </g>
+</svg>

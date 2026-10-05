@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">import() 骨架的六个动作与两个判定</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">箭头方向全是「父类 → 子类」：子类从不回调父类，这就是好莱坞原则</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="640" height="520" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 骨架逐步走一遍（代码只有一份，在 abstract class 里）</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">蓝 = 骨架自己的动作　红 = 抽象步骤　黄 = 判定（钩子）　绿 = 结果</text>
+
+    <rect x="24" y="56" width="250" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="36" y="74" font-size="10.5" font-weight="bold" fill="#1e40af">① 进入 final import()</text>
+    <text x="36" y="92" font-size="10" fill="#1e40af">$report = new ImportReport()</text>
+
+    <line x1="149" y1="100" x2="149" y2="118" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="24" y="120" width="250" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="36" y="140" font-size="10.5" font-weight="bold" fill="#92400e">② 判定：readRow() 给到 null？</text>
+    <text x="36" y="158" font-size="10" fill="#92400e">readRow 是抽象步骤（红）</text>
+
+    <line x1="274" y1="144" x2="326" y2="144" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="300" y="138" text-anchor="middle" font-size="9.5" fill="#64748b">是</text>
+    <rect x="328" y="120" width="290" height="48" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="340" y="140" font-size="10.5" font-weight="bold" fill="#1e40af">⑥ 收尾：close() → return $report</text>
+    <text x="340" y="158" font-size="10" fill="#1e40af">close 也是抽象步骤，顺序由骨架定</text>
+
+    <line x1="149" y1="168" x2="149" y2="186" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="176" y="182" font-size="9.5" fill="#64748b">否，拿到一行 → total++</text>
+
+    <rect x="24" y="188" width="250" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="36" y="208" font-size="10.5" font-weight="bold" fill="#92400e">③ 判定：shouldImport(row)？</text>
+    <text x="36" y="226" font-size="10" fill="#92400e">钩子，父类给了默认 return true</text>
+
+    <line x1="274" y1="212" x2="326" y2="212" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="300" y="206" text-anchor="middle" font-size="9.5" fill="#991b1b">false</text>
+    <rect x="328" y="188" width="290" height="48" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="340" y="208" font-size="10.5" fill="#991b1b">$report-&gt;skipped++; continue</text>
+    <text x="340" y="226" font-size="10" fill="#991b1b">本行不落库，直接回到 ②</text>
+
+    <line x1="149" y1="236" x2="149" y2="254" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="176" y="250" font-size="9.5" fill="#64748b">true，这行要留</text>
+
+    <rect x="24" y="256" width="250" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="36" y="276" font-size="10.5" font-weight="bold" fill="#92400e">④ persist(normalize(row))</text>
+    <text x="36" y="294" font-size="10" fill="#92400e">两个钩子嵌套调用，顺序写死在骨架</text>
+
+    <line x1="149" y1="304" x2="149" y2="322" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="24" y="324" width="250" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="36" y="342" font-size="10.5" fill="#14532d">⑤ $report-&gt;imported++</text>
+    <text x="36" y="360" font-size="10" fill="#14532d">回到 ② 读下一行</text>
+
+    <line x1="274" y1="346" x2="300" y2="346" stroke="#16a34a" stroke-width="1.5"/>
+    <line x1="300" y1="346" x2="300" y2="172" stroke="#16a34a" stroke-width="1.5"/>
+    <line x1="300" y1="172" x2="278" y2="150" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="24" y="376" width="594" height="88" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="38" y="392" font-size="9.5" font-weight="bold" fill="#334155">走一遍 CsvImporter 就是实测第 1 组（逐字）：1_CSV 导入 :</text>
+    <text x="38" y="407" font-size="9.5" fill="#334155">　　落库 {"name":"张三","dept":"研发","email":"Zhang@Example.com"}</text>
+    <text x="38" y="422" font-size="9.5" fill="#334155">　　落库 {"name":"李四","dept":"研发","email":"li@example.com"}</text>
+    <text x="38" y="437" font-size="9.5" fill="#334155">　　共 3 行，导入 2 行，跳过 1 行　→ 3 次 ②、3 次 ③，其中 1 次走红框</text>
+    <text x="38" y="452" font-size="9.5" fill="#334155">2_JSON 导入 : 共 2 行，导入 2 行，跳过 0 行　3_组合版导入 : 同 CSV</text>
+    <text x="14" y="482" font-size="10.5" font-weight="bold" fill="#92400e">5_钩子带默认实现 : shouldImport=true　→　JSON 那组一行没跳，它只覆写了 normalize</text>
+    <text x="14" y="502" font-size="10.5" fill="#334155">Go 版 go1.26.5 前两组与 PHP/Java 一致；Java 版 4_钩子是抽象的吗 : false（有默认实现）</text>
+  </g>
+
+  <g transform="translate(680,74)">
+    <rect x="0" y="0" width="300" height="520" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 和「传回调」怎么分</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">第五节：同样是「把变化点交出去」，有三种做法</text>
+
+    <rect x="14" y="56" width="272" height="106" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="76" font-size="10.5" font-weight="bold" fill="#1e40af">模板方法</text>
+    <text x="28" y="96" font-size="10" fill="#1e40af">复用手段：继承</text>
+    <text x="28" y="114" font-size="10" fill="#1e40af">变化点个数：多个步骤</text>
+    <text x="28" y="132" font-size="10" fill="#1e40af">何时确定：编译 / 加载时</text>
+    <text x="28" y="152" font-size="10" font-weight="bold" fill="#1e40af">顺序控制：骨架强制</text>
+
+    <rect x="14" y="170" width="272" height="88" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="190" font-size="10.5" font-weight="bold" fill="#14532d">策略</text>
+    <text x="28" y="210" font-size="10" fill="#14532d">复用手段：组合（持有接口）</text>
+    <text x="28" y="228" font-size="10" fill="#14532d">变化点：一个算法</text>
+    <text x="28" y="246" font-size="10" font-weight="bold" fill="#14532d">何时确定：运行时，调用方选</text>
+
+    <rect x="14" y="266" width="272" height="70" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="28" y="286" font-size="10.5" font-weight="bold" fill="#334155">回调 / 闭包</text>
+    <text x="28" y="306" font-size="10" fill="#334155">骨架短、步骤是临时拼的时候更轻</text>
+    <text x="28" y="324" font-size="10" fill="#334155">但「导入器」本身是领域实体时不占优</text>
+
+    <text x="14" y="354" font-size="10.5" font-weight="bold" fill="#92400e">一句话判据</text>
+    <text x="14" y="374" font-size="10.5" fill="#92400e">要「换算法」用策略</text>
+    <text x="14" y="394" font-size="10.5" fill="#92400e">要「定顺序」用模板方法</text>
+
+    <text x="14" y="424" font-size="10.5" fill="#334155">Go 里没有继承，骨架只能是一个</text>
+    <text x="14" y="444" font-size="10.5" fill="#334155">自由函数 Import(src Importer)，</text>
+    <text x="14" y="464" font-size="10.5" fill="#334155">变化点用 Importer / skipper /</text>
+    <text x="14" y="484" font-size="10.5" fill="#334155">normalizer 三个小接口表达</text>
+    <text x="14" y="508" font-size="10.5" fill="#334155">→ 骨架照样只有一份，顺序照样强制</text>
+  </g>
+
+  <g transform="translate(20,608)">
+    <rect x="0" y="0" width="960" height="80" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">为什么要「final 骨架 + 抽象步骤 + 钩子」三件套</text>
+    <text x="14" y="48" font-size="11" fill="#334155">骨架是 final（实测 4 : true），子类就只能填步骤、改不了顺序 —— 于是「流程」变成一个能一次读完、也敢在评审里引用的地方；步骤与钩子的划分只有一问：</text>
+    <text x="14" y="70" font-size="11" fill="#334155">「不做这件事能不能给出一个说得过去的行为」。能 → 钩子（子类少写代码）；不能 → 抽象步骤（编译器替你把漏掉的实现挑出来）。</text>
+  </g>
+</svg>

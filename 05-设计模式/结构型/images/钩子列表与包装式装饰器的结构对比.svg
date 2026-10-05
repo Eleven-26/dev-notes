@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">钩子列表 vs 包装式装饰器：两种「包一层」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">原文结构能用，但它没有「转发 + 加工」这一环 —— 只有前置通知和后置通知</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 原文的钩子列表：被装饰者知情</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">Decorator 接口只有 beforeDo / afterDo，与 eat 不同形</text>
+
+    <rect x="20" y="58" width="430" height="96" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="36" y="78" font-size="11.5" font-weight="bold" fill="#1e40af">class User —— 自己收集装饰器</text>
+    <text x="36" y="98" font-size="10.5" fill="#1e40af">private array $decorators = [SleepDecorator, FoodDecorator];</text>
+    <text x="36" y="118" font-size="10.5" fill="#1e40af">eat()：foreach beforeDo → 真吃饭 → foreach afterDo</text>
+    <text x="36" y="140" font-size="10.5" fill="#991b1b">数据不流经装饰器，只被通知两次</text>
+
+    <text x="14" y="176" font-size="11.5" font-weight="bold" fill="#991b1b">⚠️ 扩展点固定在「前 / 后」两个钩子</text>
+    <text x="14" y="196" font-size="11" fill="#334155">接口与 eat 不同形 → 装饰器不能再被同类装饰</text>
+    <text x="14" y="216" font-size="11" fill="#334155">做不了中间加工：没法换一种编码再交给内层</text>
+    <text x="14" y="236" font-size="11" fill="#334155">被装饰者知情 —— 它自己遍历那个数组</text>
+    <text x="14" y="262" font-size="11.5" fill="#92400e">框架里的 beforeXxx / afterXxx、事件钩子都是这个思路</text>
+    <text x="14" y="286" font-size="11.5" fill="#14532d">就想要「前后各跑一段」时，它比标准装饰器更省事</text>
+  </g>
+
+  <g transform="translate(500,74)">
+    <rect x="0" y="0" width="480" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 标准装饰器：被装饰者不知情</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">调用方从外往里 new，四层都是同一个 DataSource</text>
+
+    <rect x="20" y="58" width="440" height="34" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="36" y="80" font-size="11.5" font-weight="bold" fill="#14532d">CountingDecorator</text>
+    <text x="444" y="80" text-anchor="end" font-size="10.5" fill="#64748b">implements DataSource</text>
+    <line x1="240" y1="92" x2="240" y2="100" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="100" width="440" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="36" y="122" font-size="11.5" font-weight="bold" fill="#1e40af">EncryptionDecorator</text>
+    <text x="444" y="122" text-anchor="end" font-size="10.5" fill="#64748b">implements DataSource</text>
+    <line x1="240" y1="134" x2="240" y2="142" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="142" width="440" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="36" y="164" font-size="11.5" font-weight="bold" fill="#92400e">CompressionDecorator</text>
+    <text x="444" y="164" text-anchor="end" font-size="10.5" fill="#64748b">implements DataSource</text>
+    <line x1="240" y1="176" x2="240" y2="184" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="184" width="440" height="34" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="36" y="206" font-size="11.5" font-weight="bold" fill="#334155">PlainDataSource</text>
+    <text x="444" y="206" text-anchor="end" font-size="10.5" fill="#64748b">真正存数据的地方</text>
+
+    <text x="14" y="244" font-size="11.5" font-weight="bold" fill="#14532d">四者接口完全相同 → 能任意嵌套、任意换序</text>
+    <text x="14" y="266" font-size="11.5" fill="#334155">每层都能「转发 + 加工」：写时包，读时剥</text>
+    <text x="14" y="288" font-size="11.5" fill="#92400e">扩展点不受限制，任意方法都能改</text>
+  </g>
+
+  <g transform="translate(20,406)">
+    <rect x="0" y="0" width="960" height="214" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">五维对照：差别不在「包不包」，在「谁去包」</text>
+
+    <text x="14" y="48" font-size="11.5" font-weight="bold" fill="#0f172a">维度</text>
+    <text x="200" y="48" font-size="11.5" font-weight="bold" fill="#991b1b">钩子列表（原文）</text>
+    <text x="600" y="48" font-size="11.5" font-weight="bold" fill="#14532d">标准装饰器（本篇）</text>
+
+    <text x="14" y="70" font-size="11" fill="#334155">接口</text>
+    <text x="200" y="70" font-size="11" fill="#334155">不同（beforeDo / eat）</text>
+    <text x="600" y="70" font-size="11" fill="#334155">完全相同</text>
+
+    <text x="14" y="92" font-size="11" fill="#334155">能否嵌套同类</text>
+    <text x="200" y="92" font-size="11" fill="#334155">不能</text>
+    <text x="600" y="92" font-size="11" fill="#334155">能：压缩外面还能再包一层</text>
+
+    <text x="14" y="114" font-size="11" fill="#334155">被装饰者是否知情</text>
+    <text x="200" y="114" font-size="11" fill="#334155">知情，它自己遍历数组</text>
+    <text x="600" y="114" font-size="11" fill="#334155">完全不知情</text>
+
+    <text x="14" y="136" font-size="11" fill="#334155">扩展点</text>
+    <text x="200" y="136" font-size="11" fill="#334155">固定两个（before / after）</text>
+    <text x="600" y="136" font-size="11" fill="#334155">任意方法</text>
+
+    <text x="14" y="158" font-size="11" fill="#334155">适合什么</text>
+    <text x="200" y="158" font-size="11" fill="#334155">固定的前后各跑一段</text>
+    <text x="600" y="158" font-size="11" fill="#334155">可叠加的行为层</text>
+
+    <text x="14" y="188" font-size="11.5" font-weight="bold" fill="#92400e">一句话区分：钩子列表改的是「什么时候被通知」，标准装饰器改的是「数据怎么流过层层包装」</text>
+  </g>
+</svg>

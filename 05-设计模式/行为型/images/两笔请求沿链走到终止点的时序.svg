@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 736" width="1000" height="736" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="736" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两笔请求沿链走：放行走满四环，拒绝停在第一环</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">对应实测第 1、2 行 —— 两笔的审计计数都是 1，这就是「后面没执行」的证据</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="660" height="540" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. handle() 骨架 + check() 判定</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">链：BlacklistHandler → RateLimitHandler → AmountThresholdHandler → AuditTrailHandler</text>
+
+    <rect x="20" y="56" width="100" height="28" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="70" y="74" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#334155">调用方</text>
+    <rect x="150" y="56" width="100" height="28" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="6"/>
+    <text x="200" y="74" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#991b1b">黑名单环</text>
+    <rect x="280" y="56" width="100" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="330" y="74" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">限流环</text>
+    <rect x="410" y="56" width="100" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="460" y="74" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1e40af">金额阈值环</text>
+    <rect x="540" y="56" width="100" height="28" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="590" y="74" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">审计环</text>
+
+    <line x1="70" y1="84" x2="70" y2="500" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="200" y1="84" x2="200" y2="500" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="330" y1="84" x2="330" y2="500" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="460" y1="84" x2="460" y2="500" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="590" y1="84" x2="590" y2="500" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="14" y="104" font-size="10" font-weight="bold" fill="#0f172a">第 1 笔：正常请求 u-1，金额 500</text>
+    <line x1="70" y1="126" x2="198" y2="126" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="134" y="122" text-anchor="middle" font-size="9" fill="#64748b">① handle(RiskRequest)</text>
+    <line x1="200" y1="148" x2="328" y2="148" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="264" y="144" text-anchor="middle" font-size="9" fill="#64748b">② check() 返回 null</text>
+    <line x1="330" y1="170" x2="458" y2="170" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="394" y="166" text-anchor="middle" font-size="9" fill="#64748b">③ check() 未超上限</text>
+    <line x1="460" y1="192" x2="588" y2="192" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="524" y="188" text-anchor="middle" font-size="9" fill="#64748b">④ 金额未过阈值</text>
+    <text x="586" y="210" text-anchor="end" font-size="9" fill="#14532d">⑤ calls = 1，仍返回 null</text>
+    <line x1="590" y1="232" x2="72" y2="232" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="330" y="228" text-anchor="middle" font-size="9" fill="#14532d">⑥ next 为 null，Decision::allow() 兜底 → 放行</text>
+
+    <text x="14" y="258" font-size="10" font-weight="bold" fill="#991b1b">第 2 笔：命中黑名单</text>
+    <line x1="70" y1="284" x2="198" y2="284" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="134" y="280" text-anchor="middle" font-size="9" fill="#64748b">⑦ handle(RiskRequest)</text>
+    <text x="208" y="308" font-size="9" fill="#991b1b">⑧ check() 给出 Decision::deny('命中黑名单')</text>
+    <line x1="200" y1="324" x2="72" y2="324" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="136" y="320" text-anchor="middle" font-size="9" fill="#991b1b">⑨ 就地返回，链在此终止</text>
+
+    <rect x="280" y="338" width="310" height="44" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="435" y="356" text-anchor="middle" font-size="10" font-weight="bold" fill="#991b1b">限流环 / 金额环 / 审计环：这一笔一次都没被调用</text>
+    <text x="435" y="374" text-anchor="middle" font-size="9.5" fill="#991b1b">所以审计计数还是 1 —— 实测第 2 行的括号就是这么来的</text>
+
+    <text x="14" y="404" font-size="10" fill="#334155">换成「把审计放链首」（实测第 7 行）：拒绝也记到了，审计被调用 1 次 —— 同一条链换个环序，语义就变了</text>
+    <text x="14" y="424" font-size="10" fill="#334155">实测第 6 行是「重新组装」那组：黑名单 → 新用户 → 限流 → 审计；5_新用户请求 被拒，6_老用户同金额 放行</text>
+    <text x="14" y="444" font-size="10" fill="#92400e">细节 5：拒绝理由由具体环给出、不层层包装 —— 日志里能直接看到「是黑名单拦的」还是「额度拦的」</text>
+    <text x="14" y="464" font-size="10" fill="#991b1b">⚠️ 第 6 条最容易翻车：限流计数器存在对象属性里，只在同一个进程、同一条链实例内有效</text>
+    <text x="14" y="484" font-size="10" fill="#991b1b">　真实项目里计数必须外置（Redis / 本地缓存 + 时间窗），否则 php-fpm 多进程各自计数 = 限流形同虚设</text>
+    <text x="14" y="510" font-size="10" font-weight="bold" fill="#14532d">汇总：1_正常 审计 1 次 → 放行；2_黑名单 审计仍 1 次 → 拒绝（链在第 1 环终止）</text>
+  </g>
+
+  <g transform="translate(690,74)">
+    <rect x="0" y="0" width="290" height="540" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 先选终止语义</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">第三节：这两种「链」经常被混着叫责任链</text>
+
+    <rect x="14" y="56" width="262" height="150" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="78" font-size="11.5" font-weight="bold" fill="#92400e">一环比到底（本篇）</text>
+    <text x="28" y="100" font-size="10" fill="#92400e">某环给出结论即终止</text>
+    <text x="28" y="122" font-size="10" fill="#92400e">check 返回 Decision 终止 / null 放行</text>
+    <text x="28" y="144" font-size="10" fill="#92400e">场景：风控、审批、鉴权</text>
+    <text x="28" y="166" font-size="10" fill="#92400e">（通过就够，不必都问）</text>
+    <text x="28" y="190" font-size="10.5" font-weight="bold" fill="#92400e">优点：短路、快</text>
+
+    <rect x="14" y="220" width="262" height="132" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="242" font-size="11.5" font-weight="bold" fill="#14532d">全部执行</text>
+    <text x="28" y="264" font-size="10" fill="#14532d">每环都跑，谁都能否决</text>
+    <text x="28" y="286" font-size="10" fill="#14532d">check 累计结果，或抛异常</text>
+    <text x="28" y="308" font-size="10" fill="#14532d">场景：数据校验要一次报全</text>
+    <text x="28" y="330" font-size="10" fill="#14532d">中间件也算这一类</text>
+
+    <text x="14" y="378" font-size="10" fill="#991b1b">PSR-15 中间件是混合体：每层都执行、</text>
+    <text x="14" y="398" font-size="10" fill="#991b1b">每层都能提前返回响应 —— 两种模式</text>
+    <text x="14" y="418" font-size="10" fill="#991b1b">同时成立，不必硬分</text>
+
+    <text x="14" y="448" font-size="10.5" font-weight="bold" fill="#0f172a">和装饰器的分界（第四节）</text>
+    <text x="14" y="470" font-size="10" fill="#334155">一句话判据：某层拦下后，</text>
+    <text x="14" y="490" font-size="10" fill="#334155">后面的还要跑吗？</text>
+    <text x="14" y="510" font-size="10" fill="#14532d">要 → 装饰器；不要 → 责任链</text>
+  </g>
+
+  <g transform="translate(20,626)">
+    <rect x="0" y="0" width="960" height="98" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="22" font-size="15" font-weight="bold" fill="#0f172a">三语言形态：链的组装与终止方式各不相同</text>
+    <text x="14" y="44" font-size="11" fill="#334155">Java：javax.servlet.Filter 的 doFilter(req, res, chain) 是「全部执行」派；Spring HandlerInterceptor 用 preHandle() 返回 false 终止。</text>
+    <text x="14" y="66" font-size="11" fill="#334155">Go：没有继承，用 func(http.Handler) http.Handler 包装，或用切片存链 —— chi / gin 的 Use() 就是这个形状。</text>
+    <text x="14" y="88" font-size="11" fill="#14532d">go1.26.5 实测：8_切片版·正常 : 放行　9_切片版·黑名单 : 拒绝（命中黑名单）　10_切片版审计次数 : 2（两笔都记到了）</text>
+  </g>
+</svg>

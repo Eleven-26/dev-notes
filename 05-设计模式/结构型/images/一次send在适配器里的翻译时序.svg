@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 send() 穿过适配器：参数顺序与返回值的翻译现场</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">上半是短信通道，下半是 Slack 通道 —— 两段的调用点是同一个 notifyAll()</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="660" height="440" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 两条通道，四个翻译点</text>
+
+    <rect x="30" y="42" width="120" height="30" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="90" y="62" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">调用方</text>
+    <rect x="265" y="42" width="130" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="330" y="62" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">Adapter（Notifier）</text>
+    <rect x="495" y="42" width="130" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="560" y="62" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">Adaptee（第三方）</text>
+
+    <line x1="90" y1="72" x2="90" y2="404" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="330" y1="72" x2="330" y2="404" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="560" y1="72" x2="560" y2="404" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="14" y="94" font-size="10.5" font-weight="bold" fill="#1e40af">短信通道</text>
+    <line x1="90" y1="114" x2="328" y2="114" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="210" y="108" text-anchor="middle" font-size="10" fill="#334155">① send('13800000000', '您的订单已发货')</text>
+    <line x1="330" y1="146" x2="558" y2="146" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="444" y="140" text-anchor="middle" font-size="10" fill="#14532d">② dispatchMessage(text, phone) 顺序换过来</text>
+    <line x1="560" y1="178" x2="332" y2="178" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwD)"/>
+    <text x="444" y="172" text-anchor="middle" font-size="10" fill="#334155">③ ['phone'=&gt;…, 'len'=&gt;21, 'urgent'=&gt;false]</text>
+    <line x1="330" y1="210" x2="92" y2="210" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwB)"/>
+    <text x="210" y="204" text-anchor="middle" font-size="10" fill="#1e40af">④ 'sms:13800000000(21)' array 翻回 string</text>
+
+    <text x="14" y="248" font-size="10.5" font-weight="bold" fill="#1e40af">换成 Slack 通道</text>
+    <line x1="90" y1="268" x2="328" y2="268" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="210" y="262" text-anchor="middle" font-size="10" fill="#334155">⑤ send('13800000000', '您的订单已发货')</text>
+    <line x1="330" y1="300" x2="558" y2="300" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="444" y="294" text-anchor="middle" font-size="10" fill="#14532d">⑥ post(['text' =&gt; '138…: 您的订单已发货'])</text>
+    <line x1="560" y1="332" x2="92" y2="332" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwB)"/>
+    <text x="320" y="326" text-anchor="middle" font-size="10" fill="#1e40af">⑦ 'slack:13800000000: 您的订单已发货'</text>
+
+    <rect x="14" y="352" width="632" height="46" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="372" font-size="11" font-weight="bold" fill="#1e40af">①~④ 与 ⑤~⑦ 来自同一个 notifyAll()：调用方一行没改</text>
+    <text x="28" y="390" font-size="10.5" fill="#1e40af">换供应商 = new 另一个适配器；参数顺序、返回值、度量口径都在这里被翻译</text>
+  </g>
+
+  <g transform="translate(690,74)">
+    <rect x="0" y="0" width="290" height="440" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 三个观察点</text>
+
+    <text x="14" y="60" font-size="11.5" font-weight="bold" fill="#1e40af">调用方只依赖 Notifier</text>
+    <text x="14" y="80" font-size="10.5" fill="#334155">Target 用 interface，适配器 implements</text>
+
+    <text x="14" y="112" font-size="11.5" font-weight="bold" fill="#1e40af">被适配者注入进来</text>
+    <text x="14" y="132" font-size="10.5" fill="#334155">不在适配器里 new，才能替换与测试</text>
+
+    <text x="14" y="164" font-size="11.5" font-weight="bold" fill="#1e40af">适配器不是必经关卡</text>
+    <text x="14" y="184" font-size="10.5" fill="#334155">3_被适配者可单独使用：</text>
+    <text x="14" y="202" font-size="10.5" fill="#334155">{"phone":"138","len":2,"urgent":false}</text>
+
+    <rect x="14" y="222" width="262" height="112" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="145" y="244" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#92400e">适配器该保持薄</text>
+    <text x="28" y="268" font-size="10.5" fill="#92400e">唯一职责是翻译形状：</text>
+    <text x="28" y="288" font-size="10.5" fill="#92400e">参数顺序、返回值、度量口径。</text>
+    <text x="28" y="308" font-size="10.5" fill="#991b1b">一旦掺进业务分支，</text>
+    <text x="28" y="326" font-size="10.5" fill="#991b1b">那部分逻辑就该独立出去。</text>
+
+    <rect x="14" y="346" width="262" height="78" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="145" y="368" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#991b1b">跨语言要翻的不止形状</text>
+    <text x="28" y="392" font-size="10.5" fill="#991b1b">长度口径：PHP/Go 21 字节，</text>
+    <text x="28" y="410" font-size="10.5" fill="#991b1b">Java 7 个 UTF-16 代码单元。</text>
+  </g>
+
+  <g transform="translate(20,526)">
+    <rect x="0" y="0" width="960" height="100" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">实测输出（三语言同一套骨架）</text>
+    <text x="14" y="50" font-size="11.5" fill="#334155">PHP 8.0.2 与 Go 1.26：-&gt; sms:13800000000(21)、-&gt; slack:13800000000: 您的订单已发货</text>
+    <text x="14" y="74" font-size="11.5" fill="#334155">JDK 1.8：-&gt; sms:13800000000(7)。Go 版收件人为空时在适配器里返回 error「收件人不能为空」，PHP/Java 对应抛异常。</text>
+  </g>
+</svg>

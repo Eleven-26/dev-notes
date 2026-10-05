@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">组合后的谓词仍然是一个谓词：这就是「结合多个标准获得单一标准」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">all / any / not 的输入输出都是 callable(object): bool，所以树能一直往上长</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 一棵「标准树」：远程 且 (工程师 或 销售)</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">正文里的 $remoteEngOrSales 就是这个形状</text>
+
+    <rect x="220" y="56" width="180" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="310" y="74" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">Predicates::all()</text>
+    <text x="310" y="92" text-anchor="middle" font-size="9.5" fill="#14532d">全部满足，遇 false 短路</text>
+
+    <line x1="270" y1="100" x2="150" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="350" y1="100" x2="412" y2="120" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="60" y="124" width="150" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="135" y="142" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">$isRemote</text>
+    <text x="135" y="160" text-anchor="middle" font-size="9.5" fill="#1e40af">$e-&gt;isRemote()</text>
+
+    <rect x="330" y="124" width="180" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="420" y="142" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">Predicates::any()</text>
+    <text x="420" y="160" text-anchor="middle" font-size="9.5" fill="#14532d">任一满足，遇 true 短路</text>
+
+    <line x1="390" y1="168" x2="360" y2="188" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="450" y1="168" x2="478" y2="188" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="300" y="192" width="110" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="355" y="210" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">$inEng</text>
+    <text x="355" y="228" text-anchor="middle" font-size="9.5" fill="#1e40af">=== 'eng'</text>
+    <rect x="430" y="192" width="120" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="490" y="210" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">$inSales</text>
+    <text x="490" y="228" text-anchor="middle" font-size="9.5" fill="#1e40af">=== 'sales'</text>
+
+    <text x="14" y="262" font-size="11" fill="#14532d">组合器返回新谓词而不是结果数组 —— 所以还能再组合（细节 2）</text>
+    <text x="14" y="284" font-size="11" fill="#334155">对 Ann：isRemote 为 true → 进 any() → inEng 为 true，短路返回 true</text>
+    <text x="14" y="306" font-size="11" fill="#991b1b">对 Bob：isRemote 为 false → all() 立刻 false，any() 一次都不跑（实测第 5 行）</text>
+  </g>
+
+  <g transform="translate(650,74)">
+    <rect x="0" y="0" width="330" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 三个角色与原文的两个代价</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">第一节的角色表 + 第四节</text>
+
+    <rect x="14" y="56" width="302" height="86" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="78" font-size="11.5" font-weight="bold" fill="#1e40af">三个角色</text>
+    <text x="28" y="98" font-size="10.5" fill="#1e40af">标准 / 谓词：判断单个元素要不要（Criteria）</text>
+    <text x="28" y="116" font-size="10.5" fill="#1e40af">组合标准：And / Or / Not 拼成新标准</text>
+    <text x="28" y="134" font-size="10.5" fill="#1e40af">被筛选集合：原始数据（原文的 Person 数组）</text>
+
+    <rect x="14" y="154" width="302" height="76" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="176" font-size="11.5" font-weight="bold" fill="#92400e">问题一：每个标准一个类</text>
+    <text x="28" y="196" font-size="10.5" fill="#92400e">标准只有一行判断却要建类、建实例，</text>
+    <text x="28" y="214" font-size="10.5" fill="#92400e">组合还必须传 Criteria 实例；</text>
+    <text x="28" y="230" font-size="10.5" fill="#14532d">闭包版天然可嵌套，一行就够</text>
+
+    <rect x="14" y="242" width="302" height="72" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="264" font-size="11.5" font-weight="bold" fill="#991b1b">问题二：OR 里用 in_array 去重</text>
+    <text x="28" y="284" font-size="10.5" fill="#991b1b">两边各筛一遍再合并 → 最坏 O(n²)</text>
+    <text x="28" y="302" font-size="10.5" fill="#991b1b">松散比较：属性相同的两条记录</text>
+    <text x="28" y="316" font-size="10.5" fill="#991b1b">会被判成「重复」，静默丢数据</text>
+  </g>
+
+  <g transform="translate(20,414)">
+    <rect x="0" y="0" width="960" height="100" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">同一批数据、四种标准（第三节实测，PHP 8.0.2 CLI）</text>
+    <text x="14" y="48" font-size="11.5" fill="#334155">集合四条记录：Ann（eng，远程）、Bob（eng，非远程）、Cara（sales，远程）、Dan（sales，非远程）</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">1_远程工程师 : Ann　　2_工程师或远程 : Ann, Bob, Cara　　3_非工程师 : Cara, Dan　　4_远程且(工程师|销售) : Ann, Cara</text>
+    <text x="14" y="90" font-size="11" fill="#14532d">第 4 行正是左边那棵组合树的结果；原文的 OR 要两次遍历 + 去重才能得到同一行输出</text>
+  </g>
+</svg>

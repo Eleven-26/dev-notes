@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 dispatch() 的一轮通知：快照遍历 + 异常隔离</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">对应 3.2 节实测 1a / 1b / 1c / 2a / 2b / 3 六行（本机 PHP 8.0.2）</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="640" height="532" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 语义二：一个监听器抛错，其余仍要收到</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">链：Mailer → SmsListener（抛错）→ Points，注册表就按这个顺序</text>
+
+    <rect x="30" y="56" width="80" height="28" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="70" y="74" text-anchor="middle" font-size="10" font-weight="bold" fill="#334155">脚本</text>
+    <rect x="160" y="56" width="80" height="28" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="200" y="74" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#14532d">派发器</text>
+    <rect x="290" y="56" width="80" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="330" y="74" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">Mailer</text>
+    <rect x="420" y="56" width="80" height="28" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="6"/>
+    <text x="460" y="74" text-anchor="middle" font-size="9" font-weight="bold" fill="#991b1b">Sms 监听器</text>
+    <rect x="550" y="56" width="80" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="590" y="74" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">Points</text>
+
+    <line x1="70" y1="84" x2="70" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="200" y1="84" x2="200" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="330" y1="84" x2="330" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="460" y1="84" x2="460" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="590" y1="84" x2="590" y2="470" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <line x1="70" y1="104" x2="198" y2="104" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="134" y="100" text-anchor="middle" font-size="9" fill="#64748b">① dispatch($event)</text>
+
+    <line x1="200" y1="128" x2="270" y2="128" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="235" y="124" text-anchor="middle" font-size="9" fill="#64748b">② snapshot()</text>
+    <text x="278" y="132" font-size="9" fill="#334155">foreach 的是这一份拷贝</text>
+
+    <line x1="200" y1="156" x2="328" y2="156" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="264" y="152" text-anchor="middle" font-size="9" fill="#64748b">③ handle($event)</text>
+    <line x1="330" y1="176" x2="202" y2="176" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="266" y="172" text-anchor="middle" font-size="9" fill="#14532d">④ 收到</text>
+
+    <line x1="200" y1="204" x2="458" y2="204" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="330" y="200" text-anchor="middle" font-size="9" fill="#64748b">⑤ handle($event)</text>
+    <line x1="460" y1="228" x2="202" y2="228" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="330" y="224" text-anchor="middle" font-size="9" fill="#991b1b">⑥ RuntimeException('短信网关超时')</text>
+
+    <rect x="212" y="240" width="290" height="46" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="224" y="258" font-size="9.5" fill="#991b1b">⑦ catch (Throwable $e)　// 不是 Exception</text>
+    <text x="224" y="276" font-size="9.5" fill="#991b1b">$failures[] = $listener::class . ': ' . $e</text>
+
+    <line x1="200" y1="304" x2="588" y2="304" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="394" y="300" text-anchor="middle" font-size="9" fill="#64748b">⑧ handle($event)　—— 循环没被打断，第三个照样通知</text>
+    <line x1="590" y1="324" x2="202" y2="324" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="396" y="320" text-anchor="middle" font-size="9" fill="#14532d">⑨ 收到</text>
+
+    <line x1="200" y1="352" x2="72" y2="352" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="136" y="348" text-anchor="middle" font-size="9" fill="#991b1b">⑩ 攒完统一抛一次</text>
+
+    <rect x="20" y="368" width="600" height="46" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="32" y="386" font-size="10" fill="#14532d">实测 2b_隔离 : 部分监听器失败 -&gt; SmsListener: 短信网关超时</text>
+    <text x="32" y="404" font-size="10" fill="#14532d">　　　实际收到通知: Mailer &gt; Points　—— 失败者进了消息，活着的没有被连坐</text>
+
+    <rect x="20" y="422" width="600" height="42" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="32" y="440" font-size="10" fill="#991b1b">对照 2a_不隔离 : 短信网关超时　实际收到通知: Mailer　—— Points 直接消失，主流程也被一起带崩</text>
+    <text x="32" y="458" font-size="10" fill="#991b1b">日志里记 $listener::class 才能一眼定位是「哪个监听器」坏了，而不是只看到一个 message</text>
+
+    <text x="14" y="486" font-size="10.5" fill="#334155">三处细节：catch 用 Throwable；失败攒起来、通知完统一抛一次；要静默就改异步队列靠重试兜底（同步事件里「有监听器失败」必须冒泡）</text>
+    <text x="14" y="508" font-size="10.5" fill="#334155">Go 版同一套：抛出: 部分监听器失败 -&gt; [sms boom]、表长仍为 3；快照语义 first sees 1 / first sees 2 / second sees 2（go1.26.5）</text>
+  </g>
+
+  <g transform="translate(680,74)">
+    <rect x="0" y="0" width="300" height="532" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 语义一 / 三 与那堵墙</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">注册表活多久，决定观察者能不能跨请求</text>
+
+    <rect x="14" y="56" width="272" height="104" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="76" font-size="10.5" font-weight="bold" fill="#1e40af">语义一：本轮改动下轮才生效</text>
+    <text x="28" y="96" font-size="10" fill="#1e40af">B 在 handle() 里摘掉 C、挂上 D</text>
+    <text x="28" y="114" font-size="10" fill="#1e40af">1a_第一轮 : A &gt; B &gt; C</text>
+    <text x="28" y="132" font-size="10" fill="#1e40af">1b_第二轮 : A &gt; B &gt; D</text>
+    <text x="28" y="152" font-size="10" font-weight="bold" fill="#1e40af">用「注销」做权限控制挡不住这一轮</text>
+
+    <rect x="14" y="172" width="272" height="72" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="192" font-size="10.5" font-weight="bold" fill="#92400e">语义三：按对象身份去重</text>
+    <text x="28" y="212" font-size="10" fill="#92400e">1c_重复挂载 D : A &gt; B &gt; D</text>
+    <text x="28" y="232" font-size="10" fill="#92400e">SplObjectStorage 天然按身份，但 clone 要自己写</text>
+
+    <rect x="14" y="256" width="272" height="64" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="28" y="276" font-size="10.5" font-weight="bold" fill="#334155">场景 3 是语义一的语言层原因</text>
+    <text x="28" y="296" font-size="10" fill="#334155">3_数组遍历是快照: 依次访问 abc，</text>
+    <text x="28" y="312" font-size="10" fill="#334155">遍历后原数组剩 ac（写时复制）</text>
+
+    <rect x="14" y="332" width="272" height="128" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="352" font-size="10.5" font-weight="bold" fill="#991b1b">第四节：php-fpm 的墙（实测）</text>
+    <text x="28" y="372" font-size="9" fill="#991b1b">1_本请求注册表 : {"OrderPaid":["Audit-</text>
+    <text x="28" y="388" font-size="9" fill="#991b1b">Listener","SmsListener"]}</text>
+    <text x="28" y="406" font-size="9.5" fill="#991b1b">2_新进程注册表 : []</text>
+    <text x="28" y="424" font-size="9" fill="#991b1b">2_队列文件 : {"event":"OrderPaid",</text>
+    <text x="28" y="440" font-size="9" fill="#991b1b">　　　　　　　　 "orderId":1001}</text>
+    <text x="28" y="456" font-size="10" font-weight="bold" fill="#991b1b">唯一跨过进程边界的只有那行事件</text>
+
+    <text x="14" y="478" font-size="10" fill="#334155">常驻模型（Swoole / RoadRunner）下注册表</text>
+    <text x="14" y="494" font-size="10" fill="#334155">变跨请求共享：注册只做一次，监听器里</text>
+    <text x="14" y="510" font-size="10" fill="#334155">绝不能存用户态数据（串号风险）。</text>
+    <text x="14" y="526" font-size="10" fill="#991b1b">Java leaky 组：listeners=1→2→3；fixed 恒 0</text>
+  </g>
+
+  <g transform="translate(20,618)">
+    <rect x="0" y="0" width="960" height="70" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">所以标准写法是：数组注册表 + snapshot() 遍历 + catch (Throwable) 统一抛</text>
+    <text x="14" y="48" font-size="11" fill="#334155">数组让「快照」白送（语义一），显式 snapshot() 让通知期间改表也安全（Java 直跑会撞 ConcurrentModificationException），按对象身份去重让重复挂载无害（语义三）。</text>
+    <text x="14" y="66" font-size="11" fill="#64748b">与中介者的分界：观察者一律广播、不做「谁受影响」的判断；中介者持有规则、只通知受影响的同事（见「中介者模式」第三节）。</text>
+  </g>
+</svg>

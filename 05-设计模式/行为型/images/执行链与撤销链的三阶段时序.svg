@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">执行链与撤销链：每一跳都换一层，Invoker 全程不认识具体命令</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">三条链：run → execute → 接收者方法｜undoLast → array_pop → undo → 接收者的逆操作｜撤销信息由命令在 execute 时自己采集</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="516" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+
+    <rect x="30" y="56" width="140" height="28" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="100" y="75" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">脚本（调用方）</text>
+    <rect x="270" y="56" width="140" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="340" y="75" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">CommandInvoker</text>
+    <rect x="520" y="56" width="140" height="28" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="590" y="75" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">具体命令</text>
+    <rect x="770" y="56" width="140" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="840" y="75" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">TextEditor（接收者）</text>
+
+    <line x1="100" y1="84" x2="100" y2="482" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="340" y1="84" x2="340" y2="482" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="590" y1="84" x2="590" y2="482" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="840" y1="84" x2="840" y2="482" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="14" y="102" font-size="11.5" font-weight="bold" fill="#1e40af">第 1 阶段：run() —— 执行一步、记一步</text>
+    <text x="220" y="118" text-anchor="middle" font-size="9.5" fill="#334155">run(new InsertTextCommand(editor, 'Hello'))</text>
+    <line x1="100" y1="124" x2="340" y2="124" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="465" y="140" text-anchor="middle" font-size="9.5" fill="#334155">execute()，随后 history[] = 命令</text>
+    <line x1="340" y1="146" x2="590" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="715" y="162" text-anchor="middle" font-size="9.5" fill="#334155">insert('Hello')　→ content=Hello</text>
+    <line x1="590" y1="168" x2="840" y2="168" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="220" y="188" font-size="9.5" fill="#334155">run(new InsertTextCommand(editor, ', World'))、execute()、insert(', World')</text>
+    <text x="14" y="210" font-size="10.5" fill="#14532d">实测 1_连续两步之后 : Hello, World</text>
+
+    <text x="14" y="240" font-size="11.5" font-weight="bold" fill="#14532d">第 2 阶段：undoLast() —— 弹出最上层命令，调它的 undo()</text>
+    <text x="220" y="256" text-anchor="middle" font-size="9.5" fill="#334155">undoLast()</text>
+    <line x1="100" y1="262" x2="340" y2="262" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="465" y="278" text-anchor="middle" font-size="9.5" fill="#334155">array_pop() 取出 ', World' 那条 → undo()</text>
+    <line x1="340" y1="284" x2="590" y2="284" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="715" y="300" text-anchor="middle" font-size="9.5" fill="#334155">deleteTail(strlen(', World') = 7)</text>
+    <line x1="590" y1="306" x2="840" y2="306" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="14" y="328" font-size="10.5" fill="#14532d">实测 2_撤销一步 : Hello　→　再 undoLast() 一次 → 实测 3_再撤销一步 : (空)</text>
+
+    <text x="14" y="356" font-size="11.5" font-weight="bold" fill="#92400e">第 3 阶段：删除命令在 execute() 里先把要删的内容记下来</text>
+    <text x="220" y="372" text-anchor="middle" font-size="9.5" fill="#334155">run(new DeleteTailCommand(editor, 3))</text>
+    <line x1="100" y1="378" x2="340" y2="378" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="715" y="394" text-anchor="middle" font-size="9.5" fill="#92400e">removed = substr(content, -3) 记的是 'def'，再 deleteTail(3)</text>
+    <line x1="340" y1="400" x2="840" y2="400" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="220" y="416" text-anchor="middle" font-size="9.5" fill="#334155">undoLast() → undo()</text>
+    <line x1="100" y1="422" x2="590" y2="422" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="715" y="438" text-anchor="middle" font-size="9.5" fill="#334155">insert($removed) 原样插回</text>
+    <line x1="590" y1="444" x2="840" y2="444" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="14" y="466" font-size="10.5" fill="#14532d">实测 4_删除末尾 3 个 : abc　→　5_撤销删除 : abcdef（恢复的是当时删掉的内容）　→　6_历史条数 : 1</text>
+    <text x="14" y="490" font-size="10.5" fill="#991b1b">撤销不能靠「再算一遍」：删掉的内容必须在执行时原样记住 —— 第二节细节 3</text>
+  </g>
+
+  <g transform="translate(20,602)">
+    <rect x="0" y="0" width="960" height="76" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="12" font-weight="bold" fill="#0f172a">第四节判据：策略回答「用哪种算法」，命令回答「把这次操作记下来」</text>
+    <text x="14" y="46" font-size="11" fill="#334155">命令有状态（参数 + 撤销信息），策略/责任链通常无状态；谁触发也不同：Invoker 可以延迟、排队、记录 vs 调用方直接选 vs 请求沿链传递</text>
+    <text x="14" y="68" font-size="11" fill="#334155">第六节：命令对象一旦带上状态就不能被复用（与「策略应尽量无状态」相反）｜JDK 1.8 与 go1.26.5 实测逐行一致，Go 版第 5 行 abcdef 后多一个空格</text>
+  </g>
+</svg>

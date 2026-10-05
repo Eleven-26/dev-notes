@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">快照的真假只差一句 clone：五步时间线 + 第 7、8 行的对照</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">restore() 恢复的是「当时整份状态」（content + cursor + meta），不是「反向操作」</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="250" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 实测第 1~5 行：保存、推进、再推进、恢复</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">Originator 是 TextEditor，负责人是 SnapshotHistory（__construct(private int $limit = 10)）</text>
+
+    <rect x="20" y="56" width="180" height="140" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="110" y="76" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">1_第一次保存</text>
+    <text x="34" y="98" font-size="9.5" fill="#1e40af">type('Hello')</text>
+    <text x="34" y="116" font-size="9.5" fill="#1e40af">save() → push()</text>
+    <text x="34" y="134" font-size="9.5" fill="#1e40af">栈内 1 个快照</text>
+    <text x="34" y="152" font-size="9.5" fill="#1e40af">内容=Hello</text>
+    <text x="34" y="176" font-size="9.5" font-weight="bold" fill="#1e40af">游标=5</text>
+    <line x1="200" y1="126" x2="212" y2="126" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="212" y="56" width="180" height="140" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="302" y="76" text-anchor="middle" font-size="10" font-weight="bold" fill="#334155">2_内容推进后</text>
+    <text x="226" y="98" font-size="9.5" fill="#334155">type(' World')</text>
+    <text x="226" y="116" font-size="9.5" fill="#334155">内容=Hello World</text>
+    <text x="226" y="134" font-size="9.5" fill="#334155">快照没跟着变</text>
+    <text x="226" y="158" font-size="9.5" fill="#334155">原件继续改，</text>
+    <text x="226" y="176" font-size="9.5" fill="#334155">栈里那份是旧值</text>
+    <line x1="392" y1="126" x2="404" y2="126" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="404" y="56" width="180" height="140" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="494" y="76" text-anchor="middle" font-size="10" font-weight="bold" fill="#334155">3_继续输入</text>
+    <text x="418" y="98" font-size="9.5" fill="#334155">type(' again')</text>
+    <text x="418" y="116" font-size="9.5" fill="#334155">Hello World again</text>
+    <text x="418" y="134" font-size="9.5" fill="#334155">这一步没有 save()</text>
+    <text x="418" y="158" font-size="9.5" fill="#991b1b">所以它注定会被</text>
+    <text x="418" y="176" font-size="9.5" fill="#991b1b">下一次 restore 丢掉</text>
+    <line x1="584" y1="126" x2="596" y2="126" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="596" y="56" width="180" height="140" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="686" y="76" text-anchor="middle" font-size="10" font-weight="bold" fill="#14532d">4_恢复上一个快照</text>
+    <text x="610" y="98" font-size="9.5" fill="#14532d">restore(pop())</text>
+    <text x="610" y="116" font-size="9.5" fill="#14532d">内容=Hello World</text>
+    <text x="610" y="134" font-size="9.5" fill="#14532d">整体替换，不逐字段</text>
+    <text x="610" y="158" font-size="9.5" fill="#14532d">打补丁（细节 5）</text>
+
+    <rect x="788" y="56" width="160" height="140" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="868" y="76" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">5_快照摘要</text>
+    <text x="802" y="98" font-size="9.5" fill="#92400e">内容=Hello World</text>
+    <text x="802" y="116" font-size="9.5" fill="#92400e">游标=11</text>
+    <text x="802" y="134" font-size="9.5" fill="#92400e">标题=初稿</text>
+    <text x="802" y="158" font-size="9.5" fill="#92400e">游标 11 =</text>
+    <text x="802" y="176" font-size="9.5" fill="#92400e">strlen('Hello World')</text>
+
+    <text x="14" y="222" font-size="10.5" fill="#334155">实测：1_第一次保存 : 栈内 1 个快照，内容=Hello　2_内容推进后 : Hello World　3_继续输入 : Hello World again　4_恢复上一个快照 : Hello World　5_快照摘要 : 内容=Hello World 游标=11</text>
+    <text x="14" y="242" font-size="10.5" font-weight="bold" fill="#991b1b">6_容量上限 2 存 3 个 : 栈内剩 2 个　栈顶恢复出来的是 abc（丢的是最早那个 a，不是最新的）—— 超限时丢最早</text>
+  </g>
+
+  <g transform="translate(20,336)">
+    <rect x="0" y="0" width="960" height="210" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 第四节：第 7、8 行的差别只有一个字 —— 克隆了吗</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">快照里只要有一个可变成员没深拷贝，「快照」就是假的</text>
+
+    <rect x="20" y="56" width="440" height="118" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="34" y="78" font-size="11.5" font-weight="bold" fill="#14532d">save() 里 clone $this-&gt;meta（本篇做法）</text>
+    <text x="34" y="98" font-size="10" fill="#14532d">快照持有的是 Meta 的副本，meta() 返回时也 clone</text>
+    <text x="34" y="118" font-size="10" fill="#14532d">7_快照摘要（深拷贝）: 内容=(空) 游标=0 标题=初稿</text>
+    <text x="34" y="140" font-size="10" fill="#14532d">（原件已改成「被改过了」，快照不受影响）</text>
+    <text x="34" y="162" font-size="10" font-weight="bold" fill="#14532d">PHP 的数组是「值」（写时复制），对象是「引用」</text>
+
+    <rect x="480" y="56" width="460" height="118" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="494" y="78" font-size="11.5" font-weight="bold" fill="#991b1b">badSnapshot() { return $this-&gt;meta; }</text>
+    <text x="494" y="98" font-size="10" fill="#991b1b">返回的是同一个对象句柄，不是副本</text>
+    <text x="494" y="118" font-size="10" fill="#991b1b">8_快照里的标题（不克隆） : 被改过了</text>
+    <text x="494" y="140" font-size="10" fill="#991b1b">（快照被原件改动了 → 这就是坑）</text>
+    <text x="494" y="162" font-size="10" font-weight="bold" fill="#991b1b">Go 版同一课：8_切片共享底层数组 : 原对象 Tags = [被改过了]</text>
+
+    <text x="14" y="196" font-size="10.5" fill="#334155">三语言里「哪些成员要手动拷」不同：PHP 只有对象｜Java 对象、数组、集合｜Go 指针、切片、map、channel —— 值语义那一侧（PHP 数组、Java String、Go 标量）自动安全</text>
+  </g>
+
+  <g transform="translate(20,558)">
+    <rect x="0" y="0" width="960" height="126" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="12" font-weight="bold" fill="#0f172a">第七节：快照越「简单」（越接近纯值），越不容易出错</text>
+    <text x="14" y="48" font-size="11" fill="#14532d">能在快照里只放不可变数据，就别放可变对象 —— 这是这个模式唯一需要长期维护的约定</text>
+    <text x="14" y="72" font-size="11" fill="#334155">容量治理：SnapshotHistory 的 $limit 让栈有上限，push 超限时丢最早那一个；生产里的撤销栈同样只留最近 N 步（另见「命令模式」第三节）</text>
+    <text x="14" y="96" font-size="11" fill="#334155">恢复语义：restore() 整体替换 content / cursor / meta，而不是逐字段打补丁 —— 新增字段时逐字段恢复必然漏</text>
+    <text x="14" y="118" font-size="11" fill="#991b1b">⚠️ 长段中文里的引用成员一旦漏 clone，bug 表现为「撤销后改不动」，排查极难 —— 写完 save() 就照第 7、8 行那样做一组对照实测</text>
+  </g>
+</svg>

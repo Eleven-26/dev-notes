@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 716" width="1000" height="716" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="716" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">递归下降的四层与求值时的那一次短路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">层数就是优先级：OR 最外层最松，NOT 最内层绑得最紧；括号只是「回到最外层」的入口</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="434" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 解析：token 流一路往下递</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">Tokenizer 的正则：/\(|\)|&gt;=|&lt;=|!=|[=&lt;&gt;]|[A-Za-z_][A-Za-z0-9_]*|-?\d+(?:\.\d+)?|"[^"]*"/</text>
+
+    <rect x="20" y="58" width="188" height="42" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="114" y="76" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1e40af">parse()</text>
+    <text x="114" y="92" text-anchor="middle" font-size="9.5" fill="#1e40af">入口：要整条消费完</text>
+
+    <rect x="20" y="114" width="188" height="42" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="114" y="132" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">parseOr()</text>
+    <text x="114" y="148" text-anchor="middle" font-size="9.5" fill="#92400e">第 1 层</text>
+
+    <rect x="20" y="170" width="188" height="42" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="114" y="188" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">parseAnd()</text>
+    <text x="114" y="204" text-anchor="middle" font-size="9.5" fill="#92400e">第 2 层</text>
+
+    <rect x="20" y="226" width="188" height="42" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="114" y="244" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">parseNot()</text>
+    <text x="114" y="260" text-anchor="middle" font-size="9.5" fill="#92400e">第 3 层</text>
+
+    <rect x="20" y="282" width="188" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="114" y="300" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">parsePrimary()</text>
+    <text x="114" y="316" text-anchor="middle" font-size="9.5" fill="#14532d">第 4 层：括号或三元组</text>
+
+    <line x1="114" y1="100" x2="114" y2="112" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="114" y1="156" x2="114" y2="168" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="114" y1="212" x2="114" y2="224" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="114" y1="268" x2="114" y2="280" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="222" y="76" font-size="9.5" fill="#1e40af">parseOr() 返回后 peek() 还有东西 → 抛「表达式末尾有多余内容」</text>
+    <text x="222" y="128" font-size="9.5" fill="#92400e">while accept('OR') → new OrExpression(left, parseAnd())　左结合</text>
+    <text x="222" y="184" font-size="9.5" fill="#92400e">while accept('AND') → new AndExpression(left, parseNot())</text>
+    <text x="222" y="240" font-size="9.5" fill="#92400e">accept('NOT') → new NotExpression(parseNot())　自己调自己</text>
+    <text x="222" y="292" font-size="9.5" fill="#14532d">accept('(') → parseOr()，再要 ')'　—— 括号把层数重新归零</text>
+    <text x="222" y="308" font-size="9.5" fill="#14532d">否则读 field / operator / value 三元组 → new Comparison(...)</text>
+
+    <path d="M208,296 C300,340 260,110 214,86" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwB)"/>
+    <text x="300" y="336" font-size="9.5" fill="#1e40af">')' 缺失 → 抛「缺少右括号」；三元组不齐 → 抛「比较表达式不完整」</text>
+
+    <rect x="20" y="352" width="580" height="66" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="34" y="372" font-size="10" font-weight="bold" fill="#334155">这条链跑完的结果就是上一张图那棵树（实测逐字）：</text>
+    <text x="34" y="390" font-size="10" fill="#334155">1_规则 : age &gt; 18 AND (vip = true OR amount &gt; 1000)　→　2_语法树 : (age &gt; 18 AND (vip = true OR amount &gt; 1000))</text>
+    <text x="34" y="408" font-size="10" fill="#334155">4_规则 : NOT status = "banned"　→　5_语法树 : NOT status = "banned"</text>
+  </g>
+
+  <g transform="translate(660,74)">
+    <rect x="0" y="0" width="320" height="434" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 同一棵树，四个 Context</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">解析一次、求值多次 —— 这是它比 eval 划算的地方</text>
+
+    <rect x="14" y="56" width="292" height="150" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="76" font-size="10.5" font-weight="bold" fill="#14532d">实测四组（逐字）</text>
+    <text x="28" y="96" font-size="10" fill="#14532d">3.1_{"age":25,"vip":false,"amount":500} → 拒绝</text>
+    <text x="28" y="114" font-size="10" fill="#14532d">3.2_{"age":25,"vip":true,"amount":500} → 通过</text>
+    <text x="28" y="132" font-size="10" fill="#14532d">3.3_{"age":16,"vip":true,"amount":500} → 拒绝</text>
+    <text x="28" y="150" font-size="10" fill="#14532d">3.4_{"age":30,"vip":false,"amount":2000} → 通过</text>
+    <text x="28" y="174" font-size="10" fill="#14532d">3.3 停在左孩子（age &gt; 18 已 false）</text>
+    <text x="28" y="192" font-size="10" fill="#14532d">3.4 靠右孩子 amount &gt; 1000 通过</text>
+
+    <rect x="14" y="218" width="292" height="118" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="238" font-size="10.5" font-weight="bold" fill="#991b1b">8_短路验证 : 拒绝</text>
+    <text x="28" y="258" font-size="10" fill="#991b1b">（右侧变量不存在，但左侧已为 false）</text>
+    <text x="28" y="280" font-size="10" fill="#991b1b">&& 让 Context::get() 根本没被调到，</text>
+    <text x="28" y="298" font-size="10" fill="#991b1b">于是「规则写错了变量名」这件事</text>
+    <text x="28" y="318" font-size="10" font-weight="bold" fill="#991b1b">被掩盖到某个数据出现时才炸</text>
+
+    <text x="14" y="356" font-size="10.5" fill="#334155">生产做法：解析后遍历树做一次</text>
+    <text x="14" y="376" font-size="10.5" fill="#334155">变量存在性校验，而不是靠运行时抛错</text>
+    <text x="14" y="400" font-size="10.5" fill="#92400e">Go 版短路要手写 if !left { return false }</text>
+    <text x="14" y="422" font-size="10.5" fill="#92400e">—— 短路是行为，不是运算符的副作用</text>
+  </g>
+
+  <g transform="translate(20,520)">
+    <rect x="0" y="0" width="960" height="186" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">三类非法输入分别由哪一层抛出</text>
+    <text x="14" y="48" font-size="11" fill="#991b1b">9_非法表达式 : age &gt;　　　 → 比较表达式不完整　—— parsePrimary 读完 field / operator 后 value 是 null</text>
+    <text x="14" y="66" font-size="11" fill="#991b1b">9_非法表达式 : age &gt; 18 AND → 比较表达式不完整　—— parseAnd 的 while 里 accept('AND') 成立，接着 parseNot → parsePrimary 缺三元组</text>
+    <text x="14" y="84" font-size="11" fill="#991b1b">9_非法表达式 : (age &gt; 18　　 → 缺少右括号　—— parsePrimary 的 accept(')') 返回 false</text>
+    <text x="14" y="108" font-size="11" fill="#334155">报错点全部集中在解析层，节点类里一个 if 都没有 —— 它不知道自己在处理什么业务规则。</text>
+    <text x="14" y="126" font-size="11" fill="#334155">AndExpression 的 interpret 只有一行：return left-&gt;interpret($context) &amp;&amp; right-&gt;interpret($context);</text>
+    <text x="14" y="148" font-size="11" fill="#334155">这也是「类数 ≈ 产生式数 × 2」的由来：一个产生式对应一个非终结符类，一个 token 类别对应一个终结符类 —— 数一数类的数量就知道该不该手写。</text>
+    <text x="14" y="170" font-size="11" fill="#64748b">第二节末的 5 个细节里最值钱的一条：节点类全部 final + 构造时把子节点定死，树就不会在求值期间被改写。</text>
+  </g>
+</svg>

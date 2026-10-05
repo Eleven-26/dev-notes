@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一个元素穿过组合谓词时，什么时候停</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">生成器决定「取不取」，all/any 决定「判不判」，toList 决定「物不物化」</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="366" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">按元素逐个走这四步，命中即返回</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">左列是判据，中列是标准写法的行为，右列逐字抄第三节实测读数</text>
+
+    <rect x="20" y="62" width="290" height="56" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="165" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">① 还有下一个元素吗？</text>
+    <text x="165" y="102" text-anchor="middle" font-size="10" fill="#92400e">不取就不算</text>
+    <line x1="310" y1="90" x2="330" y2="90" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="62" width="200" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="432" y="84" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">yield 一个判一个</text>
+    <text x="432" y="102" text-anchor="middle" font-size="10" fill="#1e40af">apply() 返回 Generator</text>
+    <line x1="532" y1="90" x2="552" y2="90" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="62" width="386" height="56" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="747" y="84" text-anchor="middle" font-size="11" fill="#334155">实测 6_惰性取首个 : Ann</text>
+    <text x="747" y="102" text-anchor="middle" font-size="10.5" fill="#64748b">首条命中就停手，后 3 条记录从未被评估</text>
+
+    <rect x="20" y="134" width="290" height="56" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="165" y="156" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">② all() 里某个谓词返回 false？</text>
+    <text x="165" y="174" text-anchor="middle" font-size="10" fill="#92400e">AND 从左往右逐个跑</text>
+    <line x1="310" y1="162" x2="330" y2="162" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="134" width="200" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="432" y="156" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">立即 return false</text>
+    <text x="432" y="174" text-anchor="middle" font-size="10" fill="#1e40af">后面的谓词不再求值</text>
+    <line x1="532" y1="162" x2="552" y2="162" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="134" width="386" height="56" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="747" y="156" text-anchor="middle" font-size="11" fill="#334155">实测 5_AND 短路：后续谓词被调用 0 次（应为 0）</text>
+    <text x="747" y="174" text-anchor="middle" font-size="10.5" fill="#64748b">大集合 + 要发 IO 的谓词，这条短路最值钱</text>
+
+    <rect x="20" y="206" width="290" height="56" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="165" y="228" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">③ any() 里某个谓词返回 true？</text>
+    <text x="165" y="246" text-anchor="middle" font-size="10" fill="#92400e">OR 同样短路</text>
+    <line x1="310" y1="234" x2="330" y2="234" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="206" width="200" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="432" y="228" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">立即 return true</text>
+    <text x="432" y="246" text-anchor="middle" font-size="10" fill="#1e40af">一个元素只判一次</text>
+    <line x1="532" y1="234" x2="552" y2="234" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="206" width="386" height="56" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="747" y="228" text-anchor="middle" font-size="11" fill="#991b1b">原文写法：各筛一遍再 in_array 去重</text>
+    <text x="747" y="246" text-anchor="middle" font-size="10.5" fill="#991b1b">最坏 O(n²)；松散比较把属性相同的两条记录静默合成一条</text>
+
+    <rect x="20" y="278" width="290" height="56" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="165" y="300" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">④ 调用方要数组还是要流？</text>
+    <text x="165" y="318" text-anchor="middle" font-size="10" fill="#92400e">要不要物化暴露给调用方</text>
+    <line x1="310" y1="306" x2="330" y2="306" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="332" y="278" width="200" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="432" y="300" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">要数组就 toList()</text>
+    <text x="432" y="318" text-anchor="middle" font-size="10" fill="#14532d">并重新索引</text>
+    <line x1="532" y1="306" x2="552" y2="306" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <rect x="554" y="278" width="386" height="56" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="747" y="294" text-anchor="middle" font-size="11" fill="#334155">实测 7_array_filter 保留原键 : 2,3</text>
+    <text x="747" y="312" text-anchor="middle" font-size="11" fill="#334155">实测 8_toList 连续下标 : 0,1</text>
+    <text x="747" y="330" text-anchor="middle" font-size="10" fill="#64748b">保留原键交给前端，JSON 会变成对象而不是数组</text>
+  </g>
+
+  <g transform="translate(20,452)">
+    <rect x="0" y="0" width="960" height="100" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">短路的前提：谓词必须是纯函数</text>
+    <text x="14" y="48" font-size="11.5" fill="#334155">「没命中的谓词不会被调用」是第 3 条细节给的保证；谓词一旦带副作用，同一份数据换个组合顺序，副作用执行次数就变了 —— 短路变成隐性差异。</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">Java：Predicate 自带 and / or / negate 且默认短路，Stream 天然惰性（实测 findFirst 之后只评估了 1 个元素）。</text>
+    <text x="14" y="92" font-size="11.5" fill="#334155">Go：没有生成器 —— Filter 要么返回新切片，要么收回调逐项消费；「取第一个就停」要自己写 First()，或用 Go 1.23+ 的 iter.Seq。</text>
+  </g>
+</svg>

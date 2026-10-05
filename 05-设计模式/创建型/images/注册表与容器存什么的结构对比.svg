@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+    <marker id="arwO" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#b45309"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">注册表存「实例」、容器存「怎么造」：一张表看出差别</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同样的 set/get 四个方法，表里放的东西不同，对象的创建时机就完全不同</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="290" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. Registry：表里存的是现成实例</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">普通类 + 实例方法（不继承 ArrayObject、不用全静态）</text>
+
+    <rect x="20" y="56" width="430" height="80" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="34" y="78" font-size="12.5" font-weight="bold" fill="#1e40af">Registry（可实例化的普通类）</text>
+    <text x="34" y="100" font-size="11" fill="#1e40af">private array $items = [];   // id =&gt; 对象</text>
+    <text x="34" y="122" font-size="10.5" fill="#1e40af">set / get / has / remove 四个方法</text>
+
+    <line x1="235" y1="136" x2="235" y2="164" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="248" y="158" font-size="10" fill="#14532d">set('logger', new Logger('app'))</text>
+
+    <rect x="20" y="166" width="430" height="84" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="8"/>
+    <text x="34" y="188" font-size="11.5" font-weight="bold" fill="#334155">$items 表内容</text>
+    <text x="34" y="210" font-size="11" fill="#334155">'logger'  =&gt;  Logger 实例（本体已经在这了）</text>
+    <text x="34" y="232" font-size="11" fill="#991b1b">⚠️ 注册那一刻就构造，哪怕这次请求根本用不到</text>
+
+    <text x="14" y="266" font-size="11" fill="#14532d">✅ get() 直接返回句柄：实测 1a_取回的是同一对象 : true</text>
+    <text x="14" y="284" font-size="11" fill="#334155">重复注册与取不到都抛异常：1e / 1d 两行</text>
+  </g>
+
+  <g transform="translate(500,74)">
+    <rect x="0" y="0" width="480" height="290" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. Container：表里存的是工厂闭包</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">两张表：factories 存方案，resolved 存结果</text>
+
+    <rect x="20" y="56" width="440" height="80" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="34" y="78" font-size="12.5" font-weight="bold" fill="#14532d">Container（第五节实现）</text>
+    <text x="34" y="100" font-size="11" fill="#14532d">private array $factories = [];  // id =&gt; Closure</text>
+    <text x="34" y="122" font-size="11" fill="#14532d">private array $resolved  = [];  // id =&gt; 已构造实例</text>
+
+    <rect x="20" y="148" width="440" height="104" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="8"/>
+    <text x="34" y="168" font-size="11.5" font-weight="bold" fill="#334155">get($id) 的三步查找</text>
+    <text x="34" y="188" font-size="11" fill="#334155">① 查 resolved —— 命中就直接返回（第二次走这条）</text>
+    <text x="34" y="208" font-size="11" fill="#334155">② 查 factories —— 没有则抛 OutOfBoundsException</text>
+    <text x="34" y="228" font-size="11" fill="#14532d">③ 调工厂构造 → 写回 resolved → 返回</text>
+    <text x="34" y="245" font-size="10.5" fill="#92400e">这就是懒加载：构造发生在第一次 get()</text>
+
+    <text x="14" y="272" font-size="11" fill="#14532d">实测 2a_get 之前构造次数 : 0　　2b_两次 get 之后 : 1</text>
+  </g>
+
+  <g transform="translate(20,378)">
+    <rect x="0" y="0" width="960" height="164" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 为什么容器取代了注册表（第五节的三件事）</text>
+    <text x="14" y="48" font-size="11.5" fill="#334155">对象何时创建：注册表在「注册那一刻」，容器在「第一次 get()」—— 上面 2a/2b 两行就是这个差别的读数。</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">依赖怎么来：注册表要人工在外面造好再塞进来；容器在工厂闭包里声明，甚至自动解析。</text>
+    <text x="14" y="92" font-size="11.5" fill="#334155">可测试性：静态注册表＝全局状态，A 测试注册的东西会漏到 B 测试；容器每个测试 new 一个。</text>
+    <text x="14" y="114" font-size="11.5" font-weight="bold" fill="#92400e">⭐ has() 语义不同：注册表问「表里有这个对象吗」，容器问「知道怎么造这个东西吗」。</text>
+    <text x="14" y="134" font-size="11.5" fill="#991b1b">⚠️ Service Locator 被判反模式：依赖从构造函数签名挪到了运行时查找，看代码看不出依赖关系。</text>
+    <text x="14" y="154" font-size="11.5" font-weight="bold" fill="#14532d">三语言共同结论：注册表的现代形态是容器，而容器的现代用法是依赖注入，不是「到处 get」。</text>
+  </g>
+</svg>

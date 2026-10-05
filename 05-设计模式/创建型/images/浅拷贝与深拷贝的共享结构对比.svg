@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一个 clone 的两副面孔：对象属性共享、数组属性独立</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：没写 __clone 的浅拷贝；右：__clone 里把引用属性也 clone 一遍的深拷贝 —— 读数抄自第四节实测</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 浅拷贝：ShallowTemplate 没实现 __clone</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">对其它对象的引用仍指向原来的对象</text>
+
+    <rect x="24" y="58" width="140" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <rect x="306" y="58" width="140" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="94" y="78" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">$shallow 原件</text>
+    <text x="94" y="94" text-anchor="middle" font-size="10" fill="#1e40af">Template</text>
+    <text x="376" y="78" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">$copy 副本</text>
+    <text x="376" y="94" text-anchor="middle" font-size="10" fill="#1e40af">clone 出来的</text>
+
+    <rect x="168" y="146" width="134" height="42" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" rx="8"/>
+    <text x="235" y="164" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">Signature 对象</text>
+    <text x="235" y="180" text-anchor="middle" font-size="10" fill="#991b1b">本体只有一份</text>
+    <line x1="120" y1="102" x2="196" y2="144" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <line x1="350" y1="102" x2="274" y2="144" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+
+    <rect x="24" y="216" width="140" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <rect x="306" y="216" width="140" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="94" y="233" text-anchor="middle" font-size="10.5" fill="#14532d">recipients 数组</text>
+    <text x="94" y="249" text-anchor="middle" font-size="10.5" fill="#14532d">实测 1b：1 个</text>
+    <text x="376" y="233" text-anchor="middle" font-size="10.5" fill="#14532d">recipients 数组</text>
+    <text x="376" y="249" text-anchor="middle" font-size="10.5" fill="#14532d">实测 1c：2 个</text>
+    <line x1="50" y1="102" x2="50" y2="214" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="332" y1="102" x2="332" y2="214" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <text x="14" y="278" font-size="11" fill="#991b1b">实测 1a：改副本的签名，原件变成 -- 被副本改掉了</text>
+    <text x="14" y="298" font-size="11" fill="#334155">数组是写时复制的值语义，所以 1b / 1c 各自独立</text>
+  </g>
+
+  <g transform="translate(500,74)">
+    <rect x="0" y="0" width="480" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 深拷贝：__clone 里把引用属性也拷</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">那些引用变量指向新的拷贝对象，这叫间接拷贝</text>
+
+    <rect x="30" y="58" width="150" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <rect x="300" y="58" width="150" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="105" y="78" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">$deep 原件</text>
+    <text x="105" y="94" text-anchor="middle" font-size="10" fill="#1e40af">DeepTemplate</text>
+    <text x="375" y="78" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">$deepCopy 副本</text>
+    <text x="375" y="94" text-anchor="middle" font-size="10" fill="#1e40af">clone 出来的</text>
+
+    <rect x="40" y="150" width="130" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <rect x="310" y="150" width="130" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="105" y="168" text-anchor="middle" font-size="11" fill="#14532d">Signature（原件的）</text>
+    <text x="105" y="184" text-anchor="middle" font-size="10" fill="#14532d">-- 客户成功团队</text>
+    <text x="375" y="168" text-anchor="middle" font-size="11" fill="#14532d">Signature（副本的）</text>
+    <text x="375" y="184" text-anchor="middle" font-size="10" fill="#14532d">改这个不影响上面</text>
+    <line x1="105" y1="102" x2="105" y2="148" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="375" y1="102" x2="375" y2="148" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <text x="14" y="222" font-size="11" fill="#14532d">__clone() 里：$this-&gt;signature = clone $this-&gt;signature;</text>
+    <text x="14" y="246" font-size="11" fill="#334155">实测 2：改副本的签名，原件仍为 -- 客户成功团队</text>
+    <text x="14" y="266" font-size="11" fill="#334155">实测 3：序列化往返同样成立（unserialize(serialize())）</text>
+    <text x="14" y="292" font-size="11.5" font-weight="bold" fill="#991b1b">⚠️ 只写 clone 不够：要逐个数一遍引用类型属性</text>
+  </g>
+
+  <g transform="translate(20,394)">
+    <rect x="0" y="0" width="960" height="170" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">三种深拷贝做法与代价 —— 以及原文那个不建议的写法</text>
+
+    <rect x="14" y="36" width="300" height="76" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="56" font-size="11.5" font-weight="bold" fill="#1e40af">手动 __clone（推荐）</text>
+    <text x="28" y="76" font-size="10.5" fill="#1e40af">语义固定在类里，调用方只需 clone</text>
+    <text x="28" y="94" font-size="10.5" fill="#92400e">代价：新增引用属性要记得补一行</text>
+    <text x="28" y="108" font-size="10.5" fill="#991b1b">漏一个 = 静默的数据污染源</text>
+
+    <rect x="330" y="36" width="300" height="76" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="344" y="56" font-size="11.5" font-weight="bold" fill="#92400e">序列化往返</text>
+    <text x="344" y="76" font-size="10.5" fill="#92400e">实测可行，但慢：整棵树编解码两遍</text>
+    <text x="344" y="94" font-size="10.5" fill="#92400e">要求所有属性可序列化 —— 有 Closure</text>
+    <text x="344" y="108" font-size="10.5" fill="#991b1b">直接失败；还会触发 __wakeup 的副作用</text>
+
+    <rect x="646" y="36" width="300" height="76" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="660" y="56" font-size="11.5" font-weight="bold" fill="#14532d">拷贝构造器 / withXxx()</text>
+    <text x="660" y="76" font-size="10.5" fill="#14532d">最显式、最易测，但要手写构造参数</text>
+    <text x="660" y="94" font-size="10.5" fill="#14532d">不可变对象配合它最自然</text>
+    <text x="660" y="108" font-size="10.5" fill="#14532d">PHP 8.1+ 可用 readonly</text>
+
+    <text x="14" y="132" font-size="11" fill="#92400e">原文用 cloned($isDeep) 的参数决定深浅 —— 不建议：深浅是该类的固定语义，不该让调用方每次都记住。</text>
+    <text x="14" y="152" font-size="11" fill="#991b1b">两类不能拷的情况：① 对象图有循环引用（手动 __clone 会无限递归，改用显式 ID 引用）；② 持资源句柄（fopen / PDO 拷完共享同一底层资源，谁关闭都会让对方拿到"已关闭连接"）。</text>
+  </g>
+</svg>

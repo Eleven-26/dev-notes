@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">退化不靠感觉：三条可反射验证的判据</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个 inspect() 量两个类 —— 实测读数：body 7 行 / 分支 0 / 状态 0 对 body 15 行 / 分支 2 / 状态 1</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="470" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 合格：CheckoutFacade::place</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">方法体只有三次转发 + 一个 return</text>
+
+    <rect x="20" y="58" width="430" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="36" y="84" font-size="11.5" fill="#14532d">判据 1：方法体行数（合格 5~10 行）</text>
+    <text x="434" y="84" text-anchor="end" font-size="13" font-weight="bold" fill="#14532d">7 行</text>
+
+    <rect x="20" y="108" width="430" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="36" y="134" font-size="11.5" fill="#14532d">判据 2：依赖入参的业务分支数</text>
+    <text x="434" y="134" text-anchor="end" font-size="13" font-weight="bold" fill="#14532d">0</text>
+
+    <rect x="20" y="158" width="430" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="36" y="184" font-size="11.5" fill="#14532d">判据 3：内部可变状态属性数</text>
+    <text x="434" y="184" text-anchor="end" font-size="13" font-weight="bold" fill="#14532d">0</text>
+
+    <text x="14" y="224" font-size="11" fill="#334155">原文读数：place body= 7 行, 分支=0；内部可变状态属性数=0</text>
+    <text x="14" y="246" font-size="11" fill="#334155">构造注入进来的三个依赖不算内部状态</text>
+    <text x="14" y="268" font-size="11" fill="#334155">返回 $txn，调用方不必回头查状态</text>
+    <text x="14" y="292" font-size="11.5" font-weight="bold" fill="#14532d">一个用例一个类：CheckoutFacade，不是 handle($action)</text>
+    <text x="14" y="312" font-size="11" fill="#92400e">它仍然满足「不独占」：子系统可以被单独 new 出来直接调</text>
+  </g>
+
+  <g transform="translate(500,74)">
+    <rect x="0" y="0" width="480" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 退化：OrderGodService::handle</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">三项指标同时越界</text>
+
+    <rect x="20" y="58" width="440" height="42" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="36" y="84" font-size="11.5" fill="#991b1b">判据 1：方法体行数</text>
+    <text x="444" y="84" text-anchor="end" font-size="13" font-weight="bold" fill="#991b1b">15 行</text>
+
+    <rect x="20" y="108" width="440" height="42" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="36" y="134" font-size="11.5" fill="#991b1b">判据 2：if + match 的业务分支数</text>
+    <text x="444" y="134" text-anchor="end" font-size="13" font-weight="bold" fill="#991b1b">2</text>
+
+    <rect x="20" y="158" width="440" height="42" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="36" y="184" font-size="11.5" fill="#991b1b">判据 3：$memo 自建缓存</text>
+    <text x="444" y="184" text-anchor="end" font-size="13" font-weight="bold" fill="#991b1b">1</text>
+
+    <text x="14" y="224" font-size="11" fill="#991b1b">越界点 1：vip 且 qty 大于 10 就把 qty 改成 10</text>
+    <text x="14" y="246" font-size="11" fill="#991b1b">越界点 2：match(channel) 决定 fee 取 100 还是 200</text>
+    <text x="14" y="268" font-size="11" fill="#991b1b">越界点 3：$memo[(int) $order['id']] = $txn 自己养状态</text>
+    <text x="14" y="292" font-size="11.5" font-weight="bold" fill="#92400e">外观一旦有状态，就从「入口」变成「真相源」</text>
+    <text x="14" y="312" font-size="11" fill="#334155">测试与并发都会跟着变复杂</text>
+  </g>
+
+  <g transform="translate(20,406)">
+    <rect x="0" y="0" width="960" height="144" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">这三条为什么能「反射验证」，以及退化之后怎么补救</text>
+    <text x="14" y="50" font-size="11.5" fill="#334155">inspect() 的做法：ReflectionClass 取方法起止行算出 body 行数，preg_match_all 数分支关键字，比对构造注入属性挑出自建的状态属性</text>
+    <text x="14" y="74" font-size="11.5" fill="#334155">判据 1：合格外观单方法 5~10 行（实测 7）；15 行说明它已在替子系统做决定。判据 2：分支该回到领域对象或策略模式。</text>
+    <text x="14" y="98" font-size="11.5" fill="#334155">判据 3：构造注入的依赖不算，自己养缓存 / 累加器才算（实测 0 vs 1）。</text>
+    <text x="14" y="124" font-size="11.5" font-weight="bold" fill="#92400e">补救不是把上帝类拆小继续当上帝，而是按用例拆 —— CheckoutFacade 优于 OrderService::handle($action)（第九节三语言同判据）</text>
+  </g>
+</svg>

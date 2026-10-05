@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三种工厂形态：到底由谁决定"造哪个"</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一场景（报表导出 CSV / JSON）的三种写法 —— 实测输出一样，差别全在扩展成本</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="320" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 简单工厂：集中在一个方法</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">一个 match 决定造哪个</text>
+
+    <rect x="16" y="54" width="288" height="46" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="160" y="72" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">ExporterFactory</text>
+    <text x="160" y="90" text-anchor="middle" font-size="10.5" fill="#1e40af">create(string $format): Exporter</text>
+
+    <rect x="60" y="116" width="200" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="160" y="136" text-anchor="middle" font-size="10.5" fill="#92400e">match ($format)</text>
+    <line x1="160" y1="100" x2="160" y2="114" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="16" y="176" width="140" height="34" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <rect x="172" y="176" width="140" height="34" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="86" y="197" text-anchor="middle" font-size="10.5" fill="#14532d">CsvExporter</text>
+    <text x="242" y="197" text-anchor="middle" font-size="10.5" fill="#14532d">JsonExporter</text>
+    <line x1="120" y1="146" x2="90" y2="174" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="200" y1="146" x2="238" y2="174" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="14" y="232" font-size="10.5" fill="#92400e">default 分支当场抛异常，不返回 null：</text>
+    <text x="14" y="250" font-size="10.5" fill="#991b1b">实测 不支持的导出格式：xml</text>
+    <text x="14" y="278" font-size="11.5" font-weight="bold" fill="#991b1b">❌ 新增格式要回来改这个 match</text>
+    <text x="14" y="300" font-size="11" fill="#14532d">✅ 调用方只依赖 Exporter 接口</text>
+  </g>
+
+  <g transform="translate(350,74)">
+    <rect x="0" y="0" width="320" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 工厂方法：下推给子类</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">父类只管流程，子类决定造哪个</text>
+
+    <rect x="16" y="54" width="288" height="66" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5" rx="6"/>
+    <text x="160" y="72" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">abstract class ReportGenerator</text>
+    <text x="160" y="90" text-anchor="middle" font-size="10.5" fill="#334155">generate() 声明 final，只管流程</text>
+    <text x="160" y="108" text-anchor="middle" font-size="10.5" fill="#334155">abstract createExporter() 交给子类</text>
+
+    <rect x="16" y="156" width="136" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <rect x="172" y="156" width="136" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="84" y="174" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">MonthlyReport</text>
+    <text x="84" y="194" text-anchor="middle" font-size="10.5" fill="#1e40af">new CsvExporter()</text>
+    <text x="240" y="174" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">ApiReport</text>
+    <text x="240" y="194" text-anchor="middle" font-size="10.5" fill="#1e40af">new JsonExporter()</text>
+    <line x1="120" y1="120" x2="90" y2="154" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="200" y1="120" x2="238" y2="154" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <text x="14" y="230" font-size="10.5" fill="#334155">实测：MonthlyReport → Ann,eng | Bob,sales</text>
+    <text x="14" y="248" font-size="10.5" fill="#334155">实测：ApiReport → [{"name":"Ann",...}]</text>
+    <text x="14" y="278" font-size="11.5" font-weight="bold" fill="#14532d">✅ 新增格式 = 加一个 XxxReport，老代码不动</text>
+    <text x="14" y="300" font-size="11" fill="#92400e">核心工程师定义抽象，业务工程师实现具体</text>
+  </g>
+
+  <g transform="translate(680,74)">
+    <rect x="0" y="0" width="300" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 抽象工厂：一族一起造</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">工厂方法是它的简化版</text>
+
+    <rect x="16" y="60" width="130" height="32" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <rect x="16" y="160" width="130" height="32" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="81" y="81" text-anchor="middle" font-size="10.5" fill="#1e40af">工厂一</text>
+    <text x="81" y="181" text-anchor="middle" font-size="10.5" fill="#1e40af">工厂二</text>
+    <text x="81" y="112" text-anchor="middle" font-size="10" fill="#64748b">产品线一</text>
+    <text x="81" y="212" text-anchor="middle" font-size="10" fill="#64748b">产品线二</text>
+
+    <rect x="164" y="52" width="120" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <rect x="164" y="90" width="120" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <rect x="164" y="152" width="120" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <rect x="164" y="190" width="120" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="224" y="71" text-anchor="middle" font-size="10" fill="#14532d">同族产品 A</text>
+    <text x="224" y="109" text-anchor="middle" font-size="10" fill="#14532d">同族产品 B</text>
+    <text x="224" y="171" text-anchor="middle" font-size="10" fill="#14532d">同族产品 C</text>
+    <text x="224" y="209" text-anchor="middle" font-size="10" fill="#14532d">同族产品 D</text>
+    <line x1="146" y1="72" x2="162" y2="67" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="146" y1="80" x2="162" y2="105" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="146" y1="172" x2="162" y2="167" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="146" y1="180" x2="162" y2="205" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="14" y="240" font-size="11" fill="#334155">一个工厂负责造"一整族"相关产品，</text>
+    <text x="14" y="260" font-size="11" fill="#334155">新增时加一族工厂，同样满足开闭。</text>
+    <text x="14" y="292" font-size="11.5" font-weight="bold" fill="#92400e">区别只一句：工厂方法一条产品线，</text>
+    <text x="14" y="312" font-size="11.5" font-weight="bold" fill="#92400e">抽象工厂有多条产品线。</text>
+  </g>
+
+  <g transform="translate(20,404)">
+    <rect x="0" y="0" width="960" height="136" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">对照与那条真坑</text>
+
+    <text x="14" y="50" font-size="11.5" fill="#334155">简单工厂：新增产品要改工厂的 match —— ❌ 不满足开闭，但结构最省</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">工厂方法：新增产品只加一个子类 —— ✅ 严格遵守开闭；代价是每个产品配一个类</text>
+    <text x="14" y="90" font-size="11.5" fill="#334155">抽象工厂：一个工厂造一族 —— ✅ 满足开闭；用不上多条产品线时别硬上</text>
+    <text x="560" y="50" font-size="11.5" font-weight="bold" fill="#991b1b">可继承的工厂基类里，new self() 造的是父类</text>
+    <text x="560" y="70" font-size="10.5" fill="#991b1b">实测 3a：new self() 的类型 = BaseFactory</text>
+    <text x="560" y="88" font-size="10.5" fill="#14532d">实测 3b：new static() 的类型 = ChildFactory（后期静态绑定）</text>
+    <text x="560" y="108" font-size="10.5" fill="#334155">它不报错，直到某个只存在于子类的方法被调用才炸</text>
+    <text x="14" y="122" font-size="11" fill="#92400e">本目录的工厂一律 final：加 final 比辨析 self / static 更省事。</text>
+  </g>
+</svg>

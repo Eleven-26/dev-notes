@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">订单状态机：五条合法迁移、两个终态，非法动作由当前状态自己拒</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">迁移写在状态对象里（PendingPayment::pay() 决定「我可以去已支付」），不是写在 Order 的一串 if 里</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="430" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. abstract class OrderState 的五个子类</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">Order 只持有 ?OrderState $state，pay/ship/confirm/cancel 全部转发给当前状态：$this-&gt;state-&gt;pay($this)</text>
+
+    <line x1="18" y1="172" x2="38" y2="172" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="18" y="120" font-size="10" fill="#64748b">订单创建即待支付</text>
+
+    <rect x="40" y="140" width="170" height="64" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" rx="10"/>
+    <text x="125" y="166" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">PendingPayment</text>
+    <text x="125" y="186" text-anchor="middle" font-size="11" fill="#1e40af">待支付</text>
+
+    <rect x="300" y="140" width="170" height="64" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5" rx="10"/>
+    <text x="385" y="166" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Paid</text>
+    <text x="385" y="186" text-anchor="middle" font-size="11" fill="#14532d">已支付</text>
+
+    <rect x="560" y="140" width="170" height="64" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5" rx="10"/>
+    <text x="645" y="166" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Shipped</text>
+    <text x="645" y="186" text-anchor="middle" font-size="11" fill="#14532d">已发货</text>
+
+    <rect x="790" y="300" width="160" height="60" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5" rx="10"/>
+    <text x="870" y="324" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Completed</text>
+    <text x="870" y="344" text-anchor="middle" font-size="11" fill="#334155">已完成（终态）</text>
+
+    <rect x="395" y="300" width="160" height="60" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" rx="10"/>
+    <text x="475" y="324" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">Cancelled</text>
+    <text x="475" y="344" text-anchor="middle" font-size="11" fill="#991b1b">已取消（终态）</text>
+
+    <line x1="210" y1="172" x2="298" y2="172" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="254" y="166" text-anchor="middle" font-size="10" fill="#334155">pay()</text>
+    <line x1="470" y1="172" x2="558" y2="172" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="514" y="166" text-anchor="middle" font-size="10" fill="#334155">ship()</text>
+    <line x1="730" y1="172" x2="770" y2="240" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="770" y1="240" x2="870" y2="240" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="870" y1="240" x2="870" y2="298" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="812" y="234" text-anchor="middle" font-size="10" fill="#334155">confirm()</text>
+
+    <line x1="125" y1="204" x2="125" y2="272" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="125" y1="272" x2="393" y2="272" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="150" y="266" font-size="10" fill="#334155">cancel()</text>
+    <line x1="385" y1="204" x2="385" y2="252" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="385" y1="252" x2="440" y2="298" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="330" y="246" font-size="10" fill="#334155">cancel() 退款</text>
+
+    <line x1="160" y1="140" x2="160" y2="96" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <line x1="160" y1="96" x2="620" y2="96" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <line x1="620" y1="96" x2="620" y2="138" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwR)"/>
+    <text x="300" y="90" font-size="10" fill="#991b1b">ship() 被拒（实测 2）：状态类里没有这条边</text>
+
+    <line x1="660" y1="204" x2="660" y2="272" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <line x1="660" y1="272" x2="557" y2="316" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwR)"/>
+    <text x="600" y="288" text-anchor="middle" font-size="10" fill="#991b1b">cancel() 被拒</text>
+
+    <text x="14" y="386" font-size="10.5" fill="#14532d">实测 3_支付 : SO-1001: 待支付 → 已支付　5_发货 : SO-1001: 已支付 → 已发货　7_签收 : SO-1001: 已发货 → 已完成</text>
+    <text x="14" y="408" font-size="10.5" fill="#991b1b">实测 2 未支付就发货、4 重复支付、6 发货后取消、8 终态再取消 —— 四条非法路径都由当前状态的 reject() 抛出，Order 里没有任何 if</text>
+  </g>
+
+  <g transform="translate(20,516)">
+    <rect x="0" y="0" width="960" height="160" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 三个要看清的取舍</text>
+    <text x="14" y="48" font-size="11.5" font-weight="bold" fill="#14532d">第五节判据：状态之间有「下一步」，策略之间没有</text>
+    <text x="14" y="68" font-size="11" fill="#334155">同一份 if/else 拆成状态类后，「谁决定转移」变了 —— 转移由状态对象自己决定，不是 Context 决定（第一节末）。这条是状态模式与策略模式的分水岭</text>
+    <text x="14" y="87" font-size="11" fill="#334155">第三节：转移只取决于「当前状态 + 操作」两个变量时用表驱动就够 —— const TRANSITIONS = ['待支付' =&gt; ['pay' =&gt; '已支付', 'cancel' =&gt; '已取消'], ...]</text>
+    <text x="14" y="106" font-size="11" fill="#334155">实测 4_表驱动·pay : 待支付 → 已支付，输出与状态类版完全一致，但只有 40 行 vs 200 行，而且表能直接喂给前端画状态图</text>
+    <text x="14" y="125" font-size="11" fill="#334155">第四节：状态类不带实例数据，所以可以共享 —— 实测 9_共享同一状态对象 : true（PHP 静态池 / Go 空结构体），Java 每次 new 则是 false</text>
+    <text x="14" y="144" font-size="11" fill="#991b1b">⚠️ 实测 10_但状态不存实例数据 : 订单表里存的是状态名「待支付」；Java 存 enum.ordinal() 是坑，顺序一改历史数据含义全变，要存 name() 或显式 code</text>
+  </g>
+</svg>

@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+    <marker id="arwR" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">foreach 一轮里到底调了哪几个协议方法，以及游标的惰性</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：手写 Iterator 时 PHP 每轮的调用顺序（右边的文字就是程序逐行打印出来的东西）　右：把分页拉取伪装成一条平铺序列</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="640" height="430" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 一轮遍历的调用时序（实测逐行）</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">原文在每个协议方法里都 echo 一句，为的就是把顺序打印出来</text>
+
+    <line x1="70" y1="70" x2="70" y2="404" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+    <line x1="250" y1="70" x2="250" y2="404" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+    <line x1="430" y1="70" x2="430" y2="404" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+    <rect x="24" y="46" width="92" height="24" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="70" y="62" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">foreach 引擎</text>
+    <rect x="192" y="46" width="116" height="24" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="250" y="62" text-anchor="middle" font-size="10" font-weight="bold" fill="#14532d">MyIterator 实例</text>
+    <rect x="374" y="46" width="112" height="24" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="430" y="62" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">循环体（你的代码）</text>
+
+    <line x1="70" y1="92" x2="248" y2="92" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="80" y="88" font-size="9.5" fill="#1e40af">① rewind()</text>
+    <text x="452" y="95" font-size="9.5" fill="#334155">倒回第一个元素</text>
+
+    <line x1="70" y1="120" x2="248" y2="120" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="80" y="116" font-size="9.5" fill="#1e40af">② valid()</text>
+    <text x="452" y="123" font-size="9.5" fill="#991b1b">当前元素: 1（valid 内部又调了一次）</text>
+
+    <line x1="250" y1="148" x2="72" y2="148" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="118" y="144" font-size="9.5" fill="#64748b">true</text>
+    <text x="452" y="151" font-size="9.5" fill="#334155">检查有效性: 1</text>
+
+    <line x1="70" y1="176" x2="248" y2="176" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="80" y="172" font-size="9.5" fill="#1e40af">③ current()</text>
+    <text x="452" y="179" font-size="9.5" fill="#334155">当前元素: 1（同一句被打印第二遍）</text>
+
+    <line x1="70" y1="204" x2="248" y2="204" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="80" y="200" font-size="9.5" fill="#1e40af">④ key()</text>
+    <text x="452" y="207" font-size="9.5" fill="#334155">当前元素的键: 0</text>
+
+    <line x1="70" y1="232" x2="428" y2="232" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <text x="150" y="228" font-size="9.5" fill="#92400e">⑤ 进入循环体</text>
+    <text x="452" y="235" font-size="9.5" fill="#334155">此时键值对 -- key 0: value 1</text>
+
+    <line x1="70" y1="260" x2="248" y2="260" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="80" y="256" font-size="9.5" fill="#1e40af">⑥ next()（循环体结束后）</text>
+    <text x="452" y="263" font-size="9.5" fill="#334155">移向下一个元素: 2</text>
+
+    <path d="M 430 288 L 430 300 L 74 300" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arwD)"/>
+    <text x="150" y="296" font-size="9.5" fill="#64748b">回到 ②，第二轮：当前元素: 2 / 键: 1</text>
+
+    <line x1="70" y1="328" x2="248" y2="328" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="80" y="324" font-size="9.5" fill="#991b1b">⑦ 最后一轮的 valid() 之前</text>
+    <text x="452" y="331" font-size="9.5" fill="#991b1b">移向下一个元素:（空）当前元素:（空）</text>
+
+    <line x1="250" y1="356" x2="72" y2="356" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="96" y="352" font-size="9.5" fill="#991b1b">false</text>
+    <text x="452" y="359" font-size="9.5" fill="#991b1b">检查有效性:（空）→ 不进循环体，结束</text>
+
+    <rect x="14" y="374" width="612" height="44" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="26" y="392" font-size="10" font-weight="bold" fill="#991b1b">实测末三行的值是空的：next() 之后指针已越界，current() 返回 false</text>
+    <text x="26" y="410" font-size="10" fill="#991b1b">原文用 current() !== false 当判据，所以「元素值恰好是 false」和「遍历结束」这两种情况分不开</text>
+  </g>
+
+  <g transform="translate(680,74)">
+    <rect x="0" y="0" width="300" height="430" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 惰性：消费几条付几页</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">OrderCursor 把「页」藏进生成器</text>
+
+    <rect x="14" y="54" width="272" height="98" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="26" y="72" font-size="10.5" font-weight="bold" fill="#1e40af">1) 全部遍历（共 5 条 / 每页 2 条）</text>
+    <text x="26" y="90" font-size="9.5" fill="#1e40af">页1 fetch(1,2) → 给 SO-1,SO-2</text>
+    <text x="26" y="106" font-size="9.5" fill="#1e40af">页2 fetch(2,2) → 给 SO-3,SO-4</text>
+    <text x="26" y="122" font-size="9.5" fill="#1e40af">页3 fetch(3,2) → 给 SO-5，不满页就 return</text>
+    <text x="26" y="140" font-size="9.5" font-weight="bold" fill="#1e40af">拿到 : SO-1,SO-2,SO-3,SO-4,SO-5</text>
+
+    <rect x="14" y="164" width="272" height="66" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="26" y="182" font-size="10.5" font-weight="bold" fill="#14532d">2) 只要前 3 条就 break</text>
+    <text x="26" y="200" font-size="9.5" fill="#14532d">实际请求页数 : 2（只拉到第 2 页）</text>
+    <text x="26" y="218" font-size="9.5" font-weight="bold" fill="#14532d">→ 后续页根本没发请求</text>
+
+    <rect x="14" y="242" width="272" height="66" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="26" y="260" font-size="10.5" font-weight="bold" fill="#92400e">为什么是 3 页而不是 4 页</text>
+    <text x="26" y="278" font-size="9.5" fill="#92400e">if (count($rows) &lt; $pageSize) return;</text>
+    <text x="26" y="296" font-size="9.5" fill="#92400e">不满页 = 已是最后一页，省掉一次空请求</text>
+
+    <rect x="14" y="320" width="272" height="98" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="26" y="338" font-size="10.5" font-weight="bold" fill="#334155">骨架只有这几个成员</text>
+    <text x="26" y="356" font-size="9.5" fill="#334155">final class OrderCursor</text>
+    <text x="26" y="372" font-size="9.5" fill="#334155">implements IteratorAggregate</text>
+    <text x="26" y="388" font-size="9.5" fill="#334155">public int $pagesFetched = 0;</text>
+    <text x="26" y="404" font-size="9.5" fill="#334155">getIterator(): Generator { yield from … }</text>
+  </g>
+
+  <g transform="translate(20,516)">
+    <rect x="0" y="0" width="960" height="158" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">读出的两件事，与两处坑</text>
+    <text x="14" y="48" font-size="11" fill="#334155">每轮调三次方法：valid() → current() → key()，循环体执行完再 next()；进第一轮之前额外有一次 rewind() —— 这就是 A 图那七步的由来</text>
+    <text x="14" y="68" font-size="11" fill="#991b1b">⚠️ 坑一（4.1）：原文 valid() 写成 current() !== false，于是每轮多调一次 current()（若里面有 IO，代价直接翻倍），「当前元素: 1」也被打印两遍</text>
+    <text x="14" y="88" font-size="11" fill="#991b1b">⚠️ 坑二（4.2）：实现 Iterator 的对象遍历的是迭代器自身状态 —— 多个 foreach 共享同一个指针，不能嵌套遍历同一个实例，第二次往往从上次结束处开始</text>
+    <text x="14" y="108" font-size="11" fill="#334155">第 5.1 节：五方法 40 行 → getIterator() + yield 12 行，「当前哪一项 / 下一个 / 是否结束」三件事由生成器托管，且不会出现哨兵值 bug</text>
+    <text x="14" y="128" font-size="11" fill="#334155">第 5.3 节：naturals() 是无限序列 —— 内存占用与「消费了几个」成正比，与「总共有几个」无关；这就是读大文件、分页拉接口的底层机制</text>
+    <text x="14" y="148" font-size="11" fill="#334155">三语言同一课：Java 越界抛 NoSuchElementException（JDK 1.8 实测第二次调用抛异常）｜Go 的 iter.Seq 用 yield 返回值当结束信号｜PHP 用 valid() 返回 false</text>
+  </g>
+</svg>

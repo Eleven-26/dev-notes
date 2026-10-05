@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">观察者三段式：事件、监听器、派发器各是什么</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判据：一次状态变化要触发多个彼此独立的副作用，且这些副作用以后还会增加</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="600" height="410" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 三个类型，谁都不认识「具体业务」</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">本篇用「订单支付后要做三件事」这个场景（3.1 节）</text>
+
+    <rect x="20" y="56" width="250" height="80" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="34" y="76" font-size="10.5" font-weight="bold" fill="#1e40af">final class OrderPaid（事件）</text>
+    <text x="34" y="96" font-size="10" fill="#1e40af">private int $orderId</text>
+    <text x="34" y="114" font-size="10" fill="#1e40af">private int $amountInCents</text>
+    <text x="34" y="130" font-size="9.5" fill="#1e40af">dispatch($event) 时它作为参数传进去</text>
+
+    <rect x="20" y="150" width="250" height="66" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="34" y="170" font-size="10.5" font-weight="bold" fill="#334155">interface OrderPaidListener</text>
+    <text x="34" y="190" font-size="10" fill="#334155">handle(OrderPaid $event): void</text>
+    <text x="34" y="206" font-size="9.5" fill="#64748b">只认事件类型，不认识派发器</text>
+
+    <rect x="20" y="230" width="250" height="128" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="34" y="250" font-size="10.5" font-weight="bold" fill="#14532d">final class OrderEventDispatcher</text>
+    <text x="34" y="270" font-size="10" fill="#14532d">subscribe(...)　// 按对象身份去重</text>
+    <text x="34" y="288" font-size="10" fill="#14532d">unsubscribe(...)</text>
+    <text x="34" y="306" font-size="10" fill="#14532d">dispatch(OrderPaid $event): void</text>
+    <text x="34" y="324" font-size="10" fill="#14532d">private snapshot(): array</text>
+    <text x="34" y="346" font-size="10" font-weight="bold" fill="#14532d">注册表 = 派发器的一项内部状态</text>
+
+    <line x1="145" y1="230" x2="145" y2="220" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="270" y1="96" x2="282" y2="96" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="282" y1="96" x2="282" y2="290" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="282" y1="290" x2="272" y2="290" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="300" y="56" width="282" height="80" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="314" y="76" font-size="10.5" font-weight="bold" fill="#92400e">final class AuditListener</text>
+    <text x="314" y="94" font-size="10" fill="#92400e">implements OrderPaidListener</text>
+    <text x="314" y="112" font-size="10" fill="#92400e">handle() 里写审计日志</text>
+
+    <rect x="300" y="148" width="282" height="80" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="314" y="168" font-size="10.5" font-weight="bold" fill="#92400e">final class StockListener</text>
+    <text x="314" y="186" font-size="10" fill="#92400e">implements OrderPaidListener</text>
+    <text x="314" y="204" font-size="10" fill="#92400e">handle() 里扣库存</text>
+
+    <line x1="270" y1="182" x2="298" y2="182" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="270" y1="270" x2="286" y2="270" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="286" y1="270" x2="286" y2="118" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="286" y1="118" x2="298" y2="118" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="300" y="248" font-size="10.5" fill="#334155">派发器只认接口，多一个副作用 =</text>
+    <text x="300" y="266" font-size="10.5" fill="#334155">多挂一个监听器，业务代码不动</text>
+
+    <rect x="20" y="370" width="562" height="30" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="30" y="390" font-size="10.5" fill="#334155">3.2 节三条语义的实测行：1a A &gt; B &gt; C　1b A &gt; B &gt; D　1c A &gt; B &gt; D（重复挂载 D 仍只通知一次）</text>
+  </g>
+
+  <g transform="translate(640,74)">
+    <rect x="0" y="0" width="340" height="410" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 从 SplSubject 到 PSR-14</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">3.3 节：为什么要「事件当参数传」</text>
+
+    <rect x="14" y="56" width="312" height="120" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="76" font-size="10.5" font-weight="bold" fill="#991b1b">interface SplSubject（旧）</text>
+    <text x="28" y="96" font-size="10" fill="#991b1b">attach(SplObserver) / detach(...)</text>
+    <text x="28" y="114" font-size="10" fill="#991b1b">notify()　// ⚠️ 无参数</text>
+    <text x="28" y="134" font-size="10" fill="#991b1b">观察者要反手抓主体字段</text>
+    <text x="28" y="154" font-size="10" font-weight="bold" fill="#991b1b">→ 观察者与主体绑死，且只能一种事件</text>
+
+    <rect x="14" y="184" width="312" height="128" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="204" font-size="10.5" font-weight="bold" fill="#14532d">PSR-14（推荐）</text>
+    <text x="28" y="224" font-size="10" fill="#14532d">EventDispatcherInterface::dispatch(object $event)</text>
+    <text x="28" y="242" font-size="10" fill="#14532d">ListenerProviderInterface::getListenersForEvent()</text>
+    <text x="28" y="262" font-size="10" fill="#14532d">按类名查表 —— 无关事件的监听器不会被触发</text>
+    <text x="28" y="282" font-size="10" font-weight="bold" fill="#14532d">实测 audit: 1001　sms: 1001　dispatch 返回事件本身</text>
+    <text x="28" y="302" font-size="10" fill="#14532d">多事件类型、重入安全都在这里解决</text>
+
+    <text x="14" y="332" font-size="10.5" fill="#334155">本仓库 SimpleEventDispatcher（232 行）</text>
+    <text x="14" y="352" font-size="10.5" fill="#334155">listen(string $eventClass, callable $listener)</text>
+    <text x="14" y="372" font-size="10.5" fill="#334155">+ dispatch(object $event): object</text>
+    <text x="14" y="394" font-size="10.5" font-weight="bold" fill="#92400e">事件当参数传 = 观察者不再需要认识主体</text>
+  </g>
+
+  <g transform="translate(20,496)">
+    <rect x="0" y="0" width="960" height="182" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">第七节对照：观察者模式在三种运行时里，差异全在「注册表活多久」</text>
+    <text x="14" y="48" font-size="11" fill="#334155">注册表生命周期 —— PHP：一次请求，进程结束自动干净｜Java：JVM，必须显式注销｜Go：进程，必须显式注销。</text>
+    <text x="14" y="68" font-size="11" fill="#991b1b">Java 实测第 3 组：leaky request=1 listeners=1　request=2 listeners=2　request=3 listeners=3 —— 监听器持有请求上下文、事件源是单例，这就是有名的内存泄漏来源</text>
+    <text x="14" y="88" font-size="11" fill="#14532d">同一组里的 fixed request=1/2/3 listeners=0：反注册做对了，表就不涨。PHP 因为每请求重建，根本没有这个问题。</text>
+    <text x="14" y="108" font-size="11" fill="#334155">一个观察者抛错 —— PHP 8.0.2 实测 2b : 部分监听器失败 -&gt; SmsListener: 短信网关超时，而 Mailer &gt; Points 仍收到通知（Go 版同形）。</text>
+    <text x="14" y="128" font-size="11" fill="#334155">越界与失败传递 —— PHP/Java 抛异常自动冒泡，Go 返回 error 逐层传递；通知期间改表在 Java 直跑会撞 ConcurrentModificationException，所以本篇遍历 snapshot()。</text>
+    <text x="14" y="152" font-size="11" fill="#92400e">⚠️ 常驻模型（Swoole / RoadRunner）下注册表变成跨请求共享状态：注册只做一次，且监听器里绝不能存用户态数据（串号风险）。第四节那条墙见下一张时序图。</text>
+    <text x="14" y="172" font-size="11" fill="#334155">与中介者的分界（第八节）：中介者里主体持有观察者引用、由中介者做判断；观察者一律广播给订阅者，不做「谁受影响」的判断。</text>
+  </g>
+</svg>

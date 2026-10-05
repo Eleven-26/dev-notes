@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">风控链的四环、两类返回与两个终止点</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">handle() 是 final 骨架，各环只实现 check() —— 返回 Decision 就终止，返回 null 才交下一环</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 环的顺序就是语义</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">组装写法逐字抄第二节：setNext() 返回下一环，所以能一路点下去</text>
+
+    <rect x="14" y="56" width="200" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="114" y="74" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">RiskRequest</text>
+    <text x="114" y="92" text-anchor="middle" font-size="9" fill="#1e40af">userId / amount / newUser</text>
+
+    <rect x="230" y="56" width="180" height="44" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="320" y="74" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#92400e">Decision</text>
+    <text x="320" y="92" text-anchor="middle" font-size="9" fill="#92400e">allow() / deny(reason)</text>
+
+    <rect x="426" y="56" width="180" height="44" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="516" y="74" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">abstract RiskHandler</text>
+    <text x="516" y="92" text-anchor="middle" font-size="8.5" fill="#334155">final handle() + abstract check()</text>
+
+    <line x1="214" y1="78" x2="228" y2="78" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="410" y1="78" x2="424" y2="78" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="14" y="126" width="136" height="60" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="82" y="146" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#991b1b">BlacklistHandler</text>
+    <text x="82" y="164" text-anchor="middle" font-size="9" fill="#991b1b">命中即 deny</text>
+    <text x="82" y="178" text-anchor="middle" font-size="9" fill="#991b1b">实测第 2 行终止</text>
+
+    <rect x="166" y="126" width="136" height="60" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="234" y="146" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">RateLimitHandler</text>
+    <text x="234" y="164" text-anchor="middle" font-size="9" fill="#92400e">窗口内第 3 次</text>
+    <text x="234" y="178" text-anchor="middle" font-size="9" fill="#92400e">超过上限 2 就 deny</text>
+
+    <rect x="318" y="126" width="136" height="60" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="386" y="146" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">AmountThreshold</text>
+    <text x="386" y="164" text-anchor="middle" font-size="9" fill="#1e40af">阈值 100000</text>
+    <text x="386" y="178" text-anchor="middle" font-size="9" fill="#1e40af">大额转人工审核</text>
+
+    <rect x="470" y="126" width="136" height="60" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="538" y="146" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">AuditTrailHandler</text>
+    <text x="538" y="164" text-anchor="middle" font-size="9" fill="#14532d">public int $calls</text>
+    <text x="538" y="178" text-anchor="middle" font-size="9" fill="#14532d">永远返回 null</text>
+
+    <line x1="150" y1="156" x2="164" y2="156" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="302" y1="156" x2="316" y2="156" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="454" y1="156" x2="468" y2="156" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <text x="14" y="206" font-size="10.5" fill="#64748b">下一环为 null 时，handle() 用 Decision::allow() 兜底 —— 走完全链就放行</text>
+    <text x="14" y="228" font-size="10.5" fill="#991b1b">NewUserHandler 是可选环：正文把它插在黑名单与限流之间，实测第 5、6 行专门对比换序结果</text>
+    <text x="14" y="252" font-size="10.5" fill="#334155">两个终止点：check() 给出 Decision 就地返回；给 null 就继续。拦下之后后面的环不再执行</text>
+    <text x="14" y="276" font-size="10.5" fill="#334155">实测第 7 行把审计放链首：拒绝也记到了（审计被调用 1 次）—— 顺序即语义</text>
+    <text x="14" y="300" font-size="10.5" fill="#92400e">⚠️ 状态放环上而不是请求里：限流计数、审计 calls 都是环的属性，换序结果就不同</text>
+  </g>
+
+  <g transform="translate(650,74)">
+    <rect x="0" y="0" width="330" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 第五节的真实形态</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">正文列出的五个"生产里天天在跑的责任链"</text>
+
+    <rect x="14" y="56" width="302" height="50" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="76" font-size="11" font-weight="bold" fill="#14532d">PSR-15 / Laravel Pipeline</text>
+    <text x="28" y="94" font-size="9.5" fill="#14532d">MiddlewareInterface + RequestHandlerInterface</text>
+
+    <rect x="14" y="112" width="302" height="50" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="28" y="132" font-size="11" font-weight="bold" fill="#334155">Java javax.servlet.Filter</text>
+    <text x="28" y="150" font-size="9.5" fill="#334155">doFilter(req, res, chain)</text>
+
+    <rect x="14" y="168" width="302" height="50" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="28" y="188" font-size="11" font-weight="bold" fill="#334155">Spring HandlerInterceptor</text>
+    <text x="28" y="206" font-size="9.5" fill="#334155">preHandle() 返回 false 即终止</text>
+
+    <rect x="14" y="224" width="302" height="50" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="28" y="244" font-size="11" font-weight="bold" fill="#334155">Go 的中间件包装</text>
+    <text x="28" y="262" font-size="9.5" fill="#334155">func(http.Handler) http.Handler；chi / gin 的 Use()</text>
+
+    <text x="14" y="292" font-size="10.5" fill="#991b1b">本篇的链是"一环比到底"，</text>
+    <text x="14" y="312" font-size="10.5" fill="#991b1b">这些真实中间件是"每层都执行"的混合体</text>
+  </g>
+
+  <g transform="translate(20,416)">
+    <rect x="0" y="0" width="960" height="134" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">实测（PHP 8.0.2 CLI）—— 构建链：黑名单 → 限流 → 金额阈值 → 审计</text>
+    <text x="14" y="48" font-size="11" fill="#334155">1_正常请求 : 放行　审计被调用次数 : 1　　2_黑名单 : 拒绝（命中黑名单）　审计被调用次数 : 1（没变 → 链在第 1 环就终止了）</text>
+    <text x="14" y="70" font-size="11" fill="#334155">3_第 3 次请求 : 拒绝（窗口内第 3 次，超过上限 2）　　4_大额请求 : 拒绝（金额 200000 超过阈值 100000，转人工审核）</text>
+    <text x="14" y="92" font-size="11" fill="#334155">重新组装：黑名单 → 新用户 → 限流 → 审计　5_新用户请求 : 拒绝（新用户首单，转人工审核）　6_老用户同金额 : 放行</text>
+    <text x="14" y="116" font-size="11" fill="#14532d">7_把审计放链首 : 审计被调用 1 次（拒绝也记到了 → 顺序即语义）｜go1.26.5：10_切片版审计次数 : 2（两笔都记到了）</text>
+  </g>
+</svg>

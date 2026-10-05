@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">代理的三层叠加：接口完全相同是立身之本</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">保护(缓存(虚拟(真实主题))) —— 调用方只认 DocumentRepository 一个接口</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 抽象主题与四层替身</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">每一层都 implements DocumentRepository</text>
+
+    <rect x="20" y="56" width="580" height="30" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="310" y="76" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">interface DocumentRepository —— find(int $id): string</text>
+
+    <rect x="20" y="96" width="580" height="150" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="36" y="116" font-size="11.5" font-weight="bold" fill="#14532d">GuardedDocumentRepository（保护代理）</text>
+    <text x="584" y="116" text-anchor="end" font-size="10.5" fill="#14532d">role !== admin 就抛</text>
+
+    <rect x="46" y="124" width="508" height="110" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="62" y="144" font-size="11.5" font-weight="bold" fill="#1e40af">CachedDocumentRepository（缓存代理）</text>
+    <text x="538" y="144" text-anchor="end" font-size="10.5" fill="#1e40af">$cache[$id] ??=</text>
+
+    <rect x="72" y="152" width="436" height="70" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="88" y="172" font-size="11.5" font-weight="bold" fill="#92400e">LazyDocumentRepository（虚拟代理）</text>
+    <text x="492" y="172" text-anchor="end" font-size="10.5" fill="#92400e">$real ??= factory()</text>
+
+    <rect x="98" y="180" width="364" height="34" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+    <text x="114" y="200" font-size="11.5" font-weight="bold" fill="#334155">DatabaseDocumentRepository（真实主题）</text>
+
+    <text x="14" y="270" font-size="11.5" fill="#14532d">四层都实现 find(int $id): string —— 代理能替换真实主题</text>
+    <text x="14" y="292" font-size="11" fill="#334155">三条判据缺一条就不是代理：同一接口 / 目标从外面进来 / 加的是访问控制</text>
+    <text x="14" y="312" font-size="11" fill="#991b1b">代理一般不做同类叠加：叠两层缓存代理意义不大，装饰器才为叠加设计</text>
+  </g>
+
+  <g transform="translate(650,74)">
+    <rect x="0" y="0" width="330" height="330" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. PHP 想省转发只有两条路</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">第五节：没有 JDK 那种运行时动态代理</text>
+
+    <rect x="14" y="56" width="302" height="120" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="78" font-size="11.5" font-weight="bold" fill="#1e40af">① 魔术方法 __call / __callStatic</text>
+    <text x="28" y="98" font-size="10.5" fill="#1e40af">只对没声明的方法生效</text>
+    <text x="28" y="116" font-size="10.5" fill="#1e40af">接口方法必须显式声明，否则拦不到</text>
+    <text x="28" y="134" font-size="10.5" fill="#1e40af">IDE 无法跳转、参数不做类型检查</text>
+    <text x="28" y="156" font-size="10.5" fill="#92400e">Laravel Facade 走的就是这条路</text>
+
+    <rect x="14" y="188" width="302" height="86" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="210" font-size="11.5" font-weight="bold" fill="#14532d">② 代码生成（扩展或第三方库）</text>
+    <text x="28" y="230" font-size="10.5" fill="#14532d">编译期或首次运行时生成代理类</text>
+    <text x="28" y="248" font-size="10.5" fill="#14532d">换来类型完整、可静态分析</text>
+    <text x="28" y="266" font-size="10.5" fill="#14532d">代价：额外依赖与缓存目录</text>
+
+    <text x="14" y="298" font-size="11" font-weight="bold" fill="#92400e">结论：PHP 手写代理是常态 ——</text>
+    <text x="14" y="316" font-size="11" fill="#92400e">真到几十个方法都要转发才引入代码生成</text>
+  </g>
+
+  <g transform="translate(20,416)">
+    <rect x="0" y="0" width="960" height="134" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">实测（PHP 8.0.2 CLI）：三类代理各自拦住的是不同的东西</text>
+    <text x="14" y="48" font-size="11.5" fill="#334155">1a_访问前真实对象已创建 : false → 1b_访问结果 : doc#1 → 1c_访问后已创建 : true（虚拟代理拦的是「何时存在」）</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">2_真实查询次数（应为 2）: 2 -&gt; [2,3]　　3_保护代理拒绝 : 角色 guest 无权访问文档 4（拦的是「能不能进」）</text>
+    <text x="14" y="92" font-size="11.5" fill="#334155">4a_叠加代理第一次 : doc#5　　4b_叠加代理第二次 : doc#5　　4c_真实查询次数（应为 1）: 1（拦的是「第几次」）</text>
+    <text x="14" y="116" font-size="11" fill="#991b1b">原文两个坑：构造器里的无参分支实测 ArgumentCountError；类型声明写成具体类，这个代理就只能代理它，叠加也不成立</text>
+  </g>
+</svg>

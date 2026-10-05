@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">PHP 里的三种迭代形态，与它们能不能重复遍历</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">手写 Iterator（五方法）｜IteratorAggregate + yield（容器）｜裸 Generator（流）—— 差别全在「重新遍历时发生了什么」</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="440" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 三种形态的骨架（第五节的推荐顺序）</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">同一件事三种写法；第三节原文的五方法只用于对照，新代码不要照着写</text>
+
+    <rect x="14" y="54" width="590" height="130" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="74" font-size="11.5" font-weight="bold" fill="#1e40af">形态一：手写 Iterator（Java 风格的五件套）</text>
+    <text x="28" y="92" font-size="10" fill="#1e40af">final class MyIterator implements Iterator</text>
+    <text x="28" y="110" font-size="10" fill="#1e40af">rewind() / current() / key() / next() / valid() —— 5 个方法</text>
+    <text x="28" y="128" font-size="10" fill="#1e40af">原文的 valid()：return $this-&gt;current() !== false;</text>
+    <text x="28" y="146" font-size="10" fill="#991b1b">⚠️ 容器里有 false 时：[1, false, 3] 遍历到 false 就停，第三个数永远拿不到，且不报错</text>
+    <text x="28" y="164" font-size="10" font-weight="bold" fill="#14532d">✅ 不依赖元素值的判据：return key($this-&gt;var) !== null;</text>
+
+    <rect x="14" y="196" width="590" height="110" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="216" font-size="11.5" font-weight="bold" fill="#14532d">形态二：IteratorAggregate + yield（本篇推荐）</text>
+    <text x="28" y="234" font-size="10" fill="#14532d">final class NumberBucket implements IteratorAggregate</text>
+    <text x="28" y="252" font-size="10" fill="#14532d">getIterator(): Generator { foreach ($this-&gt;values as $k =&gt; $v) { yield $k =&gt; $v; } }</text>
+    <text x="28" y="270" font-size="10" fill="#14532d">实测：key 0: value 1　key 1: value 2　key 2: value 3</text>
+    <text x="28" y="288" font-size="10" font-weight="bold" fill="#14532d">40 行 → 12 行；每次 foreach 重新进 getIterator()，所以天然可反复遍历</text>
+
+    <rect x="14" y="318" width="590" height="112" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="338" font-size="11.5" font-weight="bold" fill="#92400e">形态三：裸 Generator（流、无限序列）</text>
+    <text x="28" y="356" font-size="10" fill="#92400e">function naturals(): Generator { for ($i = 1; ; $i++) { yield $i; } }</text>
+    <text x="28" y="374" font-size="10" fill="#92400e">实测：取前 5 个自然数: 1 2 3 4 5 —— 用数组实现等价功能必然 OOM</text>
+    <text x="28" y="392" font-size="10" fill="#991b1b">⚠️ 中途 break 后重来：Exception: Cannot rewind a generator that was already run</text>
+    <text x="28" y="410" font-size="10" fill="#991b1b">⚠️ 已耗尽后重来：抛 Exception：Cannot traverse an already closed generator</text>
+  </g>
+
+  <g transform="translate(660,74)">
+    <rect x="0" y="0" width="320" height="440" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 重复遍历（实测逐字）</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">报错消息取决于生成器处在哪个状态</text>
+
+    <rect x="14" y="54" width="290" height="80" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="26" y="72" font-size="10.5" font-weight="bold" fill="#14532d">3) IteratorAggregate 可以重复遍历</text>
+    <text x="26" y="90" font-size="9.5" fill="#14532d">第一遍 : SO-1,SO-2,SO-3,SO-4,SO-5</text>
+    <text x="26" y="106" font-size="9.5" fill="#14532d">第二遍 : SO-1,SO-2,SO-3,SO-4,SO-5</text>
+    <text x="26" y="126" font-size="9.5" fill="#14532d">（每次都重新进 getIterator()）</text>
+
+    <rect x="14" y="146" width="290" height="84" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="26" y="164" font-size="10.5" font-weight="bold" fill="#991b1b">4) 裸生成器：只能遍历一次</text>
+    <text x="26" y="182" font-size="9.5" fill="#991b1b">第一遍 : SO-1,SO-2,SO-3,SO-4,SO-5</text>
+    <text x="26" y="200" font-size="9.5" fill="#991b1b">第二遍 : 抛 Exception：</text>
+    <text x="26" y="216" font-size="9.5" font-weight="bold" fill="#991b1b">Cannot traverse an already closed generator</text>
+
+    <rect x="14" y="242" width="290" height="100" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="26" y="260" font-size="10.5" font-weight="bold" fill="#1e40af">两句报错不是同一件事</text>
+    <text x="26" y="278" font-size="9.5" fill="#1e40af">中途 break（生成器未跑完）</text>
+    <text x="26" y="294" font-size="9.5" fill="#1e40af">→ Cannot rewind a generator</text>
+    <text x="26" y="310" font-size="9.5" fill="#1e40af">已跑完 / 已 return（生成器已关闭）</text>
+    <text x="26" y="326" font-size="9.5" fill="#1e40af">→ Cannot traverse an already closed…</text>
+
+    <rect x="14" y="354" width="290" height="76" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="26" y="372" font-size="10.5" font-weight="bold" fill="#334155">第 4.2 节：foreach 的三种语义</text>
+    <text x="26" y="390" font-size="9.5" fill="#334155">数组 : 遍历副本，改 $v 不影响原数组</text>
+    <text x="26" y="406" font-size="9.5" fill="#334155">引用 : 改原数组（循环后须 unset($v)）</text>
+    <text x="26" y="422" font-size="9.5" fill="#991b1b">Iterator 对象 : 共享同一个指针</text>
+  </g>
+
+  <g transform="translate(20,526)">
+    <rect x="0" y="0" width="960" height="158" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">第 5.5 节选型表与第八节三语言对照</text>
+    <text x="14" y="48" font-size="11" fill="#334155">直接 foreach 数组（90% 的场景，不需要任何模式）｜IteratorAggregate + yield（要隐藏内部结构、要惰性、要能复用遍历）</text>
+    <text x="14" y="66" font-size="11" fill="#334155">手写 Iterator（需要精细控制指针：双向、可回退、树形遍历）｜Generator 函数（数据源是流：文件、接口分页、游标）｜RecursiveIterator（树形）</text>
+    <text x="14" y="86" font-size="11" fill="#334155">第八节三语言 · 手写迭代器的最少方法数：PHP 5 个（rewind / current / key / next / valid）｜Java 2 个（hasNext / next）｜Go 0 个</text>
+    <text x="14" y="104" font-size="11" fill="#334155">Go 那个「0 个方法」是 range-over-func：func Numbers(n int) iter.Seq[int] —— for range 可以直接遍历一个函数</text>
+    <text x="14" y="124" font-size="11" fill="#334155">越界行为：PHP 的 valid() 返回 false｜Java 的 next() 抛 NoSuchElementException｜Go 的 yield 返回 false，循环自然结束</text>
+    <text x="14" y="144" font-size="11" font-weight="bold" fill="#0f172a">⭐ 三者共通：迭代器是「一次性游标」，不是「可反复查询的视图」—— Java 没有 rewind()，要重头就得重新拿一个 iterator()</text>
+  </g>
+</svg>

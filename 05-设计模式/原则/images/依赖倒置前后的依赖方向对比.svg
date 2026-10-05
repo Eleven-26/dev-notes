@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">依赖倒置：把依赖方向翻过来，高层就不再 new 低层</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">左：高层直接依赖具体类；右：高层与具体实现都指向抽象（interface）——细节依赖抽象，抽象不依赖细节</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="460" height="330" fill="#f8fafc" stroke="#dc2626" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#991b1b">A. 倒置前：高层 new 低层</text>
+
+    <rect x="110" y="44" width="240" height="44" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="124" y="62" font-size="11" font-weight="bold" fill="#991b1b">高层：BadNotifier</text>
+    <text x="124" y="80" font-size="10.5" fill="#991b1b">notify() 里直接 new 具体类</text>
+
+    <line x1="230" y1="88" x2="230" y2="134" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="244" y="116" font-size="10.5" fill="#991b1b">编译期写死</text>
+
+    <rect x="110" y="138" width="240" height="44" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="124" y="156" font-size="11" font-weight="bold" fill="#991b1b">具体类：BadRegisterService</text>
+    <text x="124" y="174" font-size="10.5" fill="#991b1b">register()：校验 + 落库 + 发信</text>
+
+    <text x="16" y="212" font-size="10.5" fill="#991b1b">后果 1：换一种实现，必须改高层的代码（对修改开放）</text>
+    <text x="16" y="234" font-size="10.5" fill="#991b1b">后果 2：无法为高层写单测——依赖是在方法体里 new 出来的</text>
+    <text x="16" y="256" font-size="10.5" fill="#991b1b">后果 3：低层的细节顺着调用链上传，高层跟着变</text>
+
+    <rect x="16" y="270" width="428" height="44" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="30" y="288" font-size="10.5" fill="#92400e">这就是第四节症状表里 DIP 那一行：</text>
+    <text x="30" y="306" font-size="10.5" fill="#92400e">「无法为高层模块写单测（因为它 new 了低层）」</text>
+  </g>
+
+  <g transform="translate(500,74)">
+    <rect x="0" y="0" width="480" height="330" fill="#f8fafc" stroke="#16a34a" stroke-width="1.2" rx="10"/>
+    <text x="16" y="24" font-size="15" font-weight="bold" fill="#14532d">B. 倒置后：两边都依赖抽象</text>
+
+    <rect x="24" y="40" width="216" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="38" y="58" font-size="11" font-weight="bold" fill="#1e40af">高层：OrderService</text>
+    <text x="38" y="76" font-size="10.5" fill="#1e40af">构造函数注入 Notifier</text>
+
+    <line x1="130" y1="84" x2="150" y2="140" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="160" y="116" font-size="10.5" fill="#14532d">依赖抽象</text>
+
+    <rect x="140" y="144" width="220" height="44" fill="#ffffff" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="5 4" rx="8"/>
+    <text x="154" y="162" font-size="11" font-weight="bold" fill="#1e40af">抽象：interface Notifier</text>
+    <text x="154" y="180" font-size="10.5" fill="#1e40af">notify(string $to): string</text>
+
+    <line x1="140" y1="270" x2="180" y2="190" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+    <line x1="380" y1="270" x2="330" y2="190" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="30" y="270" width="200" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="44" y="288" font-size="11" font-weight="bold" fill="#14532d">测试替身 FakeNotifier</text>
+    <text x="44" y="306" font-size="10.5" fill="#14532d">注入即可，不发真通知</text>
+
+    <rect x="280" y="270" width="180" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="294" y="288" font-size="11" font-weight="bold" fill="#14532d">RealNotifier</text>
+    <text x="294" y="306" font-size="10.5" fill="#14532d">返回 notified:xxx</text>
+  </g>
+
+  <g transform="translate(20,424)">
+    <rect x="0" y="0" width="960" height="80" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+    <text x="16" y="26" font-size="10.5" fill="#334155">⭐ DIP 最实际的收益是<tspan font-weight="bold" fill="#0f172a">可测试性</tspan>：依赖的是 Notifier 接口，测试时注入一个假实现就行，不必真的发通知</text>
+    <text x="16" y="50" font-size="10.5" fill="#334155">实现类之间互不认识，新增一种通知方式只是多一个 implements，高层一行都不用动（这条收益同时兑现了开闭原则）</text>
+    <text x="16" y="72" font-size="10.5" fill="#334155">容器（见 创建型/注册模式.md）就是「自动完成注入」的工具——容器存在的理由正是这条原则</text>
+  </g>
+</svg>

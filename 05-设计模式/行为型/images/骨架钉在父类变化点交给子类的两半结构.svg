@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#94a3b8"/>
+    </marker>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0,0 6,3 0,6" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">模板方法：骨架钉在父类，变化点交给子类</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">好莱坞原则 —— 是父类调用子类，不是子类调用父类；子类只提供零件，装配顺序由骨架决定</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="434" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">AbstractClass = DataImporter（骨架）</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">模板方法本身：子类不能改写骨架，只能填步骤</text>
+
+    <rect x="20" y="56" width="580" height="150" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="34" y="78" font-size="11" font-weight="bold" fill="#1e40af">final public function import(): ImportReport</text>
+    <text x="34" y="96" font-size="10" fill="#1e40af">$report = new ImportReport();</text>
+    <text x="34" y="114" font-size="10" fill="#1e40af">$this-&gt;open();                                    // 抽象步骤</text>
+    <text x="34" y="132" font-size="10" fill="#1e40af">while (($row = $this-&gt;readRow()) !== null) {                  // 抽象步骤</text>
+    <text x="34" y="150" font-size="10" fill="#1e40af">if (!$this-&gt;shouldImport($row)) { $report-&gt;skipped++; continue; }   // 钩子</text>
+    <text x="34" y="168" font-size="10" fill="#1e40af">$this-&gt;persist($this-&gt;normalize($row));    // 钩子 + 钩子，$report-&gt;imported++</text>
+    <text x="34" y="186" font-size="10" fill="#1e40af">} $this-&gt;close();   return $report;                     // 抽象步骤</text>
+
+    <line x1="150" y1="206" x2="150" y2="228" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="460" y1="206" x2="460" y2="228" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwD)"/>
+
+    <rect x="20" y="230" width="280" height="112" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="34" y="252" font-size="11" font-weight="bold" fill="#991b1b">抽象步骤（子类必须实现）</text>
+    <text x="34" y="272" font-size="10" fill="#991b1b">abstract protected open(): void</text>
+    <text x="34" y="290" font-size="10" fill="#991b1b">abstract protected readRow(): ?array</text>
+    <text x="34" y="308" font-size="10" fill="#991b1b">abstract protected close(): void</text>
+    <text x="34" y="330" font-size="10" font-weight="bold" fill="#991b1b">没有合理默认值 → 只能abstract</text>
+
+    <rect x="320" y="230" width="280" height="112" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="334" y="252" font-size="11" font-weight="bold" fill="#92400e">钩子 Hook（有默认实现，可选覆写）</text>
+    <text x="334" y="272" font-size="10" fill="#92400e">protected shouldImport(array $row): bool</text>
+    <text x="334" y="290" font-size="10" fill="#92400e">protected normalize(array $row): array</text>
+    <text x="334" y="308" font-size="10" fill="#92400e">protected persist(array $row): void</text>
+    <text x="334" y="330" font-size="10" font-weight="bold" fill="#92400e">有合理默认值 → 钩子</text>
+
+    <text x="14" y="358" font-size="10.5" fill="#334155">第三节判据只有一个：「不做这件事能不能给出一个说得过去的行为」</text>
+    <text x="14" y="376" font-size="10.5" fill="#14532d">实测 4_骨架是 final 吗 : true　5_钩子带默认实现 : shouldImport=true</text>
+    <text x="14" y="394" font-size="10.5" fill="#14532d">Java 版同样：3_骨架是 final 吗 : true　4_钩子是抽象的吗 : false（false = 有默认实现）</text>
+    <text x="14" y="412" font-size="10.5" fill="#334155">CSV 与 JSON 只实现变化点：1_CSV 导入「共 3 行，导入 2 行，跳过 1 行」</text>
+    <text x="14" y="428" font-size="10.5" fill="#334155">　　　　　　　　　　　　2_JSON 导入「共 2 行，导入 2 行，跳过 0 行」</text>
+  </g>
+
+  <g transform="translate(660,74)">
+    <rect x="0" y="0" width="320" height="434" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">ConcreteClass 与组合版</text>
+    <text x="14" y="42" font-size="10.5" fill="#64748b">三个落点，骨架都只有一份</text>
+
+    <rect x="14" y="56" width="292" height="86" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="76" font-size="10.5" font-weight="bold" fill="#14532d">final class CsvImporter</text>
+    <text x="28" y="94" font-size="10" fill="#14532d">extends DataImporter</text>
+    <text x="28" y="112" font-size="10" fill="#14532d">填 open / readRow / close</text>
+    <text x="28" y="130" font-size="10" fill="#14532d">覆写 normalize / shouldImport</text>
+
+    <rect x="14" y="150" width="292" height="60" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="170" font-size="10.5" font-weight="bold" fill="#14532d">final class JsonImporter</text>
+    <text x="28" y="188" font-size="10" fill="#14532d">换数据源，骨架一字不动</text>
+
+    <rect x="14" y="218" width="292" height="86" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="238" font-size="10.5" font-weight="bold" fill="#1e40af">组合版 final class PipelineImporter</text>
+    <text x="28" y="256" font-size="10" fill="#1e40af">public function import(): ImportReport</text>
+    <text x="28" y="274" font-size="10" fill="#1e40af">不靠继承，把 Importer</text>
+    <text x="28" y="292" font-size="10" fill="#1e40af">当零件注进来自己走一遍骨架</text>
+
+    <text x="14" y="322" font-size="10.5" fill="#334155">第五节判据：要「换算法」用策略，</text>
+    <text x="14" y="340" font-size="10.5" fill="#334155">要「定顺序」用模板方法。</text>
+    <text x="14" y="358" font-size="10.5" fill="#334155">复用手段：继承（父类定骨架）</text>
+    <text x="14" y="376" font-size="10.5" fill="#334155">vs 组合（持有接口，可替换）</text>
+    <text x="14" y="398" font-size="10.5" fill="#334155">Go 没有继承：三个小接口</text>
+    <text x="14" y="416" font-size="10.5" fill="#334155">+ 自由函数 Import(src) 担骨架</text>
+  </g>
+
+  <g transform="translate(20,520)">
+    <rect x="0" y="0" width="960" height="146" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">四节两个真实陷阱，都有实测</text>
+    <text x="14" y="48" font-size="11" fill="#991b1b">陷阱 1 · self:: 与 $this：1_self::step() → base（期望 sub，覆写被吞掉）　2_$this-&gt;step() → sub　—— 骨架里调步骤一律用 $this</text>
+    <text x="14" y="68" font-size="11" fill="#991b1b">陷阱 2 · 父类构造器先跑：8_PHP : 抛 Error「Typed property CtorChildFirst::$value must not be accessed before initialization」</text>
+    <text x="14" y="88" font-size="11" fill="#991b1b">　　　9_Java : 父类构造器拿到的值 = null　10_Java : 子类构造完成后再取值 = ready　→ 9_PHP（字段有默认值）: 拿到 name=ready</text>
+    <text x="14" y="112" font-size="11" fill="#334155">结论：构造器里不要调钩子。要用钩子就放到显式的 init() 里，让调用时机由骨架决定，而不是由语言的对象模型决定。</text>
+    <text x="14" y="136" font-size="11" fill="#334155">第七节三语言对照 · 骨架载体：PHP「abstract class + final 方法」｜Java「abstract class + final 方法」｜Go「自由函数 + 小接口」（go1.26.5 前两组读数与 PHP/Java 一致）</text>
+  </g>
+</svg>
