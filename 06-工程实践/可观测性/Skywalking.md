@@ -2,7 +2,7 @@
 
 > 探针式 APM 的完整拆解：TraceSegment 与 span 树的核心概念、OAP 四层架构与数据流、Java / Go / PHP / Node.js 四类探针的实现原理（含轻量级队列内核与 Dubbo 插件生命周期）、UI 六大面板的读法、部署形态与本机 11.0.0 实跑结论。
 >
-> ⭐ 边界先说清：本篇讲**探针式 APM**（SkyWalking 自有协议 + Agent）。「OTel 路线怎么落地」的完整推导见 [Jaeger.md](Jaeger.md)；「三支柱怎么选、五层怎么配、UI 怎么比」见 [可观测性选型.md](可观测性选型.md)；**指标数学**（分位数怎么算才可聚合，APM 面板的 P99 曲线同源）见 [Prometheus直方图与分位数.md](Prometheus直方图与分位数.md)。各语言的接入代码按语言拆成分册，见第七节。
+> ⭐ 边界先说清：本篇讲**探针式 APM**（SkyWalking 自有协议 + Agent）。「OTel 路线怎么落地」的完整推导见 [Jaeger.md](Jaeger.md)；「三支柱怎么选、五层怎么配、UI 怎么比」见 [可观测性选型.md](可观测性选型.md)；**指标数学**（分位数怎么算才可聚合，APM 面板的 P99 曲线同源）不在本篇展开。各语言的接入代码按语言拆成分册，见第七节。
 >
 > 内容整理自个人学习笔记。**当前参考版本为 11.0.0**（本机 Docker 实跑：OAP 11.0.0 + BanyanDB 0.11.0 + `apache/skywalking-ui:latest`），版本差异与实测读数见第五节。
 
@@ -313,7 +313,7 @@ Dashboard 是「先看整体，再决定往哪钻」的第一落点，顶部可�
 - **Slow Services (ms)**：慢服务排行，优先点名「谁拖慢了整条链路」。
 - **Un-Health Services (Apdex)**：Apdex 不健康的服务。Apdex 综合了成功 / 失败与响应时间，数值越低越差（0.3045、0.5103 属于明显不健康）。
 - **Slow Endpoints (ms)**：慢端点排行，形如 `服务 : 端点`，比慢服务更精确，能直接指到某个 URL / 接口。
-- **Global Response Latency Percentiles**：全局响应延迟分位数曲线，图例为 **P50 / P75 / P90 / P95 / P99**。**P99 是判断「长尾是否恶化」最常用的指标**——平均值会被大量快请求拉平，P99 才能暴露少数用户正在忍受的慢。分位数为什么必须「先聚合桶再算」，见 [Prometheus直方图与分位数.md](Prometheus直方图与分位数.md) 第一节。
+- **Global Response Latency Percentiles**：全局响应延迟分位数曲线，图例为 **P50 / P75 / P90 / P95 / P99**。**P99 是判断「长尾是否恶化」最常用的指标**——平均值会被大量快请求拉平，P99 才能暴露少数用户正在忍受的慢。
 - **Global Heatmap**：热力图，纵轴为响应时间区间、颜色深浅代表请求密度，用来发现「偶发但集中」的慢请求带。
 
 `Instance` 维度看多实例是否均衡（某台机器异常会先体现为它那一列延迟偏高）；`Endpoint` 维度看单接口的延迟与成功率。
@@ -522,7 +522,6 @@ services:
 
 - [可观测性选型.md](可观测性选型.md) — **选型主线**：三支柱定位、五层选型、契合语言与 UI 体验两个横切维度、三套推荐组合
 - [Jaeger.md](Jaeger.md) — **本篇的直接对照面**：OTel 路线的 Trace/Span 概念、部署、采样策略
-- [Prometheus直方图与分位数.md](Prometheus直方图与分位数.md) — 指标数学：面板 P99 曲线为什么必须「先聚合桶再算分位」
 - [接入Skywalking.md](../../01-编程语言/go/接入Skywalking.md) — Go 侧编译期注入与 OTel 备选路线
 - [接入Skywalking.md](../../01-编程语言/java/接入Skywalking.md) — Java 侧 `-javaagent` 接入、日志关联、跨线程与优雅停机
 - [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤

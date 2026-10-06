@@ -17,14 +17,13 @@
 
 选型篇是**唯一的决策入口**：本目录其余三篇都是它某一行的「展开」。⚠️ 具体判据（谁干什么、采样率怎么定、成本怎么降）**只在选型篇写一份**，零件篇指回去，不重复讲。
 
-## 二、本目录四篇的分工
+## 二、本目录三篇的分工
 
 | 篇 | 层 | 覆盖什么 | 什么时候读 |
 |---|---|---|---|
 | [可观测性选型.md](可观测性选型.md) | 选型 | 三支柱分工与串联、五个层面横向对比、**契合语言**维度（Java / Go / PHP 探针成熟度）、三套推荐组合 | 决定「上哪套」之前；或要说服别人换掉现方案时 |
 | [Skywalking.md](Skywalking.md) | 实现（探针式 APM 主线） | Trace / Segment / Span 分层、四层架构与数据流、四语言探针的无侵入原理（字节码增强 / 编译期注入 / PHP 扩展 / monkey patch）、UI 六个面板、本机 11.0.0 实跑部署 | 选了 SkyWalking，或要搞懂「无侵入」到底付出了什么代价 |
 | [Jaeger.md](Jaeger.md) | 实现（OTel 路线主线） | Trace/Span 概念、与 OpenTelemetry 的协作关系、部署形态（all-in-one / v2 + ClickHouse）、采样策略 | 走 OTel 标准化路线；或要和 SkyWalking 做对照 |
-| [Prometheus直方图与分位数.md](Prometheus直方图与分位数.md) | 实现（指标侧细节） | 为什么「各副本 p95 求平均」是错的、直方图三块拼图与累积计数、`histogram_quantile()` 的近似偏差、桶边界怎么选 | 面板上那条 P99 曲线**算得对不对**存疑时 |
 
 > ⭐ **两篇 tracing 篇怎么配合**：Skywalking.md 讲「探针替你做掉多少事、绑定了什么」，
 > [Jaeger.md](Jaeger.md) 讲「自己埋点换来多少自由」。两者的分工判据收敛在选型篇第二节与
@@ -41,8 +40,8 @@
         ↓
    ┌──── Java 为主 ────────┐        ┌──── Go / 多语言 ────────┐
    ↓                       ↓        ↓                         ↓
-③ Skywalking.md      ④ Prometheus直方图与分位数.md      ③' Jaeger.md
-   （探针原理 / UI / 部署）    （指标侧：P99 怎么算才可聚合）   （OTel 埋点 / 采样 / 部署）
+③ Skywalking.md      ③' Jaeger.md
+   （探针原理 / UI / 部署）    （OTel 埋点 / 采样 / 部署）
 ```
 
 ### 3.2 专题线：只想补某一块
@@ -51,7 +50,6 @@
 |---|---|
 | **新系统选型** | 可观测性选型（一、二、三、四、五、六节 → 七套组合三选一）→ 选中的那篇实现 |
 | **搞懂「无侵入」的代价** | Skywalking.md 第三节（3.1 字节码增强 → 3.2 队列内核 → 3.5 Go 编译期注入 → 3.6 PHP 扩展）→ 选型篇「契合语言」小节 |
-| **P99 曲线算错了** | Prometheus直方图与分位数.md 第一、二、三节 → 第六节（分位数与均值的关系） |
 | **链路断在半路** | Skywalking.md 3.4 上下文传播三条铁律 → [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) → 各语言接入分册 |
 | **要接进自己的服务** | 直接跳语言分册（见「五」），概念不清再回本目录 |
 | **部署一套试水** | Skywalking.md 第五节（本机三容器实跑，含 4 条踩坑）/ Jaeger.md 第四节 4.1（all-in-one） |
@@ -62,7 +60,6 @@
 |---|---|---|
 | Skywalking.md | 可观测性选型.md | 先知道「为什么是这条路线」，才看得懂它放弃了什么（协议绑定、UI 定制） |
 | Jaeger.md | 可观测性选型.md | 同上；Jaeger 的价值（后端可替换）只有在对比语境里才成立 |
-| Prometheus直方图与分位数.md | 可观测性选型.md 第一节 | 那节给了「指标低成本靠的是低基数」，直方图正是拿桶换可聚合性 |
 | 三篇实现篇之间 | — | 互不依赖，按选型结果任选一条读 |
 
 ## 四、版本与实测坐标
@@ -71,7 +68,6 @@
 |---|---|---|
 | [Skywalking.md](Skywalking.md) | SkyWalking **11.0.0** + BanyanDB **0.11.0** + `apache/skywalking-ui:latest`（Horizon） | ✅ 三容器 docker-compose 实跑：OAP 就绪、GraphQL 查询返回、schema 安装读数、UI :8080 → 200。**未验证**：Horizon 登录进面板（需自备 argon2id 用户哈希）、Node.js 探针 |
 | [Jaeger.md](Jaeger.md) | Jaeger v2（运行时即 OTel Collector）、ClickHouse 后端 | ⚠️ 以公开配置口径整理，落地代码在语言分册里编译验证 |
-| [Prometheus直方图与分位数.md](Prometheus直方图与分位数.md) | Prometheus + Go client | ✅ 容器与本机 Go 实跑，正文 `text` 块为原始 stdout（时序数字标了波动范围） |
 | [可观测性选型.md](可观测性选型.md) | — | 结论以「存储 / 采样 / 探针成熟度」三条实测可验的判据为主，版本号在各实现篇里核对 |
 
 ⚠️ SkyWalking 的**存储选型随版本变化**：11.0.0 的 `storage.selector` 只有 banyandb / elasticsearch / mysql / postgresql（**H2 已于 10.2 移除**）。选型篇与 Jaeger.md 的对比表都按这一口径写，读到旧资料的「H2 / TiDB」要留意版本。
@@ -114,6 +110,5 @@
 - [可观测性选型.md](可观测性选型.md) — 本目录总纲：三支柱分工 + 五个层面选型 + 三套组合
 - [Skywalking.md](Skywalking.md) — 探针式 APM 主线：Agent / OAP / Storage / UI 架构与原理
 - [Jaeger.md](Jaeger.md) — OTel 路线主线：Trace/Span 概念、部署、采样策略
-- [Prometheus直方图与分位数.md](Prometheus直方图与分位数.md) — 指标侧细节：分位数怎么算才可聚合
 - [目录.md](../../目录.md) — 全仓知识点索引
 - [素材清单.md](../../素材清单.md) — 本目录素材出处登记

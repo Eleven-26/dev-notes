@@ -226,7 +226,7 @@ Query 服务自带 UI，与查询接口同进程：`http://127.0.0.1:16686/`。�
 
 ## 关联
 
-- [README.md](README.md) — 本目录导读：四篇的分工、阅读顺序与本机实测坐标
+- [README.md](README.md) — 本目录导读：三篇的分工、阅读顺序与本机实测坐标
 - [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) — Go 侧 OTel SDK 埋点的完整接入手册（含 [photography-server](https://github.com/Eleven-26/photography-server) 落地映射）
 - [接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
 - [Skywalking.md](Skywalking.md) — 探针式 APM 的另一条路线与分工
@@ -235,4 +235,3 @@ Query 服务自带 UI，与查询接口同进程：`http://127.0.0.1:16686/`。�
 - [K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 采集组件的部署形态
 - [可观测性选型.md](可观测性选型.md) — 链路追踪的完整选型表（含指标、日志、存储、可视化的选型）
 
-> 反向引用（本篇被下列文档引到）：[Prometheus直方图与分位数.md](Prometheus直方图与分位数.md)
