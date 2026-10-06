@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="pql-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">PromQL 查询链路：兼容层 → 查询引擎 → 同一份存储</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">兼容不是转发到 Prometheus，而是解析成查询计划后在同一引擎执行</text>
+
+  <rect x="30" y="92" width="650" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="355" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 客户端</text>
+  <text x="355" y="133" text-anchor="middle" font-size="11.5" fill="#1d4ed8">Grafana Prometheus 数据源 / curl</text>
+
+  <line x1="355" y1="144" x2="355" y2="164" stroke="#334155" stroke-width="1.6" marker-end="url(#pql-arw)"/>
+
+  <rect x="30" y="164" width="650" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="355" y="186" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">② HTTP 兼容入口</text>
+  <text x="355" y="205" text-anchor="middle" font-size="11.5" fill="#1d4ed8">/v1/prometheus/api/v1/query_range?db=public</text>
+
+  <line x1="355" y1="216" x2="355" y2="236" stroke="#334155" stroke-width="1.6" marker-end="url(#pql-arw)"/>
+
+  <rect x="30" y="236" width="650" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="355" y="258" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">③ PromQL 解析</text>
+  <text x="355" y="277" text-anchor="middle" font-size="11.5" fill="#334155">Rust 原生重实现（官方称 &gt;90% 兼容）</text>
+
+  <line x1="355" y1="288" x2="355" y2="308" stroke="#334155" stroke-width="1.6" marker-end="url(#pql-arw)"/>
+
+  <rect x="30" y="308" width="650" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="355" y="330" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">④ 查询计划与优化</text>
+  <text x="355" y="349" text-anchor="middle" font-size="11.5" fill="#334155">DataFusion 查询引擎</text>
+
+  <line x1="355" y1="360" x2="355" y2="380" stroke="#334155" stroke-width="1.6" marker-end="url(#pql-arw)"/>
+
+  <rect x="30" y="380" width="650" height="52" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="355" y="402" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">⑤ 存储扫描</text>
+  <text x="355" y="421" text-anchor="middle" font-size="11.5" fill="#9a3412">region / Parquet，持久层在对象存储</text>
+
+  <line x1="355" y1="432" x2="355" y2="452" stroke="#334155" stroke-width="1.6" marker-end="url(#pql-arw)"/>
+
+  <rect x="30" y="452" width="650" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="355" y="474" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">⑥ 响应</text>
+  <text x="355" y="493" text-anchor="middle" font-size="11.5" fill="#166534">Prometheus JSON（status / data.resultType / result）</text>
+
+  <rect x="710" y="92" width="260" height="412" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="726" y="118" font-size="13" font-weight="bold" fill="#0f172a">另两处入口</text>
+  <text x="726" y="142" font-size="11.5" fill="#334155">· GreptimeDB 自有 PromQL：</text>
+  <text x="734" y="160" font-size="11.5" fill="#334155">/v1/promql（非 Prom 格式）</text>
+  <text x="726" y="184" font-size="11.5" fill="#334155">· SQL 里写 PromQL：</text>
+  <text x="734" y="202" font-size="11.5" fill="#334155">TQL EVAL (start,end,step)</text>
+  <line x1="726" y1="220" x2="954" y2="220" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="726" y="246" font-size="13" font-weight="bold" fill="#0f172a">兼容边界</text>
+  <text x="726" y="270" font-size="11.5" fill="#334155">· @ 修饰符：不支持</text>
+  <text x="726" y="292" font-size="11.5" fill="#334155">· 时间精度：计算降到毫秒</text>
+  <text x="726" y="314" font-size="11.5" fill="#334155">· __name__ 负向匹配：不允许</text>
+  <text x="726" y="336" font-size="11.5" fill="#334155">· 类型仅 Timestamp / String /</text>
+  <text x="734" y="354" font-size="11.5" fill="#334155">Double</text>
+  <text x="726" y="380" font-size="11.5" fill="#334155">· 具体函数差异以官方</text>
+  <text x="734" y="398" font-size="11.5" fill="#334155">兼容性列表为准</text>
+  <line x1="726" y1="418" x2="954" y2="418" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="726" y="444" font-size="11.5" fill="#334155">扩展：__field__ 选字段、</text>
+  <text x="734" y="462" font-size="11.5" fill="#334155">__database__ 跨库（仅 =）</text>
+  <text x="726" y="488" font-size="11.5" fill="#64748b">Grafana URL 填 /v1/prometheus，</text>
+  <text x="726" y="504" font-size="11.5" fill="#64748b">不是 /v1/promql</text>
+
+  <rect x="30" y="528" width="940" height="72" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="46" y="554" font-size="12" fill="#0f172a">⭐ 兼容层共享 Prometheus 的请求参数与响应格式，因此既有 Grafana 面板换数据源即可用，不必重写。</text>
+  <text x="46" y="576" font-size="12" fill="#0f172a">⚠️ 但「能跑」不等于「每条表达式等价」：复杂子查询与落在 TBD 边界的函数要在切换前单独验证。</text>
+</svg>

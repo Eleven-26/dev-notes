@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="idxA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="idxB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">VictoriaMetrics 索引结构：选择器 → 倒排索引 → TSID → 样本 part</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">TSID 是内部主键（永不暴露）；倒排索引把标签值映射到 TSID；样本按 TSID 排序存放</text>
+
+  <rect x="40" y="90" width="250" height="180" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="165" y="118" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#1e3a8a">客户端：标签选择器</text>
+  <text x="60" y="146" font-size="12.5" fill="#1e3a8a">{__name__="http_requests_total",</text>
+  <text x="60" y="168" font-size="12.5" fill="#1e3a8a"> job="api", status="500"}</text>
+  <text x="60" y="198" font-size="12" fill="#1e3a8a">按 metric name、label 名、label 值</text>
+  <text x="60" y="218" font-size="12" fill="#1e3a8a">发起检索</text>
+  <text x="60" y="248" font-size="12" fill="#64748b">⚠️ 用户永远拿不到 TSID</text>
+
+  <line x1="290" y1="180" x2="352" y2="180" stroke="#334155" stroke-width="1.8" marker-end="url(#idxA)"/>
+
+  <rect x="360" y="90" width="320" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="520" y="116" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#0f172a">倒排索引（indexdb）</text>
+
+  <rect x="382" y="132" width="276" height="104" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="520" y="158" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">全局索引（global）</text>
+  <text x="398" y="182" font-size="12" fill="#14532d">不带日期；每个映射每保留期只建一次</text>
+  <text x="398" y="204" font-size="12" fill="#14532d">用于时间范围 ≥ 分区跨度的查询</text>
+  <text x="398" y="226" font-size="12" fill="#14532d">覆盖整个保留期</text>
+
+  <rect x="382" y="252" width="276" height="118" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="520" y="278" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">每日索引（per-day）</text>
+  <text x="398" y="302" font-size="12" fill="#7c2d12">键里带日期；每出现一天建一条</text>
+  <text x="398" y="324" font-size="12" fill="#7c2d12">用于时间范围 &lt; 分区跨度的查询</text>
+  <text x="398" y="346" font-size="12" fill="#7c2d12">短窗口查询成本与保留期解耦</text>
+
+  <line x1="520" y1="390" x2="520" y2="426" stroke="#2563eb" stroke-width="2" marker-end="url(#idxB)"/>
+
+  <rect x="400" y="432" width="240" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="520" y="458" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">TSID 集合（内部主键）</text>
+  <text x="520" y="480" text-anchor="middle" font-size="12" fill="#1e3a8a">候选序列 → 求交 → 最终集合</text>
+
+  <line x1="680" y1="180" x2="742" y2="180" stroke="#334155" stroke-width="1.8" marker-end="url(#idxA)"/>
+
+  <rect x="750" y="90" width="210" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="855" y="116" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#0f172a">样本数据（data）</text>
+  <rect x="768" y="132" width="174" height="104" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="855" y="158" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">按月分区</text>
+  <text x="782" y="182" font-size="11.5" fill="#7f1d1d">data/small/YYYY_MM</text>
+  <text x="782" y="204" font-size="11.5" fill="#7f1d1d">data/big/YYYY_MM</text>
+  <text x="782" y="226" font-size="11.5" fill="#7f1d1d">分区过期时索引同寿删除</text>
+  <rect x="768" y="252" width="174" height="118" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="855" y="278" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">part → block</text>
+  <text x="782" y="302" font-size="11.5" fill="#7f1d1d">block 内样本按</text>
+  <text x="782" y="322" font-size="11.5" fill="#7f1d1d">TSID 排序</text>
+  <text x="782" y="344" font-size="11.5" fill="#7f1d1d">每 block ≤ 8192 样本</text>
+  <text x="782" y="364" font-size="11.5" fill="#7f1d1d">timestamps/values.bin</text>
+
+  <rect x="40" y="412" width="330" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="60" y="440" font-size="13" font-weight="bold" fill="#0f172a">索引条目自己也是一套 LSM</text>
+  <text x="60" y="464" font-size="12" fill="#334155">indexdb 用 mergeset：新条目先进内存，</text>
+  <text x="60" y="484" font-size="12" fill="#334155">再刷成小 part、后台合并成大 part。</text>
+  <text x="60" y="504" font-size="12" fill="#64748b">⚠️ churn 越高，索引写放大越明显</text>
+
+  <rect x="40" y="528" width="920" height="88" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="60" y="558" font-size="12.5" fill="#0f172a">⚠️ 索引与样本是两套结构、同一套生命周期：indexdb 是分区的一部分，分区过期被删时索引一起删；</text>
+  <text x="60" y="582" font-size="12.5" fill="#0f172a">新保留期的索引随新样本到来逐步重建。-disablePerDayIndex（自 v1.112.0）可关闭每日索引，仅低 churn 场景划算。</text>
+  <text x="60" y="606" font-size="12.5" fill="#0f172a">⚠️ 在已有历史数据的实例上重新开启每日索引，会让这部分历史数据变得不可检索。</text>
+</svg>

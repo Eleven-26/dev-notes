@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="a1b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">集群版三个组件与数据流</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">写经 vminsert 分片落下，读经 vmselect 广播合并；vmstorage 之间互不通信（shared nothing）</text>
+
+  <rect x="40" y="92" width="250" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="165" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">采集端</text>
+  <text x="165" y="138" text-anchor="middle" font-size="11.5" fill="#166534">vmagent / Prometheus</text>
+
+  <rect x="375" y="92" width="250" height="60" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">负载均衡</text>
+  <text x="500" y="138" text-anchor="middle" font-size="11.5" fill="#475569">vmauth / nginx</text>
+
+  <rect x="710" y="92" width="250" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="835" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">查询端</text>
+  <text x="835" y="138" text-anchor="middle" font-size="11.5" fill="#166534">Grafana / vmalert</text>
+
+  <line x1="290" y1="122" x2="371" y2="122" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#a1)"/>
+  <line x1="710" y1="122" x2="629" y2="122" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#a1)"/>
+
+  <rect x="90" y="210" width="300" height="72" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="240" y="236" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">vminsert  :8480</text>
+  <text x="240" y="258" text-anchor="middle" font-size="12" fill="#1d4ed8">无状态：接收写入</text>
+  <text x="240" y="274" text-anchor="middle" font-size="12" fill="#1d4ed8">按 metric+labels 一致性哈希分片</text>
+
+  <rect x="610" y="210" width="300" height="72" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="760" y="236" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">vmselect  :8481</text>
+  <text x="760" y="258" text-anchor="middle" font-size="12" fill="#1d4ed8">无状态：广播查询</text>
+  <text x="760" y="274" text-anchor="middle" font-size="12" fill="#1d4ed8">在所有 vmstorage 上合并 / 去重</text>
+
+  <line x1="440" y1="152" x2="270" y2="206" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#a1)"/>
+  <line x1="560" y1="152" x2="730" y2="206" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#a1)"/>
+  <text x="330" y="184" text-anchor="middle" font-size="11.5" fill="#475569">/insert → :8480</text>
+  <text x="672" y="184" text-anchor="middle" font-size="11.5" fill="#475569">/select → :8481</text>
+
+  <rect x="60" y="316" width="880" height="36" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="500" y="339" text-anchor="middle" font-size="12.5" fill="#334155">vmstorage RPC 通道：写入 :8400 ｜ 查询 :8401</text>
+
+  <line x1="240" y1="282" x2="240" y2="314" stroke="#2563eb" stroke-width="1.8" marker-end="url(#a1b)"/>
+  <line x1="760" y1="282" x2="760" y2="314" stroke="#2563eb" stroke-width="1.8" marker-end="url(#a1b)"/>
+
+  <rect x="50" y="392" width="280" height="96" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="190" y="420" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">vmstorage #1</text>
+  <text x="190" y="443" text-anchor="middle" font-size="11.5" fill="#9a3412">:8482 · 有状态</text>
+  <text x="190" y="466" text-anchor="middle" font-size="11.5" fill="#9a3412">存原始数据，按条件返回</text>
+
+  <rect x="360" y="392" width="280" height="96" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="420" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">vmstorage #2</text>
+  <text x="500" y="443" text-anchor="middle" font-size="11.5" fill="#9a3412">:8482 · 有状态</text>
+  <text x="500" y="466" text-anchor="middle" font-size="11.5" fill="#9a3412">与其它节点互不通信</text>
+
+  <rect x="670" y="392" width="280" height="96" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="810" y="420" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">vmstorage #3</text>
+  <text x="810" y="443" text-anchor="middle" font-size="11.5" fill="#9a3412">:8482 · 有状态</text>
+  <text x="810" y="466" text-anchor="middle" font-size="11.5" fill="#9a3412">不共享数据</text>
+
+  <line x1="190" y1="352" x2="190" y2="388" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="500" y1="352" x2="500" y2="388" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="810" y1="352" x2="810" y2="388" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <text x="40" y="524" font-size="12.5" fill="#0f172a">⭐ shared nothing：vmstorage 之间互不知道、不通信、不共享数据；分片与复制由 vminsert / vmselect 两端完成。</text>
+  <text x="40" y="550" font-size="12.5" fill="#0f172a">⚠️ 写路径按哈希落到 N 个节点（-replicationFactor=N，默认 1）；读路径广播到所有节点后合并、去重。</text>
+  <text x="40" y="576" font-size="12" fill="#64748b">🔎 前端路由：/insert → vminsert:8480，/select → vmselect:8481；vmstorage 只做「按条件存 / 取」，不做重分片。</text>
+</svg>

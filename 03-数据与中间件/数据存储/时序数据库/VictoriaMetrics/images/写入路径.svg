@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="wArr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">VictoriaMetrics 写入路径：从采集到落盘的五站</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">数据先入内存缓冲（最多约 1 秒，立即可查），再刷成磁盘 part，最后由后台合并成更大的 part</text>
+
+  <rect x="40" y="88" width="560" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="64" y="118" font-size="14" font-weight="bold" fill="#1e3a8a">① 采集端</text>
+  <text x="64" y="144" font-size="12" fill="#1d4ed8">vmagent 抓取 / Prometheus scrape / 应用直接 push</text>
+  <text x="630" y="120" font-size="11.5" fill="#0f172a">高负载官方建议用 vmagent 替代</text>
+  <text x="630" y="144" font-size="11.5" fill="#0f172a">vmagent 可多实例分片抓取大量目标</text>
+
+  <line x1="320" y1="164" x2="320" y2="184" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wArr)"/>
+
+  <rect x="40" y="184" width="560" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="64" y="214" font-size="14" font-weight="bold" fill="#1e3a8a">② 写入通道</text>
+  <text x="64" y="240" font-size="12" fill="#1d4ed8">remote write / native / Influx line / Graphite / OTLP</text>
+  <text x="630" y="216" font-size="11.5" fill="#0f172a">Prometheus 走 remote_write 推给 VM</text>
+  <text x="630" y="240" font-size="11.5" fill="#0f172a">vmagent 自带持久化磁盘队列，断连可续传</text>
+
+  <line x1="320" y1="260" x2="320" y2="280" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wArr)"/>
+
+  <rect x="40" y="280" width="560" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="64" y="310" font-size="14" font-weight="bold" fill="#7c2d12">③ 接入与校验</text>
+  <text x="64" y="336" font-size="12" fill="#7c2d12">单机 :8428/api/v1/write；集群 vminsert :8480 的 /insert/ 路径</text>
+  <text x="630" y="312" font-size="11.5" fill="#0f172a">解析 到 relabel（可丢弃整条序列）</text>
+  <text x="630" y="336" font-size="11.5" fill="#b91c1c">超标签上限直接丢弃，计入 vm_rows_ignored_total</text>
+
+  <line x1="320" y1="356" x2="320" y2="376" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wArr)"/>
+
+  <rect x="40" y="376" width="560" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="64" y="406" font-size="14" font-weight="bold" fill="#14532d">④ 内存缓冲 到 内存 part</text>
+  <text x="64" y="432" font-size="12" fill="#166534">最多约 1 秒，此时查询已可见</text>
+  <text x="630" y="408" font-size="11.5" fill="#b91c1c">非正常退出可能丢最后约 1 秒</text>
+  <text x="630" y="432" font-size="11.5" fill="#0f172a">刷盘间隔 -inmemoryDataFlushInterval 过短会增加磁盘 IO</text>
+
+  <line x1="320" y1="452" x2="320" y2="472" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wArr)"/>
+
+  <rect x="40" y="472" width="560" height="76" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="64" y="502" font-size="14" font-weight="bold" fill="#0f172a">⑤ 落盘与后台合并</text>
+  <text x="64" y="528" font-size="12" fill="#334155">落到 /data/small/YYYY_MM/ 到 合并为 big part</text>
+  <text x="630" y="504" font-size="11.5" fill="#0f172a">part 不可变、原子注册（fsync 后才入 parts.json）</text>
+  <text x="630" y="528" font-size="11.5" fill="#0f172a">合并提升压缩率、减少查询要扫的 part 数</text>
+
+  <text x="20" y="592" font-size="12" fill="#0f172a">⭐ 关键点：写入优先于查询；去重与降采样都不是「写入即丢弃」，而是在后台合并期 / 查询期发生。</text>
+  <text x="20" y="620" font-size="12" fill="#0f172a">⚠️ 单机版无内建多副本；HA 由采集端双写 + 去重（-dedup.minScrapeInterval）实现。</text>
+</svg>

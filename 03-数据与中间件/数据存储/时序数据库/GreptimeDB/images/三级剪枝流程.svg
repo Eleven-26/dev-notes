@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="prA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">查询的三级剪枝：从粗到细</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">时间范围 → row group 统计 → 索引，三者结合使用，越靠前越廉价</text>
+
+  <rect x="40" y="86" width="480" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="280" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">查询：谓词 + 时间范围</text>
+  <text x="280" y="131" text-anchor="middle" font-size="11.5" fill="#1d4ed8">host=host-a AND region=us-east AND ts 区间 AND cpu&gt;0.7</text>
+
+  <line x1="280" y1="144" x2="280" y2="172" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#prA)"/>
+
+  <rect x="40" y="172" width="480" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="280" y="196" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">① 时间范围剪枝</text>
+  <text x="280" y="217" text-anchor="middle" font-size="11.5" fill="#166534">时间范围不相交的文件 / memtable，在打开 reader 前直接跳过</text>
+
+  <line x1="280" y1="232" x2="280" y2="260" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#prA)"/>
+
+  <rect x="40" y="260" width="480" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="280" y="284" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">② row group min-max 统计</text>
+  <text x="280" y="305" text-anchor="middle" font-size="11.5" fill="#1d4ed8">统计能证明无行匹配谓词，则跳过整个 row group</text>
+
+  <line x1="280" y1="320" x2="280" y2="348" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#prA)"/>
+
+  <rect x="40" y="348" width="480" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="280" y="372" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">③ 索引剪枝（Puffin 辅助文件）</text>
+  <text x="280" y="393" text-anchor="middle" font-size="11.5" fill="#9a3412">统计不够时，用倒排 / 跳数 / 全文索引做更具选择性的排除</text>
+
+  <line x1="280" y1="408" x2="280" y2="436" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#prA)"/>
+
+  <rect x="40" y="436" width="480" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="280" y="460" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">读取剩余数据 + 精确过滤 → 输出</text>
+  <text x="280" y="481" text-anchor="middle" font-size="11.5" fill="#475569">对存活 row group 扫描，可能再按序列号 / 操作类型合并去重</text>
+
+  <text x="546" y="196" font-size="11.5" fill="#15803d">⭐ 对时序查询最廉价、也最重要</text>
+  <text x="546" y="216" font-size="11.5" fill="#15803d">先缩小时间范围，再看时间线、列</text>
+
+  <text x="546" y="284" font-size="11.5" fill="#1d4ed8">例：cpu 最大值为 0.6 的 row group</text>
+  <text x="546" y="304" font-size="11.5" fill="#1d4ed8">不可能匹配 cpu&gt;0.7，整块跳过</text>
+
+  <text x="546" y="372" font-size="11.5" fill="#9a3412">索引放 Puffin，与 SST 元数据同管理</text>
+  <text x="546" y="392" font-size="11.5" fill="#9a3412">契合对象存储：一起管理 / 缓存 / 跳过</text>
+
+  <text x="546" y="460" font-size="11.5" fill="#475569">append-only 表在不需要有序输出时</text>
+  <text x="546" y="480" font-size="11.5" fill="#475569">可省去较多排序工作</text>
+
+  <text x="40" y="524" font-size="12" fill="#64748b">⚠️ 剪枝口径引自 Greptime 官方博客《GreptimeDB 存储引擎设计内幕》（2022-12-20）与官方文档《存储引擎》；未做本机实测。</text>
+  <text x="40" y="546" font-size="12" fill="#64748b">说明：min-max 统计来自 Parquet row group 列统计；索引类型与阈值以最新官方文档为准。</text>
+</svg>

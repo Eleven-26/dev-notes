@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="f6" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">故障排查路径：从现象到根因</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">顺序不能乱 —— 先拿指标定性，再定位到哪一层，最后才动配置或扩资源</text>
+
+  <rect x="40" y="96" width="380" height="76" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="60" y="128" font-size="14" font-weight="bold" fill="#7f1d1d">① 现象</text>
+  <text x="60" y="152" font-size="12" fill="#7f1d1d">接口变慢 / 写入超时 / 内存或磁盘告警</text>
+
+  <rect x="40" y="196" width="380" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="228" font-size="14" font-weight="bold" fill="#1e3a8a">② 先看指标（只读不改）</text>
+  <text x="60" y="252" font-size="12" fill="#1e3a8a">/metrics 上的 vm_slow_* 与磁盘类指标</text>
+
+  <rect x="40" y="296" width="380" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="328" font-size="14" font-weight="bold" fill="#1e3a8a">③ 定位是哪一层</text>
+  <text x="60" y="352" font-size="12" fill="#1e3a8a">写入 / 查询 / 磁盘 / 组件互连</text>
+
+  <rect x="40" y="396" width="380" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="60" y="428" font-size="14" font-weight="bold" fill="#7c2d12">④ 找根因</text>
+  <text x="60" y="452" font-size="12" fill="#7c2d12">基数 / 内存 / 只读门槛 / 连接饱和</text>
+
+  <rect x="40" y="496" width="380" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="60" y="528" font-size="14" font-weight="bold" fill="#14532d">⑤ 处置并复测</text>
+  <text x="60" y="552" font-size="12" fill="#14532d">用同一套指标复测，留下基线</text>
+
+  <line x1="230" y1="172" x2="230" y2="196" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#f6)"/>
+  <line x1="230" y1="272" x2="230" y2="296" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#f6)"/>
+  <line x1="230" y1="372" x2="230" y2="396" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#f6)"/>
+  <line x1="230" y1="472" x2="230" y2="496" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#f6)"/>
+
+  <line x1="420" y1="134" x2="452" y2="134" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="420" y1="234" x2="452" y2="234" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="420" y1="334" x2="452" y2="334" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="420" y1="434" x2="452" y2="434" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="420" y1="534" x2="452" y2="534" stroke="#cbd5e1" stroke-width="1.4"/>
+
+  <text x="460" y="134" font-size="11.5" fill="#0f172a">先确认是「存储层」的问题，还是采集端 / 下游的问题</text>
+
+  <text x="460" y="226" font-size="11.5" fill="#0f172a">vm_slow_row_inserts_total 持续高 → 多为活跃序列数 &gt; 内存</text>
+  <text x="460" y="246" font-size="11.5" fill="#0f172a">vm_free_disk_space_bytes 逼近 limit → 接近只读</text>
+
+  <text x="460" y="326" font-size="11.5" fill="#0f172a">写入：vm_slow_*；查询：/api/v1/status/top_queries</text>
+  <text x="460" y="346" font-size="11.5" fill="#0f172a">磁盘：vm_data_size_bytes；互连：vm_rpc_*</text>
+
+  <text x="460" y="426" font-size="11.5" fill="#0f172a">空闲磁盘 &lt; 20% → 后台合并变差，拖慢读写</text>
+  <text x="460" y="446" font-size="11.5" fill="#b91c1c">vm_storage_is_read_only = 1 → 已进只读，方向是扩盘</text>
+  <text x="460" y="466" font-size="11.5" fill="#0f172a">vm_rpc_send_duration_seconds_total 接近 1s → 连接饱和</text>
+
+  <text x="460" y="526" font-size="11.5" fill="#15803d">扩盘 / 治基数 / 扩节点；保持 50% 空闲内存</text>
+  <text x="460" y="546" font-size="11.5" fill="#15803d">改完用同一套指标复测，否则无从判断好没好</text>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="b5" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">备份与恢复演练流程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">没演练过的备份等于没有备份 —— 重点是「真恢复出来并校验」</text>
+
+  <rect x="39" y="106" width="170" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="124" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">① 选备份点</text>
+  <text x="124" y="166" text-anchor="middle" font-size="11.5" fill="#1d4ed8">latest</text>
+  <text x="124" y="188" text-anchor="middle" font-size="11.5" fill="#1d4ed8">+ 一个更早日期</text>
+  <text x="124" y="210" text-anchor="middle" font-size="11" fill="#64748b">两个点都验</text>
+
+  <rect x="227" y="106" width="170" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="312" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">② 隔离环境</text>
+  <text x="312" y="166" text-anchor="middle" font-size="11.5" fill="#1d4ed8">另起数据目录</text>
+  <text x="312" y="188" text-anchor="middle" font-size="11.5" fill="#1d4ed8">或另起实例</text>
+  <text x="312" y="210" text-anchor="middle" font-size="11" fill="#64748b">不覆盖生产</text>
+
+  <rect x="415" y="106" width="170" height="150" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">③ vmrestore</text>
+  <text x="500" y="166" text-anchor="middle" font-size="11.5" fill="#9a3412">先 kill -INT 停进程</text>
+  <text x="500" y="188" text-anchor="middle" font-size="11.5" fill="#9a3412">恢复到 -storageDataPath</text>
+  <text x="500" y="210" text-anchor="middle" font-size="11" fill="#64748b">集群逐 vmstorage</text>
+
+  <rect x="603" y="106" width="170" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="688" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">④ 校验</text>
+  <text x="688" y="166" text-anchor="middle" font-size="11.5" fill="#166534">序列条数一致</text>
+  <text x="688" y="188" text-anchor="middle" font-size="11.5" fill="#166534">指定样本值一致</text>
+  <text x="688" y="210" text-anchor="middle" font-size="11" fill="#64748b">用一条已知查询</text>
+
+  <rect x="791" y="106" width="170" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="876" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">⑤ 记录</text>
+  <text x="876" y="166" text-anchor="middle" font-size="11.5" fill="#166534">恢复耗时</text>
+  <text x="876" y="188" text-anchor="middle" font-size="11.5" fill="#166534">RTO 量级</text>
+  <text x="876" y="210" text-anchor="middle" font-size="11" fill="#64748b">定下次演练</text>
+
+  <line x1="209" y1="181" x2="223" y2="181" stroke="#64748b" stroke-width="1.8" marker-end="url(#b5)"/>
+  <line x1="397" y1="181" x2="411" y2="181" stroke="#64748b" stroke-width="1.8" marker-end="url(#b5)"/>
+  <line x1="585" y1="181" x2="599" y2="181" stroke="#64748b" stroke-width="1.8" marker-end="url(#b5)"/>
+  <line x1="773" y1="181" x2="787" y2="181" stroke="#64748b" stroke-width="1.8" marker-end="url(#b5)"/>
+
+  <text x="40" y="300" font-size="12.5" fill="#0f172a">⭐ 目标不是「备份能跑通」，而是「从备份真恢复出一份可用数据」，并记录恢复耗时（即 RTO 的量级）。</text>
+  <text x="40" y="326" font-size="12.5" fill="#b91c1c">⚠️ 恢复前必须先停进程（kill -INT）；不要用 cp / rsync 直接复制快照目录（混用硬链接与软链接会漏拷）。</text>
+  <text x="40" y="352" font-size="12" fill="#64748b">🔎 用 vm_snapshots 盯快照数量；-snapshotsMaxAge 让旧快照自动过期，否则旧快照会持续占盘。</text>
+</svg>

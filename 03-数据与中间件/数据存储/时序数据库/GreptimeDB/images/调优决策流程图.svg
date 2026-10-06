@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="tuneArw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">调优决策流程：现象 → 可能原因 → 检查项 → 动作</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先定位瓶颈在哪一层，再动对应参数；不要拿别人硬件/基数下的数字当基线（方法示意，非实测）</text>
+
+  <rect x="40" y="96" width="360" height="68" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="60" y="126" font-size="13.5" font-weight="bold" fill="#7f1d1d">① 写入整体变慢</text>
+  <text x="60" y="150" font-size="11.5" fill="#7f1d1d">吞吐下降 / 请求排队</text>
+
+  <rect x="40" y="178" width="360" height="68" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="208" font-size="13.5" font-weight="bold" fill="#1e3a8a">② 协议层延迟高</text>
+  <text x="60" y="232" font-size="11.5" fill="#1e3a8a">frontend 侧耗时长</text>
+
+  <rect x="40" y="260" width="360" height="68" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="290" font-size="13.5" font-weight="bold" fill="#1e3a8a">③ 卡在 datanode 存储阶段</text>
+  <text x="60" y="314" font-size="11.5" fill="#1e3a8a">入口不慢、落盘慢</text>
+
+  <rect x="40" y="342" width="360" height="68" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="60" y="372" font-size="13.5" font-weight="bold" fill="#7c2d12">④ 只有少数节点慢</text>
+  <text x="60" y="396" font-size="11.5" fill="#7c2d12">节点间不均衡</text>
+
+  <rect x="40" y="424" width="360" height="68" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="60" y="454" font-size="13.5" font-weight="bold" fill="#7c2d12">⑤ 小文件堆积 / 查询变慢</text>
+  <text x="60" y="478" font-size="11.5" fill="#7c2d12">compaction 跟不上</text>
+
+  <rect x="40" y="506" width="360" height="68" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="60" y="536" font-size="13.5" font-weight="bold" fill="#14532d">⑥ 乱序写入</text>
+  <text x="60" y="560" font-size="11.5" fill="#14532d">一批行跨多个时间窗口</text>
+
+  <line x1="220" y1="164" x2="220" y2="178" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#tuneArw)"/>
+  <line x1="220" y1="246" x2="220" y2="260" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#tuneArw)"/>
+  <line x1="220" y1="328" x2="220" y2="342" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#tuneArw)"/>
+  <line x1="220" y1="410" x2="220" y2="424" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#tuneArw)"/>
+  <line x1="220" y1="492" x2="220" y2="506" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#tuneArw)"/>
+
+  <line x1="400" y1="130" x2="428" y2="130" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="400" y1="212" x2="428" y2="212" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="400" y1="294" x2="428" y2="294" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="400" y1="376" x2="428" y2="376" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="400" y1="458" x2="428" y2="458" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="400" y1="540" x2="428" y2="540" stroke="#cbd5e1" stroke-width="1.4"/>
+
+  <text x="436" y="118" font-size="11.5" fill="#0f172a">查 rate(greptime_table_operator_ingest_rows[...])</text>
+  <text x="436" y="138" font-size="11.5" fill="#b91c1c">→ 先排除数据源暴增/骤降，不急着调库</text>
+
+  <text x="436" y="200" font-size="11.5" fill="#0f172a">查 greptime_servers_http/grpc_requests_elapsed_bucket</text>
+  <text x="436" y="220" font-size="11.5" fill="#15803d">→ 批太小或并发不足：加大批大小（起步 1000 行）与并发</text>
+
+  <text x="436" y="282" font-size="11.5" fill="#0f172a">查 greptime_mito_handle_request / write_stage_elapsed</text>
+  <text x="436" y="302" font-size="11.5" fill="#15803d">→ 落盘慢 / 写缓冲不足：核对 WAL 落点，加大 global_write_buffer_size</text>
+
+  <text x="436" y="364" font-size="11.5" fill="#0f172a">查 greptime_mito_write_rows_total、REGION_STATISTICS</text>
+  <text x="436" y="384" font-size="11.5" fill="#b45309">→ 分区不均 / 单 Region 过热：先调分区，勿盲目加写缓冲</text>
+
+  <text x="436" y="446" font-size="11.5" fill="#0f172a">查报错 Too many files to read concurrently</text>
+  <text x="436" y="466" font-size="11.5" fill="#15803d">→ compaction 未追上 / 跨时段回填：指定 compaction.twcs.time_window</text>
+
+  <text x="436" y="528" font-size="11.5" fill="#0f172a">查写入时间戳分布</text>
+  <text x="436" y="548" font-size="11.5" fill="#15803d">→ 按时间窗口组织批次；导入历史数据前先建表</text>
+
+  <text x="30" y="612" font-size="12" fill="#64748b">三条纪律：先比「入口延迟」与「存储层延迟」定位瓶颈层 · 写入不均先归因分区 · 一次只动一个参数，改完用同一套指标复测。</text>
+</svg>

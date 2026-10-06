@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="flowArw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Flow 数据流：源表 → Flow 引擎 → sink 结果表 → 下游查询</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">写入源表后由 Flow 增量/定时物化结果；下游只读 sink 表，不再扫原始明细（结构示意，非实测）</text>
+
+  <rect x="30" y="96" width="190" height="96" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="125" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">源表</text>
+  <text x="125" y="154" text-anchor="middle" font-size="11.5" fill="#1d4ed8">source table</text>
+  <text x="125" y="176" text-anchor="middle" font-size="11.5" fill="#1d4ed8">原始明细事件</text>
+
+  <rect x="270" y="96" width="210" height="96" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="375" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">Flow 引擎</text>
+  <text x="375" y="154" text-anchor="middle" font-size="11.5" fill="#166534">持续聚合 / 窗口计算</text>
+  <text x="375" y="176" text-anchor="middle" font-size="11.5" fill="#166534">内置轻量流处理</text>
+
+  <rect x="530" y="96" width="200" height="96" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="630" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">sink 结果表</text>
+  <text x="630" y="154" text-anchor="middle" font-size="11.5" fill="#9a3412">物化聚合结果</text>
+  <text x="630" y="176" text-anchor="middle" font-size="11.5" fill="#9a3412">自动维护 update_at</text>
+
+  <rect x="780" y="96" width="190" height="96" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="875" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">查询 / 看板</text>
+  <text x="875" y="154" text-anchor="middle" font-size="11.5" fill="#475569">告警</text>
+  <text x="875" y="176" text-anchor="middle" font-size="11.5" fill="#475569">只读结果表</text>
+
+  <line x1="222" y1="144" x2="266" y2="144" stroke="#64748b" stroke-width="1.6" marker-end="url(#flowArw)"/>
+  <line x1="482" y1="144" x2="526" y2="144" stroke="#64748b" stroke-width="1.6" marker-end="url(#flowArw)"/>
+  <line x1="732" y1="144" x2="776" y2="144" stroke="#64748b" stroke-width="1.6" marker-end="url(#flowArw)"/>
+
+  <text x="125" y="214" text-anchor="middle" font-size="11.5" fill="#64748b">事件时间 = TIME INDEX</text>
+  <text x="375" y="214" text-anchor="middle" font-size="11.5" fill="#64748b">增量 / 定时评估</text>
+  <text x="630" y="214" text-anchor="middle" font-size="11.5" fill="#64748b">Tag 为 PRIMARY KEY</text>
+  <text x="875" y="214" text-anchor="middle" font-size="11.5" fill="#64748b">不扫原始明细</text>
+
+  <line x1="30" y1="238" x2="970" y2="238" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="30" y="256" width="940" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="48" y="282" font-size="13" font-weight="bold" fill="#0f172a">触发与更新语义（以官方文档为准）</text>
+  <text x="48" y="308" font-size="12.5" fill="#334155">① 含 Aggregate / Distinct 或带 EVAL INTERVAL 走批处理；普通非聚合投影走遗留 streaming（新负载不推荐）。</text>
+  <text x="48" y="332" font-size="12.5" fill="#334155">② 时间窗口聚合可增量评估；无可用时间窗口的批处理 SQL 必须给 EVAL INTERVAL，且执行全量查询。</text>
+  <text x="48" y="356" font-size="12.5" fill="#b45309">③ EXPIRE AFTER 只让过期数据退出计算范围：结果不会因时间流逝而变，且它不删数据（删数据用 TTL）。</text>
+
+  <text x="30" y="402" font-size="12" fill="#64748b">分布式下由 Frontend 中转数据通路：流模式镜像写入到 Flownode，批处理模式由 Flownode 查源表并写 sink 表。</text>
+</svg>

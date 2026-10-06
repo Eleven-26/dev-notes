@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="s2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">从单节点平滑迁移到集群：四步</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">官方路径：新旧并存，等老数据自然过期后再下线，免数据迁移</text>
+
+  <rect x="39" y="106" width="170" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="124" y="136" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">① 开 RPC</text>
+  <text x="124" y="162" text-anchor="middle" font-size="11.5" fill="#1d4ed8">单节点重启</text>
+  <text x="124" y="182" text-anchor="middle" font-size="11.5" fill="#1d4ed8">-vmselectAddr</text>
+  <text x="124" y="212" text-anchor="middle" font-size="11" fill="#64748b">被视作租户 0:0</text>
+
+  <rect x="227" y="106" width="170" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="312" y="136" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">② 旁挂空集群</text>
+  <text x="312" y="162" text-anchor="middle" font-size="11.5" fill="#1d4ed8">vminsert</text>
+  <text x="312" y="182" text-anchor="middle" font-size="11.5" fill="#1d4ed8">vmselect</text>
+  <text x="312" y="202" text-anchor="middle" font-size="11.5" fill="#1d4ed8">vmstorage</text>
+
+  <rect x="415" y="106" width="170" height="150" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="136" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">③ 上层 vmselect</text>
+  <text x="500" y="162" text-anchor="middle" font-size="11.5" fill="#9a3412">同时查询</text>
+  <text x="500" y="182" text-anchor="middle" font-size="11.5" fill="#9a3412">单节点 +</text>
+  <text x="500" y="202" text-anchor="middle" font-size="11.5" fill="#9a3412">新集群</text>
+
+  <rect x="603" y="106" width="170" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="688" y="136" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">④ 切换写入</text>
+  <text x="688" y="162" text-anchor="middle" font-size="11.5" fill="#166534">写切到集群</text>
+  <text x="688" y="182" text-anchor="middle" font-size="11.5" fill="#166534">停写单节点</text>
+  <text x="688" y="202" text-anchor="middle" font-size="11.5" fill="#166534">保留期后下线</text>
+
+  <line x1="209" y1="181" x2="223" y2="181" stroke="#64748b" stroke-width="1.8" marker-end="url(#s2)"/>
+  <line x1="397" y1="181" x2="411" y2="181" stroke="#64748b" stroke-width="1.8" marker-end="url(#s2)"/>
+  <line x1="585" y1="181" x2="599" y2="181" stroke="#64748b" stroke-width="1.8" marker-end="url(#s2)"/>
+
+  <text x="40" y="300" font-size="12.5" fill="#0f172a">⭐ 全程免数据迁移、免停机（只有第 ① 步要重启一次单节点）；老数据随保留期自动消失，再把单节点摘除即可。</text>
+  <text x="40" y="326" font-size="12.5" fill="#b91c1c">⚠️ 这条路径的前提是「数据可见即可」。若要真正改动数据（改 label、只迁一部分、改去重口径），需改用 vmctl。</text>
+  <text x="40" y="352" font-size="12" fill="#64748b">⚠️ 若需要多租户，迁移前先在集群侧规划好 accountID / projectID；单节点版本身不支持真正的多租户。</text>
+</svg>

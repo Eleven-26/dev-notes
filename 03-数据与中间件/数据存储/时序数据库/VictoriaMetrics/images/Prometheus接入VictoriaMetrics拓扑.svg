@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="tpA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="tpB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="tpC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Prometheus 接入 VictoriaMetrics 的两种方式</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">方式一保留 Prometheus 采集（VM 只当后端）；方式二用 vmagent 替代采集（VM 整体替代）</text>
+
+  <text x="60" y="106" font-size="13" font-weight="bold" fill="#1e3a8a">方式一：保留 Prometheus 采集</text>
+  <rect x="60" y="118" width="330" height="78" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="225" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">Prometheus（采集 + 本地 TSDB）</text>
+  <text x="225" y="170" text-anchor="middle" font-size="12" fill="#1e3a8a">抓取配置不动，只加一段 remote_write</text>
+  <text x="225" y="188" text-anchor="middle" font-size="11.5" fill="#64748b">定位：VM 作为长期存储后端</text>
+
+  <text x="60" y="300" font-size="13" font-weight="bold" fill="#14532d">方式二：用 vmagent 替代采集</text>
+  <rect x="60" y="312" width="330" height="78" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="225" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">vmagent（抓取 + 磁盘缓冲）</text>
+  <text x="225" y="364" text-anchor="middle" font-size="12" fill="#14532d">-promscrape.config 直接吃 prometheus.yml</text>
+  <text x="225" y="382" text-anchor="middle" font-size="11.5" fill="#64748b">定位：VM 整体替代 Prometheus</text>
+
+  <line x1="390" y1="157" x2="466" y2="178" stroke="#2563eb" stroke-width="1.8" marker-end="url(#tpB)"/>
+  <text x="428" y="150" text-anchor="middle" font-size="11.5" fill="#1e3a8a">remote_write</text>
+  <line x1="390" y1="351" x2="466" y2="330" stroke="#16a34a" stroke-width="1.8" marker-end="url(#tpC)"/>
+  <text x="428" y="378" text-anchor="middle" font-size="11.5" fill="#14532d">remote_write</text>
+
+  <rect x="470" y="100" width="310" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.7"/>
+  <text x="625" y="128" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#0f172a">VictoriaMetrics（单机版 / 集群版）</text>
+  <rect x="488" y="144" width="274" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="625" y="168" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">写入端点 /api/v1/write</text>
+  <text x="625" y="190" text-anchor="middle" font-size="11.5" fill="#1e3a8a">接收 Prometheus remote write</text>
+  <rect x="488" y="216" width="274" height="88" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="625" y="240" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">存储：data（样本）+ indexdb（索引）</text>
+  <text x="625" y="264" text-anchor="middle" font-size="11.5" fill="#7f1d1d">按月分区、按 TSID 排序；倒排索引</text>
+  <text x="625" y="286" text-anchor="middle" font-size="11.5" fill="#7f1d1d">本地磁盘；集群版为 vminsert/vmstorage/vmselect</text>
+  <rect x="488" y="316" width="274" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="625" y="340" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">查询 API /api/v1/query(_range)</text>
+  <text x="625" y="362" text-anchor="middle" font-size="11.5" fill="#14532d">Prometheus 兼容，Grafana 可直接换数据源</text>
+  <text x="625" y="418" text-anchor="middle" font-size="11.5" fill="#64748b">多实例写入时用 dedup 去重</text>
+
+  <line x1="780" y1="160" x2="812" y2="160" stroke="#334155" stroke-width="1.8" marker-end="url(#tpA)"/>
+  <rect x="818" y="130" width="152" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="894" y="156" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Grafana</text>
+  <text x="894" y="176" text-anchor="middle" font-size="11" fill="#1e3a8a">Prometheus 兼容数据源</text>
+
+  <line x1="780" y1="300" x2="812" y2="300" stroke="#334155" stroke-width="1.8" marker-end="url(#tpA)"/>
+  <rect x="818" y="270" width="152" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="894" y="296" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">vmalert</text>
+  <text x="894" y="316" text-anchor="middle" font-size="11" fill="#7c2d12">告警 / 记录规则</text>
+
+  <line x1="894" y1="330" x2="894" y2="388" stroke="#334155" stroke-width="1.8" marker-end="url(#tpA)"/>
+  <rect x="818" y="396" width="152" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="894" y="422" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">Alertmanager</text>
+  <text x="894" y="442" text-anchor="middle" font-size="11" fill="#7c2d12">分组 · 抑制 · 静默</text>
+
+  <rect x="60" y="470" width="330" height="70" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="225" y="498" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">vmctl / 导出接口</text>
+  <text x="225" y="520" text-anchor="middle" font-size="11.5" fill="#334155">迁移 Prometheus 历史数据（或先并行双写）</text>
+  <line x1="390" y1="505" x2="466" y2="445" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#tpA)"/>
+
+  <rect x="40" y="562" width="920" height="82" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="60" y="590" font-size="12.5" fill="#0f172a">⭐ 低风险顺序：先 remote_write 当后端 → 双后端对账查询与告警 → 面板换数据源 → 再决定采集侧是否交给 vmagent。</text>
+  <text x="60" y="614" font-size="12.5" fill="#0f172a">⚠️ 多实例写入务必开去重（-dedup.minScrapeInterval 与 scrape_interval 对齐）；remote write 2.0 目前仍为实验性状态。</text>
+  <text x="60" y="638" font-size="12.5" fill="#0f172a">⚠️ 与 Prometheus 存在行为差异（rate/increase、NaN、负 offset），迁移前需挑代表查询逐条对账。</text>
+</svg>

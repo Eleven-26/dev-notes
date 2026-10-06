@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rsA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">region 与 SST 的内部组织</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">region 是表数据的物理分片；SST 以 row group 为可独立读取或跳过的单位</text>
+
+  <rect x="40" y="84" width="430" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="255" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">Region（逻辑隔离存储单元）</text>
+  <text x="62" y="146" font-size="12" fill="#334155">· 元数据：schema 定义 tag / timestamp / field 列</text>
+  <text x="62" y="176" font-size="12" fill="#334155">· memtable：可变 + 不可变两级内存缓冲</text>
+  <text x="62" y="206" font-size="12" fill="#334155">· SST 文件：若干不可变 Parquet 文件</text>
+  <text x="62" y="236" font-size="12" fill="#334155">· manifest：记录 region 变更（新增 / 移除文件）</text>
+  <text x="62" y="266" font-size="12" fill="#334155">· 存储选项：本地盘或对象存储</text>
+  <text x="62" y="310" font-size="12" fill="#64748b">行按 (主键, 时间索引) 排序；主键相同 = 同一条时间线</text>
+  <text x="62" y="340" font-size="12" fill="#64748b">同一 region 内的行必须共享同一套 schema</text>
+  <text x="62" y="370" font-size="12" fill="#64748b">表的数据存放在一到多个 region 中</text>
+
+  <rect x="510" y="84" width="450" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="735" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">一个 SST 文件内部（Parquet）</text>
+
+  <rect x="532" y="128" width="406" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="735" y="150" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Row Group 1</text>
+  <text x="735" y="169" text-anchor="middle" font-size="11.5" fill="#1d4ed8">列统计：最小值 / 最大值 / null 数量</text>
+
+  <rect x="532" y="188" width="406" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="735" y="216" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Row Group 2 … 第 k 个</text>
+
+  <text x="532" y="260" font-size="11.5" fill="#334155">文件级元数据：时间范围 · 行数 · 文件大小 · row group 数 ·</text>
+  <text x="532" y="278" font-size="11.5" fill="#334155">可用索引 · 主键范围（有条件时记录）</text>
+
+  <rect x="532" y="292" width="406" height="46" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="735" y="312" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">关联的 Puffin 辅助文件</text>
+  <text x="735" y="330" text-anchor="middle" font-size="11.5" fill="#9a3412">倒排索引 / 跳数索引 / 全文索引 以 Blob 存放</text>
+
+  <line x1="470" y1="200" x2="510" y2="200" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#rsA)"/>
+  <text x="490" y="192" text-anchor="middle" font-size="11" fill="#64748b">包含</text>
+
+  <rect x="40" y="410" width="920" height="92" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="438" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">Compaction 的时间窗口（TWCS，默认策略）</text>
+  <text x="120" y="470" text-anchor="middle" font-size="12" fill="#166534">[ 时间窗口 1 ]</text>
+  <text x="380" y="470" text-anchor="middle" font-size="12" fill="#166534">[ 时间窗口 2 ]</text>
+  <text x="640" y="470" text-anchor="middle" font-size="12" fill="#166534">[ 时间窗口 3 ]</text>
+  <text x="870" y="470" text-anchor="middle" font-size="12" fill="#166534">… …</text>
+  <text x="500" y="494" text-anchor="middle" font-size="11.5" fill="#14532d">每个窗口内可能含多个 SST；同一窗口内重叠文件会被一起合并，TTL 从较旧窗口移除过期文件</text>
+
+  <text x="40" y="536" font-size="12" fill="#64748b">⚠️ 布局口径引自 Greptime 官方博客《GreptimeDB 存储引擎设计内幕》（2022-12-20）与官方文档；未做本机实测。</text>
+  <text x="40" y="556" font-size="12" fill="#64748b">说明：row group 行数上限、索引类型等细节以最新官方文档为准。</text>
+</svg>

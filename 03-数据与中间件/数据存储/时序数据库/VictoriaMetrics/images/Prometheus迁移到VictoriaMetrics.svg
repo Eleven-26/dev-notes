@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mgA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">从 Prometheus 迁到 VictoriaMetrics 的推荐路径</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先只写、后对账、最后切查询与告警；每一步都保留回退路径</text>
+
+  <rect x="60" y="92" width="500" height="56" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="80" y="126" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 起一个 VM，确认查询 API 可用</text>
+  <line x1="310" y1="148" x2="310" y2="166" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mgA)"/>
+
+  <rect x="60" y="168" width="500" height="56" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="80" y="202" font-size="13.5" font-weight="bold" fill="#1e3a8a">② Prometheus 加 remote_write（只写，不动查询）</text>
+  <line x1="310" y1="224" x2="310" y2="242" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mgA)"/>
+
+  <rect x="60" y="244" width="500" height="56" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="80" y="278" font-size="13.5" font-weight="bold" fill="#7c2d12">③ 抽样核对 + 双后端查询对账</text>
+  <line x1="310" y1="300" x2="310" y2="318" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mgA)"/>
+
+  <rect x="60" y="320" width="500" height="56" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="80" y="354" font-size="13.5" font-weight="bold" fill="#7c2d12">④ Grafana 新增 VM 数据源，面板对照观察</text>
+  <line x1="310" y1="376" x2="310" y2="394" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mgA)"/>
+
+  <rect x="60" y="396" width="500" height="56" rx="9" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="80" y="430" font-size="13.5" font-weight="bold" fill="#7f1d1d">⑤ 切面板数据源；告警影子运行后再切</text>
+  <line x1="310" y1="452" x2="310" y2="470" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mgA)"/>
+
+  <rect x="60" y="472" width="500" height="56" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="80" y="506" font-size="13.5" font-weight="bold" fill="#14532d">⑥ 决定采集侧是否交给 vmagent（终态）</text>
+
+  <text x="600" y="114" font-size="12" fill="#0f172a">单机版 1 个进程即可；先不接生产查询</text>
+  <text x="600" y="138" font-size="12" fill="#64748b">历史数据先用 vmctl 回灌，与双写并行</text>
+
+  <text x="600" y="190" font-size="12" fill="#0f172a">⚠️ 多实例写入务必开 dedup（与 scrape_interval 对齐）</text>
+  <text x="600" y="214" font-size="12" fill="#64748b">此后「从现在起的数据」已在 VM，无迁移缺口</text>
+
+  <text x="600" y="266" font-size="12" fill="#0f172a">对不上的先归类：rate/increase、NaN、负 offset</text>
+  <text x="600" y="290" font-size="12" fill="#64748b">需要与 Prometheus 完全对齐 → 用 *_prometheus 函数</text>
+
+  <text x="600" y="342" font-size="12" fill="#0f172a">面板通常只改 data source 即可</text>
+  <text x="600" y="366" font-size="12" fill="#64748b">重点抽查有行为差异的那几条查询</text>
+
+  <text x="600" y="418" font-size="12" fill="#0f172a">⚠️ 阈值口径可能变（尤其用了 increase() 的规则）</text>
+  <text x="600" y="442" font-size="12" fill="#64748b">影子运行 = 只发测试通道，不触发真实告警</text>
+
+  <text x="600" y="494" font-size="12" fill="#0f172a">要边缘磁盘缓冲 → 交；要最小改动 → 保留 Prometheus</text>
+  <text x="600" y="518" font-size="12" fill="#64748b">这一步可延后，不影响前面已完成的迁移</text>
+
+  <rect x="40" y="556" width="920" height="66" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="60" y="584" font-size="12.5" fill="#0f172a">⭐ 核心原则：先并行双写保证「从现在起的数据都在」，再回灌历史——而不是「搬完历史才切换」。</text>
+  <text x="60" y="608" font-size="12.5" fill="#0f172a">⚠️ 最容易被低估的是告警口径：函数行为差异可能让阈值静默失效，必须逐条复核。</text>
+</svg>

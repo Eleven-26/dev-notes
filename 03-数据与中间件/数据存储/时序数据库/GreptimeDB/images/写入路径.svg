@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="waA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次写入的路径：WAL → memtable → flush 成 SST</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">写入在 WAL 持久化、并在内存可见后即可向客户端确认；落成列式文件是后台的事</text>
+
+  <rect x="60" y="84" width="880" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">① 写入到达 Region</text>
+  <text x="500" y="130" text-anchor="middle" font-size="12" fill="#1d4ed8">客户端 → Frontend 解析协议与路由 → 转发到承载目标 Region 的 Datanode</text>
+
+  <line x1="500" y1="144" x2="500" y2="168" stroke="#64748b" stroke-width="1.8" marker-end="url(#waA)"/>
+
+  <rect x="60" y="168" width="880" height="62" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="500" y="192" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">② 写 WAL（预写日志）：先持久化</text>
+  <text x="500" y="214" text-anchor="middle" font-size="12" fill="#991b1b">可落本地盘 / EBS 类云块存储（Local WAL），也可落 Kafka（Remote WAL）</text>
+
+  <line x1="500" y1="230" x2="500" y2="254" stroke="#64748b" stroke-width="1.8" marker-end="url(#waA)"/>
+
+  <rect x="60" y="254" width="880" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="278" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">③ 写 mutable memtable：内存可见</text>
+  <text x="500" y="300" text-anchor="middle" font-size="12" fill="#1d4ed8">行按 time index 写入内存缓冲区，服务近期写入，并累积数据等待持久化</text>
+
+  <line x1="500" y1="316" x2="500" y2="340" stroke="#64748b" stroke-width="1.8" marker-end="url(#waA)"/>
+
+  <rect x="60" y="340" width="880" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="364" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">④ 达到阈值后 flush：冻结 memtable → Parquet SST</text>
+  <text x="500" y="386" text-anchor="middle" font-size="12" fill="#166534">冻结可变 memtable、安装新的可变 memtable，再把冻结部分写成不可变 SST 文件</text>
+
+  <line x1="500" y1="402" x2="500" y2="426" stroke="#64748b" stroke-width="1.8" marker-end="url(#waA)"/>
+
+  <rect x="60" y="426" width="880" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="500" y="450" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">⑤ 在 region manifest 记录新文件的元数据</text>
+  <text x="500" y="472" text-anchor="middle" font-size="12" fill="#475569">manifest 是记录 region 变更（新增 / 被 compaction 移除的文件）的元数据日志</text>
+
+  <text x="60" y="520" font-size="12" fill="#64748b">⭐ 写入确认时机：WAL 中持久化 + 内存中可见 —— 之后把缓冲数据转成列式文件是后台动作。</text>
+  <text x="60" y="540" font-size="12" fill="#64748b">⚠️ 路径口径引自 Greptime 官方博客《GreptimeDB 存储引擎设计内幕》（2022-12-20）与官方文档；未做本机实测。</text>
+</svg>

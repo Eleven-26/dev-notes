@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="archA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">GreptimeDB 整体架构：三大核心组件 + 可选 Flow 运行时</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">standalone 把三层合并进一个进程；分布式用共享对象存储分离计算与存储</text>
+
+  <rect x="60" y="84" width="880" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">客户端 / 采集端</text>
+  <text x="500" y="130" text-anchor="middle" font-size="12" fill="#475569">Prometheus Remote Write · OTLP · Loki Push · InfluxDB Line · MySQL / PostgreSQL · gRPC / HTTP</text>
+
+  <line x1="500" y1="140" x2="500" y2="164" stroke="#64748b" stroke-width="1.8" marker-end="url(#archA)"/>
+
+  <rect x="60" y="164" width="880" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="188" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">Frontend（无状态，可水平扩缩）</text>
+  <text x="500" y="210" text-anchor="middle" font-size="12" fill="#1d4ed8">鉴权 · 多协议转内部 gRPC · 分布式查询规划 · 按 Region 路由读写</text>
+
+  <rect x="60" y="246" width="430" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="275" y="270" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">Metasrv</text>
+  <text x="275" y="292" text-anchor="middle" font-size="11.5" fill="#166534">catalog / schema / 表 / Region 路由 / procedure</text>
+
+  <rect x="510" y="246" width="430" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="725" y="270" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">Flownode（可选）</text>
+  <text x="725" y="292" text-anchor="middle" font-size="11.5" fill="#9a3412">Flow 任务：持续计算并物化到 sink 表</text>
+
+  <line x1="275" y1="222" x2="275" y2="246" stroke="#64748b" stroke-width="1.6" marker-end="url(#archA)"/>
+  <line x1="725" y1="222" x2="725" y2="246" stroke="#64748b" stroke-width="1.6" marker-end="url(#archA)"/>
+
+  <line x1="500" y1="306" x2="500" y2="330" stroke="#64748b" stroke-width="1.8" marker-end="url(#archA)"/>
+
+  <rect x="60" y="330" width="880" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="354" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">Datanode（承载 Region）</text>
+  <text x="500" y="376" text-anchor="middle" font-size="12" fill="#1d4ed8">执行读写 · 记录 WAL · 运行 compaction · 把数据文件写入存储后端</text>
+
+  <rect x="60" y="416" width="430" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="275" y="440" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">WAL（预写日志）</text>
+  <text x="275" y="462" text-anchor="middle" font-size="11.5" fill="#991b1b">Local（本地盘 / EBS 类）· Remote（Kafka）· Noop</text>
+
+  <rect x="510" y="416" width="430" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="725" y="440" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">持久化数据</text>
+  <text x="725" y="462" text-anchor="middle" font-size="11.5" fill="#475569">Parquet SST + Puffin 索引 + manifest</text>
+
+  <line x1="275" y1="390" x2="275" y2="416" stroke="#64748b" stroke-width="1.6" marker-end="url(#archA)"/>
+  <line x1="725" y1="390" x2="725" y2="416" stroke="#64748b" stroke-width="1.6" marker-end="url(#archA)"/>
+
+  <text x="60" y="510" font-size="12" fill="#64748b">说明：三个核心组件在 standalone 下合并为一个进程；分布式下对象存储是共享的持久化位置，本地盘只做 cache。</text>
+  <text x="60" y="530" font-size="12" fill="#64748b">⚠️ 组件职责引自 GreptimeDB 官方文档《架构》；本图未做本机实测。</text>
+</svg>

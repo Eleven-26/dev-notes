@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="csq-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">跨信号关联查询：三张表 → 一条 SQL → 一行上下文</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">关联键来自数据本身：trace_id 缝合链路与日志，service_name / host 缝合指标</text>
+
+  <rect x="30" y="92" width="290" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="175" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">opentelemetry_traces</text>
+  <text x="175" y="143" text-anchor="middle" font-size="11.5" fill="#1d4ed8">service_name（Tag）</text>
+  <text x="175" y="163" text-anchor="middle" font-size="11.5" fill="#1d4ed8">trace_id / span_id</text>
+  <text x="175" y="183" text-anchor="middle" font-size="11.5" fill="#1d4ed8">span_name / duration_nano</text>
+  <text x="175" y="203" text-anchor="middle" font-size="11.5" fill="#1d4ed8">span_status_code</text>
+  <text x="175" y="226" text-anchor="middle" font-size="11" fill="#475569">一行一个 span</text>
+
+  <rect x="355" y="92" width="290" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">opentelemetry_logs</text>
+  <text x="500" y="143" text-anchor="middle" font-size="11.5" fill="#166534">trace_id</text>
+  <text x="500" y="163" text-anchor="middle" font-size="11.5" fill="#166534">severity_text</text>
+  <text x="500" y="183" text-anchor="middle" font-size="11.5" fill="#166534">body</text>
+  <text x="500" y="203" text-anchor="middle" font-size="11.5" fill="#166534">resource_attributes</text>
+  <text x="500" y="226" text-anchor="middle" font-size="11" fill="#475569">append-only 日志表</text>
+
+  <rect x="680" y="92" width="290" height="150" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="825" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">greptime_physical_table</text>
+  <text x="825" y="143" text-anchor="middle" font-size="11.5" fill="#9a3412">service_name / host（Tag）</text>
+  <text x="825" y="163" text-anchor="middle" font-size="11.5" fill="#9a3412">greptime_value（Field）</text>
+  <text x="825" y="183" text-anchor="middle" font-size="11.5" fill="#9a3412">greptime_timestamp</text>
+  <text x="825" y="203" text-anchor="middle" font-size="11.5" fill="#9a3412">latency / cpu_util</text>
+  <text x="825" y="226" text-anchor="middle" font-size="11" fill="#475569">多张逻辑表共用</text>
+
+  <line x1="175" y1="244" x2="175" y2="294" stroke="#334155" stroke-width="1.6" marker-end="url(#csq-arw)"/>
+  <line x1="500" y1="244" x2="500" y2="294" stroke="#334155" stroke-width="1.6" marker-end="url(#csq-arw)"/>
+  <line x1="825" y1="244" x2="825" y2="294" stroke="#334155" stroke-width="1.6" marker-end="url(#csq-arw)"/>
+
+  <rect x="30" y="300" width="940" height="66" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="500" y="326" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">共同标识（JOIN 键）：先按时间范围 / 时间窗口缩小，再关联</text>
+  <text x="500" y="350" text-anchor="middle" font-size="12" fill="#334155">trace_id → 链路 ↔ 日志　　service_name / host → 指标 ↔ 日志 / 链路</text>
+
+  <line x1="500" y1="366" x2="500" y2="412" stroke="#334155" stroke-width="1.6" marker-end="url(#csq-arw)"/>
+
+  <rect x="30" y="418" width="940" height="118" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="446" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">一行结果：服务 / span / 耗时 + 同期日志 + 同期指标</text>
+  <text x="500" y="472" text-anchor="middle" font-size="11.5" fill="#1e3a8a">SELECT t.service_name, t.span_name, t.duration_nano/1000000 AS duration_ms, l.severity_text, l.body, m.p95_latency</text>
+  <text x="500" y="494" text-anchor="middle" font-size="11.5" fill="#1e3a8a">FROM opentelemetry_traces t JOIN opentelemetry_logs l ON l.trace_id = t.trace_id</text>
+  <text x="500" y="516" text-anchor="middle" font-size="11.5" fill="#1e3a8a">JOIN metrics m ON m.service_name = t.service_name</text>
+
+  <rect x="30" y="548" width="940" height="56" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="46" y="574" font-size="12" fill="#0f172a">⚠️ 三张表时间粒度常不同：先把粒度统一（CTE / 子查询 + 时间窗口），否则 JOIN 会放大或丢行。</text>
+  <text x="46" y="594" font-size="12" fill="#0f172a">⚠️ trace_id 属高基数列，用 skipping index 而非塞进主键；时间过滤写在子查询里先缩扫描。</text>
+</svg>

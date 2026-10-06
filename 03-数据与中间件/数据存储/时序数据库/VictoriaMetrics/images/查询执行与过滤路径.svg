@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="qfA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="qfB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条查询的执行与过滤路径：代价在哪一步放大</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">顺序固定：选择器 → 索引 → 护栏 → 读 part → rollup → 缓存；右侧标注每步的成本来源</text>
+
+  <rect x="50" y="90" width="440" height="66" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="70" y="118" font-size="14" font-weight="bold" fill="#1e3a8a">① 标签选择器 series_selector</text>
+  <text x="70" y="142" font-size="12" fill="#1e3a8a">metric name + label 过滤（等值 / 正则 / or 分组）</text>
+
+  <line x1="270" y1="156" x2="270" y2="176" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#qfA)"/>
+
+  <rect x="50" y="178" width="440" height="66" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="70" y="206" font-size="14" font-weight="bold" fill="#14532d">② 索引查找：按时间范围选索引</text>
+  <text x="70" y="230" font-size="12" fill="#14532d">时间范围 &lt; 分区跨度 → per-day；否则 → global</text>
+
+  <line x1="270" y1="244" x2="270" y2="264" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#qfA)"/>
+
+  <rect x="50" y="266" width="440" height="66" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="70" y="294" font-size="14" font-weight="bold" fill="#7c2d12">③ 护栏裁决（可在此拒绝查询）</text>
+  <text x="70" y="318" font-size="12" fill="#7c2d12">超限 → 拒绝；超时 → 取消，保护整实例</text>
+
+  <line x1="270" y1="332" x2="270" y2="352" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#qfA)"/>
+
+  <rect x="50" y="354" width="440" height="66" rx="9" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="70" y="382" font-size="14" font-weight="bold" fill="#7f1d1d">④ 按 TSID 读取 data part 原始样本</text>
+  <text x="70" y="406" font-size="12" fill="#7f1d1d">按 TSID 排序定位 block（每 block ≤ 8192 样本）</text>
+
+  <line x1="270" y1="420" x2="270" y2="440" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#qfA)"/>
+
+  <rect x="50" y="442" width="440" height="66" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="70" y="470" font-size="14" font-weight="bold" fill="#1e3a8a">⑤ rollup 计算（rate / avg_over_time 等）</text>
+  <text x="70" y="494" font-size="12" fill="#1e3a8a">按 step 对齐时间点，逐点算出结果值</text>
+
+  <line x1="270" y1="508" x2="270" y2="528" stroke="#2563eb" stroke-width="2" marker-end="url(#qfB)"/>
+
+  <rect x="50" y="530" width="440" height="66" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="70" y="558" font-size="14" font-weight="bold" fill="#14532d">⑥ rollup result cache → 返回结果</text>
+  <text x="70" y="582" font-size="12" fill="#14532d">命中则直接返回；未命中才算完再写缓存</text>
+
+  <line x1="490" y1="211" x2="512" y2="211" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="490" y1="299" x2="512" y2="299" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="490" y1="387" x2="512" y2="387" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="490" y1="563" x2="512" y2="563" stroke="#cbd5e1" stroke-width="1.4"/>
+
+  <text x="520" y="200" font-size="12" fill="#0f172a">⚠️ 高基数 regexp 在这一步放大候选集</text>
+  <text x="520" y="220" font-size="12" fill="#64748b">负向匹配要先枚举全集再排除，最贵</text>
+
+  <text x="520" y="288" font-size="12" fill="#0f172a">护栏参数分两类：单查询资源 + 并发总量</text>
+  <text x="520" y="308" font-size="12" fill="#64748b">maxUniqueTimeseries / maxQueryDuration</text>
+  <text x="520" y="328" font-size="12" fill="#64748b">/ maxSamplesPerQuery / maxConcurrentRequests</text>
+
+  <text x="520" y="376" font-size="12" fill="#0f172a">读放大与 part 数量相关</text>
+  <text x="520" y="396" font-size="12" fill="#64748b">合并充分 → 要扫的 part 更少 → 更快</text>
+
+  <text x="520" y="552" font-size="12" fill="#0f172a">⚠️ 回填历史数据后缓存可能返回旧结果</text>
+  <text x="520" y="572" font-size="12" fill="#64748b">→ -search.disableCache 或请求带 nocache=1</text>
+
+  <rect x="40" y="616" width="920" height="72" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="60" y="644" font-size="12.5" fill="#0f172a">⭐ 排查口诀：先看②的候选集是不是被正则放大，再看③是被哪个护栏拦下，最后才怀疑缓存；</text>
+  <text x="60" y="668" font-size="12.5" fill="#0f172a">「历史补写后结果不对」→ 优先用 nocache=1 排除 rollup result cache，而不是先怀疑数据本身。</text>
+</svg>
