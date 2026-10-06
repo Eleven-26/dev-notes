@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sw1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SkyWalking 四层架构：探针 → OAP → Storage → UI</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">上报走 gRPC(11800)，查询走 GraphQL(12800)，11.x 另有管理面 admin-server(17128)</text>
+
+  <rect x="70" y="84" width="400" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="90" y="110" font-size="13.5" font-weight="bold" fill="#1e3a8a">Tracing：各语言探针</text>
+  <text x="90" y="132" font-size="11.5" fill="#1e3a8a">Java 字节码增强 / Go 编译期注入 / PHP 扩展 / Node patch</text>
+
+  <rect x="530" y="84" width="400" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="550" y="110" font-size="13.5" font-weight="bold" fill="#1e3a8a">Metrics：Service Mesh / eBPF</text>
+  <text x="550" y="132" font-size="11.5" fill="#1e3a8a">Envoy 指标、Prometheus fetcher、Zipkin / OTLP 兼容接收</text>
+
+  <line x1="270" y1="146" x2="270" y2="164" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sw1)"/>
+  <line x1="730" y1="146" x2="730" y2="164" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sw1)"/>
+
+  <rect x="70" y="164" width="860" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="90" y="192" font-size="13.5" font-weight="bold" fill="#0f172a">OAP（Observability Analysis Platform）</text>
+
+  <rect x="90" y="206" width="190" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="104" y="228" font-size="12" font-weight="bold" fill="#7c2d12">Receiver</text>
+  <text x="104" y="248" font-size="11" fill="#7c2d12">gRPC / HTTP 接收</text>
+
+  <rect x="300" y="206" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="314" y="228" font-size="12" font-weight="bold" fill="#7c2d12">Analysis Core</text>
+  <text x="314" y="248" font-size="11" fill="#7c2d12">OAL V2 聚合 · 拓扑 · 告警</text>
+
+  <rect x="530" y="206" width="180" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="544" y="228" font-size="12" font-weight="bold" fill="#7c2d12">Query Core</text>
+  <text x="544" y="248" font-size="11" fill="#7c2d12">GraphQL 查询</text>
+
+  <rect x="730" y="206" width="180" height="54" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="744" y="228" font-size="12" font-weight="bold" fill="#0f172a">Admin Server</text>
+  <text x="744" y="248" font-size="11" fill="#0f172a">17128（11.x 新增）</text>
+
+  <line x1="280" y1="233" x2="300" y2="233" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sw1)"/>
+
+  <text x="90" y="290" font-size="11.5" fill="#334155">写路径：Receiver → Analysis Core → Storage（聚合指标与拓扑边在这里算出来）</text>
+  <text x="90" y="314" font-size="11.5" fill="#334155">读路径：UI → Query Core → Storage；Admin Server 供运行期管理与自检</text>
+  <text x="90" y="342" font-size="11.5" fill="#b91c1c">⚠️ 两端都有异步队列，队列满时按策略丢数据——宁可丢数据，也不阻塞业务线程</text>
+
+  <line x1="500" y1="374" x2="500" y2="392" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sw1)"/>
+
+  <rect x="70" y="392" width="860" height="88" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="90" y="420" font-size="13.5" font-weight="bold" fill="#0f172a">Storage（可插拔）</text>
+  <text x="90" y="444" font-size="11.5" fill="#334155">BanyanDB（selector 默认值）/ Elasticsearch / MySQL / PostgreSQL</text>
+  <text x="90" y="466" font-size="11.5" fill="#b91c1c">⚠️ H2 已在 10.2 移除；TiDB 走 MySQL 兼容协议接入，selector 里没有 TiDB 键</text>
+
+  <line x1="500" y1="480" x2="500" y2="498" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sw1)"/>
+
+  <rect x="70" y="498" width="860" height="88" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="90" y="526" font-size="13.5" font-weight="bold" fill="#14532d">UI（11.x 起镜像实现是 Horizon，容器内监听 8081）</text>
+  <text x="90" y="550" font-size="11.5" fill="#14532d">Dashboard / 拓扑图 / Trace / 性能剖析 / 日志 / 告警</text>
+  <text x="90" y="572" font-size="11.5" fill="#14532d">六个面板对应排障六段：发现异常 → 定位服务 → 看链路 → 找代码 → 查日志 → 回溯时间</text>
+
+  <rect x="20" y="606" width="960" height="76" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="634" font-size="12" fill="#0f172a">⭐ 一句话记忆：探针采集 → OAP 接收与分析 → Storage 持久化 → UI 查询展示（数据来源两类：Tracing 与 Metrics）</text>
+  <text x="36" y="658" font-size="12" fill="#0f172a">端口：11800 gRPC 上报 · 12800 REST / GraphQL · 17128 admin-server · BanyanDB 17912 · Horizon UI 8081</text>
+</svg>

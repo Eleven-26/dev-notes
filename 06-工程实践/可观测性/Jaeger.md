@@ -1,12 +1,12 @@
 # Jaeger 链路追踪
 
-> Trace / Span 与采样率的核心概念、Jaeger 的四组件架构、与 OpenTelemetry 的协作关系、部署方式与采样策略、与 SkyWalking 的分工。
+> Trace / Span 与采样率的核心概念、Jaeger 的四组件架构、与 OpenTelemetry 的协作关系、部署方式与采样策略、UI 检索视图、与 SkyWalking 的分工。
 >
 > 内容整理自个人学习笔记。同目录另见 [Skywalking.md](Skywalking.md)；接入代码按语言拆成分册，见第五节。
 
 Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNCF，2019 年毕业（Graduated），用于分布式/微服务架构下的**调用链追踪与性能分析**：一次请求经过了哪些服务、每个服务做了什么、耗时卡在哪一跳、失败发生在哪个环节。
 
-覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → 使用方法（分册）→ 与 SkyWalking 分工 → 常见追问。结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的落地映射见 [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第十节。
+覆盖内容：核心概念 → 架构与选型 → 与 OpenTelemetry 的协作 → 部署与采样 → UI 视图 → 使用方法（分册）→ 与 SkyWalking 分工 → 常见追问。结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的落地映射见 [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) 第十节。
 
 ## 一、核心概念
 
@@ -52,7 +52,7 @@ Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNC
 |---|---|---|---|
 | 探针方式 | OTel SDK / OTel Java Agent | Java Agent / 多语言 agent（含 Go native） | Brave / OTel SDK |
 | 侵入性 | 中（SDK 显式埋点或 OTel Agent） | 低（字节码增强，几乎零改码） | 中 |
-| 存储 | ES / Cassandra / ClickHouse / Badger | ES / BanyanDB / H2 / MySQL | ES / MySQL / 内存 |
+| 存储 | ES / Cassandra / ClickHouse / Badger | BanyanDB（默认）/ ES / MySQL / PostgreSQL（**H2 已于 10.2 移除**） | ES / MySQL / 内存 |
 | UI | 简洁，专注 trace 检索与 span 瀑布 | 丰富：拓扑、指标、告警、日志关联 | 极简 |
 | 生态 | 与 **OpenTelemetry 深度绑定**（v2 即 OTel Collector） | Apache 顶级，自成体系（OAP + agent） | 老牌，功能收敛 |
 | 适用 | 已用 OTel / 多语言 / 要可移植链路 | 要开箱即用 APM 大盘与拓扑 | 极简嵌入式 |
@@ -77,14 +77,6 @@ Jaeger (v2 = Collector + Query + UI) ──▶ Storage(ClickHouse/ES) ──▶ 
 ![从 OTel 埋点到 Jaeger UI 的数据流](images/OTel到Jaeger的数据流.svg)
 
 ⚠️ 混用坑：链路头格式必须端到端一致。上游注入 `traceparent`、下游只认 `sw8`，链路会断成两段独立 trace。
-
-## 四、Jaeger UI
-
-http://127.0.0.1:16686/
-
-![Jaeger 面板](images/jaeger-ui-面板.png)
-
-![Jaeger 链路](images/jaeger-ui-链路.png)
 
 ## 四、部署
 
@@ -187,6 +179,16 @@ service:
 
 ⭐ 生产推荐 `ParentBased(TraceIDRatioBased(x))`：保证**同一 trace 全链路采样决策一致**，避免下游有、上游无。
 
+### 4.4 Jaeger UI（检索入口与视图）
+
+Query 服务自带 UI，与查询接口同进程：`http://127.0.0.1:16686/`。左侧按 **服务 / 操作 / 标签 / 时间窗 / 耗时区间** 检索，右侧是 Span 调用树与耗时瀑布（含 span 内嵌的 log rows 与 tags）。
+
+![Jaeger 面板](images/jaeger-ui-面板.png)
+
+![Jaeger 链路](images/jaeger-ui-链路.png)
+
+⚠️ UI 只做「链路」这一件事：拓扑要靠 Service Graph 另配指标，告警没有，业务日志也不在这里——动线断点与补齐方式见 [可观测性选型.md](可观测性选型.md) 第 6.1 节。
+
 ## 五、使用方法
 
 本篇只讲概念、架构、部署与选型；接入代码按语言拆成分册，与 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 同一命名口径：
@@ -206,7 +208,7 @@ service:
 | 埋点协议 | OTLP（W3C `traceparent`） | native gRPC（`sw8` header），另有 OTel/Zipkin receiver |
 | 侵入性 | SDK 显式埋点 或 OTel Agent | Agent 字节码增强，几乎零改码 |
 | 拓扑/告警 | 无（需配合 Grafana 等） | 内置拓扑图、告警规则 |
-| 存储 | ClickHouse / ES / Cassandra | BanyanDB / ES / H2 |
+| 存储 | ClickHouse / ES / Cassandra | BanyanDB（11.0.0 默认）/ ES / MySQL / PostgreSQL |
 | 跨语言 | 天然（OTel 全语言） | 多语言 agent，Java/Go 最成熟 |
 
 ⭐ 建议：**二选一为主线，不要并行双报**。已用 OTel、多语言、要标准化 → **Jaeger 主链路**，指标告警另接 Prometheus + Grafana；要开箱即用 APM 大盘与拓扑告警 → **SkyWalking 主线**，Jaeger 仅在按 ID 精查时按需开。
@@ -224,6 +226,7 @@ service:
 
 ## 关联
 
+- [README.md](README.md) — 本目录导读：四篇的分工、阅读顺序与本机实测坐标
 - [接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md) — Go 侧 OTel SDK 埋点的完整接入手册（含 [photography-server](https://github.com/Eleven-26/photography-server) 落地映射）
 - [接入Jaeger.md](../../01-编程语言/java/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
 - [Skywalking.md](Skywalking.md) — 探针式 APM 的另一条路线与分工
@@ -231,4 +234,5 @@ service:
 - [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
 - [K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — 采集组件的部署形态
 - [可观测性选型.md](可观测性选型.md) — 链路追踪的完整选型表（含指标、日志、存储、可视化的选型）
+
 > 反向引用（本篇被下列文档引到）：[Prometheus直方图与分位数.md](Prometheus直方图与分位数.md)

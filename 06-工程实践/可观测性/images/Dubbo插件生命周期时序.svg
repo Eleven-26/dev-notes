@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="db1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="760" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">Dubbo 插件生命周期：两侧的 span 靠 sw8 头接成同一条链路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">四个阶段：插件发现 → 类增强 → 运行期拦截 → 停止与 flush</text>
+
+  <line x1="130" y1="120" x2="130" y2="610" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="390" y1="120" x2="390" y2="610" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="640" y1="120" x2="640" y2="610" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="890" y1="120" x2="890" y2="610" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <rect x="25" y="86" width="210" height="34" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="130" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">服务 A 业务代码（Consumer）</text>
+  <rect x="285" y="86" width="210" height="34" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="390" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">服务 A 侧 Agent</text>
+  <rect x="535" y="86" width="210" height="34" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="640" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">服务 B 侧 Agent</text>
+  <rect x="785" y="86" width="210" height="34" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="890" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">服务 B 业务代码（Provider）</text>
+
+  <rect x="285" y="140" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="390" y="164" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">① 插件发现（JVM 启动期）</text>
+  <text x="390" y="186" text-anchor="middle" font-size="11" fill="#7c2d12">witness 类命中才生效</text>
+
+  <rect x="285" y="206" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="390" y="230" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">② 类增强（类加载期）</text>
+  <text x="390" y="252" text-anchor="middle" font-size="11" fill="#7c2d12">Consumer / Provider 两侧织入</text>
+
+  <line x1="130" y1="286" x2="384" y2="286" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#db1)"/>
+  <text x="257" y="278" text-anchor="middle" font-size="11" fill="#334155">③ invoke() 被拦截</text>
+
+  <rect x="285" y="306" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="390" y="330" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">④ 创建 Exit span</text>
+  <text x="390" y="352" text-anchor="middle" font-size="11" fill="#7c2d12">operationName / peer 入 span</text>
+
+  <line x1="390" y1="386" x2="634" y2="386" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#db1)"/>
+  <text x="512" y="378" text-anchor="middle" font-size="11" fill="#334155">⑤ attachment 携带 sw8 头</text>
+
+  <rect x="535" y="406" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="640" y="430" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">⑥ Extract 上游上下文</text>
+  <text x="640" y="452" text-anchor="middle" font-size="11" fill="#7c2d12">创建 Entry span（同 traceId）</text>
+
+  <line x1="640" y1="486" x2="884" y2="486" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#db1)"/>
+  <text x="762" y="478" text-anchor="middle" font-size="11" fill="#334155">⑦ 调用真实方法</text>
+
+  <line x1="890" y1="526" x2="646" y2="526" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#db1)"/>
+  <text x="768" y="518" text-anchor="middle" font-size="11" fill="#334155">⑧ 正常返回 / 抛异常</text>
+
+  <rect x="535" y="546" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="640" y="570" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">⑨ 异常：span 标记 error</text>
+  <text x="640" y="592" text-anchor="middle" font-size="11" fill="#7c2d12">handleMethodException 记堆栈</text>
+
+  <rect x="20" y="620" width="960" height="112" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="650" font-size="12" fill="#0f172a">⑩ 停止与 flush（JVM 退出期）：ShutdownHook 先停消费者线程、flush 队列中未发送的数据，再关 gRPC 通道 —— kill -9 会丢最后一批链路数据</text>
+  <text x="36" y="678" font-size="12" fill="#0f172a">⭐ 同一个 traceId 把「服务 A → 服务 B」两个 segment 串起来；拓扑图的边就是这样从 Trace 数据里推出来的</text>
+  <text x="36" y="708" font-size="12" fill="#b91c1c">⚠️ 该有的边没出现 = 上下文没透传（常见于 Nginx / 网关裁剪 header，或线程池没做上下文快照）</text>
+</svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="dc1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">轻量级队列内核：DataCarrier → Channel → N 个环形 Buffer</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">多生产者 → 多个无锁环形队列 → 每个 Buffer 绑一个消费线程 → 批量 gRPC 上报</text>
+
+  <text x="40" y="112" font-size="13" font-weight="bold" fill="#0f172a">生产者：业务线程（拦截器里 produce）</text>
+  <text x="40" y="134" font-size="11.5" fill="#64748b">采样发生在入队之前，未命中直接丢弃</text>
+
+  <rect x="40" y="176" width="200" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="140" y="201" text-anchor="middle" font-size="11.5" fill="#1e3a8a">业务线程 1 · produce()</text>
+  <rect x="40" y="224" width="200" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="140" y="249" text-anchor="middle" font-size="11.5" fill="#1e3a8a">业务线程 2 · produce()</text>
+  <rect x="40" y="272" width="200" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="140" y="297" text-anchor="middle" font-size="11.5" fill="#1e3a8a">业务线程 N · produce()</text>
+
+  <line x1="240" y1="196" x2="300" y2="196" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dc1)"/>
+  <line x1="240" y1="244" x2="300" y2="244" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dc1)"/>
+  <line x1="240" y1="292" x2="300" y2="292" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dc1)"/>
+
+  <rect x="300" y="120" width="380" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="316" y="146" font-size="13" font-weight="bold" fill="#0f172a">DataCarrier（队列内核的门户）</text>
+
+  <rect x="316" y="156" width="348" height="166" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="330" y="172" font-size="11.5" fill="#334155">Channel：按线程 / 分区把数据分散到 N 个 Buffer</text>
+
+  <rect x="330" y="176" width="320" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="490" y="201" text-anchor="middle" font-size="11" fill="#7c2d12">Buffer0：定长数组 + 环形游标（取模定位）</text>
+  <rect x="330" y="224" width="320" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="490" y="249" text-anchor="middle" font-size="11" fill="#7c2d12">Buffer1：写入游标原子自增，免锁</text>
+  <rect x="330" y="272" width="320" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="490" y="297" text-anchor="middle" font-size="11" fill="#7c2d12">Buffer N：长度为 2 的幂时用位运算</text>
+
+  <line x1="680" y1="196" x2="720" y2="196" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dc1)"/>
+  <line x1="680" y1="244" x2="720" y2="244" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dc1)"/>
+  <line x1="680" y1="292" x2="720" y2="292" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dc1)"/>
+
+  <rect x="720" y="176" width="240" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="840" y="201" text-anchor="middle" font-size="11" fill="#14532d">ConsumerThread 0 · consume(List)</text>
+  <rect x="720" y="224" width="240" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="840" y="249" text-anchor="middle" font-size="11" fill="#14532d">ConsumerThread 1 · consume(List)</text>
+  <rect x="720" y="272" width="240" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="840" y="297" text-anchor="middle" font-size="11" fill="#14532d">ConsumerThread N · consume(List)</text>
+
+  <line x1="840" y1="312" x2="840" y2="330" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dc1)"/>
+  <rect x="720" y="330" width="240" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="840" y="352" text-anchor="middle" font-size="11" fill="#1e3a8a">TraceSegmentReportServiceClient</text>
+  <text x="840" y="372" text-anchor="middle" font-size="11" fill="#1e3a8a">打包成 gRPC 请求，批量发往 OAP</text>
+
+  <rect x="40" y="330" width="200" height="52" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="54" y="352" font-size="11" fill="#0f172a">容量 = CHANNEL_SIZE</text>
+  <text x="54" y="372" font-size="11" fill="#0f172a">× BUFFER_SIZE（构造时定）</text>
+
+  <rect x="20" y="420" width="460" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="448" font-size="13" font-weight="bold" fill="#0f172a">三种存储策略（BufferStrategy）</text>
+  <text x="36" y="478" font-size="11.5" fill="#334155">BLOCKING：阻塞等空位（默认）——不丢数据但拖慢业务</text>
+  <text x="36" y="502" font-size="11.5" fill="#334155">OVERRIDE：新数据覆盖旧数据——适合只看最新值</text>
+  <text x="36" y="526" font-size="11.5" fill="#334155">IF_POSSIBLE：从 index 往后找 n 位，有则存、无则丢</text>
+  <text x="36" y="550" font-size="11.5" fill="#334155">n = IDataPartitioner.maxRetryCount，默认为 3</text>
+  <text x="36" y="580" font-size="11.5" fill="#b91c1c">⚠️ 队列满时按策略丢，绝不反压业务线程</text>
+
+  <rect x="520" y="420" width="460" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="536" y="448" font-size="13" font-weight="bold" fill="#0f172a">通道之间互不阻塞</text>
+  <text x="536" y="478" font-size="11.5" fill="#334155">trace / meter / logging 各走独立的 DataCarrier</text>
+  <text x="536" y="502" font-size="11.5" fill="#334155">trace 上报通常 1 个消费线程就够，日志指标另配</text>
+  <text x="536" y="526" font-size="11.5" fill="#334155">消费循环：读 index → 无新数据轻量自旋让出 CPU</text>
+  <text x="536" y="550" font-size="11.5" fill="#334155">→ 有新数据按批取出 → 回调 IConsumer.consume</text>
+  <text x="536" y="580" font-size="11.5" fill="#b91c1c">⚠️ OAP 抖动只影响队列水位，不影响业务线程</text>
+
+  <rect x="20" y="624" width="960" height="46" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="652" font-size="11.5" fill="#0f172a">⭐ 10.4 起 BatchQueue 替代 DataCarrier：语义不变（有界 + 批量 + 异步 + 满了按策略丢），官方 changelog 称 OAP 线程 150+ → ~72</text>
+</svg>
