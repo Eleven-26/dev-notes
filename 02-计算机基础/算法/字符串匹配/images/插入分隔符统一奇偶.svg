@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Manacher 预处理：插入 # 把奇偶回文统一成奇数</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">样例 abba（n = 4）→ #a#b#b#a#（m = 2n + 1 = 9）；半径含中心，原串回文长度 = r[i] - 1</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="460" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 插入分隔符：把两种中心统一成一种</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">样例 abba：长度 4 的回文，中心落在两个字符之间</text>
+
+    <text x="14" y="74" font-size="11" fill="#334155">原串 abba（n = 4，偶回文）</text>
+    <g font-family="Consolas, Courier New, monospace" font-size="9.5" fill="#94a3b8" text-anchor="middle">
+      <text x="125" y="96">0</text>
+      <text x="195" y="96">1</text>
+      <text x="265" y="96">2</text>
+      <text x="335" y="96">3</text>
+    </g>
+    <g>
+      <rect x="90" y="102" width="70" height="44" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="160" y="102" width="70" height="44" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="230" y="102" width="70" height="44" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="300" y="102" width="70" height="44" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    </g>
+    <g font-family="Consolas, Courier New, monospace" font-size="22" font-weight="bold" fill="#1e3a8a" text-anchor="middle">
+      <text x="125" y="130">a</text>
+      <text x="195" y="130">b</text>
+      <text x="265" y="130">b</text>
+      <text x="335" y="130">a</text>
+    </g>
+    <line x1="230" y1="92" x2="230" y2="150" stroke="#dc2626" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="14" y="168" font-size="10" fill="#334155">回文中心落在 b|b 之间 → 没有单个字符做中心</text>
+    <text x="240" y="170" font-size="9.5" fill="#dc2626">偶数长度</text>
+
+    <text x="14" y="190" font-size="11" fill="#334155">插入 # 后 #a#b#b#a#（m = 2n + 1 = 9）</text>
+    <g font-family="Consolas, Courier New, monospace" font-size="9.5" fill="#94a3b8" text-anchor="middle">
+      <text x="36" y="212">0</text>
+      <text x="80" y="212">1</text>
+      <text x="124" y="212">2</text>
+      <text x="168" y="212">3</text>
+      <text x="212" y="212">4</text>
+      <text x="256" y="212">5</text>
+      <text x="300" y="212">6</text>
+      <text x="344" y="212">7</text>
+      <text x="388" y="212">8</text>
+    </g>
+    <g>
+      <rect x="14" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="58" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="102" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="146" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="190" y="218" width="44" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+      <rect x="234" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="278" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="322" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <rect x="366" y="218" width="44" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    </g>
+    <g font-family="Consolas, Courier New, monospace" font-size="20" font-weight="bold" fill="#1e3a8a" text-anchor="middle">
+      <text x="36" y="243">#</text>
+      <text x="80" y="243">a</text>
+      <text x="124" y="243">#</text>
+      <text x="168" y="243">b</text>
+      <text x="212" y="243" fill="#166534">#</text>
+      <text x="256" y="243">b</text>
+      <text x="300" y="243">#</text>
+      <text x="344" y="243">a</text>
+      <text x="388" y="243">#</text>
+    </g>
+    <line x1="212" y1="210" x2="212" y2="266" stroke="#16a34a" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="14" y="280" font-size="10" fill="#334155">回文中心落在第 4 个字符 # 上 → 单中心可用</text>
+    <text x="222" y="284" font-size="9.5" fill="#16a34a">奇数长度</text>
+
+    <rect x="14" y="300" width="432" height="84" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="324" font-size="11" font-weight="bold" fill="#92400e">半径换算：原串回文长度 = r[i] - 1</text>
+    <text x="28" y="346" font-size="10" fill="#92400e">r[4] = 5（含中心）→ 5 - 1 = 4，正是 abba 的长度</text>
+    <text x="28" y="368" font-size="10" fill="#92400e">半径序列 r = [1, 2, 1, 2, 5, 2, 1, 2, 1]，max(r) - 1 = 4</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 两个变量与「取 min」的来历</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">right 不含，所以区间写成 [center, right)</text>
+
+    <rect x="14" y="62" width="432" height="66" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="84" font-size="11.5" font-weight="bold" fill="#1e40af">center：当前已知最右回文的中心</text>
+    <text x="28" y="104" font-size="10" fill="#1e40af">即 r[center] 最大的那个位置（下标）</text>
+
+    <line x1="230" y1="128" x2="230" y2="134" stroke="#2563eb" stroke-width="1.5"/>
+    <polygon points="230,142 225,133 235,133" fill="#2563eb"/>
+
+    <rect x="14" y="142" width="432" height="66" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="164" font-size="11.5" font-weight="bold" fill="#1e40af">right：该回文的右边界，不含</text>
+    <text x="28" y="184" font-size="10" fill="#1e40af">right = center + r[center]，指向最右格的下一位</text>
+
+    <line x1="230" y1="208" x2="230" y2="214" stroke="#16a34a" stroke-width="1.5"/>
+    <polygon points="230,222 225,213 235,213" fill="#16a34a"/>
+
+    <rect x="14" y="222" width="432" height="66" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="244" font-size="11.5" font-weight="bold" fill="#14532d">i &lt; right：落在盒内，信息可以抄</text>
+    <text x="28" y="264" font-size="10" fill="#14532d">mirror = 2*center - i，与 i 关于 center 对称</text>
+
+    <line x1="230" y1="288" x2="230" y2="294" stroke="#b45309" stroke-width="1.5"/>
+    <polygon points="230,302 225,293 235,293" fill="#b45309"/>
+
+    <rect x="14" y="302" width="432" height="82" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="324" font-size="11.5" font-weight="bold" fill="#92400e">为什么还要取 min</text>
+    <text x="28" y="344" font-size="10" fill="#92400e">mirror 的回文若伸出盒的左边界，超出段对 i 无保证</text>
+    <text x="28" y="364" font-size="10" fill="#92400e">只信边界内那段：min(r[mirror], right - i)，剩下自己扩</text>
+  </g>
+</svg>

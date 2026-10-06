@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">块排序后，(L, R) 指针的移动路径</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">用第三节手推样例：a = [1, 2, 1, 3, 2]（下标 0..4），块大小 = √5 = 2</text>
+
+  <g transform="translate(20,88)">
+    <rect x="0" y="0" width="470" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 序列分块与访问顺序</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">块 = 下标 / 2：块 0 含下标 0..1，块 1 含 2..3，块 2 是 4</text>
+
+    <text x="54" y="66" text-anchor="middle" font-size="10" fill="#64748b">0</text>
+    <text x="144" y="66" text-anchor="middle" font-size="10" fill="#64748b">1</text>
+    <text x="234" y="66" text-anchor="middle" font-size="10" fill="#64748b">2</text>
+    <text x="324" y="66" text-anchor="middle" font-size="10" fill="#64748b">3</text>
+    <text x="414" y="66" text-anchor="middle" font-size="10" fill="#64748b">4</text>
+
+    <rect x="14" y="72" width="80" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="54" y="94" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">1</text>
+    <rect x="104" y="72" width="80" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="144" y="94" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">2</text>
+    <rect x="194" y="72" width="80" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="234" y="94" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">1</text>
+    <rect x="284" y="72" width="80" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="324" y="94" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">3</text>
+    <rect x="374" y="72" width="80" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="414" y="94" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">2</text>
+
+    <line x1="14" y1="116" x2="184" y2="116" stroke="#64748b" stroke-width="1"/>
+    <line x1="194" y1="116" x2="364" y2="116" stroke="#64748b" stroke-width="1"/>
+    <line x1="374" y1="116" x2="454" y2="116" stroke="#64748b" stroke-width="1"/>
+    <text x="99" y="130" text-anchor="middle" font-size="9.5" fill="#64748b">块 0（0..1）</text>
+    <text x="279" y="130" text-anchor="middle" font-size="9.5" fill="#64748b">块 1（2..3）</text>
+    <text x="414" y="130" text-anchor="middle" font-size="9.5" fill="#64748b">块 2（4）</text>
+
+    <rect x="104" y="142" width="260" height="26" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="234" y="159" text-anchor="middle" font-size="10" fill="#92400e">q0 [1,3]　块 0（l=1），r = 3</text>
+    <rect x="14" y="178" width="440" height="26" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="234" y="195" text-anchor="middle" font-size="10" fill="#14532d">q1 [0,4]　块 0（l=0），r = 4 —— 同块按 r 升序，排在 q0 后</text>
+    <rect x="194" y="214" width="80" height="26" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="234" y="231" text-anchor="middle" font-size="10" fill="#334155">q2 [2,2]</text>
+    <text x="290" y="231" font-size="9.5" fill="#64748b">块 1 是奇数块（块内只有它一个查询）</text>
+
+    <text x="14" y="266" font-size="10.5" fill="#64748b">访问顺序：q0 → q1 → q2，同块内右端点 3 → 4 单调升</text>
+    <text x="14" y="288" font-size="10.5" fill="#64748b">跨块进块 1：R 从 4 回退到 2、L 从 0 推进到 2</text>
+    <text x="14" y="316" font-size="10.5" fill="#64748b">不做奇偶排序时：每进一个新块，R 都要从近 n 处折回</text>
+  </g>
+
+  <g transform="translate(510,88)">
+    <rect x="0" y="0" width="470" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. (L, R) 路径与逐步移动账</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">当前区间从空 [0, -1] 出发，数字抄自第三节手推块</text>
+
+    <rect x="14" y="58" width="442" height="136" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11" font-weight="bold" fill="#1e40af">路径：(0,-1) → (1,3) → (0,4) → (2,2)</text>
+    <text x="28" y="104" font-size="10" fill="#1e40af">→ q0 [1,3]：R -1→3 加 4 步，L 0→1 移 1 步</text>
+    <text x="28" y="126" font-size="10" fill="#1e40af">→ q1 [0,4]：L 1→0 加回 a[0]，R 3→4 加 1 步</text>
+    <text x="28" y="148" font-size="10" fill="#1e40af">→ q2 [2,2]：L 0→2 移 2 步，R 4→2 回退 2 步</text>
+    <text x="28" y="176" font-size="10.5" font-weight="bold" fill="#1e40af">合计：左指针 1+1+2 = 4 步，右指针 4+1+2 = 7 步</text>
+
+    <rect x="14" y="208" width="442" height="60" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="230" font-size="11" font-weight="bold" fill="#14532d">各询问答案（区间不同数个数）</text>
+    <text x="28" y="252" font-size="10" fill="#14532d">q0 = 3 {2,1,3}　q1 = 3 {1,2,3}　q2 = 1 {1}</text>
+
+    <rect x="14" y="282" width="442" height="46" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="310" font-size="10" fill="#991b1b">对照：不排序逐条重扫要重算 3+5+1 = 9 个位置</text>
+  </g>
+</svg>

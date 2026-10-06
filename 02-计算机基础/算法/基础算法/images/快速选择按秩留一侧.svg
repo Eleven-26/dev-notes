@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB4" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">快速选择：partition 之后按秩 k 只保留一侧</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">与快排的分界：快排两侧都要递归，快速选择只走进含第 k 名的那一侧</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 一轮分区，三分支：留哪边由 p 与 k 比出来</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">分区本身与快排完全相同（形态见 快排分区.svg，此处不重画），差别只在落位之后的去向</text>
+
+    <rect x="330" y="56" width="300" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="480" y="88" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">① 随机选 pivot，分区后落位下标 p</text>
+    <line x1="480" y1="108" x2="480" y2="124" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB4)"/>
+
+    <rect x="280" y="126" width="400" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="480" y="158" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#92400e">② 比较 p 与目标下标 k（k = K-1，0-based）</text>
+
+    <line x1="380" y1="178" x2="200" y2="214" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB4)"/>
+    <line x1="480" y1="178" x2="480" y2="214" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB4)"/>
+    <line x1="580" y1="178" x2="760" y2="214" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB4)"/>
+    <text x="270" y="200" text-anchor="middle" font-size="9.5" fill="#334155">p == k</text>
+    <text x="480" y="200" text-anchor="middle" font-size="9.5" fill="#334155">p &lt; k</text>
+    <text x="690" y="200" text-anchor="middle" font-size="9.5" fill="#334155">p &gt; k</text>
+
+    <rect x="14" y="216" width="300" height="68" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="242" font-size="11.5" font-weight="bold" fill="#14532d">p == k：命中</text>
+    <text x="28" y="266" font-size="10.5" fill="#14532d">返回 a[p]，整题结束</text>
+
+    <rect x="330" y="216" width="300" height="68" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="344" y="242" font-size="11.5" font-weight="bold" fill="#1e40af">p &lt; k：只留右段</text>
+    <text x="344" y="266" font-size="10.5" fill="#1e40af">lo = p + 1，左半连同 pivot 出局</text>
+
+    <rect x="646" y="216" width="300" height="68" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="660" y="242" font-size="11.5" font-weight="bold" fill="#1e40af">p &gt; k：只留左段</text>
+    <text x="660" y="266" font-size="10.5" fill="#1e40af">hi = p - 1，右半连同 pivot 出局</text>
+
+    <polyline points="480,284 480,300 920,300 920,82 632,82" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arwB4)"/>
+    <text x="640" y="296" font-size="9.5" fill="#2563eb">留下的那一段再走一遍 ①，直到 lo == hi 返回 a[lo]</text>
+  </g>
+
+  <g transform="translate(20,414)">
+    <rect x="0" y="0" width="960" height="210" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 正文手推：a = [3 2 1 5 4]，k = 1（第 2 小）走了三轮</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">黄 = 本轮 pivot 落位 p，灰 = 被永久丢弃，红虚线 = 目标下标 k=1</text>
+
+    <line x1="188" y1="58" x2="188" y2="192" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="188" y="54" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#dc2626">k=1</text>
+
+    <text x="14" y="83" font-size="9.5" fill="#64748b">第1轮 [0,4]</text>
+    <rect x="130" y="62" width="54" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="157" y="81" text-anchor="middle" font-size="12" fill="#1e40af">3</text>
+    <rect x="192" y="62" width="54" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="219" y="81" text-anchor="middle" font-size="12" fill="#1e40af">2</text>
+    <rect x="254" y="62" width="54" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="281" y="81" text-anchor="middle" font-size="12" fill="#1e40af">1</text>
+    <rect x="316" y="62" width="54" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1.5" rx="6"/>
+    <text x="343" y="81" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">4</text>
+    <rect x="378" y="62" width="54" height="28" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="405" y="81" text-anchor="middle" font-size="12" fill="#94a3b8">5</text>
+    <text x="480" y="81" font-size="10" fill="#334155">pivot=4 → p=3 &gt; k → hi=2，下标 3、4 出局</text>
+
+    <text x="14" y="125" font-size="9.5" fill="#64748b">第2轮 [0,2]</text>
+    <rect x="130" y="104" width="54" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1.5" rx="6"/>
+    <text x="157" y="123" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">1</text>
+    <rect x="192" y="104" width="54" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="219" y="123" text-anchor="middle" font-size="12" fill="#1e40af">2</text>
+    <rect x="254" y="104" width="54" height="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="281" y="123" text-anchor="middle" font-size="12" fill="#1e40af">3</text>
+    <rect x="316" y="104" width="54" height="28" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="343" y="123" text-anchor="middle" font-size="12" fill="#94a3b8">4</text>
+    <rect x="378" y="104" width="54" height="28" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="405" y="123" text-anchor="middle" font-size="12" fill="#94a3b8">5</text>
+    <text x="480" y="123" font-size="10" fill="#334155">pivot=1 → p=0 &lt; k → lo=1，只剩 [1,2]</text>
+
+    <text x="14" y="167" font-size="9.5" fill="#64748b">第3轮 [1,2]</text>
+    <rect x="130" y="146" width="54" height="28" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="157" y="165" text-anchor="middle" font-size="12" fill="#94a3b8">1</text>
+    <rect x="192" y="146" width="54" height="28" fill="#dcfce7" stroke="#16a34a" stroke-width="2" rx="6"/>
+    <text x="219" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">2</text>
+    <rect x="254" y="146" width="54" height="28" fill="#fef3c7" stroke="#b45309" stroke-width="1.5" rx="6"/>
+    <text x="281" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">3</text>
+    <rect x="316" y="146" width="54" height="28" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="343" y="165" text-anchor="middle" font-size="12" fill="#94a3b8">4</text>
+    <rect x="378" y="146" width="54" height="28" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="405" y="165" text-anchor="middle" font-size="12" fill="#94a3b8">5</text>
+    <text x="480" y="165" font-size="10" fill="#334155">pivot=3 → p=2 &gt; k → hi=1，lo == hi，返回 a[1] = 2 ✓</text>
+
+    <text x="14" y="196" font-size="10" fill="#64748b">每轮只给留下的那一段再分区——被丢的一半连同 pivot 再也不被看一眼</text>
+  </g>
+</svg>

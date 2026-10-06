@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">子集枚举的递推链与 O(3^n) 的总账</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：mask = 5 的枚举链（抄正文 2.1）　右：n = 3 时逐 mask 点数的合计</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="460" height="352" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. mask = 5 的子集枚举链</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">for s := 5; s &gt; 0; s = (s-1) &amp; 5，每步严格递减</text>
+
+    <rect x="14" y="58" width="432" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="81" font-size="11.5" font-weight="bold" fill="#1e40af">s = 101 (5) → 集合 {A, C}</text>
+
+    <line x1="230" y1="94" x2="230" y2="118" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="244" y="110" font-size="9.5" fill="#2563eb">(s-1) &amp; 5 = 100</text>
+
+    <rect x="14" y="118" width="432" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="141" font-size="11.5" font-weight="bold" fill="#1e40af">s = 100 (4) → 集合 {C}</text>
+
+    <line x1="230" y1="154" x2="230" y2="178" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="244" y="170" font-size="9.5" fill="#2563eb">(s-1) &amp; 5 = 001</text>
+
+    <rect x="14" y="178" width="432" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="201" font-size="11.5" font-weight="bold" fill="#1e40af">s = 001 (1) → 集合 {A}</text>
+
+    <line x1="230" y1="214" x2="230" y2="238" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="244" y="230" font-size="9.5" fill="#2563eb">(s-1) &amp; 5 = 000</text>
+
+    <rect x="14" y="238" width="432" height="32" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="259" font-size="11" fill="#991b1b">s = 000 → 停：条件 s &gt; 0，空集不枚举</text>
+
+    <text x="14" y="296" font-size="10" fill="#334155">s-1 把最低位的 1 借位摊开，&amp; 5 再把结果夹回子集</text>
+    <text x="14" y="316" font-size="10" fill="#334155">序列严格递减 → 不漏也不重，恰得 3 个非空子集</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="352" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 总代价：Σ 2^popcount(mask) = 3^n</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">n = 3：每个 mask 的子集个数（含空集），逐格点数</text>
+
+    <rect x="14" y="58" width="100" height="34" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="64" y="80" text-anchor="middle" font-size="11" fill="#334155">000 : 1</text>
+    <rect x="124" y="58" width="100" height="34" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="174" y="80" text-anchor="middle" font-size="11" fill="#334155">001 : 2</text>
+    <rect x="234" y="58" width="100" height="34" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="284" y="80" text-anchor="middle" font-size="11" fill="#334155">010 : 2</text>
+    <rect x="344" y="58" width="102" height="34" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="395" y="80" text-anchor="middle" font-size="11" fill="#334155">011 : 4</text>
+
+    <rect x="14" y="98" width="100" height="34" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="64" y="120" text-anchor="middle" font-size="11" fill="#334155">100 : 2</text>
+    <rect x="124" y="98" width="100" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="174" y="120" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">101 : 4</text>
+    <rect x="234" y="98" width="100" height="34" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="284" y="120" text-anchor="middle" font-size="11" fill="#334155">110 : 4</text>
+    <rect x="344" y="98" width="102" height="34" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="395" y="120" text-anchor="middle" font-size="11" fill="#334155">111 : 8</text>
+
+    <rect x="14" y="142" width="432" height="36" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="165" font-size="11.5" font-weight="bold" fill="#14532d">合计 1+2+2+4+2+4+4+8 = 27 = 3^3</text>
+
+    <rect x="14" y="190" width="432" height="64" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="212" font-size="11.5" font-weight="bold" fill="#92400e">换个数法：每个元素在配对里三选一</text>
+    <text x="28" y="232" font-size="10" fill="#92400e">不在 mask ／ 在 mask 但不在 sub ／ 也在 sub</text>
+    <text x="28" y="248" font-size="10" fill="#92400e">n 个元素独立 → (mask, sub) 配对共 3^n 个</text>
+
+    <text x="14" y="286" font-size="10" fill="#64748b">mask = 5 那格被左侧链条走过一遍：4 个子集</text>
+    <text x="14" y="306" font-size="10" fill="#64748b">⚠️ 3^n 那档只在「每个状态枚举子集」时出现</text>
+    <text x="14" y="326" font-size="10" fill="#64748b">普通 O(2^n × n) 的转移（如 TSP）不吃这个账</text>
+  </g>
+</svg>

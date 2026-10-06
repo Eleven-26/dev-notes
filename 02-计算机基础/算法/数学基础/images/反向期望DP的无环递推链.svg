@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">反向期望 DP：从唯一终点沿无环依赖倒推</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">链例出自正文 3.3：每步以概率 1 前进一格，到达状态 3 停止；数值为手推</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#0f172a">A. 链上：正向是走法，反向是填表</text>
+    <text x="16" y="52" font-size="10.5" fill="#64748b">绿箭头 = 反向递推顺序（① → ④），蓝箭头 = 合法走法</text>
+
+    <text x="407" y="92" text-anchor="middle" font-size="9.5" fill="#16a34a">①</text>
+    <text x="347" y="92" text-anchor="middle" font-size="9.5" fill="#16a34a">②</text>
+    <text x="237" y="92" text-anchor="middle" font-size="9.5" fill="#16a34a">③</text>
+    <text x="127" y="92" text-anchor="middle" font-size="9.5" fill="#16a34a">④</text>
+
+    <line x1="387" y1="104" x2="319" y2="104" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="277" y1="104" x2="209" y2="104" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="167" y1="104" x2="99" y2="104" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <circle cx="77" cy="130" r="20" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="77" y="130" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#14532d">0</text>
+    <circle cx="187" cy="130" r="20" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="187" y="130" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#1e40af">1</text>
+    <circle cx="297" cy="130" r="20" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="297" y="130" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#1e40af">2</text>
+    <circle cx="407" cy="130" r="20" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+    <text x="407" y="130" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#92400e">3</text>
+
+    <text x="407" y="168" text-anchor="middle" font-size="10" fill="#92400e">E[3] = 0</text>
+    <text x="297" y="168" text-anchor="middle" font-size="10" fill="#1e40af">E[2] = 1</text>
+    <text x="187" y="168" text-anchor="middle" font-size="10" fill="#1e40af">E[1] = 2</text>
+    <text x="77" y="168" text-anchor="middle" font-size="10" fill="#14532d">E[0] = 3</text>
+
+    <line x1="97" y1="184" x2="165" y2="184" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="207" y1="184" x2="275" y2="184" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="317" y1="184" x2="385" y2="184" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="230" y="202" text-anchor="middle" font-size="9.5" fill="#2563eb">每步以概率 1 前进一格</text>
+
+    <rect x="14" y="214" width="432" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="28" y="236" font-size="10.5" font-weight="bold" fill="#1e40af">反向填表（正文 3.3 的推演）：</text>
+    <text x="28" y="256" font-size="10.5" fill="#1e40af">E[3] = 0 → E[2] = 1 → E[1] = 2 → E[0] = 3</text>
+    <text x="28" y="276" font-size="10.5" fill="#1e40af">答案 = E[0] = 3，即从起点走到终点的期望步数</text>
+
+    <rect x="14" y="302" width="432" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="28" y="324" font-size="10.5" fill="#14532d">每个 E[i] 只依赖后继 E[i+1]，方向单一</text>
+    <text x="28" y="344" font-size="10.5" fill="#14532d">终点先定后，倒推一遍就收敛，无需解方程</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#0f172a">B. 方向判据与终止前提</text>
+    <text x="16" y="52" font-size="10.5" fill="#64748b">判据与模板逐字取自正文 3.2 / 3.3</text>
+
+    <rect x="14" y="64" width="432" height="58" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="28" y="86" font-size="10.5" font-weight="bold" fill="#92400e">方向判据（正文）</text>
+    <text x="28" y="106" font-size="10.5" fill="#92400e">起点唯一、终点多个 → 正向；终点唯一、起点多个 → 反向</text>
+
+    <rect x="14" y="134" width="432" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="28" y="156" font-size="10.5" font-weight="bold" fill="#1e40af">反向模板（正文 3.3）</text>
+    <text x="28" y="176" font-size="10.5" fill="#1e40af">E[n] = 0</text>
+    <text x="28" y="196" font-size="10.5" fill="#1e40af">E[i] = Σ p(i, j) × E[j] + cost(i)</text>
+
+    <rect x="14" y="222" width="432" height="76" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="28" y="244" font-size="10.5" font-weight="bold" fill="#991b1b">终止前提：转移图无环</text>
+    <text x="28" y="264" font-size="10.5" fill="#991b1b">状态互相依赖（成环）时反向递推不会终止，</text>
+    <text x="28" y="284" font-size="10.5" fill="#991b1b">须列线性方程组用高斯消元，O(n³)</text>
+
+    <rect x="14" y="310" width="432" height="52" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="332" font-size="10.5" fill="#334155">复杂度（正文六）：期望 DP = O(状态数 × 转移数)，</text>
+    <text x="28" y="350" font-size="10.5" fill="#334155">高斯消元 O(n³)</text>
+  </g>
+</svg>

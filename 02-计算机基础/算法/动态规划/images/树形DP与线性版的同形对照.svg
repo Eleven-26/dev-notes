@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="480" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">打家劫舍：链版与树版是同一副转移方程</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">转移式逐字抄自线性 DP 2.3 与树形 DP 3.1</text>
+
+  <g transform="translate(40,88)">
+    <rect x="0" y="0" width="450" height="280" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">链版：打家劫舍</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">dp[i][0] 不偷、dp[i][1] 偷（线性 DP 2.3）</text>
+
+    <line x1="112" y1="105" x2="190" y2="105" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="237" y1="105" x2="315" y2="105" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <circle cx="90" cy="105" r="22" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="90" y="105" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#1e40af">i-1</text>
+    <circle cx="215" cy="105" r="22" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="215" y="105" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#1e40af">i</text>
+    <circle cx="340" cy="105" r="22" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="340" y="105" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#1e40af">i+1</text>
+
+    <text x="28" y="170" font-size="11" fill="#1e40af">dp[i][0] = max(dp[i-1][0], dp[i-1][1])</text>
+    <text x="28" y="192" font-size="11" fill="#1e40af">dp[i][1] = dp[i-1][0] + val[i]</text>
+    <text x="28" y="222" font-size="11" fill="#334155">只看前一个节点 → 一维状态就够</text>
+    <text x="28" y="244" font-size="11" fill="#334155">阶段图是一条线，从左往右推</text>
+  </g>
+
+  <g transform="translate(520,88)">
+    <rect x="0" y="0" width="440" height="280" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">树版：打家劫舍 III</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">dp[u][0] 不选、dp[u][1] 选（树形 DP 3.1）</text>
+
+    <line x1="220" y1="105" x2="160" y2="168" stroke="#16a34a" stroke-width="1.5"/>
+    <line x1="220" y1="105" x2="280" y2="168" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="220" cy="105" r="22" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="220" y="105" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#1e40af">u</text>
+    <circle cx="150" cy="175" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="150" y="175" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#14532d">v1</text>
+    <circle cx="290" cy="175" r="22" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="290" y="175" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#14532d">v2</text>
+
+    <text x="28" y="225" font-size="11" fill="#1e40af">dp[u][0] = Σ max(dp[v][0], dp[v][1])</text>
+    <text x="28" y="247" font-size="11" fill="#1e40af">dp[u][1] = val[u] + Σ dp[v][0]</text>
+  </g>
+
+  <g transform="translate(40,384)">
+    <rect x="0" y="0" width="920" height="72" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="10"/>
+    <text x="20" y="26" font-size="12" fill="#92400e">链就是一棵退化的树：每个节点只有一个子节点时，Σ 只剩一项，dp[u][·] 就退化成 dp[i][·]</text>
+    <text x="20" y="50" font-size="12" fill="#92400e">同一个「选 / 不选」的转移，差别只在阶段图由一条线换成一棵树</text>
+  </g>
+</svg>

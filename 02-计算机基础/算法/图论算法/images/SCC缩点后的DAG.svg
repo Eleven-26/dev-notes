@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SCC 缩点：两个环各缩成一个点，整体变成 DAG</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">图：0→1, 1→2, 2→0, 2→3, 3→4, 4→5, 5→3（与本篇第二节推演同一张图）</text>
+
+  <g transform="translate(20,78)">
+    <rect x="0" y="0" width="960" height="260" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 缩点结果：分量内部的环画成自环，跨分量只剩一条边</text>
+
+    <rect x="60" y="56" width="300" height="144" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="10"/>
+    <text x="210" y="88" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">A = {0, 1, 2}</text>
+    <text x="210" y="112" text-anchor="middle" font-size="10.5" fill="#1e40af">内部环：0→1→2→0</text>
+    <path d="M 150 148 C 180 176 240 176 270 148" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#ab)"/>
+    <text x="210" y="192" text-anchor="middle" font-size="9.5" fill="#1e40af">（自环示意分量内部两两可达）</text>
+
+    <line x1="360" y1="128" x2="586" y2="128" stroke="#2563eb" stroke-width="2" marker-end="url(#ab)"/>
+    <text x="474" y="114" text-anchor="middle" font-size="10.5" fill="#1e40af">跨分量只剩一条边 2→3</text>
+
+    <rect x="600" y="56" width="300" height="144" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="10"/>
+    <text x="750" y="88" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">B = {3, 4, 5}</text>
+    <text x="750" y="112" text-anchor="middle" font-size="10.5" fill="#1e40af">内部环：3→4→5→3</text>
+    <path d="M 690 148 C 720 176 780 176 810 148" fill="none" stroke="#2563eb" stroke-width="1.8" marker-end="url(#ab)"/>
+    <text x="750" y="192" text-anchor="middle" font-size="9.5" fill="#1e40af">（自环示意分量内部两两可达）</text>
+
+    <text x="60" y="234" font-size="11" fill="#334155">两个 SCC 各缩成一个点后，图上只剩 A → B 一条边：本身已是 DAG，可以做拓扑排序与 DAG 上的 DP</text>
+  </g>
+
+  <g transform="translate(20,358)">
+    <rect x="0" y="0" width="960" height="186" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 判据与对照</text>
+
+    <rect x="14" y="44" width="300" height="124" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="68" font-size="11.5" font-weight="bold" fill="#92400e">SCC 根：dfn[u] == low[u]</text>
+    <text x="28" y="90" font-size="10" fill="#92400e">此时栈中 u..栈顶 = 一个 SCC</text>
+    <text x="28" y="110" font-size="10" fill="#92400e">例：dfn[3]==low[3] 弹出 {3,4,5}</text>
+    <text x="28" y="130" font-size="10" fill="#92400e">dfn[0]==low[0] 弹出 {0,1,2}</text>
+    <text x="28" y="150" font-size="9.5" fill="#92400e">不成立就继续留在栈上等祖先收网</text>
+
+    <rect x="324" y="44" width="300" height="124" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="338" y="68" font-size="11.5" font-weight="bold" fill="#1e40af">为什么缩点后必是 DAG</text>
+    <text x="338" y="90" font-size="10" fill="#1e40af">若缩完还有环，环上分量两两可达</text>
+    <text x="338" y="110" font-size="10" fill="#1e40af">按「极大」它们本应是同一个 SCC</text>
+    <text x="338" y="130" font-size="10" fill="#1e40af">⇒ 与「已经缩完」矛盾</text>
+
+    <rect x="634" y="44" width="300" height="124" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="648" y="68" font-size="11.5" font-weight="bold" fill="#334155">Kosaraju 对照：两遍 DFS</text>
+    <text x="648" y="90" font-size="10" fill="#334155">① 原图 DFS，按完成时间记录</text>
+    <text x="648" y="110" font-size="10" fill="#334155">② 反图上按完成时间逆序 DFS</text>
+    <text x="648" y="130" font-size="10" fill="#334155">每遍扩散出的点集就是一个 SCC</text>
+  </g>
+</svg>

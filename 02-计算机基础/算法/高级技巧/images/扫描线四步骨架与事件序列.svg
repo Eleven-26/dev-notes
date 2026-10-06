@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">扫描线四步骨架：拆事件、排序、结算、维护</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">步骤顺序抄正文第二节「思路」；样例读数抄第二节手推表</text>
+
+  <g transform="translate(20,88)">
+    <rect x="0" y="0" width="460" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="20" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 骨架：二维被切成一维序列</text>
+    <text x="20" y="46" font-size="10.5" fill="#64748b">顺序固定，第 ③ 步先结算、第 ④ 步再改状态</text>
+
+    <rect x="14" y="58" width="432" height="60" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">① 拆事件：每个矩形拆两条竖边</text>
+    <text x="28" y="100" font-size="10" fill="#1e40af">左边界 delta=+1（入边），右边界 delta=-1（出边）</text>
+
+    <line x1="230" y1="118" x2="230" y2="132" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="132" width="432" height="60" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="154" font-size="11.5" font-weight="bold" fill="#1e40af">② 排序：全部竖边按 x 升序</text>
+    <text x="28" y="174" font-size="10" fill="#1e40af">n 个矩形 → 2n 个事件，这一步 O(n log n)</text>
+
+    <line x1="230" y1="192" x2="230" y2="206" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="206" width="432" height="60" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="228" font-size="11.5" font-weight="bold" fill="#92400e">③ 结算：处理当前事件前先结算上一段</text>
+    <text x="28" y="248" font-size="10" fill="#92400e">面积 += 覆盖长度 × (本事件 x − 上一事件 x)</text>
+
+    <line x1="230" y1="266" x2="230" y2="280" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="280" width="432" height="60" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="302" font-size="11.5" font-weight="bold" fill="#14532d">④ 维护：线段树更新覆盖计数</text>
+    <text x="28" y="322" font-size="10" fill="#14532d">covered 只认「被覆盖的 y 长度」，不认次数</text>
+
+    <text x="20" y="350" font-size="10" fill="#64748b">covered 只在相邻两个事件 x 之间取值（正文第二节）</text>
+  </g>
+
+  <g transform="translate(500,88)">
+    <rect x="0" y="0" width="480" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="20" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 两条时间线：事件序与结算表</text>
+    <text x="20" y="46" font-size="10.5" fill="#64748b">全部取自正文第二节的双矩形样例</text>
+
+    <rect x="14" y="58" width="452" height="70" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">事件序列（按 x 升序）</text>
+    <text x="28" y="100" font-size="10" fill="#1e40af">x=1 入边 +1 → x=2 入边 +1 → x=4 出边 -1 → x=5 出边 -1</text>
+    <text x="28" y="120" font-size="10" fill="#1e40af">每步之前先结算，covered 依次取 2、3、2</text>
+
+    <rect x="14" y="140" width="452" height="118" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="162" font-size="11.5" font-weight="bold" fill="#334155">结算表（宽 × covered = 贡献 → 累计）</text>
+    <text x="28" y="184" font-size="10" fill="#334155">段 [1,2)：1 × 2 = 2 → 累计面积 2</text>
+    <text x="28" y="206" font-size="10" fill="#334155">段 [2,4)：2 × 3 = 6 → 累计面积 8</text>
+    <text x="28" y="228" font-size="10" fill="#334155">段 [4,5)：1 × 2 = 2 → 累计面积 10</text>
+    <text x="28" y="248" font-size="10" fill="#334155">最终并集面积 = 10</text>
+
+    <rect x="14" y="270" width="452" height="70" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="292" font-size="11.5" font-weight="bold" fill="#92400e">动手前记住两个坑（正文第五节）</text>
+    <text x="28" y="312" font-size="10" fill="#92400e">y 坐标代表「段」不是「点」→ 区间左闭右开</text>
+    <text x="28" y="332" font-size="10" fill="#92400e">覆盖计数不需要下推 —— 只用计数判是否覆盖</text>
+  </g>
+</svg>

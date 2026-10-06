@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" width="1000" height="530" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="530" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">区间 DP：先枚举区间长度，再枚举起点与分割点</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">样例是石子合并 [1 2 3 4]，表内数字逐字抄自正文 2.1 的手推</text>
+
+  <g transform="translate(40,88)">
+    <rect x="0" y="0" width="520" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="20" y="26" font-size="15" font-weight="bold" fill="#0f172a">按区间长度分层的填表顺序</text>
+    <text x="20" y="46" font-size="10.5" fill="#64748b">行 = j（终点）、列 = i（起点）；颜色 = 区间长度，同色格子同层</text>
+
+    <text x="132" y="84" text-anchor="middle" font-size="11" fill="#64748b">i=0</text>
+    <text x="228" y="84" text-anchor="middle" font-size="11" fill="#64748b">i=1</text>
+    <text x="324" y="84" text-anchor="middle" font-size="11" fill="#64748b">i=2</text>
+    <text x="420" y="84" text-anchor="middle" font-size="11" fill="#64748b">i=3</text>
+
+    <text x="40" y="124" font-size="11" fill="#64748b">j=0</text>
+    <text x="40" y="190" font-size="11" fill="#64748b">j=1</text>
+    <text x="40" y="256" font-size="11" fill="#64748b">j=2</text>
+    <text x="40" y="322" font-size="11" fill="#64748b">j=3</text>
+
+    <rect x="90" y="92" width="84" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="132" y="126" text-anchor="middle" font-size="14" fill="#1e40af">0</text>
+    <rect x="186" y="92" width="84" height="56" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="6"/>
+
+    <rect x="90" y="158" width="84" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="132" y="192" text-anchor="middle" font-size="14" fill="#14532d">3</text>
+    <rect x="186" y="158" width="84" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="228" y="192" text-anchor="middle" font-size="14" fill="#1e40af">0</text>
+    <rect x="282" y="158" width="84" height="56" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="6"/>
+
+    <rect x="90" y="224" width="84" height="56" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="132" y="258" text-anchor="middle" font-size="14" fill="#92400e">11</text>
+    <rect x="186" y="224" width="84" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="228" y="258" text-anchor="middle" font-size="14" fill="#14532d">5</text>
+    <rect x="282" y="224" width="84" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="324" y="258" text-anchor="middle" font-size="14" fill="#1e40af">0</text>
+    <rect x="378" y="224" width="84" height="56" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="6"/>
+
+    <rect x="90" y="290" width="84" height="56" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5" rx="6"/>
+    <text x="132" y="324" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">20</text>
+    <rect x="186" y="290" width="84" height="56" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+    <text x="228" y="324" text-anchor="middle" font-size="14" fill="#92400e">14</text>
+    <rect x="282" y="290" width="84" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="324" y="324" text-anchor="middle" font-size="14" fill="#14532d">7</text>
+    <rect x="378" y="290" width="84" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+    <text x="420" y="324" text-anchor="middle" font-size="14" fill="#1e40af">0</text>
+
+    <text x="20" y="374" font-size="11" fill="#334155">蓝 = len 1（全 0）、绿 = len 2（3 / 5 / 7）、黄 = len 3（11 / 14）、橙 = len 4（答案 20）</text>
+    <text x="20" y="396" font-size="11" fill="#334155">每个 dp[i][j] 只依赖更短的区间 —— 这就是「先枚举长度」的全部理由</text>
+  </g>
+
+  <g transform="translate(580,88)">
+    <rect x="0" y="0" width="380" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">三个循环的顺序不能反</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">长度 → 起点 → 分割点</text>
+
+    <rect x="14" y="62" width="352" height="88" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="84" font-size="11" fill="#1e40af">外层：区间长度 len = 2 .. n</text>
+    <text x="28" y="106" font-size="11" fill="#1e40af">中层：起点 i，终点 j = i + len - 1</text>
+    <text x="28" y="128" font-size="11" fill="#1e40af">内层：分割点 k = i .. j-1</text>
+
+    <rect x="14" y="166" width="352" height="104" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="188" font-size="11.5" font-weight="bold" fill="#92400e">dp[i][j] 只依赖更短的区间</text>
+    <text x="28" y="210" font-size="11" fill="#92400e">len 从小到大 → 依赖必已算好</text>
+    <text x="28" y="232" font-size="11" fill="#92400e">换顺序就会读到还没填的空格子</text>
+    <text x="28" y="254" font-size="11" fill="#92400e">这是唯一不踩空格子的顺序</text>
+
+    <rect x="14" y="286" width="352" height="110" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="308" font-size="11.5" font-weight="bold" fill="#14532d">本例：cost 就是区间总重</text>
+    <text x="28" y="330" font-size="10.5" fill="#14532d">len 4：dp[0][3] = min(14, 3+7, 11) + 10 = 20</text>
+    <text x="28" y="352" font-size="10.5" fill="#14532d">四堆合并成一堆的最小代价 = 20</text>
+    <text x="28" y="374" font-size="10.5" fill="#14532d">len 2 是 3 / 5 / 7；len 3 是 11 / 14</text>
+  </g>
+</svg>

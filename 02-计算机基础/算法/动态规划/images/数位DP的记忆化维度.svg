@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数位 DP：缓存键只含 (pos, state)，limit / lead 不进键</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">读写出自正文第三节模板；限制维度与复杂度口径出自第三节与第五节</text>
+
+  <g transform="translate(40,88)">
+    <rect x="0" y="0" width="560" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="20" y="26" font-size="15" font-weight="bold" fill="#0f172a">缓存键：只含 (pos, state)</text>
+    <text x="20" y="46" font-size="10.5" fill="#64748b">limit / lead 是「一路走来的约束」，不是「状态」，因此不进键</text>
+
+    <rect x="14" y="64" width="532" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="84" font-size="11.5" font-weight="bold" fill="#14532d">① !limit &amp;&amp; !lead → 读写 memo</text>
+    <text x="28" y="104" font-size="11" fill="#14532d">此时 (pos, state) 的答案只由自己决定，可安全复用</text>
+
+    <rect x="14" y="134" width="532" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="154" font-size="11.5" font-weight="bold" fill="#7f1d1d">② limit=true → 不读不写</text>
+    <text x="28" y="174" font-size="11" fill="#7f1d1d">当前位被 digits[pos] 卡住，同键答案不同，会串味</text>
+
+    <rect x="14" y="204" width="532" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="224" font-size="11.5" font-weight="bold" fill="#7f1d1d">③ lead=true → 不读不写</text>
+    <text x="28" y="244" font-size="11" fill="#7f1d1d">前导零不算数位，结果依赖「是否为零」，同样串味</text>
+
+    <rect x="14" y="274" width="532" height="70" fill="#fef9c3" stroke="#ca8a04" stroke-width="1" rx="8"/>
+    <text x="28" y="296" font-size="11" fill="#713f12">判据：能读写 ⇔ 后续位的枚举空间不再被上界 / 前导零限制</text>
+    <text x="28" y="318" font-size="11" fill="#713f12">模板里那两处 if !limit &amp;&amp; !lead 就是这条判据的落点</text>
+    <text x="28" y="338" font-size="11" fill="#713f12">键里只留 (pos, state)，state 那一维按题目增删</text>
+  </g>
+
+  <g transform="translate(620,88)">
+    <rect x="0" y="0" width="360" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">为什么这样切维度</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">limit 一进键，缓存命中率骤降</text>
+
+    <rect x="14" y="64" width="332" height="112" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="84" font-size="11.5" font-weight="bold" fill="#1e40af">limit 的两张面孔</text>
+    <text x="28" y="106" font-size="11" fill="#1e40af">limit=true：只能取 0..digits[pos]；</text>
+    <text x="28" y="128" font-size="11" fill="#1e40af">limit=false：每位都能 0..9 任取。</text>
+    <text x="28" y="150" font-size="11" fill="#1e40af">两种结果来源不同，键相同就会串味。</text>
+    <text x="28" y="170" font-size="11" fill="#1e40af">所以干脆不缓存 limit=true 的分支。</text>
+
+    <rect x="14" y="188" width="332" height="88" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="208" font-size="11.5" font-weight="bold" fill="#14532d">缓存后的收益</text>
+    <text x="28" y="230" font-size="11" fill="#14532d">limit=false 的分支里 (pos, state) 大量重复，</text>
+    <text x="28" y="252" font-size="11" fill="#14532d">每个状态只算一次，指数级降到多项式。</text>
+
+    <rect x="14" y="288" width="332" height="64" fill="#fef9c3" stroke="#ca8a04" stroke-width="1" rx="8"/>
+    <text x="28" y="308" font-size="11.5" font-weight="bold" fill="#713f12">复杂度（第五节）</text>
+    <text x="28" y="328" font-size="11" fill="#713f12">时间 O(位数 × 状态数 × 10)</text>
+    <text x="28" y="346" font-size="11" fill="#713f12">位数 ≤ 19，状态数通常 ≤ 100</text>
+  </g>
+</svg>

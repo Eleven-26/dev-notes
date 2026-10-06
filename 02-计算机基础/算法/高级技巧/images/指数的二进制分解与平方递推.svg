@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">矩阵快速幂：指数按二进制分解，平方链逐位推进</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">走一遍第二节 matPow(a, 13, mod)；13 = (1101)₂，逐步推演为示意</text>
+
+  <g transform="translate(20,88)">
+    <rect x="0" y="0" width="470" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 平方链与指数位</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">每轮把 a 平方一次，指数走 1 → 2 → 4 → 8 → 16</text>
+
+    <rect x="14" y="58" width="78" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="53" y="83" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">a^1</text>
+    <rect x="104" y="58" width="78" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="143" y="83" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">a^2</text>
+    <rect x="194" y="58" width="78" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="233" y="83" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">a^4</text>
+    <rect x="284" y="58" width="78" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="323" y="83" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">a^8</text>
+    <rect x="374" y="58" width="78" height="40" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="413" y="83" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">a^16</text>
+
+    <line x1="92" y1="78" x2="104" y2="78" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="182" y1="78" x2="194" y2="78" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="272" y1="78" x2="284" y2="78" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="362" y1="78" x2="374" y2="78" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <text x="53" y="112" text-anchor="middle" font-size="10" fill="#1e40af">bit0=1</text>
+    <text x="143" y="112" text-anchor="middle" font-size="10" fill="#334155">bit1=0</text>
+    <text x="233" y="112" text-anchor="middle" font-size="10" fill="#1e40af">bit2=1</text>
+    <text x="323" y="112" text-anchor="middle" font-size="10" fill="#1e40af">bit3=1</text>
+    <text x="413" y="112" text-anchor="middle" font-size="10" fill="#334155">bit4=0</text>
+
+    <rect x="14" y="126" width="442" height="140" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="148" font-size="11.5" font-weight="bold" fill="#1e40af">res 推进（位为 1 才乘入当前幂）</text>
+    <text x="28" y="170" font-size="10" fill="#1e40af">初值：res = E（单位矩阵，identity 函数）</text>
+    <text x="28" y="192" font-size="10" fill="#1e40af">第 1 轮 bit0=1 → res = E × a^1 = a^1</text>
+    <text x="28" y="214" font-size="10" fill="#1e40af">第 2 轮 bit1=0 → res 不动</text>
+    <text x="28" y="236" font-size="10" fill="#1e40af">第 3 轮 bit2=1 → res = a^1 × a^4 = a^5</text>
+    <text x="28" y="256" font-size="10" fill="#1e40af">第 4 轮 bit3=1 → res = a^5 × a^8 = a^13</text>
+
+    <rect x="14" y="280" width="442" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="302" font-size="11.5" font-weight="bold" fill="#14532d">终值 res = a^13，即 M^13</text>
+    <text x="28" y="324" font-size="10" fill="#14532d">a^16 算出但 bit4=0，没有乘入</text>
+
+    <text x="14" y="364" font-size="10.5" fill="#64748b">乘入顺序按指数从低位到高位，与右栏四段一一对应</text>
+  </g>
+
+  <g transform="translate(510,88)">
+    <rect x="0" y="0" width="470" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 判定流程（对应第二节代码）</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">四个动作循环执行，直到指数 n 为 0</text>
+
+    <rect x="14" y="58" width="442" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="75" font-size="11" font-weight="bold" fill="#1e40af">① n &gt; 0 ?</text>
+    <text x="28" y="91" font-size="10" fill="#1e40af">否则 → 返回 res，指数分解完毕</text>
+
+    <rect x="14" y="112" width="442" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="129" font-size="11" font-weight="bold" fill="#1e40af">② n&amp;1 == 1 ?（当前最低位）</text>
+    <text x="28" y="145" font-size="10" fill="#1e40af">是 → res = mul(res, a)，否则跳过</text>
+
+    <rect x="14" y="166" width="442" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="183" font-size="11" font-weight="bold" fill="#14532d">③ a = mul(a, a)</text>
+    <text x="28" y="199" font-size="10" fill="#14532d">与位无关，每轮固定平方一次</text>
+
+    <rect x="14" y="220" width="442" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="237" font-size="11" font-weight="bold" fill="#1e40af">④ n &gt;&gt;= 1</text>
+    <text x="28" y="253" font-size="10" fill="#1e40af">n 右移一位，回到 ① 处理下一个位</text>
+
+    <line x1="235" y1="98" x2="235" y2="112" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="235" y1="152" x2="235" y2="166" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="235" y1="206" x2="235" y2="220" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="274" width="442" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="295" font-size="11" font-weight="bold" fill="#92400e">乘法次数 = 指数的位数 + 1 的个数</text>
+    <text x="28" y="317" font-size="10" fill="#92400e">每次矩阵乘 O(k³) → 总计 O(k³ log n)</text>
+
+    <rect x="14" y="340" width="442" height="48" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="359" font-size="10.5" font-weight="bold" fill="#991b1b">res 初值必须是单位矩阵 E</text>
+    <text x="28" y="378" font-size="10" fill="#991b1b">写成零矩阵 → 结果恒为 0（第六节坑）</text>
+  </g>
+</svg>

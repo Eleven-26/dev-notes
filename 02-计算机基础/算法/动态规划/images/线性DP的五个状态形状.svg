@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">线性 DP 的五种状态形状</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">状态都沿「前 i 个」推进，差别只在状态几维、回看多远 —— 样例与链接见正文第二节</text>
+
+  <g transform="translate(20,90)">
+    <rect x="0" y="0" width="176" height="286" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="12" y="26" font-size="12" font-weight="bold" fill="#0f172a">① 单点滚动</text>
+    <text x="12" y="44" font-size="9.5" fill="#64748b">Kadane 最大子数组和</text>
+    <rect x="11" y="58" width="154" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="20" y="78" font-size="9.5" fill="#1e40af">dp[i] = 以 i 结尾的最大子数组和</text>
+    <text x="20" y="98" font-size="9.5" fill="#1e40af">dp[i] = max(a[i], dp[i-1]+a[i])</text>
+    <text x="20" y="118" font-size="9.5" fill="#1e40af">只回看前一格 → 压成一维滚动</text>
+    <rect x="11" y="140" width="154" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="20" y="160" font-size="9.5" fill="#14532d">答案 = max(best)，不是最后一格</text>
+    <text x="20" y="180" font-size="9.5" fill="#14532d">对应子数组 [4 -1 2 1] 的和 = 6</text>
+    <text x="20" y="200" font-size="9.5" fill="#14532d">cur / best 两个变量，O(1) 空间</text>
+    <rect x="11" y="222" width="154" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="20" y="242" font-size="9" fill="#334155">与 LIS.md 1.2 是同一个坑</text>
+    <text x="20" y="262" font-size="9" fill="#334155">最优解不一定以最后一格收尾</text>
+  </g>
+
+  <g transform="translate(216,90)">
+    <rect x="0" y="0" width="176" height="286" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="12" y="26" font-size="12" font-weight="bold" fill="#0f172a">② 两层回看</text>
+    <text x="12" y="44" font-size="9.5" fill="#64748b">LIS 型最长上升子序列</text>
+    <rect x="11" y="58" width="154" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="20" y="78" font-size="9.5" fill="#1e40af">dp[i] = 以 i 结尾的 LIS 长度</text>
+    <text x="20" y="98" font-size="9.5" fill="#1e40af">dp[i] = 1 + max(dp[j])，j &lt; i</text>
+    <text x="20" y="118" font-size="9.5" fill="#1e40af">外层 i、内层回看所有 j</text>
+    <rect x="11" y="140" width="154" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="20" y="160" font-size="9.5" fill="#14532d">O(n²)；内层是对值域的查询</text>
+    <text x="20" y="180" font-size="9.5" fill="#14532d">O(n²) 的两层枚举，标准形态</text>
+    <text x="20" y="200" font-size="9.5" fill="#14532d">可降到 O(n log n)</text>
+    <rect x="11" y="222" width="154" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="20" y="242" font-size="9" fill="#334155">完整推导见 LIS.md 第二节</text>
+    <text x="20" y="262" font-size="9" fill="#334155">本篇只留它在家族里的位置</text>
+  </g>
+
+  <g transform="translate(412,90)">
+    <rect x="0" y="0" width="176" height="286" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="12" y="26" font-size="12" font-weight="bold" fill="#0f172a">③ 0/1 状态</text>
+    <text x="12" y="44" font-size="9.5" fill="#64748b">打家劫舍</text>
+    <rect x="11" y="58" width="154" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="20" y="78" font-size="9.5" fill="#1e40af">dp[i][0] = 不偷第 i 家</text>
+    <text x="20" y="98" font-size="9.5" fill="#1e40af">dp[i][1] = 偷第 i 家</text>
+    <text x="20" y="118" font-size="9.5" fill="#1e40af">两态互斥：不能连偷两家</text>
+    <rect x="11" y="140" width="154" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="20" y="160" font-size="9" fill="#14532d">dp[i][0] = max(dp[i-1][0], dp[i-1][1])</text>
+    <text x="20" y="180" font-size="9.5" fill="#14532d">dp[i][1] = dp[i-1][0] + val[i]</text>
+    <text x="20" y="200" font-size="9.5" fill="#14532d">不偷 = 前一家两态里的大者</text>
+    <rect x="11" y="222" width="154" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="20" y="242" font-size="9" fill="#334155">与树形版打家劫舍 III 同形</text>
+    <text x="20" y="262" font-size="9" fill="#334155">链就是一棵退化的树</text>
+  </g>
+
+  <g transform="translate(608,90)">
+    <rect x="0" y="0" width="176" height="286" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="12" y="26" font-size="12" font-weight="bold" fill="#0f172a">④ 带限制</text>
+    <text x="12" y="44" font-size="9.5" fill="#64748b">股票买卖</text>
+    <rect x="11" y="58" width="154" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="20" y="78" font-size="9.5" fill="#1e40af">dp[i][k][0/1]</text>
+    <text x="20" y="98" font-size="9.5" fill="#1e40af">k = 交易次数上限</text>
+    <text x="20" y="118" font-size="9.5" fill="#1e40af">0/1 = 今天是否持股</text>
+    <rect x="11" y="140" width="154" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="20" y="160" font-size="9.5" fill="#14532d">持股与否必须进状态</text>
+    <text x="20" y="180" font-size="9.5" fill="#14532d">否则后效会串味</text>
+    <text x="20" y="200" font-size="9.5" fill="#14532d">含冷冻期 → dp[i][0/1/2]</text>
+    <rect x="11" y="222" width="154" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="20" y="242" font-size="9" fill="#334155">论证见 README.md 第一节</text>
+    <text x="20" y="262" font-size="9" fill="#334155">变体表见本篇 2.4</text>
+  </g>
+
+  <g transform="translate(804,90)">
+    <rect x="0" y="0" width="176" height="286" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="12" y="26" font-size="12" font-weight="bold" fill="#0f172a">⑤ 二维前缀</text>
+    <text x="12" y="44" font-size="9.5" fill="#64748b">编辑距离 / LCS</text>
+    <rect x="11" y="58" width="154" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="20" y="78" font-size="9.5" fill="#1e40af">dp[i][j] = a 前 i 个变 b 前 j 个</text>
+    <text x="20" y="98" font-size="9.5" fill="#1e40af">两个维度都是前缀</text>
+    <text x="20" y="118" font-size="9.5" fill="#1e40af">行列都正序扫</text>
+    <rect x="11" y="140" width="154" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="20" y="160" font-size="9.5" fill="#14532d">依赖 上 / 左 / 左上 三格</text>
+    <text x="20" y="180" font-size="9" fill="#14532d">三个依赖永远落在已算好的格</text>
+    <text x="20" y="200" font-size="9" fill="#14532d">未命中时 1 + min(上, 左, 左上)</text>
+    <rect x="11" y="222" width="154" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="20" y="242" font-size="9" fill="#334155">展开与手推表见 编辑距离.md</text>
+    <text x="20" y="262" font-size="9" fill="#334155">同类二维样板见 LCS.md</text>
+  </g>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">离散化：三步把大值域映射成紧凑名次</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">样例 a = [1000000000, 5, 7, 5] 为示意；步骤与 lower_bound 落点对应 2.1 节代码</text>
+
+  <g transform="translate(20,88)">
+    <rect x="0" y="0" width="470" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 排序 → 去重 → 二分映射</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">三个动作依次做，缺一步都会算错</text>
+
+    <rect x="14" y="58" width="442" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="75" font-size="11" font-weight="bold" fill="#1e40af">① 复制后排序</text>
+    <text x="28" y="91" font-size="10" fill="#1e40af">sort.Ints：[1e9, 5, 7, 5] → [5, 5, 7, 1e9]</text>
+
+    <rect x="14" y="112" width="442" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="129" font-size="11" font-weight="bold" fill="#1e40af">② 原地去重</text>
+    <text x="28" y="145" font-size="10" fill="#1e40af">相邻不等才 append → uniq = [5, 7, 1e9]</text>
+
+    <rect x="14" y="166" width="442" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="183" font-size="11" font-weight="bold" fill="#14532d">③ 二分找落点（lower_bound）</text>
+    <text x="28" y="199" font-size="10" fill="#14532d">sort.SearchInts(uniq, v) = 首个 ≥ v 的位置</text>
+    <text x="28" y="215" font-size="10" fill="#14532d">v 必在 uniq 中，所以落点就是它的位次</text>
+
+    <line x1="235" y1="98" x2="235" y2="112" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="235" y1="152" x2="235" y2="166" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="238" width="442" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="258" font-size="10.5" font-weight="bold" fill="#1e40af">映射结果（+1 变 1-indexed）</text>
+    <text x="28" y="280" font-size="10" fill="#1e40af">5→1，7→2，1e9→3；重复的 5 共用名次 1</text>
+
+    <text x="14" y="318" font-size="10.5" fill="#64748b">排序 O(n log n) + 每个元素二分一次，总计 O(n log n)</text>
+  </g>
+
+  <g transform="translate(510,88)">
+    <rect x="0" y="0" width="470" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 形态：原值轴 → 名次轴</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">只保大小关系，差值信息被丢掉（延伸追问）</text>
+
+    <text x="14" y="70" font-size="11" font-weight="bold" fill="#334155">原值轴：值域 [1, 1e9]，元素稀疏（示意）</text>
+    <line x1="24" y1="102" x2="450" y2="102" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="30" y1="96" x2="30" y2="108" stroke="#2563eb" stroke-width="2"/>
+    <text x="30" y="122" text-anchor="middle" font-size="10" fill="#1e40af">5</text>
+    <line x1="48" y1="96" x2="48" y2="108" stroke="#2563eb" stroke-width="2"/>
+    <text x="48" y="136" text-anchor="middle" font-size="10" fill="#1e40af">7</text>
+    <line x1="440" y1="96" x2="440" y2="108" stroke="#2563eb" stroke-width="2"/>
+    <text x="440" y="122" text-anchor="middle" font-size="10" fill="#1e40af">1e9</text>
+
+    <line x1="235" y1="148" x2="235" y2="164" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="245" y="160" font-size="9.5" fill="#2563eb">三步离散化</text>
+
+    <text x="14" y="184" font-size="11" font-weight="bold" fill="#14532d">名次轴：值域 1..3（去重后个数），格子密集</text>
+    <rect x="30" y="194" width="100" height="36" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="80" y="216" text-anchor="middle" font-size="10.5" fill="#14532d">1 ← 5</text>
+    <rect x="150" y="194" width="100" height="36" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="200" y="216" text-anchor="middle" font-size="10.5" fill="#14532d">2 ← 7</text>
+    <rect x="270" y="194" width="100" height="36" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="320" y="216" text-anchor="middle" font-size="10.5" fill="#14532d">3 ← 1e9</text>
+
+    <text x="14" y="256" font-size="10.5" fill="#64748b">名次轴长度 = 不同值个数 ≤ n，可直接当数组下标</text>
+
+    <rect x="14" y="268" width="442" height="52" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="288" font-size="10.5" font-weight="bold" fill="#991b1b">代价：原来差 2 和差近 1e9 没有区别</text>
+    <text x="28" y="308" font-size="10" fill="#991b1b">要用「绝对差值」的问题不能只靠离散化</text>
+  </g>
+</svg>

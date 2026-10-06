@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwBs" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M6,0 0,3 6,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Manacher 的最右回文盒与 r[i] 取 min</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">样例 #a#b#b#a#（下标 0..8），此刻 center = 4、right = 9（right 不含）；数值抄自正文 2.3</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="256" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 盒子 = 一次「已匹配」的存档</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">绿色 = 盒的中心，黄色 = 被借用的镜像点，红色 = 当前位 i</text>
+
+    <text x="138" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">0</text>
+    <text x="218" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">1</text>
+    <text x="298" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">2</text>
+    <text x="378" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">3</text>
+    <text x="458" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">4</text>
+    <text x="538" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">5</text>
+    <text x="618" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">6</text>
+    <text x="698" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">7</text>
+    <text x="778" y="66" text-anchor="middle" font-size="10" fill="#94a3b8">8</text>
+
+    <rect x="100" y="72" width="76" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="180" y="72" width="76" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="260" y="72" width="76" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+    <rect x="340" y="72" width="76" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="420" y="72" width="76" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <rect x="500" y="72" width="76" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="580" y="72" width="76" height="40" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <rect x="660" y="72" width="76" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+    <rect x="740" y="72" width="76" height="40" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+
+    <text x="138" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e3a8a">#</text>
+    <text x="218" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e3a8a">a</text>
+    <text x="298" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#92400e">#</text>
+    <text x="378" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e3a8a">b</text>
+    <text x="458" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#166534">#</text>
+    <text x="538" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e3a8a">b</text>
+    <text x="618" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#991b1b">#</text>
+    <text x="698" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e3a8a">a</text>
+    <text x="778" y="98" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e3a8a">#</text>
+
+    <line x1="458" y1="64" x2="458" y2="122" stroke="#16a34a" stroke-width="2" stroke-dasharray="5 4"/>
+    <line x1="820" y1="64" x2="820" y2="122" stroke="#2563eb" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="830" y="100" font-size="10" fill="#2563eb">right = 9</text>
+
+    <line x1="138" y1="122" x2="778" y2="122" stroke="#16a34a" stroke-width="1.5"/>
+    <line x1="138" y1="116" x2="138" y2="128" stroke="#16a34a" stroke-width="1.5"/>
+    <line x1="778" y1="116" x2="778" y2="128" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="200" y="142" font-size="10" fill="#14532d">已知最右回文盒 = [center, right) = [4, 9)，覆盖下标 0..8</text>
+
+    <line x1="298" y1="166" x2="618" y2="166" stroke="#2563eb" stroke-width="1.5" marker-start="url(#arwBs)" marker-end="url(#arwB)"/>
+    <text x="628" y="170" font-size="10" fill="#2563eb">i=6 ↔ mirror=2</text>
+    <line x1="378" y1="190" x2="538" y2="190" stroke="#2563eb" stroke-width="1.5" marker-start="url(#arwBs)" marker-end="url(#arwB)"/>
+    <text x="548" y="194" font-size="10" fill="#2563eb">i=5 ↔ mirror=3</text>
+
+    <text x="14" y="214" font-size="10" fill="#334155">⭐ mirror = 2*center − i：i 与 mirror 关于 center 左右对称，同一盒里</text>
+    <text x="14" y="234" font-size="10" fill="#334155">⭐ 盒只保证「对称宽度以内」匹配，所以抄来的半径要按 right − i 截断</text>
+  </g>
+
+  <g transform="translate(20,350)">
+    <rect x="0" y="0" width="470" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. r[i] 起点的三种情形</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">实例全部来自正文 2.3 的推演表</text>
+
+    <rect x="14" y="56" width="432" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="76" font-size="11.5" font-weight="bold" fill="#1e40af">① i ≥ right：盒外，无信息可借</text>
+    <text x="28" y="96" font-size="10" fill="#1e40af">r[i] 只能从 1 起步逐位扩</text>
+    <text x="28" y="116" font-size="10" fill="#1e40af">例 i=3：当时 right=3 → 扩出 r[3]=2</text>
+
+    <rect x="14" y="136" width="432" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="156" font-size="11.5" font-weight="bold" fill="#14532d">② i &lt; right 且 r[mirror] &lt; right − i</text>
+    <text x="28" y="176" font-size="10" fill="#14532d">mirror 的回文整段在盒内 → min 取 r[mirror]</text>
+    <text x="28" y="196" font-size="10" fill="#14532d">例 i=5：min(2, 4)=2，扩一步即失配</text>
+
+    <rect x="14" y="216" width="432" height="72" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="236" font-size="11.5" font-weight="bold" fill="#92400e">③ i &lt; right 且 r[mirror] ≥ right − i</text>
+    <text x="28" y="256" font-size="10" fill="#92400e">伸出盒的部分无保证 → min 取 right − i</text>
+    <text x="28" y="276" font-size="10" fill="#92400e">例 i=4：min(1, 1)=1，再连扩 4 步成 5</text>
+  </g>
+
+  <g transform="translate(510,350)">
+    <rect x="0" y="0" width="470" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 盒内那四位：纯抄定案</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">此时 center=4、right=9</text>
+
+    <rect x="14" y="56" width="432" height="112" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="10" fill="#1e40af">i=5　mirror=3　min(r[3]=2, 9−5=4)=2　定案</text>
+    <text x="28" y="102" font-size="10" fill="#1e40af">i=6　mirror=2　min(r[2]=1, 9−6=3)=1　定案</text>
+    <text x="28" y="124" font-size="10" fill="#1e40af">i=7　mirror=1　min(r[1]=2, 9−7=2)=2　定案</text>
+    <text x="28" y="146" font-size="10" fill="#1e40af">i=8　mirror=0　min(r[0]=1, 9−8=1)=1　定案</text>
+
+    <text x="14" y="192" font-size="10" fill="#334155">⚠️ i=7、i=8 属于第 ③ 类（抄到的值正好等于 right − i），</text>
+    <text x="14" y="212" font-size="10" fill="#334155">但下一步比较就失配，所以一步没扩出去、right 也没动</text>
+    <text x="14" y="240" font-size="10" fill="#14532d">⭐ 9 位里只有 i=1、i=3、i=4 让 right 右移，</text>
+    <text x="14" y="260" font-size="10" fill="#14532d">其余靠 min 定案 —— 这就是第三节 O(n) 的来源</text>
+  </g>
+</svg>

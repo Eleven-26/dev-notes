@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 7,3 0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="7" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 7,3 0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 extend 的时序：沿 fail 回退到「接得住新字符」的位置</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">实例 s = abba 的 pos = 2（第二个 'b'），起点 last = 3（"b"），对应 2.1 手推的第三行</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="470" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+
+    <rect x="150" y="14" width="200" height="34" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" rx="8"/>
+    <text x="250" y="36" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">extend(s, pos = 2)</text>
+    <rect x="600" y="14" width="200" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="1.5" rx="8"/>
+    <text x="700" y="36" font-size="11.5" font-weight="bold" fill="#92400e" text-anchor="middle">查找循环（两个 for）</text>
+
+    <g stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4">
+      <line x1="250" y1="48" x2="250" y2="398"/>
+      <line x1="700" y1="48" x2="700" y2="398"/>
+    </g>
+
+    <line x1="252" y1="76" x2="696" y2="76" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="474" y="70" font-size="10" fill="#1e40af" text-anchor="middle">起点 cur = last = 3（len 1）</text>
+
+    <rect x="512" y="94" width="376" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="524" y="113" font-size="10" fill="#92400e">pos − 1 − len[3] = 0，s[0] = 'a' ≠ 'b' → cur = fail[3] = 1</text>
+
+    <rect x="512" y="130" width="376" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="524" y="149" font-size="10" fill="#92400e">pos − 1 − len[1] = 1，s[1] = 'b' == 'b' ✓ → 停在偶根 1</text>
+
+    <line x1="698" y1="180" x2="256" y2="180" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="474" y="174" font-size="10" fill="#14532d" text-anchor="middle">返回 cur = 1（这就是可扩位置）</text>
+
+    <rect x="72" y="198" width="376" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="84" y="217" font-size="10" fill="#1e40af">next[1]['b'] 不存在 → 新建节点 now = 4</text>
+
+    <rect x="72" y="234" width="376" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="84" y="253" font-size="10" fill="#1e40af">len[4] = len[1] + 2 = 2；next[1]['b'] = 4</text>
+
+    <line x1="252" y1="284" x2="696" y2="284" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="474" y="278" font-size="10" fill="#1e40af" text-anchor="middle">第二轮：f = fail[cur] = fail[1] = 0</text>
+
+    <rect x="512" y="302" width="376" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+    <text x="524" y="321" font-size="10" fill="#92400e">pos − 1 − len[0] = 2，s[2] = 'b' == 'b' ✓ → 停在奇根 0</text>
+
+    <line x1="698" y1="352" x2="256" y2="352" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="474" y="346" font-size="10" fill="#14532d" text-anchor="middle">fail[4] = next[0]['b'] = 3（即 "b"）</text>
+
+    <rect x="72" y="370" width="376" height="28" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+    <text x="84" y="389" font-size="10" fill="#14532d">last = 4（"bb"）；本轮只新增 1 个节点</text>
+
+    <rect x="14" y="412" width="932" height="46" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="432" font-size="10.5" fill="#334155">两轮查找判据相同：pos − 1 − len[x] ≥ 0 且 s[pos − 1 − len[x]] == c，只是起点不同（第一轮 last，第二轮 fail[cur]）</text>
+    <text x="28" y="452" font-size="10.5" fill="#64748b">回退只走 fail 链、比较位置单调不回 → 每字符均摊 O(1)；len[now] == 1 时直接 fail = 1，省掉第二轮</text>
+  </g>
+</svg>

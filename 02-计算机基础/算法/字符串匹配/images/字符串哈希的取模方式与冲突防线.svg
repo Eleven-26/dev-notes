@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">选参、取模与冲突防线</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判据与分支持照正文第二、三、四节，图中不写冲突概率数字（正文未给实测值）</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="420" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 一次「用哈希判等」的判定顺序</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">方框是步骤，菱形位置是分叉：哈希不等一定能否定，哈希相等只能「大概率」肯定</text>
+
+    <rect x="20" y="58" width="210" height="54" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="34" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">① 选 base</text>
+    <text x="34" y="100" font-size="10" fill="#1e40af">大于字符集大小的质数</text>
+
+    <rect x="260" y="58" width="210" height="54" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="274" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">② 选 mod</text>
+    <text x="274" y="100" font-size="10" fill="#1e40af">大质数 1e9+7 或 2^64 溢出</text>
+
+    <rect x="500" y="58" width="210" height="54" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="514" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">③ 预处理两张表</text>
+    <text x="514" y="100" font-size="10" fill="#1e40af">h[i]、pow[i] = base^i</text>
+
+    <rect x="740" y="58" width="200" height="54" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="754" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">④ 算两个子串哈希</text>
+    <text x="754" y="100" font-size="10" fill="#1e40af">各套一次减法，O(1)</text>
+
+    <line x1="230" y1="85" x2="258" y2="85" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="470" y1="85" x2="498" y2="85" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="710" y1="85" x2="738" y2="85" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <polyline points="840,112 840,128 500,128 500,138" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <rect x="380" y="140" width="240" height="46" fill="#f1f5f9" stroke="#475569" stroke-width="1.5" rx="8"/>
+    <text x="400" y="168" font-size="11.5" font-weight="bold" fill="#334155">⑤ 比较两个哈希值</text>
+
+    <line x1="440" y1="186" x2="200" y2="196" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <line x1="560" y1="186" x2="760" y2="196" stroke="#b45309" stroke-width="1.5"/>
+    <rect x="40" y="198" width="290" height="54" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="54" y="220" font-size="11.5" font-weight="bold" fill="#14532d">否：哈希不相等</text>
+    <text x="54" y="240" font-size="10" fill="#14532d">串必不同 —— 这条方向没有漏判</text>
+
+    <rect x="620" y="198" width="300" height="54" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="634" y="220" font-size="11.5" font-weight="bold" fill="#92400e">是：只是「大概率同串」</text>
+    <text x="634" y="240" font-size="10" fill="#92400e">可能冲突 → 必须补二次保证</text>
+
+    <line x1="770" y1="252" x2="170" y2="272" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <line x1="770" y1="252" x2="490" y2="272" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <line x1="770" y1="252" x2="800" y2="272" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+
+    <rect x="20" y="274" width="290" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="34" y="296" font-size="11.5" font-weight="bold" fill="#991b1b">防线① 双哈希</text>
+    <text x="34" y="316" font-size="10" fill="#991b1b">两套 base+mod 同时冲突几乎不可能</text>
+
+    <rect x="340" y="274" width="290" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="354" y="296" font-size="11.5" font-weight="bold" fill="#991b1b">防线② 命中后复核</text>
+    <text x="354" y="316" font-size="10" fill="#991b1b">Rabin-Karp 要逐字符二次验证</text>
+
+    <rect x="660" y="274" width="290" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="674" y="296" font-size="11.5" font-weight="bold" fill="#991b1b">防线③ 慎用自然溢出</text>
+    <text x="674" y="316" font-size="10" fill="#991b1b">自然溢出可被构造输入攻击</text>
+
+    <text x="14" y="356" font-size="10" fill="#334155">⭐ 两种取模的取舍：模大质数 → 冲突率可预测、多一次取模；自然溢出 → 快、但有被构造攻击的风险</text>
+    <text x="14" y="380" font-size="10" fill="#334155">⭐ 生产环境建议双哈希；base 常取 131、13331，即大于字符集大小的质数，能减少碰撞</text>
+    <text x="14" y="404" font-size="10" fill="#92400e">⚠️ 要确定性匹配就别用哈希：KMP 是最坏 O(n) 且无冲突，哈希只是期望线性</text>
+  </g>
+</svg>

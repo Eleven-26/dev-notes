@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">记忆化搜索：一次调用的四段顺序，与同一状态的两次访问</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">四段顺序出自正文第二节模板；两次访问的对比出自第四节斐波那契的展开</text>
+
+  <g transform="translate(40,88)">
+    <rect x="0" y="0" width="470" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="20" y="26" font-size="15" font-weight="bold" fill="#0f172a">solve(state) 的四段顺序</text>
+    <text x="20" y="46" font-size="10.5" fill="#64748b">顺序固定，不能调换：判边界 → 查缓存 → 枚举子状态 → 写缓存</text>
+
+    <rect x="14" y="62" width="442" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="84" font-size="11.5" font-weight="bold" fill="#1e40af">① 判边界：isTerminal(state) ？</text>
+    <text x="28" y="104" font-size="11" fill="#1e40af">终止状态直接返回 boundary(state)</text>
+    <line x1="235" y1="118" x2="235" y2="128" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="130" width="442" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="152" font-size="11.5" font-weight="bold" fill="#1e40af">② 查缓存：memo[state] 命中 ？</text>
+    <text x="28" y="172" font-size="11" fill="#1e40af">命中就直接返回，不再往下展开</text>
+    <line x1="235" y1="186" x2="235" y2="196" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="198" width="442" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="220" font-size="11.5" font-weight="bold" fill="#1e40af">③ 枚举子状态并合并</text>
+    <text x="28" y="240" font-size="11" fill="#1e40af">res = merge(res, solve(sub))</text>
+    <line x1="235" y1="254" x2="235" y2="264" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="266" width="442" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="288" font-size="11.5" font-weight="bold" fill="#14532d">④ 写缓存再返回</text>
+    <text x="28" y="308" font-size="11" fill="#14532d">memo[state] = res，然后 return res</text>
+
+    <text x="28" y="346" font-size="10.5" fill="#64748b">三要素（状态定义 / 边界条件 / 转移方程）就落在这四段里</text>
+  </g>
+
+  <g transform="translate(540,88)">
+    <rect x="0" y="0" width="420" height="360" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">同一状态的两次访问</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">裸递归里 f(3) 出现 2 次、f(2) 出现 3 次</text>
+
+    <rect x="14" y="64" width="392" height="120" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="86" font-size="11.5" font-weight="bold" fill="#1e40af">第 1 次访问：未命中，真算一遍</text>
+    <text x="28" y="108" font-size="11" fill="#1e40af">判边界 → 查 memo（未命中）</text>
+    <text x="28" y="130" font-size="11" fill="#1e40af">→ 枚举子状态、递归下去、合并</text>
+    <text x="28" y="152" font-size="11" fill="#1e40af">→ 回填 memo[state] → 返回</text>
+
+    <rect x="14" y="200" width="392" height="120" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="222" font-size="11.5" font-weight="bold" fill="#14532d">第 2 次访问：命中，直接返回</text>
+    <text x="28" y="244" font-size="11" fill="#14532d">判边界 → 查 memo（命中）</text>
+    <text x="28" y="266" font-size="11" fill="#14532d">→ 直接返回缓存里的值</text>
+    <text x="28" y="288" font-size="11" fill="#14532d">→ 不再递归、也不再回填</text>
+
+    <text x="28" y="344" font-size="10.5" fill="#64748b">加缓存后每个状态只算 1 次 → O(n)</text>
+  </g>
+</svg>

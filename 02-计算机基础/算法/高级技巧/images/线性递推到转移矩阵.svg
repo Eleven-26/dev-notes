@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">线性递推 → 转移矩阵：矩阵元素从递推系数来</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">以斐波那契 f(n) = 1 × f(n-1) + 1 × f(n-2) 为例；口径见本篇第一、三节</text>
+
+  <g transform="translate(20,88)">
+    <rect x="0" y="0" width="470" height="432" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="18" y="28" font-size="15" font-weight="bold" fill="#0f172a">A. 从递推式读出矩阵元素</text>
+    <text x="18" y="48" font-size="10.5" fill="#64748b">二阶递推 k = 2，转移矩阵就是 2×2</text>
+
+    <rect x="14" y="64" width="442" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="86" font-size="11.5" font-weight="bold" fill="#1e40af">递推式（正文第三节）</text>
+    <text x="28" y="106" font-size="11" fill="#1e40af">f(n) = 1 × f(n-1) + 1 × f(n-2)</text>
+
+    <rect x="14" y="134" width="442" height="62" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="156" font-size="11.5" font-weight="bold" fill="#1e40af">第 1 行 ← 抄 f(n) 右边的系数</text>
+    <text x="28" y="176" font-size="11" fill="#1e40af">f(n-1) 的系数 1、f(n-2) 的系数 1</text>
+
+    <rect x="14" y="208" width="442" height="62" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="230" font-size="11.5" font-weight="bold" fill="#14532d">第 2 行 ← 把上一行整体下移一位</text>
+    <text x="28" y="250" font-size="11" fill="#14532d">即 f(n-1) = 1 × f(n-1) + 0 × f(n-2)</text>
+
+    <rect x="14" y="282" width="442" height="62" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="304" font-size="11.5" font-weight="bold" fill="#92400e">转移矩阵 M = [[1, 1], [1, 0]]</text>
+    <text x="28" y="324" font-size="11" fill="#92400e">列序 = 状态序：f(n-1) 在前、f(n-2) 在后</text>
+
+    <text x="18" y="378" font-size="10.5" fill="#64748b">套路：第 1 行抄系数，之后每行把上一行右移一位、空位补 0</text>
+    <text x="18" y="400" font-size="10.5" fill="#64748b">k 阶递推取 k×k 矩阵：除第 1 行外都是移位行</text>
+  </g>
+
+  <g transform="translate(510,88)">
+    <rect x="0" y="0" width="470" height="432" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="18" y="28" font-size="15" font-weight="bold" fill="#0f172a">B. 幂次与初始向量必须配对</text>
+    <text x="18" y="48" font-size="10.5" fill="#64748b">起点换一位，幂次就跟着换一次</text>
+
+    <rect x="14" y="64" width="442" height="62" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="86" font-size="11.5" font-weight="bold" fill="#1e40af">M^(n-1) × [f(1), f(0)] = [f(n), f(n-1)]</text>
+    <text x="28" y="106" font-size="11" fill="#1e40af">幂次 n-1 配的起点是 [f(1), f(0)]</text>
+
+    <rect x="14" y="138" width="442" height="80" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="160" font-size="11.5" font-weight="bold" fill="#14532d">代入初值验算（f(1) = 1、f(0) = 0）</text>
+    <text x="28" y="180" font-size="11" fill="#14532d">n = 2：M^1 × [1, 0] = [1, 1] = [f(2), f(1)]</text>
+    <text x="28" y="200" font-size="11" fill="#14532d">n = 3：M^2 × [1, 0] = [2, 1] = [f(3), f(2)]</text>
+
+    <rect x="14" y="230" width="442" height="96" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="252" font-size="11.5" font-weight="bold" fill="#92400e">一般 k 阶递推（第六节口径）</text>
+    <text x="28" y="272" font-size="11" fill="#92400e">M^(n-k) × [f(k), …, f(1)]</text>
+    <text x="28" y="292" font-size="11" fill="#92400e">斐波那契 k = 2：M^(n-2) × [f(2), f(1)]</text>
+    <text x="28" y="312" font-size="11" fill="#92400e">与 n-1 的写法等价，只是起点不同</text>
+
+    <rect x="14" y="338" width="442" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="28" y="360" font-size="11.5" font-weight="bold" fill="#991b1b">只改幂次、不改起点 → 全表错位</text>
+    <text x="28" y="380" font-size="11" fill="#991b1b">第六节「初始向量」一行即指此事</text>
+
+    <text x="18" y="420" font-size="10.5" fill="#64748b">两种写法都对，错的是幂次与起点混着用</text>
+  </g>
+</svg>

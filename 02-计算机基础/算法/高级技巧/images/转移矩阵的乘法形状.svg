@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">状态向量 × 转移矩阵：乘法形状从哪来</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">一般 k 阶线性递推的矩阵形状，口径见第一节；斐波那契的 2×2 具体形态见第三节配图</text>
+
+  <g transform="translate(20,88)">
+    <rect x="0" y="0" width="470" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. k 阶递推与转移矩阵 M</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">f(n) = a1×f(n-1) + a2×f(n-2) + … + ak×f(n-k)</text>
+
+    <rect x="14" y="58" width="442" height="94" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">M 是 k×k，由两类行组成</text>
+    <text x="28" y="102" font-size="10" fill="#1e40af">第 1 行 = 系数行 [a1, a2, …, ak]</text>
+    <text x="28" y="122" font-size="10" fill="#1e40af">第 2..k 行 = 移位行：第 i 行只有第 i-1 列</text>
+    <text x="28" y="142" font-size="10" fill="#1e40af">是 1、其余为 0</text>
+
+    <rect x="14" y="166" width="442" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="188" font-size="11.5" font-weight="bold" fill="#14532d">状态向量 v = [f(k), f(k-1), …, f(1)] 一列</text>
+    <text x="28" y="210" font-size="10" fill="#14532d">一次 M 乘 = 整个状态向前推进一格</text>
+
+    <rect x="14" y="238" width="442" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="260" font-size="11.5" font-weight="bold" fill="#1e40af">M^(n-k) × v 的第 1 个分量就是 f(n)</text>
+    <text x="28" y="282" font-size="10" fill="#1e40af">求幂交给快速幂 → O(k³ log n)（第五节）</text>
+
+    <text x="14" y="322" font-size="10.5" fill="#64748b">判据：转移矩阵 M 固定、与 n 无关，才有幂可求</text>
+  </g>
+
+  <g transform="translate(510,88)">
+    <rect x="0" y="0" width="470" height="340" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 乘法形状：新状态怎么算出</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">M 的第 1 行点乘旧状态列 = f(n)，其余行只是搬运</text>
+
+    <rect x="14" y="58" width="442" height="88" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">新状态第 1 个分量 = 行 × 列的点乘</text>
+    <text x="28" y="102" font-size="10" fill="#1e40af">a1×f(k) + a2×f(k-1) + … + ak×f(1)</text>
+    <text x="28" y="124" font-size="10" fill="#1e40af">= f(n)，系数正是递推式里那一排</text>
+
+    <rect x="14" y="160" width="442" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="182" font-size="11.5" font-weight="bold" fill="#14532d">第 2..k 个分量不用计算</text>
+    <text x="28" y="204" font-size="10" fill="#14532d">移位行把旧状态整体下移一格抄走</text>
+
+    <rect x="14" y="232" width="442" height="70" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="254" font-size="11.5" font-weight="bold" fill="#92400e">什么时候没有这个 M</text>
+    <text x="28" y="274" font-size="10" fill="#92400e">递推含 max / min 等非线性运算 → 无法写成</text>
+    <text x="28" y="292" font-size="10" fill="#92400e">系数 × 旧状态的组合（延伸追问第二条）</text>
+  </g>
+</svg>

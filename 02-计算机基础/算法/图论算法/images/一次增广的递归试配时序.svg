@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/></marker>
+    <marker id="sG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次增广的递归试配时序：「挪窝」成功才回填两条匹配</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">走正文第二节第 2 轮：u1 抢 v0、u0 挪 v1；全部消息可对着代码复核</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="960" height="386" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 第 2 轮 u1 的调用栈推进（自上而下是时间顺序）</text>
+
+    <rect x="25" y="44" width="150" height="30" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="100" y="64" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">主循环 hungarian</text>
+    <rect x="255" y="44" width="150" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="330" y="64" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">dfs(u1)</text>
+    <rect x="505" y="44" width="150" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="580" y="64" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">dfs(u0) 递归层</text>
+    <rect x="780" y="44" width="160" height="30" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="860" y="64" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">matchR[] 匹配表</text>
+
+    <line x1="100" y1="88" x2="100" y2="368" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="330" y1="88" x2="330" y2="368" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="580" y1="88" x2="580" y2="368" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="860" y1="88" x2="860" y2="368" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <line x1="100" y1="112" x2="330" y2="112" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sB)"/>
+    <text x="215" y="104" text-anchor="middle" font-size="10" fill="#2563eb">调用 dfs(u1)，visited 全清</text>
+
+    <text x="340" y="138" font-size="9.5" fill="#334155">试 v0：visited[v0] 置真</text>
+    <text x="340" y="158" font-size="9.5" fill="#334155">matchR[v0]=u0 占着 → 问 u0</text>
+
+    <line x1="330" y1="186" x2="580" y2="186" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sB)"/>
+    <text x="455" y="178" text-anchor="middle" font-size="10" fill="#2563eb">递归 dfs(u0)：「能不能挪窝」</text>
+
+    <text x="590" y="212" font-size="9.5" fill="#334155">v0 已访问跳过；试 v1</text>
+    <text x="590" y="232" font-size="9.5" fill="#334155">matchR[v1] = -1 是空位</text>
+
+    <line x1="580" y1="260" x2="860" y2="260" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sB)"/>
+    <text x="720" y="252" text-anchor="middle" font-size="10" fill="#1e40af">matchR[v1] = u0（u0 挪到 v1）</text>
+
+    <line x1="580" y1="288" x2="330" y2="288" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#sG)"/>
+    <text x="455" y="280" text-anchor="middle" font-size="10" fill="#14532d">返回 true</text>
+
+    <line x1="330" y1="316" x2="860" y2="316" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sB)"/>
+    <text x="595" y="308" text-anchor="middle" font-size="10" fill="#1e40af">matchR[v0] = u1（u1 接走 v0）</text>
+
+    <line x1="330" y1="344" x2="100" y2="344" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#sG)"/>
+    <text x="215" y="336" text-anchor="middle" font-size="10" fill="#14532d">返回 true</text>
+
+    <text x="110" y="366" font-size="9.5" fill="#334155">res++ ⇒ 匹配数 2</text>
+  </g>
+
+  <g transform="translate(20,490)">
+    <rect x="0" y="0" width="960" height="130" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#92400e">B. visited 与「每轮清零」管住复杂度</text>
+    <text x="14" y="52" font-size="11" fill="#92400e">同一轮里每个右侧点至多被试一次（visited[v] 挡住回头路）→ 单轮 DFS 最坏 O(E)</text>
+    <text x="14" y="78" font-size="11" fill="#92400e">n 个左部点各试一轮 → 总账 O(VE)；matchR 与 visited 合计空间 O(V)</text>
+    <text x="14" y="106" font-size="10.5" fill="#991b1b">⚠️ visited 必须每轮重新清空：上一轮的「试过就废」不跨轮成立，因为匹配态已被改写</text>
+  </g>
+</svg>

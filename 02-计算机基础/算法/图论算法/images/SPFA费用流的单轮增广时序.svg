@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 6,3.5 0,7 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 6,3.5 0,7 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 6,3.5 0,7 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">最小费用流：一轮增广的调用时序 —— 找路、推流、反边费用取负</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">样例抄自第三节推演块：s→a(1,1)、a→t(1,2)、s→b(1,2)、b→t(1,2)，边标「容量, 单位费用」</text>
+
+  <g transform="translate(20,78)">
+    <rect x="0" y="0" width="460" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 一次「找路 → 增广」的四个角色</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">角色全部来自第三节模板代码：mcmf 主循环 / SPFA / 残量网络 / flow 与 cost</text>
+
+    <text x="70" y="68" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#334155">主循环</text>
+    <text x="190" y="68" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#334155">SPFA</text>
+    <text x="305" y="68" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#334155">残量网络</text>
+    <text x="415" y="68" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#334155">flow 与 cost</text>
+
+    <line x1="70" y1="76" x2="70" y2="266" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="190" y1="76" x2="190" y2="266" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="305" y1="76" x2="305" y2="266" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="415" y1="76" x2="415" y2="266" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <line x1="70" y1="100" x2="188" y2="100" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="129" y="96" text-anchor="middle" font-size="9.5" fill="#2563eb">① 开始一轮：找最短路</text>
+
+    <line x1="190" y1="126" x2="303" y2="126" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="247" y="122" text-anchor="middle" font-size="9.5" fill="#2563eb">② 只松弛 cap 大于 0 的边</text>
+
+    <line x1="190" y1="152" x2="72" y2="152" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="130" y="148" text-anchor="middle" font-size="9.5" fill="#14532d">③ 返回 s→a→t：dist = 3</text>
+
+    <line x1="70" y1="182" x2="303" y2="182" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="187" y="178" text-anchor="middle" font-size="9.5" fill="#991b1b">④ 推流 d = 1：正边 cap - 1、反边 cap + 1</text>
+    <text x="352" y="202" text-anchor="middle" font-size="9.5" fill="#991b1b">反边费用 = 负的原费用</text>
+
+    <line x1="70" y1="230" x2="413" y2="230" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="242" y="226" text-anchor="middle" font-size="9.5" fill="#2563eb">⑤ flow += 1、cost += 1 × 3 = 3</text>
+
+    <text x="14" y="260" font-size="10" fill="#334155">⑥ 回到 ① 开下一轮，直到 SPFA 报 dist[t] = INF 才结束</text>
+  </g>
+
+  <g transform="translate(520,78)">
+    <rect x="0" y="0" width="460" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 同一份代码连跑三轮的账</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">逐轮数字全部抄自第三节推演块，可逐边手推复核</text>
+
+    <rect x="14" y="58" width="432" height="76" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="78" font-size="11" font-weight="bold" fill="#1e40af">第 1 轮 s→a→t：dist = 1 + 2 = 3，瓶颈 d = 1</text>
+    <text x="28" y="96" font-size="10" fill="#1e40af">推流后 s→a、a→t 饱和，反边 a→s(-1)、t→a(-2) 上线</text>
+    <text x="28" y="114" font-size="10" fill="#1e40af">累计 flow = 1、cost = 3</text>
+
+    <rect x="14" y="144" width="432" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="164" font-size="11" font-weight="bold" fill="#1e40af">第 2 轮 s→b→t：dist = 2 + 2 = 4，瓶颈 d = 1</text>
+    <text x="28" y="184" font-size="10" fill="#1e40af">s→a 残量为 0 走不通；累计 flow = 2、cost = 7</text>
+
+    <rect x="14" y="212" width="432" height="40" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="237" font-size="10.5" fill="#334155">第 3 轮 SPFA：s 的两条出边残量全为 0，dist[t] = INF → 结束</text>
+
+    <text x="14" y="282" font-size="10.5" font-weight="bold" fill="#14532d">结果：最大流 2、最小总费用 7 —— 两轮费用 3 + 4 恰好对上</text>
+  </g>
+
+  <g transform="translate(20,398)">
+    <rect x="0" y="0" width="960" height="160" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#92400e">C. 这一轮循环里最容易被读错的三件事</text>
+    <text x="14" y="52" font-size="10.5" fill="#92400e">① 找路按「费用」不按「跳数」：松弛判据是 e.cap 大于 0 且 dist[u] + e.cost 小于 dist[e.to]（第三节代码原样）</text>
+    <text x="14" y="74" font-size="10.5" fill="#92400e">② 反边不是新通路，是「后悔药」：cap += d 让流量能退，cost 取负让退掉的钱回到总账</text>
+    <text x="14" y="96" font-size="10.5" fill="#92400e">③ cost += d × dist[t]：瓶颈 d 决定这一轮每个单位流付多少，两轮费用 3 + 4 恰好是累计 7</text>
+    <text x="14" y="124" font-size="10.5" fill="#991b1b">⚠️ SPFA 的队列进出与负环话题本体写在 Bellman-Ford 第四节；本篇只改两处：只走残量 cap 大于 0 的边、按费用而非距离比较</text>
+    <text x="14" y="146" font-size="10" fill="#64748b">本图数字全部抄自第三节推演块，非实测读数</text>
+  </g>
+</svg>

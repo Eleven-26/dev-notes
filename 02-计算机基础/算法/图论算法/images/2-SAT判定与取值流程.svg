@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="fB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">2-SAT 求解四步：建图、Tarjan、判矛盾、按编号取值</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">判据与代码抄自正文第三节的 twoSAT 函数</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="960" height="320" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. Tarjan 之后只剩两件事：先查同群、再取小编号</text>
+
+    <rect x="14" y="44" width="220" height="88" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="66" font-size="11.5" font-weight="bold" fill="#1e40af">① 拆点建图</text>
+    <text x="28" y="86" font-size="10" fill="#1e40af">每个变量 i 拆成 2i(真)、2i+1(假)</text>
+    <text x="28" y="106" font-size="10" fill="#1e40af">每条「x∨y」加 ¬x→y、¬y→x</text>
+
+    <rect x="248" y="44" width="220" height="88" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="262" y="66" font-size="11.5" font-weight="bold" fill="#1e40af">② Tarjan 求 SCC</text>
+    <text x="262" y="86" font-size="10" fill="#1e40af">dfn / low 机制见强连通分量篇</text>
+    <text x="262" y="106" font-size="10" fill="#1e40af">得 scc[0..2n-1]，线性时间</text>
+
+    <rect x="482" y="44" width="220" height="88" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="496" y="66" font-size="11.5" font-weight="bold" fill="#92400e">③ 矛盾判定</text>
+    <text x="496" y="86" font-size="10" fill="#92400e">逐个 i 查 scc[2i] == scc[2i+1]</text>
+    <text x="496" y="106" font-size="10" fill="#92400e">相等 ⇒ 无解，直接返回</text>
+
+    <rect x="716" y="44" width="220" height="88" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="730" y="66" font-size="11.5" font-weight="bold" fill="#14532d">④ 读出一组解</text>
+    <text x="730" y="86" font-size="10" fill="#14532d">res[i] = scc[2i] &lt; scc[2i+1]</text>
+    <text x="730" y="106" font-size="10" fill="#14532d">取编号小的一端为真</text>
+
+    <line x1="234" y1="88" x2="248" y2="88" stroke="#2563eb" stroke-width="1.5" marker-end="url(#fB)"/>
+    <line x1="468" y1="88" x2="482" y2="88" stroke="#2563eb" stroke-width="1.5" marker-end="url(#fB)"/>
+    <line x1="702" y1="88" x2="716" y2="88" stroke="#2563eb" stroke-width="1.5" marker-end="url(#fB)"/>
+
+    <line x1="592" y1="132" x2="592" y2="150" stroke="#dc2626" stroke-width="1.5" marker-end="url(#fB)"/>
+    <rect x="482" y="150" width="220" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="496" y="172" font-size="11" font-weight="bold" fill="#991b1b">同群为什么无解</text>
+    <text x="496" y="192" font-size="9.5" fill="#991b1b">x→¬x 且 ¬x→x，选谁都被推到反面</text>
+
+    <line x1="826" y1="132" x2="826" y2="150" stroke="#16a34a" stroke-width="1.5" marker-end="url(#fB)"/>
+    <rect x="716" y="150" width="220" height="58" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="730" y="172" font-size="11" font-weight="bold" fill="#14532d">本例：两群互不矛盾</text>
+    <text x="730" y="192" font-size="9.5" fill="#14532d">读出 x1 = x2 = true，三条子句全过</text>
+
+    <text x="14" y="238" font-size="11" fill="#334155">读解依据：SCC 编号是逆拓扑序，编号小的群在拓扑序靠后 —— 取「靠后」的一端，不会顺蕴含边逼出自相矛盾</text>
+    <text x="14" y="264" font-size="11" fill="#334155">两条出口：任一 i 命中 scc[2i] == scc[2i+1] → 返回无解；全部落空 → 返回 res（正文第三节代码）</text>
+    <text x="14" y="290" font-size="10" fill="#64748b">代价：2n 个点、2m 条边跑一遍 Tarjan → O(n + m)（正文第五节 O(V+E) 的本例口径）</text>
+  </g>
+</svg>

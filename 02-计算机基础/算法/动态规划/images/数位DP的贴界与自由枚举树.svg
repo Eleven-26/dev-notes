@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数位 DP：「贴界」分支与「解除贴界」后的自由枚举</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">手推例子出自正文 2.1：统计 [1, 257] 中不含数字 4 的数，digits = [2, 5, 7]（高位在前）</text>
+
+  <g transform="translate(40,88)">
+    <rect x="0" y="0" width="560" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="20" y="26" font-size="15" font-weight="bold" fill="#0f172a">沿上界一路拆位：什么时候还「贴界」</text>
+    <text x="20" y="46" font-size="10.5" fill="#64748b">d 为当前位的取值；每一层都问：这一位选完，还贴着上界吗？</text>
+
+    <rect x="14" y="62" width="532" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="82" font-size="11.5" font-weight="bold" fill="#1e40af">起点 pos0　limit=true，lead=true</text>
+    <text x="28" y="100" font-size="11" fill="#1e40af">选 d=2 → 仍贴界　选 d=1 → 解除贴界　选 d=0 → 前导零</text>
+    <line x1="280" y1="116" x2="280" y2="124" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="126" width="532" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="146" font-size="11.5" font-weight="bold" fill="#1e40af">pos1　沿 2 的分支</text>
+    <text x="28" y="164" font-size="11" fill="#1e40af">选 d=5 → 仍贴界　选 d=0..3 → 解除贴界</text>
+    <line x1="280" y1="180" x2="280" y2="188" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="14" y="190" width="532" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="210" font-size="11.5" font-weight="bold" fill="#1e40af">pos2　沿 25 的分支</text>
+    <text x="28" y="228" font-size="11" fill="#1e40af">可取 0..7 里的合法值，逐个计入答案</text>
+
+    <rect x="14" y="252" width="532" height="116" fill="#fef9c3" stroke="#ca8a04" stroke-width="1" rx="8"/>
+    <text x="28" y="276" font-size="11.5" font-weight="bold" fill="#713f12">一旦贴界解除，剩下几位与上界再无关系</text>
+    <text x="28" y="298" font-size="11" fill="#713f12">结果只由 (pos, state) 决定 —— 这一支才进 memo</text>
+    <text x="28" y="320" font-size="11" fill="#713f12">limit=true 的分支枚举被上界卡住，与 limit=false 不能共用缓存</text>
+    <text x="28" y="342" font-size="11" fill="#713f12">求 [L, R] 用前缀做差：f(R) − f(L−1)</text>
+  </g>
+
+  <g transform="translate(620,88)">
+    <rect x="0" y="0" width="360" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">状态里的三个关键位</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">前两项每道题都有，第三项按题目取舍</text>
+
+    <rect x="14" y="62" width="332" height="44" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="82" font-size="11" fill="#0f172a">pos —— 当前处理到第几位</text>
+
+    <rect x="14" y="112" width="332" height="44" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="132" font-size="11" fill="#0f172a">limit —— 是否贴着上界</text>
+
+    <rect x="14" y="162" width="332" height="44" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="182" font-size="11" fill="#0f172a">lead —— 是否有前导零</text>
+
+    <rect x="14" y="212" width="332" height="44" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="232" font-size="11" fill="#0f172a">state —— 与题目相关的额外状态</text>
+
+    <rect x="14" y="266" width="332" height="94" fill="#fef9c3" stroke="#ca8a04" stroke-width="1" rx="8"/>
+    <text x="28" y="286" font-size="11" fill="#713f12">limit=true → 枚举 0..digits[pos]</text>
+    <text x="28" y="308" font-size="11" fill="#713f12">limit=false → 枚举 0..9</text>
+    <text x="28" y="330" font-size="11" fill="#713f12">lead=true → 前导零不当数位</text>
+  </g>
+</svg>

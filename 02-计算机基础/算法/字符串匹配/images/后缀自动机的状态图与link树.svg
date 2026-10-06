@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="7" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 7,3 0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arwO" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto"><path d="M0,0 8,3.5 0,7 Z" fill="#ea580c"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">后缀自动机：状态、转移边与 link 后缀链接树</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">样例串 s = banana（n = 6），状态按第二节 extend 的代码顺序编号，建完共 10 个状态</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="620" height="460" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 转移图：每条从 0 出发的路径 = 一个子串</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">圈内上行为状态编号，下行为 len（该状态表示的最长子串长度）</text>
+
+    <g stroke="#93c5fd" stroke-width="2" fill="none">
+      <line x1="87" y1="130" x2="144" y2="130" marker-end="url(#arwB)"/>
+      <line x1="202" y1="130" x2="259" y2="130" marker-end="url(#arwB)"/>
+      <line x1="317" y1="130" x2="374" y2="130" marker-end="url(#arwB)"/>
+      <line x1="432" y1="130" x2="489" y2="130" marker-end="url(#arwB)"/>
+      <line x1="87" y1="300" x2="144" y2="300" marker-end="url(#arwB)"/>
+      <line x1="202" y1="300" x2="259" y2="300" marker-end="url(#arwB)"/>
+      <line x1="317" y1="300" x2="374" y2="300" marker-end="url(#arwB)"/>
+      <line x1="432" y1="300" x2="489" y2="300" marker-end="url(#arwB)"/>
+      <line x1="60" y1="157" x2="60" y2="269" marker-end="url(#arwB)"/>
+      <line x1="80" y1="149" x2="153" y2="278" marker-end="url(#arwB)"/>
+      <line x1="500" y1="149" x2="427" y2="278" marker-end="url(#arwB)"/>
+    </g>
+
+    <g font-family="Consolas, Courier New, monospace" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">
+      <text x="116" y="122">b</text>
+      <text x="231" y="122">a</text>
+      <text x="346" y="122">n</text>
+      <text x="461" y="122">a</text>
+      <text x="116" y="292">n</text>
+      <text x="231" y="292">a</text>
+      <text x="346" y="292">n</text>
+      <text x="461" y="292">a</text>
+      <text x="76" y="220">a</text>
+      <text x="118" y="238">n</text>
+      <text x="476" y="214">n</text>
+    </g>
+
+    <g>
+      <circle cx="60" cy="130" r="27" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
+      <circle cx="175" cy="130" r="27" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="290" cy="130" r="27" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="405" cy="130" r="27" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="520" cy="130" r="27" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="60" cy="300" r="27" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>
+      <circle cx="175" cy="300" r="27" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>
+      <circle cx="290" cy="300" r="27" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>
+      <circle cx="405" cy="300" r="27" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="520" cy="300" r="27" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+    </g>
+
+    <g font-size="14" font-weight="bold" fill="#0f172a" text-anchor="middle">
+      <text x="60" y="127">0</text>
+      <text x="175" y="127">1</text>
+      <text x="290" y="127">2</text>
+      <text x="405" y="127">3</text>
+      <text x="520" y="127">4</text>
+      <text x="60" y="297">5</text>
+      <text x="175" y="297">7</text>
+      <text x="290" y="297">9</text>
+      <text x="405" y="297">6</text>
+      <text x="520" y="297">8</text>
+    </g>
+    <g font-size="8.5" fill="#475569" text-anchor="middle">
+      <text x="60" y="145">len 0</text>
+      <text x="175" y="145">len 1</text>
+      <text x="290" y="145">len 2</text>
+      <text x="405" y="145">len 3</text>
+      <text x="520" y="145">len 4</text>
+      <text x="60" y="315">len 1</text>
+      <text x="175" y="315">len 2</text>
+      <text x="290" y="315">len 3</text>
+      <text x="405" y="315">len 5</text>
+      <text x="520" y="315">len 6</text>
+    </g>
+
+    <rect x="14" y="352" width="592" height="92" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+    <text x="28" y="374" font-size="10.5" fill="#334155">蓝圈 = 每个字符新建的状态；黄圈 = clone 分裂出的状态（5、7、9）</text>
+    <text x="28" y="396" font-size="10.5" fill="#334155">绿圈 8 = 走完整个 banana 后 last 所在的位置；一个状态覆盖长度区间 (len[link[i]], len[i]]</text>
+    <text x="28" y="418" font-size="10.5" fill="#64748b">状态 2 的 link 指向 5，故它只覆盖长度 2 的子串；长度 1 的 "a" 归 clone 5</text>
+    <text x="28" y="438" font-size="10.5" fill="#64748b">共 10 个状态 ≤ 2n − 1 = 11 ✓（正文第四节的组合上界）</text>
+  </g>
+
+  <g transform="translate(660,74)">
+    <rect x="0" y="0" width="320" height="460" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. link 后缀链接树</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">橙色虚线 = link，父节点即自己的 link 目标</text>
+
+    <g stroke="#ea580c" stroke-width="2" fill="none" stroke-dasharray="7 5">
+      <line x1="148" y1="112" x2="60" y2="153" marker-end="url(#arwO)"/>
+      <line x1="160" y1="115" x2="160" y2="150" marker-end="url(#arwO)"/>
+      <line x1="172" y1="112" x2="258" y2="153" marker-end="url(#arwO)"/>
+      <line x1="152" y1="190" x2="120" y2="228" marker-end="url(#arwO)"/>
+      <line x1="168" y1="190" x2="180" y2="227" marker-end="url(#arwO)"/>
+      <line x1="264" y1="190" x2="244" y2="227" marker-end="url(#arwO)"/>
+      <line x1="280" y1="190" x2="286" y2="227" marker-end="url(#arwO)"/>
+      <line x1="176" y1="266" x2="158" y2="302" marker-end="url(#arwO)"/>
+      <line x1="192" y1="266" x2="212" y2="302" marker-end="url(#arwO)"/>
+    </g>
+
+    <g>
+      <circle cx="160" cy="96" r="19" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
+      <circle cx="48" cy="172" r="19" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="160" cy="172" r="19" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+      <circle cx="272" cy="172" r="19" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+      <circle cx="112" cy="248" r="19" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="184" cy="248" r="19" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+      <circle cx="236" cy="248" r="19" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="288" cy="248" r="19" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="148" cy="322" r="19" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <circle cx="220" cy="322" r="19" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    </g>
+    <g font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">
+      <text x="160" y="100">0</text>
+      <text x="48" y="176">1</text>
+      <text x="160" y="176">5</text>
+      <text x="272" y="176">7</text>
+      <text x="112" y="252">2</text>
+      <text x="184" y="252">9</text>
+      <text x="236" y="252">3</text>
+      <text x="288" y="252">6</text>
+      <text x="148" y="326">4</text>
+      <text x="220" y="326">8</text>
+    </g>
+
+    <rect x="14" y="352" width="292" height="92" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="374" font-size="11" font-weight="bold" fill="#14532d">沿这棵树做 DP 就能数子串</text>
+    <text x="28" y="396" font-size="10" fill="#14532d">Σ (len[i] − len[link[i]]) = 15</text>
+    <text x="28" y="416" font-size="10" fill="#14532d">= 21 − 6，与后缀数组第四节同账</text>
+    <text x="28" y="436" font-size="10" fill="#14532d">出现次数同样是自底向上累加</text>
+  </g>
+</svg>

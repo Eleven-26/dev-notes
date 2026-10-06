@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">埃氏筛：每轮划合数为什么从 p×p 起</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">示意 n = 30（非实测）；对应正文 2.1 的 for j := i * i; j &lt;= n; j += i</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#0f172a">A. 三轮划法（示意 n = 30）</text>
+    <text x="16" y="52" font-size="10.5" fill="#64748b">每行是一轮素数 i 的内层循环，起点都是 i×i</text>
+
+    <rect x="14" y="64" width="432" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="28" y="84" font-size="11" font-weight="bold" fill="#1e40af">i = 2（素数）→ 划 4, 6, 8, …, 30</text>
+    <text x="28" y="104" font-size="10" fill="#1e40af">本轮起点 2×2 = 4</text>
+
+    <rect x="14" y="126" width="432" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="28" y="146" font-size="11" font-weight="bold" fill="#1e40af">i = 3（素数）→ 划 9, 12, 15, …, 30</text>
+    <text x="28" y="166" font-size="10" fill="#1e40af">本轮起点 3×3 = 9，6 = 3×2 已在 i=2 轮划掉</text>
+
+    <rect x="14" y="188" width="432" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="28" y="208" font-size="11" font-weight="bold" fill="#1e40af">i = 5（素数）→ 划 25, 30</text>
+    <text x="28" y="228" font-size="10" fill="#1e40af">本轮起点 5×5 = 25（10, 15, 20 更早已划，30 被重复置位）</text>
+
+    <rect x="14" y="250" width="432" height="110" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="28" y="272" font-size="11" font-weight="bold" fill="#92400e">两类被跳过的轮</text>
+    <text x="28" y="292" font-size="10" fill="#92400e">i = 4，已划掉 → 外层直接跳过</text>
+    <text x="28" y="312" font-size="10" fill="#92400e">i = 7，7×7 = 49 &gt; 30 → 内层一轮不划</text>
+    <text x="28" y="332" font-size="10" fill="#92400e">最终素数表：2, 3, 5, 7, 11, 13, 17, 19, 23, 29</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="15" font-weight="bold" fill="#0f172a">B. 起点判据的一般形态与复杂度</text>
+    <text x="16" y="52" font-size="10.5" fill="#64748b">把正文 2.1 那行「更小的合数已被标记」补成完整论证</text>
+
+    <rect x="14" y="64" width="432" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="28" y="86" font-size="10.5" font-weight="bold" fill="#1e40af">i×k（k &lt; i）必在更早轮被划掉：</text>
+    <text x="28" y="106" font-size="10.5" fill="#1e40af">设 k 的最小质因子为 p，则 p ≤ k &lt; i，</text>
+    <text x="28" y="126" font-size="10.5" fill="#1e40af">这个数在第 p 轮从 p×p 起划时已被覆盖</text>
+
+    <rect x="14" y="152" width="432" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="28" y="178" font-size="10.5" fill="#14532d">所以第 i 轮第一个"没被划过"的数恰好是 i×i</text>
+
+    <rect x="14" y="208" width="432" height="58" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="28" y="230" font-size="10.5" fill="#92400e">⚠️ 工程提醒：i*i 可能溢出 —— 先判 i ≤ n/i</text>
+    <text x="28" y="250" font-size="10.5" fill="#92400e">再平方，或直接用 64 位整型</text>
+
+    <rect x="14" y="278" width="432" height="76" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="300" font-size="10.5" fill="#334155">复杂度（正文）：时间 O(n log log n)</text>
+    <text x="28" y="320" font-size="10.5" fill="#334155">空间：一张 isComposite 布尔数组 O(n)</text>
+    <text x="28" y="340" font-size="10.5" fill="#334155">单点判素另走 2.3：试除到 √n，O(√n)</text>
+  </g>
+</svg>

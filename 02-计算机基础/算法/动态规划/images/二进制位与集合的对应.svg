@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">状态压缩：把「集合」落进一个整数的二进制位</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">左：mask 的三位分别记哪个元素、1 &lt;&lt; i 落在哪一位　右：正文第三节的三种状态形状（TSP 一例抄 3.1）</text>
+
+  <g transform="translate(30,88)">
+    <rect x="0" y="0" width="470" height="430" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. mask 的每一位是一个集合成员</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">约定抄正文 3.1：bit0 记 A、bit1 记 B、bit2 记 C</text>
+
+    <rect x="14" y="64" width="136" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="82" y="88" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">bit2 = 1</text>
+    <text x="82" y="106" text-anchor="middle" font-size="10" fill="#1e40af">C 已访问</text>
+
+    <rect x="162" y="64" width="136" height="58" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="230" y="88" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">bit1 = 0</text>
+    <text x="230" y="106" text-anchor="middle" font-size="10" fill="#64748b">B 未访问</text>
+
+    <rect x="310" y="64" width="136" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="378" y="88" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">bit0 = 1</text>
+    <text x="378" y="106" text-anchor="middle" font-size="10" fill="#1e40af">A 已访问</text>
+
+    <rect x="14" y="134" width="442" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="158" font-size="11.5" font-weight="bold" fill="#14532d">mask = 0b101 = 5 → 集合 {A, C}</text>
+    <text x="28" y="176" font-size="10" fill="#14532d">从右往左是 bit0、bit1、bit2；为 1 的那两位就是集合成员</text>
+
+    <rect x="14" y="198" width="442" height="96" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="220" font-size="11.5" font-weight="bold" fill="#0f172a">1 &lt;&lt; i 的落位（第二节表格的写法）</text>
+    <text x="28" y="240" font-size="10.5" fill="#334155">1 &lt;&lt; 0 = 0b001 → 记 A</text>
+    <text x="28" y="258" font-size="10.5" fill="#334155">1 &lt;&lt; 1 = 0b010 → 记 B</text>
+    <text x="28" y="276" font-size="10.5" fill="#334155">1 &lt;&lt; 2 = 0b100 → 记 C</text>
+
+    <rect x="14" y="306" width="442" height="62" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="328" font-size="11.5" font-weight="bold" fill="#92400e">判据：第 i 位是不是 1</text>
+    <text x="28" y="348" font-size="10" fill="#92400e">mask &amp; (1 &lt;&lt; i) 非 0 → 元素 i 在集合里</text>
+
+    <text x="14" y="390" font-size="10.5" fill="#64748b">n 个元素 → 2^n 个集合，一个整数就装下「选了谁」的账</text>
+    <text x="14" y="410" font-size="10" fill="#64748b">n ≤ 20 时 2^20 约 100 万，再大就超时或超内存（第一节判据）</text>
+  </g>
+
+  <g transform="translate(520,88)">
+    <rect x="0" y="0" width="450" height="430" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 状态是集合的三种形状</text>
+    <text x="14" y="46" font-size="10.5" fill="#64748b">抄正文第三节的「本节要点」与 3.1 的 TSP 推演</text>
+
+    <rect x="14" y="62" width="422" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="84" font-size="11.5" font-weight="bold" fill="#1e40af">① dp[mask][i]：带「当前在哪」</text>
+    <text x="28" y="102" font-size="10" fill="#1e40af">TSP：已访问集合为 mask、当前停在 i</text>
+
+    <rect x="14" y="130" width="422" height="44" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="150" font-size="11.5" font-weight="bold" fill="#0f172a">② dp[mask]：纯集合</text>
+    <text x="28" y="168" font-size="10" fill="#334155">集合划分 / 子集和：mask 能不能满足条件</text>
+
+    <rect x="14" y="182" width="422" height="44" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="202" font-size="11.5" font-weight="bold" fill="#0f172a">③ dp[行][掩码]：外加一维扫描</text>
+    <text x="28" y="220" font-size="10" fill="#334155">棋盘覆盖：掩码描述边界上哪些格子被占</text>
+
+    <rect x="14" y="234" width="422" height="84" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="256" font-size="11.5" font-weight="bold" fill="#1e40af">TSP 的两个具体状态（3.1）</text>
+    <text x="28" y="276" font-size="10.5" fill="#1e40af">dp[001][A] = 从起点走到 A</text>
+    <text x="28" y="294" font-size="10.5" fill="#1e40af">dp[101][C] = 已访问 {A, C}、当前在 C 的最短路</text>
+    <text x="28" y="312" font-size="10" fill="#1e40af">转移要求 j 不在 mask 里，否则同一个点被走两次</text>
+
+    <rect x="14" y="330" width="422" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="352" font-size="11.5" font-weight="bold" fill="#14532d">答案 = min over i 的 dp[111][i] + 从 i 回起点的边</text>
+    <text x="28" y="372" font-size="10" fill="#14532d">0b111 表示三城都访问过，最后从 i 回起点闭合成环</text>
+
+    <rect x="14" y="396" width="422" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="417" font-size="10.5" fill="#92400e">复杂度 O(2^n × n²)：2^n 个 mask × i、j 各 n</text>
+  </g>
+</svg>

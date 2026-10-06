@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" width="1000" height="510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">二分答案：在答案空间上夹逼一个单调谓词</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">与二分查找的区别：二分的对象是「答案的取值」，判据是单调的 check(mid)</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="150" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 三段流程：定界 → 判定 → 夹逼</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">三步共用同一个前提：check 随答案单调（正文第一节）</text>
+
+    <rect x="14" y="58" width="290" height="80" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="78" font-size="11.5" font-weight="bold" fill="#1e40af">① 定下答案空间 [lo, hi]</text>
+    <text x="28" y="96" font-size="10" fill="#1e40af">答案一定落在这一段范围里</text>
+    <text x="28" y="112" font-size="10" fill="#1e40af">下界取 max、上界取 sum 或 1e18</text>
+    <text x="28" y="128" font-size="10" fill="#1e40af">（上界设小的坑见第五节）</text>
+
+    <line x1="306" y1="98" x2="332" y2="98" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="626" y1="98" x2="652" y2="98" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="334" y="58" width="290" height="80" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="348" y="78" font-size="11.5" font-weight="bold" fill="#92400e">② 判定函数 check(mid)</text>
+    <text x="348" y="96" font-size="10" fill="#92400e">mid 这个答案行不行？通常要 O(n)</text>
+    <text x="348" y="112" font-size="10" fill="#92400e">必须单调：越大越松（或越紧）</text>
+    <text x="348" y="128" font-size="10" fill="#92400e">非单调就不能二分（第五节）</text>
+
+    <rect x="654" y="58" width="292" height="80" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="668" y="78" font-size="11.5" font-weight="bold" fill="#14532d">③ 夹逼收缩</text>
+    <text x="668" y="96" font-size="10" fill="#14532d">可行 → hi = mid（自己也可能是解）</text>
+    <text x="668" y="112" font-size="10" fill="#14532d">不可行 → lo = mid + 1</text>
+    <text x="668" y="128" font-size="10" fill="#14532d">lo == hi 时停下，返回 lo</text>
+  </g>
+
+  <g transform="translate(20,244)">
+    <rect x="0" y="0" width="960" height="246" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 差别只在两处：二分对象与判定条件</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">循环骨架一样，换掉的只有「在什么上二分」与「看什么条件」（正文第一节对照表）</text>
+
+    <rect x="14" y="56" width="454" height="106" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="78" font-size="12" font-weight="bold" fill="#1e40af">二分查找</text>
+    <text x="28" y="98" font-size="10.5" fill="#1e40af">在什么上二分：有序数组的下标</text>
+    <text x="28" y="118" font-size="10.5" fill="#1e40af">判断条件：a[mid] == target</text>
+    <text x="28" y="138" font-size="10.5" fill="#1e40af">前提：数组有序</text>
+    <text x="28" y="156" font-size="10.5" fill="#1e40af">目标：找某个值</text>
+
+    <rect x="488" y="56" width="458" height="106" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="502" y="78" font-size="12" font-weight="bold" fill="#14532d">二分答案</text>
+    <text x="502" y="98" font-size="10.5" fill="#14532d">在什么上二分：答案的取值空间</text>
+    <text x="502" y="118" font-size="10.5" fill="#14532d">判断条件：自定义的 check(mid)</text>
+    <text x="502" y="138" font-size="10.5" fill="#14532d">前提：答案空间有单调性</text>
+    <text x="502" y="156" font-size="10.5" fill="#14532d">目标：找「最小 / 最大满足」的答案</text>
+
+    <rect x="14" y="182" width="932" height="46" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="480" y="210" text-anchor="middle" font-size="12.5" fill="#92400e">判据：「最小化最大值」「最大化最小值」「求满足条件的最小 / 最大解」都走二分答案</text>
+  </g>
+</svg>
