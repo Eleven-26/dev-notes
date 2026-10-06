@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="va1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">信封加密：RSA 只加密「对称密钥」，数据交给 AES</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">RSA 只能加密比密钥短得多的数据，所以非对称算法只负责小数据的那一步</text>
+
+  <rect x="70" y="88" width="860" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="90" y="118" font-size="13" font-weight="bold" fill="#1e3a8a">① 随机生成一把对称密钥（AES）</text>
+  <text x="90" y="144" font-size="12" fill="#1e3a8a">每次发送都用新的对称密钥，用完即弃</text>
+
+  <rect x="70" y="176" width="860" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="90" y="206" font-size="13" font-weight="bold" fill="#14532d">② 用这把 AES 密钥加密真正的数据 → AES 密文</text>
+  <text x="90" y="232" font-size="12" fill="#14532d">快、无长度限制，适合大数据量</text>
+
+  <rect x="70" y="264" width="860" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="90" y="294" font-size="13" font-weight="bold" fill="#7c2d12">③ 用对方的 RSA 公钥只加密这把对称密钥 → RSA 密文</text>
+  <text x="90" y="320" font-size="12" fill="#7c2d12">只有 32 字节左右，远小于加密上限，绰绰有余</text>
+
+  <rect x="70" y="352" width="860" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="90" y="382" font-size="13" font-weight="bold" fill="#1e3a8a">④ 把「RSA 密文 + AES 密文」一起发送过去</text>
+  <text x="90" y="408" font-size="12" fill="#1e3a8a">接收方先拿到被保护的对称密钥</text>
+
+  <rect x="70" y="440" width="860" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="90" y="470" font-size="13" font-weight="bold" fill="#14532d">⑤ 对方先用私钥解出对称密钥，再用它解出真正的数据</text>
+  <text x="90" y="496" font-size="12" fill="#14532d">非对称只解开那把钥匙，数据解密全交给对称算法</text>
+
+  <line x1="500" y1="164" x2="500" y2="176" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#va1)"/>
+  <line x1="500" y1="252" x2="500" y2="264" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#va1)"/>
+  <line x1="500" y1="340" x2="500" y2="352" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#va1)"/>
+  <line x1="500" y1="428" x2="500" y2="440" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#va1)"/>
+
+  <rect x="20" y="532" width="960" height="72" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="560" font-size="12.5" fill="#0f172a">⚠️ 实测上限：2048 位密钥 n = 256 字节，OAEP/SHA-256 上限 190 字节、PKCS#1 v1.5 上限 245 字节，再多 1 字节直接报 message too long。</text>
+  <text x="36" y="586" font-size="12.5" fill="#0f172a">⭐ 这正是 TLS 的做法，也和「签名只签摘要、不签原文」同一条思路：非对称算法只负责小数据的那一步。</text>
+</svg>

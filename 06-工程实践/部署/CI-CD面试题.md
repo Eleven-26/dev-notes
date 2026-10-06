@@ -79,6 +79,8 @@
 - 通过**一次 socket 映射**，让容器内的 docker 客户端也有了操作宿主机 Daemon 的能力，
   **这就是 DooD 与 DinD 的本质区别**（DooD 不套娃，复用宿主 Daemon）。
 
+![DooD 模式调用链路时序：docker.sock 是枢纽，真正构建的是执行器容器](images/DooD模式调用链路时序.svg)
+
 #### 配置文件与两阶段流程
 
 配置文件：**`.gitlab-ci.yml`**，里面**定义了一些变量**，

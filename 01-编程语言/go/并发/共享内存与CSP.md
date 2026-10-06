@@ -44,6 +44,8 @@ CSP（Communicating Sequential Processes，通信顺序进程）说白了就一�
 **所以 Go 的口号是"不要通过共享内存来通信，而要通过通信来共享内存"**——
 channel 就是这句话的载体，[channel实战模式.md](channel实战模式.md) 的"生产者-消费者 / 协程池"就是它的落地形态。
 
+![两条路线对照：共享内存是 A、B 读写同一块内存（必须加锁），CSP 是 A → channel → B（数据在传递、不共享）](images/共享内存与CSP两条路线.svg)
+
 ## 延伸追问
 
 - **并发写原生 `map` 会怎样？** → `fatal error: concurrent map writes`，
@@ -111,6 +113,8 @@ goroutine 1 [chan send]:
 |---|---|---|
 | **共享内存** | 结果**静默出错**（`145745` 而不是 `200000`）—— **不 panic、不报错、正常退出** | 靠 `-race` 在测试里跑到那条路径才报；**生产上只会表现为"数据慢慢对不上"** |
 | **CSP** | **死锁**：`fatal error: all goroutines are asleep - deadlock!`，还会打印**哪个协程卡在哪**（`goroutine 1 [chan send]`） | 运行时**立即**中止并指出位置 |
+
+![两种路线的失败模式：共享内存静默出错（145745≠200000、退出码 0），CSP 用错则当场死锁并指出卡在哪一行](images/两条路线的失败模式.svg)
 
 > ⭐ **这才是「Go 推荐用 channel」最硬的理由 —— 不是性能，而是错误更容易暴露。**
 > channel 每次收发都有调度与内存屏障开销，纯性能上不如 atomic；但共享内存的错**是静默的**（上面那行输出连退出码都是 0），

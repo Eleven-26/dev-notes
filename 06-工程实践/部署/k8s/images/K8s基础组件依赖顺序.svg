@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">集群基础组件的依赖顺序：装反就会反复重装</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">CNI 是一切的前提；CoreDNS → Metrics Server → HPA 是链式硬依赖，Ingress、存储、观测是并列分支</text>
+
+  <rect x="40" y="258" width="180" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="130" y="288" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">CNI</text>
+  <text x="130" y="308" text-anchor="middle" font-size="11" fill="#166534">Pod 网络与 IPAM</text>
+
+  <line x1="220" y1="291" x2="248" y2="291" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="250" y1="151" x2="250" y2="463" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="250" y1="151" x2="286" y2="151" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="250" y1="255" x2="286" y2="255" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="250" y1="359" x2="286" y2="359" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="250" y1="463" x2="286" y2="463" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="290" y="118" width="210" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="395" y="148" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">CoreDNS</text>
+  <text x="395" y="168" text-anchor="middle" font-size="11" fill="#1d4ed8">服务之间按名字互访</text>
+
+  <rect x="560" y="118" width="210" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="665" y="148" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Metrics Server</text>
+  <text x="665" y="168" text-anchor="middle" font-size="11" fill="#1d4ed8">kubectl top / HPA 的数据源</text>
+
+  <rect x="830" y="118" width="150" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="905" y="148" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">HPA</text>
+  <text x="905" y="168" text-anchor="middle" font-size="11" fill="#1d4ed8">依赖 requests</text>
+
+  <line x1="500" y1="151" x2="552" y2="151" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="770" y1="151" x2="822" y2="151" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="290" y="222" width="210" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="395" y="252" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">Ingress Controller</text>
+  <text x="395" y="272" text-anchor="middle" font-size="11" fill="#9a3412">七层入口与 TLS</text>
+
+  <rect x="560" y="222" width="210" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="665" y="252" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">LB / MetalLB</text>
+  <text x="665" y="272" text-anchor="middle" font-size="11" fill="#9a3412">自建集群必装</text>
+
+  <line x1="500" y1="255" x2="552" y2="255" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="290" y="326" width="210" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="395" y="356" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">StorageClass + CSI</text>
+  <text x="395" y="376" text-anchor="middle" font-size="11" fill="#166534">有状态负载的前提</text>
+
+  <rect x="290" y="430" width="210" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="395" y="460" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">观测三件套</text>
+  <text x="395" y="480" text-anchor="middle" font-size="11" fill="#475569">日志 / 指标 / 链路</text>
+
+  <text x="560" y="330" font-size="11.5" fill="#7c2d12">判据：kubectl top node 有数据 /</text>
+  <text x="560" y="350" font-size="11.5" fill="#7c2d12">nslookup kubernetes.default 有响应</text>
+  <text x="560" y="384" font-size="11.5" fill="#166534">PVC 一直 Pending 就是它没装好</text>
+
+  <text x="20" y="524" font-size="12" fill="#b91c1c">⚠️ HPA 依赖 Metrics Server，Metrics Server 依赖 CoreDNS，CoreDNS 依赖 CNI —— 顺序装反就会「反复重装」。</text>
+</svg>

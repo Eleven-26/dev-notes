@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="30" y="48" width="940" height="272" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="80" font-size="16" font-weight="700" fill="#0f172a">两个 channel 互相发信号（主协程先给第一棒）</text>
+
+<rect x="80" y="90" width="240" height="50" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="200" y="120" font-size="14" text-anchor="middle" fill="#334155">main</text>
+<line x1="200" y1="140" x2="200" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="212" y="164" font-size="12" fill="#64748b">先给 oddCh 第一棒</text>
+
+<rect x="80" y="180" width="240" height="90" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="200" y="212" font-size="14" text-anchor="middle" font-weight="700" fill="#1e3a8a">奇数协程</text>
+<text x="200" y="240" font-size="12" text-anchor="middle" fill="#1e3a8a">打 1,3,5,7,9</text>
+
+<rect x="680" y="180" width="240" height="90" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="800" y="212" font-size="14" text-anchor="middle" font-weight="700" fill="#14532d">偶数协程</text>
+<text x="800" y="240" font-size="12" text-anchor="middle" fill="#14532d">打 2,4,6,8,10</text>
+
+<line x1="320" y1="205" x2="672" y2="205" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="500" y="196" font-size="12" text-anchor="middle" fill="#64748b">evenCh ← struct{}{}</text>
+<line x1="680" y1="255" x2="328" y2="255" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="500" y="276" font-size="12" text-anchor="middle" fill="#64748b">oddCh ← struct{}{}</text>
+
+<rect x="30" y="344" width="940" height="256" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="376" font-size="16" font-weight="700" fill="#0f172a">对账：谁多出了 1 个信号？</text>
+
+<rect x="70" y="396" width="400" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="90" y="424" font-size="13" fill="#1e3a8a">奇数：打印 5 个 → 发送 5 个给 evenCh</text>
+<text x="90" y="450" font-size="13" fill="#1e3a8a">需要 oddCh 信号 4 个（第 1 个由 main 给）</text>
+
+<rect x="530" y="396" width="400" height="80" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="550" y="424" font-size="13" fill="#14532d">偶数：打印 5 个 → 发送 5 个给 oddCh</text>
+<text x="550" y="450" font-size="13" fill="#14532d">需要 evenCh 信号 5 个</text>
+
+<rect x="70" y="490" width="860" height="92" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="90" y="518" font-size="13" fill="#7f1d1d">偶数发 5 个，奇数只消费 4 个 → 多出 1 个信号</text>
+<text x="90" y="544" font-size="13" fill="#7f1d1d">无缓冲 channel 没有接收方 → 多余信号发不出去 → 发送方永久阻塞 → 死锁</text>
+<text x="90" y="570" font-size="13" fill="#7f1d1d">实测：1~10 打印正确，随后照样报 all goroutines are asleep - deadlock!</text>
+</svg>

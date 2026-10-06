@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="cb1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">证书链验证：逐级向上用签发者公钥验签</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">从站点证书一路验到信任的根 CA（内置在操作系统 / 浏览器信任库）</text>
+
+  <rect x="40" y="110" width="260" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="170" y="142" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">站点证书 server.crt</text>
+  <text x="170" y="166" text-anchor="middle" font-size="11" fill="#1e3a8a">Subject CN=example.local</text>
+  <rect x="370" y="110" width="260" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="142" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">中间 CA 证书</text>
+  <text x="500" y="166" text-anchor="middle" font-size="11" fill="#7c2d12">（服务端需下发）</text>
+  <rect x="700" y="110" width="260" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="830" y="142" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">根 CA：Demo Root CA</text>
+  <text x="830" y="166" text-anchor="middle" font-size="11" fill="#14532d">（在信任库，自签）</text>
+
+  <line x1="368" y1="148" x2="304" y2="148" stroke="#334155" stroke-width="1.8" marker-end="url(#cb1)"/>
+  <line x1="698" y1="148" x2="634" y2="148" stroke="#334155" stroke-width="1.8" marker-end="url(#cb1)"/>
+  <line x1="940" y1="212" x2="60" y2="212" stroke="#334155" stroke-width="1.8" marker-end="url(#cb1)"/>
+  <text x="500" y="240" text-anchor="middle" font-size="12" fill="#334155">验证方向：站点证书 → 中间 CA → 根 CA，每一跳都用上一级的公钥验签</text>
+
+  <rect x="20" y="260" width="470" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="290" font-size="13.5" font-weight="bold" fill="#0f172a">还要同时校验这四项</text>
+  <text x="36" y="320" font-size="12" fill="#334155">• 有效期（notBefore / notAfter）</text>
+  <text x="36" y="342" font-size="11.5" fill="#b91c1c">  过期是最常见的线上事故</text>
+  <text x="36" y="368" font-size="12" fill="#334155">• 主机名（SAN）</text>
+  <text x="36" y="390" font-size="11.5" fill="#b91c1c">  漏配 SAN 必然报「主机名不匹配」</text>
+  <text x="36" y="416" font-size="12" fill="#334155">• 用途（EKU）—— mTLS 客户端证书须含 clientAuth</text>
+  <text x="36" y="440" font-size="12" fill="#334155">• 吊销状态（CRL / OCSP）</text>
+
+  <rect x="510" y="260" width="470" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="526" y="290" font-size="13.5" font-weight="bold" fill="#0f172a">失败分诊（本机实测）</text>
+  <text x="526" y="320" font-size="12" fill="#b91c1c">• error 20 → 签发者不在信任库</text>
+  <text x="526" y="342" font-size="11.5" fill="#334155">  自签未导入 / 服务端没下发中间证书</text>
+  <text x="526" y="368" font-size="12" fill="#b91c1c">• No extensions in certificate</text>
+  <text x="526" y="390" font-size="11.5" fill="#334155">  只有 CN、没有 SAN</text>
+  <text x="526" y="416" font-size="12" fill="#b91c1c">• certificate has expired → 证书过期</text>
+  <text x="526" y="440" font-size="12" fill="#b91c1c">• hostname mismatch → 域名不在 SAN 里</text>
+
+  <rect x="20" y="468" width="960" height="172" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="498" font-size="12.5" fill="#0f172a">⚠️ 证书有效期已限制在 398 天以内，通常提前 30 天自动续期；但自动续期会静默失败。</text>
+  <text x="36" y="526" font-size="12.5" fill="#0f172a">⭐ 过期监控是最高性价比的一条：必须独立监控「剩余有效期 &lt; 30 天」并告警。</text>
+  <text x="36" y="554" font-size="12.5" fill="#334155">   静默失败的原因：DNS 验证记录被删、帐号额度用尽、定时任务被停。</text>
+  <text x="36" y="582" font-size="12.5" fill="#b91c1c">⚠️ 典型事故链：90 天有效期 → 续期依赖的 DNS 记录被清理 → 静默失败 → 到第 91 天凌晨全站 HTTPS 不可用。</text>
+  <text x="36" y="608" font-size="12.5" fill="#b91c1c">   根因不是「证书过期」，而是「过期没有被监控」。开启 HSTS 后更甚 —— 用户连「忽略警告继续访问」的机会都没有。</text>
+</svg>

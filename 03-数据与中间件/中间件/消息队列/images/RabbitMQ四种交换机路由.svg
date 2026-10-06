@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rb1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RabbitMQ 四种交换机：Producer 只发 Exchange，由 Binding + RoutingKey 决定去向</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">生产者从不直接投队列；交换机按绑定规则把消息路由到一个或多个队列</text>
+
+  <rect x="40" y="130" width="300" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="190" y="160" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">direct（默认行为）</text>
+  <text x="190" y="186" text-anchor="middle" font-size="12.5" fill="#1d4ed8">RoutingKey 与 BindingKey 完全相等</text>
+  <line x1="344" y1="168" x2="382" y2="168" stroke="#334155" stroke-width="1.5" marker-end="url(#rb1)"/>
+  <rect x="390" y="130" width="590" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="685" y="160" text-anchor="middle" font-size="13" fill="#334155">点对点、按业务类型分流</text>
+  <text x="685" y="186" text-anchor="middle" font-size="12.5" fill="#64748b">order.created / order.paid 各进对应队列</text>
+
+  <rect x="40" y="220" width="300" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="190" y="250" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">fanout</text>
+  <text x="190" y="276" text-anchor="middle" font-size="12.5" fill="#166534">忽略 RoutingKey，广播</text>
+  <line x1="344" y1="258" x2="382" y2="258" stroke="#334155" stroke-width="1.5" marker-end="url(#rb1)"/>
+  <rect x="390" y="220" width="590" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="685" y="250" text-anchor="middle" font-size="13" fill="#334155">广播通知、缓存刷新、多系统同步</text>
+  <text x="685" y="276" text-anchor="middle" font-size="12.5" fill="#64748b">一条消息复制到 N 个队列，每队列一份</text>
+
+  <rect x="40" y="310" width="300" height="76" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="190" y="340" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">topic</text>
+  <text x="190" y="366" text-anchor="middle" font-size="12.5" fill="#9a3412">* 匹配一个词，# 匹配零到多个词</text>
+  <line x1="344" y1="348" x2="382" y2="348" stroke="#334155" stroke-width="1.5" marker-end="url(#rb1)"/>
+  <rect x="390" y="310" width="590" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="685" y="340" text-anchor="middle" font-size="13" fill="#334155">按业务维度灵活订阅</text>
+  <text x="685" y="366" text-anchor="middle" font-size="12.5" fill="#64748b">order.*.created 能匹配 order.pay.created；order.# 匹配其下全部</text>
+
+  <rect x="40" y="400" width="300" height="76" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="190" y="430" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">headers</text>
+  <text x="190" y="456" text-anchor="middle" font-size="12.5" fill="#475569">按消息头键值匹配</text>
+  <line x1="344" y1="438" x2="382" y2="438" stroke="#334155" stroke-width="1.5" marker-end="url(#rb1)"/>
+  <rect x="390" y="400" width="590" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="685" y="430" text-anchor="middle" font-size="13" fill="#334155">复杂条件路由（无法用路由键表达时）</text>
+  <text x="685" y="456" text-anchor="middle" font-size="12.5" fill="#64748b">x-match: all / any；⚠️ 性能差、可读性低，极少使用</text>
+
+  <line x1="20" y1="500" x2="980" y2="500" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="526" font-size="13" fill="#0f172a">⭐ 路由时机在 Broker 端：这与 Kafka / RocketMQ 由生产者端选分区是根本区别。</text>
+  <text x="20" y="552" font-size="13" fill="#0f172a">默认交换机（空字符串）会在每个队列创建时自动绑定它，BindingKey 就是队列名。</text>
+  <text x="20" y="578" font-size="13" fill="#0f172a">所以 basicPublish 传空交换机名，等价于「直接投该队列」，不走自定义路由。</text>
+  <text x="20" y="604" font-size="13" fill="#0f172a">amq.direct / amq.fanout / amq.topic / amq.headers 是 Broker 预声明的系统交换机，可直接用。</text>
+  <text x="20" y="630" font-size="13" fill="#0f172a">⚠️ amq. 是保留前缀：自定义以 amq. 开头的交换机 / 队列会报 ACCESS_REFUSED。</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="30" y="48" width="940" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="78" font-size="16" font-weight="700" fill="#0f172a">结构：10 个协程 → 带缓冲 errCh → main 读取</text>
+
+<rect x="60" y="100" width="220" height="130" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="170" y="128" font-size="13" text-anchor="middle" fill="#14532d">worker ×10</text>
+<text x="170" y="154" font-size="12" text-anchor="middle" fill="#14532d">errCh ← work()</text>
+<text x="170" y="178" font-size="12" text-anchor="middle" fill="#14532d">defer wg.Done()</text>
+<text x="170" y="204" font-size="12" text-anchor="middle" fill="#64748b">各自把结果推入</text>
+
+<rect x="400" y="120" width="200" height="90" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="150" font-size="14" text-anchor="middle" fill="#1e3a8a">errCh</text>
+<text x="500" y="174" font-size="12" text-anchor="middle" fill="#1e3a8a">缓冲区 = 10</text>
+<text x="500" y="196" font-size="12" text-anchor="middle" fill="#1e3a8a">写入不阻塞</text>
+
+<rect x="720" y="120" width="220" height="90" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="830" y="150" font-size="14" text-anchor="middle" fill="#334155">main</text>
+<text x="830" y="174" font-size="12" text-anchor="middle" fill="#334155">close 后 range</text>
+<text x="830" y="196" font-size="12" text-anchor="middle" fill="#334155">读完剩余数据</text>
+
+<line x1="280" y1="165" x2="396" y2="165" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="600" y1="165" x2="716" y2="165" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="30" y="272" width="940" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="304" font-size="16" font-weight="700" fill="#0f172a">顺序：先等齐、再 close、最后 range</text>
+
+<rect x="60" y="324" width="280" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="200" y="352" font-size="13" text-anchor="middle" fill="#1e3a8a">① wg.Wait()</text>
+<text x="200" y="376" font-size="12" text-anchor="middle" fill="#1e3a8a">等 10 个协程全部结束</text>
+
+<rect x="380" y="324" width="240" height="80" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="352" font-size="13" text-anchor="middle" fill="#7c2d12">② close(errCh)</text>
+<text x="500" y="376" font-size="12" text-anchor="middle" fill="#7c2d12">第一时间关闭</text>
+
+<rect x="660" y="324" width="280" height="80" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="800" y="352" font-size="13" text-anchor="middle" fill="#14532d">③ for err := range errCh</text>
+<text x="800" y="376" font-size="12" text-anchor="middle" fill="#14532d">读出缓冲区剩余数据</text>
+
+<line x1="340" y1="364" x2="376" y2="364" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="620" y1="364" x2="656" y2="364" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="60" y="430" width="880" height="88" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="80" y="458" font-size="13" fill="#7f1d1d">为什么必须「执行完立即 close」：range 只能判断「当前缓冲区读完了」</text>
+<text x="80" y="484" font-size="13" fill="#7f1d1d">只要 channel 没关闭，range 就认为还可能有新数据 → 不会退出</text>
+<text x="80" y="508" font-size="13" fill="#7f1d1d">关掉之后缓冲区剩余数据仍可正常读出，不会丢</text>
+</svg>

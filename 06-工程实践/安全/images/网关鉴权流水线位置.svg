@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="wb1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">鉴权在网关流水线里的位置</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">鉴权在路由匹配之后、限流之前；先用路由分流，再做昂贵的验签</text>
+
+  <rect x="30" y="118" width="140" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="100" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">路由匹配</text>
+  <rect x="190" y="118" width="140" height="64" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="260" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">【鉴权】</text>
+  <rect x="350" y="118" width="140" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="420" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">限流</text>
+  <rect x="510" y="118" width="140" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="580" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">熔断</text>
+  <rect x="670" y="118" width="140" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="740" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">选节点</text>
+  <rect x="830" y="118" width="140" height="64" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="900" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">转发</text>
+
+  <line x1="170" y1="150" x2="190" y2="150" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wb1)"/>
+  <line x1="330" y1="150" x2="350" y2="150" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wb1)"/>
+  <line x1="490" y1="150" x2="510" y2="150" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wb1)"/>
+  <line x1="650" y1="150" x2="670" y2="150" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wb1)"/>
+  <line x1="810" y1="150" x2="830" y2="150" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wb1)"/>
+
+  <text x="36" y="216" font-size="12.5" fill="#334155">① 先用路由把流量分流（例如放行 /healthz）—— 鉴权要验签，成本高于路由匹配，所以不放在第一步。</text>
+  <text x="36" y="242" font-size="12.5" fill="#334155">② 鉴权必须在限流之前 —— 限流要先知道「你是谁」才能按用户维度限；反过来只能按 IP 限，NAT 后一整栋楼共用一个桶。</text>
+  <text x="36" y="268" font-size="12.5" fill="#b91c1c">⚠️ 代价：未通过鉴权的请求不受限流保护，攻击者可用无效令牌刷鉴权接口；生产上最外层按 IP 挡洪水 + 鉴权后按用户精细限。</text>
+
+  <rect x="20" y="292" width="960" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="322" font-size="14" font-weight="bold" fill="#0f172a">身份怎么传给上游：先剥、再写，顺序不能反</text>
+  <text x="36" y="356" font-size="12.5" fill="#1e3a8a">① 剥离客户端伪造的内部头：</text>
+  <text x="52" y="380" font-size="11.5" fill="#334155">for _, h := range internalHeaders { req.Header.Del(h) }</text>
+  <text x="36" y="410" font-size="12.5" fill="#14532d">② 再把网关鉴权出来的身份重新写进去（此刻它才是可信的）：</text>
+  <text x="52" y="434" font-size="11.5" fill="#334155">req.Header.Set("X-Forwarded-User", id.Subject)</text>
+  <text x="36" y="470" font-size="12.5" fill="#b91c1c">⚠️ 顺序不能反：反过来的话，客户端伪造的头会覆盖掉网关写入的可信身份 ——</text>
+  <text x="36" y="494" font-size="12.5" fill="#b91c1c">   这是一类极其常见的越权入口。</text>
+  <text x="36" y="524" font-size="12.5" fill="#334155">同样的判断也适用于 JWT 与 API Key 的选择：同一条路由选一种，而不是「两种都接受」。</text>
+</svg>

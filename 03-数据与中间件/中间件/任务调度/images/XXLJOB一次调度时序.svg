@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="xl2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">XXL-JOB 一次调度的完整时序：注册 → 抢锁 → 触发 → 回调</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">中心主动调用执行器，执行器异步执行后回调结果</text>
+
+  <rect x="40" y="88" width="280" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="180" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">执行器 Executor（:9999）</text>
+  <rect x="380" y="88" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="520" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">调度中心 Admin（:8080）</text>
+  <rect x="720" y="88" width="280" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="860" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">MySQL（xxl_job_lock）</text>
+
+  <line x1="180" y1="132" x2="180" y2="510" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="520" y1="132" x2="520" y2="510" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="860" y1="132" x2="860" y2="510" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <text x="350" y="168" text-anchor="middle" font-size="13" fill="#0f172a">① 注册 /api/registry，之后周期续约</text>
+  <line x1="184" y1="176" x2="514" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#xl2)"/>
+
+  <text x="690" y="218" text-anchor="middle" font-size="13" fill="#0f172a">② 抢行锁（schedule_lock）：SELECT ... FOR UPDATE</text>
+  <line x1="524" y1="226" x2="854" y2="226" stroke="#334155" stroke-width="1.5" marker-end="url(#xl2)"/>
+
+  <text x="690" y="268" text-anchor="middle" font-size="13" fill="#64748b">锁拿到 → 扫描待调度任务，塞入时间轮</text>
+  <line x1="856" y1="276" x2="526" y2="276" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#xl2)"/>
+
+  <text x="350" y="318" text-anchor="middle" font-size="13" fill="#0f172a">③ 到点触发：POST /run（按路由策略选目标）</text>
+  <line x1="516" y1="326" x2="186" y2="326" stroke="#334155" stroke-width="1.5" marker-end="url(#xl2)"/>
+
+  <text x="350" y="368" text-anchor="middle" font-size="13" fill="#0f172a">④ 执行完回调 POST /api/callback（handleCode）</text>
+  <line x1="184" y1="376" x2="514" y2="376" stroke="#334155" stroke-width="1.5" marker-end="url(#xl2)"/>
+
+  <text x="690" y="418" text-anchor="middle" font-size="13" fill="#0f172a">⑤ 写 xxl_job_log；失败按重试次数重试</text>
+  <line x1="524" y1="426" x2="854" y2="426" stroke="#334155" stroke-width="1.5" marker-end="url(#xl2)"/>
+
+  <text x="350" y="468" text-anchor="middle" font-size="13" fill="#0f172a">⑥ 看执行日志：POST /log 回拉执行器本地日志</text>
+  <line x1="516" y1="476" x2="186" y2="476" stroke="#334155" stroke-width="1.5" marker-end="url(#xl2)"/>
+
+  <line x1="20" y1="540" x2="980" y2="540" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="566" font-size="13" fill="#0f172a">⭐ 任意时刻只有一个实例在调度：抢到 xxl_job_lock 行锁的实例才能推进时间轮。</text>
+  <text x="20" y="592" font-size="13" fill="#0f172a">⚠️ 失败重试会重复执行：executor_fail_retry_count 每重试一次，业务就被重新触发一次。</text>
+  <text x="20" y="618" font-size="13" fill="#0f172a">⭐ 成功才触发 child_jobid 子任务，失败则告警；执行日志由中心反向回拉，不在中心落盘。</text>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">容器 = 被 Namespace 隔离 + 被 cgroup 限量的进程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">Namespace 管「能看到什么」，cgroup 管「能用多少」——两者互补，缺一不可</text>
+
+  <rect x="40" y="82" width="920" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="60" y="106" font-size="14" font-weight="bold" fill="#0f172a">容器 = 一组被 Namespace 隔离、被 cgroup 限制资源、挂载了独立 rootfs 的进程</text>
+  <text x="60" y="128" font-size="11.5" fill="#64748b">它没有自己的内核——「容器」只是内核能力组合出来的假象，让进程以为自己独占一台机器</text>
+
+  <text x="40" y="172" font-size="14" font-weight="bold" fill="#0f172a">Namespace：管「能看到什么」（隔离资源视图）</text>
+
+  <rect x="40" y="184" width="470" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="206" font-size="13" font-weight="bold" fill="#1e3a8a">PID — 进程 ID · CLONE_NEWPID</text>
+  <text x="58" y="226" font-size="11.5" fill="#1d4ed8">容器里的 nginx 是 PID 1，看不到宿主机其他进程</text>
+
+  <rect x="40" y="242" width="470" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="264" font-size="13" font-weight="bold" fill="#1e3a8a">NET — 网络设备、协议栈、端口 · CLONE_NEWNET</text>
+  <text x="58" y="284" font-size="11.5" fill="#1d4ed8">容器有独立网卡 / IP / 端口与专属 lo</text>
+
+  <rect x="40" y="300" width="470" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="322" font-size="13" font-weight="bold" fill="#1e3a8a">IPC — 信号量、消息队列、共享内存 · CLONE_NEWIPC</text>
+  <text x="58" y="342" font-size="11.5" fill="#1d4ed8">容器间的 SysV IPC 互不可见</text>
+
+  <rect x="40" y="358" width="470" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="380" font-size="13" font-weight="bold" fill="#1e3a8a">MNT — 挂载点 / 文件系统树 · CLONE_NEWNS</text>
+  <text x="58" y="400" font-size="11.5" fill="#1d4ed8">容器有独立根文件系统，mount 不影响宿主机</text>
+
+  <rect x="40" y="416" width="470" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="438" font-size="13" font-weight="bold" fill="#1e3a8a">UTS — 主机名与域名 · CLONE_NEWUTS</text>
+  <text x="58" y="458" font-size="11.5" fill="#1d4ed8">容器可以有自己的 hostname</text>
+
+  <rect x="40" y="474" width="470" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="496" font-size="13" font-weight="bold" fill="#1e3a8a">USER — 用户与用户组 ID · CLONE_NEWUSER</text>
+  <text x="58" y="516" font-size="11.5" fill="#1d4ed8">容器内 root（UID 0）映射为宿主机上的普通用户</text>
+
+  <text x="540" y="172" font-size="14" font-weight="bold" fill="#0f172a">cgroup：管「能用多少」（限制资源额度）</text>
+
+  <rect x="540" y="184" width="420" height="160" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="558" y="212" font-size="13.5" font-weight="bold" fill="#1e3a8a">CPU</text>
+  <text x="558" y="238" font-size="11.5" fill="#1d4ed8">cpu.weight（cpu.shares）相对权重</text>
+  <text x="558" y="260" font-size="11.5" fill="#1d4ed8">cpu.max（cfs_quota_us）绝对配额、cpuset 绑核</text>
+  <text x="558" y="282" font-size="11.5" fill="#1e3a8a">docker run：--cpus / --cpu-shares / --cpuset-cpus</text>
+  <text x="558" y="316" font-size="11.5" fill="#64748b">超配额只 throttle（变慢），不会被杀</text>
+
+  <rect x="540" y="360" width="420" height="168" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="558" y="388" font-size="13.5" font-weight="bold" fill="#7c2d12">内存</text>
+  <text x="558" y="414" font-size="11.5" fill="#9a3412">memory.max（硬上限）、memory.swap.max</text>
+  <text x="558" y="436" font-size="11.5" fill="#9a3412">超限由本 cgroup 内的 OOM Killer 挑进程杀</text>
+  <text x="558" y="458" font-size="11.5" fill="#7c2d12">docker run：-m 512m / --memory-swap=1g</text>
+  <text x="558" y="492" font-size="11.5" fill="#64748b">退出码 137 + OOMKilled=true 就是撞到这里</text>
+
+  <text x="20" y="550" font-size="12" fill="#0f172a">⭐ Namespace 管「看得见什么」，cgroup 管「能用多少」；限额只改额度、不改视图——容器内 free 显示的是宿主机内存。</text>
+</svg>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+<marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+</defs>
+
+<rect x="30" y="56" width="450" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="255" y="90" font-size="16" text-anchor="middle" font-weight="700" fill="#0f172a">共享内存：A、B → 同一块内存</text>
+
+<rect x="70" y="130" width="160" height="50" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="150" y="160" font-size="14" text-anchor="middle" fill="#1e3a8a">协程 A</text>
+<rect x="280" y="130" width="160" height="50" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="360" y="160" font-size="14" text-anchor="middle" fill="#1e3a8a">协程 B</text>
+
+<rect x="140" y="250" width="230" height="70" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="255" y="278" font-size="13" text-anchor="middle" fill="#7f1d1d">同一块内存（全局变量）</text>
+<text x="255" y="302" font-size="13" text-anchor="middle" fill="#7f1d1d">必须加锁：Lock → 读写 → Unlock</text>
+
+<line x1="150" y1="180" x2="214" y2="248" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="360" y1="180" x2="296" y2="248" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<text x="255" y="352" font-size="13" text-anchor="middle" fill="#7f1d1d">并发写 → 脏读 / 脏写；不加锁就可能出错</text>
+
+<rect x="520" y="56" width="450" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="745" y="90" font-size="16" text-anchor="middle" font-weight="700" fill="#0f172a">CSP：A → channel → B</text>
+
+<rect x="555" y="130" width="140" height="50" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="625" y="160" font-size="14" text-anchor="middle" fill="#14532d">协程 A</text>
+<rect x="790" y="130" width="140" height="50" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="860" y="160" font-size="14" text-anchor="middle" fill="#14532d">协程 B</text>
+
+<rect x="650" y="250" width="190" height="70" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="745" y="278" font-size="13" text-anchor="middle" fill="#1e3a8a">channel</text>
+<text x="745" y="302" font-size="12" text-anchor="middle" fill="#1e3a8a">数据在传递，不共享</text>
+
+<line x1="625" y1="180" x2="688" y2="248" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ar2)"/>
+<line x1="802" y1="250" x2="860" y2="182" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+<text x="745" y="352" font-size="13" text-anchor="middle" fill="#14532d">用错会当场死锁报错，比静默出错容易发现</text>
+
+<text x="500" y="428" font-size="13" text-anchor="middle" fill="#0f172a">Go 的口号：不要通过共享内存来通信，而要通过通信来共享内存</text>
+</svg>

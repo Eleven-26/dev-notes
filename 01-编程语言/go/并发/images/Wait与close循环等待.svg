@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 490" width="1000" height="490" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="490" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+<marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+</defs>
+
+<rect x="40" y="90" width="280" height="110" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="180" y="126" font-size="14" text-anchor="middle" font-weight="700" fill="#1e3a8a">① main：wg.Wait()</text>
+<text x="180" y="156" font-size="13" text-anchor="middle" fill="#1e3a8a">等计数归零</text>
+<text x="180" y="182" font-size="12" text-anchor="middle" fill="#64748b">先等协程退出</text>
+
+<rect x="360" y="90" width="280" height="110" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="500" y="126" font-size="14" text-anchor="middle" font-weight="700" fill="#14532d">② worker</text>
+<text x="500" y="156" font-size="13" text-anchor="middle" fill="#14532d">等 done 被 close 才 return</text>
+<text x="500" y="182" font-size="12" text-anchor="middle" fill="#64748b">select 里等退出信号</text>
+
+<rect x="680" y="90" width="280" height="110" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="820" y="126" font-size="14" text-anchor="middle" font-weight="700" fill="#7c2d12">③ close(done)</text>
+<text x="820" y="156" font-size="13" text-anchor="middle" fill="#7c2d12">却排在 wg.Wait() 之后</text>
+<text x="820" y="182" font-size="12" text-anchor="middle" fill="#64748b">还轮不到执行</text>
+
+<line x1="320" y1="145" x2="356" y2="145" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="640" y1="145" x2="676" y2="145" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<path d="M820,200 L820,300 L180,300 L180,204" fill="none" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar2)"/>
+<text x="500" y="286" font-size="13" text-anchor="middle" fill="#7f1d1d">循环等待：① 等不到 ② 退出，② 又等不到 ③ 执行</text>
+
+<rect x="30" y="346" width="940" height="120" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+<text x="52" y="378" font-size="14" fill="#7f1d1d">实测现象：程序只打印启动信息就卡住，连 Ctrl+C 都退不掉</text>
+<text x="52" y="406" font-size="13" fill="#7f1d1d">主协程阻塞在 Wait() 上，接收中断信号的代码根本没机会执行到 —— 只能杀进程</text>
+<text x="52" y="440" font-size="13" fill="#334155">破环：把 close(done) 提到 wg.Wait() 之前（先发退出信号，再等协程收工）</text>
+</svg>

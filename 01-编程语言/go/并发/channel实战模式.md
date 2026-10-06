@@ -208,6 +208,8 @@ for i := 0; i < 3; i++ {          // 固定 3 个 worker
 > 这就是"协程池"最朴素的实现：**不需要自己写调度器——channel 就是队列**，
 > **`for range` 就是 worker 的主循环**。
 
+![协程池的双 channel 结构：生产者投入 jobs，多个 worker 抢同一个 jobs，结果写进 results](images/协程池jobs与results结构.svg)
+
 ### 用法四：事件通知 / 优雅退出
 
 ```go
@@ -315,6 +317,8 @@ go func() { defer close(exitCh); /* ...消费逻辑 */ }()
 
 **把两个同步点串起来看**：`done`（生产者 → 守望者）、`content`（生产者 → 消费者）、
 `exitCh`（消费者 → `main`）——流水线上每个交接点都是 channel。
+
+![多生产者 + 单消费者的三个同步点：done 由守望者收满 3 个再 close(content)，消费者读空后经 exitCh 放行 main](images/多生产者单消费者同步点.svg)
 
 ### 一个必须知道的副作用：顺序不可控
 

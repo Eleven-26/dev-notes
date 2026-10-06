@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sa1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Java 探针：从 -javaagent 到字节码增强的流程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">无侵入的代价集中在启动期与类加载期——插件按 witness 类判定是否生效</text>
+
+  <rect x="70" y="84" width="860" height="96" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="90" y="114" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 打包合规的 agent jar（META-INF/MANIFEST.MF）</text>
+  <text x="90" y="142" font-size="12" fill="#1e3a8a">Premain-Class / Agent-Class 声明入口；Can-Redefine / Retransform-Classes 允许改已加载的类</text>
+  <text x="90" y="166" font-size="12" fill="#1e3a8a">Premain-Class 对应 -javaagent 启动挂载，Agent-Class 对应 attach 动态挂载</text>
+
+  <rect x="70" y="196" width="860" height="82" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="90" y="226" font-size="13.5" font-weight="bold" fill="#1e3a8a">② JVM 启动调用 premain(String agentArgs, Instrumentation inst)</text>
+  <text x="90" y="254" font-size="12" fill="#1e3a8a">agentArgs 是 -javaagent:xxx.jar=key=value 等号后的内容；读 agent.config、初始化日志</text>
+
+  <rect x="70" y="294" width="860" height="82" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="90" y="324" font-size="13.5" font-weight="bold" fill="#1e3a8a">③ PluginBootstrap 扫描插件、构建 PluginFinder</text>
+  <text x="90" y="352" font-size="12" fill="#1e3a8a">解析 plugins/ 与 bootstrap-plugins/ 下的 skywalking-plugin.def（插件 + 拦截器 + witness 类）</text>
+
+  <rect x="70" y="392" width="860" height="82" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="90" y="422" font-size="13.5" font-weight="bold" fill="#1e3a8a">④ Instrumentation.addTransformer 注册字节码转换器</text>
+  <text x="90" y="450" font-size="12" fill="#1e3a8a">类加载期由 ByteBuddy 匹配目标类（类名通配 / 继承关系 / 注解 / 方法签名）</text>
+
+  <rect x="70" y="490" width="860" height="96" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="90" y="520" font-size="13.5" font-weight="bold" fill="#14532d">⑤ 在目标方法的前 / 后 / 异常分支织入拦截器</text>
+  <text x="90" y="548" font-size="12" fill="#14532d">拦截器分 InstanceMethodsAroundInterceptor（能拿 this）与 StaticMethodsAroundInterceptor</text>
+  <text x="90" y="572" font-size="12" fill="#14532d">ContextManager 创建 Entry / Exit / Local span → 写入 TraceSegment → 批量上报 OAP</text>
+
+  <line x1="500" y1="180" x2="500" y2="196" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sa1)"/>
+  <line x1="500" y1="278" x2="500" y2="294" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sa1)"/>
+  <line x1="500" y1="376" x2="500" y2="392" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sa1)"/>
+  <line x1="500" y1="474" x2="500" y2="490" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#sa1)"/>
+
+  <rect x="20" y="602" width="960" height="46" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="630" font-size="12.5" fill="#0f172a">⚠️ 跨线程与异步：上下文默认跟线程走，线程池 / 异步需 ContextManager 快照或 @TraceCrossThread，否则子线程丢失 traceId。</text>
+</svg>

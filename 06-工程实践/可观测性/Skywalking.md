@@ -215,6 +215,8 @@ javaAgent 是 JVM 提供的一种「JVM 级别插件」机制。JDK 1.5 引入�
 
 5. **运行期**：类加载 → transformer 匹配 → 织入 → 拦截器采集 span → span 写入轻量级队列内核 → 消费者批量上报 OAP。为不影响启动性能，已加载的核心类通过 `retransformClasses` 补增强。**跨线程与异步**场景注意：上下文默认跟线程走，线程池/异步需要 `ContextManager` 快照机制或 `@TraceCrossThread` 注解，否则会出现「子线程丢失 traceId」——这是接入后最常见的问题之一。
 
+![Java 探针：从 -javaagent 到字节码增强的流程](images/JavaAgent字节码增强流程.svg)
+
 #### 4.1.2 轻量级队列内核
 
 **a. 什么是轻量级队列内核**
@@ -248,6 +250,8 @@ TraceSegment                        // 一次请求在「一个服务实例内�
       ├─ startTime / endTime         // 耗时瀑布图的原始数据
       └─ tags[] / logs[] / events[]  // 标签、日志、事件（异常信息等）
 ```
+
+![TraceSegment 数据结构：refs[] 接链、spans[] 还原树形](images/TraceSegment数据结构.svg)
 
 指标（meter）与日志（logging）也各走独立的 DataCarrier，互不阻塞。队列本身的数据结构要点：
 

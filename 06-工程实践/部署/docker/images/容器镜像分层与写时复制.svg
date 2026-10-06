@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 516" width="1000" height="516" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="516" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">镜像分层与联合挂载：只读层共享 + 容器层可写</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">UnionFS（Docker 上通常落地为 overlay2）把「只读镜像层 + 可写容器层」合并成一个完整根文件系统</text>
+
+  <text x="40" y="96" font-size="14" font-weight="bold" fill="#0f172a">镜像层：只读，一层叠一层</text>
+
+  <rect x="40" y="112" width="380" height="46" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="60" y="133" font-size="14" font-weight="bold" fill="#7c2d12">容器可写层（upperdir）</text>
+  <text x="60" y="151" font-size="11.5" fill="#9a3412">可读可写；所有改动落在这里</text>
+
+  <rect x="40" y="158" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="179" font-size="14" font-weight="bold" fill="#1e3a8a">应用层（只读）</text>
+  <text x="60" y="197" font-size="11.5" fill="#1d4ed8">COPY 进来的代码与产物</text>
+
+  <rect x="40" y="204" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="225" font-size="14" font-weight="bold" fill="#1e3a8a">依赖 / 运行时层（只读）</text>
+  <text x="60" y="243" font-size="11.5" fill="#1d4ed8">系统库、语言运行时</text>
+
+  <rect x="40" y="250" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="271" font-size="14" font-weight="bold" fill="#1e3a8a">基础镜像层（只读）</text>
+  <text x="60" y="289" font-size="11.5" fill="#1d4ed8">如 alpine / debian-slim</text>
+
+  <text x="40" y="326" font-size="13" fill="#0f172a">↓ UnionFS 合并挂载（overlay2）：lowerdir + upperdir → merged</text>
+  <rect x="40" y="340" width="380" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="60" y="366" font-size="13.5" font-weight="bold" fill="#14532d">merged（合并视图）</text>
+  <text x="60" y="388" font-size="11.5" fill="#166534">容器看到的完整根文件系统</text>
+  <text x="40" y="428" font-size="11.5" fill="#64748b">overlay2 挂载参数：lowerdir（只读层）/ upperdir（容器层）/ workdir</text>
+
+  <text x="510" y="96" font-size="14" font-weight="bold" fill="#0f172a">写时复制（Copy-on-Write）：改了才复制</text>
+
+  <rect x="510" y="112" width="450" height="94" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="528" y="140" font-size="13" font-weight="bold" fill="#14532d">① 只读层有 F1，容器没动过</text>
+  <text x="528" y="164" font-size="11.5" fill="#166534">直接引用只读层里的 F1 —— 不产生任何拷贝</text>
+
+  <rect x="510" y="222" width="450" height="94" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="528" y="250" font-size="13" font-weight="bold" fill="#7c2d12">② 只读层有 F2，容器要修改</text>
+  <text x="528" y="274" font-size="11.5" fill="#9a3412">先把 F2 复制到可写层（copy-up）再改，之后引用新文件</text>
+
+  <rect x="510" y="332" width="450" height="94" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="528" y="360" font-size="13" font-weight="bold" fill="#1e3a8a">③ 容器新增文件</text>
+  <text x="528" y="384" font-size="11.5" fill="#1d4ed8">只写进容器层，只读镜像层纹丝不动</text>
+
+  <line x1="20" y1="442" x2="960" y2="442" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="468" font-size="13" fill="#0f172a">⭐ 同一个镜像起的多个容器，磁盘上只存一份镜像层——只读层共享，各自只多一份很小的可写层。</text>
+  <text x="20" y="494" font-size="12" fill="#64748b">⚠️ 镜像层只读：容器内改文件不持久化，正确做法是改镜像重新部署（容器删除后可写层一起消失）。</text>
+</svg>

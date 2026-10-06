@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="xl3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">XXL-JOB 分片广播：一次调度广播到每个实例，各取自己的子集</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">大数据量任务按 index % total 横向拆到多机并行</text>
+
+  <rect x="340" y="90" width="320" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="124" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">调度中心：SHARDING_BROADCAST</text>
+
+  <line x1="500" y1="150" x2="204" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#xl3)"/>
+  <line x1="500" y1="150" x2="500" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#xl3)"/>
+  <line x1="500" y1="150" x2="796" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#xl3)"/>
+
+  <rect x="60" y="236" width="280" height="94" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="200" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">执行器 1</text>
+  <text x="200" y="286" text-anchor="middle" font-size="12" fill="#166534">BroadcastIndex = 0</text>
+  <text x="200" y="310" text-anchor="middle" font-size="11.5" fill="#166534">取 n % total == 0 的行</text>
+
+  <rect x="360" y="236" width="280" height="94" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="500" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">执行器 2</text>
+  <text x="500" y="286" text-anchor="middle" font-size="12" fill="#166534">BroadcastIndex = 1</text>
+  <text x="500" y="310" text-anchor="middle" font-size="11.5" fill="#166534">取 n % total == 1 的行</text>
+
+  <rect x="660" y="236" width="280" height="94" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="800" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">执行器 3</text>
+  <text x="800" y="286" text-anchor="middle" font-size="12" fill="#166534">BroadcastIndex = 2</text>
+  <text x="800" y="310" text-anchor="middle" font-size="11.5" fill="#166534">取 n % total == 2 的行</text>
+
+  <line x1="20" y1="380" x2="980" y2="380" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="406" font-size="13" fill="#0f172a">⭐ 选 SHARDING_BROADCAST 时，中心把一次调度广播给该 AppName 下的每一台在线执行器。</text>
+  <text x="20" y="432" font-size="13" fill="#0f172a">⭐ 每条请求带 BroadcastIndex（从 0 开始）与 BroadcastTotal（总分片数）。</text>
+  <text x="20" y="458" font-size="13" fill="#0f172a">⚠️ 参数只在分片路由下有效：其他路由下 Go 拿到 0/0、Java 拿到 0/1，代码必须兜底。</text>
+  <text x="20" y="484" font-size="13" fill="#0f172a">⚠️ 正确姿势是「每片自己 MOD 取子集」，而不是按数据库主键区间切（会漏数据或重复）。</text>
+  <text x="20" y="514" font-size="12" fill="#64748b">字段名就是 BroadcastIndex / BroadcastTotal；写成 param.ShardIndex 编译不过。</text>
+</svg>

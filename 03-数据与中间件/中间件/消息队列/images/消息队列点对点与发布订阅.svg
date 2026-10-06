@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mq1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">消息模型：点对点（P2P）与发布订阅（Pub/Sub）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">一条消息在一个组内只消费一次，不同组之间各自独立</text>
+
+  <rect x="20" y="82" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="108" font-size="14" font-weight="bold" fill="#0f172a">① 点对点（P2P）：生产者 → Queue → 单个消费者</text>
+
+  <rect x="60" y="140" width="180" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="150" y="178" text-anchor="middle" font-size="12.5" fill="#1e3a8a">生产者</text>
+  <line x1="244" y1="172" x2="316" y2="172" stroke="#334155" stroke-width="1.5" marker-end="url(#mq1)"/>
+
+  <rect x="320" y="140" width="200" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="420" y="178" text-anchor="middle" font-size="12.5" fill="#7c2d12">Queue</text>
+
+  <line x1="524" y1="160" x2="596" y2="152" stroke="#334155" stroke-width="1.4" marker-end="url(#mq1)"/>
+  <line x1="524" y1="184" x2="596" y2="192" stroke="#334155" stroke-width="1.4" marker-end="url(#mq1)"/>
+  <rect x="600" y="130" width="200" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="700" y="158" text-anchor="middle" font-size="12.5" fill="#14532d">消费者 A</text>
+  <rect x="600" y="186" width="200" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="700" y="214" text-anchor="middle" font-size="12.5" fill="#14532d">消费者 B</text>
+
+  <text x="36" y="254" font-size="12" fill="#64748b">⭐ 一条消息只被一个消费者处理，队列天然负载均衡（RabbitMQ 同队列竞争、RocketMQ 集群消费）。</text>
+
+  <rect x="20" y="292" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="318" font-size="14" font-weight="bold" fill="#0f172a">② 发布订阅（Pub/Sub）：生产者 → Topic → 多个订阅组</text>
+
+  <rect x="60" y="350" width="180" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="150" y="388" text-anchor="middle" font-size="12.5" fill="#1e3a8a">生产者</text>
+  <line x1="244" y1="382" x2="316" y2="382" stroke="#334155" stroke-width="1.5" marker-end="url(#mq1)"/>
+
+  <rect x="320" y="350" width="200" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="420" y="388" text-anchor="middle" font-size="12.5" fill="#7c2d12">Topic</text>
+
+  <line x1="524" y1="370" x2="596" y2="362" stroke="#334155" stroke-width="1.4" marker-end="url(#mq1)"/>
+  <line x1="524" y1="394" x2="596" y2="402" stroke="#334155" stroke-width="1.4" marker-end="url(#mq1)"/>
+  <rect x="600" y="340" width="340" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="770" y="368" text-anchor="middle" font-size="12.5" fill="#14532d">订阅组 A（组内 P2P）</text>
+  <rect x="600" y="392" width="340" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="770" y="420" text-anchor="middle" font-size="12.5" fill="#14532d">订阅组 B（组内 P2P）</text>
+
+  <text x="36" y="464" font-size="12" fill="#64748b">⭐ 每个订阅组各消费一次（Kafka Consumer Group、RocketMQ 广播消费、Pulsar Subscription）。</text>
+
+  <line x1="20" y1="506" x2="980" y2="506" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="532" font-size="13" fill="#0f172a">⭐ 实际常混合：Topic 内部做 P2P（集群消费、负载均衡），Topic 之间做 Pub/Sub（各组独立订阅）。</text>
+</svg>

@@ -44,6 +44,8 @@
 
 每个分区 1 个 Leader + N 个 Follower，**Leader 读写、Follower 只拉取同步**（不对外服务）；分区与副本尽量**分散到不同 Broker**，单机宕机只丢该机上的 Leader（Controller 从 ISR 选新 Leader）；副本因子 `replication.factor` 决定冗余度，生产建议 **≥ 3**。
 
+![Kafka 分区与副本：1 个 Leader + N 个 Follower，分散到不同 Broker](images/Kafka分区与副本分布.svg)
+
 ### 日志段（Segment）与稀疏索引
 
 一个 Partition 的物理存储 = 一个目录，里面按**日志段**切分：
@@ -55,6 +57,8 @@
 | `0000...000.timeindex` | **时间戳索引**（稀疏） | 支持按时间戳定位（位点按时间重置就靠它） |
 
 > ⭐ **稀疏索引**是设计精髓：不记录每条消息的位置（太占空间），而是每隔若干字节记一条，查找时先用索引**二分定位到大致位置**，再在 `.log` 中**顺序扫描**，用极小的索引代价换取快速定位。
+
+![Kafka 日志段与稀疏索引：一个 Partition 目录内的 .log / .index / .timeindex](images/Kafka日志段与稀疏索引.svg)
 
 ### ⭐ 为什么顺序写磁盘还能这么快
 
@@ -133,6 +137,8 @@ props.put("max.in.flight.requests.per.connection", 5); // 开启幂等后可 >1 
 > ⭐ 现实结论：Kafka 只能保证 At Least Once 的「不丢」，**「不重」必须靠消费端幂等**，「恰好一次」只在 Kafka 内部流处理链路（读 Topic → 写 Topic）严格成立；跨系统（写 MySQL / 发 HTTP）永远做不到，只能幂等等价实现。幂等的四种做法见 [消息队列选型.md](消息队列选型.md)。
 
 ## 五、消费者组与重平衡
+
+![Kafka 消费者组：组内分摊分区，重平衡会全组停摆](images/Kafka消费者组与重平衡.svg)
 
 ### 分区分配策略
 

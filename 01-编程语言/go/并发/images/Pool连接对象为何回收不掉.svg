@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 630" width="1000" height="630" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="630" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="100" y="84" width="800" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="500" y="119" font-size="13" text-anchor="middle" fill="#334155">① 用 sync.Pool 做 gRPC 客户端连接对象池，容量设为 4</text>
+
+<line x1="500" y1="142" x2="500" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="100" y="166" width="800" height="56" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="500" y="201" font-size="13" text-anchor="middle" fill="#14532d">② 流量小：Pool 里对象数 ≈ 4，一切正常</text>
+
+<line x1="500" y1="224" x2="500" y2="246" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="100" y="248" width="800" height="56" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="283" font-size="13" text-anchor="middle" fill="#7c2d12">③ 流量大：最多取 4 个，不够就新建；用完丢回 Pool → 池里可能攒到 10 / 20 / 40 个</text>
+
+<line x1="500" y1="306" x2="500" y2="328" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="100" y="330" width="800" height="56" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="500" y="365" font-size="13" text-anchor="middle" fill="#7f1d1d">④ 流量降下来：池里看起来恢复 ≤ 4，但多出来的连接对象并没有被销毁</text>
+
+<rect x="30" y="416" width="940" height="196" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+<text x="52" y="448" font-size="16" font-weight="700" fill="#7f1d1d">为什么销毁不掉？</text>
+<text x="52" y="480" font-size="13" fill="#7f1d1d">gRPC 客户端与服务端之间有「心跳」→ 连接对象即使不在 sync.Pool 里，也仍存活在内存中</text>
+<text x="52" y="508" font-size="13" fill="#7f1d1d">→ GC 无法回收（还有存活引用），代码又拿不到（已不在池子里）—— 彻底「失控」</text>
+<text x="52" y="542" font-size="13" fill="#334155">后果 ① 内存泄漏：对象越来越多又回收不了 → 内存持续增长</text>
+<text x="52" y="570" font-size="13" fill="#334155">后果 ② 协程泄漏：每个 gRPC 连接产生 3~4 个协程 → 一台 4 核机器上出现了约 1200 个协程</text>
+<text x="52" y="598" font-size="13" fill="#64748b">根因：连接池的实现问题 —— 没有正确地关闭 / 复用超出的连接对象</text>
+</svg>

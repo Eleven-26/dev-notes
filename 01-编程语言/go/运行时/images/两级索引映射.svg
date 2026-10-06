@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="60" y="48" width="880" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="80" y="76" font-size="12" fill="#334155">64 位有效地址 48 位 → 256TB；每块 4MB（2^22）→ 需要 2^26 = 64M 个索引条目</text>
+
+<rect x="60" y="210" width="160" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="140" y="246" font-size="13" text-anchor="middle" fill="#334155">mheap.arenas</text>
+<line x1="222" y1="240" x2="286" y2="240" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="290" y="110" width="180" height="280" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="380" y="140" font-size="13" text-anchor="middle" font-weight="700" fill="#1e3a8a">L1 表（64 条）</text>
+<rect x="310" y="156" width="140" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="380" y="180" font-size="12" text-anchor="middle" fill="#334155">L1[0]</text>
+<rect x="310" y="204" width="140" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="380" y="228" font-size="12" text-anchor="middle" fill="#334155">L1[1]</text>
+<text x="380" y="276" font-size="13" text-anchor="middle" fill="#64748b">…</text>
+<rect x="310" y="296" width="140" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="380" y="320" font-size="12" text-anchor="middle" fill="#334155">L1[63]</text>
+
+<line x1="452" y1="175" x2="596" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="452" y1="223" x2="596" y2="318" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="600" y="130" width="340" height="110" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="770" y="162" font-size="13" text-anchor="middle" fill="#14532d">L2 表 = 1M 个 *heapArena</text>
+<text x="770" y="190" font-size="12" text-anchor="middle" fill="#14532d">按需创建：用不到就不存在</text>
+<text x="770" y="216" font-size="12" text-anchor="middle" fill="#64748b">→ arena 元数据</text>
+
+<rect x="600" y="270" width="340" height="110" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="770" y="302" font-size="13" text-anchor="middle" fill="#14532d">L2 表 = 1M 个 *heapArena</text>
+<text x="770" y="330" font-size="12" text-anchor="middle" fill="#14532d">按需创建：用不到就不存在</text>
+<text x="770" y="356" font-size="12" text-anchor="middle" fill="#64748b">→ arena 元数据</text>
+
+<text x="770" y="416" font-size="12" text-anchor="middle" fill="#64748b">…（L1[63] 同理）</text>
+
+<rect x="60" y="430" width="880" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="80" y="458" font-size="12" fill="#334155">一级索引总开销：2^26 个条目 × 8B = 512MB（太高）</text>
+<text x="80" y="486" font-size="12" fill="#7f1d1d">拆成 L1 高 6 位（64 条）+ L2 低 20 位（1M 条），L2 按需创建 → 省下绝大部分空间</text>
+<text x="80" y="514" font-size="12" fill="#64748b">查询：偏移量 → arena 编号 → 高 6 位查 L1、低 20 位查 L2 → 落到 heapArena</text>
+</svg>

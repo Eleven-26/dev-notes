@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="185" y="76" font-size="13" text-anchor="middle" fill="#334155">Put 16 个后（本轮）</text>
+<rect x="60" y="96" width="250" height="60" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="185" y="132" font-size="13" text-anchor="middle" fill="#1e3a8a">local：16 个对象</text>
+<rect x="60" y="176" width="250" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="185" y="212" font-size="13" text-anchor="middle" fill="#64748b">victim：（空）</text>
+<text x="185" y="272" font-size="12" text-anchor="middle" fill="#14532d">Get 命中原对象 16/16</text>
+
+<line x1="314" y1="147" x2="374" y2="147" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<text x="505" y="76" font-size="13" text-anchor="middle" fill="#334155">经历 1 次 GC 后</text>
+<rect x="380" y="96" width="250" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="505" y="132" font-size="13" text-anchor="middle" fill="#64748b">local：（空）</text>
+<rect x="380" y="176" width="250" height="60" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="505" y="212" font-size="13" text-anchor="middle" fill="#7c2d12">victim：16 个对象</text>
+<text x="505" y="272" font-size="12" text-anchor="middle" fill="#14532d">Get 命中原对象 15/16</text>
+
+<line x1="634" y1="147" x2="694" y2="147" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<text x="825" y="76" font-size="13" text-anchor="middle" fill="#334155">经历 2 次 GC 后</text>
+<rect x="700" y="96" width="250" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="825" y="132" font-size="13" text-anchor="middle" fill="#64748b">local：（空）</text>
+<rect x="700" y="176" width="250" height="60" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="825" y="212" font-size="13" text-anchor="middle" fill="#7f1d1d">victim：（整体丢弃）</text>
+<text x="825" y="272" font-size="12" text-anchor="middle" fill="#7f1d1d">Get 命中原对象 0/16</text>
+
+<rect x="40" y="310" width="920" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="342" font-size="15" font-weight="700" fill="#0f172a">每次 GC 开始时，poolCleanup 做两件事</text>
+<text x="60" y="376" font-size="13" fill="#334155">① 把所有 Pool 的 victim（上一轮的 local）整个丢掉</text>
+<text x="60" y="404" font-size="13" fill="#334155">② 把当前 local 挪到 victim，local 置空</text>
+<text x="60" y="440" font-size="13" fill="#7f1d1d">⭐ 所以池里的对象有两代（local 本轮 / victim 上一轮），Get 先查 local 再查 victim</text>
+<text x="60" y="468" font-size="13" fill="#7f1d1d">→ 对象能活过最多一次 GC；第二次 GC 必被回收（实测 16/16 → 15/16 → 0/16）</text>
+</svg>

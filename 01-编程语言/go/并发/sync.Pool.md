@@ -84,6 +84,8 @@ Put 16 个后立刻 Get 16 次：命中原对象 16/16
 ② 把当前 local 挪到 victim，local 置空
 ```
 
+![victim cache 的两代与两次 GC：poolCleanup 先丢 victim、再把 local 挪到 victim，所以命中率走 16/16 → 15/16 → 0/16](images/victim两代与poolCleanup.svg)
+
 所以池里的对象有**两代**：`local`（本轮）和 `victim`（上一轮）。
 `Get` 先查 local，查不到再查 victim —— **对象能活过最多一次 GC，第二次必被回收**。
 
@@ -174,6 +176,8 @@ fmt.Printf("复用到未重置的 Buffer，里面已经有 %d 字节：%q\n", re
 Get 顺序：本 P 的 private → 本 P 的 shared → 偷其他 P 的 shared → victim → New()
 Put 顺序：private 空就放 private；否则把它原来的对象推到 shared，自己占住 private
 ```
+
+![Pool 按 P 分片：每个 P 一份 private + shared，Get 依次走本 P private → 本 P shared → 偷其他 P → victim → New](images/Pool按P分片与Get顺序.svg)
 
 | 设计 | 解决的问题 |
 |---|---|

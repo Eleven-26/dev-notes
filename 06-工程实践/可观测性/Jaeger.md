@@ -23,6 +23,8 @@ Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNC
 
 ⭐ 层级理解：**Trace 是树，Span 是节点，SpanContext 是跨进程的“接力棒”，Sampler 决定这棵树留不留档。**
 
+![Trace 与 Span 树结构：子 span 的 parent_span_id 指向父 span](images/Trace与Span树结构.svg)
+
 ### 1.1 与 OpenTelemetry 的关系（关键认知）
 
 | 阶段 | 方案 | 现状 |
@@ -72,12 +74,18 @@ Jaeger (v2 = Collector + Query + UI) ──▶ Storage(ClickHouse/ES) ──▶ 
 - **传播标准化**：跨服务用 W3C `traceparent`，而非各家私有头（旧 Jaeger `uber-trace-id`、SkyWalking `sw8`）。
 - **职责清晰**：OTel 管“怎么产生和传”，Jaeger 管“怎么存、怎么查”。
 
+![从 OTel 埋点到 Jaeger UI 的数据流](images/OTel到Jaeger的数据流.svg)
+
 ⚠️ 混用坑：链路头格式必须端到端一致。上游注入 `traceparent`、下游只认 `sw8`，链路会断成两段独立 trace。
 
 ## 四、Jaeger UI
+
 http://127.0.0.1:16686/
+
 ![Jaeger 面板](images/jaeger-ui-面板.png)
+
 ![Jaeger 链路](images/jaeger-ui-链路.png)
+
 ## 四、部署
 
 ### 4.1 快速起步（all-in-one，仅开发）

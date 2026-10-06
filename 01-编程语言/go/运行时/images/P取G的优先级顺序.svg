@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="480" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="60" y="42" font-size="15" font-weight="700" fill="#0f172a">P 找 G 跑起来的优先级</text>
+
+<rect x="60" y="50" width="880" height="58" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="90" y="86" font-size="13" fill="#7c2d12">① runnext（插队位）—— 刚被唤醒的 G 优先跑</text>
+
+<line x1="500" y1="110" x2="500" y2="126" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="60" y="128" width="880" height="58" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="90" y="164" font-size="13" fill="#14532d">② 本地队列 runq（无锁，容量 256）</text>
+
+<line x1="500" y1="188" x2="500" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="60" y="206" width="880" height="58" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="90" y="242" font-size="13" fill="#1e3a8a">③ 全局队列 sched.runq（带锁）—— 一次取一批 runqgrab</text>
+
+<line x1="500" y1="266" x2="500" y2="282" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="60" y="284" width="880" height="58" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="90" y="320" font-size="13" fill="#7c2d12">④ work stealing：从其他 P 的本地队列偷走一半</text>
+
+<line x1="500" y1="344" x2="500" y2="360" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="60" y="362" width="880" height="58" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="90" y="398" font-size="13" fill="#334155">⑤ 都空了 → M 进入自旋 / 休眠</text>
+
+<text x="500" y="452" font-size="13" text-anchor="middle" fill="#0f172a">顺序的精髓：先用无锁的、再用带锁的、最后才跨 P 偷取</text>
+</svg>

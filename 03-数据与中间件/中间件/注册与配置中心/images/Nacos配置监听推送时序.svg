@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="nc1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Nacos 配置监听：长轮询 hold 住请求，变更即刻返回</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">1.x 长轮询约 29.5s；2.x 改为 9848 gRPC 双向长连接主动 Push</text>
+
+  <rect x="80" y="88" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="220" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Nacos Client（SDK）</text>
+  <rect x="640" y="88" width="280" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="780" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">Nacos Server</text>
+
+  <line x1="220" y1="132" x2="220" y2="490" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="780" y1="132" x2="780" y2="490" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <text x="500" y="172" text-anchor="middle" font-size="13" fill="#0f172a">① 发起 listening 长轮询请求</text>
+  <line x1="224" y1="180" x2="776" y2="180" stroke="#334155" stroke-width="1.5" marker-end="url(#nc1)"/>
+  <text x="792" y="204" font-size="12" fill="#9a3412">服务端 hold 住约 29.5s 不返回</text>
+
+  <text x="500" y="250" text-anchor="middle" font-size="13" fill="#15803d">② 期间有变更：立即返回新配置 + md5</text>
+  <line x1="776" y1="258" x2="226" y2="258" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#nc1)"/>
+  <text x="232" y="282" font-size="12" fill="#1d4ed8">MD5 比对：一致则不触发回调</text>
+
+  <path d="M220,346 L264,346 L264,364 L224,364" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#nc1)"/>
+  <text x="272" y="360" font-size="12" fill="#1d4ed8">③ 触发 Listener.receiveConfigInfo</text>
+  <text x="272" y="382" font-size="12" fill="#1d4ed8">（@RefreshScope 重建 Bean 才会生效）</text>
+
+  <text x="500" y="428" text-anchor="middle" font-size="13" fill="#0f172a">④ 无变更：超时返回空，客户端立刻重新发起长轮询</text>
+  <line x1="224" y1="436" x2="776" y2="436" stroke="#334155" stroke-width="1.5" marker-end="url(#nc1)"/>
+
+  <text x="500" y="476" text-anchor="middle" font-size="13" fill="#64748b">⑤ 2.x：与 9848 建双向长连接，变更通过 Push 通道下发</text>
+
+  <line x1="20" y1="516" x2="980" y2="516" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="542" font-size="13" fill="#0f172a">⭐ 本质是「hold 住请求 + 变更即刻响应」，不是 WebSocket 广播；2.x 用 gRPC 更省连接。</text>
+  <text x="20" y="568" font-size="13" fill="#0f172a">⭐ 本地快照 Failover：配置写入 cacheDir，Nacos 不可用时用快照启动，避免一起挂。</text>
+  <text x="20" y="594" font-size="13" fill="#0f172a">⚠️ 监听回调里不要做重活（重建连接池等），会阻塞推送线程。</text>
+  <text x="20" y="622" font-size="12" fill="#64748b">⚠️ 配置加解密方案下，热更新拿到的仍是 ENCv1 密文，回调里必须同样走一次解密。</text>
+</svg>

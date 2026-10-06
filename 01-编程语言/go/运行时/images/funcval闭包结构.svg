@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="60" y="130" width="280" height="160" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="200" y="160" font-size="13" text-anchor="middle" font-weight="700" fill="#1e3a8a">main.counter 的栈帧</text>
+<text x="200" y="190" font-size="12" text-anchor="middle" fill="#1e3a8a">&amp;n（指向堆上的 n）</text>
+<text x="200" y="218" font-size="11" text-anchor="middle" fill="#64748b">locals=0x20</text>
+
+<rect x="620" y="90" width="340" height="270" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="790" y="120" font-size="13" text-anchor="middle" font-weight="700" fill="#7c2d12">堆</text>
+
+<rect x="650" y="136" width="90" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="695" y="164" font-size="12" text-anchor="middle" fill="#334155">n int</text>
+<text x="760" y="164" font-size="11" fill="#64748b">runtime.newobject 分配</text>
+
+<line x1="340" y1="180" x2="644" y2="158" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="490" y="170" font-size="11" text-anchor="middle" fill="#64748b">&amp;n</text>
+
+<line x1="700" y1="210" x2="700" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="712" y="200" font-size="11" fill="#64748b">X0</text>
+
+<rect x="650" y="210" width="280" height="120" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="670" y="240" font-size="12" font-weight="700" fill="#1e3a8a">funcval（闭包对象，也在堆上）</text>
+<text x="670" y="266" font-size="11" fill="#1e3a8a">struct { F uintptr; X0 *int }</text>
+<text x="670" y="292" font-size="11" fill="#14532d">F → main.counter.func1（代码地址）</text>
+<text x="670" y="314" font-size="11" fill="#14532d">X0 → 指向堆上的 n（*int）</text>
+
+<text x="500" y="400" font-size="12" text-anchor="middle" fill="#7f1d1d">闭包不是「指向函数的指针」，而是堆上分配的结构体（函数指针 + 捕获变量表）</text>
+<text x="500" y="428" font-size="12" text-anchor="middle" fill="#334155">每次创建闭包都要 newobject；写指针进堆对象要写屏障（runtime.writeBarrier）</text>
+</svg>

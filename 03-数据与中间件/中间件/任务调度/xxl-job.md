@@ -61,6 +61,8 @@
 
 ## 三、整体架构
 
+![XXL-JOB 整体架构：调度中心与执行器的四类 HTTP 交互](images/XXLJOB整体架构与通信.svg)
+
 ```text
 ┌────────────── 调度中心集群（xxl-job-admin ×N，:8080） ──────────────┐
 │ Web 控制台 │ 调度引擎 JobScheduleHelper │ 注册发现 JobRegistryHelper │
@@ -83,6 +85,8 @@
 | **执行器自动发现** | 执行器周期上报 → 中心写注册表 → 中心刷新 `xxl_job_group.address_list` | 注册表按 AppName 聚合出地址列表，路由策略在此列表上挑 |
 | **心跳保活** | `BEAT_TIMEOUT = 30s`（监控扫描周期），`DEAD_TIMEOUT = BEAT_TIMEOUT × 3 = 90s` | 90s 内没续约的地址被 `removeDead` 物理删除 |
 | **触发时效** | 每轮预读 `PRE_READ_MS = 5000ms`，把任务塞进 **60 槽时间轮**，ring 线程按秒推进 | 调度精度是**秒级**，不是毫秒级 |
+
+![XXL-JOB 一次调度的完整时序：注册 → 抢锁 → 触发 → 回调](images/XXLJOB一次调度时序.svg)
 
 **一次调度的完整时序（文字版）**：
 
@@ -224,6 +228,8 @@ func logHandler(req *xxl.LogReq) *xxl.LogRes {
 **中间件**（统一日志、耗时统计、panic 兜底、链路透传）：`exec.Use(mw1, mw2)`，签名 `func(xxl.TaskFunc) xxl.TaskFunc`。注意 `Use` 是**整体覆盖**而非追加，多个中间件要在一次调用里传完。
 
 ### 5.2 分片广播 ⭐
+
+![XXL-JOB 分片广播：一次调度广播到每个实例，各取自己的子集](images/XXLJOB分片广播.svg)
 
 路由策略选 `SHARDING_BROADCAST` 时，中心会把任务**广播给该 AppName 下的每一台执行器**，并在 `RunReq` 里带上：
 

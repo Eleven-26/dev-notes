@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="am2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ActiveMQ 高可用：主从 + 级联，没有自动选主</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">三种扩展与容灾形态，以及各自的代价</text>
+
+  <rect x="20" y="82" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="108" font-size="14" font-weight="bold" fill="#0f172a">① Shared-Store 主从：主从挂同一份存储，从节点抢锁接管</text>
+  <rect x="100" y="138" width="220" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="210" y="168" text-anchor="middle" font-size="12.5" fill="#14532d">Master</text>
+  <text x="210" y="190" text-anchor="middle" font-size="11" fill="#166534">对外服务</text>
+  <rect x="420" y="138" width="220" height="72" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="168" text-anchor="middle" font-size="12.5" fill="#0f172a">Slave</text>
+  <text x="530" y="190" text-anchor="middle" font-size="11" fill="#475569">待命抢锁</text>
+  <rect x="740" y="138" width="200" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="840" y="168" text-anchor="middle" font-size="12.5" fill="#7c2d12">共享存储</text>
+  <text x="840" y="190" text-anchor="middle" font-size="11" fill="#9a3412">NFS / SAN</text>
+  <line x1="324" y1="174" x2="736" y2="174" stroke="#334155" stroke-width="1.5" marker-end="url(#am2)"/>
+  <line x1="644" y1="174" x2="736" y2="174" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#am2)"/>
+  <text x="36" y="234" font-size="12" fill="#b91c1c">⚠️ 依赖共享存储的可靠性；切换后客户端要重连。</text>
+
+  <rect x="20" y="272" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="298" font-size="14" font-weight="bold" fill="#0f172a">② 租约型主从（JDBC / 文件锁）：主节点周期性续租，从节点抢租</text>
+  <rect x="100" y="328" width="220" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="210" y="358" text-anchor="middle" font-size="12.5" fill="#14532d">Master</text>
+  <text x="210" y="380" text-anchor="middle" font-size="11" fill="#166534">周期续租</text>
+  <rect x="420" y="328" width="220" height="72" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="358" text-anchor="middle" font-size="12.5" fill="#0f172a">Slave</text>
+  <text x="530" y="380" text-anchor="middle" font-size="11" fill="#475569">抢租接管</text>
+  <rect x="740" y="328" width="200" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="840" y="358" text-anchor="middle" font-size="12.5" fill="#7c2d12">租约中心</text>
+  <text x="840" y="380" text-anchor="middle" font-size="11" fill="#9a3412">JDBC / 文件锁</text>
+  <line x1="324" y1="364" x2="736" y2="364" stroke="#334155" stroke-width="1.5" marker-end="url(#am2)"/>
+  <line x1="644" y1="364" x2="736" y2="364" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#am2)"/>
+  <text x="36" y="424" font-size="12" fill="#b91c1c">⚠️ 脑窗存在，需配合 failover: 传输重连。</text>
+
+  <rect x="20" y="462" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="488" font-size="14" font-weight="bold" fill="#0f172a">③ Network of Brokers：多个独立 broker 用 networkConnector 级联</text>
+  <rect x="80" y="520" width="220" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="190" y="550" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Broker 1</text>
+  <text x="190" y="572" text-anchor="middle" font-size="11" fill="#1d4ed8">独立 store</text>
+  <rect x="390" y="520" width="220" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="550" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Broker 2</text>
+  <text x="500" y="572" text-anchor="middle" font-size="11" fill="#1d4ed8">独立 store</text>
+  <rect x="700" y="520" width="220" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="810" y="550" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Broker 3</text>
+  <text x="810" y="572" text-anchor="middle" font-size="11" fill="#1d4ed8">独立 store</text>
+  <line x1="306" y1="546" x2="384" y2="546" stroke="#334155" stroke-width="1.5" marker-end="url(#am2)"/>
+  <line x1="384" y1="566" x2="306" y2="566" stroke="#334155" stroke-width="1.5" marker-end="url(#am2)"/>
+  <line x1="616" y1="546" x2="694" y2="546" stroke="#334155" stroke-width="1.5" marker-end="url(#am2)"/>
+  <line x1="694" y1="566" x2="616" y2="566" stroke="#334155" stroke-width="1.5" marker-end="url(#am2)"/>
+  <text x="36" y="636" font-size="12" fill="#b91c1c">⚠️ 消息在桥两端各存一份；队列消费者不会跨 broker 自动均衡。</text>
+
+  <line x1="20" y1="676" x2="980" y2="676" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="702" font-size="13" fill="#0f172a">⚠️ 对比记忆：Kafka 靠分区副本 + ISR 横向扩，Pulsar 靠 BookKeeper + bundle 迁移。</text>
+  <text x="20" y="728" font-size="13" fill="#0f172a">⭐ ActiveMQ Classic 只有「主从 + 级联」：单队列的吞吐与容量上限就是单 broker 的上限。</text>
+  <text x="20" y="758" font-size="12" fill="#64748b">这也是它不适合做数据管道的根因；Artemis 是另起炉灶的重写，配置与集群方式互不兼容。</text>
+</svg>

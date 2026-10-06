@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rq1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RocketMQ 三层存储：混写一条 CommitLog，索引两跳再读正文</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">写一条路（真顺序）、读两跳（先索引后正文），索引可重建</text>
+
+  <rect x="20" y="82" width="960" height="126" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="106" font-size="14" font-weight="bold" fill="#0f172a">① 写入：所有 Topic / 队列混成一条流，全机只有一个追加点</text>
+
+  <rect x="40" y="122" width="120" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="100" y="148" text-anchor="middle" font-size="12.5" fill="#1e3a8a">生产者</text>
+  <text x="100" y="168" text-anchor="middle" font-size="11.5" fill="#1d4ed8">按到达顺序</text>
+  <line x1="164" y1="152" x2="192" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#rq1)"/>
+
+  <rect x="198" y="122" width="220" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="308" y="148" text-anchor="middle" font-size="12.5" fill="#14532d">CommitLog 唯一追加点</text>
+  <text x="308" y="168" text-anchor="middle" font-size="11.5" fill="#166534">Topic / queueId 只是记录字段</text>
+  <line x1="422" y1="152" x2="450" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#rq1)"/>
+
+  <rect x="456" y="122" width="250" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="581" y="148" text-anchor="middle" font-size="12.5" fill="#7c2d12">单文件固定 1 GiB</text>
+  <text x="581" y="168" text-anchor="middle" font-size="11.5" fill="#9a3412">写满即滚动到下一个文件</text>
+  <line x1="710" y1="152" x2="738" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#rq1)"/>
+
+  <rect x="744" y="122" width="210" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="849" y="148" text-anchor="middle" font-size="12.5" fill="#0f172a">mmap / PageCache</text>
+  <text x="849" y="168" text-anchor="middle" font-size="11.5" fill="#475569">刷盘线程再批量落盘</text>
+
+  <rect x="20" y="222" width="960" height="132" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="246" font-size="14" font-weight="bold" fill="#0f172a">② 分发（后台异步、可重建）：由 CommitLog 透析出二级索引</text>
+
+  <rect x="50" y="266" width="410" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="255" y="292" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">ConsumeQueue：定长 20 字节 / 条</text>
+  <text x="255" y="314" text-anchor="middle" font-size="11.5" fill="#166534">8B 物理偏移 + 4B 长度 + 8B Tag 哈希；单文件 30 万条约 6 MB</text>
+
+  <line x1="464" y1="300" x2="502" y2="300" stroke="#334155" stroke-width="1.5" marker-end="url(#rq1)"/>
+
+  <rect x="508" y="266" width="452" height="70" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="734" y="292" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">IndexFile：按 Key 查询的哈希索引</text>
+  <text x="734" y="314" text-anchor="middle" font-size="11.5" fill="#9a3412">约 200 MB = 50 万哈希槽 + 1000 万条 20 字节条目</text>
+
+  <rect x="20" y="368" width="960" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="392" font-size="14" font-weight="bold" fill="#0f172a">③ 消费：读两跳（先索引、后正文）</text>
+
+  <rect x="60" y="410" width="220" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="170" y="445" text-anchor="middle" font-size="12.5" fill="#1e3a8a">消费者组按位点</text>
+  <line x1="284" y1="439" x2="312" y2="439" stroke="#334155" stroke-width="1.5" marker-end="url(#rq1)"/>
+
+  <rect x="318" y="410" width="210" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="423" y="445" text-anchor="middle" font-size="12" fill="#14532d">ConsumeQueue 第 N 条</text>
+  <line x1="532" y1="439" x2="560" y2="439" stroke="#334155" stroke-width="1.5" marker-end="url(#rq1)"/>
+
+  <rect x="566" y="410" width="200" height="58" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="666" y="445" text-anchor="middle" font-size="12" fill="#7c2d12">回 CommitLog 定长读</text>
+  <line x1="770" y1="439" x2="798" y2="439" stroke="#334155" stroke-width="1.5" marker-end="url(#rq1)"/>
+
+  <rect x="804" y="410" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="879" y="445" text-anchor="middle" font-size="12" fill="#0f172a">按 Tag 过滤后返回</text>
+
+  <line x1="20" y1="508" x2="980" y2="508" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="534" font-size="13" fill="#0f172a">⭐ 混写让全机只有一个追加点，写吞吐与队列数解耦 —— 「单机万级队列」的存储根基。</text>
+  <text x="20" y="560" font-size="13" fill="#0f172a">⭐ Tag 过滤在索引层比对 8 字节哈希即完成，不匹配的消息不必读 CommitLog 正文。</text>
+  <text x="20" y="586" font-size="13" fill="#0f172a">⚠️ 保留 / 清理是全局粒度：文件混写，无法按 Topic 分别过期，不同 SLA 要分集群部署。</text>
+  <text x="20" y="616" font-size="12" fill="#64748b">ConsumeQueue 只存索引不存正文，损坏或缺失时可按 CommitLog 重放重建。</text>
+</svg>

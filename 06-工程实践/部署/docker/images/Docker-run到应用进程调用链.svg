@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">docker run 到应用进程：完整调用链</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">docker 命令并不是容器的父进程；runc 是一次性的，shim 才是容器的「监护人」</text>
+
+  <rect x="30" y="78" width="150" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="105" y="106" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">docker CLI</text>
+  <rect x="188" y="78" width="150" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="263" y="106" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">dockerd</text>
+  <rect x="346" y="78" width="150" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="421" y="106" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">containerd</text>
+  <rect x="504" y="78" width="150" height="46" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="579" y="106" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">containerd-shim</text>
+  <rect x="662" y="78" width="150" height="46" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="737" y="106" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">runc</text>
+  <rect x="820" y="78" width="150" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="895" y="99" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">应用进程</text>
+  <text x="895" y="117" text-anchor="middle" font-size="11" fill="#166534">nginx，容器内 PID 1</text>
+
+  <line x1="105" y1="124" x2="105" y2="470" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <line x1="263" y1="124" x2="263" y2="470" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <line x1="421" y1="124" x2="421" y2="470" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <line x1="579" y1="124" x2="579" y2="470" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <line x1="737" y1="124" x2="737" y2="400" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <line x1="895" y1="124" x2="895" y2="470" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+
+  <line x1="113" y1="170" x2="255" y2="170" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="184" y="162" text-anchor="middle" font-size="12" fill="#0f172a">① docker run -d nginx:alpine</text>
+  <text x="184" y="188" text-anchor="middle" font-size="11" fill="#64748b">请求发到 /var/run/docker.sock</text>
+
+  <line x1="271" y1="228" x2="413" y2="228" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="342" y="220" text-anchor="middle" font-size="12" fill="#0f172a">② 镜像下载 / 解压、网络与存储卷准备</text>
+
+  <line x1="429" y1="272" x2="571" y2="272" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="500" y="264" text-anchor="middle" font-size="12" fill="#0f172a">③ 建 shim：容器生命周期管理 + 初始化 snapshot</text>
+
+  <line x1="587" y1="316" x2="729" y2="316" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="658" y="308" text-anchor="middle" font-size="12" fill="#0f172a">④ 调用 runc 创建容器进程</text>
+
+  <line x1="745" y1="358" x2="887" y2="358" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="816" y="350" text-anchor="middle" font-size="12" fill="#0f172a">⑤ clone / cgroup / pivot_root 建进程</text>
+
+  <rect x="703" y="386" width="68" height="26" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="737" y="404" text-anchor="middle" font-size="11" fill="#7f1d1d">runc 退出</text>
+  <text x="790" y="404" font-size="11" fill="#b91c1c">一次性：建完即退，不做父进程</text>
+
+  <line x1="587" y1="446" x2="887" y2="446" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arg)"/>
+  <text x="737" y="438" text-anchor="middle" font-size="12" fill="#15803d">⑥ 父进程变成 shim：转交 stdout/stderr、回收退出码</text>
+
+  <rect x="20" y="486" width="960" height="128" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="514" font-size="12.5" fill="#0f172a">⭐ runc 是「一次性」的：只负责把进程建起来，建完就退出，不会成为容器的父进程——否则升级 dockerd / containerd 就会牵连所有容器。</text>
+  <text x="36" y="542" font-size="12.5" fill="#0f172a">⭐ containerd-shim 才是容器的「监护人」：负责回收退出码，也让 dockerd 重启时容器照常运行。</text>
+  <text x="36" y="570" font-size="12.5" fill="#0f172a">💡 dockerd、containerd 负责的是管理与编排，真正碰内核（clone / cgroup / pivot_root）的是 runc。</text>
+  <text x="36" y="600" font-size="12" fill="#64748b">验证：pstree -p $(pgrep -x containerd) 能看到 containerd → shim → 应用进程。</text>
+</svg>

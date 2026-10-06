@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="o1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Once：原子读快路径 + 双检查</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">整个进程生命周期内 f 最多执行一次；后到的协程会等它执行完再返回</text>
+
+  <rect x="380" y="88" width="240" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="116" text-anchor="middle" font-size="12.5" fill="#1e3a8a">once.Do(f)</text>
+  <line x1="500" y1="132" x2="500" y2="154" stroke="#334155" stroke-width="1.6" marker-end="url(#o1)"/>
+
+  <rect x="350" y="158" width="300" height="52" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="500" y="190" text-anchor="middle" font-size="12" fill="#7c2d12">o.done.Load() == 0 ？</text>
+  <line x1="650" y1="184" x2="694" y2="184" stroke="#334155" stroke-width="1.6" marker-end="url(#o1)"/>
+  <text x="672" y="176" text-anchor="middle" font-size="11.5" fill="#334155">否</text>
+  <rect x="700" y="152" width="280" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="840" y="178" text-anchor="middle" font-size="11.5" fill="#0f172a">直接返回，不加锁</text>
+  <text x="840" y="200" text-anchor="middle" font-size="10.5" fill="#64748b">原子读做快路径：执行过就不再进锁</text>
+
+  <line x1="500" y1="210" x2="500" y2="232" stroke="#334155" stroke-width="1.6" marker-end="url(#o1)"/>
+  <text x="512" y="226" font-size="11.5" fill="#334155">是</text>
+
+  <rect x="350" y="234" width="300" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="266" text-anchor="middle" font-size="12" fill="#1e3a8a">o.m.Lock() + defer o.m.Unlock()</text>
+  <line x1="500" y1="286" x2="500" y2="308" stroke="#334155" stroke-width="1.6" marker-end="url(#o1)"/>
+
+  <rect x="350" y="310" width="300" height="52" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="500" y="342" text-anchor="middle" font-size="12" fill="#7c2d12">双检查：再 Load 一次还是 0 ？</text>
+  <line x1="650" y1="336" x2="694" y2="336" stroke="#334155" stroke-width="1.6" marker-end="url(#o1)"/>
+  <text x="672" y="328" text-anchor="middle" font-size="11.5" fill="#334155">否</text>
+  <rect x="700" y="304" width="280" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="840" y="330" text-anchor="middle" font-size="11.5" fill="#0f172a">直接返回，什么都不做</text>
+  <text x="840" y="352" text-anchor="middle" font-size="10.5" fill="#64748b">防止后到的协程又执行一遍</text>
+
+  <line x1="500" y1="362" x2="500" y2="384" stroke="#334155" stroke-width="1.6" marker-end="url(#o1)"/>
+  <text x="512" y="378" font-size="11.5" fill="#334155">是</text>
+
+  <rect x="350" y="386" width="300" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="412" text-anchor="middle" font-size="12" fill="#14532d">defer o.done.Store(1)</text>
+  <text x="500" y="434" text-anchor="middle" font-size="12" fill="#14532d">然后执行 f()</text>
+
+  <rect x="20" y="472" width="960" height="82" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="498" font-size="12" fill="#0f172a">⚠️ f 里 panic 仍算「执行过」（defer Store 先跑）→ 后续 Do 直接返回，instance 可能还是 nil。</text>
+  <text x="36" y="522" font-size="12" fill="#0f172a">⚠️ f 里递归调同一个 Once.Do → 死锁（doSlow 已经持有 o.m，再次进入只能等这把锁）。</text>
+  <text x="36" y="546" font-size="12" fill="#0f172a">⭐ 与「自己用 atomic + CAS」的区别：CAS 只保证「只有一个进」，后到者不会等它执行完。</text>
+</svg>

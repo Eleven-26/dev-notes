@@ -58,6 +58,8 @@
 
 ## 三、整体架构：存算分离换来了什么
 
+![Pulsar 存算分离架构：Broker 无状态 + BookKeeper ensemble](images/Pulsar存算分离架构.svg)
+
 ### 3.1 写路径
 
 ```text
@@ -82,6 +84,8 @@ Broker 收到订阅的请求后从 BookKeeper 拉 Entry，按订阅类型分发�
 
 ### 3.3 为什么扩容 / Broker 故障「不用搬数据」
 
+![Pulsar 故障转移与扩容：迁的是 bundle 所有权，不是数据](images/Pulsar故障转移与扩容.svg)
+
 | 步骤 | 发生什么 |
 | --- | --- |
 | Broker 宕机 | 它持有的 bundle 所有权（ZooKeeper / pulsar-metadata 上的租约）超时释放 |
@@ -105,6 +109,8 @@ Broker 收到订阅的请求后从 BookKeeper 拉 Entry，按订阅类型分发�
 ---
 
 ## 四、订阅模型：四种订阅类型怎么选 ⭐
+
+![Pulsar 四种订阅类型：Exclusive / Shared / Key_Shared / Failover](images/Pulsar四种订阅类型.svg)
 
 | 订阅类型 | 同一订阅允许的 Consumer 数 | 消息分发 | 顺序保证 | 故障切换 | 典型场景 |
 | --- | --- | --- | --- | --- | --- |

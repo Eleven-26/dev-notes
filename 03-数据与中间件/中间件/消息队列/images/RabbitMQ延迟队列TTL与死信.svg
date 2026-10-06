@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rb2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RabbitMQ 延迟队列：TTL + DLX 与延迟插件</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两种实现思路与各自的坑：队头阻塞、消息暂存在交换机</text>
+
+  <rect x="20" y="82" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="108" font-size="14" font-weight="bold" fill="#0f172a">方案 A：TTL + DLX，不依赖插件</text>
+
+  <rect x="60" y="150" width="190" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="155" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">业务队列</text>
+  <text x="155" y="198" text-anchor="middle" font-size="11.5" fill="#1d4ed8">设 x-message-ttl</text>
+
+  <line x1="254" y1="182" x2="286" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#rb2)"/>
+
+  <rect x="290" y="150" width="190" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="385" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">DLX 死信交换机</text>
+  <text x="385" y="198" text-anchor="middle" font-size="11.5" fill="#9a3412">x-dead-letter-exchange</text>
+
+  <line x1="484" y1="182" x2="516" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#rb2)"/>
+
+  <rect x="520" y="150" width="190" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="615" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">死信队列</text>
+  <text x="615" y="198" text-anchor="middle" font-size="11.5" fill="#166534">延迟到期的消费者</text>
+
+  <line x1="714" y1="182" x2="746" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#rb2)"/>
+
+  <rect x="750" y="150" width="190" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="845" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">消费者</text>
+  <text x="845" y="198" text-anchor="middle" font-size="11.5" fill="#166534">二次校验业务状态</text>
+
+  <text x="36" y="242" font-size="12.5" fill="#b91c1c">⚠️ 队头阻塞：队列级 TTL 只检查队头；队头未过期时，后面已过期的也不会被投到 DLX。</text>
+  <text x="36" y="266" font-size="12.5" fill="#64748b">规避：为每个延迟粒度建独立队列（1min / 5min / 30min…），但延迟时间无法动态变化。</text>
+
+  <rect x="20" y="306" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="332" font-size="14" font-weight="bold" fill="#0f172a">方案 B：rabbitmq_delayed_message_exchange 插件（推荐）</text>
+
+  <rect x="60" y="372" width="200" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="160" y="397" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">生产者</text>
+  <text x="160" y="418" text-anchor="middle" font-size="11.5" fill="#1d4ed8">header x-delay(ms)</text>
+
+  <line x1="264" y1="402" x2="296" y2="402" stroke="#334155" stroke-width="1.5" marker-end="url(#rb2)"/>
+
+  <rect x="300" y="372" width="300" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="450" y="397" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">x-delayed-message 交换机</text>
+  <text x="450" y="418" text-anchor="middle" font-size="11.5" fill="#9a3412">时间轮 + 到期投递</text>
+
+  <line x1="604" y1="402" x2="636" y2="402" stroke="#334155" stroke-width="1.5" marker-end="url(#rb2)"/>
+
+  <rect x="640" y="372" width="160" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="720" y="407" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">目标队列</text>
+
+  <line x1="804" y1="402" x2="836" y2="402" stroke="#334155" stroke-width="1.5" marker-end="url(#rb2)"/>
+
+  <rect x="840" y="372" width="100" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="890" y="407" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">消费者</text>
+
+  <text x="36" y="456" font-size="12.5" fill="#0f172a">⭐ 支持任意毫秒延迟、无需为每个粒度建队列；⚠️ 消息暂存在交换机内、不落常规队列，节点宕机可能丢。</text>
+
+  <line x1="20" y1="500" x2="980" y2="500" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="526" font-size="13" fill="#0f172a">死信触发三场景：被 reject / nack 且 requeue=false、消息 TTL 过期、队列达 x-max-length 上限被挤出。</text>
+  <text x="20" y="552" font-size="13" fill="#0f172a">⚠️ requeue 陷阱：失败后 requeue=true 会把消息放回队头，反复失败即无限重入队死循环。</text>
+  <text x="20" y="578" font-size="13" fill="#0f172a">正确做法是配死信队列 + 限制重试次数，或直接 requeue=false 让消息进 DLX。</text>
+  <text x="20" y="608" font-size="12" fill="#64748b">x-message-ttl 是消息存活时间；x-expires 是队列空闲存活时间（整队删除），两者别混。</text>
+</svg>

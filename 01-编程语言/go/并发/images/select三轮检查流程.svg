@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="s1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">selectgo 的三轮检查</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">多路就绪时选谁是随机的，加锁顺序则统一按地址排 —— 前者防饿死，后者防死锁</text>
+
+  <rect x="20" y="110" width="310" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="36" y="138" font-size="13" font-weight="bold" fill="#1e3a8a">第一轮：能立刻完成吗</text>
+  <text x="36" y="162" font-size="11" fill="#64748b">按 pollorder 顺序逐个看 case</text>
+  <rect x="36" y="176" width="278" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="175" y="199" text-anchor="middle" font-size="11" fill="#14532d">能：send 有空位 / recv 有数据</text>
+  <text x="175" y="220" text-anchor="middle" font-size="11" fill="#166534">→ 执行该分支并返回</text>
+  <rect x="36" y="250" width="278" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="175" y="273" text-anchor="middle" font-size="11" fill="#7c2d12">都不能，但有 default</text>
+  <text x="175" y="294" text-anchor="middle" font-size="11" fill="#9a3412">→ 执行 default（不阻塞）</text>
+  <rect x="36" y="324" width="278" height="62" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="175" y="347" text-anchor="middle" font-size="11" fill="#7f1d1d">都不能，也没有 default</text>
+  <text x="175" y="368" text-anchor="middle" font-size="11" fill="#b91c1c">→ 进入第二轮</text>
+
+  <line x1="334" y1="260" x2="354" y2="260" stroke="#334155" stroke-width="1.6" marker-end="url(#s1)"/>
+  <line x1="674" y1="260" x2="694" y2="260" stroke="#334155" stroke-width="1.6" marker-end="url(#s1)"/>
+
+  <rect x="360" y="110" width="310" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="376" y="138" font-size="13" font-weight="bold" fill="#7c2d12">第二轮：挂到所有 channel 上</text>
+  <text x="376" y="162" font-size="11" fill="#64748b">为什么是「所有」：挂起时不知道谁会先就绪</text>
+  <rect x="376" y="176" width="278" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="515" y="207" text-anchor="middle" font-size="11.5" fill="#1e3a8a">当前协程被包装成 sudog</text>
+  <rect x="376" y="240" width="278" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="515" y="263" text-anchor="middle" font-size="11" fill="#1e3a8a">sudog 依次挂进每个 case 对应的</text>
+  <text x="515" y="284" text-anchor="middle" font-size="11" fill="#1d4ed8">sendq / recvq</text>
+  <rect x="376" y="314" width="278" height="52" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="515" y="345" text-anchor="middle" font-size="11.5" fill="#7c2d12">挂起当前协程（★ 不占 CPU）</text>
+  <text x="376" y="392" font-size="10.5" fill="#64748b">于是从 select 流程里「走出去」了</text>
+
+  <rect x="700" y="110" width="280" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="716" y="138" font-size="13" font-weight="bold" fill="#14532d">第三轮：被唤醒后收尾</text>
+  <text x="716" y="162" font-size="11" fill="#64748b">唤醒方 = 对端 channel 的 send / recv / close</text>
+  <rect x="716" y="176" width="248" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="840" y="207" text-anchor="middle" font-size="11.5" fill="#14532d">重新加锁，按 lockorder 遍历</text>
+  <rect x="716" y="240" width="248" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="840" y="263" text-anchor="middle" font-size="11" fill="#14532d">① 找出哪个 case 真正成功了</text>
+  <text x="840" y="284" text-anchor="middle" font-size="11" fill="#166534">（唤醒方就是成功的那个）</text>
+  <rect x="716" y="314" width="248" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="840" y="337" text-anchor="middle" font-size="11" fill="#14532d">② 把其他队列上的 sudog 出队</text>
+  <text x="840" y="358" text-anchor="middle" font-size="11" fill="#166534">（清理失败 case 的占位）</text>
+  <text x="716" y="392" font-size="10.5" fill="#64748b">不清理会留下野指针</text>
+
+  <rect x="20" y="428" width="470" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="36" y="454" font-size="12" font-weight="bold" fill="#1e3a8a">pollorder（轮询顺序）</text>
+  <text x="36" y="476" font-size="11" fill="#1d4ed8">剔除无效 case 后随机洗牌 → 防某个 case 被饿死</text>
+  <rect x="510" y="428" width="470" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="526" y="454" font-size="12" font-weight="bold" fill="#14532d">lockorder（锁定顺序）</text>
+  <text x="526" y="476" font-size="11" fill="#166534">按 channel 内存地址从小到大 → 防多 channel 加锁死锁</text>
+
+  <text x="20" y="528" font-size="12" fill="#0f172a">⭐ 有 default：第一轮末尾直接命中，不进入第二轮 —— 这就是「非阻塞模式」的来源。</text>
+  <text x="20" y="554" font-size="12" fill="#0f172a">⚠️ case 对应 nil channel：该 case 永远不就绪 → 等同于禁用这个分支（select 里「摘掉」分支的技巧）。</text>
+  <text x="20" y="580" font-size="12" fill="#0f172a">⚠️ 空 select {}：没有 case 也没有 default → 永久阻塞（常用来「卡住主协程」）。</text>
+</svg>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mq2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">保证最终一致的三种主流思路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">核心问题：如何保证「本地业务操作」与「消息发送」两个动作的原子性</text>
+
+  <text x="40" y="108" font-size="13.5" font-weight="bold" fill="#0f172a">① 本地消息表：业务与待发消息写入同一本地事务，再由定时任务投递</text>
+  <rect x="40" y="124" width="200" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="140" y="154" text-anchor="middle" font-size="12" fill="#1e3a8a">业务库事务</text>
+  <text x="140" y="176" text-anchor="middle" font-size="11" fill="#1d4ed8">业务 + 待发消息同写</text>
+  <line x1="244" y1="160" x2="276" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="280" y="124" width="200" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="380" y="154" text-anchor="middle" font-size="12" fill="#7c2d12">定时任务 / 异步线程</text>
+  <text x="380" y="176" text-anchor="middle" font-size="11" fill="#9a3412">扫描待发送消息</text>
+  <line x1="484" y1="160" x2="516" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="520" y="124" width="200" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="620" y="154" text-anchor="middle" font-size="12" fill="#14532d">投递 MQ</text>
+  <text x="620" y="176" text-anchor="middle" font-size="11" fill="#166534">成功才更新消息状态</text>
+  <line x1="724" y1="160" x2="756" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="760" y="124" width="200" height="72" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="860" y="154" text-anchor="middle" font-size="12" fill="#0f172a">最终一致</text>
+  <text x="860" y="176" text-anchor="middle" font-size="11" fill="#475569">简单但有投递延迟</text>
+
+  <text x="40" y="248" font-size="13.5" font-weight="bold" fill="#0f172a">② 事务消息（半消息 + 回查）：RocketMQ 原生，及时性最好</text>
+  <rect x="40" y="264" width="200" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="140" y="294" text-anchor="middle" font-size="12" fill="#1e3a8a">① 发半消息</text>
+  <text x="140" y="316" text-anchor="middle" font-size="11" fill="#1d4ed8">对消费者不可见</text>
+  <line x1="244" y1="300" x2="276" y2="300" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="280" y="264" width="200" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="380" y="294" text-anchor="middle" font-size="12" fill="#1e3a8a">② 执行本地事务</text>
+  <text x="380" y="316" text-anchor="middle" font-size="11" fill="#1d4ed8">改本地库</text>
+  <line x1="484" y1="300" x2="516" y2="300" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="520" y="264" width="200" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="620" y="294" text-anchor="middle" font-size="12" fill="#14532d">③ Commit / Rollback</text>
+  <text x="620" y="316" text-anchor="middle" font-size="11" fill="#166534">提交或删除半消息</text>
+  <line x1="724" y1="300" x2="756" y2="300" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="760" y="264" width="200" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="860" y="294" text-anchor="middle" font-size="12" fill="#7c2d12">④ 未确认则回查</text>
+  <text x="860" y="316" text-anchor="middle" font-size="11" fill="#9a3412">Broker 反查生产者</text>
+
+  <text x="40" y="388" font-size="13.5" font-weight="bold" fill="#0f172a">③ 最大努力通知：独立服务反复通知下游，直到成功或达最大次数</text>
+  <rect x="40" y="404" width="200" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="140" y="434" text-anchor="middle" font-size="12" fill="#1e3a8a">业务处理完成</text>
+  <text x="140" y="456" text-anchor="middle" font-size="11" fill="#1d4ed8">发起通知</text>
+  <line x1="244" y1="440" x2="276" y2="440" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="280" y="404" width="200" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="380" y="434" text-anchor="middle" font-size="12" fill="#7c2d12">独立通知服务</text>
+  <text x="380" y="456" text-anchor="middle" font-size="11" fill="#9a3412">反复通知下游</text>
+  <line x1="484" y1="440" x2="516" y2="440" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="520" y="404" width="200" height="72" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="620" y="434" text-anchor="middle" font-size="12" fill="#7f1d1d">至成功或达最大次数</text>
+  <text x="620" y="456" text-anchor="middle" font-size="11" fill="#b91c1c">不保证一定到达</text>
+  <line x1="724" y1="440" x2="756" y2="440" stroke="#334155" stroke-width="1.5" marker-end="url(#mq2)"/>
+  <rect x="760" y="404" width="200" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="860" y="434" text-anchor="middle" font-size="12" fill="#14532d">下游幂等 + 对账</text>
+  <text x="860" y="456" text-anchor="middle" font-size="11" fill="#166534">兜底必须配</text>
+
+  <line x1="20" y1="506" x2="980" y2="506" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="532" font-size="13" fill="#0f172a">⭐ 强度：本地消息表 = 最终一致；事务消息（半消息 + 回查）= 最终一致且及时性最好；最大努力通知 = 弱一致。</text>
+  <text x="20" y="558" font-size="13" fill="#0f172a">⚠️ 三条路都要消费端做幂等：唯一键 / 去重表 / 状态机，因为消息都可能被重复投递。</text>
+  <text x="20" y="588" font-size="12" fill="#64748b">事务消息只保证「本地事务 ↔ 消息投递」一致；下游多服务的业务一致性仍靠幂等、对账与补偿。</text>
+</svg>

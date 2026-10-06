@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="stg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">OpenResty 请求处理阶段：一段逻辑该写在哪</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">请求是一条流水线 —— 阶段决定「能不能做、什么时候做」；写错阶段，代码要么不执行、要么报错</text>
+
+  <rect x="30" y="88" width="250" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="155" y="115" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">init_by_lua* / init_worker*</text>
+  <rect x="300" y="88" width="280" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="440" y="115" text-anchor="middle" font-size="12" fill="#334155">预加载模块 / 起定时器</text>
+  <text x="600" y="114" font-size="12" fill="#64748b">非请求阶段：没有请求上下文</text>
+
+  <line x1="155" y1="132" x2="155" y2="146" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#stg)"/>
+
+  <rect x="30" y="146" width="250" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="173" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">SERVER_REWRITE / REWRITE</text>
+  <rect x="300" y="146" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="440" y="173" text-anchor="middle" font-size="12" fill="#1e3a8a">set_by_lua* / rewrite_by_lua*</text>
+  <text x="600" y="172" font-size="12" fill="#334155">改 URI、重定向、变量赋值</text>
+
+  <line x1="155" y1="190" x2="155" y2="204" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#stg)"/>
+
+  <rect x="30" y="204" width="250" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="155" y="231" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">PREACCESS / ACCESS</text>
+  <rect x="300" y="204" width="280" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="440" y="231" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">access_by_lua*</text>
+  <text x="600" y="230" font-size="12" font-weight="bold" fill="#7c2d12">⭐ 鉴权、限流、IP 白名单</text>
+
+  <line x1="155" y1="248" x2="155" y2="262" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#stg)"/>
+
+  <rect x="30" y="262" width="250" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="155" y="289" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">CONTENT</text>
+  <rect x="300" y="262" width="280" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="440" y="289" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">content_by_lua*</text>
+  <text x="600" y="288" font-size="12" font-weight="bold" fill="#7c2d12">⭐ 生成响应（ngx.say）</text>
+
+  <line x1="155" y1="306" x2="155" y2="320" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#stg)"/>
+
+  <rect x="30" y="320" width="250" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="347" text-anchor="middle" font-size="12" fill="#1e3a8a">（上游选择）</text>
+  <rect x="300" y="320" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="440" y="347" text-anchor="middle" font-size="12" fill="#1e3a8a">balancer_by_lua*</text>
+  <text x="600" y="346" font-size="12" fill="#334155">动态选 upstream（服务发现）</text>
+
+  <line x1="155" y1="364" x2="155" y2="378" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#stg)"/>
+
+  <rect x="30" y="378" width="250" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="405" text-anchor="middle" font-size="12" fill="#1e3a8a">（响应头过滤）</text>
+  <rect x="300" y="378" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="440" y="405" text-anchor="middle" font-size="12" fill="#1e3a8a">header_filter_by_lua*</text>
+  <text x="600" y="404" font-size="12" fill="#334155">改响应头、算耗时</text>
+
+  <line x1="155" y1="422" x2="155" y2="436" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#stg)"/>
+
+  <rect x="30" y="436" width="250" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="463" text-anchor="middle" font-size="12" fill="#1e3a8a">（响应体过滤）</text>
+  <rect x="300" y="436" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="440" y="463" text-anchor="middle" font-size="12" fill="#1e3a8a">body_filter_by_lua*</text>
+  <text x="600" y="462" font-size="12" fill="#b91c1c">⚠️ 可能被多次调用</text>
+
+  <line x1="155" y1="480" x2="155" y2="494" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#stg)"/>
+
+  <rect x="30" y="494" width="250" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="521" text-anchor="middle" font-size="12" fill="#1e3a8a">（日志）</text>
+  <rect x="300" y="494" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="440" y="521" text-anchor="middle" font-size="12" fill="#1e3a8a">log_by_lua*</text>
+  <text x="600" y="520" font-size="12" fill="#b91c1c">⚠️ 不能做阻塞 I/O</text>
+
+  <text x="30" y="566" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 判据：要拦人 → access_by_lua*；要改 URI → rewrite_by_lua*；要产出响应 → content_by_lua*。</text>
+  <text x="30" y="592" font-size="12" fill="#b91c1c">⚠️ 阶段顺序实测：return / rewrite 在 REWRITE 就结束请求 → 同 location 的 limit_req（PREACCESS）够不着。</text>
+</svg>

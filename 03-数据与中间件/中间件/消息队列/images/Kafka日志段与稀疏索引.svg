@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="k1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Kafka 日志段与稀疏索引：一个 Partition 就是一个目录</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">目录内按日志段（Segment）切分，每段配偏移量索引与时间戳索引</text>
+
+  <rect x="20" y="80" width="960" height="222" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="106" font-size="14" font-weight="bold" fill="#0f172a">Partition 目录（文件名 = 该段起始 offset）</text>
+
+  <rect x="50" y="122" width="280" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="190" y="146" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">日志段 1</text>
+  <rect x="360" y="122" width="280" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="146" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">日志段 2</text>
+  <rect x="670" y="122" width="280" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="810" y="146" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">日志段 3</text>
+
+  <rect x="50" y="166" width="280" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="190" y="188" text-anchor="middle" font-size="12" fill="#14532d">.log 真正的消息数据</text>
+  <rect x="50" y="206" width="280" height="34" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="190" y="228" text-anchor="middle" font-size="12" fill="#7c2d12">.index 偏移量索引（稀疏）</text>
+  <rect x="50" y="246" width="280" height="34" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="190" y="268" text-anchor="middle" font-size="12" fill="#7c2d12">.timeindex 时间戳索引（稀疏）</text>
+
+  <rect x="360" y="166" width="280" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="500" y="188" text-anchor="middle" font-size="12" fill="#14532d">.log 真正的消息数据</text>
+  <rect x="360" y="206" width="280" height="34" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="500" y="228" text-anchor="middle" font-size="12" fill="#7c2d12">.index 偏移量索引（稀疏）</text>
+  <rect x="360" y="246" width="280" height="34" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="500" y="268" text-anchor="middle" font-size="12" fill="#7c2d12">.timeindex 时间戳索引（稀疏）</text>
+
+  <rect x="670" y="166" width="280" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="810" y="188" text-anchor="middle" font-size="12" fill="#14532d">.log 真正的消息数据</text>
+  <rect x="670" y="206" width="280" height="34" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="810" y="228" text-anchor="middle" font-size="12" fill="#7c2d12">.index 偏移量索引（稀疏）</text>
+  <rect x="670" y="246" width="280" height="34" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="810" y="268" text-anchor="middle" font-size="12" fill="#7c2d12">.timeindex 时间戳索引（稀疏）</text>
+
+  <line x1="20" y1="326" x2="980" y2="326" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="352" font-size="14" font-weight="bold" fill="#0f172a">按 offset 查一条消息：索引两跳，永远不扫描整个文件</text>
+
+  <rect x="20" y="368" width="210" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="125" y="394" text-anchor="middle" font-size="12.5" fill="#0f172a">客户端按 offset 查询</text>
+  <text x="125" y="414" text-anchor="middle" font-size="11.5" fill="#64748b">或按时间戳重置位点</text>
+
+  <line x1="234" y1="400" x2="264" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+
+  <rect x="270" y="368" width="210" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="375" y="394" text-anchor="middle" font-size="12.5" fill="#7c2d12">.index 二分定位</text>
+  <text x="375" y="414" text-anchor="middle" font-size="11.5" fill="#9a3412">找到「大致位置」</text>
+
+  <line x1="484" y1="400" x2="514" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+
+  <rect x="520" y="368" width="210" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="625" y="394" text-anchor="middle" font-size="12.5" fill="#14532d">.log 顺序扫描</text>
+  <text x="625" y="414" text-anchor="middle" font-size="11.5" fill="#166534">从大致位置往后读</text>
+
+  <line x1="734" y1="400" x2="764" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+
+  <rect x="770" y="368" width="210" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="875" y="394" text-anchor="middle" font-size="12.5" fill="#1e3a8a">命中消息</text>
+  <text x="875" y="414" text-anchor="middle" font-size="11.5" fill="#1d4ed8">读 PageCache 或下盘</text>
+
+  <line x1="20" y1="458" x2="980" y2="458" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="484" font-size="13" fill="#0f172a">⭐ 稀疏索引是设计精髓：不记录每条消息的位置（太占空间），而是每隔若干字节记一条。</text>
+  <text x="20" y="510" font-size="13" fill="#0f172a">⭐ 先用 .index 二分定位到大致位置，再在 .log 顺序扫描，用极小的索引代价换快速定位。</text>
+  <text x="20" y="536" font-size="13" fill="#0f172a">文件名就是该段的起始 offset；log.segment.bytes 默认 1 GiB，写满即滚动出新段。</text>
+  <text x="20" y="562" font-size="13" fill="#0f172a">⚠️ 分区数不是越多越好：文件句柄、内存索引、Controller 元数据、重平衡耗时都线性上升。</text>
+  <text x="20" y="596" font-size="12" fill="#64748b">时间戳索引支持按时间定位位点（位点按时间重置就靠它）；清理交给 retention（时间或大小先到者）。</text>
+</svg>

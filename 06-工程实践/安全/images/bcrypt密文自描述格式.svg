@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">自描述的密码哈希：算法、参数、盐、摘要都写在密文里</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">校验时按密文自己声明的参数计算；升级参数时旧密文仍可验证</text>
+
+  <rect x="20" y="84" width="960" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="114" font-size="13.5" font-weight="bold" fill="#0f172a">bcrypt 输出（自描述串）</text>
+  <text x="40" y="150" font-size="15" fill="#1e3a8a">$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy</text>
+  <text x="40" y="178" font-size="12" fill="#334155">└┬┘└┬┘└────────── 22 字符盐 ──────────┘└────────── 31 字符摘要 ──────────┘</text>
+  <text x="40" y="204" font-size="11.5" fill="#334155">算法版本（2a = bcrypt） · cost（10 = 2^10 轮） · 22 字符盐 · 31 字符摘要</text>
+
+  <rect x="20" y="240" width="960" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="270" font-size="13" font-weight="bold" fill="#0f172a">自己实现时也照此设计</text>
+  <text x="40" y="302" font-size="14" fill="#14532d">pbkdf2-sha256$100000$&lt;base64 盐&gt;$&lt;base64 派生密钥&gt;</text>
+  <text x="40" y="330" font-size="11.5" fill="#334155">算法 · 迭代次数 · 盐 · 派生密钥，全部写在密文里</text>
+
+  <rect x="20" y="364" width="960" height="140" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="394" font-size="12.5" fill="#0f172a">⭐ 好处：算法与参数都写进密文 —— 将来提高迭代次数或换算法时，旧密文仍可按它自己声明的参数验证。</text>
+  <text x="36" y="420" font-size="12.5" fill="#0f172a">登录成功后再用新参数重新加密并写回，这就是「密码哈希平滑升级」的标准做法。</text>
+  <text x="36" y="448" font-size="12.5" fill="#b91c1c">⚠️ 没有自描述格式，参数一旦定下就改不动 —— 也就永远升不了级。</text>
+  <text x="36" y="478" font-size="12.5" fill="#b91c1c">⚠️ 字段长度按「未来要换的算法」留余量：bcrypt 是 60 字符，用 varchar(100)+ 而不是 char(32)。</text>
+</svg>

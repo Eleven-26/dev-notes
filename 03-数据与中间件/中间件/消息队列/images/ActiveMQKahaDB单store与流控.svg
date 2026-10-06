@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="am1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ActiveMQ KahaDB：所有目的地共用一个 journal 目录</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">一个队列膨胀会拖垮整个 broker —— 全局单 store 的事故模型</text>
+
+  <rect x="60" y="110" width="220" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="170" y="143" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Queue A</text>
+  <rect x="390" y="110" width="220" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="143" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Queue B</text>
+  <rect x="720" y="110" width="220" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="830" y="143" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Topic</text>
+
+  <line x1="170" y1="168" x2="170" y2="200" stroke="#334155" stroke-width="1.5" marker-end="url(#am1)"/>
+  <line x1="500" y1="168" x2="500" y2="200" stroke="#334155" stroke-width="1.5" marker-end="url(#am1)"/>
+  <line x1="830" y1="168" x2="830" y2="200" stroke="#334155" stroke-width="1.5" marker-end="url(#am1)"/>
+
+  <rect x="120" y="208" width="760" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="136" y="232" font-size="13" font-weight="bold" fill="#0f172a">KahaDB journal（data/kahadb，全局唯一）</text>
+  <rect x="150" y="252" width="220" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="260" y="280" text-anchor="middle" font-size="12.5" fill="#14532d">journal 页</text>
+  <text x="260" y="302" text-anchor="middle" font-size="11" fill="#166534">顺序追加（默认 32MB / 页）</text>
+  <rect x="390" y="252" width="220" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="500" y="280" text-anchor="middle" font-size="12.5" fill="#14532d">journal 页</text>
+  <text x="500" y="302" text-anchor="middle" font-size="11" fill="#166534">内存索引 + 定期 checkpoint</text>
+  <rect x="630" y="252" width="220" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="740" y="280" text-anchor="middle" font-size="12.5" fill="#14532d">journal 页</text>
+  <text x="740" y="302" text-anchor="middle" font-size="11" fill="#166534">数据被引用则无法回收</text>
+
+  <rect x="60" y="376" width="280" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="200" y="414" text-anchor="middle" font-size="12.5" fill="#7c2d12">memory 水位</text>
+  <rect x="360" y="376" width="280" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="500" y="414" text-anchor="middle" font-size="12.5" fill="#7c2d12">store 水位</text>
+  <rect x="660" y="376" width="280" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="800" y="414" text-anchor="middle" font-size="12.5" fill="#7c2d12">temp 水位</text>
+
+  <text x="20" y="474" font-size="13" fill="#0f172a">⭐ 内存侧有 systemUsage 三档水位（memory / store / temp），超过水位会反向阻塞生产者。</text>
+
+  <line x1="20" y1="496" x2="980" y2="496" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="522" font-size="13" fill="#0f172a">⭐ 全局单 store：某队列堆积 10GB，journal 无法回收，所有目的地一起变慢（不像分区各自一个目录）。</text>
+  <text x="20" y="548" font-size="13" fill="#0f172a">⚠️ 大消息是 KahaDB 的天敌：单条消息接近页大小时触发整页重写，是集群最常见的性能事故。</text>
+  <text x="20" y="574" font-size="13" fill="#0f172a">⚠️ 表象是「发送卡住但没报错」—— 这是 ActiveMQ 生产环境最典型的流控症状。</text>
+  <text x="20" y="604" font-size="12" fill="#64748b">高可用只有主从 + Network of Brokers 级联；单队列限额即单 broker 限额。</text>
+</svg>

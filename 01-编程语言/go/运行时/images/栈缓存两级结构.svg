@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+
+<rect x="40" y="56" width="440" height="280" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="260" y="88" font-size="14" text-anchor="middle" font-weight="700" fill="#14532d">stackpool：小栈全局缓存（≤ 16KB）</text>
+
+<text x="60" y="120" font-size="12" fill="#334155">按栈等级分组的数组（2KB 固定栈 → 4 级）</text>
+<rect x="60" y="136" width="90" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="105" y="164" font-size="12" text-anchor="middle" fill="#14532d">2K</text>
+<rect x="160" y="136" width="90" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="205" y="164" font-size="12" text-anchor="middle" fill="#14532d">4K</text>
+<rect x="260" y="136" width="90" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="305" y="164" font-size="12" text-anchor="middle" fill="#14532d">8K</text>
+<rect x="360" y="136" width="90" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="405" y="164" font-size="12" text-anchor="middle" fill="#14532d">16K</text>
+
+<text x="60" y="212" font-size="12" fill="#334155">每个 P、每个等级上限 stackCacheSize = 32KB</text>
+<text x="60" y="238" font-size="12" fill="#334155">单 P 总量 = 32KB × _NumStackOrders</text>
+<text x="60" y="264" font-size="12" fill="#7f1d1d">= 32KB × 4 = 128KB（必须有界）</text>
+<text x="60" y="298" font-size="12" fill="#64748b">目的：小栈共享复用，缓存对齐避免伪共享</text>
+
+<rect x="520" y="56" width="440" height="280" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="740" y="88" font-size="14" text-anchor="middle" font-weight="700" fill="#7f1d1d">stackLarge：大栈缓存（&gt; 16KB）</text>
+
+<text x="540" y="120" font-size="12" fill="#334155">分配先查大栈缓存；缩容后归还到缓存</text>
+<text x="540" y="152" font-size="12" fill="#334155">free 数组长度 = heapAddrBits(48) − pageShift(13)</text>
+<text x="540" y="178" font-size="12" fill="#7f1d1d">= 35 → 下标 0 ~ 34</text>
+<text x="540" y="204" font-size="12" fill="#334155">第 i 个链表缓存 2^i 个页的栈</text>
+<text x="540" y="230" font-size="12" fill="#7f1d1d">页数必须是 2 的幂：需要 3 页 → 归到 4 页</text>
+
+<rect x="540" y="248" width="60" height="36" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="570" y="272" font-size="11" text-anchor="middle" fill="#7c2d12">2^0</text>
+<rect x="608" y="248" width="60" height="36" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="638" y="272" font-size="11" text-anchor="middle" fill="#7c2d12">2^1</text>
+<rect x="676" y="248" width="60" height="36" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="706" y="272" font-size="11" text-anchor="middle" fill="#7c2d12">2^2</text>
+<rect x="744" y="248" width="60" height="36" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="774" y="272" font-size="11" text-anchor="middle" fill="#7c2d12">2^3</text>
+<rect x="812" y="248" width="60" height="36" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="842" y="272" font-size="11" text-anchor="middle" fill="#7c2d12">…</text>
+<rect x="880" y="248" width="60" height="36" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="910" y="272" font-size="11" text-anchor="middle" fill="#7c2d12">2^34</text>
+
+<text x="500" y="372" font-size="12" text-anchor="middle" fill="#0f172a">共同目的：需要栈时先查缓存，命中即拿走；都不命中才去内存分配器 / 操作系统</text>
+<text x="500" y="400" font-size="12" text-anchor="middle" fill="#7f1d1d">缓存是为了快，但必须有上限 —— 否则会过度占用内存</text>
+</svg>

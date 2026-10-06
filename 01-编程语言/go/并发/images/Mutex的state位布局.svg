@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Mutex 的 state：状态位与等待者计数挤在同一个 int32 里</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">低 3 位放状态，第 3 位起累计排队人数 —— 这就是「排队上限」的由来</text>
+
+  <text x="70" y="142" text-anchor="middle" font-size="11" fill="#64748b">高位</text>
+  <text x="410" y="142" text-anchor="middle" font-size="12" fill="#1e3a8a">state &gt;&gt; 3 = 当前排队人数</text>
+  <text x="770" y="142" text-anchor="middle" font-size="11" fill="#64748b">低位</text>
+
+  <rect x="40" y="152" width="60" height="60" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="100" y="152" width="620" height="60" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="410" y="189" text-anchor="middle" font-size="13" fill="#1e3a8a">等待者计数（28 位）</text>
+  <rect x="720" y="152" width="100" height="60" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="770" y="189" text-anchor="middle" font-size="12" fill="#7c2d12">状态位 ×3</text>
+  <rect x="850" y="152" width="130" height="60" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="915" y="178" text-anchor="middle" font-size="12" fill="#0f172a">sema uint32</text>
+  <text x="915" y="198" text-anchor="middle" font-size="10" fill="#64748b">挂起 / 唤醒标识</text>
+
+  <text x="100" y="238" font-size="11" fill="#64748b">计数推进到符号位 → state 变负数、state&gt;&gt;3 语义失效（但工程上先撞到的是内存，不是 int32 边界）</text>
+
+  <rect x="120" y="262" width="180" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="210" y="284" text-anchor="middle" font-size="11" fill="#7c2d12">mutexLocked = 1 &lt;&lt; 0</text>
+  <text x="210" y="304" text-anchor="middle" font-size="11" fill="#9a3412">001 已加锁</text>
+  <rect x="360" y="262" width="180" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="450" y="284" text-anchor="middle" font-size="11" fill="#7c2d12">mutexWoken = 1 &lt;&lt; 1</text>
+  <text x="450" y="304" text-anchor="middle" font-size="11" fill="#9a3412">010 有等待者被唤醒</text>
+  <rect x="600" y="262" width="180" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="690" y="284" text-anchor="middle" font-size="11" fill="#7c2d12">mutexStarving = 1 &lt;&lt; 2</text>
+  <text x="690" y="304" text-anchor="middle" font-size="11" fill="#9a3412">100 饥饿模式</text>
+  <text x="120" y="342" font-size="11" fill="#64748b">三个位互不冲突，可以按位或叠加：三种状态全占 = 001 | 010 | 100 = 111 = 7</text>
+
+  <text x="60" y="386" font-size="11.5" fill="#0f172a">每多一个协程排队，state += 1 &lt;&lt; mutexWaiterShift（即 +8）：</text>
+  <rect x="60" y="398" width="280" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="200" y="430" text-anchor="middle" font-size="11.5" fill="#0f172a">第 1 个持锁：state = 001 = 1</text>
+  <rect x="360" y="398" width="280" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="500" y="430" text-anchor="middle" font-size="11.5" fill="#0f172a">第 2 个排队：1001 = 9</text>
+  <rect x="660" y="398" width="280" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="800" y="430" text-anchor="middle" font-size="11.5" fill="#0f172a">第 3 个排队：10001 = 17</text>
+
+  <rect x="20" y="474" width="960" height="72" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="500" font-size="12" fill="#0f172a">⭐ 上限 = 32 位 − 1 位符号 − 3 位状态 = 28 位 → 2²⁸ − 1 个等待者，再加 1 个持锁者。</text>
+  <text x="36" y="526" font-size="12" fill="#0f172a">⚠️ 上限来自「位宽复用」而不是设计约束 —— 2²⁸ 个等待协程光栈内存就是数百 GB 级，早就 OOM 了。</text>
+</svg>

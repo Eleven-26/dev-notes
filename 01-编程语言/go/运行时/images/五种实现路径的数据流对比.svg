@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" width="1000" height="530" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="530" fill="#ffffff"/>
+
+<text x="60" y="74" font-size="13" font-weight="700" fill="#0f172a">方案</text>
+<text x="290" y="74" font-size="13" font-weight="700" fill="#0f172a">数据路径</text>
+<text x="750" y="74" font-size="13" font-weight="700" fill="#0f172a">CPU 拷贝</text>
+<text x="870" y="74" font-size="13" font-weight="700" fill="#0f172a">syscall</text>
+
+<rect x="40" y="90" width="920" height="60" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="60" y="126" font-size="12" fill="#7f1d1d">read + write（基准）</text>
+<text x="290" y="126" font-size="12" fill="#7f1d1d">磁盘 → 页缓存 → 用户缓冲区 → socket → 网卡</text>
+<text x="750" y="126" font-size="13" font-weight="700" fill="#7f1d1d">2 次</text>
+<text x="870" y="126" font-size="13" font-weight="700" fill="#7f1d1d">2</text>
+
+<rect x="40" y="158" width="920" height="60" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="60" y="194" font-size="12" fill="#7c2d12">mmap + write</text>
+<text x="290" y="194" font-size="12" fill="#7c2d12">磁盘 → 页缓存 ═共享═ 用户地址空间 → socket → 网卡</text>
+<text x="750" y="194" font-size="13" font-weight="700" fill="#7c2d12">1 次</text>
+<text x="870" y="194" font-size="13" font-weight="700" fill="#7c2d12">2</text>
+
+<rect x="40" y="226" width="920" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="60" y="262" font-size="12" fill="#14532d">sendfile</text>
+<text x="290" y="262" font-size="12" fill="#14532d">磁盘 → 页缓存 → socket 缓冲区 → 网卡（不经过用户态）</text>
+<text x="750" y="262" font-size="13" font-weight="700" fill="#14532d">1 次</text>
+<text x="870" y="262" font-size="13" font-weight="700" fill="#14532d">1</text>
+
+<rect x="40" y="294" width="920" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="60" y="330" font-size="12" fill="#14532d">sendfile + DMA gather</text>
+<text x="290" y="330" font-size="12" fill="#14532d">磁盘 → 页缓存 ──DMA(gather)──→ 网卡（只传描述符）</text>
+<text x="750" y="330" font-size="13" font-weight="700" fill="#14532d">0 次</text>
+<text x="870" y="330" font-size="13" font-weight="700" fill="#14532d">1</text>
+
+<rect x="40" y="362" width="920" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="60" y="398" font-size="12" fill="#14532d">splice</text>
+<text x="290" y="398" font-size="12" fill="#14532d">磁盘 → 页缓存 → pipe（只传页引用）→ socket → 网卡</text>
+<text x="750" y="398" font-size="13" font-weight="700" fill="#14532d">0 次</text>
+<text x="870" y="398" font-size="13" font-weight="700" fill="#14532d">2</text>
+
+<rect x="40" y="430" width="920" height="60" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="60" y="466" font-size="12" fill="#1e3a8a">MSG_ZEROCOPY</text>
+<text x="290" y="466" font-size="12" fill="#1e3a8a">用户缓冲区被「钉住」→ 直接交给网卡 DMA（发送时）</text>
+<text x="750" y="466" font-size="13" font-weight="700" fill="#1e3a8a">0 次</text>
+<text x="870" y="466" font-size="13" font-weight="700" fill="#1e3a8a">1 + 通知</text>
+
+<text x="500" y="516" font-size="12" text-anchor="middle" fill="#64748b">表中只统计 CPU 参与的数据拷贝；加上 DMA 每种还要再多 1~2 次</text>
+</svg>

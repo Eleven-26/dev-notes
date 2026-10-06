@@ -67,6 +67,8 @@ Nginx 的配置是**声明式**的，规则在**启动 / reload 时**就定死�
 - **要产出响应**（自己返回数据）→ `content_by_lua*`
 - **要改别人的响应**（加头、改 body）→ `header_filter_by_lua*` / `body_filter_by_lua*`
 
+![OpenResty 请求处理阶段：每个阶段的 Lua 入口与典型用途](images/OpenResty请求处理阶段.svg)
+
 ### 2.2 ⭐ 本机实测：阶段顺序不是"背下来"的，是能测出来的
 
 「阶段到底谁先谁后」有一个非常干净的验证方式——**把限流和 `return` 放在同一个 location 里**。
@@ -346,6 +348,8 @@ location /        { ... }   # 兜底
 
 1. **`^~` 不是"优先级更高的前缀"**，而是"**如果我最长，就别再看正则了**"。`/a/b/c` 命中 `^~ /a/b` 而不是正则 `~ ^/a/c`，就是它在起作用。
 2. **正则一旦匹配就胜出，会盖掉更长的普通前缀**：`/a/c/x` 的最长前缀是 `/a/`，但正则 `^/a/c` 出现了 → 正则赢。
+
+![location 匹配优先级：按检查顺序的判定流程与实测结果](images/location匹配优先级判定.svg)
 
 ### 4.2 `proxy_pass` 末尾那个斜杠，差一个字符结果完全不同 ⭐
 
@@ -716,6 +720,8 @@ ngx.say(body)
 ```
 
 ⚠️ 三个限制：① `capture` 的子请求**必须落在能 `proxy_pass` 的 location 上**，不能是另一个 `content_by_lua*`；② 共享字典的**容量是静态的**（`lua_shared_dict cache 10m`），写满后 `set` 会失败（**必须判返回值**，否则缓存静默失效）；③ 共享字典**没有淘汰策略**（LRU 之类要自己实现），生产更适合用 `lua-resty-lrucache`（worker 内 LRU）+ 共享字典两级。
+
+![capture_multi 响应聚合调用时序：并发子请求 → 合并 → 共享字典缓存](images/响应聚合调用时序.svg)
 
 ---
 

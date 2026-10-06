@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="340" y="44" width="320" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="500" y="76" font-size="13" text-anchor="middle" fill="#334155">io.Copy(dst, src)</text>
+
+<line x1="500" y1="96" x2="180" y2="136" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="96" x2="500" y2="136" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="96" x2="820" y2="136" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="40" y="140" width="280" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="180" y="168" font-size="12" text-anchor="middle" fill="#14532d">src 实现 io.WriterTo</text>
+<text x="180" y="190" font-size="12" text-anchor="middle" fill="#14532d">→ src.WriteTo(dst)</text>
+
+<rect x="360" y="140" width="280" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="168" font-size="12" text-anchor="middle" fill="#1e3a8a">dst 实现 io.ReaderFrom</text>
+<text x="500" y="190" font-size="12" text-anchor="middle" fill="#1e3a8a">→ dst.ReadFrom(src)</text>
+
+<rect x="680" y="140" width="280" height="64" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="820" y="168" font-size="12" text-anchor="middle" fill="#7f1d1d">都不行</text>
+<text x="820" y="190" font-size="12" text-anchor="middle" fill="#7f1d1d">→ 32 KiB 缓冲循环拷贝</text>
+
+<line x1="500" y1="204" x2="500" y2="236" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="360" y="240" width="280" height="56" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="274" font-size="12" text-anchor="middle" fill="#1e3a8a">(*TCPConn).readFrom</text>
+
+<line x1="500" y1="296" x2="180" y2="316" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="296" x2="500" y2="316" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="296" x2="820" y2="316" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="40" y="320" width="280" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="180" y="348" font-size="12" text-anchor="middle" fill="#14532d">源也是 socket</text>
+<text x="180" y="370" font-size="12" text-anchor="middle" fill="#14532d">→ splice(2)</text>
+
+<rect x="360" y="320" width="280" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="500" y="348" font-size="12" text-anchor="middle" fill="#14532d">源是 *os.File</text>
+<text x="500" y="370" font-size="12" text-anchor="middle" fill="#14532d">→ sendfile(2)</text>
+
+<rect x="680" y="320" width="280" height="64" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="820" y="348" font-size="12" text-anchor="middle" fill="#7f1d1d">都不行</text>
+<text x="820" y="370" font-size="12" text-anchor="middle" fill="#7f1d1d">→ genericReadFrom</text>
+
+<rect x="40" y="410" width="920" height="90" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="440" font-size="12" fill="#7f1d1d">sendFile 的类型识别：*io.LimitedReader 会被解开（所以 io.CopyN 仍走 sendfile）；必须是 *os.File，否则 handled=false</text>
+<text x="60" y="470" font-size="12" fill="#7f1d1d">⚠️ 任何自定义 Reader 包装器（如埋点计数）都会打断快路径，退回 read + write</text>
+</svg>

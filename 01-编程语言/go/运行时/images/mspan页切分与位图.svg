@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+</defs>
+
+<rect x="60" y="48" width="880" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="80" y="76" font-size="13" fill="#334155">class 3：对象 24B，span 8KB → 8192 / 24 = 341 个对象，余 8 字节（只用于对齐）</text>
+
+<rect x="60" y="120" width="80" height="90" fill="#dbeafe" stroke="#cbd5e1"/>
+<rect x="140" y="120" width="80" height="90" fill="#dbeafe" stroke="#cbd5e1"/>
+<rect x="220" y="120" width="80" height="90" fill="#dbeafe" stroke="#cbd5e1"/>
+<rect x="300" y="120" width="80" height="90" fill="#dbeafe" stroke="#cbd5e1"/>
+<rect x="380" y="120" width="80" height="90" fill="#dbeafe" stroke="#cbd5e1"/>
+<rect x="460" y="120" width="80" height="90" fill="#ffedd5" stroke="#ea580c"/>
+<rect x="540" y="120" width="80" height="90" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="620" y="120" width="80" height="90" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="700" y="120" width="80" height="90" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="780" y="120" width="80" height="90" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="860" y="120" width="80" height="90" fill="#f8fafc" stroke="#cbd5e1"/>
+
+<text x="260" y="168" font-size="12" text-anchor="middle" fill="#1e3a8a">已分配</text>
+<text x="260" y="190" font-size="11" text-anchor="middle" fill="#1e3a8a">allocBits = 1</text>
+<text x="740" y="168" font-size="12" text-anchor="middle" fill="#334155">空闲</text>
+<text x="740" y="190" font-size="11" text-anchor="middle" fill="#64748b">allocBits = 0</text>
+
+<line x1="500" y1="228" x2="500" y2="214" stroke="#ea580c" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="500" y="248" font-size="12" text-anchor="middle" fill="#7c2d12">freeindex：下次从这开始找空闲对象</text>
+
+<rect x="60" y="290" width="280" height="120" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="80" y="320" font-size="13" font-weight="700" fill="#1e3a8a">freeindex</text>
+<text x="80" y="346" font-size="12" fill="#1e3a8a">扫描起始位置（0 ~ nelems）</text>
+<text x="80" y="372" font-size="12" fill="#64748b">它之前的位置不用再扫，</text>
+<text x="80" y="398" font-size="12" fill="#64748b">因为必然已经分配出去了</text>
+
+<rect x="360" y="290" width="280" height="120" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="380" y="320" font-size="13" font-weight="700" fill="#14532d">allocCache</text>
+<text x="380" y="346" font-size="12" fill="#14532d">allocBits 的缓存（uint64）</text>
+<text x="380" y="372" font-size="12" fill="#64748b">一次扫 64 bit，而不是 1 bit，</text>
+<text x="380" y="398" font-size="12" fill="#64748b">把「当前段」加速</text>
+
+<rect x="660" y="290" width="280" height="120" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="680" y="320" font-size="13" font-weight="700" fill="#7c2d12">gcmarkBits</text>
+<text x="680" y="346" font-size="12" fill="#7c2d12">GC 标记位图</text>
+<text x="680" y="372" font-size="12" fill="#64748b">与 allocBits 分开维护，</text>
+<text x="680" y="398" font-size="12" fill="#64748b">生命周期不同，互不干扰</text>
+
+<text x="500" y="440" font-size="12" text-anchor="middle" fill="#334155">图中切片为示意；实际 341 个对象，尾部余 8 字节只用于对齐，所以 limit ≠ span 末尾</text>
+</svg>

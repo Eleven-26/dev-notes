@@ -53,6 +53,8 @@ Spring Cloud Alibaba 默认拼接 `DataId = ${spring.application.name}-${spring.
 
 ## 三、整体架构
 
+![Nacos 整体架构：Server 集群、Distro/JRaft 与存储层](images/Nacos整体架构.svg)
+
 ```text
 ┌──────────────── Nacos Server 集群（节点对等，无主从） ─────────────────┐
 │  Nacos A  ◀────────── JRaft / Distro 数据同步 ──────────▶ Nacos B / C │
@@ -294,6 +296,8 @@ func main() {
 
 ### 5.4 配置监听与热更新机制
 
+![Nacos 配置监听：长轮询 hold 住请求，变更即刻返回](images/Nacos配置监听推送时序.svg)
+
 | 机制 | 说明 |
 | --- | --- |
 | **长轮询 Long Polling** | 客户端发起 `listening` 请求，服务端 **hold 住 29.5s** 不返回；期间有变更立即返回，超时返回空并重新发起 |
@@ -425,6 +429,8 @@ func main() {
 ```
 
 ### 6.3 实例健康检查与失效时间线
+
+![Nacos 实例健康检查：15s 标记不健康，30s 摘除](images/Nacos实例健康检查时间线.svg)
 
 | 时间点 | 事件 |
 | --- | --- |

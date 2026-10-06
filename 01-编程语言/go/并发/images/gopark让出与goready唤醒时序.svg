@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="p1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="p2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">gopark 让出与 goready 唤醒的时序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">阻塞时 M 完全没被拖住；唤醒时新 G 进 runnext，比本地队列里的老 G 先跑</text>
+
+  <rect x="40" y="84" width="140" height="40" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="110" y="109" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">唤醒方</text>
+  <rect x="240" y="84" width="140" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="310" y="109" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">G（被阻塞）</text>
+  <rect x="450" y="84" width="160" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="530" y="109" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">g0（系统栈）</text>
+  <rect x="660" y="84" width="150" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="735" y="109" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">P 的本地队列</text>
+  <rect x="860" y="84" width="110" height="40" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="915" y="109" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">M</text>
+
+  <line x1="110" y1="124" x2="110" y2="576" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="310" y1="124" x2="310" y2="576" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="530" y1="124" x2="530" y2="576" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="735" y1="124" x2="735" y2="576" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="915" y1="124" x2="915" y2="576" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+
+  <text x="30" y="148" font-size="12" font-weight="bold" fill="#1e3a8a">一、gopark：让出，而不是占住</text>
+
+  <line x1="380" y1="172" x2="446" y2="172" stroke="#334155" stroke-width="1.6" marker-end="url(#p1)"/>
+  <text x="413" y="164" text-anchor="middle" font-size="11" fill="#0f172a">mcall(park_m)：切到系统栈</text>
+
+  <line x1="446" y1="208" x2="314" y2="208" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#p1)"/>
+  <text x="380" y="200" text-anchor="middle" font-size="11" fill="#9a3412">① 记 waitreason = [chan receive]</text>
+
+  <line x1="610" y1="248" x2="856" y2="248" stroke="#334155" stroke-width="1.6" marker-end="url(#p1)"/>
+  <text x="733" y="240" text-anchor="middle" font-size="11" fill="#0f172a">② 置 _Gwaiting、解绑 M</text>
+
+  <line x1="610" y1="288" x2="656" y2="288" stroke="#334155" stroke-width="1.6" marker-end="url(#p1)"/>
+  <text x="760" y="292" font-size="11" fill="#0f172a">③ schedule() 挑下一个 G</text>
+
+  <line x1="735" y1="328" x2="911" y2="328" stroke="#16a34a" stroke-width="1.6" marker-end="url(#p2)"/>
+  <text x="823" y="320" text-anchor="middle" font-size="11" fill="#15803d">取出 G_b 继续跑（M 没被拖住）</text>
+
+  <line x1="20" y1="368" x2="980" y2="368" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="6 5"/>
+  <text x="500" y="362" text-anchor="middle" font-size="11.5" fill="#64748b">—— 之后某个时刻：对端（channel 对端 / netpoller）触发 goready ——</text>
+
+  <text x="30" y="396" font-size="12" font-weight="bold" fill="#14532d">二、goready：被唤醒时发生什么</text>
+
+  <line x1="110" y1="424" x2="446" y2="424" stroke="#334155" stroke-width="1.6" marker-end="url(#p1)"/>
+  <text x="278" y="416" text-anchor="middle" font-size="11" fill="#0f172a">goready(gp) → ready()：在系统栈上执行</text>
+
+  <line x1="446" y1="460" x2="314" y2="460" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#p2)"/>
+  <text x="380" y="452" text-anchor="middle" font-size="11" fill="#15803d">① _Gwaiting → _Grunnable</text>
+
+  <line x1="610" y1="496" x2="656" y2="496" stroke="#334155" stroke-width="1.6" marker-end="url(#p1)"/>
+  <text x="760" y="500" font-size="11" fill="#0f172a">② runqput(p, gp, next=true)</text>
+
+  <line x1="610" y1="532" x2="856" y2="532" stroke="#334155" stroke-width="1.6" marker-end="url(#p1)"/>
+  <text x="733" y="524" text-anchor="middle" font-size="11" fill="#0f172a">③ wakep()：没空闲 M 就唤醒 / 新建</text>
+
+  <line x1="735" y1="566" x2="911" y2="566" stroke="#16a34a" stroke-width="1.6" marker-end="url(#p2)"/>
+  <text x="823" y="558" text-anchor="middle" font-size="11" fill="#15803d">runnext 里的 G 优先跑</text>
+
+  <rect x="20" y="592" width="960" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="616" font-size="12" fill="#0f172a">⭐ 被 park 的 G 既不占 P 也不占 M：M 立刻去跑别的 G，所以「阻塞一个协程」的成本 ≈ 一个 g + 它的栈。</text>
+  <text x="36" y="640" font-size="12" fill="#64748b">实测：10001 个协程全阻塞在同一个 channel 上 —— threads=10、idleprocs=8、runqueue=0。</text>
+</svg>

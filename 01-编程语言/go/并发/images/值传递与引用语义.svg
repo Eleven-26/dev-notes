@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" width="1000" height="510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="30" y="56" width="940" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="86" font-size="17" font-weight="700" fill="#0f172a">① 纯值类型（int / 纯 struct）：拷贝即隔离</text>
+
+<rect x="90" y="118" width="280" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="230" y="145" font-size="14" text-anchor="middle" fill="#1e3a8a">c := Counter{n: 1}</text>
+<text x="230" y="168" font-size="13" text-anchor="middle" fill="#334155">c.n = 1</text>
+
+<rect x="630" y="118" width="280" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="770" y="145" font-size="14" text-anchor="middle" fill="#1e3a8a">x := c（函数参数）</text>
+<text x="770" y="168" font-size="13" text-anchor="middle" fill="#334155">x.n = 99</text>
+
+<line x1="370" y1="150" x2="622" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="496" y="140" font-size="13" text-anchor="middle" fill="#64748b">值拷贝：整体复制一份</text>
+
+<text x="500" y="205" font-size="13" text-anchor="middle" fill="#14532d">改 x.n 之后，c.n 仍是 1 ✅ 两份是独立副本</text>
+
+<rect x="30" y="248" width="940" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="278" font-size="17" font-weight="700" fill="#0f172a">② 引用语义（map / slice / 指针）：拷贝的是「头」，数据仍共享</text>
+
+<rect x="70" y="304" width="320" height="58" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="230" y="339" font-size="13" text-anchor="middle" fill="#7c2d12">h := Holder{m: 头1}</text>
+
+<rect x="70" y="388" width="320" height="58" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="230" y="423" font-size="13" text-anchor="middle" fill="#7c2d12">h2 := h（结构体被拷贝，但 m 还是「头1'」）</text>
+
+<rect x="640" y="318" width="300" height="100" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="790" y="350" font-size="14" text-anchor="middle" font-weight="700" fill="#14532d">同一张哈希表</text>
+<text x="790" y="376" font-size="13" text-anchor="middle" fill="#14532d">a:1 → a:1, b:2</text>
+<text x="790" y="400" font-size="12" text-anchor="middle" fill="#64748b">改 h2.m 之后</text>
+
+<line x1="390" y1="333" x2="632" y2="352" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="390" y1="417" x2="632" y2="392" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<text x="500" y="474" font-size="13" text-anchor="middle" fill="#7f1d1d">⭐ 拷贝了结构体 ≠ 隔离了数据：改 h2.m 会同时改变 h 看到的内容</text>
+</svg>

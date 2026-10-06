@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="k2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Kafka 消费者组与重平衡：组内分摊分区，重平衡全组停摆</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">分区是多机并行的基本单位，也是消费并行度的天花板</text>
+
+  <rect x="20" y="82" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="108" font-size="14" font-weight="bold" fill="#0f172a">① 分区分配：组内每个分区只交给一个消费者，组间互不影响</text>
+
+  <rect x="60" y="134" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="170" y="162" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">分区 0</text>
+  <rect x="60" y="190" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="170" y="218" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">分区 1</text>
+  <rect x="60" y="246" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="170" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">分区 2</text>
+
+  <rect x="620" y="134" width="320" height="100" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="780" y="172" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">消费者 A</text>
+  <text x="780" y="200" text-anchor="middle" font-size="12.5" fill="#166534">分到：分区 0、分区 1</text>
+  <rect x="620" y="246" width="320" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="780" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">消费者 B：分到分区 2</text>
+
+  <line x1="284" y1="156" x2="614" y2="172" stroke="#334155" stroke-width="1.4" marker-end="url(#k2)"/>
+  <line x1="284" y1="212" x2="614" y2="196" stroke="#334155" stroke-width="1.4" marker-end="url(#k2)"/>
+  <line x1="284" y1="268" x2="614" y2="268" stroke="#334155" stroke-width="1.4" marker-end="url(#k2)"/>
+
+  <text x="36" y="318" font-size="12.5" fill="#0f172a">⭐ 一条消息在一个组内只被消费一次；不同组各自独立、互不影响。</text>
+
+  <text x="20" y="368" font-size="14" font-weight="bold" fill="#0f172a">② 重平衡：触发 → 全组停工 → 重新分配 → 恢复消费</text>
+
+  <rect x="20" y="384" width="210" height="68" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="125" y="410" text-anchor="middle" font-size="12.5" fill="#7c2d12">触发：成员加入 / 离开</text>
+  <text x="125" y="432" text-anchor="middle" font-size="12.5" fill="#7c2d12">分区数变化、心跳超时</text>
+
+  <line x1="234" y1="418" x2="264" y2="418" stroke="#334155" stroke-width="1.5" marker-end="url(#k2)"/>
+
+  <rect x="270" y="384" width="210" height="68" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="375" y="410" text-anchor="middle" font-size="12.5" fill="#7f1d1d">EAGER：撤销全部分区</text>
+  <text x="375" y="432" text-anchor="middle" font-size="12.5" fill="#7f1d1d">全组停止消费（STW）</text>
+
+  <line x1="484" y1="418" x2="514" y2="418" stroke="#334155" stroke-width="1.5" marker-end="url(#k2)"/>
+
+  <rect x="520" y="384" width="210" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="625" y="410" text-anchor="middle" font-size="12.5" fill="#0f172a">按策略重新分配</text>
+  <text x="625" y="432" text-anchor="middle" font-size="12.5" fill="#475569">Range / RoundRobin / Sticky</text>
+
+  <line x1="734" y1="418" x2="764" y2="418" stroke="#334155" stroke-width="1.5" marker-end="url(#k2)"/>
+
+  <rect x="770" y="384" width="210" height="68" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="875" y="410" text-anchor="middle" font-size="12.5" fill="#14532d">恢复消费</text>
+  <text x="875" y="432" text-anchor="middle" font-size="12.5" fill="#166534">CooperativeSticky 增量</text>
+
+  <line x1="20" y1="478" x2="980" y2="478" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="504" font-size="13" fill="#0f172a">⚠️ EAGER 重平衡是 Stop The World：全组停止消费，组越大停顿越久，期间消息持续堆积。</text>
+  <text x="20" y="530" font-size="13" fill="#0f172a">⚠️ 分区易主后从上次提交的位点继续，位点旧就重复消费；处理慢反复超时还会形成死循环。</text>
+  <text x="20" y="556" font-size="13" fill="#0f172a">⭐ 减少重平衡：静态成员 group.instance.id（重启保留原分配）、CooperativeSticky 增量重平衡。</text>
+  <text x="20" y="582" font-size="13" fill="#0f172a">session.timeout.ms 默认 45s（3.0+）管「你还活着吗」，心跳间隔 heartbeat.interval.ms 默认 3s。</text>
+  <text x="20" y="608" font-size="13" fill="#0f172a">max.poll.interval.ms 默认 5min 管「一批消息处理完了吗」，是两次 poll() 的最大间隔。</text>
+  <text x="20" y="640" font-size="12" fill="#64748b">业务处理耗时长时最常踩 max.poll.interval.ms：调大它，或减小 max.poll.records，二者取其一。</text>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" width="1000" height="510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">多阶段构建：编译期依赖不进最终镜像</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">第一阶段（FROM node）的 Node 环境与依赖不会进入最终镜像，最终只带编译产物 + Nginx</text>
+
+  <rect x="40" y="96" width="920" height="120" rx="10" fill="#f8fafc" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="60" y="122" font-size="14" font-weight="bold" fill="#1e3a8a">构建阶段 builder：FROM node:20 AS builder</text>
+
+  <rect x="56" y="140" width="216" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="164" y="174" text-anchor="middle" font-size="12" fill="#1e3a8a">Node 运行时 / 编译器</text>
+
+  <rect x="288" y="140" width="216" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="396" y="174" text-anchor="middle" font-size="12" fill="#1e3a8a">node_modules + 依赖缓存</text>
+
+  <rect x="520" y="140" width="216" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="628" y="174" text-anchor="middle" font-size="12" fill="#1e3a8a">源码 COPY . .</text>
+
+  <rect x="752" y="140" width="192" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="848" y="174" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">构建产物 /app/dist</text>
+
+  <line x1="500" y1="220" x2="500" y2="256" stroke="#16a34a" stroke-width="2" marker-end="url(#arg)"/>
+  <text x="520" y="244" font-size="12" fill="#0f172a">COPY --from=builder /app/dist ← 只拷产物，不带编译期依赖</text>
+
+  <rect x="40" y="268" width="920" height="120" rx="10" fill="#f8fafc" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="60" y="294" font-size="14" font-weight="bold" fill="#14532d">运行阶段 final：FROM nginx:alpine</text>
+
+  <rect x="56" y="312" width="288" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="200" y="346" text-anchor="middle" font-size="12" fill="#14532d">nginx:alpine 基座</text>
+
+  <rect x="360" y="312" width="288" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="504" y="346" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">/app/dist（只拷产物）</text>
+
+  <rect x="664" y="312" width="288" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="808" y="346" text-anchor="middle" font-size="12" fill="#334155">ENTRYPOINT / CMD</text>
+
+  <line x1="20" y1="404" x2="960" y2="404" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="430" font-size="13" fill="#0f172a">⭐ 不用多阶段：最终镜像 = Node 运行时 + node_modules + 源码 + 产物（体积大得多）。</text>
+  <text x="20" y="458" font-size="13" fill="#0f172a">⭐ 用多阶段：最终镜像 = nginx + 产物 —— 编译器、包管理器缓存、测试夹具都留在中间阶段。</text>
+  <text x="20" y="486" font-size="11.5" fill="#64748b">配合：选 alpine 这类小基础镜像；exec（数组）形式的 ENTRYPOINT 才能让程序直接当 1 号进程。</text>
+</svg>

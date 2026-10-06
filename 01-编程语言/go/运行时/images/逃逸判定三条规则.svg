@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="350" y="48" width="300" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="500" y="74" font-size="13" text-anchor="middle" fill="#334155">编译器：这个变量该放哪？</text>
+<text x="500" y="96" font-size="12" text-anchor="middle" fill="#64748b">默认假设：变量本该在栈上</text>
+
+<line x1="500" y1="108" x2="185" y2="168" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="108" x2="500" y2="168" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="108" x2="815" y2="168" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="40" y="172" width="290" height="130" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="185" y="204" font-size="13" text-anchor="middle" font-weight="700" fill="#7c2d12">① 被函数外部引用？</text>
+<text x="185" y="232" font-size="12" text-anchor="middle" fill="#7c2d12">返回指针 / 地址进全局变量</text>
+<text x="185" y="256" font-size="12" text-anchor="middle" fill="#7c2d12">→ 生命周期超出当前函数</text>
+<text x="185" y="284" font-size="12" text-anchor="middle" fill="#7f1d1d">必须逃逸</text>
+
+<rect x="355" y="172" width="290" height="130" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="204" font-size="13" text-anchor="middle" font-weight="700" fill="#7c2d12">② 是不是太大？</text>
+<text x="500" y="232" font-size="12" text-anchor="middle" fill="#7c2d12">局部大数组 / 大 struct</text>
+<text x="500" y="256" font-size="12" text-anchor="middle" fill="#7c2d12">超过栈的可用空间</text>
+<text x="500" y="284" font-size="12" text-anchor="middle" fill="#7f1d1d">只能上堆</text>
+
+<rect x="670" y="172" width="290" height="130" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="815" y="204" font-size="13" text-anchor="middle" font-weight="700" fill="#7c2d12">③ 编译期能定大小/类型？</text>
+<text x="815" y="232" font-size="12" text-anchor="middle" fill="#7c2d12">通过接口（多态）赋值</text>
+<text x="815" y="256" font-size="12" text-anchor="middle" fill="#7c2d12">具体类型与大小运行时才知</text>
+<text x="815" y="284" font-size="12" text-anchor="middle" fill="#7f1d1d">必须逃逸</text>
+
+<rect x="40" y="326" width="920" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="358" font-size="15" font-weight="700" fill="#0f172a">底层约束：两条内存分配基本原则</text>
+<text x="60" y="392" font-size="13" fill="#334155">原则 1：指向栈上对象的指针，不能被存到堆中 → 对象和指向它的指针必须在「同一侧」</text>
+<text x="60" y="420" font-size="13" fill="#334155">原则 2：指向栈上对象的指针，生命周期不能超过该栈对象本身 → 指针活得更久就一起搬到堆上</text>
+<text x="60" y="452" font-size="13" fill="#7f1d1d">→ 栈是「函数返回即整体回收」的；一旦有指针逃出去引用它，就会变成悬空指针</text>
+<text x="60" y="480" font-size="13" fill="#334155">所以编译器宁可让变量上堆，也不能让程序崩</text>
+</svg>

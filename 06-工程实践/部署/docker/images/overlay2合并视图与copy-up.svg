@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">overlay2 的合并视图与 copy-up</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">lowerdir（只读镜像层，可多层）+ upperdir（容器唯一可写层）+ workdir → 联合成 mergeddir</text>
+
+  <text x="20" y="96" font-size="14" font-weight="bold" fill="#0f172a">挂载参数 → 合并视图</text>
+
+  <rect x="20" y="112" width="440" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="40" y="134" font-size="13" font-weight="bold" fill="#1e3a8a">lowerdir</text>
+  <text x="40" y="154" font-size="11.5" fill="#1d4ed8">只读镜像层，可以有多层</text>
+
+  <rect x="20" y="176" width="440" height="52" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="40" y="198" font-size="13" font-weight="bold" fill="#7c2d12">upperdir</text>
+  <text x="40" y="218" font-size="11.5" fill="#9a3412">容器唯一的可写层</text>
+
+  <rect x="20" y="240" width="440" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="40" y="262" font-size="13" font-weight="bold" fill="#0f172a">workdir</text>
+  <text x="40" y="282" font-size="11.5" fill="#475569">overlay 的内部工作目录</text>
+
+  <text x="20" y="316" font-size="13" fill="#0f172a">↓ 联合挂载</text>
+  <rect x="20" y="328" width="440" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="40" y="354" font-size="13.5" font-weight="bold" fill="#14532d">mergeddir（合并视图）</text>
+  <text x="40" y="376" font-size="11.5" fill="#166534">容器看到的完整文件系统</text>
+
+  <text x="520" y="96" font-size="14" font-weight="bold" fill="#0f172a">两种操作的成本</text>
+
+  <rect x="520" y="112" width="440" height="124" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="538" y="140" font-size="13" font-weight="bold" fill="#7c2d12">改「已存在」的文件 → copy-up</text>
+  <text x="538" y="166" font-size="11.5" fill="#9a3412">把整个文件从 lower 拷到 upper，再改。</text>
+  <text x="538" y="190" font-size="11.5" fill="#9a3412">没有块级 COW：大文件（DB / 日志 / 模型）</text>
+  <text x="538" y="212" font-size="11.5" fill="#9a3412">追加写，第一次就付「整份复制」的代价。</text>
+
+  <rect x="520" y="252" width="440" height="124" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="538" y="280" font-size="13" font-weight="bold" fill="#7f1d1d">删「下层」的文件 → whiteout</text>
+  <text x="538" y="306" font-size="11.5" fill="#b91c1c">只写一个 whiteout 标记遮蔽下层。</text>
+  <text x="538" y="330" font-size="11.5" fill="#b91c1c">下层体积不会变小 → rm 要和安装写在同一个 RUN。</text>
+
+  <line x1="20" y1="408" x2="960" y2="408" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="434" font-size="13" fill="#0f172a">① 任何有写行为的目录都该用 volume —— copy-up 是整个文件级的，写在容器层的增量还会一直堆着。</text>
+  <text x="20" y="460" font-size="13" fill="#0f172a">② 多阶段构建只拷产物，本质也是在跟「删不掉下层体积」这条规律较劲。</text>
+  <text x="20" y="486" font-size="11.5" fill="#64748b">定位：docker inspect -f '{{.GraphDriver.Data}}' 看 LowerDir / UpperDir / MergedDir。</text>
+</svg>

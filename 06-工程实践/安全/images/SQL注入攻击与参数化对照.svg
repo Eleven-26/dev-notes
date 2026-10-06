@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SQL 注入：拼接把输入变成「语法」，参数化让输入永远是「数据」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个输入走两条路 —— 拼接绕过口令，参数化三次全部失败</text>
+
+  <rect x="40" y="84" width="440" height="380" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="60" y="116" font-size="14" font-weight="bold" fill="#7f1d1d">拼接 SQL（危险）</text>
+  <text x="60" y="148" font-size="11.5" fill="#7f1d1d">用户输入：admin' --</text>
+  <text x="60" y="178" font-size="11.5" fill="#7f1d1d">拼出的 SQL：</text>
+  <text x="60" y="202" font-size="11.5" fill="#7f1d1d">SELECT id FROM users WHERE username = 'admin'</text>
+  <text x="60" y="226" font-size="11.5" fill="#7f1d1d">--' AND password = 'whatever'</text>
+  <text x="60" y="258" font-size="11.5" fill="#7f1d1d">查询结果：err=&lt;nil&gt; → 登录成功</text>
+  <text x="60" y="282" font-size="11.5" fill="#7f1d1d">（连密码都不用知道）</text>
+  <text x="60" y="314" font-size="11.5" fill="#7f1d1d">换 ' OR '1'='1' -- 同样得手</text>
+  <text x="60" y="344" font-size="11.5" fill="#7f1d1d">⚠️ 但 ' OR '1'='1'（不加注释）打不进去：</text>
+  <text x="60" y="368" font-size="11.5" fill="#7f1d1d">AND 优先级高于 OR，密码条件仍然生效</text>
+  <text x="60" y="392" font-size="11.5" fill="#7f1d1d">实测 err=sql: no rows in result set</text>
+  <text x="60" y="416" font-size="11.5" fill="#7f1d1d">→ 登录失败</text>
+  <text x="60" y="446" font-size="11.5" fill="#7f1d1d">根因：输入被当成 SQL 代码解析</text>
+
+  <rect x="520" y="84" width="440" height="380" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="540" y="116" font-size="14" font-weight="bold" fill="#14532d">参数化查询（安全）</text>
+  <text x="540" y="148" font-size="11.5" fill="#14532d">用户输入：admin' --</text>
+  <text x="540" y="178" font-size="11.5" fill="#14532d">SQL 模板（占位符）：</text>
+  <text x="540" y="202" font-size="11.5" fill="#14532d">SELECT id FROM users WHERE username = ?</text>
+  <text x="540" y="226" font-size="11.5" fill="#14532d">AND password = ?</text>
+  <text x="540" y="258" font-size="11.5" fill="#14532d">查询结果：err=sql: no rows in result set</text>
+  <text x="540" y="282" font-size="11.5" fill="#14532d">→ 登录失败</text>
+  <text x="540" y="314" font-size="11.5" fill="#14532d">三条 payload 走参数化，三次全部失败</text>
+  <text x="540" y="344" font-size="11.5" fill="#14532d">输入被当作参数绑定，永远只是数据</text>
+  <text x="540" y="368" font-size="11.5" fill="#14532d">不可能变成语法的一部分</text>
+  <text x="540" y="392" font-size="11.5" fill="#14532d">这才是唯一可靠的解法</text>
+  <text x="540" y="416" font-size="11.5" fill="#14532d">（addslashes 有宽字节注入，不能当防护）</text>
+  <text x="540" y="446" font-size="11.5" fill="#14532d">有效：输入永远只是数据、不参与语法</text>
+
+  <rect x="20" y="480" width="960" height="122" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="510" font-size="12.5" fill="#0f172a">⭐ 三条结论：① 不加注释的恒真式打不进去（AND 优先级高于 OR）；② 加注释、或用 admin' -- 就能完全绕过口令；</text>
+  <text x="36" y="536" font-size="12.5" fill="#0f172a">③ 同一个输入走参数化，三次全部失败 —— 输入永远只是数据。</text>
+  <text x="36" y="566" font-size="12.5" fill="#b91c1c">⚠️ 通用原则：永远不要动态拼装 SQL、不要用管理员权限的连接、异常信息不要回显、数据库最小权限。</text>
+  <text x="36" y="592" font-size="12.5" fill="#b91c1c">   参数化让输入永远只是数据；客户端校验可被绕过，服务端校验才是唯一有效的。</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="340" y="44" width="320" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="76" font-size="13" text-anchor="middle" fill="#1e3a8a">_rt0_amd64 → runtime·rt0_go</text>
+
+<line x1="500" y1="96" x2="500" y2="108" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="110" width="680" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="160" y="138" font-size="12" fill="#334155">① 栈对齐 + 规范化传参（argc / argv 入栈）</text>
+
+<line x1="500" y1="154" x2="500" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="168" width="680" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="160" y="196" font-size="12" fill="#334155">② 初始化 g0、m0 的 TLS，g0 ↔ m0 双向绑定</text>
+
+<line x1="500" y1="212" x2="500" y2="224" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="226" width="680" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="160" y="254" font-size="12" fill="#334155">③ 探测 CPU 型号 · 初始化 CGO · 更新 g 栈保护</text>
+
+<line x1="500" y1="270" x2="500" y2="282" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="284" width="680" height="44" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="160" y="312" font-size="12" fill="#7f1d1d">④ 硬件 / OS 兼容性校验（失败 → bad CPU）</text>
+
+<line x1="500" y1="328" x2="500" y2="340" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="342" width="680" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="160" y="370" font-size="12" fill="#334155">⑤ runtime.check 运行时自检（九类检查）</text>
+
+<line x1="500" y1="386" x2="500" y2="398" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="400" width="680" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="160" y="428" font-size="12" fill="#1e3a8a">⑥ runtime.args 解析命令行参数 + auxv</text>
+
+<line x1="500" y1="444" x2="500" y2="456" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="458" width="680" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="160" y="486" font-size="12" fill="#1e3a8a">⑦ osinit 可用 CPU 数 / 大页大小 / CGO 退出信号</text>
+
+<line x1="500" y1="502" x2="500" y2="514" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="516" width="680" height="44" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="160" y="544" font-size="12" fill="#7c2d12">⑧ schedinit：stackinit / mallocinit / … / procresize / worldstart</text>
+
+<line x1="500" y1="560" x2="500" y2="572" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<rect x="140" y="574" width="680" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="160" y="602" font-size="12" fill="#14532d">⑨ newproc(main) → mstart：创建并调度 main goroutine → main.main</text>
+</svg>

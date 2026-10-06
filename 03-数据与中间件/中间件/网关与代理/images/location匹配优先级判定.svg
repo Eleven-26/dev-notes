@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="loc" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">nginx location 匹配优先级：检查顺序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">规则按固定顺序检查 —— `=` 与 `^~` 不是「优先级更高的前缀」，而是改变后续检查</text>
+
+  <rect x="30" y="96" width="430" height="56" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="50" y="124" font-size="14" font-weight="bold" fill="#1e3a8a">① `=` 精确匹配</text>
+  <text x="50" y="145" font-size="12" fill="#1d4ed8">命中就直接用它，不再往后看</text>
+  <rect x="520" y="96" width="450" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="540" y="130" font-size="12.5" fill="#0f172a">请求 /a  →  exact（=）</text>
+
+  <line x1="245" y1="152" x2="245" y2="172" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#loc)"/>
+
+  <rect x="30" y="172" width="430" height="56" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="50" y="200" font-size="14" font-weight="bold" fill="#14532d">② `^~` 前缀匹配</text>
+  <text x="50" y="221" font-size="12" fill="#166534">若它是最长前缀，则「抑制正则」</text>
+  <rect x="520" y="172" width="450" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="540" y="206" font-size="12.5" fill="#0f172a">请求 /a/b/c  →  caret-prefix（^~）</text>
+
+  <line x1="245" y1="228" x2="245" y2="248" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#loc)"/>
+
+  <rect x="30" y="248" width="430" height="56" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="50" y="276" font-size="14" font-weight="bold" fill="#7c2d12">③ `~` / `~*` 正则</text>
+  <text x="50" y="297" font-size="12" fill="#9a3412">按配置出现顺序，第一个匹配的胜出</text>
+  <rect x="520" y="248" width="450" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="540" y="282" font-size="12.5" fill="#0f172a">请求 /a/c/x  →  regex（~）</text>
+
+  <line x1="245" y1="304" x2="245" y2="324" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#loc)"/>
+
+  <rect x="30" y="324" width="430" height="56" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="50" y="352" font-size="14" font-weight="bold" fill="#1e3a8a">④ 普通前缀（无修饰符）</text>
+  <text x="50" y="373" font-size="12" fill="#1d4ed8">取「最长前缀」</text>
+  <rect x="520" y="324" width="450" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="540" y="358" font-size="12.5" fill="#0f172a">请求 /a/x  →  普通前缀（/a/）</text>
+
+  <line x1="245" y1="380" x2="245" y2="400" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#loc)"/>
+
+  <rect x="30" y="400" width="430" height="56" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="50" y="428" font-size="14" font-weight="bold" fill="#0f172a">⑤ `/` 兜底</text>
+  <text x="50" y="449" font-size="12" fill="#475569">最后兜底，前面的都没命中时用它</text>
+  <rect x="520" y="400" width="450" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="540" y="434" font-size="12.5" fill="#0f172a">请求 /z  →  普通前缀（/ fallback）</text>
+
+  <line x1="30" y1="488" x2="970" y2="488" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="514" font-size="13" font-weight="bold" fill="#0f172a">⭐ 两条最常被搞错：</text>
+  <text x="30" y="538" font-size="12" fill="#0f172a">1）`^~` 不是「优先级更高的前缀」，而是「如果我最长，就别再看正则了」。</text>
+  <text x="30" y="560" font-size="12" fill="#7f1d1d">2）正则一旦匹配就胜出，会盖掉更长的普通前缀（/a/c/x 的最长前缀是 /a/，但正则 ^/a/c 赢）。</text>
+</svg>

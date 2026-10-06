@@ -70,6 +70,8 @@ AND 0 <> (select count(*) from admin);        -- 判断是否存在 admin 表
 AND (select count(`name`) from admin) <> 0;   -- 猜列名
 ```
 
+![SQL 注入：拼接把输入变成语法，参数化让输入永远只是数据](images/SQL注入攻击与参数化对照.svg)
+
 ### 2.3 防护：八条通用原则 + 落到语言
 
 **通用八条**：
@@ -186,6 +188,8 @@ CSRF（Cross-site request forgery，**跨站请求伪造**，也叫 One Click At
 
 ⭐ **现代补充：`SameSite` Cookie**（首选）。把会话 Cookie 设为 `SameSite=Lax`（或 `Strict`），**跨站请求根本不会带上 Cookie**，CSRF 的立足点直接被抽掉——这比在业务代码里逐个校验 Referer 可靠得多。
 
+![CSRF 攻击链路与防御：借 Cookie 自动携带冒用身份](images/CSRF攻击链路与防御.svg)
+
 ### 4.3 实测：Token 生成与校验
 
 用 HMAC 把「服务端密钥 + 会话 ID」签成 Token，**服务端不用存、攻击者造不出**：
@@ -232,6 +236,8 @@ Location: http://localhost/checkout<CRLF>
 ```
 
 页面因此**意外地执行了藏在 URL 里的 JavaScript**。⚠️ 同类问题不止发生在 `Location`，也可能出现在 `Set-Cookie` 等任何 header 上——**攻击者可以自己造一个 `Set-Cookie: evil=value`**（会话固定）。
+
+![HTTP 头注入：一个 CRLF 就能提前结束 headers、凭空造出一个头](images/HTTP头注入CRLF流程.svg)
 
 ### 5.2 实测：标准库改写、裸报文拆行 ⭐
 

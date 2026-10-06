@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="g1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="g2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">goroutine 的 g 状态机与迁移</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">状态常量取自 runtime/runtime2.go；括号里是状态值</text>
+
+  <rect x="60" y="96" width="140" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="130" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">_Gidle(0)</text>
+  <text x="130" y="141" text-anchor="middle" font-size="11" fill="#475569">刚分配好</text>
+
+  <rect x="330" y="96" width="160" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="410" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">_Grunnable(1)</text>
+  <text x="410" y="141" text-anchor="middle" font-size="11" fill="#1d4ed8">在队列里可运行</text>
+
+  <rect x="610" y="96" width="150" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="685" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">_Grunning(2)</text>
+  <text x="685" y="141" text-anchor="middle" font-size="11" fill="#166534">正被 M 执行</text>
+
+  <rect x="830" y="96" width="140" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="900" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">_Gdead(6)</text>
+  <text x="900" y="141" text-anchor="middle" font-size="11" fill="#475569">执行结束</text>
+  <text x="900" y="180" text-anchor="middle" font-size="10.5" fill="#64748b">进 gfree 复用</text>
+
+  <rect x="330" y="250" width="160" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="410" y="274" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">_Gwaiting(4)</text>
+  <text x="410" y="295" text-anchor="middle" font-size="11" fill="#9a3412">被动等待，不占 M</text>
+
+  <rect x="610" y="250" width="150" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="685" y="274" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">_Gsyscall(3)</text>
+  <text x="685" y="295" text-anchor="middle" font-size="11" fill="#9a3412">在系统调用中</text>
+
+  <line x1="204" y1="124" x2="326" y2="124" stroke="#334155" stroke-width="1.6" marker-end="url(#g1)"/>
+  <text x="265" y="116" text-anchor="middle" font-size="11" fill="#334155">分配好</text>
+
+  <line x1="494" y1="124" x2="606" y2="124" stroke="#334155" stroke-width="1.6" marker-end="url(#g1)"/>
+  <text x="550" y="116" text-anchor="middle" font-size="11" fill="#334155">被 M 取走</text>
+
+  <line x1="764" y1="124" x2="826" y2="124" stroke="#334155" stroke-width="1.6" marker-end="url(#g1)"/>
+  <text x="795" y="116" text-anchor="middle" font-size="11" fill="#334155">执行结束</text>
+
+  <line x1="622" y1="152" x2="486" y2="248" stroke="#ea580c" stroke-width="1.6" marker-end="url(#g1)"/>
+  <text x="500" y="200" text-anchor="middle" font-size="11" fill="#9a3412">阻塞：chan / 锁 / sleep / IO</text>
+
+  <line x1="410" y1="248" x2="410" y2="154" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#g2)"/>
+  <text x="396" y="196" text-anchor="end" font-size="11" fill="#15803d">被唤醒（goready）</text>
+
+  <line x1="655" y1="152" x2="655" y2="248" stroke="#ea580c" stroke-width="1.6" marker-end="url(#g1)"/>
+  <line x1="715" y1="248" x2="715" y2="152" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#g2)"/>
+  <text x="775" y="202" font-size="11" fill="#334155">进入系统调用 / 返回</text>
+
+  <rect x="20" y="330" width="960" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="356" font-size="12.5" font-weight="bold" fill="#334155">另有（非主流程状态）与一个易错点</text>
+  <text x="36" y="380" font-size="11.5" fill="#334155">_Gcopystack(8)：栈正在被复制　　_Gpreempted(9)：被异步抢占后停住</text>
+  <text x="36" y="404" font-size="11.5" fill="#334155">⚠️ _Gscan 是位（0x1000）不是状态：GC 扫某个 G 的栈时给它加上该位，于是出现 _Gscanwaiting 这类组合。</text>
+  <text x="36" y="428" font-size="11.5" fill="#64748b">所以运行时里真正的读法是 readgstatus(gp) &amp;^ _Gscan。</text>
+</svg>

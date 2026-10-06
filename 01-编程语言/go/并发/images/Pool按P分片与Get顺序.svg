@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="50" y="60" width="280" height="180" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="190" y="90" font-size="14" text-anchor="middle" font-weight="700" fill="#0f172a">P0</text>
+<rect x="80" y="104" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="190" y="132" font-size="12" text-anchor="middle" fill="#1e3a8a">private（1 个，无锁）</text>
+<rect x="80" y="160" width="220" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="190" y="188" font-size="12" text-anchor="middle" fill="#14532d">shared poolChain（CAS）</text>
+
+<rect x="360" y="60" width="280" height="180" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="500" y="90" font-size="14" text-anchor="middle" font-weight="700" fill="#0f172a">P1</text>
+<rect x="390" y="104" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="132" font-size="12" text-anchor="middle" fill="#1e3a8a">private（1 个，无锁）</text>
+<rect x="390" y="160" width="220" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="500" y="188" font-size="12" text-anchor="middle" fill="#14532d">shared poolChain（CAS）</text>
+
+<rect x="670" y="60" width="280" height="180" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="810" y="90" font-size="14" text-anchor="middle" font-weight="700" fill="#0f172a">P2</text>
+<rect x="700" y="104" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="810" y="132" font-size="12" text-anchor="middle" fill="#1e3a8a">private（1 个，无锁）</text>
+<rect x="700" y="160" width="220" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="810" y="188" font-size="12" text-anchor="middle" fill="#14532d">shared poolChain（CAS）</text>
+
+<text x="50" y="286" font-size="15" font-weight="700" fill="#0f172a">Get 顺序</text>
+
+<rect x="50" y="302" width="170" height="56" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="135" y="336" font-size="12" text-anchor="middle" fill="#1e3a8a">① 本 P private</text>
+<rect x="240" y="302" width="170" height="56" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="325" y="336" font-size="12" text-anchor="middle" fill="#14532d">② 本 P shared</text>
+<rect x="430" y="302" width="170" height="56" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="515" y="336" font-size="12" text-anchor="middle" fill="#7c2d12">③ 偷其他 P shared</text>
+<rect x="620" y="302" width="170" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="705" y="336" font-size="12" text-anchor="middle" fill="#334155">④ victim</text>
+<rect x="810" y="302" width="150" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="885" y="336" font-size="12" text-anchor="middle" fill="#334155">⑤ New()</text>
+
+<line x1="222" y1="330" x2="236" y2="330" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="412" y1="330" x2="426" y2="330" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="602" y1="330" x2="616" y2="330" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="792" y1="330" x2="806" y2="330" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="40" y="384" width="920" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="414" font-size="13" fill="#334155">Put 顺序：private 空就放 private；否则把原来的对象推到 shared，自己占住 private</text>
+<text x="60" y="442" font-size="13" fill="#334155">private 只放 1 个 → 覆盖「取一个用一个」这个最常见模式；其余进 shared 链式队列</text>
+<text x="60" y="470" font-size="13" fill="#7f1d1d">⭐ runtime_procPin：Get/Put 先把自己钉在当前 P 上（禁止抢占），取完再放开</text>
+<text x="60" y="498" font-size="13" fill="#334155">→ 避免「刚拿到本 P 的分片就被调度到别的 P」；绝大多数操作无锁，只有跨 P 偷取才需同步</text>
+</svg>

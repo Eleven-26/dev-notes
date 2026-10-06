@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+
+<text x="60" y="44" font-size="15" font-weight="700" fill="#0f172a">同一份 117 MB 分配压力下，GOGC 档位的取舍</text>
+
+<rect x="60" y="70" width="280" height="150" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="200" y="102" font-size="13" text-anchor="middle" font-weight="700" fill="#1e3a8a">GOGC = 20</text>
+<text x="200" y="130" font-size="12" text-anchor="middle" fill="#1e3a8a">极致省内存</text>
+<text x="200" y="158" font-size="12" text-anchor="middle" fill="#334155">GC 97 次</text>
+<text x="200" y="182" font-size="12" text-anchor="middle" fill="#334155">堆峰值 2.2 MB</text>
+<text x="200" y="206" font-size="11" text-anchor="middle" fill="#64748b">CPU 换内存</text>
+
+<rect x="360" y="60" width="280" height="170" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="500" y="92" font-size="13" text-anchor="middle" font-weight="700" fill="#14532d">GOGC = 100（默认）</text>
+<text x="500" y="120" font-size="12" text-anchor="middle" fill="#14532d">平衡点</text>
+<text x="500" y="148" font-size="12" text-anchor="middle" fill="#334155">GC 40 次</text>
+<text x="500" y="172" font-size="12" text-anchor="middle" fill="#334155">堆峰值 4.3 MB</text>
+<text x="500" y="196" font-size="11" text-anchor="middle" fill="#64748b">目标堆 = 存活堆 × 2</text>
+<text x="500" y="218" font-size="11" text-anchor="middle" fill="#64748b">多数场景够用</text>
+
+<rect x="660" y="70" width="280" height="150" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="800" y="102" font-size="13" text-anchor="middle" font-weight="700" fill="#7c2d12">GOGC = 1000</text>
+<text x="800" y="130" font-size="12" text-anchor="middle" fill="#7c2d12">省 CPU，费内存</text>
+<text x="800" y="158" font-size="12" text-anchor="middle" fill="#334155">GC 3 次</text>
+<text x="800" y="182" font-size="12" text-anchor="middle" fill="#334155">堆峰值 39.8 MB</text>
+<text x="800" y="206" font-size="11" text-anchor="middle" fill="#64748b">内存换 CPU</text>
+
+<rect x="60" y="252" width="430" height="110" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="80" y="284" font-size="13" font-weight="700" fill="#7f1d1d">GOGC = off（危险）</text>
+<text x="80" y="310" font-size="12" fill="#7f1d1d">GC 0 次 · 堆峰值 119 MB</text>
+<text x="80" y="336" font-size="12" fill="#64748b">内存换 CPU，但内存没有上限</text>
+
+<rect x="510" y="252" width="430" height="110" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="530" y="284" font-size="13" font-weight="700" fill="#1e3a8a">GOMEMLIMIT 才是「内存守门员」</text>
+<text x="530" y="310" font-size="12" fill="#1e3a8a">GOGC=1000 + 8MB 上限 → GC 70 次、堆峰值 2.4 MB</text>
+<text x="530" y="336" font-size="12" fill="#64748b">软上限：逼近上限就临时加密 GC 频率</text>
+
+<text x="500" y="396" font-size="12" text-anchor="middle" fill="#0f172a">⭐ 顺序是先减少分配，再调参；调参只在「分配量不变」的前提下重分配 CPU 与内存</text>
+</svg>

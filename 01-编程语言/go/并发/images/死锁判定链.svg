@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">死锁判定链：什么时候才报 all goroutines are asleep</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判定死锁的标准不是「有没有阻塞」，而是「还有没有人能来解救」</text>
+
+  <rect x="340" y="92" width="320" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="120" text-anchor="middle" font-size="11.5" fill="#1e3a8a">有协程阻塞了（阻塞即交出 CPU，等别人解救）</text>
+  <line x1="500" y1="138" x2="500" y2="158" stroke="#334155" stroke-width="1.6" marker-end="url(#d1)"/>
+
+  <rect x="290" y="160" width="420" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="194" text-anchor="middle" font-size="12" fill="#7c2d12">所有协程（含 main）都被永久阻塞？</text>
+
+  <path d="M350 216 L350 240 L245 240 L245 258" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#d1)"/>
+  <text x="300" y="234" text-anchor="middle" font-size="11.5" fill="#334155">否</text>
+  <path d="M650 216 L650 240 L755 240 L755 258" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#d1)"/>
+  <text x="700" y="234" text-anchor="middle" font-size="11.5" fill="#334155">是</text>
+
+  <rect x="20" y="262" width="450" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="36" y="288" font-size="12" font-weight="bold" fill="#0f172a">静默卡死：不报死锁（判据 4）</text>
+  <text x="36" y="312" font-size="11" fill="#334155">只要 main 还在，runtime 就认为「还有希望」——</text>
+  <text x="36" y="332" font-size="11" fill="#334155">于是它一直等下去，不 panic、不报错，比 panic 更隐蔽。</text>
+  <text x="36" y="356" font-size="11" fill="#64748b">线上「协程泄漏」多半就是这么来的。</text>
+
+  <rect x="530" y="262" width="450" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="546" y="286" font-size="11.5" fill="#7c2d12">还有能打破僵局的事件吗？</text>
+  <text x="546" y="306" font-size="11" fill="#9a3412">（活跃 timer / netpoll / 还有任何协程在跑）</text>
+
+  <line x1="640" y1="318" x2="640" y2="348" stroke="#334155" stroke-width="1.6" marker-end="url(#d1)"/>
+  <text x="652" y="338" font-size="11.5" fill="#334155">无</text>
+  <line x1="870" y1="318" x2="870" y2="348" stroke="#334155" stroke-width="1.6" marker-end="url(#d1)"/>
+  <text x="882" y="338" font-size="11.5" fill="#334155">有</text>
+
+  <rect x="530" y="352" width="215" height="150" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="546" y="376" font-size="11" fill="#7f1d1d">无事件 + 全阻塞 →</text>
+  <text x="546" y="396" font-size="11" fill="#b91c1c">运行时判定「再也动</text>
+  <text x="546" y="414" font-size="11" fill="#b91c1c">不了了」，主动 throw：</text>
+  <text x="546" y="436" font-size="10.5" fill="#7f1d1d">fatal error: all</text>
+  <text x="546" y="452" font-size="10.5" fill="#7f1d1d">goroutines are asleep</text>
+  <text x="546" y="472" font-size="11" fill="#7f1d1d">→ deadlock!（判据 3）</text>
+  <text x="546" y="492" font-size="10.5" fill="#64748b">栈里能看到卡在谁身上</text>
+
+  <rect x="765" y="352" width="215" height="150" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="781" y="376" font-size="11" fill="#7c2d12">有事件（或还有协程</text>
+  <text x="781" y="394" font-size="11" fill="#7c2d12">在跑）→ 静默卡死，</text>
+  <text x="781" y="412" font-size="11" fill="#9a3412">永远不报错 —— 例如</text>
+  <text x="781" y="430" font-size="11" fill="#9a3412">没超时的网络调用、</text>
+  <text x="781" y="448" font-size="11" fill="#9a3412">for{} 忙等。</text>
+  <text x="781" y="472" font-size="11" fill="#7c2d12">⭐ 超时兜底是第一道</text>
+  <text x="781" y="490" font-size="11" fill="#7c2d12">防线，把死锁降级成超时</text>
+
+  <rect x="20" y="386" width="450" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="412" font-size="11" fill="#0f172a">⚠️ 判据 4 实测：main 正常结束、全程没有任何 deadlock 报错。</text>
+  <text x="36" y="432" font-size="11" fill="#0f172a">⚠️ 判据 3 实测：for range 忘了 close，读空后 range 继续等，</text>
+  <text x="36" y="452" font-size="11" fill="#0f172a">　 main 阻塞且无人解救 → fatal error: all goroutines are asleep。</text>
+  <text x="36" y="478" font-size="11" fill="#64748b">⭐ 定位：看 fatal 之后打印的协程栈，找到停在 chan send /</text>
+  <text x="36" y="498" font-size="11" fill="#64748b">　 chan receive 上的那个，顺着看它等的对手方是谁。</text>
+
+  <rect x="20" y="552" width="960" height="56" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="586" font-size="12" fill="#0f172a">⭐ 四条判据的落点：满写 / 空读都阻塞；阻塞即交出 CPU；只有「全阻塞 + 无外部事件」才 throw。</text>
+</svg>

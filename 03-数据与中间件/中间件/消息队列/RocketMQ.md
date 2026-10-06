@@ -62,6 +62,8 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 
 ### 存储设计：CommitLog / ConsumeQueue / IndexFile ⭐
 
+![RocketMQ 三层存储：混写一条 CommitLog，ConsumeQueue / IndexFile 建索引](images/RocketMQ三层存储结构.svg)
+
 #### CommitLog：所有 Topic 混在一条日志里顺序写
 
 - Broker 只有**一条** CommitLog：所有 Topic、所有队列的消息按**到达物理顺序**追加写进当前的 mmap 文件（单文件 1 GiB，见第七节 PageCache 小节）。Topic/queueId 只是记录里的字段，不影响写的位置。
@@ -127,6 +129,8 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 ```
 
 ### 拉取与长轮询：Push 本质是「挂起的 Pull」⭐
+
+![RocketMQ 长轮询拉取：Broker 挂起请求，新消息到达即唤醒](images/RocketMQ长轮询拉取时序.svg)
 
 - **没有真的推**：PushConsumer 内部是 `PullMessageService` **单线程**不停从拉取任务队列取请求发 RPC（拉本身是异步网络调用，一个线程够了），消费则在消费线程池执行——"拉"和"用"解耦，才是 Push 语义的全部真相。
 - **broker 端挂起实现准实时**：拉取请求带 `suspendTimeoutMillis`，无消息时 Broker 不立即返回空，而是把请求挂起；新消息落入 CommitLog 时触发到达通知，按队列 + Tag 哈希匹配唤醒挂起的请求立刻返回。效果：**没消息不占一次往返，有消息毫秒级响应**，空轮询的网络/CPU 开销归零。Broker 对挂起请求的数量与时长都有上限保护（参数以官方文档为准），挂起满了会退化为短轮询。
@@ -210,6 +214,8 @@ msg.setDeliverTimeMs(System.currentTimeMillis() + 10_000L);  // 定时到某个�
 - 无论哪代，"延迟"改变的只是**投递时机**，不影响存储顺序与消费语义；消费失败的 `%RETRY%` 重投本身就是对延迟级别机制的一次复用（见第六节重试细节）。
 
 ### 事务消息（两阶段 + 回查）
+
+![RocketMQ 事务消息：半消息 → 本地事务 → Commit/Rollback → 定时回查](images/RocketMQ事务消息两阶段与回查.svg)
 
 1. Producer 发送**半消息（Half Message）**：对消费者不可见，写入系统 Topic `RMQ_SYS_TRANS_HALF_TOPIC`；
 2. Broker ACK 后 Producer 执行**本地事务**，再按结果发送 **Commit / Rollback**：Commit 把消息转入真实 Topic 并可见，Rollback 删除半消息；

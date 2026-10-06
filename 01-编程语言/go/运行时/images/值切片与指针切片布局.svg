@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" width="1000" height="440" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+</defs>
+
+<rect x="40" y="56" width="440" height="280" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="260" y="88" font-size="14" text-anchor="middle" font-weight="700" fill="#14532d">[]Node：连续、无指针</text>
+
+<rect x="70" y="110" width="63" height="60" fill="#dcfce7" stroke="#16a34a"/>
+<rect x="133" y="110" width="63" height="60" fill="#dcfce7" stroke="#16a34a"/>
+<rect x="196" y="110" width="63" height="60" fill="#dcfce7" stroke="#16a34a"/>
+<rect x="259" y="110" width="63" height="60" fill="#dcfce7" stroke="#16a34a"/>
+<rect x="322" y="110" width="63" height="60" fill="#dcfce7" stroke="#16a34a"/>
+<rect x="385" y="110" width="63" height="60" fill="#dcfce7" stroke="#16a34a"/>
+<text x="260" y="146" font-size="11" text-anchor="middle" fill="#14532d">连续的 24B Node …</text>
+
+<text x="70" y="204" font-size="12" fill="#64748b">一整块连续内存，内部没有指针</text>
+<text x="70" y="250" font-size="12" fill="#334155">耗时 5 ms</text>
+<text x="70" y="274" font-size="12" fill="#334155">堆峰值增量 11722 KB</text>
+<text x="70" y="298" font-size="12" fill="#334155">总分配 11 MB ｜ GC 1 次</text>
+
+<rect x="520" y="56" width="440" height="280" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="740" y="88" font-size="14" text-anchor="middle" font-weight="700" fill="#7f1d1d">[]*Node：散落、全是指针</text>
+
+<rect x="550" y="104" width="380" height="44" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="740" y="132" font-size="12" text-anchor="middle" fill="#7f1d1d">50 万个指针（每个指向一个独立对象）</text>
+
+<line x1="615" y1="148" x2="615" y2="162" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="745" y1="148" x2="745" y2="182" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="875" y1="148" x2="875" y2="162" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="570" y="164" width="90" height="40" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="615" y="189" font-size="11" text-anchor="middle" fill="#7c2d12">Node</text>
+<rect x="700" y="184" width="90" height="40" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="745" y="209" font-size="11" text-anchor="middle" fill="#7c2d12">Node</text>
+<rect x="830" y="164" width="90" height="40" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="875" y="189" font-size="11" text-anchor="middle" fill="#7c2d12">Node</text>
+
+<text x="550" y="250" font-size="12" fill="#334155">耗时 25 ms（慢 5 倍）</text>
+<text x="550" y="274" font-size="12" fill="#334155">堆峰值增量 15633 KB（多 33%）</text>
+<text x="550" y="298" font-size="12" fill="#334155">总分配 15 MB（多 36%）｜ GC 1 次</text>
+
+<text x="500" y="376" font-size="12" text-anchor="middle" fill="#7f1d1d">原因：① 每个对象单独分配（分配器开销 + 对齐浪费）② GC 要为 50 万个指针逐个追踪</text>
+<text x="500" y="406" font-size="12" text-anchor="middle" fill="#0f172a">⭐ 工程含义：[]Struct 优于 []*Struct（除非需要 nil 语义或频繁替换元素）</text>
+</svg>

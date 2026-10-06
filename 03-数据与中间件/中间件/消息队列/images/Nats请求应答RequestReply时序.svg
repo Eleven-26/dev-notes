@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="nt1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">NATS Request-Reply：内建的请求响应模式</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">请求方自带收件箱 INBOX，响应方向 reply 主题回写</text>
+
+  <rect x="80" y="88" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="220" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">请求方 Requester</text>
+  <rect x="640" y="88" width="280" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="780" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">响应方 Responder</text>
+
+  <line x1="220" y1="132" x2="220" y2="440" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="780" y1="132" x2="780" y2="440" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <text x="500" y="172" text-anchor="middle" font-size="13" fill="#0f172a">Request(subj, data)：reply 自动设为收件箱 INBOX.xyz</text>
+  <line x1="224" y1="180" x2="774" y2="180" stroke="#334155" stroke-width="1.5" marker-end="url(#nt1)"/>
+
+  <path d="M780,244 L824,244 L824,262 L784,262" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#nt1)"/>
+  <text x="832" y="256" font-size="12" fill="#166534">处理请求（业务）</text>
+
+  <text x="500" y="312" text-anchor="middle" font-size="13" fill="#0f172a">向 INBOX.xyz 回写响应，请求方收到即返回</text>
+  <line x1="776" y1="320" x2="226" y2="320" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#nt1)"/>
+
+  <path d="M220,384 L264,384 L264,402 L224,402" fill="none" stroke="#334155" stroke-width="1.4" marker-end="url(#nt1)"/>
+  <text x="272" y="398" font-size="12" fill="#1d4ed8">收到即返回；超时则 ErrTimeout</text>
+
+  <line x1="20" y1="468" x2="980" y2="468" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="494" font-size="13" fill="#0f172a">⭐ Request-Reply 是 NATS 内建模式：不必自己约定 reply 主题，INBOX 由客户端自动生成。</text>
+  <text x="20" y="520" font-size="13" fill="#0f172a">⚠️ 发起方必须保持连接才能收到响应；请求方掉线或超时，响应就丢了。</text>
+  <text x="20" y="546" font-size="13" fill="#0f172a">⭐ 响应方必须向 msg.Reply 回写；需要带 Header 时用 RequestMsg(msg, timeout)。</text>
+  <text x="20" y="572" font-size="13" fill="#0f172a">⭐ 配合队列组：多个响应方同组竞争，即可实现请求侧的负载均衡。</text>
+  <text x="20" y="602" font-size="12" fill="#64748b">超时未响应返回 nats.ErrTimeout（Java 侧超时抛 TimeoutException）。</text>
+</svg>

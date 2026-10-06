@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="360" y="48" width="280" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="500" y="80" font-size="13" text-anchor="middle" fill="#334155">调用 Wait / WaitN</text>
+
+<line x1="500" y1="100" x2="185" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="100" x2="500" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="500" y1="100" x2="815" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="40" y="180" width="290" height="120" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="185" y="212" font-size="13" text-anchor="middle" fill="#7c2d12">n &gt; Burst</text>
+<text x="185" y="240" font-size="12" text-anchor="middle" fill="#7c2d12">rate: Wait(n=6) exceeds</text>
+<text x="185" y="262" font-size="12" text-anchor="middle" fill="#7c2d12">limiter's burst 5</text>
+<text x="185" y="288" font-size="12" text-anchor="middle" fill="#7f1d1d">≠ ctx.Err()</text>
+
+<rect x="355" y="180" width="290" height="120" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="212" font-size="13" text-anchor="middle" fill="#7c2d12">预测 deadline 前拿不到</text>
+<text x="500" y="240" font-size="12" text-anchor="middle" fill="#7c2d12">would exceed context deadline</text>
+<text x="500" y="262" font-size="12" text-anchor="middle" fill="#7c2d12">立即返回</text>
+<text x="500" y="288" font-size="12" text-anchor="middle" fill="#7f1d1d">此刻 ctx.Err() 仍是 nil</text>
+
+<rect x="670" y="180" width="290" height="120" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="815" y="212" font-size="13" text-anchor="middle" fill="#14532d">等待途中 ctx 取消 / 超时</text>
+<text x="815" y="240" font-size="12" text-anchor="middle" fill="#14532d">返回 ctx.Err()</text>
+<text x="815" y="262" font-size="12" text-anchor="middle" fill="#14532d">context canceled</text>
+<text x="815" y="288" font-size="12" text-anchor="middle" fill="#14532d">✅ = ctx.Err()</text>
+
+<rect x="40" y="324" width="920" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="356" font-size="15" font-weight="700" fill="#0f172a">怎么判断？两类问题不要混</text>
+<text x="60" y="390" font-size="13" fill="#1e3a8a">想知道「是不是 ctx 引发的失败」→ 看 ctx.Err()（别看错误串）</text>
+<text x="60" y="418" font-size="13" fill="#1e3a8a">想知道「有没有拿到令牌」→ err != nil 就够了（Wait 只在没拿到令牌时才返回错误）</text>
+
+<rect x="60" y="436" width="880" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="80" y="462" font-size="12" fill="#334155">case err == nil:　　　　　// 拿到令牌，继续处理</text>
+<text x="80" y="484" font-size="12" fill="#334155">case ctx.Err() != nil:　　// 请求方超时 / 主动断开 → 如实返回 ctx.Err()</text>
+<text x="80" y="506" font-size="12" fill="#334155">default:　　　　　　　　　// 等不到令牌 → 按限流拒绝处理，比如回 429</text>
+</svg>

@@ -37,6 +37,8 @@ RabbitMQ 是基于 **AMQP 0-9-1** 协议的开源消息代理，由 **Erlang** �
 
 生产者从不直接发消息给队列，而是发给 Exchange，由 Exchange 按 **Binding + RoutingKey** 决定投递到哪些队列。这就是 RabbitMQ 与其他 MQ（Topic 直接对应分区）最大的区别。
 
+![RabbitMQ 四种交换机：direct / fanout / topic / headers 的路由规则](images/RabbitMQ四种交换机路由.svg)
+
 | 类型 | 路由规则 | 典型场景 | 备注 |
 |---|---|---|---|
 | **direct**（默认行为） | RoutingKey 与 BindingKey **完全相等** | 点对点、按业务类型分流（`order.created` / `order.paid`） | 最常用、语义最清晰 |
@@ -67,6 +69,8 @@ RabbitMQ 是基于 **AMQP 0-9-1** 协议的开源消息代理，由 **Erlang** �
 ## 四、消息可靠性与确认机制 ⭐
 
 「消息不丢」要**同时**管住生产、存储、消费三段，任何一段缺失都会丢。
+
+![RabbitMQ 消息不丢的三段链路：Publisher Confirm → 持久化 → 手动 ack](images/RabbitMQ消息确认与投递时序.svg)
 
 ### 4.1 生产者侧：Publisher Confirm vs 事务
 
@@ -146,6 +150,8 @@ channel.queueDeclare("biz.queue", true, false, false, args);
 > ⚠️ `x-message-ttl` 是**消息存活时间**；`x-expires` 是**队列空闲存活时间**（队列无消费者且未访问达到时间则整队删除），两者别混。
 
 ### 5.2 延迟队列的两种实现
+
+![RabbitMQ 延迟队列：TTL + DLX 与延迟插件的两条路线](images/RabbitMQ延迟队列TTL与死信.svg)
 
 **方案 A：TTL + DLX（不依赖插件）**
 

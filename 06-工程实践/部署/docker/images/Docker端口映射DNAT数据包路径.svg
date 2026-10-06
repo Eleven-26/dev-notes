@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">端口映射（-p）的本质是 DNAT：数据包路径</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">容器内看到的目的地址是容器自己的 IP，不是 127.0.0.1</text>
+
+  <rect x="35" y="96" width="210" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="140" y="128" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">外部客户端</text>
+  <text x="140" y="152" text-anchor="middle" font-size="11.5" fill="#1d4ed8">外部包</text>
+  <text x="140" y="172" text-anchor="middle" font-size="11.5" fill="#1d4ed8">目标：宿主机:8080</text>
+
+  <rect x="275" y="96" width="210" height="96" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="380" y="128" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">宿主机 nat 表</text>
+  <text x="380" y="152" text-anchor="middle" font-size="11.5" fill="#9a3412">DNAT 改写目的 → 容器IP:80</text>
+  <text x="380" y="172" text-anchor="middle" font-size="11.5" fill="#9a3412">老 iptables / 新 nftables</text>
+
+  <rect x="515" y="96" width="210" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="620" y="128" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">docker bridge</text>
+  <text x="620" y="152" text-anchor="middle" font-size="11.5" fill="#166534">经 veth 送达</text>
+  <text x="620" y="172" text-anchor="middle" font-size="11.5" fill="#166534">容器 netns 的 eth0</text>
+
+  <rect x="755" y="96" width="210" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="860" y="128" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">容器内应用</text>
+  <text x="860" y="152" text-anchor="middle" font-size="11.5" fill="#166534">看到的目的地址</text>
+  <text x="860" y="172" text-anchor="middle" font-size="11.5" fill="#166534">= 容器自己的 IP</text>
+
+  <line x1="249" y1="144" x2="271" y2="144" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="489" y1="144" x2="511" y2="144" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="729" y1="144" x2="751" y2="144" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+
+  <rect x="20" y="216" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="244" font-size="13" font-weight="bold" fill="#0f172a">推论（高频考点）：容器内服务必须监听 0.0.0.0</text>
+  <text x="36" y="272" font-size="12.5" fill="#b91c1c">⚠️ 只监听 127.0.0.1 时，DNAT 后的包匹配不上回环监听的 socket</text>
+  <text x="52" y="296" font-size="12.5" fill="#b91c1c">→ 这就是「本地跑得好、一进容器映射端口就 connection refused」的第一原因。</text>
+  <text x="36" y="330" font-size="12.5" fill="#0f172a">反向坑：-p 8080:80 绑在宿主 0.0.0.0，同网段机器都能访问；要收紧就写 -p 127.0.0.1:8080:80。</text>
+  <text x="36" y="358" font-size="12.5" fill="#0f172a">排障顺序：容器内监听在哪个地址 → DNAT 规则有没有下发 → 容器 IP 之间通不通。</text>
+  <text x="36" y="392" font-size="11.5" fill="#64748b">默认 bridge 不支持按名字解析；自定义 bridge 里用容器内嵌 DNS（127.0.0.11）按容器名 / 网络别名解析。</text>
+  <text x="36" y="416" font-size="11.5" fill="#64748b">容器网段和内网 / VPN 撞了：换自定义网络的 --subnet；上不了外网：查宿主 ip_forward 与 NAT 规则。</text>
+</svg>

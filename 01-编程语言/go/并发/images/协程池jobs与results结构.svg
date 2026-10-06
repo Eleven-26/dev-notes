@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="k1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">协程池：jobs / results 双 channel 的结构</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">多个 worker 抢同一个 jobs —— channel 是队列，for range 就是 worker 的主循环</text>
+
+  <rect x="30" y="190" width="160" height="80" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="110" y="222" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">任务生产者</text>
+  <text x="110" y="246" text-anchor="middle" font-size="10.5" fill="#1d4ed8">投完 close(jobs)</text>
+
+  <rect x="250" y="150" width="70" height="190" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="285" y="142" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">jobs</text>
+  <rect x="680" y="150" width="70" height="190" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="715" y="142" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">results</text>
+
+  <rect x="380" y="132" width="240" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="166" text-anchor="middle" font-size="12" fill="#14532d">worker 1</text>
+  <rect x="380" y="218" width="240" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="252" text-anchor="middle" font-size="12" fill="#14532d">worker 2</text>
+  <rect x="380" y="304" width="240" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="338" text-anchor="middle" font-size="12" fill="#14532d">worker 3</text>
+  <text x="380" y="392" font-size="11" fill="#334155">每个 worker 都跑：for job := range jobs { results &lt;- job.Do() }</text>
+
+  <line x1="190" y1="230" x2="246" y2="230" stroke="#334155" stroke-width="1.6" marker-end="url(#k1)"/>
+  <line x1="320" y1="160" x2="376" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+  <line x1="320" y1="246" x2="376" y2="246" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+  <line x1="320" y1="332" x2="376" y2="332" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+  <line x1="624" y1="160" x2="676" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+  <line x1="624" y1="246" x2="676" y2="246" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+  <line x1="624" y1="332" x2="676" y2="332" stroke="#334155" stroke-width="1.5" marker-end="url(#k1)"/>
+  <line x1="750" y1="230" x2="806" y2="230" stroke="#334155" stroke-width="1.6" marker-end="url(#k1)"/>
+
+  <rect x="810" y="190" width="160" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="890" y="222" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">结果汇总 / 消费</text>
+  <text x="890" y="246" text-anchor="middle" font-size="10.5" fill="#166534">从 results 取回</text>
+
+  <rect x="20" y="420" width="960" height="100" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="446" font-size="12" fill="#0f172a">⭐ 多个 worker 读同一个 channel 安全且不重不漏 —— 每个元素只会被一个 worker 取到。</text>
+  <text x="36" y="470" font-size="12" fill="#0f172a">⭐ worker 数量固定：没新任务时阻塞在 range 上不销毁，有新任务立刻接上；不需要自己写调度器。</text>
+  <text x="36" y="494" font-size="12" fill="#0f172a">⚠️ 退出：投递完 close(jobs)，range 自然结束 —— 只有发送方该 close，且只 close 一次。</text>
+</svg>

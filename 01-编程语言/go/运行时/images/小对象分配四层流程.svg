@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="60" y="40" font-size="15" font-weight="700" fill="#0f172a">一次小对象分配（≤ 32KB）：先对齐取整找 size class，再逐层向下要</text>
+
+<rect x="60" y="64" width="560" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="80" y="92" font-size="13" font-weight="700" fill="#14532d">mcache（每 P 私有，无锁）</text>
+<text x="80" y="118" font-size="12" fill="#14532d">② 找该 class 的 mspan → ③ 有空闲槽位就直接分配</text>
+
+<line x1="340" y1="140" x2="340" y2="192" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="500" y="172" font-size="12" text-anchor="middle" fill="#64748b">④ mspan 槽位用完 → 取一个空闲 span</text>
+
+<rect x="60" y="194" width="560" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="80" y="222" font-size="13" font-weight="700" fill="#1e3a8a">mcentral（按 size class 的全局集散中心）</text>
+<text x="80" y="248" font-size="12" fill="#1e3a8a">提供 mspan；同一 class 的 span 在此汇聚</text>
+
+<line x1="340" y1="270" x2="340" y2="322" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="500" y="302" font-size="12" text-anchor="middle" fill="#64748b">⑤ mcentral 也空 → 创建新 mspan</text>
+
+<rect x="60" y="324" width="560" height="76" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="80" y="352" font-size="13" font-weight="700" fill="#7c2d12">mheap（页级批发，以 mspan 形式提供）</text>
+<text x="80" y="378" font-size="12" fill="#7c2d12">只做页级批发，不直接给对象分配空间</text>
+
+<line x1="340" y1="400" x2="340" y2="452" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="500" y="432" font-size="12" text-anchor="middle" fill="#64748b">⑥ 没有足够连续页 → 向 OS 申请 ≥ 1MB</text>
+
+<rect x="60" y="454" width="560" height="76" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="80" y="482" font-size="13" font-weight="700" fill="#334155">操作系统</text>
+<text x="80" y="508" font-size="12" fill="#334155">申请至少 1MB 的内存页，交给 mheap</text>
+
+<rect x="680" y="64" width="280" height="180" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="820" y="96" font-size="13" text-anchor="middle" font-weight="700" fill="#7f1d1d">大对象 &gt; 32KB</text>
+<text x="820" y="126" font-size="12" text-anchor="middle" fill="#7f1d1d">直接使用 mheap</text>
+<text x="820" y="152" font-size="12" text-anchor="middle" fill="#7f1d1d">绕过 mcache 和 mcentral</text>
+<text x="820" y="182" font-size="12" text-anchor="middle" fill="#64748b">尺寸各异、不可复用</text>
+<text x="820" y="206" font-size="12" text-anchor="middle" fill="#64748b">缓存它没有收益</text>
+<text x="820" y="230" font-size="12" text-anchor="middle" fill="#64748b">反而占着缓存位</text>
+
+<rect x="680" y="270" width="280" height="260" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="700" y="302" font-size="13" font-weight="700" fill="#0f172a">回收 sweep 的三条分支</text>
+<text x="700" y="332" font-size="12" fill="#334155">① 为响应分配而清扫 →</text>
+<text x="716" y="354" font-size="12" fill="#64748b">清扫后直接返回 mcache</text>
+<text x="700" y="388" font-size="12" fill="#334155">② 清扫后仍有已分配对象 →</text>
+<text x="716" y="410" font-size="12" fill="#64748b">放入对应 class 的 mcentral 链表</text>
+<text x="700" y="444" font-size="12" fill="#334155">③ 清扫后所有对象都已空闲 →</text>
+<text x="716" y="466" font-size="12" fill="#64748b">内存页归还 mheap，span 失效</text>
+<text x="700" y="500" font-size="12" fill="#7f1d1d">只有第一层（mcache）无锁</text>
+</svg>

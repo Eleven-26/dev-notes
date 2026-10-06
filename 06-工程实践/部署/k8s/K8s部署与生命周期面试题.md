@@ -212,6 +212,8 @@ kubectl logs <pod> --previous   # 重启前那个实例的日志（关键）
 | 只配 liveness 不配 readiness | 新 Pod 刚起、还没预热就被打流量 → 一批 5xx（readiness 是"接流量的门票"） |
 | 用 `initialDelaySeconds` 当启动保险 | 猜不准就还是误杀；**用 startupProbe 表达"启动要多久"更准确** |
 
+![三个探针：各回答什么问题、失败会怎样（重启 vs 只摘流量）](images/K8s三探针与失败后果.svg)
+
 ### 3.2 优雅关闭的时序与代码要点
 
 ```text
@@ -245,6 +247,8 @@ db.Close()
   所以 `terminationGracePeriodSeconds > preStop 等待 + 应用排空最坏耗时 + 余量`，否则最后一步被 SIGKILL。
 - 新版本 K8s 已对"终止信号与 endpoint 摘除"做了先后顺序上的保证，但**规则传播到每个节点仍需时间**，
   所以留一小段等待仍然是稳妥做法。⚠️ exec 形式的 `sleep` 要求镜像里**有 shell**（scratch/distroless 会失败）。
+
+![Pod 删除与优雅关闭时序：endpoint 摘除与 preStop / SIGTERM / SIGKILL 两条并行路](images/K8sPod删除与优雅关闭时序.svg)
 
 ---
 

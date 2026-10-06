@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="60" y="52" width="280" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="200" y="80" font-size="13" text-anchor="middle" fill="#334155">sysmon 监控线程</text>
+<rect x="360" y="52" width="280" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="80" font-size="13" text-anchor="middle" fill="#1e3a8a">spin 协程（占着 P）</text>
+<rect x="660" y="52" width="280" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="800" y="80" font-size="13" text-anchor="middle" fill="#14532d">同 P 的别的协程</text>
+
+<line x1="200" y1="96" x2="200" y2="430" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,4"/>
+<line x1="500" y1="96" x2="500" y2="430" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,4"/>
+<line x1="800" y1="96" x2="800" y2="430" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,4"/>
+
+<line x1="200" y1="150" x2="492" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="346" y="142" font-size="12" text-anchor="middle" fill="#64748b">每 20µs~10ms 醒一次，检查</text>
+
+<rect x="380" y="170" width="240" height="48" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="190" font-size="12" text-anchor="middle" fill="#7c2d12">纯计算循环</text>
+<text x="500" y="208" font-size="12" text-anchor="middle" fill="#7c2d12">已运行 &gt; 10ms</text>
+
+<line x1="200" y1="260" x2="492" y2="260" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="346" y="252" font-size="12" text-anchor="middle" fill="#64748b">发 SIGURG 给那个 M</text>
+
+<rect x="380" y="280" width="240" height="48" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="300" font-size="12" text-anchor="middle" fill="#7c2d12">信号处理函数挂起 G</text>
+<text x="500" y="318" font-size="12" text-anchor="middle" fill="#7c2d12">保存现场</text>
+
+<line x1="500" y1="370" x2="792" y2="370" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="646" y="362" font-size="12" text-anchor="middle" fill="#64748b">重新调度 → P 交给别的 G</text>
+
+<text x="500" y="406" font-size="12" text-anchor="middle" fill="#14532d">别的协程首跳延迟 = 22ms（被饿住的时长）</text>
+
+<rect x="40" y="440" width="920" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="470" font-size="13" fill="#334155">默认（异步抢占开启）：首跳延迟 22ms，期间打点 258 次</text>
+<text x="60" y="498" font-size="13" fill="#7f1d1d">关掉异步抢占（GODEBUG=asyncpreemptoff=1）：首跳延迟 2.718s（≈ 整个循环时长）→ 被彻底饿死</text>
+<text x="60" y="524" font-size="12" fill="#64748b">sysmon 判定门槛约 10ms，所以抢占延迟在毫秒级，不是微秒级</text>
+</svg>

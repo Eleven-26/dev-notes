@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rl" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">nginx -s reload：进程全量替换，长连接被断</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">master 不变、worker 全部换新；老 worker 做完在途请求再退出，但它持有的 keep-alive 连接一起断了</text>
+
+  <rect x="40" y="96" width="380" height="190" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="220" y="124" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">reload 前</text>
+  <rect x="70" y="142" width="320" height="48" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="230" y="171" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">master 8288 · 保持不变</text>
+  <rect x="70" y="206" width="320" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="230" y="230" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">worker 16296（旧）</text>
+  <text x="230" y="252" text-anchor="middle" font-size="11" fill="#9a3412">持有 keep-alive 连接</text>
+
+  <line x1="424" y1="191" x2="574" y2="191" stroke="#334155" stroke-width="1.8" marker-end="url(#rl)"/>
+  <text x="499" y="182" text-anchor="middle" font-size="11.5" fill="#334155">nginx -s reload</text>
+  <text x="499" y="212" text-anchor="middle" font-size="11" fill="#64748b">命令本身 48 ms</text>
+
+  <rect x="580" y="96" width="380" height="190" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="770" y="124" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">reload 后</text>
+  <rect x="610" y="142" width="320" height="48" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="770" y="171" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">master 8288 · 保持不变</text>
+  <rect x="610" y="206" width="320" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="770" y="230" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">worker 9628（新）</text>
+  <text x="770" y="252" text-anchor="middle" font-size="11" fill="#166534">接收新请求</text>
+
+  <rect x="40" y="320" width="460" height="90" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="60" y="350" font-size="13" font-weight="bold" fill="#14532d">短连接：完全平滑</text>
+  <text x="60" y="374" font-size="11.5" fill="#166534">reload 前 134/134、reload 后 137/137（均 100%）</text>
+  <text x="60" y="396" font-size="11.5" fill="#166534">老 worker 先做完在途请求再退出</text>
+
+  <rect x="520" y="320" width="440" height="90" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="540" y="350" font-size="13" font-weight="bold" fill="#7f1d1d">长连接：会被断</text>
+  <text x="540" y="374" font-size="11.5" fill="#b91c1c">reload 后 ERR:ConnectionAbortedError</text>
+  <text x="540" y="396" font-size="11.5" fill="#b91c1c">同一连接 3 轮全部复现 → connection reset</text>
+
+  <line x1="40" y1="436" x2="970" y2="436" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="464" font-size="12" fill="#0f172a">⭐ 「reload 平滑」要加限定：对无状态短连接平滑，对连接池化的长连接（Go http.Client / gRPC / WebSocket）不平滑。</text>
+  <text x="40" y="490" font-size="12" fill="#64748b">worker_shutdown_timeout 只能给一个宽限期，但无法避免 —— 老 worker 终究要退出。</text>
+</svg>

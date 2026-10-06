@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="wd1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTP 头注入：一个 CRLF 就能凭空造出一个头</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">headers 与 content 之间靠一组空行（CRLF CRLF）分隔 —— 能注入头，就能提前结束 headers</text>
+
+  <rect x="40" y="88" width="520" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="122" font-size="11.5" fill="#1e3a8a">① 重定向参数未过滤：?page=http://localhost/checkout</text>
+  <text x="60" y="146" font-size="11.5" fill="#64748b">直接写进 Location 头</text>
+
+  <rect x="40" y="176" width="520" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="210" font-size="11.5" fill="#1e3a8a">② 参数里注入 %0D%0A%0D%0A（0x0D 0x0A = 两组 CRLF）</text>
+  <text x="60" y="234" font-size="11.5" fill="#64748b">URL 编码把 CRLF 藏进了参数里</text>
+
+  <rect x="40" y="264" width="520" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="60" y="298" font-size="11.5" fill="#7c2d12">③ 解码后拼进响应头 → 提前出现空行</text>
+  <text x="60" y="322" font-size="11.5" fill="#64748b">headers 在此处被意外结束</text>
+
+  <rect x="40" y="352" width="520" height="76" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="60" y="386" font-size="11.5" fill="#7f1d1d">④ 空行之后的内容被当成响应体：</text>
+  <text x="60" y="410" font-size="11.5" fill="#7f1d1d">&lt;script&gt;alert('hello')&lt;/script&gt;</text>
+
+  <rect x="40" y="440" width="520" height="76" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="60" y="474" font-size="11.5" fill="#7f1d1d">⑤ 浏览器把注入的脚本当页面内容执行</text>
+  <text x="60" y="498" font-size="11.5" fill="#7f1d1d">藏进 URL 的 JavaScript 被运行</text>
+
+  <line x1="300" y1="164" x2="300" y2="176" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wd1)"/>
+  <line x1="300" y1="252" x2="300" y2="264" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wd1)"/>
+  <line x1="300" y1="340" x2="300" y2="352" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wd1)"/>
+  <line x1="300" y1="428" x2="300" y2="440" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#wd1)"/>
+
+  <rect x="600" y="88" width="360" height="428" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="616" y="118" font-size="13.5" font-weight="bold" fill="#0f172a">防护与实测</text>
+  <text x="616" y="148" font-size="11.5" fill="#334155">• 过滤所有响应头，尤其 CRLF</text>
+  <text x="616" y="174" font-size="11.5" fill="#334155">• 能用框架的 header API，就别</text>
+  <text x="616" y="194" font-size="11.5" fill="#334155">  自己拼响应报文</text>
+  <text x="616" y="226" font-size="11.5" fill="#14532d">• Go net/http 写 header 时会把 \r\n</text>
+  <text x="616" y="246" font-size="11.5" fill="#14532d">  替换成空格 → 注入不成立（默认免疫）</text>
+  <text x="616" y="278" font-size="11.5" fill="#b91c1c">• 手写裸报文则同一个输入会真拆出</text>
+  <text x="616" y="298" font-size="11.5" fill="#b91c1c">  第二个头（如 Set-Cookie: evil=1）</text>
+  <text x="616" y="330" font-size="11.5" fill="#334155">• 限制 header 大小：Apache 默认 8K，</text>
+  <text x="616" y="350" font-size="11.5" fill="#334155">  超限返回 400 Bad Request</text>
+  <text x="616" y="382" font-size="11.5" fill="#b91c1c">⚠️ 反过来说，把超过 8K 的 header 链接</text>
+  <text x="616" y="402" font-size="11.5" fill="#b91c1c">  发给受害者，会让其被服务器拒绝访问</text>
+  <text x="616" y="422" font-size="11.5" fill="#b91c1c">  —— 这也是一类拒绝服务</text>
+  <text x="616" y="462" font-size="11.5" fill="#334155">实测：Location 值里的 \r\n 在 net/http</text>
+  <text x="616" y="482" font-size="11.5" fill="#334155">  下变成两个空格，在裸报文里被拆成</text>
+  <text x="616" y="502" font-size="11.5" fill="#334155">  [1] Location / [2] Set-Cookie 两行</text>
+
+  <rect x="20" y="532" width="960" height="72" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="560" font-size="12.5" fill="#0f172a">⭐ 结论：net/http 在写 header 时把换行替换成空格（所以默认免疫），而手写裸报文时同一个输入会真的变成两个头。</text>
+  <text x="36" y="586" font-size="12.5" fill="#b91c1c">⚠️ 生产含义：能用框架的 header API 就别自己拼响应报文；同类问题不止发生在 Location，Set-Cookie 等任何 header 都可能中招。</text>
+</svg>

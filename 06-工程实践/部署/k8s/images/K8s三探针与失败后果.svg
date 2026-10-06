@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三个探针：各回答什么问题、失败会怎样</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">startup 把冷启动豁免期显式化；readiness 失败只摘流量；liveness 失败才重启</text>
+
+  <rect x="40" y="112" width="440" height="86" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="140" font-size="13" font-weight="bold" fill="#1e3a8a">startupProbe —— 「它启动完了吗」</text>
+  <text x="58" y="164" font-size="11.5" fill="#1d4ed8">把冷启动豁免期显式化</text>
+  <text x="58" y="186" font-size="11.5" fill="#1d4ed8">失败：超过阈值仍失败 → 杀掉重启</text>
+
+  <rect x="40" y="212" width="440" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="58" y="240" font-size="13" font-weight="bold" fill="#14532d">readinessProbe —— 「现在能接流量吗」</text>
+  <text x="58" y="264" font-size="11.5" fill="#166534">失败：只从 Service endpoint 摘掉，不重启</text>
+  <text x="58" y="286" font-size="11.5" fill="#166534">它是「接流量的门票」，与存活无关</text>
+
+  <rect x="40" y="312" width="440" height="86" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="58" y="340" font-size="13" font-weight="bold" fill="#7c2d12">livenessProbe —— 「是不是僵住了」</text>
+  <text x="58" y="364" font-size="11.5" fill="#9a3412">失败：重启容器；别让它依赖下游</text>
+  <text x="58" y="386" font-size="11.5" fill="#9a3412">配成和 readiness 一样 = 白配且更危险</text>
+
+  <text x="520" y="112" font-size="14" font-weight="bold" fill="#0f172a">常见误配的后果链条</text>
+
+  <rect x="520" y="128" width="440" height="96" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="538" y="156" font-size="12" font-weight="bold" fill="#7f1d1d">liveness 太紧</text>
+  <text x="538" y="180" font-size="11" fill="#b91c1c">超时短 / failureThreshold=1 / 探针依赖下游</text>
+  <text x="538" y="202" font-size="11" fill="#b91c1c">→ 抖动 → 杀 → 冷启动 → 更多失败 → 重启风暴</text>
+
+  <rect x="520" y="238" width="440" height="88" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="538" y="266" font-size="12" font-weight="bold" fill="#7c2d12">只配 liveness，不配 readiness</text>
+  <text x="538" y="290" font-size="11" fill="#9a3412">新 Pod 刚起、还没预热就被打流量</text>
+  <text x="538" y="312" font-size="11" fill="#9a3412">→ 一批 5xx</text>
+
+  <rect x="520" y="340" width="440" height="88" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="538" y="368" font-size="12" font-weight="bold" fill="#0f172a">用 initialDelaySeconds 当启动保险</text>
+  <text x="538" y="392" font-size="11" fill="#475569">猜不准就还是误杀</text>
+  <text x="538" y="414" font-size="11" fill="#475569">→ 改用 startupProbe 表达「启动要多久」更准确</text>
+
+  <text x="20" y="470" font-size="12.5" fill="#0f172a">⭐ 三探针分工：startup 管「什么时候开始查」，readiness 管「能不能接流量」，liveness 管「要不要重启」。</text>
+</svg>

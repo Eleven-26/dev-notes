@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">CI 上为什么每次从零构建：缓存搬到哪</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">层缓存存在「执行构建的那个 daemon / 构建器」本地；CI 的 job 容器每次全新 → 本地缓存必为空</text>
+
+  <rect x="40" y="96" width="360" height="76" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="60" y="126" font-size="13.5" font-weight="bold" fill="#7f1d1d">CI 的 job 容器每次全新</text>
+  <text x="60" y="150" font-size="11.5" fill="#b91c1c">本地层缓存为空 → 每次都从零构建</text>
+
+  <line x1="404" y1="134" x2="452" y2="134" stroke="#334155" stroke-width="2" marker-end="url(#arw)"/>
+
+  <rect x="456" y="96" width="504" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="476" y="126" font-size="13.5" font-weight="bold" fill="#1e3a8a">缓存只能搬到共享存储</text>
+  <text x="476" y="150" font-size="11.5" fill="#1d4ed8">目标：跨 Runner、跨机器都能复用同一份层缓存</text>
+
+  <rect x="40" y="200" width="300" height="150" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="228" font-size="13" font-weight="bold" fill="#1e3a8a">① registry 缓存</text>
+  <text x="58" y="254" font-size="11.5" fill="#1d4ed8">--cache-from 指向旧镜像层</text>
+  <text x="58" y="276" font-size="11.5" fill="#1d4ed8">--cache-to 把缓存推回仓库</text>
+  <text x="58" y="306" font-size="11.5" fill="#64748b">缓存 tag 与发布 tag 分开；</text>
+  <text x="58" y="326" font-size="11.5" fill="#64748b">缓存会一直长大，要配套清理</text>
+
+  <rect x="350" y="200" width="300" height="150" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="368" y="228" font-size="13" font-weight="bold" fill="#14532d">② 固定复用同一台 Runner</text>
+  <text x="368" y="254" font-size="11.5" fill="#166534">或把构建器缓存目录挂出来</text>
+  <text x="368" y="276" font-size="11.5" fill="#166534">命中率高、不额外占仓库</text>
+  <text x="368" y="306" font-size="11.5" fill="#64748b">机器坏了就全丢；</text>
+  <text x="368" y="326" font-size="11.5" fill="#64748b">并发 job 抢同一份缓存要限流</text>
+
+  <rect x="660" y="200" width="300" height="150" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="678" y="228" font-size="13" font-weight="bold" fill="#7c2d12">③ 依赖级缓存</text>
+  <text x="678" y="254" font-size="11.5" fill="#9a3412">复用包管理器 cache 目录</text>
+  <text x="678" y="276" font-size="11.5" fill="#9a3412">对「依赖层重建」最有效</text>
+  <text x="678" y="306" font-size="11.5" fill="#64748b">并发写与容量要管；</text>
+  <text x="678" y="326" font-size="11.5" fill="#64748b">只改代码时命中率最高</text>
+
+  <rect x="20" y="370" width="960" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="398" font-size="13" font-weight="bold" fill="#0f172a">BuildKit 时代更强的一招：--mount=type=cache（把依赖目录挂成缓存卷）</text>
+  <text x="36" y="424" font-size="12" fill="#0f172a">挂载目录独立于镜像层 → 层缓存失效时它依然保留；改 go.mod 只补差量，换基础镜像也不受影响。</text>
+  <text x="36" y="450" font-size="11.5" fill="#64748b">⚠️ 前提：BuildKit（现代 Docker 默认已开）；Dockerfile 首行写 # syntax=docker/dockerfile:1 声明语法版本。</text>
+  <text x="36" y="470" font-size="11.5" fill="#64748b">Go 依赖层的唯一正确顺序：COPY go.mod go.sum → RUN go mod download → COPY . . → build。</text>
+</svg>

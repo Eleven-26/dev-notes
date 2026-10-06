@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sa2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="ra2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="rr2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">上游故障转移：被动健康检查与重试时序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">轮询命中死节点 → connect 超时 → proxy_next_upstream 自动重试健康节点；客户端无感，代价是多等一个超时</text>
+
+  <rect x="30" y="88" width="120" height="48" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="90" y="117" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">客户端</text>
+  <rect x="210" y="88" width="180" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="300" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">nginx</text>
+  <text x="300" y="128" text-anchor="middle" font-size="10" fill="#1d4ed8">location /failover/</text>
+  <rect x="520" y="88" width="200" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="620" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">上游 127.0.0.1:18081</text>
+  <text x="620" y="128" text-anchor="middle" font-size="10" fill="#166534">健康</text>
+  <rect x="750" y="88" width="200" height="48" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="850" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">上游 127.0.0.1:18099</text>
+  <text x="850" y="128" text-anchor="middle" font-size="10" fill="#b91c1c">无人监听</text>
+
+  <line x1="90" y1="136" x2="90" y2="392" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="300" y1="136" x2="300" y2="392" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="620" y1="136" x2="620" y2="392" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="850" y1="136" x2="850" y2="392" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <text x="195" y="158" text-anchor="middle" font-size="11.5" fill="#0f172a">请求 #2</text>
+  <line x1="94" y1="166" x2="296" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#sa2)"/>
+
+  <text x="575" y="194" text-anchor="middle" font-size="11.5" fill="#7f1d1d">轮询选中死节点 18099</text>
+  <line x1="304" y1="202" x2="846" y2="202" stroke="#334155" stroke-width="1.5" marker-end="url(#sa2)"/>
+
+  <text x="575" y="232" text-anchor="middle" font-size="11.5" fill="#b91c1c">connect 超时（1s）</text>
+  <line x1="846" y1="240" x2="304" y2="240" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#rr2)"/>
+
+  <text x="460" y="274" text-anchor="middle" font-size="11.5" fill="#166534">proxy_next_upstream 重试</text>
+  <line x1="304" y1="282" x2="616" y2="282" stroke="#334155" stroke-width="1.5" marker-end="url(#sa2)"/>
+
+  <text x="460" y="310" text-anchor="middle" font-size="11.5" fill="#475569">200</text>
+  <line x1="616" y1="318" x2="304" y2="318" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ra2)"/>
+
+  <text x="195" y="352" text-anchor="middle" font-size="11.5" fill="#1e3a8a">200（客户端无感）</text>
+  <line x1="296" y1="360" x2="94" y2="360" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ra2)"/>
+
+  <line x1="30" y1="400" x2="970" y2="400" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="428" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 三条结论：</text>
+  <text x="40" y="452" font-size="12" fill="#0f172a">① 8 个请求全是 200 —— 客户端完全无感（proxy_next_upstream 起了作用）。</text>
+  <text x="40" y="476" font-size="12" fill="#0f172a">② 踩到死节点那次 rt=1.010s：整整多等了 proxy_connect_timeout 那一秒（被动健康检查的固有成本）。</text>
+  <text x="40" y="500" font-size="12" fill="#0f172a">③ 摘除是「时间窗」而非「探测」：max_fails=2 / fail_timeout=5s，节点恢复也要等下一个请求撞上来。</text>
+  <text x="40" y="528" font-size="12" fill="#b91c1c">⚠️ 对比：APISIX / Kong / Envoy 有主动健康检查，节点挂掉与恢复是秒级、无用户代价；社区版 nginx 只有被动式。</text>
+</svg>

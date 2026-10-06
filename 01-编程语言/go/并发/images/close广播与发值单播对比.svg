@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 490" width="1000" height="490" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="490" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="30" y="56" width="450" height="400" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="255" y="90" font-size="16" text-anchor="middle" font-weight="700" fill="#7f1d1d">向 quit 发 3 次值（单播）</text>
+
+<rect x="120" y="110" width="270" height="54" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="255" y="144" font-size="13" text-anchor="middle" fill="#7c2d12">quit &lt;- struct{}{} ×3</text>
+
+<line x1="255" y1="164" x2="255" y2="192" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="90" y="196" width="330" height="56" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="255" y="230" font-size="13" text-anchor="middle" fill="#14532d">worker 1 收到 ✅</text>
+<rect x="90" y="272" width="330" height="56" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="255" y="306" font-size="13" text-anchor="middle" fill="#7f1d1d">worker 2 永久阻塞 ❌</text>
+<rect x="90" y="348" width="330" height="56" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="255" y="382" font-size="13" text-anchor="middle" fill="#7f1d1d">worker 3 永久阻塞 ❌</text>
+
+<text x="255" y="430" font-size="13" text-anchor="middle" fill="#7f1d1d">channel 的值只能被一个接收者取走 → 另外 2 个泄漏</text>
+
+<rect x="520" y="56" width="450" height="400" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="745" y="90" font-size="16" text-anchor="middle" font-weight="700" fill="#14532d">close(quit)（广播）</text>
+
+<rect x="620" y="110" width="330" height="54" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="785" y="144" font-size="13" text-anchor="middle" fill="#1e3a8a">close(quit)</text>
+
+<line x1="620" y1="137" x2="560" y2="137" stroke="#2563eb" stroke-width="1.5"/>
+<line x1="560" y1="137" x2="560" y2="376" stroke="#2563eb" stroke-width="1.5"/>
+<line x1="560" y1="224" x2="616" y2="224" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="560" y1="300" x2="616" y2="300" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="560" y1="376" x2="616" y2="376" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="620" y="196" width="330" height="56" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="785" y="230" font-size="13" text-anchor="middle" fill="#14532d">worker 1 收到 ✅</text>
+<rect x="620" y="272" width="330" height="56" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="785" y="306" font-size="13" text-anchor="middle" fill="#14532d">worker 2 收到 ✅</text>
+<rect x="620" y="348" width="330" height="56" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="785" y="382" font-size="13" text-anchor="middle" fill="#14532d">worker 3 收到 ✅</text>
+
+<text x="745" y="430" font-size="13" text-anchor="middle" fill="#14532d">「已关闭」对每个接收者都返回 ok=false → 一次唤醒全部</text>
+</svg>

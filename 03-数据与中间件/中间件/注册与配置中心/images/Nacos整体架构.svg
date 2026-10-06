@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 670" width="1000" height="670" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="670" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Nacos 整体架构：注册中心 + 配置中心，一个组件顶掉两个</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">Server 节点对等、无主从；临时实例走 AP，持久化实例与配置走 CP</text>
+
+  <rect x="40" y="90" width="920" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="114" font-size="14" font-weight="bold" fill="#0f172a">Nacos Server 集群（节点对等，无主从之分）</text>
+  <rect x="60" y="130" width="280" height="74" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="200" y="158" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Nacos 节点</text>
+  <text x="200" y="182" text-anchor="middle" font-size="11" fill="#1d4ed8">OpenAPI / 控制台 / 注册表 / 健康检查</text>
+  <rect x="360" y="130" width="280" height="74" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="158" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Nacos 节点</text>
+  <text x="500" y="182" text-anchor="middle" font-size="11" fill="#1d4ed8">配置存储 / 服务注册表 / 健康检查</text>
+  <rect x="660" y="130" width="280" height="74" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="800" y="158" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Nacos 节点</text>
+  <text x="800" y="182" text-anchor="middle" font-size="11" fill="#1d4ed8">OpenAPI / 控制台 / 注册表 / 健康检查</text>
+
+  <line x1="60" y1="222" x2="940" y2="222" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="500" y="244" text-anchor="middle" font-size="12" fill="#64748b">JRaft / Distro 数据同步（节点对等，无主从）</text>
+  <text x="56" y="272" font-size="12" fill="#334155">端口：8848 HTTP + 控制台　9848 客户端 gRPC　9849 服务端 gRPC　7848 集群通信</text>
+
+  <rect x="40" y="310" width="920" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="500" y="346" text-anchor="middle" font-size="12.5" fill="#7c2d12">存储：集群必须外置 MySQL（5.7+ / 8.0）；单机可用内嵌 Derby（仅演示）</text>
+
+  <rect x="40" y="390" width="450" height="90" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="265" y="420" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">Distro（AP）</text>
+  <text x="265" y="446" text-anchor="middle" font-size="12" fill="#166534">用于临时实例（ephemeral=true）</text>
+  <text x="265" y="466" text-anchor="middle" font-size="12" fill="#166534">最终一致 + 高可用</text>
+
+  <rect x="510" y="390" width="450" height="90" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="735" y="420" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">JRaft（CP）</text>
+  <text x="735" y="446" text-anchor="middle" font-size="12" fill="#991b1b">用于持久化实例与配置数据</text>
+  <text x="735" y="466" text-anchor="middle" font-size="12" fill="#991b1b">强一致，需多数派存活</text>
+
+  <rect x="40" y="500" width="920" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="500" y="526" text-anchor="middle" font-size="12.5" fill="#0f172a">Nacos Client（SDK）：注册心跳 + 配置长轮询 / gRPC 推送</text>
+  <text x="500" y="550" text-anchor="middle" font-size="12" fill="#475569">本地快照与故障降级：Nacos 不可用时仍能用 cacheDir 启动</text>
+
+  <line x1="20" y1="588" x2="980" y2="588" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="614" font-size="13" fill="#0f172a">⭐ CP / AP 不是全局开关，而是按数据类型路由：临时实例 AP，持久化实例与配置 CP。</text>
+  <text x="20" y="640" font-size="13" fill="#0f172a">⚠️ 集群节点数必须奇数（3 / 5 / 7）；2 台挂 1 台即失去多数派，还不如单机。</text>
+</svg>

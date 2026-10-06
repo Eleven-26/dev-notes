@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">进不去容器时的排查顺序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">操作语义不同：先确认容器还在不在，再分辨「没 shell」「没权限」「还在启动」</text>
+
+  <rect x="40" y="96" width="380" height="72" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="126" font-size="14" font-weight="bold" fill="#1e3a8a">① 容器还在吗</text>
+  <text x="58" y="150" font-size="11.5" fill="#1d4ed8">docker ps -a；已退出看 logs 与 inspect ExitCode</text>
+
+  <rect x="40" y="180" width="380" height="72" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="210" font-size="14" font-weight="bold" fill="#1e3a8a">② 镜像里有 shell 吗</text>
+  <text x="58" y="234" font-size="11.5" fill="#1d4ed8">docker run --rm --entrypoint sh &lt;image&gt; -c 'echo ok'</text>
+
+  <rect x="40" y="264" width="380" height="72" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="294" font-size="14" font-weight="bold" fill="#1e3a8a">③ 是权限问题吗</text>
+  <text x="58" y="318" font-size="11.5" fill="#1d4ed8">加 -u root，或看 docker inspect 的 User 字段</text>
+
+  <rect x="40" y="348" width="380" height="72" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="58" y="378" font-size="14" font-weight="bold" fill="#7c2d12">④ 卡在启动中</text>
+  <text x="58" y="402" font-size="11.5" fill="#9a3412">-it 会一直等，改用 -d 起容器再用 logs 观察</text>
+
+  <rect x="40" y="432" width="380" height="72" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="58" y="462" font-size="14" font-weight="bold" fill="#14532d">⑤ 能进但主进程不是 1 号</text>
+  <text x="58" y="486" font-size="11.5" fill="#166534">信号收不到 —— 见 容器原理.md 的 PID 1 部分</text>
+
+  <line x1="230" y1="168" x2="230" y2="180" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="230" y1="252" x2="230" y2="264" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="230" y1="336" x2="230" y2="348" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="230" y1="420" x2="230" y2="432" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#arw)"/>
+
+  <line x1="424" y1="132" x2="452" y2="132" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="424" y1="216" x2="452" y2="216" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="424" y1="300" x2="452" y2="300" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="424" y1="384" x2="452" y2="384" stroke="#cbd5e1" stroke-width="1.4"/>
+  <line x1="424" y1="468" x2="452" y2="468" stroke="#cbd5e1" stroke-width="1.4"/>
+
+  <text x="460" y="126" font-size="12" fill="#0f172a">已停的容器不能 exec 进去：先判断是不是根本不在了</text>
+  <text x="460" y="204" font-size="12" fill="#0f172a">报 executable file not found → distroless / scratch</text>
+  <text x="460" y="228" font-size="12" fill="#15803d">改用宿主 nsenter -t PID -a 钻进去（这时是唯一手段）</text>
+  <text x="460" y="294" font-size="12" fill="#0f172a">容器内 root 与宿主映射不同时，权限报错先怀疑这里</text>
+  <text x="460" y="378" font-size="12" fill="#0f172a">CrashLoop 时 exec 进的是「半死」视角，优先看日志</text>
+  <text x="460" y="462" font-size="12" fill="#0f172a">属于「能进去但停不掉」的另一类问题（容器原理.md）</text>
+
+  <line x1="20" y1="518" x2="960" y2="518" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="544" font-size="12.5" fill="#0f172a">⭐ 取证纪律：容器内只读不改 —— 改过的文件在容器重建后必然丢失，还会让现场失真；要改配置就走「改配置源 → 重新部署」。</text>
+</svg>

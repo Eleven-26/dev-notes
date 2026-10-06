@@ -34,6 +34,8 @@ NATS 是 **云原生、轻量级、高性能**的发布订阅消息系统，CNCF
 
 **Request-Reply 流程**：请求方发消息并把 `reply` 设为自动生成的收件箱 `INBOX.xyz` → 响应方处理完向 `INBOX.xyz` 回写 → 收到即返回，超时返回 `nats.ErrTimeout`。`INBOX` 由客户端自动生成。
 
+![NATS Request-Reply：请求方自带 INBOX，响应方向 reply 主题回写](images/Nats请求应答RequestReply时序.svg)
+
 > ⚠️ **发起方必须保持连接**才能收到响应；请求方掉线或超时，响应就丢。
 
 ## 三、消息模型对照 ⭐
@@ -64,6 +66,8 @@ Core NATS 与 JetStream 是同一个连接上的两种用法，这是理解 NATS
 > ⭐ 最大认知差异：**Kafka 消费组「共享一个 offset」且分区与成员绑定；NATS 队列组「共享一个投递队列」由服务端随机派发**。因此 NATS 不保证「同一 key 稳定落到同一消费者」，也就没有分区内顺序可言。
 
 ## 四、整体架构
+
+![NATS 整体架构：route 组网成 mesh，Super Cluster 与 Leaf Node](images/Nats整体架构route与LeafNode.svg)
 
 | 形态 | 说明 | 适用 |
 | --- | --- | --- |
@@ -443,6 +447,8 @@ nc.close();
 | 消费端幂等 | 唯一键 / 去重表 / 状态机（「仅当状态为上一步时才推进」） | ⭐ 唯一可靠的做法，跨系统适用 |
 
 ### 8.3 ACK 策略与重投
+
+![NATS JetStream 的 ACK 与重投：AckWait + MaxDeliver](images/NatsJetStream应答与重投.svg)
 
 | 选项 | 语义 | 用在哪 |
 | --- | --- | --- |

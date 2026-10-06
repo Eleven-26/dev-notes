@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sg1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数字签名：私钥签、公钥验，改一个字符就露馅</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">签名对象是「原文的摘要」，不是原文本身</text>
+
+  <text x="40" y="88" font-size="13" font-weight="bold" fill="#1e3a8a">发送方 A：签名</text>
+  <rect x="40" y="100" width="160" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="120" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">原文 M</text>
+  <text x="120" y="150" text-anchor="middle" font-size="11" fill="#1e3a8a">明文</text>
+  <rect x="230" y="100" width="160" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="310" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">HASH</text>
+  <text x="310" y="150" text-anchor="middle" font-size="11" fill="#1e3a8a">SHA-256</text>
+  <rect x="420" y="100" width="160" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">摘要 H</text>
+  <text x="500" y="150" text-anchor="middle" font-size="11" fill="#1e3a8a">定长 256 bit</text>
+  <rect x="610" y="100" width="160" height="64" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="690" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">用私钥加密 H</text>
+  <text x="690" y="150" text-anchor="middle" font-size="11" fill="#7c2d12">非对称运算（慢）</text>
+  <rect x="800" y="100" width="160" height="64" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="880" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">签名 S</text>
+  <text x="880" y="150" text-anchor="middle" font-size="11" fill="#14532d">RSA-2048 = 256 字节</text>
+  <line x1="200" y1="132" x2="230" y2="132" stroke="#334155" stroke-width="1.6" marker-end="url(#sg1)"/>
+  <line x1="390" y1="132" x2="420" y2="132" stroke="#334155" stroke-width="1.6" marker-end="url(#sg1)"/>
+  <line x1="580" y1="132" x2="610" y2="132" stroke="#334155" stroke-width="1.6" marker-end="url(#sg1)"/>
+  <line x1="770" y1="132" x2="800" y2="132" stroke="#334155" stroke-width="1.6" marker-end="url(#sg1)"/>
+
+  <rect x="40" y="182" width="920" height="44" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="500" y="210" text-anchor="middle" font-size="12.5" fill="#0f172a">发送 {M, S}（原文 + 签名）—— 签名只保护完整性，不提供保密性，原文仍是明文传的</text>
+
+  <text x="40" y="256" font-size="13" font-weight="bold" fill="#14532d">接收方 B：验证</text>
+  <rect x="40" y="268" width="200" height="64" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="140" y="296" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">收到 {M, S}</text>
+  <text x="140" y="318" text-anchor="middle" font-size="11" fill="#14532d">把两者区分开</text>
+  <rect x="280" y="268" width="200" height="64" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="380" y="296" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">对 M 做 HASH</text>
+  <text x="380" y="318" text-anchor="middle" font-size="11" fill="#14532d">→ 摘要 H*</text>
+  <rect x="520" y="268" width="200" height="64" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="620" y="296" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">用发送方公钥解密 S</text>
+  <text x="620" y="318" text-anchor="middle" font-size="11" fill="#14532d">→ 摘要 H</text>
+  <rect x="760" y="268" width="200" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="860" y="296" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">比较 H 与 H*</text>
+  <text x="860" y="318" text-anchor="middle" font-size="11" fill="#1e3a8a">相同 → 未被篡改</text>
+  <line x1="240" y1="300" x2="280" y2="300" stroke="#334155" stroke-width="1.6" marker-end="url(#sg1)"/>
+  <line x1="480" y1="300" x2="520" y2="300" stroke="#334155" stroke-width="1.6" marker-end="url(#sg1)"/>
+  <line x1="720" y1="300" x2="760" y2="300" stroke="#334155" stroke-width="1.6" marker-end="url(#sg1)"/>
+
+  <rect x="20" y="352" width="960" height="64" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="36" y="380" font-size="12.5" fill="#7f1d1d">⚠️ 实测：原文未改 → 验签 true；只改一个字节 → 验签 false（雪崩效应）。</text>
+  <text x="36" y="404" font-size="12.5" fill="#7f1d1d">   26 字节输入经 SHA-256 得到 256 bit 摘要，摘要长度固定、与原文长度无关。</text>
+
+  <rect x="20" y="436" width="960" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="466" font-size="14" font-weight="bold" fill="#0f172a">三个必须澄清的边界</text>
+  <text x="36" y="498" font-size="12.5" fill="#334155">① 签名验的是「摘要是否一致」：验签成功只说明「发送者持有对应私钥」且「内容未被改动」。</text>
+  <text x="36" y="524" font-size="12.5" fill="#334155">② 不提供保密性、不说明发送时间、不防重放（防重放要叠加 timestamp + nonce）。</text>
+  <text x="36" y="550" font-size="12.5" fill="#334155">③ 只对「篡改」负责，不对「伪造」负责 —— 私钥的保护等级决定整套体系的上限。</text>
+  <text x="36" y="582" font-size="12.5" fill="#0f172a">⭐ 为什么不直接对原文签名？原文可能很长且非对称算法极慢 —— 先做摘要再签名，既高效又只保护完整性。</text>
+  <text x="36" y="610" font-size="12.5" fill="#334155">实测性能：HMAC-SHA256 2000 次 77.3 ms；SHA256withRSA 2000 次 9234.8 ms —— 签名慢 119 倍，压力落在签发方。</text>
+  <text x="36" y="638" font-size="12.5" fill="#334155">实测长度：签名 RSA-2048 = 256 字节（= 密钥长度）、ECDSA P-256 ≈ 70 字节，均与原文长度无关。</text>
+  <text x="36" y="668" font-size="12.5" fill="#b91c1c">⚠️ 用 HASH(数据 + 密钥) 代替 HMAC 存在长度扩展攻击；HMAC 的双层哈希结构专门防这个。</text>
+</svg>

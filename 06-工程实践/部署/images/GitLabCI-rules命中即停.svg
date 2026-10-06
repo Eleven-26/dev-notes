@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">rules：逐条求值、命中即停</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">第一个为真的规则决定 job 的行为；一条都没命中时，job 根本不会被创建（不是跳过，是不存在）</text>
+
+  <rect x="350" y="82" width="300" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="500" y="114" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">job 的 rules：自上而下逐条求值</text>
+
+  <line x1="500" y1="134" x2="500" y2="166" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+
+  <rect x="330" y="170" width="340" height="58" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="196" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">规则1 命中？分支 == "main"</text>
+  <text x="500" y="216" text-anchor="middle" font-size="11" fill="#9a3412">if: '$CI_COMMIT_BRANCH == "main"'</text>
+
+  <line x1="490" y1="228" x2="272" y2="282" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arr)"/>
+  <line x1="510" y1="228" x2="728" y2="282" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arg)"/>
+  <text x="366" y="266" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">命中即停</text>
+  <text x="634" y="266" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">不命中</text>
+
+  <rect x="40" y="286" width="440" height="130" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="58" y="314" font-size="13" font-weight="bold" fill="#7f1d1d">按这条规则决定 job 的行为</text>
+  <text x="58" y="340" font-size="11.5" fill="#b91c1c">采用它的 when / variables / needs，后面的规则不再看。</text>
+  <text x="58" y="364" font-size="11.5" fill="#b91c1c">例：when: never → job 直接被否决</text>
+  <text x="58" y="386" font-size="11.5" fill="#b91c1c">（该分支下它不出现在 --list 里）。</text>
+
+  <rect x="520" y="286" width="440" height="130" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="538" y="314" font-size="13" font-weight="bold" fill="#14532d">继续求值下一条规则</text>
+  <text x="538" y="340" font-size="11.5" fill="#166534">最后一条 when: on_success（没有 if）是兜底：</text>
+  <text x="538" y="364" font-size="11.5" fill="#166534">它在任何分支都命中，于是 job 被创建、正常跑。</text>
+  <text x="538" y="386" font-size="11.5" fill="#166534">同一个 job 里，第一条命中的规则就决定了结果。</text>
+
+  <rect x="20" y="432" width="960" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="460" font-size="13" font-weight="bold" fill="#0f172a">一条规则都没命中：job 根本不会被创建（不是 skipped）</text>
+  <text x="36" y="486" font-size="11.5" fill="#64748b">实测口径：--list 里 when: never 的 job 被排除，要连它一起看用 --list-all。</text>
+</svg>

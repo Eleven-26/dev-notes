@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="m2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">多生产者 + 单消费者：三个同步点怎么落</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">done（生产者 → 守望者）、content（生产者 → 消费者）、exitCh（消费者 → main）</text>
+
+  <rect x="20" y="100" width="250" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="36" y="126" font-size="12.5" font-weight="bold" fill="#0f172a">3 个读取协程（生产者）</text>
+  <rect x="40" y="140" width="210" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="145" y="168" text-anchor="middle" font-size="12" fill="#1e3a8a">读取协程 a</text>
+  <rect x="40" y="200" width="210" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="145" y="228" text-anchor="middle" font-size="12" fill="#1e3a8a">读取协程 b</text>
+  <rect x="40" y="260" width="210" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="145" y="288" text-anchor="middle" font-size="12" fill="#1e3a8a">读取协程 c</text>
+  <text x="36" y="340" font-size="11" fill="#64748b">各读各的文件，读出的内容</text>
+  <text x="36" y="360" font-size="11" fill="#64748b">统一写进同一个公共管道</text>
+
+  <line x1="274" y1="170" x2="516" y2="170" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <text x="395" y="158" text-anchor="middle" font-size="11" fill="#0f172a">done：收满 3 个即全部干完</text>
+  <line x1="274" y1="320" x2="516" y2="320" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <text x="395" y="308" text-anchor="middle" font-size="11" fill="#0f172a">content：公共管道</text>
+
+  <rect x="520" y="126" width="200" height="90" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="620" y="154" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">守望者协程</text>
+  <text x="620" y="178" text-anchor="middle" font-size="11" fill="#334155">收满 3 个信号 =</text>
+  <text x="620" y="198" text-anchor="middle" font-size="11" fill="#334155">所有生产者都已结束</text>
+
+  <rect x="520" y="272" width="200" height="90" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="620" y="300" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">消费者协程</text>
+  <text x="620" y="324" text-anchor="middle" font-size="11" fill="#166534">for line := range content</text>
+  <text x="620" y="344" text-anchor="middle" font-size="11" fill="#166534">读空 + 已关闭 才退出</text>
+
+  <line x1="620" y1="218" x2="620" y2="268" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#m2)"/>
+  <text x="640" y="246" font-size="11" fill="#15803d">close(content)：只关一次</text>
+
+  <rect x="790" y="272" width="180" height="90" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="880" y="300" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">main</text>
+  <text x="880" y="324" text-anchor="middle" font-size="11" fill="#1d4ed8">&lt;- exitCh</text>
+  <text x="880" y="344" text-anchor="middle" font-size="11" fill="#1d4ed8">阻塞等待</text>
+  <line x1="724" y1="317" x2="786" y2="317" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <text x="755" y="309" text-anchor="middle" font-size="10.5" fill="#334155">exitCh</text>
+
+  <rect x="20" y="412" width="960" height="92" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="438" font-size="12" fill="#0f172a">⭐ 流水线上每个交接点都是 channel：谁生产谁 close，消费者只负责把管道读空。</text>
+  <text x="36" y="462" font-size="12" fill="#0f172a">⚠️ 顺序不可控：多个生产者往同一个管道写，聚合顺序完全由并发调度决定，每次运行都可能不同。</text>
+  <text x="36" y="486" font-size="12" fill="#0f172a">⚠️ 唯一可靠的退出条件仍是「管道已空 + 已 close」——「消费者跑得快、暂时读空」不代表可以退出。</text>
+</svg>

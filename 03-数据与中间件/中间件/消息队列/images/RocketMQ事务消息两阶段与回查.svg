@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rq3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="rq4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="rq5" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RocketMQ 事务消息：半消息 → 本地事务 → Commit/Rollback → 回查</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两阶段提交 + 定时回查，保证「本地事务 ↔ 消息投递」最终一致</text>
+
+  <rect x="40" y="88" width="260" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="170" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">生产者 Producer</text>
+  <rect x="380" y="88" width="280" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="520" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">Broker</text>
+  <rect x="720" y="88" width="260" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="850" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">消费者</text>
+
+  <line x1="170" y1="132" x2="170" y2="456" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="520" y1="132" x2="520" y2="456" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="850" y1="132" x2="850" y2="456" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <text x="345" y="168" text-anchor="middle" font-size="13" fill="#0f172a">① 发送半消息（Half Message）</text>
+  <line x1="174" y1="176" x2="514" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#rq3)"/>
+  <text x="532" y="200" font-size="12" fill="#9a3412">写入 RMQ_SYS_TRANS_HALF_TOPIC，消费者不可见</text>
+
+  <text x="345" y="238" text-anchor="middle" font-size="13" fill="#64748b">② 半消息写入成功，Producer 执行本地事务</text>
+  <line x1="516" y1="246" x2="176" y2="246" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#rq3)"/>
+
+  <text x="345" y="298" text-anchor="middle" font-size="13" fill="#0f172a">③ 按本地事务结果发 Commit / Rollback</text>
+  <line x1="174" y1="306" x2="514" y2="306" stroke="#334155" stroke-width="1.5" marker-end="url(#rq3)"/>
+  <text x="532" y="330" font-size="12" fill="#9a3412">Commit → 转真实 Topic 可见；Rollback → 删除半消息</text>
+
+  <text x="685" y="364" text-anchor="middle" font-size="13" fill="#15803d">④ 消息可见 → 消费者正常消费</text>
+  <line x1="524" y1="372" x2="844" y2="372" stroke="#16a34a" stroke-width="1.5" marker-end="url(#rq5)"/>
+
+  <text x="345" y="420" text-anchor="middle" font-size="13" fill="#c2410c">⑤ 长期未收到结果：每 60s 扫描超时半消息并回查</text>
+  <line x1="516" y1="428" x2="176" y2="428" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#rq4)"/>
+
+  <text x="20" y="476" font-size="13" fill="#0f172a">⚠️ 回查默认最多 15 次，仍未决则丢弃并打日志 —— 关键业务必须靠对账补偿兜底。</text>
+
+  <line x1="20" y1="500" x2="980" y2="500" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="526" font-size="13" fill="#0f172a">⭐ 半消息为什么不可见：真实 Topic 的 ConsumeQueue 里没有它的索引条目，按位点走不到。</text>
+  <text x="20" y="552" font-size="13" fill="#0f172a">⭐ Commit = 把半消息内容重新投递进真实 Topic；Rollback / 清理 = 追加操作记录，不原地改日志。</text>
+  <text x="20" y="578" font-size="13" fill="#0f172a">⚠️ 回查可能落到同组另一台实例：checkLocalTransaction 必须靠消息属性反查事务表 / 订单状态。</text>
+  <text x="20" y="604" font-size="13" fill="#0f172a">⚠️ 回查耗尽仍可能丢消息；事务消息也不支持延迟与批量，ProducerGroup 必须全局唯一。</text>
+  <text x="20" y="636" font-size="12" fill="#64748b">三个本地事务状态：COMMIT_MESSAGE 提交可见 / ROLLBACK_MESSAGE 回滚 / UNKNOW 等回查。</text>
+</svg>

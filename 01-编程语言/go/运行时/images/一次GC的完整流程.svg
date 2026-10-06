@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" width="1000" height="510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+
+<text x="60" y="46" font-size="15" font-weight="700" fill="#0f172a">一次 GC 的时间线：两次极短 STW + 全程并发</text>
+
+<rect x="60" y="190" width="60" height="64" fill="#fee2e2" stroke="#dc2626"/>
+<rect x="120" y="190" width="360" height="64" fill="#dbeafe" stroke="#2563eb"/>
+<rect x="480" y="190" width="140" height="64" fill="#ffedd5" stroke="#ea580c"/>
+<rect x="620" y="190" width="60" height="64" fill="#fee2e2" stroke="#dc2626"/>
+<rect x="680" y="190" width="260" height="64" fill="#dcfce7" stroke="#16a34a"/>
+
+<text x="90" y="228" font-size="13" text-anchor="middle" fill="#7f1d1d">①</text>
+<text x="300" y="228" font-size="13" text-anchor="middle" fill="#1e3a8a">②</text>
+<text x="550" y="228" font-size="13" text-anchor="middle" fill="#7c2d12">③</text>
+<text x="650" y="228" font-size="13" text-anchor="middle" fill="#7f1d1d">④</text>
+<text x="810" y="228" font-size="13" text-anchor="middle" fill="#14532d">⑤</text>
+
+<text x="60" y="164" font-size="12" fill="#64748b">用户代码与 GC 并发执行，只有两次极短的 STW</text>
+<text x="940" y="164" font-size="12" fill="#64748b">时间 →</text>
+
+<rect x="60" y="284" width="880" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="80" y="314" font-size="12" fill="#7f1d1d">① STW · mark setup —— 开启写屏障、准备标记，极短</text>
+<text x="80" y="342" font-size="12" fill="#1e3a8a">② 并发标记 —— 与用户 goroutine 同时跑，写屏障把新指针补记下来</text>
+<text x="80" y="370" font-size="12" fill="#7c2d12">③ 并发标记 + 辅助标记 —— mutator assist：分配太快的 goroutine 被「罚」去帮忙标记</text>
+<text x="80" y="398" font-size="12" fill="#7f1d1d">④ STW · mark termination —— 关闭写屏障、收尾，同样极短</text>
+<text x="80" y="426" font-size="12" fill="#14532d">⑤ 并发清扫 sweep —— 后台分批把死对象内存还给分配器，不需要 STW</text>
+<text x="80" y="460" font-size="12" fill="#0f172a">⭐ 关键词：两次极短 STW（实测 0~1 ms，常为微秒级）+ 全程并发</text>
+</svg>

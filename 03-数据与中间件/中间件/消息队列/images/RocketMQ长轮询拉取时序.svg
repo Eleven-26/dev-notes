@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rq2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RocketMQ 长轮询拉取：Push 本质是「挂起的 Pull」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">拉取与消费解耦：单线程发拉取请求，消费在消费线程池执行</text>
+
+  <rect x="40" y="88" width="260" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="170" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">拉取线程 PullMessageService</text>
+  <rect x="380" y="88" width="280" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="520" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">Broker（可挂起请求）</text>
+  <rect x="720" y="88" width="260" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="850" y="116" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">消费线程池</text>
+
+  <line x1="170" y1="132" x2="170" y2="440" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="520" y1="132" x2="520" y2="440" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="850" y1="132" x2="850" y2="440" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <text x="345" y="168" text-anchor="middle" font-size="13" fill="#0f172a">拉取请求（带 suspendTimeoutMillis，长轮询）</text>
+  <line x1="174" y1="176" x2="514" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2)"/>
+
+  <text x="532" y="200" font-size="12" fill="#9a3412">无消息 → 挂起请求，不立即返回空</text>
+
+  <text x="345" y="238" text-anchor="middle" font-size="13" fill="#15803d">新消息到达触发通知 → 唤醒挂起请求立刻返回</text>
+  <line x1="516" y1="246" x2="176" y2="246" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#rq2)"/>
+
+  <text x="510" y="298" text-anchor="middle" font-size="13" fill="#0f172a">响应写入 ProcessQueue（本地缓存），提交消费任务</text>
+  <line x1="176" y1="306" x2="844" y2="306" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2)"/>
+
+  <text x="510" y="348" text-anchor="middle" font-size="13" fill="#64748b">消费完成（受 ProcessQueue 条数 / 体积阈值约束）</text>
+  <line x1="846" y1="356" x2="176" y2="356" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#rq2)"/>
+
+  <text x="345" y="398" text-anchor="middle" font-size="13" fill="#0f172a">位点持久化：周期提交「下一条待拉位置」</text>
+  <line x1="174" y1="406" x2="514" y2="406" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2)"/>
+
+  <line x1="20" y1="478" x2="980" y2="478" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="504" font-size="13" fill="#0f172a">⭐ 效果：没消息不占一次往返，有消息毫秒级响应，空轮询的网络与 CPU 开销归零。</text>
+  <text x="20" y="530" font-size="13" fill="#0f172a">⭐ PushConsumer 的「拉」与「用」解耦：单线程发 RPC 足够，消费在消费线程池执行。</text>
+  <text x="20" y="556" font-size="13" fill="#0f172a">⚠️ 流控在客户端做：ProcessQueue 阈值超限即暂停该队列拉取，表现为「TPS 掉但没报错」。</text>
+  <text x="20" y="582" font-size="13" fill="#0f172a">⚠️ 批量拉取的位点是队列级一个整数；批内失败整批不提交、下批重来，重复会被放大。</text>
+  <text x="20" y="608" font-size="13" fill="#0f172a">⚠️ 并发度三层封顶：队列数 → 线程池大小 → ProcessQueue 流控阈值，只调线程池往往无效。</text>
+</svg>

@@ -178,6 +178,8 @@ deploy:fallback               deploy  on_success   false
 > `--list` 的口径：**`when: never` 的 job 被排除**（要连它一起看用 `--list-all`）。
 > 上表里 `deploy:fallback` 在 main 分支下是被 `never` 否决的，因此该行不出现。
 
+![rules 逐条求值、命中即停：第一条命中的规则决定 job 行为](images/GitLabCI-rules命中即停.svg)
+
 ### 3.2 规则里能写什么
 
 | 键 | 作用 |
@@ -486,6 +488,8 @@ package               package  on_success  false                       [test:a]
    本机工具提供 `--validate-dependency-chain` 专门提前校验这种断链；
 2. **`needs` 会改变 artifacts 的下载范围**：默认只下载 `needs` 里列的 job 的 artifacts，
    而不是同 stage 全部 —— 想拿别的 job 的产物就得显式加进 `needs` 或 `dependencies`。
+
+![needs 用 DAG 打破 stage 串行：只等被依赖的 job，不等整个 stage](images/GitLabCI-needs的DAG打破stage串行.svg)
 
 ---
 

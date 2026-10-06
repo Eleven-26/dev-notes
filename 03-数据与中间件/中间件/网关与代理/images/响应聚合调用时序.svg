@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sa" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="ra" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">capture_multi 响应聚合：一次请求并发调多个内部接口</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">content_by_lua* 里用 capture_multi 并发子请求 → cjson 合并 → 共享字典缓存命中则直接返回</text>
+
+  <rect x="30" y="88" width="120" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="90" y="115" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">客户端</text>
+  <rect x="200" y="88" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="300" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">OpenResty</text>
+  <text x="300" y="126" text-anchor="middle" font-size="10" fill="#1d4ed8">content_by_lua*</text>
+  <rect x="450" y="88" width="180" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="540" y="115" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">/_internal/user</text>
+  <rect x="650" y="88" width="180" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="740" y="115" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">/_internal/orders</text>
+  <rect x="830" y="88" width="160" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="910" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">ngx.shared</text>
+  <text x="910" y="126" text-anchor="middle" font-size="10" fill="#166534">cache</text>
+
+  <line x1="90" y1="132" x2="90" y2="505" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="300" y1="132" x2="300" y2="505" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="540" y1="132" x2="540" y2="505" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="740" y1="132" x2="740" y2="505" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <line x1="910" y1="132" x2="910" y2="505" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+
+  <text x="195" y="160" text-anchor="middle" font-size="11.5" fill="#0f172a">GET /api/xxx</text>
+  <line x1="94" y1="168" x2="296" y2="168" stroke="#334155" stroke-width="1.5" marker-end="url(#sa)"/>
+
+  <text x="420" y="196" text-anchor="middle" font-size="11.5" fill="#7c2d12">capture_multi（并发）</text>
+  <line x1="304" y1="204" x2="536" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#sa)"/>
+
+  <text x="520" y="232" text-anchor="middle" font-size="11.5" fill="#7c2d12">capture_multi（并发）</text>
+  <line x1="304" y1="240" x2="736" y2="240" stroke="#334155" stroke-width="1.5" marker-end="url(#sa)"/>
+
+  <text x="420" y="276" text-anchor="middle" font-size="11.5" fill="#475569">user JSON</text>
+  <line x1="536" y1="284" x2="304" y2="284" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ra)"/>
+
+  <text x="520" y="312" text-anchor="middle" font-size="11.5" fill="#475569">orders JSON</text>
+  <line x1="736" y1="320" x2="304" y2="320" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ra)"/>
+
+  <text x="150" y="360" font-size="11.5" font-weight="bold" fill="#0f172a">⭐ cjson.encode 合并 user + orders</text>
+
+  <text x="605" y="392" text-anchor="middle" font-size="11.5" fill="#166534">cache:get(request_uri)</text>
+  <line x1="304" y1="400" x2="906" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#sa)"/>
+
+  <text x="605" y="426" text-anchor="middle" font-size="11.5" fill="#475569">hit 直接返回 / miss 则 set(…, 10)</text>
+  <line x1="906" y1="434" x2="304" y2="434" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ra)"/>
+
+  <text x="195" y="466" text-anchor="middle" font-size="11.5" fill="#1e3a8a">200 JSON（X-Cache: HIT）</text>
+  <line x1="296" y1="474" x2="94" y2="474" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ra)"/>
+
+  <line x1="30" y1="512" x2="970" y2="512" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="538" font-size="12" fill="#0f172a">⚠️ capture 的子请求必须落在能 proxy_pass 的 location 上，不能是另一个 content_by_lua*。</text>
+  <text x="30" y="562" font-size="12" fill="#64748b">⚠️ 共享字典容量是静态的，写满后 set 返回 nil（缓存静默失效）；没有淘汰策略，生产常配 lrucache 两级。</text>
+</svg>

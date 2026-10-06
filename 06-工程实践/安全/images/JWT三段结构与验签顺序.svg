@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 810" width="1000" height="810" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="wa1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="810" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">JWT 的三段结构与验签顺序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">payload 只是 base64，明文可读；签名覆盖的是「前两段的原始字符串」</text>
+
+  <rect x="50" y="92" width="250" height="80" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="175" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">base64url(header)</text>
+  <text x="175" y="146" text-anchor="middle" font-size="11.5" fill="#1e3a8a">{"alg":"HS256"}</text>
+  <rect x="330" y="92" width="250" height="80" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="455" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">base64url(payload)</text>
+  <text x="455" y="146" text-anchor="middle" font-size="11.5" fill="#1e3a8a">{"sub":"u-1", …} 明文</text>
+  <rect x="610" y="92" width="340" height="80" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="780" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">base64url(HMAC-SHA256(前两段))</text>
+  <text x="780" y="146" text-anchor="middle" font-size="11.5" fill="#14532d">签名 —— 只能验「是不是我们发的」</text>
+  <text x="312" y="141" text-anchor="middle" font-size="26" fill="#64748b">.</text>
+  <text x="592" y="141" text-anchor="middle" font-size="26" fill="#64748b">.</text>
+
+  <text x="36" y="204" font-size="13" font-weight="bold" fill="#0f172a">验签顺序（顺序不能乱）</text>
+
+  <rect x="40" y="220" width="920" height="88" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="250" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 解析 Authorization 头</text>
+  <text x="60" y="278" font-size="12" fill="#1e3a8a">按空格切出 scheme 与 token；scheme 大小写不敏感（Bearer / bearer / BEARER 都过），但分隔符必须是空格</text>
+  <text x="60" y="298" font-size="12" fill="#b91c1c">⚠️ Bearer\txxx 被拒绝：Tab 会被当成令牌的一部分，验签必然失败，早拒绝比晚失败好</text>
+
+  <rect x="40" y="320" width="920" height="88" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="350" font-size="13.5" font-weight="bold" fill="#1e3a8a">② 用原始字节验签</text>
+  <text x="60" y="378" font-size="12" fill="#1e3a8a">mac = HMAC-SHA256(parts[0] + "." + parts[1])，再与第三段比对</text>
+  <text x="60" y="398" font-size="12" fill="#b91c1c">⚠️ 必须 hmac.Equal（恒定时间比较），不能用 ==；且要先用原始字节验签、通过了再解析</text>
+
+  <rect x="40" y="420" width="920" height="74" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="450" font-size="13.5" font-weight="bold" fill="#1e3a8a">③ 业务字段校验（签名过了 ≠ 凭证有效）</text>
+  <text x="60" y="478" font-size="12" fill="#1e3a8a">exp 必须存在（缺了返回 token_no_expiry）且未过期；nbf 未到则「尚未生效」；寿命 exp − iat ≤ 24h 上限</text>
+
+  <rect x="40" y="506" width="920" height="74" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="536" font-size="13.5" font-weight="bold" fill="#1e3a8a">④ 角色校验</text>
+  <text x="60" y="564" font-size="12" fill="#1e3a8a">路由要求的角色集合非空时，凭证里的角色必须有交集；⚠️ Role 为空不能「跳过校验」当作放行</text>
+
+  <rect x="40" y="592" width="920" height="88" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="60" y="622" font-size="13.5" font-weight="bold" fill="#14532d">⑤ 放行 / 拒绝</text>
+  <text x="60" y="650" font-size="12" fill="#14532d">通过 → 先剥离客户端伪造的内部头，再写入网关鉴权出的可信身份</text>
+  <text x="60" y="670" font-size="12" fill="#14532d">拒绝 → 401「你是谁」/ 403「你不能做这个」，两者必须分开（混用会触发刷新风暴）</text>
+
+  <line x1="500" y1="308" x2="500" y2="320" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#wa1)"/>
+  <line x1="500" y1="408" x2="500" y2="420" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#wa1)"/>
+  <line x1="500" y1="494" x2="500" y2="506" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#wa1)"/>
+  <line x1="500" y1="580" x2="500" y2="592" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#wa1)"/>
+
+  <rect x="20" y="694" width="960" height="100" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="722" font-size="12.5" fill="#0f172a">⭐ 三个「调库时被藏起来」的点：① 签名对字节敏感 —— 先 unmarshal 再 marshal 会让签名失效，必须先用原始字节验签；</text>
+  <text x="36" y="748" font-size="12.5" fill="#0f172a">② 比较必须恒定时间 —— 否则可被时序攻击逐字节猜出签名；③ 签名与有效期是两件独立的事 —— 签名说明「票是我们发的」，exp 说明「票还能不能用」。</text>
+  <text x="36" y="774" font-size="12.5" fill="#b91c1c">⚠️ 错误码分两档：token_no_expiry / token_too_long_lived 指向签发侧配置错；unauthorized（过期/签名错/格式错）指向客户端凭证问题。</text>
+</svg>

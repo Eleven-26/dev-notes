@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="aa1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">开放 API 签名：防篡改 + 防重放</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">只做「参数 + 密钥 → 摘要」只能防篡改；防重放必须叠加 timestamp 与 nonce</text>
+
+  <text x="40" y="88" font-size="13" font-weight="bold" fill="#1e3a8a">客户端：构造并签发</text>
+  <rect x="40" y="100" width="280" height="72" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="180" y="130" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 按字典序拼接关键参数</text>
+  <text x="180" y="154" text-anchor="middle" font-size="11" fill="#1e3a8a">含 path / query / body 摘要</text>
+  <rect x="360" y="100" width="280" height="72" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="130" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">② 生成 timestamp 与 nonce</text>
+  <text x="500" y="154" text-anchor="middle" font-size="11" fill="#1e3a8a">nonce 是一次性随机串</text>
+  <rect x="680" y="100" width="280" height="72" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="820" y="130" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">③ sign = HMAC(密钥, 参数串</text>
+  <text x="820" y="154" text-anchor="middle" font-size="12" fill="#7c2d12">+ timestamp + nonce)</text>
+  <line x1="320" y1="136" x2="360" y2="136" stroke="#334155" stroke-width="1.6" marker-end="url(#aa1)"/>
+  <line x1="640" y1="136" x2="680" y2="136" stroke="#334155" stroke-width="1.6" marker-end="url(#aa1)"/>
+
+  <rect x="40" y="196" width="920" height="44" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="500" y="224" text-anchor="middle" font-size="12.5" fill="#0f172a">→ 发送 {参数, timestamp, nonce, sign} 给服务端</text>
+
+  <text x="40" y="270" font-size="13" font-weight="bold" fill="#14532d">服务端：校验</text>
+  <rect x="40" y="282" width="280" height="72" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="180" y="312" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">④ 用共享密钥重算签名并比对</text>
+  <text x="180" y="336" text-anchor="middle" font-size="11" fill="#14532d">→ 防篡改</text>
+  <rect x="360" y="282" width="280" height="72" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="312" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">⑤ 校验时间差 ≤ N 分钟</text>
+  <text x="500" y="336" text-anchor="middle" font-size="11" fill="#14532d">→ 限制重放窗口</text>
+  <rect x="680" y="282" width="280" height="72" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="820" y="312" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">⑥ nonce 去重（窗口内一次性）</text>
+  <text x="820" y="336" text-anchor="middle" font-size="11" fill="#14532d">→ 彻底阻止窗口内重放</text>
+  <line x1="320" y1="318" x2="360" y2="318" stroke="#334155" stroke-width="1.6" marker-end="url(#aa1)"/>
+  <line x1="640" y1="318" x2="680" y2="318" stroke="#334155" stroke-width="1.6" marker-end="url(#aa1)"/>
+
+  <rect x="20" y="380" width="960" height="260" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="410" font-size="14" font-weight="bold" fill="#0f172a">三要素缺一不可</text>
+  <text x="36" y="442" font-size="12.5" fill="#334155">• 签名覆盖所有关键参数 → 防篡改（只签部分参数，攻击者挪动未覆盖的参数即可绕过）。</text>
+  <text x="36" y="468" font-size="12.5" fill="#334155">• timestamp（要求与服务端时间差在 N 分钟内）→ 限制重放窗口。</text>
+  <text x="36" y="494" font-size="12.5" fill="#334155">• nonce（一次性随机串，服务端缓存去重）→ 彻底阻止窗口内重放。</text>
+  <text x="36" y="526" font-size="12.5" fill="#b91c1c">⚠️ 只做「参数 + 密钥 → 摘要」只能防篡改，不能防重放；签名密钥只能存在于服务端。</text>
+  <text x="36" y="552" font-size="12.5" fill="#b91c1c">⚠️ 另一个常见错误：把签名密钥放进 URL 或前端代码；客户端验签只能提示用户，攻击者可跳过。</text>
+  <text x="36" y="584" font-size="12.5" fill="#0f172a">⭐ 签名的校验必须在服务端做。</text>
+  <text x="36" y="614" font-size="12.5" fill="#334155">制品签名同理：预签名 URL 有效期要短、限定 HTTP 方法与对象前缀、不向客户端下发长期密钥。</text>
+</svg>

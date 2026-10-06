@@ -225,6 +225,8 @@ _Gidle(0) ──分配好──→ _Grunnable(1) ──被 M 取走──→ _Gr
 - ⭐ **`_Gscan` 是位不是状态**：GC 扫某个 G 的栈时给它加上 `0x1000`（于是出现 `_Gscanwaiting` 这类组合），
   所以运行时里真正的读法是 `readgstatus(gp) &^ _Gscan`。
 
+![g 状态机与迁移：_Gidle → _Grunnable → _Grunning，阻塞与系统调用后回到 _Grunnable，执行结束进 _Gdead](images/g状态机与迁移.svg)
+
 ### 4.3 实测：状态与「为什么阻塞」在栈 dump 里都看得到
 
 ```go
@@ -305,6 +307,8 @@ func ready(gp *g, traceskip int, next bool) {
 三个动作对应三个问题：**状态怎么改回来 → 排到哪 → 谁来跑**。
 `next=true` 意味着被唤醒的 G 会进 **`runnext`**（见 [GMP调度.md](../运行时/GMP调度.md)），
 **比本地队列里排队的老 G 更优先** —— 这就是"刚被唤醒的 G 往往马上就能跑"的原因。
+
+![gopark 让出与 goready 唤醒的时序：mcall(park_m) 切到 g0，置 _Gwaiting 解绑 M；goready → ready() 改状态、进 runnext、wakep](images/gopark让出与goready唤醒时序.svg)
 
 ### 5.3 实测：1 万个阻塞协程，线程只有 10 条
 

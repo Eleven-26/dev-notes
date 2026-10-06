@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="40" y="56" width="920" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="88" font-size="15" font-weight="700" fill="#0f172a">Go 1.17+ amd64：参数与返回值走寄存器（ABIInternal）</text>
+
+<rect x="70" y="110" width="200" height="60" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="170" y="136" font-size="12" text-anchor="middle" fill="#1e3a8a">调用者</text>
+<text x="170" y="156" font-size="11" text-anchor="middle" fill="#64748b">swap(a, b)</text>
+
+<line x1="270" y1="140" x2="394" y2="140" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="332" y="132" font-size="11" text-anchor="middle" fill="#64748b">a→AX、b→BX</text>
+
+<rect x="400" y="110" width="120" height="48" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="460" y="140" font-size="13" text-anchor="middle" fill="#7c2d12">AX</text>
+<rect x="530" y="110" width="120" height="48" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="590" y="140" font-size="13" text-anchor="middle" fill="#7c2d12">BX</text>
+<text x="525" y="176" font-size="11" text-anchor="middle" fill="#64748b">入参 16 字节</text>
+
+<line x1="652" y1="140" x2="734" y2="140" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<text x="693" y="132" font-size="11" text-anchor="middle" fill="#64748b">返回值</text>
+
+<rect x="740" y="110" width="190" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="835" y="136" font-size="12" text-anchor="middle" fill="#14532d">被调函数</text>
+<text x="835" y="156" font-size="11" text-anchor="middle" fill="#64748b">$0-16 全程不碰栈</text>
+
+<text x="60" y="228" font-size="12" fill="#334155">函数头带 ABIInternal 是寄存器调用约定的标记；$0-16 = 栈帧 0 字节、入参 16 字节</text>
+
+<rect x="40" y="280" width="920" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="312" font-size="15" font-weight="700" fill="#0f172a">参数超过 9 个：第 10 个自动退回栈（sumBig 实测）</text>
+
+<rect x="60" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="104" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">AX</text>
+<rect x="156" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="200" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">BX</text>
+<rect x="252" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="296" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">CX</text>
+<rect x="348" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="392" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">DI</text>
+<rect x="444" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="488" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">SI</text>
+<rect x="540" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="584" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">R8</text>
+<rect x="636" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="680" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">R9</text>
+<rect x="732" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="776" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">R10</text>
+<rect x="828" y="330" width="88" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="872" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">R11</text>
+
+<text x="60" y="400" font-size="12" fill="#334155">整数 / 指针参数寄存器共 9 个 —— 所以第 10 个参数自动退回栈</text>
+
+<rect x="60" y="416" width="856" height="50" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="80" y="448" font-size="12" fill="#7f1d1d">入参栈区（调用者准备）：第 10 个参数 j 落在 main.j+8(SP)</text>
+</svg>

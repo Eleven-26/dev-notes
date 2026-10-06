@@ -51,6 +51,8 @@ ActiveMQ 的文档与报错全是 JMS 词汇，先把这套词和「通用 MQ �
 
 ActiveMQ Classic 的持久化默认是 **KahaDB**：所有持久化目的地**共用一个 journal 目录**（`data/kahadb`），journal 顺序追加 + 内存索引 + 定期 checkpoint。
 
+![ActiveMQ KahaDB：所有目的地共用一个 journal 目录与三档水位](images/ActiveMQKahaDB单store与流控.svg)
+
 这带来 ActiveMQ 运维最典型的事故模型：
 
 - **单队列膨胀会拖垮整个 broker**。某个队列堆积 10GB，journal 无法回收（数据还被引用），磁盘与索引一起涨，所有目的地一起变慢——不像 Kafka「分区各自一个目录」那样能隔离。
@@ -58,6 +60,8 @@ ActiveMQ Classic 的持久化默认是 **KahaDB**：所有持久化目的地**�
 - 内存侧有 `systemUsage` 三档水位（memory / store / temp），**超过 memory 水位 broker 会反向阻塞生产者**（producer flow control），表象是「发送卡住但没报错」。
 
 ### 3.2 高可用：主从 + 级联，没有自动选主
+
+![ActiveMQ 高可用：Shared-Store 主从、租约型主从与 Network of Brokers 级联](images/ActiveMQ主从与级联拓扑.svg)
 
 | 方案 | 机制 | 代价 |
 | --- | --- | --- |
@@ -74,6 +78,8 @@ ActiveMQ Artemis 是 Apache **另起炉灶**的实现（源自 HornetQ 捐赠）
 ---
 
 ## 四、消息可靠性 ⭐
+
+![ActiveMQ 重投与死信：失败 → redeliveryPolicy → ActiveMQ.DLQ](images/ActiveMQ重投与死信流程.svg)
 
 | 环节 | 机制 | 会丢 / 会重的场景 |
 | --- | --- | --- |

@@ -36,6 +36,8 @@
 
 > 顺序不能乱：**①没通就没有 ③**；**②不做（镜像可变），④的回滚就是空话**。
 
+![K8s 从零到上线四段流程：集群层 → 制品层 → 应用层 → 变更层](images/K8s从零到上线四段流程.svg)
+
 ---
 
 ## 二、集群搭建：kubeadm 标准流程
@@ -222,6 +224,8 @@ CNI（Pod 网络，一切的前提）
 > 所以**先设 `requests` 再开 HPA**，顺序反了会以为 HPA 坏了。
 > `kubectl autoscale --cpu-percent` 在本机 v1.36.1 上已标注 deprecated（改用 `--cpu`），参数以所用版本为准。
 
+![集群基础组件的依赖顺序：CNI 是一切前提，CoreDNS → Metrics Server → HPA 是链式硬依赖](images/K8s基础组件依赖顺序.svg)
+
 组件齐了之后，把**默认 StorageClass、节点标签（如 `disk=ssd`）、污点、节点池**定好——
 应用清单里的 `nodeSelector` / `affinity` 全靠这些标签，**先定标签，再部署应用**。
 
@@ -243,6 +247,8 @@ Namespace（隔离边界）
                           └── Ingress（七层路由 / 域名 / TLS）
                     └── HPA（依赖 requests + Metrics Server）/ PDB（依赖多副本）
 ```
+
+![应用上线：对象层级（Deployment → ReplicaSet → Pod）与依赖顺序](images/K8s应用对象层级与上线顺序.svg)
 
 ### 4.2 最小可用的清单骨架
 

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">限并发的令牌：拿在 go 之前，还是拿在协程里</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">5000 个任务、每个约 0.4 ms、上限 50 —— 耗时几乎一样，峰值却差 60~70 倍</text>
+
+  <rect x="20" y="84" width="460" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="36" y="112" font-size="13.5" font-weight="bold" fill="#14532d">② 令牌在 go 之前拿（推荐）</text>
+  <rect x="40" y="126" width="420" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="150" text-anchor="middle" font-size="12" fill="#1e3a8a">for 遍历 5000 个任务</text>
+  <text x="250" y="178" text-anchor="middle" font-size="13" fill="#94a3b8">↓</text>
+  <rect x="40" y="182" width="420" height="38" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="250" y="206" text-anchor="middle" font-size="12" fill="#14532d">sem &lt;- struct{}{}（拿不到就阻塞在这一行）</text>
+  <text x="250" y="234" text-anchor="middle" font-size="13" fill="#94a3b8">↓</text>
+  <rect x="40" y="238" width="420" height="38" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="250" y="262" text-anchor="middle" font-size="11.5" fill="#0f172a">go func(){ defer func(){ &lt;-sem }(); fetchOne(id) }()</text>
+  <text x="36" y="302" font-size="12" fill="#15803d">背压作用在「创建」之前 → 峰值协程只有 52</text>
+
+  <rect x="520" y="84" width="460" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="536" y="112" font-size="13.5" font-weight="bold" fill="#7f1d1d">③ 令牌在协程里拿（会爆）</text>
+  <rect x="540" y="126" width="420" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="750" y="150" text-anchor="middle" font-size="12" fill="#1e3a8a">for 遍历 5000 个任务</text>
+  <text x="750" y="178" text-anchor="middle" font-size="13" fill="#94a3b8">↓</text>
+  <rect x="540" y="182" width="420" height="38" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="750" y="206" text-anchor="middle" font-size="11.5" fill="#7f1d1d">go func(){ sem &lt;- struct{}{} … }()　← 卡在这一行</text>
+  <text x="750" y="234" text-anchor="middle" font-size="13" fill="#94a3b8">↓</text>
+  <rect x="540" y="238" width="420" height="38" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="750" y="262" text-anchor="middle" font-size="11.5" fill="#7c2d12">5000 个协程已全部创建，只是都还没拿到令牌</text>
+  <text x="536" y="302" font-size="12" fill="#b91c1c">只限住了「在跑」，没限住「在飞」→ 峰值 2800~3900</text>
+
+  <rect x="20" y="332" width="960" height="100" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="358" font-size="12.5" fill="#0f172a">② 耗时 59~65 ms ｜ 峰值协程 52 ｜ 堆分配 0.7 MB　　③ 耗时 59~64 ms ｜ 峰值 2800~3900 ｜ 堆分配 2.0 MB</text>
+  <text x="36" y="382" font-size="12.5" fill="#0f172a">⭐ 耗时几乎一模一样，峰值差 60~70 倍 —— 两种写法都限住了「同时在跑 50 个」，</text>
+  <text x="36" y="404" font-size="12.5" fill="#0f172a">　　但只有把令牌拿在 go 之前，才限住了「同时在飞」。背压必须作用在「创建」这一步上。</text>
+</svg>

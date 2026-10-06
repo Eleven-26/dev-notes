@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<rect x="40" y="110" width="156" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="118" y="155" font-size="13" text-anchor="middle" fill="#334155">磁盘</text>
+<rect x="232" y="110" width="156" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="310" y="146" font-size="12" text-anchor="middle" fill="#1e3a8a">内核页缓存</text>
+<text x="310" y="168" font-size="11" text-anchor="middle" fill="#64748b">page cache</text>
+<rect x="424" y="110" width="156" height="80" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="502" y="146" font-size="12" text-anchor="middle" fill="#7c2d12">用户缓冲区</text>
+<text x="502" y="168" font-size="11" text-anchor="middle" fill="#64748b">[]byte</text>
+<rect x="616" y="110" width="156" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="694" y="146" font-size="12" text-anchor="middle" fill="#1e3a8a">socket 缓冲区</text>
+<text x="694" y="168" font-size="11" text-anchor="middle" fill="#64748b">发送队列</text>
+<rect x="808" y="110" width="156" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="886" y="155" font-size="13" text-anchor="middle" fill="#334155">网卡</text>
+
+<line x1="198" y1="150" x2="228" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="390" y1="150" x2="420" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="582" y1="150" x2="612" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+<line x1="774" y1="150" x2="804" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<text x="214" y="212" font-size="11" text-anchor="middle" fill="#64748b">拷贝1 · DMA</text>
+<text x="404" y="212" font-size="11" text-anchor="middle" fill="#64748b">拷贝2 · CPU</text>
+<text x="594" y="212" font-size="11" text-anchor="middle" fill="#64748b">拷贝3 · CPU</text>
+<text x="784" y="212" font-size="11" text-anchor="middle" fill="#64748b">拷贝4 · DMA</text>
+
+<text x="310" y="242" font-size="12" text-anchor="middle" fill="#1e3a8a">read(2)：磁盘 → 页缓存 → 用户缓冲区</text>
+<text x="694" y="242" font-size="12" text-anchor="middle" fill="#1e3a8a">write(2)：用户缓冲区 → socket 缓冲区 → 网卡</text>
+
+<rect x="40" y="270" width="920" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="300" font-size="13" fill="#334155">拷贝 4 次：2 次 DMA（不占 CPU）+ 2 次 CPU（逐字节参与，大文件能吃掉 30%+ 的 CPU 周期）</text>
+<text x="60" y="328" font-size="13" fill="#334155">系统调用 2 次（read / write）；上下文切换 4 次（每次系统调用一进一出）</text>
+<text x="60" y="356" font-size="13" fill="#7f1d1d">根源：read / write 的接口契约就是「数据必须经过用户态」</text>
+</svg>
