@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+<text x="500" y="36" font-size="20" font-weight="bold" text-anchor="middle" fill="#0f172a">struct 字段的内存布局：对齐与 padding（linux/amd64 实测）</text>
+<text x="500" y="62" font-size="13" text-anchor="middle" fill="#64748b">色块只表示字段顺序与相对大小；块下方标注的是 unsafe.Offsetof 的真实读数</text>
+
+<rect x="20" y="86" width="960" height="128" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="30" y="102" font-size="13" font-weight="bold" fill="#0f172a">Bad 顺序：bool → int64 → bool → *int（两个小字段被大对齐字段孤立）</text>
+
+<rect x="30" y="116" width="60" height="56" fill="#dbeafe" stroke="#2563eb"/>
+<text x="60" y="140" font-size="11" text-anchor="middle" fill="#1e3a8a">Flag</text>
+<text x="60" y="158" font-size="10" text-anchor="middle" fill="#1e3a8a">1B</text>
+<rect x="90" y="116" width="60" height="56" fill="#fee2e2" stroke="#dc2626"/>
+<text x="120" y="140" font-size="11" text-anchor="middle" fill="#7f1d1d">padding</text>
+<text x="120" y="158" font-size="10" text-anchor="middle" fill="#7f1d1d">7B</text>
+<rect x="150" y="116" width="220" height="56" fill="#dcfce7" stroke="#16a34a"/>
+<text x="260" y="140" font-size="11" text-anchor="middle" fill="#14532d">Num int64（对齐 8）</text>
+<text x="260" y="158" font-size="10" text-anchor="middle" fill="#14532d">8B</text>
+<rect x="370" y="116" width="60" height="56" fill="#dbeafe" stroke="#2563eb"/>
+<text x="400" y="140" font-size="11" text-anchor="middle" fill="#1e3a8a">Tail</text>
+<text x="400" y="158" font-size="10" text-anchor="middle" fill="#1e3a8a">1B</text>
+<rect x="430" y="116" width="60" height="56" fill="#fee2e2" stroke="#dc2626"/>
+<text x="460" y="140" font-size="11" text-anchor="middle" fill="#7f1d1d">padding</text>
+<text x="460" y="158" font-size="10" text-anchor="middle" fill="#7f1d1d">7B</text>
+<rect x="490" y="116" width="220" height="56" fill="#fef3c7" stroke="#b45309"/>
+<text x="600" y="140" font-size="11" text-anchor="middle" fill="#854d0e">Ptr *int（对齐 8）</text>
+<text x="600" y="158" font-size="10" text-anchor="middle" fill="#854d0e">8B</text>
+
+<text x="60" y="190" font-size="11" text-anchor="middle" fill="#64748b">@0</text>
+<text x="260" y="190" font-size="11" text-anchor="middle" fill="#64748b">@8</text>
+<text x="400" y="190" font-size="11" text-anchor="middle" fill="#64748b">@16</text>
+<text x="600" y="190" font-size="11" text-anchor="middle" fill="#64748b">@24</text>
+<text x="770" y="140" font-size="13" font-weight="bold" fill="#7f1d1d">sizeof=32</text>
+<text x="770" y="162" font-size="12" fill="#7f1d1d">含 14B padding</text>
+
+<rect x="20" y="236" width="960" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="30" y="252" font-size="13" font-weight="bold" fill="#0f172a">Good 顺序：int64 → bool → bool → *int（两个 bool 挤在一起共享缝隙）</text>
+
+<rect x="30" y="266" width="220" height="56" fill="#dcfce7" stroke="#16a34a"/>
+<text x="140" y="290" font-size="11" text-anchor="middle" fill="#14532d">Num int64（对齐 8）</text>
+<text x="140" y="308" font-size="10" text-anchor="middle" fill="#14532d">8B</text>
+<rect x="250" y="266" width="60" height="56" fill="#dbeafe" stroke="#2563eb"/>
+<text x="280" y="290" font-size="11" text-anchor="middle" fill="#1e3a8a">Tail</text>
+<text x="280" y="308" font-size="10" text-anchor="middle" fill="#1e3a8a">1B</text>
+<rect x="310" y="266" width="60" height="56" fill="#dbeafe" stroke="#2563eb"/>
+<text x="340" y="290" font-size="11" text-anchor="middle" fill="#1e3a8a">Flag</text>
+<text x="340" y="308" font-size="10" text-anchor="middle" fill="#1e3a8a">1B</text>
+<rect x="370" y="266" width="60" height="56" fill="#fee2e2" stroke="#dc2626"/>
+<text x="400" y="290" font-size="11" text-anchor="middle" fill="#7f1d1d">padding</text>
+<text x="400" y="308" font-size="10" text-anchor="middle" fill="#7f1d1d">6B</text>
+<rect x="430" y="266" width="220" height="56" fill="#fef3c7" stroke="#b45309"/>
+<text x="540" y="290" font-size="11" text-anchor="middle" fill="#854d0e">Ptr *int（对齐 8）</text>
+<text x="540" y="308" font-size="10" text-anchor="middle" fill="#854d0e">8B</text>
+
+<text x="140" y="340" font-size="11" text-anchor="middle" fill="#64748b">@0</text>
+<text x="280" y="340" font-size="11" text-anchor="middle" fill="#64748b">@8</text>
+<text x="340" y="356" font-size="11" text-anchor="middle" fill="#64748b">@9</text>
+<text x="540" y="340" font-size="11" text-anchor="middle" fill="#64748b">@16</text>
+<text x="710" y="290" font-size="13" font-weight="bold" fill="#14532d">sizeof=24</text>
+<text x="710" y="312" font-size="12" fill="#14532d">只剩 6B padding</text>
+
+<rect x="30" y="386" width="940" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="50" y="412" font-size="12" fill="#334155">规则：每个字段的偏移必须是它对齐值的整数倍；总大小向上补到最大对齐值（此例为 8）的整数倍</text>
+<text x="50" y="436" font-size="12" fill="#334155">Bad：Flag@0 之后 Num 要落到 8（补 7B）；Tail@16 之后 Ptr 要落到 24（再补 7B）</text>
+<text x="50" y="460" font-size="12" fill="#334155">Good：Tail@8、Flag@9 背靠背，只在 Ptr 前补 6B</text>
+<text x="50" y="484" font-size="12" font-weight="bold" fill="#0f172a">实测收益：每实例省 8 字节（32 → 24）；一万个实例省 80000 字节</text>
+
+<rect x="20" y="504" width="720" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="30" y="514" width="24" height="16" fill="#dbeafe" stroke="#2563eb"/>
+<text x="62" y="527" font-size="12" fill="#334155">bool</text>
+<rect x="120" y="514" width="24" height="16" fill="#dcfce7" stroke="#16a34a"/>
+<text x="152" y="527" font-size="12" fill="#334155">int64</text>
+<rect x="220" y="514" width="24" height="16" fill="#fef3c7" stroke="#b45309"/>
+<text x="252" y="527" font-size="12" fill="#334155">指针</text>
+<rect x="320" y="514" width="24" height="16" fill="#fee2e2" stroke="#dc2626"/>
+<text x="352" y="527" font-size="12" fill="#334155">padding（被对齐规则逼出来的空隙）</text>
+</svg>

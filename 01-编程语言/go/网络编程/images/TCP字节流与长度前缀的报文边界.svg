@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">TCP 字节流 vs 长度前缀 framing 的报文边界</text>
+  <text x="500" y="62" text-anchor="middle" font-size="13" fill="#64748b">同一个服务端（3 次 Write × 8 字节），接收端只改缓冲区大小 —— 分段结果全部来自容器实测</text>
+
+  <!-- 发送侧 -->
+  <text x="60" y="96" font-size="13" font-weight="bold" fill="#14532d">发送侧：应用层三次 Write，每次 8 字节（一条消息）</text>
+  <rect x="60" y="108" width="170" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="145" y="134" text-anchor="middle" font-size="14" fill="#14532d">MSG-0001（8 字节）</text>
+  <rect x="240" y="108" width="170" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="325" y="134" text-anchor="middle" font-size="14" fill="#14532d">MSG-0002（8 字节）</text>
+  <rect x="420" y="108" width="170" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="505" y="134" text-anchor="middle" font-size="14" fill="#14532d">MSG-0003（8 字节）</text>
+  <text x="620" y="126" font-size="12.5" fill="#64748b">三次 Write 返回的 n 依次是 8 / 8 / 8，</text>
+  <text x="620" y="144" font-size="12.5" fill="#64748b">但它们到了流里就只是第 0-7、8-15、16-23 号字节</text>
+
+  <path d="M325 150 L325 172" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <!-- 流 -->
+  <rect x="60" y="176" width="880" height="40" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="201" text-anchor="middle" font-size="13.5" fill="#334155">TCP 交付的是一条字节流：MSG-0001MSG-0002MSG-0003（24 字节，中间没有任何分隔符）</text>
+
+  <!-- A1 -->
+  <text x="60" y="248" font-size="13" font-weight="bold" fill="#7f1d1d">A1 接收端缓冲区 64 字节 → 粘包：一次读到 3 条</text>
+  <rect x="60" y="258" width="500" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="310" y="283" text-anchor="middle" font-size="13.5" fill="#7f1d1d">read#1 n=24 data="MSG-0001MSG-0002MSG-0003"</text>
+  <rect x="570" y="258" width="200" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="670" y="283" text-anchor="middle" font-size="13.5" fill="#7f1d1d">read#2 n=0 err=EOF</text>
+  <text x="790" y="276" font-size="12" fill="#64748b">三条消息被一次读走：</text>
+  <text x="790" y="292" font-size="12" fill="#64748b">消息边界彻底看不见</text>
+
+  <!-- A2 -->
+  <text x="60" y="332" font-size="13" font-weight="bold" fill="#7f1d1d">A2 接收端缓冲区 5 字节 → 拆包：边界落在消息中间</text>
+  <rect x="60" y="342" width="184" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="152" y="367" text-anchor="middle" font-size="13.5" fill="#7f1d1d">read#1 n=5「MSG-0」</text>
+  <rect x="248" y="342" width="184" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="340" y="367" text-anchor="middle" font-size="13.5" fill="#7f1d1d">read#2 n=5「001MS」</text>
+  <rect x="436" y="342" width="184" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="528" y="367" text-anchor="middle" font-size="13.5" fill="#7f1d1d">read#3 n=5「G-000」</text>
+  <rect x="624" y="342" width="184" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="716" y="367" text-anchor="middle" font-size="13.5" fill="#7f1d1d">read#4 n=5「2MSG-」</text>
+  <rect x="812" y="342" width="128" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="876" y="367" text-anchor="middle" font-size="13.5" fill="#7f1d1d">read#5 n=4「0003」</text>
+  <text x="60" y="402" font-size="12.5" fill="#b91c1c">第 2 次 Read 拿到的「001MS」里，前 3 字节是第 1 条消息的尾巴、后 2 字节是第 2 条消息的开头 —— 单看一次 Read 的返回值无法恢复边界</text>
+
+  <!-- framing -->
+  <text x="60" y="446" font-size="13" font-weight="bold" fill="#1e3a8a">加上 4 字节长度前缀之后（实测：服务端故意把 16 字节的一帧拆成 10 + 6 两段发）</text>
+  <rect x="60" y="458" width="140" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="130" y="476" text-anchor="middle" font-size="12.5" fill="#1e3a8a">00 00 00 0C</text>
+  <text x="130" y="493" text-anchor="middle" font-size="11.5" fill="#1e3a8a">长度前缀 4 字节</text>
+  <rect x="200" y="458" width="210" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="305" y="476" text-anchor="middle" font-size="12.5" fill="#1e3a8a">ACK-SPL（体前 6 字节）</text>
+  <text x="305" y="493" text-anchor="middle" font-size="11.5" fill="#1e3a8a">底层 Read #2 n=10 就到这里</text>
+  <rect x="410" y="458" width="210" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="515" y="476" text-anchor="middle" font-size="12.5" fill="#14532d">IT-ME（体后 6 字节）</text>
+  <text x="515" y="493" text-anchor="middle" font-size="11.5" fill="#14532d">60ms 后到达：Read #3 n=6</text>
+  <path d="M620 479 L668 479" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar)"/>
+  <rect x="672" y="458" width="268" height="42" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="806" y="476" text-anchor="middle" font-size="12.5" fill="#0f172a">io.ReadFull 两段读补满 12 字节</text>
+  <text x="806" y="493" text-anchor="middle" font-size="11.5" fill="#334155">交付一条完整消息，用时 61ms</text>
+
+  <rect x="60" y="520" width="880" height="84" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="80" y="546" font-size="13" font-weight="bold" fill="#854d0e">结论（三条都能被上面的读数直接支撑）</text>
+  <text x="80" y="568" font-size="12.5" fill="#854d0e">① Read 返回 n &lt; len(buf) 不代表「读完」，只代表「这次内核手里有 n 个字节」；② 边界必须由应用层规则划出来（定长 / 分隔符 / 长度前缀）；</text>
+  <text x="80" y="588" font-size="12.5" fill="#854d0e">③ 划界要配「读满 N 字节」的工具（io.ReadFull / bufio.Reader），而不是把一次 Read 的返回值当一条消息交给业务。</text>
+
+  <text x="60" y="632" font-size="11.5" fill="#64748b">读数来源：golang:1.26-alpine 容器内 go1.26.8 实测，A1 / A2 见实验 cmd/lab 的 A 段，framing 见 cmd/srv + cmd/cli 的第 2 条回包。</text>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+<defs>
+<marker id="are" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+<marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+</defs>
+
+<text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">包装链与 errors.Is / errors.As 的沿链匹配</text>
+<text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">Is 问「链上有没有这个值」，As 问「链上有没有这个类型」，两者都靠 %w 把链接起来</text>
+
+<rect x="48" y="86" width="500" height="440" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="64" y="112" font-size="13" font-weight="bold" fill="#0f172a">一条 %w 链（实测输出原样抄回）</text>
+
+<rect x="80" y="128" width="420" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="290" y="150" font-size="12" fill="#1e3a8a" text-anchor="middle">第 1 层 handler GetUser：biz(code=404)...</text>
+<text x="290" y="170" font-size="12" fill="#1e3a8a" text-anchor="middle">由 fmt.Errorf 以 %w 生成</text>
+
+<rect x="80" y="200" width="420" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="290" y="222" font-size="12" fill="#1e3a8a" text-anchor="middle">第 2 层 BizError：Code=404 Msg=用户不存在</text>
+<text x="290" y="242" font-size="12" fill="#1e3a8a" text-anchor="middle">自定义 Unwrap 返回 Err</text>
+
+<rect x="80" y="272" width="420" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="290" y="294" font-size="12" fill="#1e3a8a" text-anchor="middle">第 3 层 sentinel：user not found</text>
+<text x="290" y="314" font-size="12" fill="#1e3a8a" text-anchor="middle">由 errors.New 建的唯一实例</text>
+
+<rect x="80" y="356" width="420" height="60" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="290" y="380" font-size="12" fill="#7f1d1d" text-anchor="middle">断链现场：写成 %v 时链到此为止</text>
+<text x="290" y="402" font-size="12" fill="#7f1d1d" text-anchor="middle">实测 Is 为 false，Unwrap 得 &lt;nil&gt;</text>
+
+<text x="64" y="446" font-size="12" fill="#334155">链深可用 errors.Unwrap 一层层走到 &lt;nil&gt; 来数</text>
+<text x="64" y="474" font-size="12" fill="#334155">Join 是并列多条而非一条：Unwrap 单个返回 nil</text>
+<text x="64" y="502" font-size="12" fill="#64748b">读数为容器内 go1.26.8 的真实输出</text>
+
+<line x1="290" y1="180" x2="290" y2="198" stroke="#334155" stroke-width="1.6" marker-end="url(#are)"/>
+<line x1="290" y1="252" x2="290" y2="270" stroke="#334155" stroke-width="1.6" marker-end="url(#are)"/>
+<line x1="290" y1="324" x2="290" y2="354" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#are)"/>
+<text x="306" y="192" font-size="11" fill="#64748b">Unwrap</text>
+<text x="306" y="264" font-size="11" fill="#64748b">Unwrap</text>
+<text x="306" y="344" font-size="11" fill="#7f1d1d">写成 %v 就断</text>
+
+<rect x="572" y="86" width="380" height="200" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="588" y="112" font-size="13" font-weight="bold" fill="#14532d">errors.Is(err, target) 的三步</text>
+<text x="588" y="140" font-size="12" fill="#14532d">1 先比 err == target，比的是接口值</text>
+<text x="588" y="168" font-size="12" fill="#14532d">2 再看 err 有没有自定义 Is 方法</text>
+<text x="588" y="196" font-size="12" fill="#14532d">3 沿 Unwrap 递归，命中即 true</text>
+<text x="588" y="230" font-size="12" fill="#14532d">实测：同文本不同实例 false</text>
+<text x="588" y="258" font-size="12" fill="#14532d">可比较值类型同字段 true</text>
+
+<rect x="572" y="300" width="380" height="140" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="588" y="326" font-size="13" font-weight="bold" fill="#1e3a8a">errors.As(err, target) 的三步</text>
+<text x="588" y="354" font-size="12" fill="#1e3a8a">1 target 必须是「指向错误类型的指针」</text>
+<text x="588" y="382" font-size="12" fill="#1e3a8a">2 沿链找第一个可赋值的类型并写入</text>
+<text x="588" y="410" font-size="12" fill="#1e3a8a">3 传错形态直接 panic，不是返回 false</text>
+
+<rect x="572" y="454" width="380" height="72" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="588" y="480" font-size="13" font-weight="bold" fill="#854d0e">换层时的分工</text>
+<text x="588" y="506" font-size="12" fill="#854d0e">Is 判语义（该不该重试），As 取数据（要 Code）</text>
+
+<rect x="48" y="546" width="904" height="124" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+<text x="64" y="574" font-size="13" font-weight="bold" fill="#0f172a">实测对照（正文第三节原文）</text>
+<text x="64" y="602" font-size="12" fill="#334155">Is(w,base)=true　Is(v,base)=false　两者的 Error() 文本却完全相同</text>
+<text x="64" y="628" font-size="12" fill="#334155">Is(err,ErrUserNotFound)=true　Is(err,ErrNoRows)=false，因为服务层已换成业务语义</text>
+<text x="64" y="654" font-size="12" fill="#334155">As 到 BizError 得 true，As 到 StorageError 得 false：链里没有它</text>
+</svg>

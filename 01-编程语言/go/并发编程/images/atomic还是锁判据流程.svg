@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <defs>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">该用 atomic 还是锁？—— 判据流程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">临界区只碰「一个变量的一次读/写」→ atomic；要「多个字段一起变」或有 IO / 调用 → 锁</text>
+
+  <rect x="390" y="80" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="107" text-anchor="middle" font-size="12.5" fill="#1e3a8a">要保护的临界区长啥样？</text>
+  <line x1="500" y1="124" x2="500" y2="148" stroke="#334155" stroke-width="1.6" marker-end="url(#a2)"/>
+
+  <rect x="330" y="150" width="340" height="56" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="176" text-anchor="middle" font-size="12" fill="#854d0e">只读写「一个」对齐的变量？</text>
+  <text x="500" y="196" text-anchor="middle" font-size="10.5" fill="#854d0e">（一个 int64 / 一个指针 / 一个 bool）</text>
+
+  <line x1="670" y1="178" x2="760" y2="178" stroke="#16a34a" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="690" y="160" width="42" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="711" y="174" text-anchor="middle" font-size="11" fill="#14532d">是</text>
+  <rect x="766" y="150" width="204" height="88" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="868" y="176" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">用 atomic 类型族</text>
+  <text x="868" y="198" text-anchor="middle" font-size="10.5" fill="#14532d">Int64 / Bool / Pointer[T]</text>
+  <text x="868" y="218" text-anchor="middle" font-size="10" fill="#64748b">计数、标志位、快照发布</text>
+
+  <line x1="500" y1="206" x2="500" y2="238" stroke="#dc2626" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="486" y="212" width="210" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="496" y="226" font-size="10.5" fill="#7f1d1d">否：多字段 / 复合不变量</text>
+
+  <rect x="330" y="240" width="340" height="56" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="266" text-anchor="middle" font-size="12" fill="#854d0e">临界区里有 IO / 函数调用 /</text>
+  <text x="500" y="286" text-anchor="middle" font-size="12" fill="#854d0e">代码较长、要「多字段一起变」？</text>
+
+  <line x1="670" y1="268" x2="760" y2="268" stroke="#dc2626" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="690" y="250" width="42" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="711" y="264" text-anchor="middle" font-size="11" fill="#7f1d1d">是</text>
+  <rect x="766" y="240" width="204" height="88" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="868" y="266" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">用 Mutex</text>
+  <text x="868" y="288" text-anchor="middle" font-size="10.5" fill="#7f1d1d">读:写 几十倍才换 RWMutex</text>
+  <text x="868" y="308" text-anchor="middle" font-size="10" fill="#64748b">一次加锁改多字段，比 N 个 atomic 省</text>
+
+  <line x1="330" y1="268" x2="240" y2="268" stroke="#334155" stroke-width="1.5" marker-end="url(#a2)"/>
+  <rect x="248" y="250" width="78" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="287" y="264" text-anchor="middle" font-size="10.5" fill="#334155">都不满足</text>
+  <rect x="30" y="240" width="204" height="88" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="132" y="266" text-anchor="middle" font-size="12" fill="#0f172a">用 sync 原语</text>
+  <text x="132" y="288" text-anchor="middle" font-size="10.5" fill="#334155">Once 只初始化 / Cond 等条件</text>
+  <text x="132" y="308" text-anchor="middle" font-size="10" fill="#64748b">channel 传递所有权</text>
+
+  <rect x="30" y="344" width="940" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="48" y="372" font-size="13" font-weight="bold" fill="#0f172a">为什么「读一个值 + 后面一堆操作」不能只靠 atomic？</text>
+  <text x="48" y="400" font-size="12" fill="#334155">atomic.Load 只保证「这一次读」是原子的；「读到」与「据此去做」之间，状态可能已被别人改了。</text>
+  <text x="48" y="426" font-size="12" fill="#7f1d1d">要「读-判断-执行」整段不被插队 → 那是临界区语义 → 必须上锁。atomic 给不了临界区。</text>
+  <text x="48" y="454" font-size="12" fill="#0f172a">取舍的另一面：竞争极激烈时 CAS 反复重试会空转烧 CPU；此时 Mutex「抢不到就挂起、让出 P」反而更划算。</text>
+  <text x="48" y="486" font-size="11.5" fill="#14532d">实测（go1.26.8 容器，4 核，RunParallel）：自增竞争下 atomic ≈ 17 ns/op，Mutex ≈ 42–57 ns/op。</text>
+  <text x="48" y="512" font-size="11.5" fill="#64748b">无竞争单线程：atomic ≈ 11–14 ns，Mutex ≈ 32–43 ns —— 差距主要是锁的进出指令，不是「快很多」。</text>
+  <text x="48" y="544" font-size="11" fill="#64748b">判据落点：单变量 → atomic 类型族；多字段 / 长临界区 → Mutex；读多写少的整体快照 → atomic.Pointer[T]（见「使用」节）。</text>
+  <text x="48" y="574" font-size="11" fill="#854d0e">Go 1.19+ 一律用类型族（Int64/Uint64/Bool/Pointer[T]/Value），别再用 &amp;x 形式的老函数族。</text>
+</svg>

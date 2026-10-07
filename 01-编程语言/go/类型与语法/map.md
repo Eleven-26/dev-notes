@@ -585,7 +585,7 @@ internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
 | **`fatal error: concurrent map writes`** | **fatal error** | ❌ **不能**，进程直接退出 |
 
 > ⚠️ 生产上"偶发整个进程挂掉、日志里只有 `fatal error: concurrent map writes`"就是这一条 ——
-> 它不是普通 panic，**`defer + recover` 救不了**。完整机制与替代方案见 [线程安全.md](../并发/线程安全.md)。
+> 它不是普通 panic，**`defer + recover` 救不了**。完整机制与替代方案见 [线程安全.md](../并发编程/线程安全.md)。
 
 ### 延伸追问
 
@@ -596,11 +596,14 @@ internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
 
 ## 关联
 
-- [线程安全.md](../并发/线程安全.md) — 并发读写为什么会直接 fatal
-- [并发同步原语.md](../并发/并发同步原语.md) — sync.Map 与分段锁方案
+- [指针与引用.md](指针与引用.md) — map 元素不可寻址导致的「value 是 struct 就改不动」，与另外三种"改不到外面"症状的对照在彼
+- [线程安全.md](../并发编程/线程安全.md) — 并发读写为什么会直接 fatal
+- [并发同步原语.md](../并发编程/并发同步原语.md) — sync.Map 与分段锁方案
 - [切片.md](切片.md) — 另一种引用类型的扩容与共享
 - [散列表.md](../../../02-计算机基础/数据结构/哈希表/散列表.md) — 哈希表的结构、冲突处理与扩容的四道闸门
 - [类型系统.md](类型系统.md) — 类型转换与方法集规则，map 为什么不能取地址
-- [并发同步原语.md](../并发/并发同步原语.md) — `sync.Map`、分段锁与原子操作怎么选
+- [基础类型与零值.md](基础类型与零值.md) — nil map 写入为什么 panic（实测原文 `assignment to entry in nil map`）与"零值能不能直接用"的总判据
+- [struct与tag.md](struct与tag.md) — 什么样的 struct 能当 key：可比较规则与 `invalid map key type` 的编译错误原文
+- [并发同步原语.md](../并发编程/并发同步原语.md) — `sync.Map`、分段锁与原子操作怎么选
 
 > 反向引用（本篇被下列文档引到）：[for-range.md](for-range.md)、[数组与链表.md](../../../02-计算机基础/数据结构/线性结构/数组与链表.md)

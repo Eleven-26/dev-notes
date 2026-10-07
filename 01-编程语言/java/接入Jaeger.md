@@ -410,7 +410,7 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 
 - [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
 - [接入Skywalking.md](接入Skywalking.md) — javaagent 路线的对照（同为字节码增强，但协议是 `sw8`）
-- [接入Jaeger.md](../go/接入Jaeger.md) — 同一套 OTel 埋点在 Go 侧的写法
+- [接入Jaeger.md](../go/可观测性/接入Jaeger.md) — 同一套 OTel 埋点在 Go 侧的写法
 - [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路后端与「契合语言」维度的横向对比
 - [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
 - [镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `COPY --from` 与 initContainer 两种 agent 分发方式

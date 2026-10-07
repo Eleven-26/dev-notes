@@ -273,6 +273,6 @@ private final AtomicReference<List<String>> snapshot =
 - [线程池.md](线程池.md) — 任务从提交线程「交接」给工作线程，交接点上同样依赖 HB 关系
 - [运行时数据区与栈帧.md](../运行时/运行时数据区与栈帧.md) — 工作内存对应到真实硬件时，寄存器与操作数栈就是「每个线程一份」的部分
 - [JVM与垃圾回收.md](../运行时/JVM与垃圾回收.md) — 同样在对象头里做文章：锁状态与 GC 分代年龄共用 Mark Word
-- [共享内存与CSP.md](../../go/并发/共享内存与CSP.md) — Go 侧对同一问题的取舍：选择 CSP（channel）而不是共享内存 + 屏障
-- [并发同步原语.md](../../go/并发/并发同步原语.md) — Go `Mutex` 与 `atomic` 的语义对照，Go 内存模型的 HB 规则与 Java 高度相似
+- [共享内存与CSP.md](../../go/并发编程/共享内存与CSP.md) — Go 侧对同一问题的取舍：选择 CSP（channel）而不是共享内存 + 屏障
+- [并发同步原语.md](../../go/并发编程/并发同步原语.md) — Go `Mutex` 与 `atomic` 的语义对照，Go 内存模型的 HB 规则与 Java 高度相似
 - [服务发现的Java实现.md](../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md) — 「使用」一节的代码出处：不可变快照 + `AtomicReference` 整体替换

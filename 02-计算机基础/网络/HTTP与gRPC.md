@@ -603,6 +603,6 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 - [通信选型.md](通信选型.md) — 应用层协议与序列化格式的完整选型（含 WebSocket / SSE / MQTT / HTTP3）
 
 - [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 应用层数据如何被逐层封装、以及 MTU 引起的分片
-- [不使用protoc的gRPC.md](../../01-编程语言/go/不使用protoc的gRPC.md) — 反过来的一问：有 HTTP/2 与 gRPC 帧、但没有 protoc 和生成代码时，怎么把 RPC 调通
+- [不使用protoc的gRPC.md](../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) — 反过来的一问：有 HTTP/2 与 gRPC 帧、但没有 protoc 和生成代码时，怎么把 RPC 调通
 
-> 反向引用（本篇被下列文档引到）：[从零实现网关.md](../../01-编程语言/go/从零实现网关.md)、[接入Jaeger.md](../../01-编程语言/go/接入Jaeger.md)、[网关路由匹配.md](../../01-编程语言/go/网关路由匹配.md)、[08-WWW服务器.md](../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[DNS解析.md](DNS解析.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)、[反向代理原理与实现.md](反向代理原理与实现.md)、[Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)、[Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)、[可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)
+> 反向引用（本篇被下列文档引到）：[从零实现网关.md](../../01-编程语言/go/网络编程/从零实现网关.md)、[接入Jaeger.md](../../01-编程语言/go/可观测性/接入Jaeger.md)、[网关路由匹配.md](../../01-编程语言/go/网络编程/网关路由匹配.md)、[08-WWW服务器.md](../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[DNS解析.md](DNS解析.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)、[反向代理原理与实现.md](反向代理原理与实现.md)、[Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)、[Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)、[可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)

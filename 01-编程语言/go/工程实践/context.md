@@ -503,10 +503,10 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 
 ## 关联
 
-- [协程泄漏与死锁.md](../并发/协程泄漏与死锁.md) — 取消信号传不下去就会漏协程
-- [channel原理与底层实现.md](../并发/channel原理与底层实现.md) — 取消传播本质是 close 广播
+- [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — 取消信号传不下去就会漏协程
+- [channel原理与底层实现.md](../并发编程/channel原理与底层实现.md) — 取消传播本质是 close 广播
 - [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — 客户端侧的请求取消与超时
 - [稳定性三件套.md](../../../04-架构与系统/分布式/服务治理/稳定性三件套.md) — 超时预算与熔断的关系
 - [数据导入导出设计.md](../../../04-架构与系统/系统设计/数据导入导出设计.md) — 异步任务的取消与超时：ctx 要贯穿到每一批提交的安全点
 
-> 反向引用（本篇被下列文档引到）：[不使用protoc的gRPC.md](../不使用protoc的gRPC.md)、[Kratos框架.md](Kratos框架.md)、[标准库实现.md](定时任务/标准库实现.md)、[配置热重载与快照.md](配置热重载与快照.md)、[channel使用陷阱.md](../并发/channel使用陷阱.md)、[goroutine实战模式.md](../并发/goroutine实战模式.md)、[并发控制实战.md](../并发/并发控制实战.md)、[限流器.md](../并发/限流器.md)、[接入Jaeger.md](../接入Jaeger.md)、[接入Skywalking.md](../接入Skywalking.md)、[服务注册与发现的Go实现.md](../../../04-架构与系统/分布式/服务治理/服务注册与发现的Go实现.md)
+> 反向引用（本篇被下列文档引到）：[不使用protoc的gRPC.md](../网络编程/不使用protoc的gRPC.md)、[Kratos框架.md](框架/微服务/Kratos框架.md)、[标准库实现.md](定时任务/标准库实现.md)、[配置热重载与快照.md](配置热重载与快照.md)、[channel使用陷阱.md](../并发编程/channel使用陷阱.md)、[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[并发控制实战.md](../并发编程/并发控制实战.md)、[限流器.md](../并发编程/限流器.md)、[接入Jaeger.md](../可观测性/接入Jaeger.md)、[接入Skywalking.md](../可观测性/接入Skywalking.md)、[服务注册与发现的Go实现.md](../../../04-架构与系统/分布式/服务治理/服务注册与发现的Go实现.md)

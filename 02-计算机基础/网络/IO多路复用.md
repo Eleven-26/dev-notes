@@ -482,7 +482,7 @@ lsof -p "$PID" -a -iTCP
 ## 关联
 
 - [TCP滑动窗口.md](tcp/TCP滑动窗口.md) — 半开连接与事件循环
-- [channel原理与底层实现.md](../../01-编程语言/go/并发/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
+- [channel原理与底层实现.md](../../01-编程语言/go/并发编程/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
 - [零拷贝.md](../../01-编程语言/go/运行时/零拷贝.md) — 数据搬运的另一半成本
 - [性能排查.md](../linux/性能排查.md) — 连接状态分布与 fd 上限的排查
 

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 的 Load 查找顺序（Go 1.9 – 1.23 经典实现）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先无锁查 read 快照；未命中才加锁看 dirty；miss 攒满阈值触发整体提升</text>
+
+  <rect x="390" y="80" width="220" height="42" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="106" text-anchor="middle" font-size="12.5" fill="#1e3a8a">Load(key)</text>
+  <line x1="500" y1="122" x2="500" y2="146" stroke="#334155" stroke-width="1.6" marker-end="url(#m3)"/>
+
+  <rect x="340" y="148" width="320" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="172" text-anchor="middle" font-size="12" fill="#14532d">① 原子读 read，查 m[key]</text>
+  <text x="500" y="192" text-anchor="middle" font-size="10.5" fill="#64748b">无锁快路径</text>
+
+  <line x1="660" y1="175" x2="744" y2="175" stroke="#16a34a" stroke-width="1.5" marker-end="url(#m3)"/>
+  <rect x="662" y="152" width="80" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="702" y="166" text-anchor="middle" font-size="10" fill="#14532d">命中非nil</text>
+  <rect x="748" y="150" width="222" height="52" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="859" y="176" text-anchor="middle" font-size="12" fill="#0f172a">返回 value, true</text>
+  <text x="859" y="194" text-anchor="middle" font-size="10" fill="#64748b">不加锁 —— 读快的来源</text>
+
+  <line x1="500" y1="202" x2="500" y2="228" stroke="#334155" stroke-width="1.6" marker-end="url(#m3)"/>
+  <rect x="392" y="206" width="216" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="220" text-anchor="middle" font-size="10" fill="#334155">未命中 / Entry=nil</text>
+
+  <rect x="360" y="230" width="280" height="48" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="252" text-anchor="middle" font-size="12" fill="#854d0e">② miss++</text>
+  <text x="500" y="270" text-anchor="middle" font-size="10.5" fill="#854d0e">miss ≥ len(dirty) ？</text>
+
+  <line x1="640" y1="254" x2="742" y2="254" stroke="#b45309" stroke-width="1.5" marker-end="url(#m3)"/>
+  <rect x="662" y="236" width="40" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="682" y="250" text-anchor="middle" font-size="10" fill="#854d0e">是</text>
+  <rect x="748" y="228" width="222" height="54" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="859" y="252" text-anchor="middle" font-size="11.5" fill="#7f1d1d">③ 加锁提升 dirty→read</text>
+  <text x="859" y="270" text-anchor="middle" font-size="10.5" fill="#7f1d1d">miss=0 · dirty=nil</text>
+
+  <line x1="500" y1="278" x2="500" y2="304" stroke="#334155" stroke-width="1.6" marker-end="url(#m3)"/>
+  <rect x="462" y="284" width="40" height="20" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="482" y="298" text-anchor="middle" font-size="10" fill="#334155">否</text>
+
+  <rect x="340" y="306" width="320" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="330" text-anchor="middle" font-size="12" fill="#1e3a8a">④ 加 mu，去 dirty[key] 找</text>
+  <text x="500" y="348" text-anchor="middle" font-size="10.5" fill="#64748b">dirty 命中 → 返回；dirty 无此键 → 未找到</text>
+
+  <rect x="30" y="378" width="940" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="48" y="404" font-size="12" fill="#0f172a">· 只有 read 未命中时才会碰到锁：读多写少、键稳定 → 绝大多数命中 read，几乎无锁。</text>
+  <text x="48" y="428" font-size="12" fill="#7f1d1d">· 键集翻转时：dirty 被提升置 nil，下次 Store 又从 read 整表重建 dirty → 反复复制 Entry，miss 与重建互相放大 → 慢。</text>
+  <text x="48" y="452" font-size="11" fill="#64748b">Go 1.24+ 已无 read/dirty/miss 这套：Load 走哈希前缀树逐层 atomic.Pointer.Load（见「sync.Map哈希前缀树结构」图）。</text>
+
+  <rect x="30" y="486" width="940" height="122" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="48" y="512" font-size="12" font-weight="bold" fill="#854d0e">对照：现行 go1.26.8 的 Load（无「提升」这一步）</text>
+  <text x="48" y="540" font-size="12" fill="#854d0e">root.Load() → 每层 children[(hash 右移 shift) 与 15].Load() → 空槽=miss；是 entry 就到 overflow 链比 key。</text>
+  <text x="48" y="566" font-size="11.5" fill="#854d0e">全程只有 atomic.Pointer.Load，没有 miss 计数、没有整表提升；写侧才 lock 单个 indirect.mu。</text>
+  <text x="48" y="592" font-size="11" fill="#64748b">两版都是「读多写少 + 键集稳定」优化取向；差别在无锁程度与写密集时的表现。</text>
+</svg>

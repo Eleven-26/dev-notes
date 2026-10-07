@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+<defs>
+<marker id="arv" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">函数实参永远拷贝：拷了什么、还共享什么</text>
+<text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">四行是同一件事：值传递拷的是「头」，头里带指针就能共享，纯数据的不共享</text>
+
+<rect x="48" y="124" width="250" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="173" y="152" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">struct 传值</text>
+<text x="173" y="180" font-size="12" fill="#1e3a8a" text-anchor="middle">整个结构体复制一份</text>
+
+<rect x="358" y="146" width="240" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="478" y="169" font-size="12" fill="#334155" text-anchor="middle">拷 sizeof(T) 字节，实测 16</text>
+
+<rect x="668" y="124" width="284" height="80" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="810" y="152" font-size="13" font-weight="bold" fill="#7f1d1d" text-anchor="middle">不共享</text>
+<text x="810" y="180" font-size="12" fill="#7f1d1d" text-anchor="middle">函数内改字段，调用方看不见</text>
+
+<rect x="48" y="216" width="250" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="173" y="244" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">slice 传值</text>
+<text x="173" y="272" font-size="12" fill="#1e3a8a" text-anchor="middle">拷的是 24 字节的头</text>
+
+<rect x="358" y="238" width="240" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="478" y="261" font-size="12" fill="#334155" text-anchor="middle">指针加长度加容量</text>
+
+<rect x="668" y="216" width="284" height="80" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="810" y="244" font-size="13" font-weight="bold" fill="#854d0e" text-anchor="middle">半共享</text>
+<text x="810" y="272" font-size="12" fill="#854d0e" text-anchor="middle">改元素生效，append 的新数组丢失</text>
+
+<rect x="48" y="308" width="250" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="173" y="336" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">map 传值</text>
+<text x="173" y="364" font-size="12" fill="#1e3a8a" text-anchor="middle">拷的是一个 hmap 指针</text>
+
+<rect x="358" y="330" width="240" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="478" y="353" font-size="12" fill="#334155" text-anchor="middle">8 字节，指向同一张哈希表</text>
+
+<rect x="668" y="308" width="284" height="80" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="810" y="336" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">共享</text>
+<text x="810" y="364" font-size="12" fill="#14532d" text-anchor="middle">增删改键都可见，但换不了 map 本身</text>
+
+<rect x="48" y="400" width="250" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="173" y="428" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">interface 传值</text>
+<text x="173" y="456" font-size="12" fill="#1e3a8a" text-anchor="middle">拷类型字加数据字</text>
+
+<rect x="358" y="422" width="240" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="478" y="445" font-size="12" fill="#334155" text-anchor="middle">16 字节，值或指针在里面</text>
+
+<rect x="668" y="400" width="284" height="80" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="810" y="428" font-size="13" font-weight="bold" fill="#854d0e" text-anchor="middle">看里面装的是什么</text>
+<text x="810" y="456" font-size="12" fill="#854d0e" text-anchor="middle">装值就再拷一次，装指针才改得动</text>
+
+<line x1="298" y1="164" x2="356" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+<line x1="598" y1="164" x2="666" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+<line x1="298" y1="256" x2="356" y2="256" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+<line x1="598" y1="256" x2="666" y2="256" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+<line x1="298" y1="348" x2="356" y2="348" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+<line x1="598" y1="348" x2="666" y2="348" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+<line x1="298" y1="440" x2="356" y2="440" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+<line x1="598" y1="440" x2="666" y2="440" stroke="#334155" stroke-width="1.5" marker-end="url(#arv)"/>
+
+<rect x="48" y="500" width="904" height="126" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="64" y="528" font-size="13" font-weight="bold" fill="#0f172a">判据：先问「这份拷贝里有几个字节是指针」，再问「函数要改的是内容还是那个变量本身」</text>
+<text x="64" y="556" font-size="12" fill="#334155">要改内容且拷贝里有指针，值传参就够；要改调用方手里的变量本身，只能传变量的地址</text>
+<text x="64" y="582" font-size="12" fill="#334155">连指针都要改（比如函数负责给一个空指针赋值），就得传指针的指针，实测见正文第二节</text>
+<text x="64" y="608" font-size="12" fill="#64748b">字节数是容器内 go1.26.8 的 unsafe.Sizeof 读数；slice 头 24、接口 16、指针 8</text>
+</svg>

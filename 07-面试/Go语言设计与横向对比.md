@@ -323,7 +323,7 @@ go build -ldflags="-s -w" -o hello3.exe .    # 1.6 MB（去掉符号表与 DWARF
 |---|---|
 | **C** | 语法骨架（`{}` 代码块、`for`、指针）、"编译要快"的价值取向 |
 | **Pascal / Oberon** | **声明语法**与**包**的概念（Oberon 作者 Wirth 是 Pascal 之父） |
-| **CSP**（Hoare，1978） | goroutine + channel 的**并发模型**（见 [共享内存与CSP.md](../01-编程语言/go/并发/共享内存与CSP.md)） |
+| **CSP**（Hoare，1978） | goroutine + channel 的**并发模型**（见 [共享内存与CSP.md](../01-编程语言/go/并发编程/共享内存与CSP.md)） |
 | **Limbo / Newsqueak** | channel 的**具体语法与运行时实现**（Rob Pike 参与过这两个语言） |
 | **Java** | GC、接口（但 Go 改成了**隐式实现**） |
 

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+<defs>
+<marker id="arp" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+<marker id="aru" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+</defs>
+
+<text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">指针变量、它所指的堆对象，以及 uintptr 断链</text>
+<text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">Go 没有引用类型，只有指针；uintptr 只是地址的整数快照，GC 不顺着它找对象</text>
+
+<rect x="48" y="88" width="302" height="252" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="199" y="118" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">调用方栈帧</text>
+
+<rect x="70" y="150" width="124" height="46" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="132" y="178" font-size="12" fill="#334155" text-anchor="middle">p 是 *T</text>
+<rect x="204" y="150" width="124" height="46" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="266" y="178" font-size="12" fill="#334155" text-anchor="middle">up 是 uintptr</text>
+<rect x="70" y="206" width="124" height="46" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="132" y="234" font-size="12" fill="#334155" text-anchor="middle">pp：指针的指针</text>
+<rect x="204" y="206" width="124" height="46" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="266" y="234" font-size="12" fill="#334155" text-anchor="middle">n 是 int</text>
+
+<text x="64" y="278" font-size="12" fill="#1e3a8a">指针变量本身在栈上，拷参数只拷 8 字节</text>
+<text x="64" y="302" font-size="12" fill="#1e3a8a">被外部引用的对象必须逃逸到堆</text>
+<text x="64" y="326" font-size="12" fill="#64748b">逃逸原理见 内存逃逸.md，本篇不重讲</text>
+
+<rect x="650" y="88" width="302" height="252" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="801" y="118" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">堆：GC 管这块内存</text>
+
+<rect x="690" y="150" width="222" height="80" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="801" y="178" font-size="12" fill="#334155" text-anchor="middle">p 所指的对象 A=42</text>
+<text x="801" y="206" font-size="12" fill="#334155" text-anchor="middle">回收后这段可被改写复用</text>
+
+<text x="666" y="278" font-size="12" fill="#14532d">只要还有真引用，对象就不会被回收</text>
+<text x="666" y="302" font-size="12" fill="#14532d">Go 的 GC 不搬对象，地址数值不会变</text>
+<text x="666" y="326" font-size="12" fill="#7f1d1d">但 uintptr 不是引用，保不住对象</text>
+
+<rect x="372" y="140" width="252" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="498" y="162" font-size="12" fill="#14532d" text-anchor="middle">真引用：GC 顺这条线找到对象</text>
+<rect x="372" y="200" width="252" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="498" y="222" font-size="12" fill="#7f1d1d" text-anchor="middle">整数快照：GC 看不见它</text>
+
+<line x1="194" y1="170" x2="370" y2="157" stroke="#16a34a" stroke-width="1.6"/>
+<line x1="624" y1="157" x2="686" y2="172" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arp)"/>
+<line x1="328" y1="226" x2="370" y2="217" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="6 4"/>
+<line x1="624" y1="217" x2="686" y2="205" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#aru)"/>
+
+<rect x="48" y="356" width="904" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="64" y="384" font-size="13" font-weight="bold" fill="#0f172a">同一份「只留 uintptr」的代码，在容器里跑三次的真实读数（go1.26.8）</text>
+<text x="64" y="412" font-size="12" fill="#334155">第 1 次：finalizer 已运行=true，用 uintptr 读回 A=0 B=0</text>
+<text x="64" y="436" font-size="12" fill="#334155">第 2 次读回 A=-999 B=-999，第 3 次同样是 -999 与 -999</text>
+<text x="64" y="460" font-size="12" fill="#334155">对照组（全程持 unsafe.Pointer 加 KeepAlive）：20 万次全部读到正确值</text>
+<text x="64" y="484" font-size="12" fill="#334155">go vet 报出 possible misuse of unsafe.Pointer 三处，正是那三次 uintptr 回转</text>
+<text x="64" y="514" font-size="12" fill="#7f1d1d">能读到旧值不等于对象还活着：那块内存的所有权已经交还给 runtime</text>
+<text x="64" y="544" font-size="12" fill="#1e3a8a">分工：unsafe.Pointer 用来持有对象，uintptr 只用来算偏移、传给 syscall</text>
+<text x="64" y="574" font-size="12" fill="#64748b">地址形如 0xc0000... 的读数是示意，每次运行都不同，不要当断言</text>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 经典结构（Go 1.9 – 1.23）：read / dirty 双 map</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">读优先走只读快照 read（无锁）；写落到 dirty；miss 计数到阈值后把 dirty 整体提升为 read</text>
+
+  <rect x="360" y="76" width="280" height="70" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="102" text-anchor="middle" font-size="13" fill="#0f172a">type Map struct</text>
+  <text x="500" y="122" text-anchor="middle" font-size="11.5" fill="#334155">mu Mutex · read · dirty · miss</text>
+  <text x="500" y="138" text-anchor="middle" font-size="11.5" fill="#334155">read = atomic.Pointer[readOnly]</text>
+
+  <line x1="420" y1="146" x2="250" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <line x1="580" y1="146" x2="750" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+
+  <rect x="70" y="200" width="360" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="250" y="228" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">read（只读快照）</text>
+  <text x="250" y="252" text-anchor="middle" font-size="11.5" fill="#14532d">readOnly{ m map[any]*Entry,</text>
+  <text x="250" y="272" text-anchor="middle" font-size="11.5" fill="#14532d">amended bool }</text>
+  <text x="250" y="298" text-anchor="middle" font-size="11" fill="#334155">Load 命中这里 → 原子读，</text>
+  <text x="250" y="316" text-anchor="middle" font-size="11" fill="#334155">全程不加锁（读快的来源）</text>
+  <text x="250" y="340" text-anchor="middle" font-size="11" fill="#7f1d1d">amended：dirty 有 read 里没有的新键</text>
+
+  <rect x="570" y="200" width="360" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="750" y="228" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">dirty（可写副本）</text>
+  <text x="750" y="252" text-anchor="middle" font-size="11.5" fill="#1e3a8a">dirty map[any]*Entry</text>
+  <text x="750" y="278" text-anchor="middle" font-size="11" fill="#334155">Store / Delete 未命中 read 时</text>
+  <text x="750" y="296" text-anchor="middle" font-size="11" fill="#334155">写它，需持 mu</text>
+  <text x="750" y="320" text-anchor="middle" font-size="11" fill="#7f1d1d">Entry 值为 nil = 「键已被删」墓碑</text>
+  <text x="750" y="338" text-anchor="middle" font-size="11" fill="#7f1d1d">dirty=nil（提升后置空）走 expunged</text>
+
+  <rect x="360" y="250" width="280" height="52" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="272" text-anchor="middle" font-size="12" fill="#854d0e">miss 计数</text>
+  <text x="500" y="290" text-anchor="middle" font-size="11" fill="#854d0e">read 未命中次数，攒满就提升</text>
+
+  <line x1="430" y1="276" x2="285" y2="276" stroke="#b45309" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#m1)"/>
+  <line x1="570" y1="276" x2="715" y2="276" stroke="#b45309" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#m1)"/>
+
+  <line x1="750" y1="350" x2="750" y2="392" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <rect x="770" y="362" width="200" height="24" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="870" y="378" text-anchor="middle" font-size="10.5" fill="#334155">miss ≥ len(dirty) 则提升</text>
+
+  <rect x="440" y="396" width="320" height="64" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="600" y="424" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">提升（promote）</text>
+  <text x="600" y="446" text-anchor="middle" font-size="11" fill="#7f1d1d">dirty 变新 read · miss=0 · dirty=nil</text>
+
+  <line x1="440" y1="428" x2="250" y2="428" stroke="#dc2626" stroke-width="1.4" marker-end="url(#m1)"/>
+  <rect x="380" y="470" width="440" height="26" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="600" y="487" text-anchor="middle" font-size="10.5" fill="#7f1d1d">下次 Store 发现 dirty=nil → 从 read 整表重建 dirty（补写墓碑键）</text>
+
+  <rect x="30" y="510" width="940" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="48" y="536" font-size="12" fill="#0f172a">· 读：Load 先看 read；命中且 Entry 非 nil → 直接返回（无锁）。未命中 → miss++，加锁再看 dirty。</text>
+  <text x="48" y="560" font-size="12" fill="#0f172a">· 写：Store 命中 read 且 !amended 直接写；否则加锁写 dirty；dirty=nil 时先把 read 里的键补进 dirty 再写。</text>
+  <text x="48" y="584" font-size="12" fill="#7f1d1d">· 退化根因：键集反复全量重写 → dirty 被提升置 nil 后又被整表重建，重建要遍历 read 复制全部 Entry → 抖动、慢。</text>
+  <text x="48" y="610" font-size="11" fill="#64748b">注：字段名取自该版实现通称；本仓库既有笔记「read + dirty 双 map」描述的即此版。Go 1.24 起已被哈希前缀树重写（见另图）。</text>
+</svg>

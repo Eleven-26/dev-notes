@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="mg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="mr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">reflect.Value 的两个字与"可寻址性"：为什么 ValueOf(x) 不能 Set</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">Value 内部与 eface 同构（类型指针 + 数据指针 + flag）；能不能写，取决于数据指针指向谁</text>
+
+  <!-- 源变量 x 在栈上 -->
+  <rect x="40" y="92" width="180" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="130" y="120" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">栈上的 var x User</text>
+  <text x="130" y="144" text-anchor="middle" font-size="11" fill="#334155">有真实地址（可寻址）</text>
+
+  <!-- 路径A：ValueOf(x) -->
+  <rect x="270" y="80" width="330" height="110" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="435" y="102" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">路径 A：reflect.ValueOf(x)</text>
+  <rect x="292" y="116" width="140" height="60" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="362" y="138" text-anchor="middle" font-size="11" fill="#0f172a">typ = *rtype(User)</text>
+  <text x="362" y="160" text-anchor="middle" font-size="11" fill="#7f1d1d">ptr → 一份副本</text>
+  <rect x="452" y="116" width="130" height="60" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="517" y="138" text-anchor="middle" font-size="11" fill="#0f172a">flag: 无 flagAddr</text>
+  <text x="517" y="160" text-anchor="middle" font-size="11" fill="#7f1d1d">CanSet=false</text>
+  <line x1="222" y1="127" x2="290" y2="146" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mr)"/>
+
+  <!-- 路径B：ValueOf 取指针再 Elem -->
+  <rect x="270" y="230" width="330" height="110" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="435" y="252" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">路径 B：reflect.ValueOf(&amp;x).Elem()</text>
+  <rect x="292" y="266" width="140" height="60" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="362" y="288" text-anchor="middle" font-size="11" fill="#0f172a">typ = *rtype(User)</text>
+  <text x="362" y="310" text-anchor="middle" font-size="11" fill="#166534">ptr → x 本身</text>
+  <rect x="452" y="266" width="130" height="60" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="517" y="288" text-anchor="middle" font-size="11" fill="#0f172a">flag: 有 flagAddr</text>
+  <text x="517" y="310" text-anchor="middle" font-size="11" fill="#14532d">CanSet=true</text>
+  <line x1="222" y1="150" x2="290" y2="250" stroke="#16a34a" stroke-width="1.6" marker-end="url(#mg)"/>
+
+  <!-- 右侧结果对比 -->
+  <rect x="640" y="92" width="320" height="88" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="656" y="116" font-size="12" font-weight="bold" fill="#7f1d1d">A：Set / SetString 直接 panic</text>
+  <text x="656" y="140" font-size="11" fill="#334155">reflect: reflect.Value.Set</text>
+  <text x="656" y="160" font-size="11" fill="#334155">using unaddressable value</text>
+
+  <rect x="640" y="250" width="320" height="88" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="656" y="274" font-size="12" font-weight="bold" fill="#14532d">B：写回真实内存成功</text>
+  <text x="656" y="298" font-size="11" fill="#334155">ValueOf(&amp;x).Elem()</text>
+  <text x="656" y="318" font-size="11" fill="#334155">.Field(0).SetString("Alice") ✓</text>
+
+  <line x1="600" y1="135" x2="638" y2="135" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mr)"/>
+  <line x1="600" y1="293" x2="638" y2="293" stroke="#16a34a" stroke-width="1.6" marker-end="url(#mg)"/>
+
+  <!-- 未导出字段规则 -->
+  <rect x="40" y="380" width="920" height="70" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="56" y="404" font-size="12.5" font-weight="bold" fill="#854d0e">⚠️ 第三种情况：即使可寻址（走 B 路径），未导出字段仍不可写</text>
+  <text x="56" y="426" font-size="11.5" fill="#334155">FieldByName("private").CanSet = false —— StructField.PkgPath 非空即"来自未导出字段"，reflect 会打 flagRO，</text>
+  <text x="56" y="444" font-size="11.5" fill="#334155">强行 Set 触发 "obtained by the use of unexported struct fields"。CanSet 需要同时满足：可寻址 + 非未导出。</text>
+
+  <!-- 底部要点 -->
+  <rect x="40" y="470" width="920" height="110" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="56" y="494" font-size="12" font-weight="bold" fill="#0f172a">读图三句话：</text>
+  <text x="56" y="518" font-size="11.5" fill="#334155">① Value 的两个字与 eface/iface 同构：一个类型指针、一个数据指针，外加一个 flag 位（见 接口.md 第四节，不在此重讲）。</text>
+  <text x="56" y="538" font-size="11.5" fill="#334155">② 能不能 Set，就看数据指针是否指向一块有真实地址、且非未导出的内存：传值=副本(否)，传指针再 Elem()=本体(是)。</text>
+  <text x="56" y="558" font-size="11.5" fill="#334155">③ 所以"要修改就传指针"是硬规矩：reflect.ValueOf(&amp;x).Elem() 是标准写法，反射读没问题、反射写必须有地址。</text>
+</svg>

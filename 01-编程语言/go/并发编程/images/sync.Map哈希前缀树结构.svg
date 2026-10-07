@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 现行结构（Go 1.24+，含实测的 go1.26.8）：无锁哈希前缀树</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">sync.Map 已委托给 internal/sync.HashTrieMap[K,V]；读全程 atomic.Pointer.Load 无锁，写才锁单个内部节点</text>
+
+  <rect x="280" y="78" width="440" height="88" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="104" text-anchor="middle" font-size="13" fill="#0f172a">HashTrieMap[K,V]（源码字段，原样）</text>
+  <text x="500" y="126" text-anchor="middle" font-size="11" fill="#334155">inited atomic.Uint32 · initMu Mutex · root atomic.Pointer[indirect]</text>
+  <text x="500" y="144" text-anchor="middle" font-size="11" fill="#334155">keyHash hashFunc · valEqual equalFunc · seed uintptr</text>
+
+  <line x1="500" y1="166" x2="500" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#m2)"/>
+  <rect x="516" y="174" width="60" height="22" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="546" y="189" text-anchor="middle" font-size="10.5" fill="#334155">root</text>
+
+  <rect x="330" y="198" width="340" height="92" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="224" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">indirect（内部节点）</text>
+  <text x="500" y="246" text-anchor="middle" font-size="10.5" fill="#334155">dead atomic.Bool · mu Mutex · parent *indirect</text>
+  <text x="500" y="266" text-anchor="middle" font-size="10.5" fill="#1e3a8a">children [16]atomic.Pointer[node]</text>
+  <text x="500" y="283" text-anchor="middle" font-size="10" fill="#64748b">nChildren=16，每层按 hash 取 4 bit（nChildrenLog2=4）</text>
+
+  <line x1="380" y1="290" x2="220" y2="360" stroke="#334155" stroke-width="1.4" marker-end="url(#m2)"/>
+  <line x1="500" y1="290" x2="500" y2="360" stroke="#334155" stroke-width="1.4" marker-end="url(#m2)"/>
+  <line x1="620" y1="290" x2="800" y2="360" stroke="#334155" stroke-width="1.4" marker-end="url(#m2)"/>
+  <rect x="150" y="316" width="140" height="22" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="220" y="331" text-anchor="middle" font-size="10" fill="#334155">slot → indirect</text>
+  <rect x="430" y="316" width="140" height="22" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="331" text-anchor="middle" font-size="10" fill="#334155">slot → entry</text>
+  <rect x="730" y="316" width="140" height="22" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="800" y="331" text-anchor="middle" font-size="10" fill="#334155">slot → entry</text>
+
+  <rect x="120" y="362" width="200" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="220" y="386" text-anchor="middle" font-size="12" fill="#1e3a8a">indirect（下一层）</text>
+  <text x="220" y="406" text-anchor="middle" font-size="10" fill="#64748b">继续按 hash 细分</text>
+
+  <rect x="410" y="362" width="200" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="510" y="386" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">entry（叶子）</text>
+  <text x="510" y="406" text-anchor="middle" font-size="10" fill="#334155">key K · value V</text>
+  <text x="510" y="424" text-anchor="middle" font-size="10" fill="#14532d">overflow atomic.Pointer[entry]</text>
+
+  <rect x="700" y="362" width="200" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="800" y="386" text-anchor="middle" font-size="12" fill="#14532d">entry（叶子）</text>
+  <text x="800" y="406" text-anchor="middle" font-size="10" fill="#64748b">同槽不同键 → 挂 overflow 链</text>
+
+  <line x1="610" y1="410" x2="700" y2="392" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m2)"/>
+
+  <rect x="410" y="450" width="200" height="44" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="510" y="470" text-anchor="middle" font-size="10.5" fill="#854d0e">哈希碰撞：overflow 链线性查</text>
+  <text x="510" y="486" text-anchor="middle" font-size="10" fill="#854d0e">e.key == key ? 命中 : e=e.overflow</text>
+  <line x1="510" y1="434" x2="510" y2="450" stroke="#b45309" stroke-width="1.2" marker-end="url(#m2)"/>
+
+  <rect x="30" y="512" width="940" height="148" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="48" y="538" font-size="12" fill="#0f172a">· Load：从 root 起，每层用 (hash &gt;&gt; hashShift) &amp; 15 选 children 槽；槽空即 miss，是 entry 就到 overflow 链比 key。全链路 atomic.Pointer.Load，无锁。</text>
+  <text x="48" y="562" font-size="12" fill="#0f172a">· Store：沿同路径找到插入点；把叶子换成 indirect 时锁该节点 mu，替换 children 用 CAS。</text>
+  <text x="48" y="586" font-size="12" fill="#7f1d1d">· Delete：children 槽 Store(nil)；节点空了置 dead=true 并从 parent 摘除 —— 没有旧版 expunged 墓碑，也没有 dirty 重建。</text>
+  <text x="48" y="614" font-size="12" font-weight="bold" fill="#14532d">· 结论：读多写少、键集稳定仍是它的主场；但插入/删除要新建 entry/indirect 节点，写密集时反而更慢、分配更多（见实测）。</text>
+  <text x="48" y="640" font-size="11" fill="#64748b">以上字段与常量均从 go1.26.8 的 internal/sync/hashtriemap.go 原样核对。</text>
+</svg>
