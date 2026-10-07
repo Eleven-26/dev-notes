@@ -1,6 +1,8 @@
 # XXL-JOB 分布式任务调度
 
-> XXL-JOB 的定位与核心概念、调度中心 / 执行器的通信与调度架构、Docker 部署，以及 Go（主，篇幅给足）与 Java（官方，作对照）两套执行器的可落地接入方式与生产避坑。
+> XXL-JOB 的定位与核心概念、调度中心 / 执行器的通信与调度架构、Docker 部署、Java（官方）执行器的接入方式，以及跨语言能力对照与生产避坑。
+>
+> ⭐ **Go 执行器的完整接入已按仓库约定拆成分册**：[xxl-job接入.md](../../../01-编程语言/go/工程实践/定时任务/xxl-job接入.md)（含 MySQL + admin + 双执行器的全链路容器实测）。
 >
 > 内容整理自个人学习笔记。通用分布式协调原理见 [distributed](../../../04-架构与系统/分布式/)，容器编排见 [docker](../../../06-工程实践/部署/)。
 
@@ -150,160 +152,16 @@ services:
 
 ---
 
-## 五、使用一：Go ⭐
+## 五、使用一：Go（已分册）
 
-```bash
-go get github.com/xxl-job/xxl-job-executor-go
-```
+**本节要点**：Go 侧接入按仓库约定拆成独立分册 —— 本篇只留**平台本体**（概念 / 架构 / 部署 / 选型 / 跨语言对照），语言接入代码放到语言目录。
 
-### 5.1 执行器配置与任务注册
-
-| `xxl` 选项函数 | 作用 | 默认值 / 说明 |
+| 语言 | 分册 | 覆盖内容 |
 | --- | --- | --- |
-| `xxl.ServerAddr(addr)` | 调度中心地址 | 形如 `http://127.0.0.1:8080/xxl-job-admin`，**必须带 context-path** |
-| `xxl.AccessToken(token)` | 通讯令牌 | 与中心 `xxl.job.accessToken` 一致 |
-| `xxl.ExecutorIp(ip)` | 执行器注册 IP | 默认 `ipv4.LocalIP()`；多网卡 / 容器**必须显式指定** |
-| `xxl.ExecutorPort(port)` | 执行器监听端口 | 默认 `9999` |
-| `xxl.RegistryKey(name)` | **执行器 AppName** | 默认 `golang-jobs`；须与中心「执行器管理」的 AppName 完全一致 |
-| `xxl.SetLogger(l)` | 自定义日志 | 实现 `Info(format string, a ...interface{})` / `Error(...)` 的 `xxl.Logger` |
+| **Go** | [xxl-job接入.md](../../../01-编程语言/go/工程实践/定时任务/xxl-job接入.md) | 执行器配置与任务注册、分片广播、失败与重试的处理约定、托管生命周期；附 **MySQL + admin 3.4.2 + 双执行器**的全链路容器实测（注册 / 触发与回调 / 重试 / 分片 / 超时五条链路） |
+| Java | 见下一节（官方实现，作为对照保留在本篇） | `XxlJobSpringExecutor` 配置、`@XxlJob` 任务定义、`XxlJobHelper` 显式成功/失败 |
 
-> ⚠️ Go 客户端**没有** `SetAddresses` / `SetAccessToken` / `SetRegistry` 这类 setter（那是部分博客的臆造或他语言写法），只有上面这些 `Option` 函数；也**不支持可插拔注册中心**，固定走 DB 注册表。
-
-```go
-package main
-
-import (
-	"context"
-	"log"
-	"time"
-
-	xxl "github.com/xxl-job/xxl-job-executor-go"
-)
-
-func main() {
-	exec := xxl.NewExecutor(
-		xxl.ServerAddr("http://127.0.0.1:8080/xxl-job-admin"), // 调度中心，必须含 context-path
-		xxl.AccessToken("default_token"),                      // = 中心 xxl.job.accessToken
-		xxl.ExecutorIp("192.168.1.10"),                        // 对中心可达的 IP，务必显式写
-		xxl.ExecutorPort("9999"),                              // 默认 9999
-		xxl.RegistryKey("xxl-job-executor-sample"),            // = 中心「执行器管理」的 AppName
-	)
-	exec.Init()                 // 必须在 RegTask / Run 之前，内部会拉起注册协程
-	exec.LogHandler(logHandler) // 控制台看「执行日志」时回拉，见下
-
-	exec.RegTask("demoJobHandler", demoJobHandler) // 名字须与中心 JobHandler 一致
-	exec.RegTask("shardingJobHandler", shardingJobHandler)
-	// Run() 阻塞至 SIGINT/SIGTERM，自动向中心摘除注册后返回（无需自己 signal.Notify）
-	if err := exec.Run(); err != nil {
-		log.Fatalf("executor exit: %v", err)
-	}
-}
-
-// 任务签名固定：func(ctx context.Context, param *xxl.RunReq) string
-func demoJobHandler(ctx context.Context, param *xxl.RunReq) string {
-	log.Printf("handler=%s param=%q logId=%d timeout=%ds",
-		param.ExecutorHandler, param.ExecutorParams, param.LogID, param.ExecutorTimeout)
-	for i := 0; i < 5; i++ {
-		select {
-		case <-ctx.Done(): // 中心超时 / 人工 kill 会 cancel，必须处理
-			return "demo canceled: " + ctx.Err().Error()
-		default:
-		}
-		time.Sleep(time.Second)
-	}
-	return "demo done"
-}
-
-// 实现后控制台「执行日志」才能看到内容；不实现则用内置的本地日志文件读取
-func logHandler(req *xxl.LogReq) *xxl.LogRes {
-	return &xxl.LogRes{Code: xxl.SuccessCode, Content: xxl.LogResContent{
-		FromLineNum: req.FromLineNum, LogContent: "在此接入日志文件或日志采集系统",
-		IsEnd: true, // 必须为 true，否则控制台会不停分页拉取
-	}}
-}
-```
-
-**优雅停止**：`exec.Run()` 内部已注册信号监听，收到 `SIGINT/SIGTERM/SIGQUIT/SIGKILL` 后调 `registryRemove()` 再返回。若要把执行器嵌进已有 `http.Server` 或交给框架托管生命周期，可只用 `exec.Init()`，后续手动 `exec.Stop()`。
-
-**中间件**（统一日志、耗时统计、panic 兜底、链路透传）：`exec.Use(mw1, mw2)`，签名 `func(xxl.TaskFunc) xxl.TaskFunc`。注意 `Use` 是**整体覆盖**而非追加，多个中间件要在一次调用里传完。
-
-### 5.2 分片广播 ⭐
-
-![XXL-JOB 分片广播：一次调度广播到每个实例，各取自己的子集](images/XXLJOB分片广播.svg)
-
-路由策略选 `SHARDING_BROADCAST` 时，中心会把任务**广播给该 AppName 下的每一台执行器**，并在 `RunReq` 里带上：
-
-| 字段 | 含义 | 说明 |
-| --- | --- | --- |
-| `param.BroadcastIndex` | 当前分片序号 | **从 0 开始**，0 表示第一片 |
-| `param.BroadcastTotal` | 执行器总实例数（总分片数） | 路由策略不是分片广播时为 **0** |
-
-> ⚠️ 字段名就是 `BroadcastIndex` / `BroadcastTotal`（`int64`），语义等同 Java 的 `shardIndex` / `shardTotal`。大量博客写成 `param.ShardIndex`，那是**错的**，编译不过。
-
-```go
-// shardingJobHandler：每个执行器实例只处理自己那一份数据（需 import "context" / "fmt" / "log"）
-// 典型场景：把千万级待处理行横向拆到 N 台机器并行跑
-func shardingJobHandler(ctx context.Context, param *xxl.RunReq) string {
-	idx, total := int(param.BroadcastIndex), int(param.BroadcastTotal)
-	if total <= 1 { // total<=0 说明本次不是分片广播路由（如被改成 ROUND），退化为单机全量
-		idx, total = 0, 1
-	} else if idx < 0 || idx >= total {
-		return fmt.Sprintf("invalid shard param: %d/%d", idx, total)
-	}
-
-	rows := loadIDs() // 业务侧自行分页拉取「待处理行」
-	handled := 0
-	for n, id := range rows {
-		if n%total != idx { // 不属于本分片的直接跳过
-			continue
-		}
-		select {
-		case <-ctx.Done(): // 超时或人工 kill，立刻让出，避免脏写
-			return fmt.Sprintf("shard %d/%d canceled, handled=%d", idx+1, total, handled)
-		default:
-		}
-		if err := process(ctx, id); err != nil {
-			// ⚠️ 单行失败不要直接 return，否则本分片剩余数据全部漏跑；记录明细后 continue
-			log.Printf("shard %d/%d process id=%d err=%v", idx+1, total, id, err)
-			continue
-		}
-		handled++
-	}
-	return fmt.Sprintf("shard %d/%d done, handled=%d", idx+1, total, handled)
-}
-func loadIDs() []int64                          { return []int64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10} }
-func process(_ context.Context, id int64) error { _ = id; return nil }
-```
-
-分片广播的**正确姿势**是「每片自己 `MOD` 取子集」，而不是「按数据库主键区间切」——区间方案在实例上下线时会漏数据或重复。中心不感知数据，只保证每个在线实例各收到一次、且带正确的 index / total。
-
-### 5.3 失败返回与重试的处理约定 ⚠️
-
-Go 客户端**最容易踩的坑**：`Task.Run` 的逻辑是——**函数正常返回 → 一律回调 `code=200`（成功）；只有 `panic` 才回调 `code=500`（失败）**。任务函数返回的字符串只是 `handleMsg`（日志内容），**不是状态码**。
-
-| 业务结果 | Go 侧写法 | 中心表现 |
-| --- | --- | --- |
-| 成功 | `return "done"` | `handleCode=200`，绿色 |
-| 业务失败，需重试 / 告警 | **必须 `panic(err)`**，或用中间件把错误约定转成 panic | `handleCode=500`，按 `executor_fail_retry_count` 重试 + 告警 |
-| 超时 | 不 panic；中心按 `executor_timeout` 判失败并调 `/kill` | cancel 掉 `ctx`，函数应尽快返回 |
-
-```go
-// 用中间件把「返回以 ERROR: 开头的字符串」统一转成 panic，避免业务里到处 panic（需 import "strings"）
-func failFastMiddleware(next xxl.TaskFunc) xxl.TaskFunc {
-	return func(ctx context.Context, param *xxl.RunReq) string {
-		msg := next(ctx, param)
-		if strings.HasPrefix(msg, "ERROR:") { // 约定：以 ERROR: 开头即业务失败
-			panic(msg)                          // 触发回调 code=500 → 中心重试 / 告警
-		}
-		return msg
-	}
-}
-
-// exec.Use(failFastMiddleware)，任务里只需： return "ERROR: 库存扣减失败, orderId=123"
-```
-
-> ⚠️ 重试 = **业务会被重复执行**。所有任务按「至少一次」设计：业务幂等键（如 `bizKey + 业务日期`）、DB 唯一索引、状态机前置判断。
-> ⚠️ `panic` 会被 `recover` 住并打印堆栈，不会让进程挂掉；但**别**用 panic 表达可恢复的单行错误（见 5.2 的 `continue`）。
+⭐ 分册里同时记录了 **3.x 的两个地址变更**（控制台去掉 `/xxl-job-admin` 后缀、登录入口改为 `/auth/login`）与一条**分片参数实测修正**（非分片路由下 Go 拿到的是 `0/1` 而不是 `0/0`）。
 
 ---
 
@@ -414,7 +272,7 @@ public class SampleXxlJob {
 | **网络可达性** ⚠️ | 触发方向是 **中心 → 执行器 `:9999`**，执行器端口必须对中心开放；「执行器能访问中心」≠「中心能访问执行器」。容器环境别只放通出方向，K8s 里确认 Service / NetworkPolicy 允许中心侧入站 |
 | **AccessToken 一致** ⚠️ | 中心 `xxl.job.accessToken` = 执行器 `accessToken`，另加 `xxl_job_group.access_token` 的按组密钥；三者对不上报 `The access token is wrong`，且线索只体现在中心日志 |
 | **任务幂等** ⚠️ | 重试、`COVER_EARLY` 覆盖、手动执行都会重复触发；必须用业务幂等键 + 唯一索引 + 状态机，禁止假设「只跑一次」 |
-| **分片参数有效性** ⚠️ | `BroadcastIndex/BroadcastTotal` **只在 `SHARDING_BROADCAST` 下有效**；改成 `ROUND` 后 Go 拿到 `0/0`、Java 拿到 `0/1`，代码必须兜底，否则 `n % 0` 直接 panic |
+| **分片参数有效性** ⚠️ | `BroadcastIndex/BroadcastTotal` **只在 `SHARDING_BROADCAST` 下有效**；代码必须兜底。⚠️ 实测（3.4.2 + executor-go v1.2.0）：`FIRST` 路由下 Go 侧拿到的是 **`0/1`**（不是流传的 `0/0`），读数见 [xxl-job接入.md](../../../01-编程语言/go/工程实践/定时任务/xxl-job接入.md) 第 4.5 节 |
 | **AppName 与 Handler 名** | 两者都是**字符串强绑定**：AppName 决定注册归属，Handler 名对不上会报「Task not registered / 没有注册」 |
 | **超时设置** | `executor_timeout` 默认 0（不限）是事故高发点，大任务务必显式设置；Go 侧只有主动检查 `ctx.Done()` 才真的「停得下来」 |
 | **日志与磁盘** | 执行器 `logpath` 默认留 30 天，务必挂持久卷 + 配轮转；`xxl_job_log` 表增长最快（每次调度一行），按 `trigger_time` 归档清理，否则 MySQL 磁盘先满 |
@@ -463,6 +321,7 @@ public class SampleXxlJob {
 - [中间件选型.md](../中间件选型.md) — 定时任务与注册中心、网关的横向选型（本篇第八节的对比在选型篇中有速查版）
 - [数据导入导出设计.md](../../../04-架构与系统/系统设计/数据导入导出设计.md) — 异步任务的另一半：任务表状态机、进度可见性、失败重试的分类
 - [Spring-boot核心.md](../../../01-编程语言/java/Spring-boot核心.md) — 本框架要解决的起点问题：`@Scheduled` 在**每个副本**都会执行一次
-- [定时任务.md](../../../01-编程语言/go/工程实践/定时任务.md) — ⭐ 平台之外的另一半：**进程内**怎么实现（丢拍 / 漂移 / 漏跑 / 重入 / 取消 / 多副本重复，均带本机实测读数）
+- [xxl-job接入.md](../../../01-编程语言/go/工程实践/定时任务/xxl-job接入.md) — ⭐ 本篇的 **Go 分册**：执行器接入 + 全链路容器实测
+- [定时任务/README.md](../../../01-编程语言/go/工程实践/定时任务/README.md) — 平台之外的另一半：**进程内**的四种实现路线（标准库 / go-cron / go-job + 本平台的 Go 分册）
 
 > 反向引用（本篇被下列文档引到）：[拓扑排序.md](../../../02-计算机基础/算法/图论算法/拓扑排序.md)、[统计页提速.md](../../../04-架构与系统/系统设计/统计页提速.md)
