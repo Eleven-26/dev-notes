@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="flowA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ClickHouse 一条 SQL 的解析与执行流程</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">子句按固定顺序逐段解析：SELECT 写在最前、却最后执行；过滤与索引在 Interpreter 阶段就决定了要读多少 granule</text>
+
+  <rect x="120" y="78" width="760" height="46" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="106" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">SQL 文本（clickhouse-client / HTTP / 各语言驱动）</text>
+  <line x1="500" y1="124" x2="500" y2="146" stroke="#64748b" stroke-width="1.8" marker-end="url(#flowA)"/>
+
+  <rect x="120" y="148" width="760" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="170" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">Parser 语法解析 → AST</text>
+  <text x="500" y="190" text-anchor="middle" font-size="12" fill="#1d4ed8">只有 SELECT 必须存在；其余子句按解析顺序逐段处理（WITH / FROM / SAMPLE / JOIN / WHERE / GROUP BY …）</text>
+  <line x1="500" y1="202" x2="500" y2="224" stroke="#64748b" stroke-width="1.8" marker-end="url(#flowA)"/>
+
+  <rect x="120" y="226" width="760" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="247" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">InterpreterSelectQuery：子句预处理决定「读多少」</text>
+  <text x="500" y="267" text-anchor="middle" font-size="12" fill="#166534">① 谓词下推：WHERE → PREWHERE 自动优化（optimize_move_to_prewhere 默认 1）</text>
+  <text x="500" y="283" text-anchor="middle" font-size="12" fill="#166534">② 分区 / 主键裁剪：MinMax（分区级）+ 稀疏索引（一级索引）→ MarkRange</text>
+  <line x1="500" y1="290" x2="500" y2="312" stroke="#64748b" stroke-width="1.8" marker-end="url(#flowA)"/>
+
+  <rect x="120" y="314" width="760" height="52" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="335" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">Query pipeline：多线程并行读，最后合并结果集</text>
+  <text x="500" y="355" text-anchor="middle" font-size="12" fill="#9a3412">书 2020 口径：Union + Expression ×2 + 2 streams；26.3 实测：Expression / Aggregating 计划树</text>
+  <line x1="500" y1="366" x2="500" y2="388" stroke="#64748b" stroke-width="1.8" marker-end="url(#flowA)"/>
+
+  <rect x="120" y="390" width="760" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="411" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">MergeTree 按 granule 读列数据（index_granularity 默认 8192 行）</text>
+  <text x="500" y="431" text-anchor="middle" font-size="12" fill="#1d4ed8">26.3 实测：read_rows = SelectedMarks × 8192；主键命中 10 × 8192 = 81,920</text>
+  <line x1="500" y1="442" x2="500" y2="464" stroke="#64748b" stroke-width="1.8" marker-end="url(#flowA)"/>
+
+  <rect x="120" y="466" width="760" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="494" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">聚合 / 排序 / DISTINCT / UNION ALL → 结果集（SELECT 在这一步才作用到每行）</text>
+
+  <text x="60" y="534" font-size="11.5" fill="#64748b">说明：流程骨架引自《ClickHouse 原理解析与应用实践》第 9 章「数据查询」的解析顺序；标「26.3 实测」的读数来自本目录容器 clickhouse/clickhouse-server 26.3-alpine（26.3.29.7）。</text>
+</svg>

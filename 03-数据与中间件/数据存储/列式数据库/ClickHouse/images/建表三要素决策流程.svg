@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="tmA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">建表三要素决策流程：引擎 → 分区键 → 排序键</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">按「查询长什么样」反推建表参数（书 4.2.5 / 6.1.1 / 6.2 口径，标注处为 26.3 实测修正）</text>
+
+  <rect x="300" y="70" width="400" height="38" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="94" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">起点：要建一张明细表</text>
+
+  <line x1="500" y1="108" x2="500" y2="120" stroke="#64748b" stroke-width="1.8" marker-end="url(#tmA)"/>
+
+  <rect x="230" y="120" width="540" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="140" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 引擎：ENGINE = MergeTree()</text>
+  <text x="500" y="158" text-anchor="middle" font-size="11.5" fill="#1d4ed8">书口径：只有合并树系列支持主键索引 / 数据分区 / 数据副本 / 数据采样 / ALTER</text>
+
+  <line x1="500" y1="166" x2="500" y2="178" stroke="#64748b" stroke-width="1.8" marker-end="url(#tmA)"/>
+
+  <rect x="150" y="178" width="700" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="198" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">② 分区键：查询是否按时间范围过滤？</text>
+  <text x="500" y="217" text-anchor="middle" font-size="11.5" fill="#166534">是 → PARTITION BY toDate(event_time) / toYYYYMM(EventTime)：分区 = 独立文件目录，查询可整目录跳过</text>
+  <text x="500" y="232" text-anchor="middle" font-size="11.5" fill="#166534">否 → 不声明：分区 ID 默认取 all，全部数据落一个分区；⚠️ 粒度别太细（按小时分区会让分区数急剧膨胀）</text>
+
+  <line x1="500" y1="238" x2="500" y2="250" stroke="#64748b" stroke-width="1.8" marker-end="url(#tmA)"/>
+
+  <rect x="150" y="250" width="700" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="270" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">③ 排序键：最常出现的等值过滤列是哪些？（ORDER BY 必填）</text>
+  <text x="500" y="289" text-anchor="middle" font-size="11.5" fill="#9a3412">按「查询里过滤频次从高到低」写进 ORDER BY (city, user_id)：列的顺序就是数据在 part 内的局部性顺序</text>
+  <text x="500" y="304" text-anchor="middle" font-size="11.5" fill="#9a3412">⭐ 实测代价：同一张表把 ORDER BY 换成 event_time，原查询的 Granules 从 10/1231 退到 980/980（全读）</text>
+
+  <line x1="500" y1="310" x2="500" y2="322" stroke="#64748b" stroke-width="1.8" marker-end="url(#tmA)"/>
+
+  <rect x="230" y="322" width="540" height="46" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="500" y="342" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4c1d95">④ PRIMARY KEY：不写则默认等于 ORDER BY</text>
+  <text x="500" y="360" text-anchor="middle" font-size="11.5" fill="#5b21b6">两者一致时索引 (.cidx) 与数据 (.bin) 按完全相同规则排序；MergeTree 主键允许重复值</text>
+
+  <line x1="500" y1="368" x2="500" y2="380" stroke="#64748b" stroke-width="1.8" marker-end="url(#tmA)"/>
+
+  <rect x="190" y="380" width="620" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="500" y="400" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">⑤ 可选件（按需追加）</text>
+  <text x="500" y="418" text-anchor="middle" font-size="11.5" fill="#475569">SAMPLE BY（表达式须同时出现在主键内，且须为 Int 类型）· 跳数索引 INDEX 名 表达式 TYPE 类型(...) GRANULARITY n</text>
+  <text x="500" y="432" text-anchor="middle" font-size="11.5" fill="#475569">列级编解码 CODEC（书口径：默认 LZ4，可选 ZSTD / Multiple / Delta）· TTL（书中留到第 7 章，本批素材未覆盖）</text>
+
+  <line x1="500" y1="438" x2="500" y2="450" stroke="#64748b" stroke-width="1.8" marker-end="url(#tmA)"/>
+
+  <rect x="300" y="450" width="400" height="40" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="476" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">完成后：SHOW CREATE TABLE 复核 + DESC 看列定义</text>
+
+  <text x="60" y="512" font-size="11.5" fill="#b91c1c">⚠️ 口径修正（26.3 实测）：本版本 default 库是 Atomic 引擎，数据落 /var/lib/clickhouse/store/&lt;uuid&gt;/，书 2020 口径的分区目录路径 /var/lib/clickhouse/data/&lt;库&gt;/&lt;表&gt;/ 在本容器不存在。</text>
+  <text x="60" y="532" font-size="11.5" fill="#64748b">决策顺序不可颠倒：先由查询形态定分区键（能不能整目录跳过），再由过滤频次定排序键（能不能靠稀疏索引定位 granule），最后才考虑加索引。</text>
+</svg>

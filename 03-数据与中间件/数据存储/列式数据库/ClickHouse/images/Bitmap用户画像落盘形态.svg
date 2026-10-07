@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkBM" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">Bitmap 用户画像落盘形态（26.3 实测）：696 万行源表 → 20 行位图表，约 10 倍体积缩减</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">实测 default.user_tags → default.tag_bitmaps　⭐ 位图是「精确集合」，与 uniq 的近似口径不同</text>
+
+  <rect x="30" y="76" width="320" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="48" y="100" font-size="13.5" font-weight="bold" fill="#0f172a">① 源表 user_tags</text>
+  <text x="48" y="120" font-size="11.5" fill="#1d4ed8">MergeTree　ORDER BY (tag, user_id)</text>
+  <text x="48" y="142" font-size="11.5" fill="#0f172a">6,960,713 行</text>
+  <text x="48" y="162" font-size="11.5" fill="#0f172a">999,909 个用户　×　20 个标签</text>
+  <text x="48" y="184" font-size="11.5" fill="#475569">user_id UInt32　+　tag LowCardinality(String)</text>
+
+  <rect x="46" y="200" width="288" height="112" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="60" y="221" font-size="12" font-weight="bold" fill="#1e3a8a">列字节实测（Wide part）</text>
+  <text x="60" y="244" font-size="11.5" fill="#0f172a">user_id　25,790,556 B　≈ 24.6 MiB</text>
+  <text x="60" y="266" font-size="11.5" fill="#0f172a">tag　　　　　33,277 B　（编码后极小）</text>
+  <text x="60" y="291" font-size="11" fill="#b45309">⚠️ Compact part 上 column_bytes_on_disk</text>
+  <text x="60" y="306" font-size="11" fill="#b45309">　 恒为 0 ⇒ 必须先强制 Wide part</text>
+
+  <line x1="352" y1="201" x2="392" y2="201" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkBM)"/>
+
+  <rect x="396" y="140" width="150" height="122" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="471" y="164" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">按标签聚合</text>
+  <text x="471" y="186" text-anchor="middle" font-size="11" fill="#1d4ed8">groupBitmapState(</text>
+  <text x="471" y="202" text-anchor="middle" font-size="11" fill="#1d4ed8">　　user_id)</text>
+  <text x="471" y="222" text-anchor="middle" font-size="11" fill="#1d4ed8">GROUP BY tag</text>
+  <text x="471" y="246" text-anchor="middle" font-size="11" fill="#b45309">读取即精确</text>
+
+  <line x1="548" y1="201" x2="588" y2="201" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkBM)"/>
+
+  <rect x="592" y="76" width="378" height="250" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="610" y="100" font-size="13.5" font-weight="bold" fill="#1e3a8a">② 位图表 tag_bitmaps</text>
+  <text x="610" y="120" font-size="11.5" fill="#1d4ed8">AggregatingMergeTree　ORDER BY tag</text>
+  <text x="610" y="142" font-size="11.5" fill="#0f172a">20 行　（一个标签一行）</text>
+  <text x="610" y="162" font-size="11.5" fill="#0f172a">users AggregateFunction(groupBitmap, UInt32)</text>
+
+  <rect x="608" y="178" width="346" height="60" rx="6" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="622" y="199" font-size="12" font-weight="bold" fill="#166534">users 列　2,508,338 B　≈ 2.51 MB</text>
+  <text x="622" y="219" font-size="11" fill="#14532d">20 张位图合计；相对源表 user_id 列小约 10 倍</text>
+  <text x="622" y="233" font-size="11" fill="#14532d">每张位图 ≈ 125.4 KB ≈ 100 万位</text>
+
+  <rect x="608" y="246" width="346" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="622" y="267" font-size="11.5" font-weight="bold" fill="#0f172a">精度校验：与源表 count() 分组逐个相等</text>
+  <text x="622" y="287" font-size="11" fill="#0f172a">t00 = 99939　…　t19 = 700331（20 个标签全对）</text>
+  <text x="622" y="305" font-size="11" fill="#166534">⇒ 位图是精确集合，不是估算</text>
+
+  <rect x="30" y="342" width="940" height="222" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="48" y="366" font-size="13.5" font-weight="bold" fill="#0f172a">③ 位图位级示意：user_id 直接映射到「第 user_id 个 bit」</text>
+  <text x="48" y="386" font-size="11.5" fill="#475569">tag = t00 的位图（示意用 20 位，真实是 100 万位）　蓝格 = 1（该用户命中此标签）　白格 = 0</text>
+
+  <rect x="70" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="90" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="112" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="132" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="154" y="400" width="40" height="34" rx="3" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="174" y="422" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1</text>
+  <rect x="196" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="216" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="238" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="258" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="280" y="400" width="40" height="34" rx="3" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="300" y="422" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1</text>
+  <rect x="322" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="342" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="364" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="384" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="406" y="400" width="40" height="34" rx="3" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="426" y="422" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1</text>
+  <rect x="448" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="468" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="490" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="510" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="532" y="400" width="40" height="34" rx="3" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="552" y="422" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1</text>
+  <rect x="574" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="594" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="616" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="636" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="658" y="400" width="40" height="34" rx="3" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="678" y="422" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1</text>
+  <rect x="700" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="720" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="742" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="762" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="784" y="400" width="40" height="34" rx="3" fill="#2563eb" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="804" y="422" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1</text>
+  <rect x="826" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="846" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="868" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="888" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+  <rect x="910" y="400" width="40" height="34" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="930" y="422" text-anchor="middle" font-size="12" fill="#64748b">0</text>
+
+  <text x="70" y="454" font-size="10.5" fill="#64748b">user_id = 0</text>
+  <text x="406" y="454" font-size="10.5" fill="#64748b">= 8</text>
+  <text x="868" y="454" font-size="10.5" fill="#64748b">= 19</text>
+
+  <rect x="48" y="470" width="904" height="80" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="64" y="492" font-size="12" font-weight="bold" fill="#1e3a8a">集合运算实测（t00 ∩ t01，结果均为 12073）：位图 0.035~0.106 s ＜ IN 0.059~0.238 s ＜ JOIN 0.115~0.382 s ＜ INTERSECT 0.177~0.496 s</text>
+  <text x="64" y="512" font-size="11.5" fill="#0f172a">bitmapAnd = 12073　bitmapOr = 207375　bitmapXor = 195302　bitmapAndnot(t19,t00) = 630441</text>
+  <text x="64" y="532" font-size="11.5" fill="#166534">交叉验证：IN 子查询求 t19 ∩ t00 = 69890 ⇒ 700331 − 69890 = 630441，与 bitmapAndnot 完全吻合</text>
+  <text x="64" y="546" font-size="11" fill="#b45309">⚠️ 差集函数名是 bitmapAndnot（小写 n）；arrayReduce('bitmapAnd', ...) 报 Code 63</text>
+</svg>

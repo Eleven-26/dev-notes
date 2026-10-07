@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="lsA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">列式存储的落盘结构：表目录 → 分区目录 → 逐列文件</text>
+  <text x="500" y="52" text-anchor="middle" font-size="13" fill="#64748b">实测 events 表（26.3.29.7 容器）：一个 Wide part 与一个 Compact part 的目录对照，文件名与大小均照抄实测输出</text>
+
+  <rect x="40" y="68" width="610" height="398" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="56" y="90" font-size="13" font-weight="bold" fill="#0f172a">Wide part（100 万行 · 约 16.09 MB）</text>
+
+  <rect x="56" y="96" width="578" height="32" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="68" y="117" font-size="11.5" fill="#0f172a">表目录：store/8f7/8f7a973c-1083-414c-a48e-780c15c4dc03/　←　Atomic 库用 UUID 命名的表目录（events）</text>
+
+  <line x1="345" y1="128" x2="345" y2="134" stroke="#64748b" stroke-width="1.6" marker-end="url(#lsA)"/>
+
+  <rect x="56" y="134" width="578" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="68" y="148" font-size="11.5" fill="#1e3a8a">分区目录：20260901_55_55_1/</text>
+  <text x="68" y="162" font-size="11" fill="#1d4ed8">命名公式 = PartitionID_MinBlockNum_MaxBlockNum_Level → 20260901 是 toDate(event_time) 的 YYYYMMDD 形式</text>
+
+  <text x="56" y="188" font-size="11.5" font-weight="bold" fill="#14532d">逐列文件：每列一个 .bin（数据）+ 一个 .cmrk2（标记）；变长列多 .size.bin，字典列多 .dict.bin</text>
+
+  <rect x="56" y="196" width="578" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="68" y="211" font-size="11" fill="#14532d">event_time.bin 2,770,896 B　·　event_time.cmrk2 430 B　·　minmax_event_time.idx 8 B</text>
+  <rect x="56" y="222" width="578" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="68" y="237" font-size="11" fill="#14532d">price.bin 5,017,558 B　·　price.cmrk2 433 B　←　实测最占磁盘的一列（Decimal(10,2)）</text>
+  <rect x="56" y="248" width="578" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="68" y="263" font-size="11" fill="#14532d">url.bin 4,091,036 B　·　url.cmrk2 416 B　·　url.size.bin 38,716 B　·　url.size.cmrk2 323 B</text>
+  <rect x="56" y="274" width="578" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="68" y="289" font-size="11" fill="#14532d">user_id.bin 4,017,298 B　·　user_id.cmrk2 439 B　←　主键第二列（UInt32）</text>
+  <rect x="56" y="300" width="578" height="22" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="68" y="315" font-size="11" fill="#14532d">tags.bin 32,662 B　·　tags.cmrk2 373 B　·　tags.size.bin 67,709 B　·　tags.size0.bin 36,169 B　←　Array(String)</text>
+  <rect x="56" y="326" width="578" height="22" rx="4" fill="#ecfccb" stroke="#65a30d" stroke-width="1.2"/>
+  <text x="68" y="341" font-size="11" fill="#3f6212">city.bin 4,837 B　·　city.cmrk2 191 B　·　city.dict.bin 93 B　·　city.dict.cmrk2 63 B　←　LowCardinality(String)</text>
+  <rect x="56" y="352" width="578" height="22" rx="4" fill="#ecfccb" stroke="#65a30d" stroke-width="1.2"/>
+  <text x="68" y="367" font-size="11" fill="#3f6212">device.bin 5,620 B　·　device.cmrk2 191 B　·　device.dict.bin 68 B　·　device.dict.cmrk2 63 B　←　LowCardinality(String)</text>
+
+  <line x1="56" y1="382" x2="634" y2="382" stroke="#cbd5e1" stroke-width="1.2"/>
+
+  <text x="56" y="400" font-size="11.5" font-weight="bold" fill="#7c2d12">part 级元数据文件（不随列数增加）</text>
+  <text x="56" y="418" font-size="11" fill="#9a3412">primary.cidx 272 B（一级索引）· columns.txt 195 B（列清单）· count.txt 7 B（行数）· checksums.txt 1,361 B（校验）</text>
+  <text x="56" y="434" font-size="11" fill="#9a3412">serialization.json 417 B · partition.dat 2 B（分区表达式最终值）· default_compression_codec.txt 10 B · columns_substreams.txt 386 B</text>
+  <text x="56" y="452" font-size="11" fill="#b91c1c">⭐ 对照书 2020 口径：一级索引文件名为 primary.cidx（书写作 primary.idx）</text>
+
+  <rect x="664" y="68" width="296" height="398" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.6"/>
+  <text x="680" y="90" font-size="13" font-weight="bold" fill="#7f1d1d">Compact part（100 行 · 1,722 B）</text>
+
+  <rect x="680" y="100" width="264" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="692" y="119" font-size="11" fill="#7f1d1d">分区目录：20261007_73_73_0/</text>
+
+  <text x="680" y="150" font-size="11.5" font-weight="bold" fill="#7f1d1d">全部列挤进一个数据文件</text>
+
+  <rect x="680" y="160" width="264" height="24" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="692" y="177" font-size="11" fill="#991b1b">data.bin　1,138 B（所有列挤在一起）</text>
+  <rect x="680" y="188" width="264" height="24" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="692" y="205" font-size="11" fill="#991b1b">data.cmrk4　115 B（注意后缀是 cmrk4）</text>
+  <rect x="680" y="216" width="264" height="24" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="692" y="233" font-size="11" fill="#991b1b">primary.cidx　56 B</text>
+  <rect x="680" y="244" width="264" height="24" rx="4" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="692" y="261" font-size="11" fill="#991b1b">minmax_event_time.idx　8 B</text>
+
+  <text x="680" y="288" font-size="11.5" font-weight="bold" fill="#7f1d1d">为什么形态不同？</text>
+  <text x="680" y="306" font-size="11" fill="#991b1b">由 min_bytes_for_wide_part 决定，</text>
+  <text x="680" y="322" font-size="11" fill="#991b1b">26.3 实测默认值 10,485,760 B（10 MiB）。</text>
+  <text x="680" y="338" font-size="11" fill="#991b1b">小于阈值 → 打包成 Compact；</text>
+  <text x="680" y="354" font-size="11" fill="#991b1b">达到阈值 → 按列拆成 Wide。</text>
+  <text x="680" y="376" font-size="11" fill="#991b1b">⭐ 同一分区里两种都出现过：</text>
+  <text x="680" y="392" font-size="11" fill="#991b1b">20260902_56_56_0（1.94 MB）是 Compact，</text>
+  <text x="680" y="408" font-size="11" fill="#991b1b">20260902_57_57_0（14.3 MB）是 Wide。</text>
+  <text x="680" y="430" font-size="11" fill="#991b1b">所以「一个列一个文件」只在 Wide part</text>
+  <text x="680" y="446" font-size="11" fill="#991b1b">成立 —— 书 2020 未提这两种 part 形态。</text>
+
+  <text x="40" y="490" font-size="11.5" fill="#b91c1c">⚠️ 26.3 实测与书 2020 口径的两处文件名差异：① 标记文件是 &lt;列&gt;.cmrk2（Wide）/ data.cmrk4（Compact），书写作 &lt;列&gt;.mrk 与 &lt;列&gt;.mrk2；② 一级索引是 primary.cidx，书写作 primary.idx。</text>
+  <text x="40" y="510" font-size="11.5" fill="#64748b">⚠️ 书 2020 口径的分区目录路径是 /var/lib/clickhouse/data/&lt;库&gt;/&lt;表&gt;/&lt;分区&gt;/；26.3 实测 default 库为 Atomic 引擎，路径是 /var/lib/clickhouse/store/&lt;uuid&gt;/&lt;分区&gt;/，按库名建的 data/ 目录不存在。</text>
+  <text x="40" y="530" font-size="11.5" fill="#64748b">本图全部文件名与字节数照抄本目录容器实测输出（实验 02），未做四舍五入改写；书 2020 的 11 类文件清单见正文对应小节。</text>
+</svg>

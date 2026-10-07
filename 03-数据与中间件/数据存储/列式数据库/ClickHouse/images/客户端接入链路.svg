@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkC1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mkC2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">客户端接入链路（26.3 实测）：两个协议入口，三条已跑通的链路</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">HTTP 8123 零依赖、跨语言；原生 9000 是各语言 SDK 的默认路径　两者语义相同，只是传输不同</text>
+
+  <rect x="30" y="80" width="250" height="62" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="103" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">Java　JDK 17 HttpClient</text>
+  <text x="155" y="123" text-anchor="middle" font-size="11" fill="#475569">java.net.http　零第三方依赖</text>
+
+  <rect x="30" y="156" width="250" height="62" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="179" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">Go　标准库 net/http</text>
+  <text x="155" y="199" text-anchor="middle" font-size="11" fill="#475569">零第三方依赖</text>
+
+  <rect x="30" y="232" width="250" height="62" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="155" y="255" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#166534">Go　clickhouse-go/v2</text>
+  <text x="155" y="275" text-anchor="middle" font-size="11" fill="#475569">v2.48.0　走原生协议</text>
+
+  <line x1="284" y1="111" x2="352" y2="137" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkC1)"/>
+  <line x1="284" y1="187" x2="352" y2="150" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkC1)"/>
+  <line x1="284" y1="263" x2="352" y2="272" stroke="#16a34a" stroke-width="1.6" marker-end="url(#mkC2)"/>
+
+  <rect x="356" y="112" width="220" height="62" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="466" y="135" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">HTTP　端口 8123</text>
+  <text x="466" y="155" text-anchor="middle" font-size="11" fill="#1d4ed8">POST 一句 SQL 即返回</text>
+
+  <rect x="356" y="240" width="220" height="62" rx="6" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="466" y="263" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#166534">原生 TCP　端口 9000</text>
+  <text x="466" y="283" text-anchor="middle" font-size="11" fill="#14532d">二进制、列式传输</text>
+
+  <line x1="580" y1="143" x2="648" y2="143" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkC1)"/>
+  <line x1="580" y1="271" x2="648" y2="271" stroke="#16a34a" stroke-width="1.6" marker-end="url(#mkC2)"/>
+
+  <rect x="652" y="100" width="320" height="216" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="812" y="126" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">ClickHouse 26.3.29.7</text>
+  <text x="812" y="148" text-anchor="middle" font-size="11.5" fill="#475569">容器 devnotes-ch　时区 UTC</text>
+  <line x1="676" y1="162" x2="948" y2="162" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="676" y="184" font-size="11.5" fill="#0f172a">表 events（1000 万行宽表）</text>
+  <text x="676" y="206" font-size="11.5" fill="#0f172a">表 user_tags / tag_bitmaps（Bitmap 画像）</text>
+  <text x="676" y="228" font-size="11.5" fill="#0f172a">system.functions / system.settings（先查再断言）</text>
+  <line x1="676" y1="244" x2="948" y2="244" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="676" y="266" font-size="11.5" fill="#b45309">⚠️ default 用户默认只允许 ::1 / 127.0.0.1</text>
+  <text x="676" y="285" font-size="11" fill="#92400e">跨容器 / 跨机互连需放开 users.d 网络白名单</text>
+  <text x="676" y="305" font-size="11" fill="#92400e">否则报 Code 516 Authentication failed</text>
+
+  <rect x="30" y="336" width="942" height="184" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="48" y="360" font-size="13.5" font-weight="bold" fill="#0f172a">实测输出：三条链路读同一张表，结果逐行一致</text>
+
+  <rect x="48" y="374" width="290" height="130" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="60" y="396" font-size="11.5" font-weight="bold" fill="#1e3a8a">Java　HttpClient → 8123</text>
+  <text x="60" y="417" font-size="10.5" fill="#0f172a">[1] 服务端: 26.3.29.7  default</text>
+  <text x="60" y="436" font-size="10.5" fill="#0f172a">[2] events 计数: 10010100</text>
+  <text x="60" y="455" font-size="10.5" fill="#0f172a">[3] 前 3 城: 北京 1251350</text>
+  <text x="72" y="471" font-size="10.5" fill="#0f172a">武汉 1251250  广州 1251250</text>
+  <text x="60" y="490" font-size="10.5" fill="#0f172a">[4] 百万行求和: 499999500000</text>
+
+  <rect x="352" y="374" width="290" height="130" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="364" y="396" font-size="11.5" font-weight="bold" fill="#1e3a8a">Go　net/http → 8123</text>
+  <text x="364" y="417" font-size="10.5" fill="#0f172a">[1] 服务端: 26.3.29.7  default</text>
+  <text x="364" y="436" font-size="10.5" fill="#0f172a">[2] events 计数: 10010100</text>
+  <text x="364" y="455" font-size="10.5" fill="#0f172a">[3] 前 3 城: 北京 1251350</text>
+  <text x="376" y="471" font-size="10.5" fill="#0f172a">武汉 1251250  广州 1251250</text>
+  <text x="364" y="490" font-size="10.5" fill="#0f172a">[4] 百万行求和: 499999500000</text>
+
+  <rect x="656" y="374" width="298" height="130" rx="6" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="668" y="396" font-size="11.5" font-weight="bold" fill="#166534">Go　clickhouse-go/v2 → 9000</text>
+  <text x="668" y="419" font-size="10.5" fill="#0f172a">[native] 服务端版本: 26.3.29.7</text>
+  <text x="668" y="440" font-size="10.5" fill="#0f172a">[native] events 行数: 10010100</text>
+  <text x="668" y="468" font-size="10.5" fill="#14532d">⭐ 与 HTTP 直连读数完全一致</text>
+  <text x="668" y="488" font-size="10.5" fill="#14532d">⇒ 两个入口只是传输不同，语义一样</text>
+</svg>

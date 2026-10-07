@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="pnB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">列编码（CODEC）对存储的实测影响：ts 列 500 万行逐列字节</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">口径：容器 devnotes-ch · ClickHouse 26.3.29.7 · 实验 08 · 表 codec_wide（强制 Wide part 才读得到逐列字节）</text>
+
+  <rect x="20" y="74" width="540" height="430" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="94" font-size="14" font-weight="bold" fill="#0f172a">A. 同一列、不同 CODEC（单位：字节/行）</text>
+
+  <rect x="36" y="104" width="508" height="76" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="128" font-size="12.5" font-weight="bold" fill="#0f172a">默认 LZ4（DateTime，未声明 CODEC）</text>
+  <text x="52" y="150" font-size="11" fill="#334155">4.0177 字节/行 = 20,088,485 字节（500 万行）</text>
+  <text x="52" y="168" font-size="11" fill="#64748b">未压缩端 20,000,000 字节，即基准宽度</text>
+
+  <rect x="36" y="192" width="508" height="76" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="216" font-size="12.5" font-weight="bold" fill="#0f172a">CODEC(ZSTD(3))</text>
+  <text x="52" y="238" font-size="11" fill="#334155">2.6617 字节/行 = 13,308,585 字节</text>
+  <text x="52" y="256" font-size="11" fill="#64748b">比默认 LZ4 省 34% —— 这是通用档位</text>
+
+  <rect x="36" y="280" width="508" height="76" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="304" font-size="12.5" font-weight="bold" fill="#0f172a">CODEC(Delta, ZSTD)</text>
+  <text x="52" y="326" font-size="11" fill="#334155">0.0047 字节/行 = 23,419 字节</text>
+  <text x="52" y="344" font-size="11" fill="#64748b">比默认 LZ4 省 858 倍 —— 仅限单调列</text>
+
+  <rect x="36" y="368" width="508" height="120" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="392" font-size="12.5" font-weight="bold" fill="#0f172a">UInt32 的 id 列同样如此</text>
+  <text x="52" y="414" font-size="11" fill="#334155">默认 LZ4 4.0177 字节/行 → Delta, ZSTD 0.0047 字节/行</text>
+  <text x="52" y="432" font-size="11" fill="#334155">整表体积对照（同为 500 万行、2 列）：</text>
+  <text x="52" y="452" font-size="11" fill="#334155">codec_plain 38.33 MiB / codec_zstd 31.40 MiB</text>
+  <text x="52" y="470" font-size="11" fill="#334155">/ codec_delta 19.21 MiB（三张表都被打成 Compact part）</text>
+
+  <rect x="580" y="74" width="400" height="430" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="596" y="104" font-size="14" font-weight="bold" fill="#0f172a">B. 这条结论的前提与边界</text>
+
+  <rect x="596" y="116" width="368" height="150" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="610" y="138" font-size="12" font-weight="bold" fill="#0f172a">⚠️ 前提：这是严格单调的列</text>
+  <text x="610" y="158" font-size="10.5" fill="#334155">本实验的 ts = 2026-01-01 + number，严格</text>
+  <text x="610" y="176" font-size="10.5" fill="#334155">单调递增、步长恒为 1 秒 —— 相邻差值全是</text>
+  <text x="610" y="194" font-size="10.5" fill="#334155">常数 1，压缩后几乎不占空间。</text>
+  <text x="610" y="212" font-size="10.5" fill="#64748b">这是 Delta 的最佳场景，不是通用结论。</text>
+  <text x="610" y="232" font-size="10.5" fill="#334155">真实业务的时间戳有重复、有乱序、有跳变，</text>
+  <text x="610" y="250" font-size="10.5" fill="#334155">绝不会有 858 倍。</text>
+
+  <rect x="596" y="278" width="368" height="110" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="610" y="300" font-size="12" font-weight="bold" fill="#0f172a">Delta 的适用面</text>
+  <text x="610" y="320" font-size="10.5" fill="#334155">单调或近似单调的整型 / 时间列。</text>
+  <text x="610" y="338" font-size="10.5" fill="#334155">先量列的实际分布（排序后相邻差值的</text>
+  <text x="610" y="356" font-size="10.5" fill="#334155">直方图），再决定是否套 Delta。</text>
+  <text x="610" y="376" font-size="10.5" fill="#64748b">不是万能药：乱序列套上去可能反而更差。</text>
+
+  <rect x="596" y="400" width="368" height="88" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="610" y="422" font-size="12" font-weight="bold" fill="#0f172a">类型真实宽度（CODEC(NONE) 实测）</text>
+  <text x="610" y="442" font-size="10.5" fill="#334155">Enum8 1.0006 / DateTime 4.0019 / FixedString(16) 16.0035</text>
+  <text x="610" y="460" font-size="10.5" fill="#334155">DateTime64(3) 与 DateTime64(6) 同为 8.0035</text>
+  <text x="610" y="478" font-size="10.5" fill="#64748b">精度只改解释方式，不改存储宽度</text>
+
+  <rect x="20" y="524" width="960" height="104" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="550" font-size="11.5" fill="#0f172a">口径提醒：上面的字节数取自 system.parts_columns.column_bytes_on_disk（逐列、压缩后）—— ⚠️ 它只在 part 是 Wide 时才有值，Compact part 下恒为 0。</text>
+  <text x="36" y="572" font-size="11.5" fill="#0f172a">实验 08 里三张 codec_* 表最初被自动打成 Compact，逐列字节读到的全是 0；改成 Wide 才拿到上面的数。</text>
+  <text x="36" y="594" font-size="11.5" fill="#0f172a">强制 Wide 的写法：SETTINGS min_bytes_for_wide_part = 0, min_rows_for_wide_part = 0（两者默认值分别是 10 MiB 与 0）。</text>
+  <text x="36" y="616" font-size="11.5" fill="#64748b">⚠️ 别用 reinterpretAsString 量类型宽度：它给 DateTime64(3) 6 字节、DateTime64(6) 7 字节，与真实的 8 字节不符。</text>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mkG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">三种写入 2000 行的墙钟与 part 数对照（exp09 ①）</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">容器 devnotes-ch（clickhouse/clickhouse-server:26.3-alpine，26.3.29.7）　表 default.events　三档写入的都是同样的 2000 行</text>
+
+  <rect x="25" y="70" width="630" height="250" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="45" y="94" font-size="13" font-weight="bold" fill="#0f172a">墙钟（shell 侧计时，单次读数）</text>
+
+  <text x="45" y="124" font-size="11.5" fill="#334155">逐行 INSERT × 2000（async_insert=0）</text>
+  <rect x="45" y="132" width="420" height="26" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="455" y="150" text-anchor="end" font-size="12" font-weight="bold" fill="#7f1d1d">29619 ms</text>
+
+  <text x="45" y="182" font-size="11.5" fill="#334155">客户端攒批：1000 行/批 × 2</text>
+  <rect x="45" y="190" width="34" height="26" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="89" y="208" font-size="12" font-weight="bold" fill="#166534">752 ms</text>
+
+  <text x="45" y="240" font-size="11.5" fill="#334155">INSERT ... SELECT 一次 2000 行</text>
+  <rect x="45" y="248" width="34" height="26" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="89" y="266" font-size="12" font-weight="bold" fill="#1d4ed8">624 ms</text>
+
+  <text x="45" y="292" font-size="11" fill="#b45309">⚠️ 条形长度按墙钟线性缩放（29619 ms = 420 px）；后两条真实比例只有约 11 px / 9 px，</text>
+  <text x="45" y="309" font-size="11" fill="#b45309">　　图中已放大到 34 px 的最小可见宽度，只用来标出「有几个数量级差」。</text>
+
+  <rect x="670" y="70" width="305" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="690" y="94" font-size="13" font-weight="bold" fill="#0f172a">落下的 part 数</text>
+
+  <text x="690" y="150" font-size="11.5" fill="#0f172a">逐行 × 2000 → 2000 个 part</text>
+  <text x="690" y="208" font-size="11.5" fill="#0f172a">攒批 1000 × 2 → 2 个 part</text>
+  <text x="690" y="266" font-size="11.5" fill="#0f172a">SELECT 一次 → 1 个 part</text>
+  <text x="690" y="300" font-size="11" fill="#64748b">part 数由「批次数」决定，不由行数决定</text>
+
+  <rect x="25" y="340" width="950" height="180" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="44" y="368" font-size="11.5" fill="#0f172a">⭐ 倍数关系：逐行 ÷ 客户端攒批 ≈ 39.4 倍；逐行 ÷ INSERT ... SELECT ≈ 47.5 倍；攒批与 SELECT 之间只差约 1.2 倍。</text>
+  <text x="44" y="394" font-size="11.5" fill="#0f172a">⭐ 三条读数同表、同 2000 行，唯一变量是「一次写入塞多少行」—— 写入成本由批次数主导，不由行数主导。</text>
+  <text x="44" y="420" font-size="11.5" fill="#b45309">⚠️ 三条都是单次读数，且是 shell 侧墙钟（含 docker exec 启动与客户端握手），绝对值只在同一批实验内横向可比。</text>
+  <text x="44" y="446" font-size="11.5" fill="#b45309">⚠️ 三档差距里也含「语句数」本身带来的解析与网络往返开销，不只是磁盘 IO 的差别。</text>
+  <text x="44" y="472" font-size="11.5" fill="#334155">⚠️ 配套的两组读数（100 part vs 1 part 的查询区间、100 → 1 的合并回落）见正文第四节与第五节；文件导入与</text>
+  <text x="44" y="496" font-size="11.5" fill="#334155">　　async_insert 的对照本轮未采齐，图中与正文都不给数字。</text>
+  <text x="44" y="512" font-size="11" fill="#64748b">说明：原始读数取自本目录实验 09（09-write-modes.txt）。</text>
+</svg>

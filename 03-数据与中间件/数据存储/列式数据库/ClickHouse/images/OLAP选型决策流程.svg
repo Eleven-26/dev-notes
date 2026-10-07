@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkF" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mkR2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="mkG2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">OLAP 选型决策流程：六个问题按顺序问，命中任一红线就停</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">判据来自本目录实测与机制对照　⚠️ Doris / StarRocks 一栏为定位对照，本仓未对其做容器实测</text>
+
+  <rect x="60" y="76" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="98" font-size="12" font-weight="bold" fill="#1e3a8a">1) 数据量 / 查询量是否超出 MySQL 承受范围？</text>
+  <text x="76" y="118" font-size="11" fill="#475569">实测参照：同一条 1000 万行聚合，MySQL 1266 s vs ClickHouse 秒级</text>
+  <line x1="500" y1="103" x2="552" y2="103" stroke="#16a34a" stroke-width="1.6" marker-end="url(#mkG2)"/>
+  <text x="508" y="96" font-size="11" fill="#166534">否</text>
+  <rect x="556" y="76" width="404" height="54" rx="6" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="572" y="98" font-size="12" font-weight="bold" fill="#166534">⛔ 留在 MySQL，别引入新组件</text>
+  <text x="572" y="118" font-size="11" fill="#14532d">多一个组件就多一份运维、同步与一致性的成本</text>
+
+  <line x1="280" y1="130" x2="280" y2="150" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkF)"/>
+  <text x="290" y="146" font-size="11" fill="#1d4ed8">是</text>
+
+  <rect x="60" y="152" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="174" font-size="12" font-weight="bold" fill="#1e3a8a">2) 查询是「大批量聚合」还是「窄表点查 / 高频单行更新」？</text>
+  <text x="76" y="194" font-size="11" fill="#475569">ClickHouse 的点查代价极高；单行更新走异步 mutation</text>
+  <line x1="500" y1="179" x2="552" y2="179" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mkR2)"/>
+  <text x="508" y="172" font-size="11" fill="#991b1b">点查</text>
+  <rect x="556" y="152" width="404" height="54" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="572" y="174" font-size="12" font-weight="bold" fill="#991b1b">⛔ 不适合 ClickHouse</text>
+  <text x="572" y="194" font-size="11" fill="#7f1d1d">窄表点查走 MySQL；高频更新走 KV / 搜索引擎</text>
+
+  <line x1="280" y1="206" x2="280" y2="226" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkF)"/>
+  <text x="290" y="222" font-size="11" fill="#1d4ed8">聚合</text>
+
+  <rect x="60" y="228" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="250" font-size="12" font-weight="bold" fill="#1e3a8a">3) 是否强依赖多表大 JOIN？</text>
+  <text x="76" y="270" font-size="11" fill="#475569">JOIN 是 ClickHouse 的弱项，大表 JOIN 大表代价高</text>
+  <line x1="500" y1="255" x2="552" y2="255" stroke="#b45309" stroke-width="1.6" marker-end="url(#mkF)"/>
+  <text x="508" y="248" font-size="11" fill="#92400e">是</text>
+  <rect x="556" y="228" width="404" height="54" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.4"/>
+  <text x="572" y="250" font-size="12" font-weight="bold" fill="#92400e">⚠️ 谨慎：先考虑 Doris / StarRocks</text>
+  <text x="572" y="270" font-size="11" fill="#78350f">或把模型改造成宽表（预聚合 / 字典表规避 JOIN）</text>
+
+  <line x1="280" y1="282" x2="280" y2="302" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkF)"/>
+  <text x="290" y="298" font-size="11" fill="#1d4ed8">否</text>
+
+  <rect x="60" y="304" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="326" font-size="12" font-weight="bold" fill="#1e3a8a">4) 写入是否是批量 / 追加为主？</text>
+  <text x="76" y="346" font-size="11" fill="#475569">实测逐行写 2000 行 29619 ms，按批 752 ms（差 39 倍）</text>
+  <line x1="500" y1="331" x2="552" y2="331" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mkR2)"/>
+  <text x="508" y="324" font-size="11" fill="#991b1b">否</text>
+  <rect x="556" y="304" width="404" height="54" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="572" y="326" font-size="12" font-weight="bold" fill="#991b1b">⛔ 不适合：part 会爆炸</text>
+  <text x="572" y="346" font-size="11" fill="#7f1d1d">大量小 part 拖垮合并与查询（见写入与数据导入.md）</text>
+
+  <line x1="280" y1="358" x2="280" y2="378" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkF)"/>
+  <text x="290" y="374" font-size="11" fill="#1d4ed8">是</text>
+
+  <rect x="60" y="380" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="402" font-size="12" font-weight="bold" fill="#1e3a8a">5) 是否需要事务与强一致？</text>
+  <text x="76" y="422" font-size="11" fill="#475569">ClickHouse 不提供跨表事务，写进 @Transactional 也只是「看起来有」</text>
+  <line x1="500" y1="407" x2="552" y2="407" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mkR2)"/>
+  <text x="508" y="400" font-size="11" fill="#991b1b">是</text>
+  <rect x="556" y="380" width="404" height="54" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="572" y="402" font-size="12" font-weight="bold" fill="#991b1b">⛔ 不适合：事务留在 MySQL</text>
+  <text x="572" y="422" font-size="11" fill="#7f1d1d">ClickHouse 只做旁路分析，业务侧要自备对账</text>
+
+  <line x1="280" y1="434" x2="280" y2="454" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkF)"/>
+  <text x="290" y="450" font-size="11" fill="#1d4ed8">否</text>
+
+  <rect x="60" y="456" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="478" font-size="12" font-weight="bold" fill="#1e3a8a">6) 团队能否接受「建表 = 分区键 + 排序键 + 引擎」？</text>
+  <text x="76" y="498" font-size="11" fill="#475569">ClickHouse 的建表决策直接决定查询性能上限</text>
+  <line x1="500" y1="483" x2="552" y2="483" stroke="#b45309" stroke-width="1.6" marker-end="url(#mkF)"/>
+  <text x="508" y="476" font-size="11" fill="#92400e">否</text>
+  <rect x="556" y="456" width="404" height="54" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.4"/>
+  <text x="572" y="478" font-size="12" font-weight="bold" fill="#92400e">⚠️ 重新评估 Doris / StarRocks</text>
+  <text x="572" y="498" font-size="11" fill="#78350f">贴近 MySQL 语法与使用习惯，上手成本更低</text>
+
+  <line x1="280" y1="510" x2="280" y2="530" stroke="#16a34a" stroke-width="1.8" marker-end="url(#mkG2)"/>
+  <text x="290" y="526" font-size="11" fill="#166534">是</text>
+
+  <rect x="60" y="532" width="900" height="52" rx="6" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="80" y="555" font-size="12.5" font-weight="bold" fill="#166534">✅ 选 ClickHouse —— 四条判据同时满足：写少读多、只追加不修改、宽表聚合、能容忍最终一致</text>
+  <text x="80" y="575" font-size="11" fill="#14532d">缺任何一条都要回到 定位与适用场景.md 重新核对；上线前再过一遍本文第 8 节的落地检查单。</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="tlA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">物化视图的历史与新增：以「建 MV 的那一刻」为界</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">源表 events 已有 1000 万行时建视图 —— 左边的历史不进目标表，右边的写入立即生效（实验 06 实测）</text>
+
+  <rect x="415" y="82" width="170" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="103" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">建 MV 的那一刻</text>
+  <line x1="500" y1="112" x2="500" y2="352" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="6 4"/>
+
+  <rect x="70" y="136" width="400" height="104" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="270" y="166" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">建 MV 之前写入的历史</text>
+  <text x="270" y="190" text-anchor="middle" font-size="11.5" fill="#0f172a">源表 events 已有 1000 万行明细</text>
+  <text x="270" y="214" text-anchor="middle" font-size="11.5" fill="#64748b">（实验 06 建 mv_agg 与 mv_events 时的现场）</text>
+
+  <rect x="530" y="136" width="400" height="104" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="730" y="166" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">建 MV 之后写入的块</text>
+  <text x="730" y="190" text-anchor="middle" font-size="11.5" fill="#14532d">再 INSERT 的 1 万行才会被捕获</text>
+  <text x="730" y="214" text-anchor="middle" font-size="11.5" fill="#166534">（实验 06 注入 2026-10-10 的 1 万行）</text>
+
+  <line x1="270" y1="248" x2="270" y2="270" stroke="#64748b" stroke-width="1.4" marker-end="url(#tlA)"/>
+  <line x1="730" y1="248" x2="730" y2="270" stroke="#64748b" stroke-width="1.4" marker-end="url(#tlA)"/>
+
+  <rect x="70" y="276" width="400" height="92" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="270" y="304" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b91c1c">目标表里 0 行</text>
+  <text x="270" y="328" text-anchor="middle" font-size="11.5" fill="#0f172a">实测 SELECT count() FROM mv_agg = 0</text>
+  <text x="270" y="350" text-anchor="middle" font-size="11.5" fill="#64748b">历史数据不会自动灌进来</text>
+
+  <rect x="530" y="276" width="400" height="92" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="730" y="304" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">同一会话里立即可见 8 行</text>
+  <text x="730" y="328" text-anchor="middle" font-size="11.5" fill="#14532d">每城 1 行：uniqMerge = 125、countMerge = 1250</text>
+  <text x="730" y="350" text-anchor="middle" font-size="11.5" fill="#166534">写入同步触发，不是异步后台任务</text>
+
+  <rect x="60" y="376" width="880" height="146" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="76" y="400" font-size="11.5" fill="#0f172a">历史要自己补：INSERT INTO mv_agg SELECT city, uniqState(user_id), sumState(price), countState() FROM events GROUP BY city</text>
+  <text x="76" y="422" font-size="11.5" fill="#0f172a">回填后实测目标表 count() = 16（8 城 × 2 个 part），FINAL 折叠后 = 8；各城读回值与实验 05 一致，再加上新注入的 1250 行/城。</text>
+  <text x="76" y="444" font-size="11.5" fill="#b91c1c">⚠️ 书 2020 口径另给了 POPULATE（带则在创建视图时连带导入源表已有数据）；本目录容器实测走的是手动 INSERT ... SELECT，POPULATE 本批未实测。</text>
+  <text x="76" y="466" font-size="11.5" fill="#b91c1c">⚠️ 两条建表语句别混：CREATE MATERIALIZED VIEW ... AS SELECT 不带数据，而 CREATE TABLE ... AS SELECT 是会带数据的。</text>
+  <text x="76" y="488" font-size="11" fill="#64748b">实测口径：clickhouse-server 26.3-alpine / 26.3.29.7（容器 devnotes-ch，时区 UTC），源表 events 1000 万行 + 新写入 1 万行。</text>
+  <text x="76" y="510" font-size="11" fill="#64748b">本图数值全部取自本目录容器实测，非书本复述；图中 0 / 16 / 8 / 125 / 1250 均为实测读数。</text>
+</svg>

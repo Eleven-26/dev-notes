@@ -3,7 +3,7 @@
     <marker id="m3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
   </defs>
   <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
-  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 的 Load 查找顺序（Go 1.9 – 1.23 经典实现）</text>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 的 Load 查找顺序（Go 1.9 – 1.25 经典实现）</text>
   <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先无锁查 read 快照；未命中才加锁看 dirty；miss 攒满阈值触发整体提升</text>
 
   <rect x="390" y="80" width="220" height="42" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
@@ -47,7 +47,7 @@
   <rect x="30" y="378" width="940" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
   <text x="48" y="404" font-size="12" fill="#0f172a">· 只有 read 未命中时才会碰到锁：读多写少、键稳定 → 绝大多数命中 read，几乎无锁。</text>
   <text x="48" y="428" font-size="12" fill="#7f1d1d">· 键集翻转时：dirty 被提升置 nil，下次 Store 又从 read 整表重建 dirty → 反复复制 Entry，miss 与重建互相放大 → 慢。</text>
-  <text x="48" y="452" font-size="11" fill="#64748b">Go 1.24+ 已无 read/dirty/miss 这套：Load 走哈希前缀树逐层 atomic.Pointer.Load（见「sync.Map哈希前缀树结构」图）。</text>
+  <text x="48" y="452" font-size="11" fill="#64748b">Go 1.26 起已无 read/dirty/miss 这套：Load 走哈希前缀树逐层 atomic.Pointer.Load（见「sync.Map哈希前缀树结构」图）。</text>
 
   <rect x="30" y="486" width="940" height="122" rx="10" fill="#fef3c7" stroke="#b45309"/>
   <text x="48" y="512" font-size="12" font-weight="bold" fill="#854d0e">对照：现行 go1.26.8 的 Load（无「提升」这一步）</text>

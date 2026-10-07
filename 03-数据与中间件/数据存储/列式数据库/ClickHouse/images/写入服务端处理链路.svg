@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mkG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">一次批量写入在服务端的处理链路（26.3 实测口径）</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">实测表 default.events　PARTITION BY toDate(event_time)　ORDER BY (city, user_id)　index_granularity = 8192</text>
+
+  <rect x="25" y="76" width="170" height="76" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="110" y="104" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">① 接收 Block</text>
+  <text x="110" y="126" text-anchor="middle" font-size="11" fill="#475569">数据面向 Block 组装</text>
+  <text x="110" y="143" text-anchor="middle" font-size="11" fill="#475569">书 4.6 节</text>
+
+  <rect x="220" y="76" width="170" height="76" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="305" y="104" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">② 按 ORDER BY 排序</text>
+  <text x="305" y="126" text-anchor="middle" font-size="11" fill="#475569">写 .bin 前的三步之一</text>
+  <text x="305" y="143" text-anchor="middle" font-size="11" fill="#475569">书 6.5.1 节</text>
+
+  <rect x="415" y="76" width="170" height="76" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="500" y="104" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">③ 生成 part 目录</text>
+  <text x="500" y="126" text-anchor="middle" font-size="11" fill="#475569">PartID_Min_Max_Level</text>
+  <text x="500" y="143" text-anchor="middle" font-size="11" fill="#475569">书 6.2.2 节</text>
+
+  <rect x="610" y="76" width="170" height="76" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="695" y="104" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">④ 落盘文件</text>
+  <text x="695" y="126" text-anchor="middle" font-size="11" fill="#475569">索引 + 每列 marks + .bin</text>
+  <text x="695" y="143" text-anchor="middle" font-size="11" fill="#475569">书 6.5 / 6.6 节</text>
+
+  <rect x="805" y="76" width="170" height="76" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="890" y="104" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">⑤ 登记元数据</text>
+  <text x="890" y="126" text-anchor="middle" font-size="11" fill="#475569">part 进 system.parts</text>
+  <text x="890" y="143" text-anchor="middle" font-size="11" fill="#475569">书 6.2.3 节</text>
+
+  <line x1="195" y1="114" x2="216" y2="114" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <line x1="390" y1="114" x2="411" y2="114" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <line x1="585" y1="114" x2="606" y2="114" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <line x1="780" y1="114" x2="801" y2="114" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+
+  <text x="110" y="176" text-anchor="middle" font-size="10.5" fill="#64748b">一条 INSERT ... SELECT 会被</text>
+  <text x="110" y="193" text-anchor="middle" font-size="10.5" fill="#64748b">切成多个 Block（见 3.3 节）</text>
+
+  <text x="305" y="176" text-anchor="middle" font-size="10.5" fill="#64748b">排序是「part 内有序」的唯一来源</text>
+  <text x="305" y="193" text-anchor="middle" font-size="10.5" fill="#64748b">也是稀疏索引能工作的前提</text>
+
+  <text x="500" y="176" text-anchor="middle" font-size="10.5" fill="#64748b">一批写入建一个新目录</text>
+  <text x="500" y="193" text-anchor="middle" font-size="10.5" fill="#64748b">目录名三段编号重算</text>
+
+  <text x="695" y="176" text-anchor="middle" font-size="10.5" fill="#64748b">每 8192 行一条索引记录</text>
+  <text x="695" y="193" text-anchor="middle" font-size="10.5" fill="#64748b">marks 与索引区间对齐</text>
+
+  <text x="890" y="176" text-anchor="middle" font-size="10.5" fill="#64748b">part 对查询可见</text>
+  <text x="890" y="193" text-anchor="middle" font-size="10.5" fill="#64748b">合并队列里多一项</text>
+
+  <rect x="25" y="236" width="950" height="76" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="44" y="258" font-size="11.5" font-weight="bold" fill="#166534">写入返回之后（异步，不在写入路径上）：同分区的多个 part 由后台 merge 合成一个</text>
+  <text x="44" y="280" font-size="11.5" fill="#334155">实测：100 个 part 恢复后台合并后，在跨 21 秒的采样窗口内回落为 1 个（exp09 ④d，见 5.2 节）</text>
+  <text x="44" y="302" font-size="11.5" fill="#b45309">⚠️ 书 2020 口径：写入后 10 ~ 15 分钟触发合并、旧 part 默认约 8 分钟后清理 —— 本批未验证这两个默认值</text>
+
+  <rect x="25" y="326" width="460" height="112" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="45" y="350" font-size="12" font-weight="bold" fill="#1e3a8a">Wide part：够大才拆成列文件</text>
+  <text x="45" y="372" font-size="11" fill="#334155">每列一个 .bin（该列的压缩数据）</text>
+  <text x="45" y="390" font-size="11" fill="#334155">每列一个 marks 文件（实测后缀 .cmrk2）</text>
+  <text x="45" y="408" font-size="11" fill="#334155">一级稀疏索引 primary.cidx（实测文件名）</text>
+  <text x="45" y="426" font-size="11" fill="#b45309">⚠️ 书 2020 口径：.mrk / .mrk2 与 primary.idx</text>
+
+  <rect x="515" y="326" width="460" height="112" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="535" y="350" font-size="12" font-weight="bold" fill="#0f172a">Compact part：小批打成单文件</text>
+  <text x="535" y="372" font-size="11" fill="#334155">所有列挤在一个 data.bin 里</text>
+  <text x="535" y="390" font-size="11" fill="#334155">marks 为 data.cmrk4（只有一个数据文件）</text>
+  <text x="535" y="408" font-size="11" fill="#334155">实测小批量证据：100 行 → 1722 字节</text>
+  <text x="535" y="426" font-size="11" fill="#b45309">⚠️ 书 2020 口径里完全没有 Compact 这一层</text>
+
+  <text x="25" y="462" font-size="11.5" fill="#64748b">说明：五步链路与两种 part 形态的证据取自本目录实验 02（容器 devnotes-ch，clickhouse/clickhouse-server:26.3-alpine，26.3.29.7）。</text>
+  <text x="25" y="484" font-size="11.5" fill="#334155">⭐ 第 2 步的排序与第 4 步的写盘，都按 index_granularity = 8192 行对齐；这也是「batch 越大越划算」的机械原因。</text>
+  <text x="25" y="506" font-size="11.5" fill="#b45309">⚠️ 书 2020 口径 vs 26.3 实测：列标记 .mrk → .cmrk2、一级索引 primary.idx → primary.cidx；压缩块布局本批未复测。</text>
+  <text x="25" y="528" font-size="11.5" fill="#64748b">⚠️ 第 5 步的登记与后台合并都是异步的：写入返回不等于 part 已经安定，要盯 system.parts 与 system.merges。</text>
+</svg>

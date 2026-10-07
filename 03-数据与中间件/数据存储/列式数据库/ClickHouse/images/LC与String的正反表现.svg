@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="pnC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">LowCardinality 的正反两面：等值过滤更快，多列 GROUP BY 反而更慢</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">口径：容器 devnotes-ch · ClickHouse 26.3.29.7 · 实验 08 · 同一份 500 万行数据只改列类型 · 每条查询各跑 3 次</text>
+
+  <rect x="20" y="74" width="470" height="426" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="94" font-size="14" font-weight="bold" fill="#0f172a">A. 存储：收益随基数下降而放大</text>
+
+  <rect x="36" y="104" width="438" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="126" font-size="12" font-weight="bold" fill="#0f172a">city（8 个取值）</text>
+  <text x="52" y="146" font-size="11" fill="#334155">327,312 → 25,766 字节（12.7 倍）</text>
+
+  <rect x="36" y="176" width="438" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="198" font-size="12" font-weight="bold" fill="#0f172a">device（5 个取值）</text>
+  <text x="52" y="218" font-size="11" fill="#334155">310,457 → 29,261 字节（10.6 倍）</text>
+
+  <rect x="36" y="248" width="438" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="270" font-size="12" font-weight="bold" fill="#0f172a">status（2 个取值）</text>
+  <text x="52" y="290" font-size="11" fill="#334155">338,797 → 25,107 字节（13.5 倍）</text>
+
+  <rect x="36" y="320" width="438" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="342" font-size="12" font-weight="bold" fill="#0f172a">category（1000 个取值）</text>
+  <text x="52" y="362" font-size="11" fill="#334155">1,640,953 → 379,298 字节（只省 4.3 倍）</text>
+
+  <rect x="36" y="392" width="438" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="52" y="414" font-size="12" font-weight="bold" fill="#0f172a">url（100 万个取值，两表都还是 String）</text>
+  <text x="52" y="434" font-size="11" fill="#334155">21,135,904 → 21,135,904 字节（一点不省）</text>
+
+  <text x="52" y="478" font-size="11" fill="#64748b">未压缩端 city 70,000,000 → 5,010,157：每行只留 1 字节字典下标</text>
+
+  <rect x="510" y="74" width="470" height="426" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="526" y="94" font-size="14" font-weight="bold" fill="#0f172a">B. 查询：4 条实测耗时区间（单位：秒）</text>
+
+  <rect x="526" y="104" width="438" height="92" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="542" y="126" font-size="11.5" font-weight="bold" fill="#0f172a">WHERE city = '北京'（等值过滤）</text>
+  <text x="542" y="146" font-size="11" fill="#334155">String 0.094 ~ 0.109 → LowCardinality 0.025 ~ 0.030</text>
+  <text x="542" y="164" font-size="11" fill="#14532d">只比字典下标：LC 快 3.5 ~ 4 倍（本次最快的场景）</text>
+
+  <rect x="526" y="206" width="438" height="92" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="542" y="228" font-size="11.5" font-weight="bold" fill="#0f172a">GROUP BY city, device, status（3 个 LC 列）</text>
+  <text x="542" y="248" font-size="11" fill="#334155">String 0.532 ~ 0.736 → LowCardinality 0.904 ~ 2.163</text>
+  <text x="542" y="266" font-size="11" fill="#991b1b">⚠️ 反而慢 1.7 ~ 3 倍：查询期要为每个 granule 重建字典</text>
+
+  <rect x="526" y="308" width="438" height="92" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="542" y="330" font-size="11.5" font-weight="bold" fill="#0f172a">GROUP BY category（1000 组）</text>
+  <text x="542" y="350" font-size="11" fill="#334155">String 0.138 ~ 0.277 → LowCardinality 0.070 ~ 0.170</text>
+  <text x="542" y="368" font-size="11" fill="#334155">仍约快 2 倍：少比字符串的收益还在</text>
+
+  <rect x="526" y="410" width="438" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="542" y="432" font-size="11.5" font-weight="bold" fill="#0f172a">WHERE city LIKE '%北京%'</text>
+  <text x="542" y="452" font-size="11" fill="#334155">String 0.129 ~ 0.236 → LowCardinality 0.042 ~ 0.196（LC 偏快）</text>
+
+  <text x="542" y="490" font-size="11" fill="#64748b">区间有重叠处不断言优劣，只断言单调趋势</text>
+
+  <rect x="20" y="520" width="960" height="120" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="544" font-size="11.5" fill="#0f172a">结论：LowCardinality 强在「存储」与「等值过滤」；多列 GROUP BY 时查询期要为每个 granule 重建 / 合并字典，开销会超过「少比字符串」的收益。</text>
+  <text x="36" y="568" font-size="11.5" fill="#0f172a">⚠️「LC 一定更快」是错的：本实验的反例就是 3 个 LC 列的 GROUP BY，三次里两次超过 1.8 s。</text>
+  <text x="36" y="592" font-size="11.5" fill="#0f172a">⚠️ Nullable 不是免费的：每列恰好多 23,473 字节；未压缩端都是 +5,000,000 字节 = 每行 1 字节 NULL 掩码，与列宽无关。</text>
+  <text x="36" y="616" font-size="11.5" fill="#64748b">耗时一律写成区间、只断言趋势：每条查询连跑 3 次，容器读数波动大；两次运行的数字不混在一句里。</text>
+</svg>

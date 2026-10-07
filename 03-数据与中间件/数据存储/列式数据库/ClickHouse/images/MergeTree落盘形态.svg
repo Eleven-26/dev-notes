@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">MergeTree 落盘形态（26.3 实测）：库 UUID 目录 → part 目录 → 每列一组 .bin / .cmrk2</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">实测表 default.events　PARTITION BY toDate(event_time)　ORDER BY (city, user_id)　index_granularity = 8192　共 1000 万行</text>
+
+  <rect x="30" y="70" width="432" height="424" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="48" y="94" font-size="13.5" font-weight="bold" fill="#0f172a">① 库目录：Atomic 引擎用 UUID 命名</text>
+  <text x="48" y="115" font-size="11.5" fill="#475569">system.tables.data_paths 实测：</text>
+  <text x="48" y="133" font-size="11" fill="#0f172a">/var/lib/clickhouse/store/8f7/8f7a973c-1083-414c-a48e-780c15c4dc03/</text>
+  <text x="48" y="152" font-size="11.5" fill="#b45309">⚠️ 书 2020 口径写 &lt;path&gt;/data/&lt;db&gt;/&lt;table&gt;/；26.3 实测无这一层</text>
+  <text x="48" y="171" font-size="11.5" fill="#475569">表目录下 = 一堆 part 目录 + detached/ + format_version.txt</text>
+
+  <rect x="46" y="184" width="400" height="294" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="60" y="206" font-size="12.5" font-weight="bold" fill="#1e3a8a">② 一次 INSERT 生成一批新 part 目录</text>
+  <text x="60" y="224" font-size="11" fill="#1d4ed8">目录名 = 分区ID_MinBlockNum_MaxBlockNum_Level（书 6.2.2 公式）</text>
+  <text x="60" y="248" font-size="11.5" fill="#0f172a">20260901_55_55_0　Wide　100.0 万行</text>
+  <text x="60" y="267" font-size="11.5" fill="#0f172a">20260902_56_56_0　Compact　11.2 万行</text>
+  <text x="60" y="286" font-size="11.5" fill="#0f172a">20260902_57_57_0　Wide　88.8 万行</text>
+  <text x="60" y="305" font-size="11.5" fill="#16a34a">20260902_56_57_1　Wide　100.0 万行 ← 56+57 合并产物</text>
+  <text x="76" y="322" font-size="11" fill="#166534">Min=56、Max=57、Level 由 0 变 1（书 6.2.3 的取值规则）</text>
+  <text x="60" y="345" font-size="11.5" fill="#0f172a">20261007_73_73_0　Compact　100 行（小批量 INSERT）</text>
+  <text x="60" y="371" font-size="11.5" fill="#b45309">⚠️ 20260901_55_55_0 与 _55_55_1 同时躺在磁盘上</text>
+  <text x="76" y="388" font-size="11" fill="#92400e">⇒ 合并后的旧 part 不会立即删除（书：默认约 8 分钟后清理）</text>
+  <text x="60" y="411" font-size="11.5" fill="#475569">OPTIMIZE TABLE events FINAL：OPTIMIZE 前 18 个 part</text>
+  <text x="76" y="428" font-size="11" fill="#475569">→ 合并后 10 个 part，每个分区恰好 100 万行（耗时 8.259 s）</text>
+  <text x="60" y="451" font-size="11.5" fill="#475569">因由：插入按 max_insert_block_size = 1048449 切块，</text>
+  <text x="76" y="468" font-size="11" fill="#475569">块边界与日期边界不对齐 → 中间几天各被切成 2 个 part</text>
+
+  <line x1="462" y1="282" x2="496" y2="282" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <text x="466" y="274" font-size="11" fill="#2563eb">放大</text>
+
+  <rect x="496" y="70" width="474" height="424" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="514" y="94" font-size="13.5" font-weight="bold" fill="#1e3a8a">③ Wide part 目录内部：列存证据</text>
+  <text x="514" y="114" font-size="11.5" fill="#1d4ed8">每列一个 .bin（该列压缩数据）+ 一个 .cmrk2（该列 marks / 偏移）</text>
+  <text x="514" y="137" font-size="12" font-weight="bold" fill="#0f172a">列数据</text>
+  <text x="514" y="157" font-size="11.5" fill="#334155">event_time.bin　event_time.cmrk2</text>
+  <text x="514" y="175" font-size="11.5" fill="#334155">user_id.bin　user_id.cmrk2</text>
+  <text x="514" y="193" font-size="11.5" fill="#334155">price.bin　price.cmrk2</text>
+  <text x="514" y="211" font-size="11.5" fill="#334155">city.bin　city.cmrk2　＋ city.dict.bin / city.dict.cmrk2</text>
+  <text x="514" y="229" font-size="11.5" fill="#334155">device.bin　device.cmrk2　＋ device.dict.bin / device.dict.cmrk2</text>
+  <text x="514" y="247" font-size="11.5" fill="#334155">url.bin　url.cmrk2　＋ url.size.bin / url.size.cmrk2</text>
+  <text x="514" y="265" font-size="11.5" fill="#334155">tags.bin　tags.cmrk2　＋ tags.size.bin / tags.size0.bin</text>
+  <text x="530" y="282" font-size="11" fill="#64748b">LowCardinality 多字典文件；String / Array 多长度偏移文件</text>
+
+  <text x="514" y="308" font-size="12" font-weight="bold" fill="#0f172a">索引与元信息</text>
+  <text x="514" y="328" font-size="11.5" fill="#b45309">primary.cidx　一级稀疏索引（⚠️ 实测已不叫 primary.idx）</text>
+  <text x="514" y="346" font-size="11.5" fill="#334155">minmax_event_time.idx ＋ partition.dat　分区 / 列 minmax</text>
+  <text x="530" y="363" font-size="11" fill="#64748b">未显式声明跳过索引也会生成</text>
+  <text x="514" y="383" font-size="11.5" fill="#334155">checksums.txt　columns.txt　count.txt</text>
+  <text x="530" y="400" font-size="11" fill="#64748b">校验和 / 列清单 / 行数（书 6.1.2 的 11 类文件仍是这条主线）</text>
+  <text x="514" y="420" font-size="11.5" fill="#334155">serialization.json　columns_substreams.txt</text>
+  <text x="514" y="438" font-size="11.5" fill="#334155">default_compression_codec.txt　metadata_version.txt</text>
+
+  <rect x="496" y="446" width="474" height="48" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="512" y="465" font-size="11.5" font-weight="bold" fill="#7f1d1d">④ Compact part 对照：只有 data.bin ＋ data.cmrk4</text>
+  <text x="512" y="483" font-size="11" fill="#991b1b">所有列挤在一个数据文件里，「一列一个文件」只在 Wide part 成立</text>
+
+  <text x="30" y="502" font-size="11.5" fill="#64748b">说明：数值与文件名全部取自本目录实验 02 的原始输出（容器 devnotes-ch，clickhouse/clickhouse-server:26.3-alpine，版本 26.3.29.7）。</text>
+  <text x="30" y="518" font-size="11.5" fill="#b45309">⚠️ 书 2020 口径的 marks 是 .mrk / .mrk2、一级索引是 primary.idx；26.3 实测为 .cmrk2 / primary.cidx（Compact 用 .cmrk4）。</text>
+  <text x="30" y="533" font-size="11.5" fill="#64748b">Wide / Compact 的分界由 min_bytes_for_wide_part（实测默认 10485760，即 10 MiB）与 min_rows_for_wide_part（实测默认 0）决定。</text>
+</svg>

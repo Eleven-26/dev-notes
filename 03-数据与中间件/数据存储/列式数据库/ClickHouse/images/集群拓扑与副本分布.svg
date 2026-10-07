@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">集群拓扑（26.3 实测）：2 分片 × 2 副本 + ClickHouse Keeper</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">4 台服务节点挂同一份 cluster.xml，仅 macros 里的 {shard} / {replica} 不同　镜像 clickhouse/clickhouse-server:26.3-alpine</text>
+
+  <rect x="330" y="68" width="340" height="60" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="500" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">devnotes-ch-keeper　ClickHouse Keeper</text>
+  <text x="500" y="110" text-anchor="middle" font-size="11.5" fill="#1d4ed8">raft 单节点　tcp 9181 / raft 9234　存复制日志与副本登记</text>
+  <text x="500" y="146" text-anchor="middle" font-size="12" fill="#b45309">⚠️ 书 2020 口径一律写 ZooKeeper；26.3 官方推荐内置 Keeper（无需外部 ZK）</text>
+
+  <line x1="500" y1="128" x2="500" y2="166" stroke="#2563eb" stroke-width="1.8"/>
+  <line x1="260" y1="166" x2="740" y2="166" stroke="#2563eb" stroke-width="1.8"/>
+  <line x1="260" y1="166" x2="260" y2="196" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkA)"/>
+  <line x1="740" y1="166" x2="740" y2="196" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkA)"/>
+
+  <rect x="40" y="200" width="440" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="60" y="224" font-size="13.5" font-weight="bold" fill="#0f172a">shard 01　{shard}=01</text>
+  <text x="60" y="242" font-size="11.5" fill="#475569">same shard, 两副本数据完全相同（ReplicatedMergeTree）</text>
+
+  <rect x="58" y="256" width="198" height="104" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="157" y="278" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">devnotes-ch-s1r1</text>
+  <text x="157" y="297" text-anchor="middle" font-size="11.5" fill="#0f172a">{replica} = r1</text>
+  <text x="157" y="316" text-anchor="middle" font-size="11.5" fill="#16a34a">实测 500160 行</text>
+  <text x="157" y="335" text-anchor="middle" font-size="11" fill="#475569">暴露 18124→8123 / 19001→9000</text>
+  <text x="157" y="352" text-anchor="middle" font-size="11" fill="#475569">曾作为故障演练对象被 stop</text>
+
+  <rect x="264" y="256" width="198" height="104" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="363" y="278" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">devnotes-ch-s1r2</text>
+  <text x="363" y="297" text-anchor="middle" font-size="11.5" fill="#0f172a">{replica} = r2</text>
+  <text x="363" y="316" text-anchor="middle" font-size="11.5" fill="#16a34a">实测 500160 行（与 r1 相等）</text>
+  <text x="363" y="335" text-anchor="middle" font-size="11" fill="#475569">r1 宕机期间接任 is_leader</text>
+  <text x="363" y="352" text-anchor="middle" font-size="11" fill="#475569">停机期间写入落到它身上</text>
+
+  <text x="60" y="386" font-size="11.5" fill="#1d4ed8">副本路径（显式写死，便于观察）：</text>
+  <text x="60" y="404" font-size="11" fill="#0f172a">/clickhouse/tables/{shard}/events_local/replicas/{replica}</text>
+  <text x="60" y="426" font-size="11.5" fill="#b45309">⚠️ 26.3 的 Atomic 库默认路径是</text>
+  <text x="60" y="443" font-size="11" fill="#92400e">/clickhouse/tables/{uuid}/{shard}，含表 UUID</text>
+
+  <rect x="520" y="200" width="440" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="540" y="224" font-size="13.5" font-weight="bold" fill="#0f172a">shard 02　{shard}=02</text>
+  <text x="540" y="242" font-size="11.5" fill="#475569">另一个分片：数据与 shard01 互不重叠</text>
+
+  <rect x="538" y="256" width="198" height="104" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="637" y="278" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">devnotes-ch-s2r1</text>
+  <text x="637" y="297" text-anchor="middle" font-size="11.5" fill="#0f172a">{replica} = r1</text>
+  <text x="637" y="316" text-anchor="middle" font-size="11.5" fill="#16a34a">实测 499840 行</text>
+  <text x="637" y="335" text-anchor="middle" font-size="11" fill="#475569">权限修好前拿到 0 行</text>
+  <text x="637" y="352" text-anchor="middle" font-size="11" fill="#475569">由 distribution_queue 自动补投</text>
+
+  <rect x="744" y="256" width="198" height="104" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="843" y="278" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">devnotes-ch-s2r2</text>
+  <text x="843" y="297" text-anchor="middle" font-size="11.5" fill="#0f172a">{replica} = r2</text>
+  <text x="843" y="316" text-anchor="middle" font-size="11.5" fill="#16a34a">实测 499840 行（与 r1 相等）</text>
+  <text x="843" y="335" text-anchor="middle" font-size="11" fill="#475569">internal_replication=true</text>
+  <text x="843" y="352" text-anchor="middle" font-size="11" fill="#475569">只写一个副本，其余靠复制同步</text>
+
+  <text x="540" y="386" font-size="11.5" fill="#1d4ed8">两个分片之和 = 分布式表读数：</text>
+  <text x="540" y="406" font-size="12" font-weight="bold" fill="#16a34a">500160 + 499840 = 1000000 行</text>
+  <text x="540" y="428" font-size="11.5" fill="#b45309">⚠️ rand() 分片键近似均匀，</text>
+  <text x="540" y="445" font-size="11" fill="#92400e">但不精确等分（相差 320 行）</text>
+
+  <rect x="40" y="464" width="920" height="60" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.4"/>
+  <text x="60" y="486" font-size="12" font-weight="bold" fill="#92400e">⭐ 两个维度是正交的：分片解决「大」（容量 / 吞吐），副本解决「稳」（可用性）</text>
+  <text x="60" y="508" font-size="11.5" fill="#92400e">单分片内的每个节点仍是单点 —— 副本才是这一层的保险；反过来，副本不增加总容量（两份数据只占两份机器）。</text>
+</svg>

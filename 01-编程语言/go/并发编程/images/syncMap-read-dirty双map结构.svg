@@ -3,7 +3,7 @@
     <marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
   </defs>
   <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
-  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 经典结构（Go 1.9 – 1.23）：read / dirty 双 map</text>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 经典结构（Go 1.9 – 1.25）：read / dirty 双 map</text>
   <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">读优先走只读快照 read（无锁）；写落到 dirty；miss 计数到阈值后把 dirty 整体提升为 read</text>
 
   <rect x="360" y="76" width="280" height="70" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
@@ -53,5 +53,5 @@
   <text x="48" y="536" font-size="12" fill="#0f172a">· 读：Load 先看 read；命中且 Entry 非 nil → 直接返回（无锁）。未命中 → miss++，加锁再看 dirty。</text>
   <text x="48" y="560" font-size="12" fill="#0f172a">· 写：Store 命中 read 且 !amended 直接写；否则加锁写 dirty；dirty=nil 时先把 read 里的键补进 dirty 再写。</text>
   <text x="48" y="584" font-size="12" fill="#7f1d1d">· 退化根因：键集反复全量重写 → dirty 被提升置 nil 后又被整表重建，重建要遍历 read 复制全部 Entry → 抖动、慢。</text>
-  <text x="48" y="610" font-size="11" fill="#64748b">注：字段名取自该版实现通称；本仓库既有笔记「read + dirty 双 map」描述的即此版。Go 1.24 起已被哈希前缀树重写（见另图）。</text>
+  <text x="48" y="610" font-size="11" fill="#64748b">注：字段名取自该版实现通称（go1.25.8 实测）；本仓库既有笔记「read + dirty 双 map」描述的即此版。Go 1.26 起已被哈希前缀树重写（见另图）。</text>
 </svg>

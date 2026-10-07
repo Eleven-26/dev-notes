@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="cmpA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">WHERE 与 PREWHERE：执行顺序对照</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">两者过滤出的行数相同；差别在于「先读哪一列」——PREWHERE 先只读过滤列，再补齐其余列</text>
+
+  <rect x="60" y="76" width="410" height="40" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="265" y="102" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">WHERE：读列 → 再过滤</text>
+
+  <rect x="60" y="132" width="410" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="265" y="155" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">① 读该 granule 里被引用的列</text>
+  <text x="265" y="176" text-anchor="middle" font-size="12" fill="#475569">过滤列 + SELECT 要返回的列，一起读进来</text>
+  <line x1="265" y1="190" x2="265" y2="210" stroke="#64748b" stroke-width="1.8" marker-end="url(#cmpA)"/>
+
+  <rect x="60" y="212" width="410" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="265" y="235" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">② Filter 过滤（读完才过滤）</text>
+  <text x="265" y="256" text-anchor="middle" font-size="12" fill="#475569">计划里多出一层 Filter</text>
+  <line x1="265" y1="270" x2="265" y2="290" stroke="#64748b" stroke-width="1.8" marker-end="url(#cmpA)"/>
+
+  <rect x="60" y="292" width="410" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="265" y="313" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">③ 输出命中行</text>
+  <text x="265" y="333" text-anchor="middle" font-size="12" fill="#166534">书 2020 口径：981,110 行</text>
+
+  <rect x="530" y="76" width="410" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="735" y="102" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">PREWHERE：先过滤 → 再补列</text>
+
+  <rect x="530" y="132" width="410" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="735" y="155" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">① 只读 PREWHERE 指定的过滤列</text>
+  <text x="735" y="176" text-anchor="middle" font-size="12" fill="#475569">书例：JavaEnable（读的列少、字节少）</text>
+  <line x1="735" y1="190" x2="735" y2="210" stroke="#64748b" stroke-width="1.8" marker-end="url(#cmpA)"/>
+
+  <rect x="530" y="212" width="410" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="735" y="235" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">② 按过滤结果再读其余列</text>
+  <text x="735" y="256" text-anchor="middle" font-size="12" fill="#475569">补全 SELECT 声明的列，省去一次 Filter</text>
+  <line x1="735" y1="270" x2="735" y2="290" stroke="#64748b" stroke-width="1.8" marker-end="url(#cmpA)"/>
+
+  <rect x="530" y="292" width="410" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="735" y="313" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">③ 输出命中行（行数相同）</text>
+  <text x="735" y="333" text-anchor="middle" font-size="12" fill="#166534">书 2020 口径：981,110 行</text>
+
+  <rect x="60" y="362" width="880" height="74" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="80" y="385" font-size="13" font-weight="bold" fill="#7c2d12">书 2020 口径对照（hits_v1，同一条 JavaEnable = 1，先 set optimize_move_to_prewhere=0 关掉自动优化）</text>
+  <text x="80" y="407" font-size="12" fill="#9a3412">WHERE　　：1.34 million rows，124.65 MB，0.095 sec　（计划含 Filter）</text>
+  <text x="80" y="427" font-size="12" fill="#9a3412">PREWHERE：1.34 million rows，　91.61 MB，0.080 sec　（计划省一次 Filter）</text>
+
+  <rect x="60" y="450" width="880" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="80" y="472" font-size="12.5" font-weight="bold" fill="#0f172a">26.3 实测（EXPLAIN indexes=1，events 表 1000 万行）：过滤条件决定读多少个 granule</text>
+  <text x="80" y="493" font-size="12" fill="#475569">命中主键 10/1231（read_bytes 339,370）· 非主键前缀 150/1231（4,915,200）· ORDER BY 选错列 980/980（21,074,796）</text>
+
+  <text x="60" y="530" font-size="11.5" fill="#64748b">⚠️ 书为 2020 年的 19.17 口径（CentOS 7.7），PREWHERE 的字节差在 26.3 上未重跑；耗时类读数波动大，只断言趋势。</text>
+</svg>

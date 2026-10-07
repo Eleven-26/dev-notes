@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="stA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">状态列与 Merge 函数的对应关系</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">以实测目标表 mv_agg（AggregatingMergeTree）为例：写入用 *State、读回用 *Merge，函数名必须与列声明成对</text>
+
+  <rect x="60" y="86" width="140" height="40" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="130" y="111" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">聚合语义</text>
+  <rect x="210" y="86" width="250" height="40" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="335" y="111" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">写入函数（INSERT 侧）</text>
+  <rect x="470" y="86" width="250" height="40" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="595" y="111" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">目标表的列类型</text>
+  <rect x="730" y="86" width="210" height="40" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="835" y="111" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">读回函数（SELECT 侧）</text>
+
+  <rect x="60" y="134" width="140" height="64" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="130" y="170" text-anchor="middle" font-size="12" fill="#0f172a">不同用户数 UV</text>
+  <rect x="210" y="134" width="250" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="335" y="170" text-anchor="middle" font-size="11.5" fill="#1e3a8a">uniqState(user_id)</text>
+  <rect x="470" y="134" width="250" height="64" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="595" y="170" text-anchor="middle" font-size="11.5" fill="#0f172a">AggregateFunction(uniq, UInt32)</text>
+  <rect x="730" y="134" width="210" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="835" y="170" text-anchor="middle" font-size="11.5" fill="#14532d">uniqMerge(users_state)</text>
+
+  <rect x="60" y="202" width="140" height="64" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="130" y="238" text-anchor="middle" font-size="12" fill="#0f172a">金额合计</text>
+  <rect x="210" y="202" width="250" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="335" y="238" text-anchor="middle" font-size="11.5" fill="#1e3a8a">sumState(price)</text>
+  <rect x="470" y="202" width="250" height="64" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="595" y="238" text-anchor="middle" font-size="10.5" fill="#0f172a">AggregateFunction(sum, Decimal(10, 2))</text>
+  <rect x="730" y="202" width="210" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="835" y="238" text-anchor="middle" font-size="11.5" fill="#14532d">sumMerge(price_state)</text>
+
+  <rect x="60" y="270" width="140" height="64" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="130" y="306" text-anchor="middle" font-size="12" fill="#0f172a">行数</text>
+  <rect x="210" y="270" width="250" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="335" y="306" text-anchor="middle" font-size="11.5" fill="#1e3a8a">countState()</text>
+  <rect x="470" y="270" width="250" height="64" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="595" y="306" text-anchor="middle" font-size="11.5" fill="#0f172a">AggregateFunction(count)</text>
+  <rect x="730" y="270" width="210" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="835" y="306" text-anchor="middle" font-size="11.5" fill="#14532d">countMerge(cnt_state)</text>
+
+  <line x1="335" y1="352" x2="835" y2="352" stroke="#64748b" stroke-width="1.4" marker-end="url(#stA)"/>
+  <text x="585" y="346" text-anchor="middle" font-size="11.5" fill="#64748b">写入侧的状态 → 读回侧的结果（中间隔着二进制存储）</text>
+
+  <rect x="60" y="366" width="880" height="156" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="76" y="390" font-size="11.5" fill="#0f172a">实测（实验 06）：回填后的 8 城 UV 逐个为 125492 / 125542 / 124957 / 125039 / 124904 / 124697 / 125282 / 124888，与直接聚合源表的结果一致。</text>
+  <text x="76" y="412" font-size="11.5" fill="#0f172a">countMerge(cnt_state) 读出 1252500（北京 1252600），比实验 05 的 1250000 多出来的正是实验 06 新注入的 2500 / 2600 行。</text>
+  <text x="76" y="434" font-size="11.5" fill="#0f172a">新写入的 1 万行在同一条会话里立即可见：每城 uniqMerge = 125、sumMerge ≈ 62xxx、countMerge = 1250。</text>
+  <text x="76" y="456" font-size="11.5" fill="#b91c1c">⚠️ 状态列不可读：直接 SELECT users_state 拿到的是二进制中间状态，必须经 *Merge 函数才能还原（本批未采集状态列的直接输出形态）。</text>
+  <text x="76" y="478" font-size="11.5" fill="#b91c1c">⚠️ 三处易错点：count 不带参数、所以 countState() 是空括号；sum 的状态列要写成 Decimal(10, 2) 与源表 price 对齐；</text>
+  <text x="92" y="500" font-size="11.5" fill="#b91c1c">列名可以自取，但读回函数必须与列声明里的聚合函数配对（uniq 只能配 uniqMerge，不能配 sumMerge）。</text>
+  <text x="76" y="518" font-size="11" fill="#64748b">要精确基数：把列换成 AggregateFunction(uniqExact, UInt32)，配 uniqExactState 与 uniqExactMerge（更慢、内存更大，本批未实测）；id 是整数时也可用 Bitmap（实验 07）。</text>
+</svg>

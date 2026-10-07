@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="spA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一级索引（稀疏索引）与 granule 的对应关系</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">以实测 events 表为例：单个 part 100 万行 · index_granularity=8192 · 实测 marks=124</text>
+
+  <rect x="60" y="84" width="96" height="38" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="108" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">数据行</text>
+
+  <rect x="166" y="84" width="148" height="38" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="240" y="108" text-anchor="middle" font-size="11.5" fill="#0f172a">第 0 ~ 8191 行</text>
+  <rect x="322" y="84" width="148" height="38" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="396" y="108" text-anchor="middle" font-size="11.5" fill="#0f172a">第 8192 ~ 16383 行</text>
+  <rect x="478" y="84" width="148" height="38" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="552" y="108" text-anchor="middle" font-size="11.5" fill="#0f172a">第 16384 ~ 24575 行</text>
+  <rect x="634" y="84" width="148" height="38" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="708" y="108" text-anchor="middle" font-size="13" fill="#64748b">……</text>
+  <rect x="790" y="84" width="148" height="38" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="864" y="102" text-anchor="middle" font-size="11.5" fill="#0f172a">第 999424 ~ 999999 行</text>
+  <text x="864" y="116" text-anchor="middle" font-size="10.5" fill="#64748b">末尾不足 8192 行</text>
+
+  <line x1="500" y1="126" x2="500" y2="132" stroke="#64748b" stroke-width="1.4" marker-end="url(#spA)"/>
+
+  <rect x="60" y="134" width="96" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="108" y="152" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">granule 编号</text>
+
+  <rect x="166" y="134" width="148" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="240" y="152" text-anchor="middle" font-size="11.5" fill="#1e3a8a">granule 0</text>
+  <rect x="322" y="134" width="148" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="396" y="152" text-anchor="middle" font-size="11.5" fill="#1e3a8a">granule 1</text>
+  <rect x="478" y="134" width="148" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="552" y="152" text-anchor="middle" font-size="11.5" fill="#1e3a8a">granule 2</text>
+  <rect x="634" y="134" width="148" height="28" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="708" y="152" text-anchor="middle" font-size="13" fill="#64748b">……</text>
+  <rect x="790" y="134" width="148" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="864" y="152" text-anchor="middle" font-size="11.5" fill="#1e3a8a">granule 122（收尾）</text>
+
+  <line x1="500" y1="166" x2="500" y2="172" stroke="#64748b" stroke-width="1.4" marker-end="url(#spA)"/>
+
+  <rect x="60" y="174" width="96" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="108" y="196" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">primary.cidx</text>
+  <text x="108" y="212" text-anchor="middle" font-size="10.5" fill="#166534">一级索引</text>
+  <text x="108" y="224" text-anchor="middle" font-size="10.5" fill="#166534">常驻内存</text>
+
+  <rect x="166" y="174" width="148" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="240" y="196" text-anchor="middle" font-size="11.5" fill="#14532d">首行主键值</text>
+  <text x="240" y="214" text-anchor="middle" font-size="10.5" fill="#166534">(city, user_id)</text>
+  <rect x="322" y="174" width="148" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="396" y="196" text-anchor="middle" font-size="11.5" fill="#14532d">首行主键值</text>
+  <text x="396" y="214" text-anchor="middle" font-size="10.5" fill="#166534">(city, user_id)</text>
+  <rect x="478" y="174" width="148" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="552" y="196" text-anchor="middle" font-size="11.5" fill="#14532d">首行主键值</text>
+  <text x="552" y="214" text-anchor="middle" font-size="10.5" fill="#166534">(city, user_id)</text>
+  <rect x="634" y="174" width="148" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="708" y="206" text-anchor="middle" font-size="13" fill="#64748b">……</text>
+  <rect x="790" y="174" width="148" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="864" y="196" text-anchor="middle" font-size="11.5" fill="#14532d">首行主键值</text>
+  <text x="864" y="214" text-anchor="middle" font-size="10.5" fill="#166534">(city, user_id)</text>
+
+  <line x1="500" y1="232" x2="500" y2="238" stroke="#64748b" stroke-width="1.4" marker-end="url(#spA)"/>
+
+  <rect x="60" y="240" width="96" height="54" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="108" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">&lt;列&gt;.cmrk2</text>
+  <text x="108" y="278" text-anchor="middle" font-size="10.5" fill="#9a3412">数据标记</text>
+  <text x="108" y="290" text-anchor="middle" font-size="10.5" fill="#9a3412">LRU 缓存</text>
+
+  <rect x="166" y="240" width="148" height="54" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="240" y="262" text-anchor="middle" font-size="11" fill="#7c2d12">1 行标记 =</text>
+  <text x="240" y="278" text-anchor="middle" font-size="10.5" fill="#9a3412">压缩块起始偏移量 +</text>
+  <text x="240" y="290" text-anchor="middle" font-size="10.5" fill="#9a3412">未压缩数据起始偏移量</text>
+  <rect x="322" y="240" width="148" height="54" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="396" y="262" text-anchor="middle" font-size="11" fill="#7c2d12">1 行标记 =</text>
+  <text x="396" y="278" text-anchor="middle" font-size="10.5" fill="#9a3412">压缩块起始偏移量 +</text>
+  <text x="396" y="290" text-anchor="middle" font-size="10.5" fill="#9a3412">未压缩数据起始偏移量</text>
+  <rect x="478" y="240" width="148" height="54" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="552" y="262" text-anchor="middle" font-size="11" fill="#7c2d12">1 行标记 =</text>
+  <text x="552" y="278" text-anchor="middle" font-size="10.5" fill="#9a3412">压缩块起始偏移量 +</text>
+  <text x="552" y="290" text-anchor="middle" font-size="10.5" fill="#9a3412">未压缩数据起始偏移量</text>
+  <rect x="634" y="240" width="148" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="708" y="272" text-anchor="middle" font-size="13" fill="#64748b">……</text>
+  <rect x="790" y="240" width="148" height="54" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="864" y="262" text-anchor="middle" font-size="11" fill="#7c2d12">1 行标记 =</text>
+  <text x="864" y="278" text-anchor="middle" font-size="10.5" fill="#9a3412">压缩块起始偏移量 +</text>
+  <text x="864" y="290" text-anchor="middle" font-size="10.5" fill="#9a3412">未压缩数据起始偏移量</text>
+
+  <line x1="500" y1="298" x2="500" y2="304" stroke="#64748b" stroke-width="1.4" marker-end="url(#spA)"/>
+
+  <rect x="60" y="306" width="96" height="58" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="108" y="330" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">&lt;列&gt;.bin</text>
+  <text x="108" y="346" text-anchor="middle" font-size="10.5" fill="#991b1b">压缩数据块</text>
+  <text x="108" y="358" text-anchor="middle" font-size="10.5" fill="#991b1b">默认 LZ4</text>
+
+  <rect x="166" y="306" width="148" height="58" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="240" y="330" text-anchor="middle" font-size="11.5" fill="#7f1d1d">压缩块 A</text>
+  <text x="240" y="348" text-anchor="middle" font-size="10.5" fill="#991b1b">64KB ~ 1MB</text>
+  <rect x="322" y="306" width="148" height="58" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="396" y="330" text-anchor="middle" font-size="11.5" fill="#7f1d1d">仍是压缩块 A</text>
+  <text x="396" y="348" text-anchor="middle" font-size="10.5" fill="#991b1b">多对一：共用同一块</text>
+  <rect x="478" y="306" width="148" height="58" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="552" y="330" text-anchor="middle" font-size="11.5" fill="#7f1d1d">压缩块 B</text>
+  <text x="552" y="348" text-anchor="middle" font-size="10.5" fill="#991b1b">64KB ~ 1MB</text>
+  <rect x="634" y="306" width="148" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="708" y="340" text-anchor="middle" font-size="13" fill="#64748b">……</text>
+  <rect x="790" y="306" width="148" height="58" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="864" y="330" text-anchor="middle" font-size="11.5" fill="#7f1d1d">压缩块 N</text>
+  <text x="864" y="348" text-anchor="middle" font-size="10.5" fill="#991b1b">一对多：一块占多行标记</text>
+
+  <rect x="60" y="382" width="878" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="76" y="404" font-size="12" fill="#0f172a">稀疏性量化（实测）：单个 100 万行 part 的 primary_key_bytes_in_memory = 740 字节 → 740 / 124 granule ≈ 每 granule 仅 6 字节索引。</text>
+  <text x="76" y="424" font-size="12" fill="#0f172a">全表 10 个 part 主键索引常驻内存合计 7,400 字节，而被索引数据 bytes_on_disk 合计 160,870,848 字节（约 153.4 MB）→ 比例 0.000046 ≈ 1/21700。</text>
+  <text x="76" y="442" font-size="11.5" fill="#b91c1c">⚠️ 26.3 实测文件名：一级索引为 primary.cidx，标记为 &lt;列&gt;.cmrk2（书 2020 口径写作 primary.idx 与 &lt;列&gt;.mrk）—— 本图按实测命名。</text>
+
+  <text x="60" y="474" font-size="11.5" fill="#64748b">贯穿口径：index_granularity 虽名为「索引粒度」，却同时决定 .idx / .cmrk2 / .bin 三者的间隔并使其彼此对齐（书 6.3.2）。</text>
+  <text x="60" y="496" font-size="11.5" fill="#64748b">读到「marks 数」时应除以 8192 反推行数：实测 read_rows = SelectedMarks × 8192（非全扫查询精确成立）。</text>
+  <text x="60" y="518" font-size="11.5" fill="#64748b">⚠️ marks 与 ceil(rows/8192) 并非恒等：实测 Compact part 取 ceil(rows/8192)，Wide part 为 ceil(rows/8192) + 1（末尾多一个收尾标记）。</text>
+  <text x="60" y="536" font-size="11.5" fill="#64748b">本图数值来自本目录容器实测（clickhouse-server 26.3-alpine / 26.3.29.7），非书本复述。</text>
+</svg>

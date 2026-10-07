@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mvA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">物化视图的写入触发链路（源表 INSERT → 状态行 → Merge 函数读回）</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">以实验 06 实测为准：底表 MergeTree（1000 万行）· 视图 MATERIALIZED VIEW ... TO · 目标表 AggregatingMergeTree</text>
+
+  <rect x="70" y="80" width="200" height="50" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="170" y="101" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">客户端</text>
+  <text x="170" y="119" text-anchor="middle" font-size="10.5" fill="#64748b">clickhouse-client</text>
+
+  <rect x="300" y="80" width="200" height="50" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="400" y="101" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">源表 events</text>
+  <text x="400" y="119" text-anchor="middle" font-size="10.5" fill="#1e3a8a">MergeTree · 排序键 (city, user_id)</text>
+
+  <rect x="530" y="80" width="200" height="50" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="630" y="101" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">物化视图 mv_events</text>
+  <text x="630" y="119" text-anchor="middle" font-size="10.5" fill="#9a3412">MATERIALIZED VIEW ... TO</text>
+
+  <rect x="760" y="80" width="200" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="860" y="101" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">目标表 mv_agg</text>
+  <text x="860" y="119" text-anchor="middle" font-size="10.5" fill="#166534">AggregatingMergeTree</text>
+
+  <line x1="170" y1="130" x2="170" y2="338" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="400" y1="130" x2="400" y2="338" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="630" y1="130" x2="630" y2="338" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="860" y1="130" x2="860" y2="338" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+
+  <line x1="170" y1="170" x2="400" y2="170" stroke="#64748b" stroke-width="1.4" marker-end="url(#mvA)"/>
+  <text x="285" y="162" text-anchor="middle" font-size="11.5" fill="#0f172a">① INSERT INTO events（本次 1 万行新块）</text>
+
+  <line x1="400" y1="210" x2="630" y2="210" stroke="#64748b" stroke-width="1.4" marker-end="url(#mvA)"/>
+  <text x="515" y="202" text-anchor="middle" font-size="11.5" fill="#0f172a">② 源表写入的块触发视图的 SELECT</text>
+
+  <line x1="630" y1="250" x2="860" y2="250" stroke="#64748b" stroke-width="1.4" marker-end="url(#mvA)"/>
+  <text x="745" y="242" text-anchor="middle" font-size="11.5" fill="#0f172a">③ 写入状态行（8 城各 1 行）</text>
+
+  <line x1="170" y1="292" x2="860" y2="292" stroke="#64748b" stroke-width="1.4" marker-end="url(#mvA)"/>
+  <text x="515" y="284" text-anchor="middle" font-size="11.5" fill="#0f172a">④ SELECT uniqMerge(users_state) ... FROM mv_agg GROUP BY city</text>
+
+  <line x1="860" y1="330" x2="170" y2="330" stroke="#64748b" stroke-width="1.4" marker-end="url(#mvA)"/>
+  <text x="515" y="322" text-anchor="middle" font-size="11.5" fill="#0f172a">⑤ 返回 8 城 UV（新写入部分 = 125）</text>
+
+  <rect x="70" y="350" width="860" height="130" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="86" y="374" font-size="11.5" fill="#0f172a">状态行在写入时同步产出：实验 06 向 events 插入 1 万行后，同一条会话里立刻可见 8 城各 1 行（uniqMerge = 125、countMerge = 1250），延迟就是本次 INSERT 本身。</text>
+  <text x="86" y="396" font-size="11.5" fill="#0f172a">目标表内部的 AggregatingMergeTree 再在后台合并（Merge）里按 ORDER BY 键折叠状态行：实测 count() = 16，加 FINAL 后 = 8（2 个 active part）。</text>
+  <text x="86" y="418" font-size="11.5" fill="#b91c1c">⚠️ 历史数据不在这条链路上：建视图时源表已有 1000 万行，但 SELECT count() FROM mv_agg = 0（补历史见第 4 节的回填 SQL）。</text>
+  <text x="86" y="440" font-size="11.5" fill="#b91c1c">⚠️ 书 2020 口径强调「变种引擎只在合并时触发」，那说的是引擎侧的 Merge；实测补充了视图侧「写入即产出状态」这一层，两者层次不同、并不矛盾。</text>
+  <text x="86" y="462" font-size="11.5" fill="#64748b">实测口径：clickhouse-server 26.3-alpine / 26.3.29.7（容器 devnotes-ch，时区 UTC）；书第 7 章的物化视图组合示意图（图 7-1）在 PDF 抽取时丢失。</text>
+  <text x="86" y="484" font-size="11.5" fill="#64748b">本图数值全部取自本目录容器实测，非书本复述；时序类读数只断言趋势，图内不写单点耗时。</text>
+</svg>
