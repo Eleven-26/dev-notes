@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 710" width="1000" height="710" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="710" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">关系型候选四族：把扩展做在哪一层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">候选看着有十几个，其实只有四条路线 —— 区别在扩展与分片语义由谁承担</text>
+
+  <rect x="30" y="76" width="940" height="124" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <rect x="44" y="92" width="176" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="132" y="114" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">单机开源族</text>
+  <text x="132" y="132" text-anchor="middle" font-size="10" fill="#1d4ed8">MySQL · MariaDB</text>
+  <text x="132" y="146" text-anchor="middle" font-size="9.5" fill="#1d4ed8">PostgreSQL · SQLite</text>
+
+  <rect x="240" y="96" width="250" height="92" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="365" y="116" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e3a8a">一个实例＝一个库</text>
+  <rect x="252" y="126" width="226" height="22" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="365" y="141" text-anchor="middle" font-size="10.5" fill="#1e40af">SQL 层 · 解析与优化</text>
+  <rect x="252" y="152" width="226" height="24" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="365" y="168" text-anchor="middle" font-size="10.5" fill="#334155">存储引擎（InnoDB / 堆表）</text>
+  <line x1="490" y1="142" x2="516" y2="142" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="520" y="116" width="108" height="52" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="574" y="136" text-anchor="middle" font-size="10" fill="#92400e">扩展做在</text>
+  <text x="574" y="152" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">实例外面</text>
+
+  <rect x="640" y="92" width="316" height="82" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="652" y="112" font-size="11" font-weight="bold" fill="#991b1b">代价：要知道瓶颈在哪一层才敢选</text>
+  <text x="652" y="132" font-size="10" fill="#991b1b">MySQL 单机扩展要靠外部方案；</text>
+  <text x="652" y="150" font-size="10" fill="#991b1b">PG 一连接一进程 → 连接数要额外管</text>
+  <text x="652" y="168" font-size="10" font-weight="bold" fill="#991b1b">SQLite＝进程内事务性存储，写整库串行</text>
+
+  <rect x="30" y="212" width="940" height="124" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <rect x="44" y="228" width="176" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="132" y="250" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">云原生托管族</text>
+  <text x="132" y="268" text-anchor="middle" font-size="10" fill="#166534">Aurora · PolarDB</text>
+  <text x="132" y="282" text-anchor="middle" font-size="9.5" fill="#166534">Cloud SQL 一类</text>
+
+  <rect x="240" y="232" width="250" height="36" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="365" y="254" text-anchor="middle" font-size="10.5" fill="#1e40af">计算节点：只留 SQL 层</text>
+  <line x1="355" y1="270" x2="355" y2="298" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="375" y1="298" x2="375" y2="270" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="240" y="300" width="250" height="28" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="365" y="318" text-anchor="middle" font-size="10.5" fill="#334155">分布式存储层：数据页</text>
+  <rect x="512" y="248" width="116" height="44" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="570" y="266" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">重做日志即数据库</text>
+  <text x="570" y="282" text-anchor="middle" font-size="9.5" fill="#92400e">数据页交给共享存储</text>
+
+  <rect x="640" y="224" width="316" height="100" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="652" y="244" font-size="11" font-weight="bold" fill="#991b1b">代价：买的是运维与容量弹性</text>
+  <text x="652" y="264" font-size="10" fill="#991b1b">① 厂商锁定：备份格式与专有存储层</text>
+  <text x="652" y="282" font-size="10" fill="#991b1b">不一定带得出云（先问怎么整份导出）</text>
+  <text x="652" y="300" font-size="10" fill="#991b1b">② 成本模型按 I/O 与存储量波动</text>
+  <text x="652" y="318" font-size="10" fill="#991b1b">③ 写仍集中在主节点，副本有数量约束</text>
+
+  <rect x="30" y="348" width="940" height="124" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <rect x="44" y="364" width="176" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="132" y="386" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">分布式 SQL 族</text>
+  <text x="132" y="404" text-anchor="middle" font-size="10" fill="#9a3412">TiDB · OceanBase</text>
+  <text x="132" y="418" text-anchor="middle" font-size="9.5" fill="#9a3412">CockroachDB 一类</text>
+
+  <rect x="240" y="362" width="250" height="22" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="365" y="377" text-anchor="middle" font-size="10" fill="#1e40af">协调层（选主 · 元数据）</text>
+  <rect x="240" y="388" width="250" height="22" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="365" y="403" text-anchor="middle" font-size="10" fill="#1e40af">计算层（SQL · 分布式执行）</text>
+  <rect x="240" y="414" width="250" height="24" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="365" y="430" text-anchor="middle" font-size="10" fill="#334155">存储层（Region + Raft 多数派）</text>
+  <line x1="490" y1="400" x2="516" y2="400" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="520" y="378" width="108" height="44" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="574" y="396" text-anchor="middle" font-size="10" font-weight="bold" fill="#92400e">分片做进内核</text>
+  <text x="574" y="412" text-anchor="middle" font-size="10" fill="#92400e">多数派复制</text>
+
+  <rect x="640" y="360" width="316" height="100" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="652" y="380" font-size="11" font-weight="bold" fill="#991b1b">代价：四条共性，各家程度不同</text>
+  <text x="652" y="400" font-size="10" fill="#991b1b">① 组件复杂度：排障链路比单机长一</text>
+  <text x="652" y="418" font-size="10" fill="#991b1b">个量级（还有一套监控与备份工具）</text>
+  <text x="652" y="436" font-size="10" fill="#991b1b">② 事务延迟下限更高　③ 方言兼容</text>
+  <text x="652" y="454" font-size="10" fill="#991b1b">不等于等价　④ 拓扑与节点数有硬要求</text>
+
+  <rect x="30" y="484" width="940" height="124" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <rect x="44" y="500" width="176" height="60" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="132" y="522" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">分片中间件路线</text>
+  <text x="132" y="540" text-anchor="middle" font-size="10" fill="#475569">ShardingSphere</text>
+  <text x="132" y="554" text-anchor="middle" font-size="9.5" fill="#475569">Vitess 一类</text>
+
+  <rect x="240" y="502" width="84" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="282" y="521" text-anchor="middle" font-size="10" fill="#1e40af">应用进程</text>
+  <line x1="324" y1="508" x2="346" y2="506" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="324" y1="526" x2="346" y2="536" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="348" y="494" width="152" height="24" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="424" y="510" text-anchor="middle" font-size="10" fill="#1e40af">进程内 SDK（只长在 JVM）</text>
+  <rect x="348" y="524" width="152" height="24" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="424" y="540" text-anchor="middle" font-size="10" fill="#334155">独立 Proxy（多运维一层）</text>
+  <line x1="500" y1="521" x2="522" y2="521" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+  <rect x="524" y="508" width="30" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="558" y="508" width="30" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="573" y="525" text-anchor="middle" font-size="9.5" fill="#1e40af">实例</text>
+  <rect x="592" y="508" width="30" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="348" y="566" font-size="9.5" fill="#475569">路由 · SQL 改写 · 结果归并 —— 底下仍是单机实例</text>
+
+  <rect x="640" y="496" width="316" height="88" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="652" y="516" font-size="11" font-weight="bold" fill="#991b1b">代价：分片一次性给你的四件事</text>
+  <text x="652" y="536" font-size="10" fill="#991b1b">① 跨片事务　② 跨片 JOIN 与聚合分页</text>
+  <text x="652" y="554" font-size="10" fill="#991b1b">③ 全局 ID　④ 扩容搬迁（成倍可摊薄）</text>
+  <text x="652" y="572" font-size="10" font-weight="bold" fill="#991b1b">真实成本是认知：每条 SQL 先问带没带分表键</text>
+
+  <rect x="30" y="620" width="940" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="45" y="642" font-size="11.5" fill="#334155">⭐ 四条线的分界是「扩展与分片语义由谁承担」：在外面加一层 / 搬上云托管 / 做进内核 / 加一层中间件</text>
+  <text x="45" y="662" font-size="11.5" fill="#334155">⚠️ 本篇不设性能列，也不引用任何第三方跑分当结论 —— 各家 benchmark 的前置条件互不可比</text>
+  <text x="45" y="682" font-size="11.5" fill="#334155">能横向讲的只有结构性口径：单表索引一般不超过 5~6 个，每个索引都拖慢写（见 4.3 节）</text>
+</svg>

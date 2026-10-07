@@ -87,6 +87,7 @@
 | 主题 | 去哪 |
 |---|---|
 | 存储选型总表（关系型 / 文档 / 搜索 / KV / 列式 / 时序 / 图） | [存储选型.md](../../存储选型.md) |
+| 图库按**存储实现**分的四族怎么横评、图库之外的三条替代路线 | [图数据库选型对比.md](../图数据库选型对比.md) |
 | 关系模型与 SQL、索引与事务的"关系型版本" | [README.md](../../关系型/MySQL/README.md) — MySQL 目录导读 |
 | KV 存储、SET 集合运算、缓存选型 | [README.md](../../NoSQL/Redis/README.md) — Redis 目录导读 |
 | 文档模型与 JSON 建模 | [README.md](../../NoSQL/MongoDB/README.md) — MongoDB 目录导读 |

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwS" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">图库选型：先估算能不能绕过图库，再按起点资产分派</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">上面那道门来自第八节，下面五条决策线来自 7.1 与 7.2</text>
+
+  <rect x="30" y="72" width="940" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="44" y="92" font-size="13" font-weight="bold" fill="#0f172a">第一道门 · 先估算能不能绕过图库</text>
+  <text x="300" y="92" font-size="9.5" fill="#64748b">本篇假定「多跳确实是主查询」</text>
+
+  <rect x="44" y="100" width="292" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="54" y="118" font-size="10.5" font-weight="bold" fill="#0f172a">关系型 + 闭包表 / 路径枚举</text>
+  <text x="54" y="136" font-size="9" fill="#334155">能撑：层级相对固定、写少读多的树 / DAG</text>
+  <text x="54" y="152" font-size="9" fill="#334155">组织树、分类树；深度大但不常变的关系</text>
+
+  <rect x="354" y="100" width="292" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="364" y="118" font-size="10.5" font-weight="bold" fill="#0f172a">Redis SET / ZSET 交集</text>
+  <text x="364" y="136" font-size="9" fill="#334155">能撑：一跳、二跳的固定形态</text>
+  <text x="364" y="152" font-size="9" fill="#334155">共同好友、关注交集；延迟极低</text>
+
+  <rect x="664" y="100" width="292" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="674" y="118" font-size="10.5" font-weight="bold" fill="#0f172a">列存 + 离线批算</text>
+  <text x="674" y="136" font-size="9" fill="#334155">能撑：离线的关系特征、批量图统计</text>
+  <text x="674" y="152" font-size="9" fill="#334155">T+1 的风控特征表</text>
+
+  <line x1="190" y1="170" x2="190" y2="182" stroke="#64748b" stroke-width="1.3" marker-end="url(#arwS)"/>
+  <line x1="500" y1="170" x2="500" y2="182" stroke="#64748b" stroke-width="1.3" marker-end="url(#arwS)"/>
+  <line x1="810" y1="170" x2="810" y2="182" stroke="#64748b" stroke-width="1.3" marker-end="url(#arwS)"/>
+
+  <rect x="44" y="184" width="904" height="70" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="56" y="204" font-size="11" font-weight="bold" fill="#991b1b">共同天花板：「在线 + 变长 + 深跳」三词同时出现，才进图库</text>
+  <text x="56" y="224" font-size="9.5" fill="#991b1b">固定形态、可预计算、浅层 → 用上面这些结构省掉一个组件</text>
+  <text x="56" y="242" font-size="9.5" fill="#991b1b">任意起点、变长到 4~6 跳、还要实时 → 才是图库的主场</text>
+  <text x="44" y="262" font-size="9.5" fill="#64748b">⚠ 关系频繁增删让闭包表维护爆炸、需要环检测或路径本身要返回时，表结构表达不动</text>
+
+  <rect x="30" y="278" width="940" height="22" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="294" font-size="10.5" font-weight="bold" fill="#475569">决策线（起点资产）</text>
+  <text x="396" y="294" font-size="10.5" font-weight="bold" fill="#475569">首选路线</text>
+  <text x="646" y="294" font-size="10.5" font-weight="bold" fill="#475569">理由</text>
+
+  <g>
+    <rect x="30" y="306" width="940" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <rect x="40" y="314" width="340" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+    <text x="48" y="332" font-size="10" font-weight="bold" fill="#1e3a8a">A · 规模亿级以下</text>
+    <text x="48" y="350" font-size="9" fill="#1d4ed8">要完整 ACID + 开箱图算法</text>
+    <rect x="390" y="314" width="240" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+    <text x="398" y="332" font-size="10" font-weight="bold" fill="#14532d">原生图存储族</text>
+    <text x="398" y="350" font-size="9" fill="#166534">本仓这个档位用 Neo4j</text>
+    <rect x="640" y="314" width="320" height="44" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="648" y="332" font-size="9" fill="#334155">单机可容纳时，专精族的遍历优势</text>
+    <text x="648" y="350" font-size="9" fill="#334155">+ 成熟算法直接兑现，运维最简</text>
+  </g>
+
+  <g>
+    <rect x="30" y="372" width="940" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <rect x="40" y="380" width="340" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+    <text x="48" y="398" font-size="10" font-weight="bold" fill="#1e3a8a">B · 已过单机容量</text>
+    <text x="48" y="416" font-size="9" fill="#1d4ed8">必须分布式与多副本</text>
+    <rect x="390" y="380" width="240" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+    <text x="398" y="398" font-size="10" font-weight="bold" fill="#14532d">KV / 列族之上的图库族</text>
+    <text x="398" y="416" font-size="9" fill="#166534">或选多模数据库里的图模块</text>
+    <rect x="640" y="380" width="320" height="44" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="648" y="398" font-size="9" fill="#334155">只有把邻接交给可水平扩展的后端</text>
+    <text x="648" y="416" font-size="9" fill="#334155">才谈得上规模；本仓未实测这两族</text>
+  </g>
+
+  <g>
+    <rect x="30" y="438" width="940" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <rect x="40" y="446" width="340" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+    <text x="48" y="464" font-size="10" font-weight="bold" fill="#1e3a8a">C · 已有大量 JVM 栈</text>
+    <text x="48" y="482" font-size="9" fill="#1d4ed8">想要 TinkerPop 生态</text>
+    <rect x="390" y="446" width="240" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+    <text x="398" y="464" font-size="10" font-weight="bold" fill="#14532d">可插拔后端的图库族</text>
+    <text x="398" y="482" font-size="9" fill="#166534">查询走 Gremlin，后端可换</text>
+    <rect x="640" y="446" width="320" height="44" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="648" y="464" font-size="9" fill="#334155">语言生态零门槛</text>
+    <text x="648" y="482" font-size="9" fill="#334155">后端复用已有 Cassandra / HBase</text>
+  </g>
+
+  <g>
+    <rect x="30" y="504" width="940" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <rect x="40" y="512" width="340" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+    <text x="48" y="530" font-size="10" font-weight="bold" fill="#1e3a8a">D · 只是偶尔跑一次全图算法</text>
+    <text x="48" y="548" font-size="9" fill="#1d4ed8">不是在线常驻查询</text>
+    <rect x="390" y="512" width="240" height="44" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.1"/>
+    <text x="398" y="530" font-size="10" font-weight="bold" fill="#92400e">图计算 / 离线引擎路线</text>
+    <text x="398" y="548" font-size="9" fill="#92400e">⚠ 别为「算一次」常驻在线图库</text>
+    <rect x="640" y="512" width="320" height="44" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="648" y="530" font-size="9" fill="#334155">全图算法在批处理里最划算</text>
+    <text x="648" y="548" font-size="9" fill="#334155">复用现有数据湖 / 数仓</text>
+  </g>
+
+  <g>
+    <rect x="30" y="570" width="940" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <rect x="40" y="578" width="340" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+    <text x="48" y="596" font-size="10" font-weight="bold" fill="#1e3a8a">E · 只想做关系型到图库</text>
+    <text x="48" y="614" font-size="9" fill="#1d4ed8">的同步副本</text>
+    <rect x="390" y="578" width="240" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+    <text x="398" y="596" font-size="10" font-weight="bold" fill="#14532d">CDC 派生副本架构</text>
+    <text x="398" y="614" font-size="9" fill="#166534">图库只做查询副本</text>
+    <rect x="640" y="578" width="320" height="44" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="648" y="596" font-size="9" fill="#334155">关系型继续做权威源</text>
+    <text x="648" y="614" font-size="9" fill="#334155">同步方式在存储选型篇第九节</text>
+  </g>
+
+  <rect x="30" y="638" width="940" height="46" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="44" y="656" font-size="9.5" fill="#334155">⚠ 「要不要上图库」（多跳是不是主查询）的准入判据不属于本篇，在存储选型篇第八节；那里也有 1~6 跳实测对照</text>
+  <text x="44" y="674" font-size="9.5" fill="#334155">⭐ 不想自己运维、要 HA 与在线备份 → 走托管图库；用社区版硬凑集群是 7.2 判据速查里点明的「通常不该选」</text>
+</svg>

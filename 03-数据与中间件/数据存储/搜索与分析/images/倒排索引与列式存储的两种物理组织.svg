@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 776" width="1000" height="776" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arwD" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="776" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两种物理组织：倒排索引与列式存储</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个目录里装着两个问题：怎么按词找到记录、怎么按列算出结论</text>
+
+  <rect x="30" y="72" width="460" height="566" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="40" y="84" width="440" height="32" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="260" y="105" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">倒排索引 · 检索族</text>
+
+  <rect x="40" y="124" width="440" height="126" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="50" y="142" font-size="9.5" font-weight="bold" fill="#1d4ed8">词项 -&gt; 文档 ID 列表（倒排表）</text>
+  <rect x="50" y="148" width="84" height="24" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="92" y="164" text-anchor="middle" font-size="9" fill="#1e3a8a">「搜索」</text>
+  <rect x="150" y="148" width="320" height="24" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="160" y="164" font-size="9" fill="#1e3a8a">文档 ID：1, 4, 7, 12, 30 …</text>
+  <line x1="134" y1="160" x2="148" y2="160" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arwD)"/>
+  <rect x="50" y="176" width="84" height="24" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="92" y="192" text-anchor="middle" font-size="9" fill="#1e3a8a">「引擎」</text>
+  <rect x="150" y="176" width="320" height="24" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="160" y="192" font-size="9" fill="#1e3a8a">文档 ID：2, 4, 15, 30 …</text>
+  <line x1="134" y1="188" x2="148" y2="188" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arwD)"/>
+  <rect x="50" y="204" width="84" height="24" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="92" y="220" text-anchor="middle" font-size="9" fill="#1e3a8a">「选型」</text>
+  <rect x="150" y="204" width="320" height="24" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="160" y="220" font-size="9" fill="#1e3a8a">文档 ID：4, 9, 21 …</text>
+  <line x1="134" y1="216" x2="148" y2="216" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arwD)"/>
+  <text x="50" y="240" font-size="9" fill="#64748b">词典 + 倒排表两份结构，合起来才是「按词找记录」</text>
+
+  <rect x="40" y="258" width="210" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.1"/>
+  <text x="50" y="276" font-size="10" font-weight="bold" fill="#92400e">原始 _source</text>
+  <text x="50" y="294" font-size="9" fill="#92400e">整篇文档原样再存一遍</text>
+  <text x="50" y="310" font-size="9" fill="#92400e">取回明细靠它</text>
+  <text x="50" y="326" font-size="9" fill="#92400e">实测里算进固定开销</text>
+
+  <rect x="260" y="258" width="220" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.1"/>
+  <text x="270" y="276" font-size="10" font-weight="bold" fill="#92400e">正排 doc_values</text>
+  <text x="270" y="294" font-size="9" fill="#92400e">聚合与排序要按列取值</text>
+  <text x="270" y="310" font-size="9" fill="#92400e">靠它把列的值再存一遍</text>
+  <text x="270" y="326" font-size="9" fill="#92400e">与倒排各自独立可关</text>
+
+  <rect x="40" y="342" width="440" height="172" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="50" y="360" font-size="9.5" font-weight="bold" fill="#14532d">本仓加性实测（3000 条相同数据 / 单分片 / 已合并到一段）</text>
+  <text x="50" y="378" font-size="9.5" fill="#166534">全量 store.size_in_bytes = 132827 B</text>
+  <text x="50" y="394" font-size="9.5" fill="#166534">关掉 doc_values（只剩倒排）= 120683 B</text>
+  <text x="50" y="410" font-size="9.5" fill="#166534">正排部分 12144 B，约 9.1%</text>
+  <text x="50" y="426" font-size="9.5" fill="#166534">关掉 index（只剩正排）= 109318 B</text>
+  <text x="50" y="442" font-size="9.5" fill="#166534">倒排部分 23509 B，约 17.7%</text>
+  <text x="50" y="458" font-size="9.5" fill="#166534">固定开销（_source、元数据等）= 97174 B</text>
+  <text x="50" y="478" font-size="9.5" font-weight="bold" fill="#14532d">交叉验算：120683 + 109318 − 97174 = 132827</text>
+  <text x="50" y="494" font-size="9" fill="#166534">与全量相等，所以两份结构是加性的独立开销</text>
+  <text x="50" y="508" font-size="9" fill="#166534">出处：索引原理篇第 6.1 节</text>
+
+  <rect x="40" y="522" width="210" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="50" y="540" font-size="10" font-weight="bold" fill="#14532d">天生擅长</text>
+  <text x="50" y="558" font-size="9" fill="#166534">分词匹配、相关度排序</text>
+  <text x="50" y="574" font-size="9" fill="#166534">高亮</text>
+  <text x="50" y="590" font-size="9" fill="#166534">任意条件自由组合过滤</text>
+  <text x="50" y="606" font-size="9" fill="#166534">倒排天然做集合求交并</text>
+
+  <rect x="260" y="522" width="220" height="96" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.1"/>
+  <text x="270" y="540" font-size="10" font-weight="bold" fill="#991b1b">天生吃亏</text>
+  <text x="270" y="558" font-size="9" fill="#991b1b">写入要为每个字段建索引</text>
+  <text x="270" y="574" font-size="9" fill="#991b1b">大宽表数值聚合要逐命中</text>
+  <text x="270" y="590" font-size="9" fill="#991b1b">文档跳读取值</text>
+  <text x="270" y="606" font-size="9" fill="#991b1b">还要维护 global ordinals</text>
+
+  <rect x="510" y="72" width="460" height="566" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="520" y="84" width="440" height="32" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="740" y="105" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">列式存储 · 分析族</text>
+
+  <rect x="520" y="124" width="440" height="126" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="530" y="142" font-size="9.5" font-weight="bold" fill="#1d4ed8">同一列的值连续存放 + 块级统计</text>
+  <rect x="530" y="150" width="100" height="58" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="580" y="168" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#334155">块 1</text>
+  <text x="580" y="184" text-anchor="middle" font-size="9" fill="#334155">同列的值连续</text>
+  <text x="580" y="200" text-anchor="middle" font-size="9" fill="#64748b">min / max</text>
+  <rect x="644" y="150" width="100" height="58" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="694" y="168" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#334155">块 2</text>
+  <text x="694" y="184" text-anchor="middle" font-size="9" fill="#334155">同列的值连续</text>
+  <text x="694" y="200" text-anchor="middle" font-size="9" fill="#64748b">min / max</text>
+  <rect x="758" y="150" width="100" height="58" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.1" stroke-dasharray="4 3"/>
+  <text x="808" y="168" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#991b1b">块 3</text>
+  <text x="808" y="184" text-anchor="middle" font-size="9" fill="#991b1b">区间不相干</text>
+  <text x="808" y="200" text-anchor="middle" font-size="9" fill="#991b1b">整块跳过</text>
+  <line x1="858" y1="179" x2="874" y2="179" stroke="#64748b" stroke-width="1.2" marker-end="url(#arwC)"/>
+  <rect x="876" y="150" width="80" height="58" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="916" y="172" text-anchor="middle" font-size="9" font-weight="bold" fill="#14532d">只读</text>
+  <text x="916" y="188" text-anchor="middle" font-size="9" font-weight="bold" fill="#14532d">块 1 与 2</text>
+  <text x="916" y="202" text-anchor="middle" font-size="9" fill="#166534">省 IO</text>
+  <text x="530" y="226" font-size="9" fill="#334155">块级统计（示意）：min = 20 max = 35</text>
+  <text x="530" y="242" font-size="9" fill="#334155">区间落在统计之外的块连值都不读</text>
+
+  <rect x="520" y="258" width="440" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.1"/>
+  <text x="530" y="276" font-size="10" font-weight="bold" fill="#92400e">配套结构：排序键 / 分区 / 跳数索引</text>
+  <text x="530" y="294" font-size="9" fill="#92400e">块级统计 + 排序键也能扛一部分条件过滤</text>
+  <text x="530" y="310" font-size="9" fill="#92400e">倒排 / 全文索引在这一族里是可选附加物</text>
+  <text x="530" y="326" font-size="9" fill="#92400e">⚠ 叠上去就是第二份开销，先问这份开销谁付</text>
+
+  <rect x="520" y="342" width="440" height="172" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="530" y="360" font-size="10" font-weight="bold" fill="#0f172a">这一族本仓未实测</text>
+  <text x="530" y="380" font-size="9" fill="#334155">正文只给结构与判据，没有体积与压缩比读数</text>
+  <text x="530" y="396" font-size="9" fill="#334155">所以这块不画数字，左侧那组数只属于倒排族</text>
+  <text x="530" y="416" font-size="9" fill="#334155">⚠ 列存的压缩比取决于表设计与数据分布</text>
+  <text x="530" y="432" font-size="9" fill="#334155">同值多不多、排序键怎么选、列的基数</text>
+  <text x="530" y="448" font-size="9" fill="#334155">同版本不同表设计，结果可以差很远</text>
+  <text x="530" y="468" font-size="9" fill="#334155">⭐ 膨胀率与压缩比是必须自己 POC 的一项</text>
+  <text x="530" y="484" font-size="9" fill="#334155">不是问厂商「你们压缩比多少」</text>
+  <text x="530" y="500" font-size="9" fill="#334155">口径见第二节第 ⑤ 个数与第六节 6.2</text>
+
+  <rect x="520" y="522" width="210" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="530" y="540" font-size="10" font-weight="bold" fill="#14532d">天生擅长</text>
+  <text x="530" y="558" font-size="9" fill="#166534">按列扫描、GROUP BY</text>
+  <text x="530" y="574" font-size="9" fill="#166534">聚合、高压缩</text>
+  <text x="530" y="590" font-size="9" fill="#166534">区间裁剪</text>
+  <text x="530" y="606" font-size="9" fill="#166534">读一列就是读一段连续字节</text>
+
+  <rect x="740" y="522" width="220" height="96" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.1"/>
+  <text x="750" y="540" font-size="10" font-weight="bold" fill="#991b1b">天生吃亏</text>
+  <text x="750" y="558" font-size="9" fill="#991b1b">没有词到文档的映射</text>
+  <text x="750" y="574" font-size="9" fill="#991b1b">全文匹配退化成扫描</text>
+  <text x="750" y="590" font-size="9" fill="#991b1b">整行读写代价高</text>
+  <text x="750" y="606" font-size="9" fill="#991b1b">行级高频更新要重写 part</text>
+
+  <rect x="30" y="646" width="940" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="44" y="666" font-size="9.5" fill="#334155">⚠ 读数边界必须一起抄走：那是小文档、单分片、已合并到一段下的比例，_source 占比被放得很大</text>
+  <text x="44" y="684" font-size="9.5" fill="#334155">真实业务里文档更大、字段更多，各部分占比显著不同</text>
+  <text x="44" y="702" font-size="9.5" fill="#334155">⭐ 要记住的不是这几个数，而是「两套结构各自都是独立开销，都能被单独关掉」</text>
+  <text x="44" y="720" font-size="9.5" fill="#334155">越界能力（某某也支持全文 / 聚合）就是叠在原结构上的第二份开销，评估时先问这份开销谁付</text>
+  <text x="44" y="738" font-size="9.5" fill="#334155">口径：左面板数字来自本仓 Elasticsearch 容器实测；右面板是结构示意，该族本仓未实测</text>
+</svg>
