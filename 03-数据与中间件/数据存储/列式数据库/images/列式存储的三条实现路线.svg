@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">列式存储的三条实现路线：按「数据与元数据归谁持有」分家</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">差别不在性能，在所有权与退路　⚠️ 只有路线一（ClickHouse）在本仓做过容器实测</text>
+
+  <rect x="30" y="72" width="304" height="36" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="182" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">路线一　库内列存引擎</text>
+  <rect x="354" y="72" width="304" height="36" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="506" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">路线二　湖上列存格式 + 外部引擎</text>
+  <rect x="678" y="72" width="292" height="36" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="824" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">路线三　托管云数仓</text>
+
+  <rect x="30" y="116" width="304" height="340" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="44" y="140" font-size="11.5" font-weight="bold" fill="#0f172a">代表</text>
+  <text x="44" y="158" font-size="11" fill="#475569">ClickHouse（MergeTree 系）</text>
+  <text x="44" y="174" font-size="11" fill="#475569">Doris / StarRocks（MPP 系）</text>
+  <text x="44" y="190" font-size="11" fill="#475569">Druid / Pinot（实时 OLAP 系）</text>
+  <line x1="44" y1="202" x2="320" y2="202" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="44" y="222" font-size="11.5" font-weight="bold" fill="#0f172a">数据归谁</text>
+  <text x="44" y="240" font-size="11" fill="#475569">引擎自己管，落在本地盘</text>
+  <text x="44" y="256" font-size="11" fill="#475569">私有 part / segment 布局</text>
+  <text x="44" y="272" font-size="11.5" font-weight="bold" fill="#0f172a">元数据归谁</text>
+  <text x="44" y="290" font-size="11" fill="#475569">引擎自己管（配置 + Keeper</text>
+  <text x="44" y="306" font-size="11" fill="#475569">或 FE / 中心 catalog）</text>
+  <line x1="44" y1="318" x2="320" y2="318" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="44" y="338" font-size="11.5" font-weight="bold" fill="#1d4ed8">退路</text>
+  <text x="44" y="356" font-size="11" fill="#475569">⚠️ 弱：要迁库才能换引擎</text>
+  <text x="44" y="376" font-size="11.5" font-weight="bold" fill="#1d4ed8">成本</text>
+  <text x="44" y="394" font-size="11" fill="#475569">按机器与盘，人力另计</text>
+
+  <rect x="354" y="116" width="304" height="340" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="368" y="140" font-size="11.5" font-weight="bold" fill="#0f172a">代表</text>
+  <text x="368" y="158" font-size="11" fill="#475569">Parquet / ORC 文件</text>
+  <text x="368" y="174" font-size="11" fill="#475569">+ Iceberg / Hudi / Paimon 表格式</text>
+  <text x="368" y="190" font-size="11" fill="#475569">+ Trino / Spark / DuckDB 读</text>
+  <line x1="368" y1="202" x2="644" y2="202" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="368" y="222" font-size="11.5" font-weight="bold" fill="#0f172a">数据归谁</text>
+  <text x="368" y="240" font-size="11" fill="#475569">对象存储，开放列式文件格式</text>
+  <text x="368" y="256" font-size="11" fill="#475569">⭐ 不属于任何一个引擎</text>
+  <text x="368" y="272" font-size="11.5" font-weight="bold" fill="#0f172a">元数据归谁</text>
+  <text x="368" y="290" font-size="11" fill="#475569">表格式（快照 / schema 演进</text>
+  <text x="368" y="306" font-size="11" fill="#475569">/ time travel）+ catalog</text>
+  <line x1="368" y1="318" x2="644" y2="318" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="368" y="338" font-size="11.5" font-weight="bold" fill="#166534">退路</text>
+  <text x="368" y="356" font-size="11" fill="#475569">⭐ 最强：换引擎不用搬数据</text>
+  <text x="368" y="376" font-size="11.5" font-weight="bold" fill="#166534">成本</text>
+  <text x="368" y="394" font-size="11" fill="#475569">存储与计算各自付费</text>
+
+  <rect x="678" y="116" width="292" height="340" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="692" y="140" font-size="11.5" font-weight="bold" fill="#0f172a">代表</text>
+  <text x="692" y="158" font-size="11" fill="#475569">Snowflake / BigQuery</text>
+  <text x="692" y="174" font-size="11" fill="#475569">Redshift，与各云自建等价物</text>
+  <line x1="692" y1="190" x2="956" y2="190" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="692" y="210" font-size="11.5" font-weight="bold" fill="#0f172a">数据归谁</text>
+  <text x="692" y="228" font-size="11" fill="#475569">托管在云内，布局多为私有</text>
+  <text x="692" y="244" font-size="11" fill="#475569">（通常提供导出通道）</text>
+  <text x="692" y="260" font-size="11.5" font-weight="bold" fill="#0f172a">元数据归谁</text>
+  <text x="692" y="278" font-size="11" fill="#475569">全托管：catalog、权限、</text>
+  <text x="692" y="294" font-size="11" fill="#475569">计费、优化都归厂商</text>
+  <line x1="692" y1="306" x2="956" y2="306" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="692" y="326" font-size="11.5" font-weight="bold" fill="#991b1b">退路</text>
+  <text x="692" y="344" font-size="11" fill="#475569">中：受导出能力与条款约束</text>
+  <text x="692" y="364" font-size="11.5" font-weight="bold" fill="#991b1b">成本</text>
+  <text x="692" y="382" font-size="11" fill="#475569">按用量计费，账单随查询走</text>
+  <text x="692" y="398" font-size="11" fill="#991b1b">⚠️ 口径要用自己的查询估</text>
+  <text x="692" y="440" font-size="11" fill="#64748b">本仓未对路线二、三做任何实测</text>
+
+  <rect x="30" y="466" width="940" height="112" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="46" y="490" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 判据：三条路线的分界线是「所有权」，不是「快不快」</text>
+  <text x="46" y="512" font-size="11.5" fill="#334155">归引擎 → 选型等于选引擎，之后每次换栈都是一次数据迁移；归湖 → 数据和格式先定，计算层可以并存多家；归云厂商 → 用账单换掉运维，但成本模型必须按自己的查询口径先算。</text>
+  <text x="46" y="534" font-size="11.5" fill="#334155">同一个业务里三条路线常常<b>同时存在</b>：湖上放明细、库内放高频聚合、云托管放弹性报表 —— 所以真正要回答的是「这份数据该落在哪条路线上」。</text>
+  <text x="46" y="556" font-size="11.5" fill="#7f1d1d">⚠️ 别把宽列数据库（HBase / Cassandra）算进这三条：它的「列族」是分布式 KV 的写入单位，与列式分析的按列扫描不是一回事，见 NoSQL选型对比.md。</text>
+</svg>

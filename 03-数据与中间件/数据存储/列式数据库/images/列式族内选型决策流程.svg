@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mkR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="mkG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="mkO" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">列式族内选型决策流程：五问按「形态 → 所有权 → 更新 → JOIN → 运维」顺序问</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">顺序不能换：形态不对后面都白搭；所有权决定后面三问还有没有选择权　⚠️ 只有第一列的 ClickHouse 一栏是本仓容器实测</text>
+
+  <rect x="60" y="76" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="98" font-size="12" font-weight="bold" fill="#1e3a8a">1) 形态：查询是「按列扫描 + 聚合」还是「按行取明细」？</text>
+  <text x="76" y="118" font-size="11" fill="#475569">列存的收益全在「只读需要的列 + 整块压缩」，点查吃不到</text>
+  <line x1="500" y1="103" x2="552" y2="103" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mkR)"/>
+  <text x="508" y="96" font-size="11" fill="#991b1b">按行</text>
+  <rect x="556" y="76" width="404" height="54" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="572" y="98" font-size="12" font-weight="bold" fill="#991b1b">⛔ 不出行存这一族</text>
+  <text x="572" y="118" font-size="11" fill="#7f1d1d">留在 MySQL / KV / 搜索引擎；「分析慢」先加索引与缓存</text>
+
+  <line x1="280" y1="130" x2="280" y2="150" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkB)"/>
+  <text x="290" y="146" font-size="11" fill="#1d4ed8">扫描 + 聚合</text>
+
+  <rect x="60" y="152" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="174" font-size="12" font-weight="bold" fill="#1e3a8a">2) 所有权：数据与元数据你想归谁？</text>
+  <text x="76" y="194" font-size="11" fill="#475569">归引擎 = 迁库才能换引擎；归湖 = 换引擎只改查询侧；归云 = 换运维换账单</text>
+  <line x1="500" y1="179" x2="552" y2="179" stroke="#b45309" stroke-width="1.6" marker-end="url(#mkO)"/>
+  <text x="508" y="172" font-size="11" fill="#92400e">要多引擎</text>
+  <rect x="556" y="152" width="404" height="54" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.4"/>
+  <text x="572" y="174" font-size="12" font-weight="bold" fill="#92400e">→ 路线二：湖上列存格式 + 外部引擎</text>
+  <text x="572" y="194" font-size="11" fill="#78350f">Parquet / ORC + 表格式，引擎可换；代价是并发与延迟</text>
+
+  <line x1="280" y1="206" x2="280" y2="226" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkB)"/>
+  <text x="290" y="222" font-size="11" fill="#1d4ed8">接受归引擎</text>
+
+  <rect x="60" y="228" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="250" font-size="12" font-weight="bold" fill="#1e3a8a">3) 更新语义：要改历史 / 按主键 upsert / 及时删单行吗？</text>
+  <text x="76" y="270" font-size="11" fill="#475569">各引擎在这条光谱上的差别，比它们的跑分差别重要得多</text>
+  <line x1="500" y1="255" x2="552" y2="255" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mkR)"/>
+  <text x="508" y="248" font-size="11" fill="#991b1b">要，且频繁</text>
+  <rect x="556" y="228" width="404" height="54" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="572" y="250" font-size="12" font-weight="bold" fill="#991b1b">⛔ 别选「只追加」派</text>
+  <text x="572" y="270" font-size="11" fill="#7f1d1d">异步重写整块代价高（实测 mutation 不是行级更新）</text>
+
+  <line x1="280" y1="282" x2="280" y2="302" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkB)"/>
+  <text x="290" y="298" font-size="11" fill="#1d4ed8">追加 / 少量覆盖</text>
+
+  <rect x="60" y="304" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="326" font-size="12" font-weight="bold" fill="#1e3a8a">4) JOIN 形态：大表 JOIN 大表是常态吗？</text>
+  <text x="76" y="346" font-size="11" fill="#475569">单表宽表聚合 / 多表星型关联，对引擎的要求是两套</text>
+  <line x1="500" y1="331" x2="552" y2="331" stroke="#b45309" stroke-width="1.6" marker-end="url(#mkO)"/>
+  <text x="508" y="324" font-size="11" fill="#92400e">是</text>
+  <rect x="556" y="304" width="404" height="54" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.4"/>
+  <text x="572" y="326" font-size="12" font-weight="bold" fill="#92400e">⚠️ 看 MPP 系（Doris / StarRocks）</text>
+  <text x="572" y="346" font-size="11" fill="#78350f">本仓未实测；或把模型改宽、用字典表规避 JOIN</text>
+
+  <line x1="280" y1="358" x2="280" y2="378" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkB)"/>
+  <text x="290" y="374" font-size="11" fill="#1d4ed8">否</text>
+
+  <rect x="60" y="380" width="440" height="54" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="402" font-size="12" font-weight="bold" fill="#1e3a8a">5) 运维：团队接得住几套自建组件？</text>
+  <text x="76" y="422" font-size="11" fill="#475569">建表三要素、合并、副本、元数据、扩容 —— 每一项都是长期人力</text>
+  <line x1="500" y1="407" x2="552" y2="407" stroke="#b45309" stroke-width="1.6" marker-end="url(#mkO)"/>
+  <text x="508" y="400" font-size="11" fill="#92400e">接不住</text>
+  <rect x="556" y="380" width="404" height="54" rx="6" fill="#fffbeb" stroke="#b45309" stroke-width="1.4"/>
+  <text x="572" y="402" font-size="12" font-weight="bold" fill="#92400e">→ 路线三：托管云数仓</text>
+  <text x="572" y="422" font-size="11" fill="#78350f">用账单换运维；退路要单独评估（格式与导出）</text>
+
+  <line x1="280" y1="434" x2="280" y2="454" stroke="#16a34a" stroke-width="1.8" marker-end="url(#mkG)"/>
+  <text x="290" y="450" font-size="11" fill="#166534">接得住</text>
+
+  <rect x="60" y="456" width="900" height="68" rx="6" fill="#ecfdf5" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="80" y="480" font-size="12.5" font-weight="bold" fill="#166534">✅ 路线一：库内列存引擎 —— 只追加 + 单表宽表聚合 + 有人运维，先测本仓实测过的 ClickHouse</text>
+  <text x="80" y="500" font-size="11" fill="#14532d">要实时明细与高并发点查混在一起时再看 Druid / Pinot 那一支；上线前过一遍本文第十节的落地检查单。</text>
+  <text x="80" y="518" font-size="11" fill="#14532d">缺任何一条判据就回到对应那一问重走；「该不该用列存」本身归 存储选型.md，不在本图范围内。</text>
+
+  <rect x="60" y="540" width="900" height="56" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="80" y="562" font-size="11.5" font-weight="bold" fill="#0f172a">⚠️ 三个「不要用本图回答」的问题</text>
+  <text x="80" y="582" font-size="11" fill="#475569">① 该不该上列存 → 存储选型.md；② 检索 vs 分析的需求轴横评 → 搜索与分析选型对比.md；③ 单产品深度取舍 → ClickHouse/选型对比与落地案例.md</text>
+</svg>

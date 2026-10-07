@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkT1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mkT2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="mkT3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">同一条大宽表聚合查询，在三条路线里的调用时序</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">⚠️ 只有左栏（ClickHouse）有本仓实测读数；中栏、右栏是按公开架构整理的步骤时序，本仓未实测</text>
+
+  <rect x="32" y="68" width="300" height="30" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="182" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">路线一　库内列存引擎（✅ 本仓实测）</text>
+  <rect x="356" y="68" width="300" height="30" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="506" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#166534">路线二　湖上列存 + 外部引擎（未实测）</text>
+  <rect x="680" y="68" width="290" height="30" rx="5" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="825" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">路线三　托管云数仓（未实测）</text>
+
+  <rect x="32" y="110" width="300" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="44" y="130" font-size="11" font-weight="bold" fill="#0f172a">① 解析与规划</text>
+  <text x="44" y="150" font-size="10.5" fill="#475569">客户端发 SQL，服务端解析、</text>
+  <rect x="356" y="110" width="300" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="368" y="130" font-size="11" font-weight="bold" fill="#0f172a">① 要当前快照</text>
+  <text x="368" y="150" font-size="10.5" fill="#475569">引擎向 catalog 读表格式的元数据，</text>
+  <rect x="680" y="110" width="290" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="692" y="130" font-size="11" font-weight="bold" fill="#0f172a">① 提交与排队</text>
+  <text x="692" y="150" font-size="10.5" fill="#475569">排队与计费在入口就发生，</text>
+
+  <line x1="182" y1="162" x2="182" y2="178" stroke="#2563eb" stroke-width="1.5" marker-end="url(#mkT1)"/>
+  <line x1="506" y1="162" x2="506" y2="178" stroke="#16a34a" stroke-width="1.5" marker-end="url(#mkT2)"/>
+  <line x1="825" y1="162" x2="825" y2="178" stroke="#dc2626" stroke-width="1.5" marker-end="url(#mkT3)"/>
+
+  <rect x="32" y="180" width="300" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="44" y="200" font-size="11" font-weight="bold" fill="#0f172a">② 两级裁剪</text>
+  <text x="44" y="220" font-size="10.5" fill="#475569">按分区键整块跳过 part，再靠稀疏</text>
+  <rect x="356" y="180" width="300" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="368" y="200" font-size="11" font-weight="bold" fill="#0f172a">② 裁文件清单</text>
+  <text x="368" y="220" font-size="10.5" fill="#475569">读 manifest 拿文件列表，按分区</text>
+  <rect x="680" y="180" width="290" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="692" y="200" font-size="11" font-weight="bold" fill="#0f172a">② 拉起计算</text>
+  <text x="692" y="220" font-size="10.5" fill="#475569">按需起集群，冷启动与否决定</text>
+
+  <line x1="182" y1="232" x2="182" y2="248" stroke="#2563eb" stroke-width="1.5" marker-end="url(#mkT1)"/>
+  <line x1="506" y1="232" x2="506" y2="248" stroke="#16a34a" stroke-width="1.5" marker-end="url(#mkT2)"/>
+  <line x1="825" y1="232" x2="825" y2="248" stroke="#dc2626" stroke-width="1.5" marker-end="url(#mkT3)"/>
+
+  <rect x="32" y="250" width="300" height="52" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="44" y="270" font-size="11" font-weight="bold" fill="#1e3a8a">③ 只读需要的列　⭐ 时间花在这</text>
+  <text x="44" y="290" font-size="10.5" fill="#1e3a8a">按列打开数据文件，块级 min/max</text>
+  <rect x="356" y="250" width="300" height="52" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="368" y="270" font-size="11" font-weight="bold" fill="#166534">③ 从对象存储取字节　⭐ 瓶颈</text>
+  <text x="368" y="290" font-size="10.5" fill="#166534">拉相关 row group / page，网络与</text>
+  <rect x="680" y="250" width="290" height="52" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="692" y="270" font-size="11" font-weight="bold" fill="#991b1b">① ② 之和　⭐ 时间花在这</text>
+  <text x="692" y="290" font-size="10.5" fill="#991b1b">排队 + 冷启动；命中结果缓存则</text>
+
+  <line x1="182" y1="302" x2="182" y2="318" stroke="#2563eb" stroke-width="1.5" marker-end="url(#mkT1)"/>
+  <line x1="506" y1="302" x2="506" y2="318" stroke="#16a34a" stroke-width="1.5" marker-end="url(#mkT2)"/>
+  <line x1="825" y1="302" x2="825" y2="318" stroke="#dc2626" stroke-width="1.5" marker-end="url(#mkT3)"/>
+
+  <rect x="32" y="320" width="300" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="44" y="340" font-size="11" font-weight="bold" fill="#0f172a">④ 向量化执行聚合</text>
+  <text x="44" y="360" font-size="10.5" fill="#475569">在本机内存里完成，必要时落盘</text>
+  <rect x="356" y="320" width="300" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="368" y="340" font-size="11" font-weight="bold" fill="#0f172a">④ 解码列页并聚合</text>
+  <text x="368" y="360" font-size="10.5" fill="#475569">解码与计算在引擎进程里，数据</text>
+  <rect x="680" y="320" width="290" height="52" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="692" y="340" font-size="11" font-weight="bold" fill="#0f172a">③ 读托管存储并聚合</text>
+  <text x="692" y="360" font-size="10.5" fill="#475569">节点上已是列式布局，执行与</text>
+
+  <line x1="182" y1="372" x2="182" y2="388" stroke="#2563eb" stroke-width="1.5" marker-end="url(#mkT1)"/>
+  <line x1="506" y1="372" x2="506" y2="388" stroke="#16a34a" stroke-width="1.5" marker-end="url(#mkT2)"/>
+  <line x1="825" y1="372" x2="825" y2="388" stroke="#dc2626" stroke-width="1.5" marker-end="url(#mkT3)"/>
+
+  <rect x="32" y="390" width="300" height="46" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="44" y="410" font-size="11" font-weight="bold" fill="#0f172a">⑤ 返回结果</text>
+  <text x="44" y="428" font-size="10.5" fill="#475569">实测：主键命中 14~20 ms，全扫 37~147 ms</text>
+  <rect x="356" y="390" width="300" height="46" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="368" y="410" font-size="11" font-weight="bold" fill="#0f172a">⑤ 返回结果</text>
+  <text x="368" y="428" font-size="10.5" fill="#475569">⚠️ 未实测：步骤 ③ 的延迟与 listing 定上限</text>
+  <rect x="680" y="390" width="290" height="46" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="692" y="410" font-size="11" font-weight="bold" fill="#0f172a">④ 返回结果 + 用量账单</text>
+  <text x="692" y="428" font-size="10.5" fill="#475569">⚠️ 未实测：排队时长各家不同</text>
+
+  <rect x="32" y="450" width="938" height="150" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="48" y="474" font-size="12.5" font-weight="bold" fill="#0f172a">⭐ 三条路线的时间花在<b>不同步骤</b>上，所以总耗时相同也不代表是同一回事</text>
+  <text x="48" y="496" font-size="11.5" fill="#334155">路线一花在「扫描与解压列」（③④）→ 扩容方向是加盘、加分片、改排序键；路线二花在「从对象存储取字节」（③）</text>
+  <text x="48" y="516" font-size="11.5" fill="#334155">→ 扩容方向是文件切分与布局、缓存层；路线三花在「排队与冷启动」（①②）→ 优化方向是常驻仓库、结果缓存与并发。</text>
+  <text x="48" y="540" font-size="11.5" font-weight="bold" fill="#7c2d12">⚠️ POC 必须分段计时：只记一个总耗时，得到的结论无法迁移，还会把瓶颈指错方向。</text>
+  <text x="48" y="562" font-size="11" fill="#475569">实测锚点只属于本仓这一套表结构与机器：1000 万行 events 表按主键命中读 81,920 行（= 10 × 8192 granule），耗时区间 14~20 ms。</text>
+  <text x="48" y="582" font-size="11" fill="#475569">出处见 索引原理与查询优化.md 第五节与 性能调优与基准测试.md；时序类读数一律带波动区间，两次运行的数字不可混用。</text>
+</svg>
