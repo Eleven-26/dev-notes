@@ -47,27 +47,102 @@ disjoint sets of keys.
 
 ## 二、内部结构长什么样？（两代分开看）
 
-**本节要点**：**2024 年的 Go 1.24 把 sync.Map 整个重写了一次**。本仓库既有笔记 [并发同步原语.md](并发同步原语.md) 第一节讲的"read + dirty 双 map"，是 **Go 1.9 – 1.23** 的经典实现；而**本机实测用的 go1.26.8 已经是无锁哈希前缀树**。两代都要看懂 —— 经典版是绝大多数资料与"为什么读快 / 为什么会退化"的答案，现行版是你现在真正在跑的代码。
+**本节要点**：**Go 1.26 把 sync.Map 整个重写了一次**。本仓库既有笔记 [并发同步原语.md](并发同步原语.md) 第一节讲的"read + dirty 双 map"，是 **Go 1.9 – 1.25** 的经典实现；而**本机实测用的 go1.26.8 已经是无锁哈希前缀树**。两代都要看懂 —— 经典版是绝大多数资料与"为什么读快 / 为什么会退化"的答案，现行版是你现在真正在跑的代码。
 
-### 2.1 经典版（Go 1.9 – 1.23）：read / dirty 双 map + miss + 墓碑
+> ⚠️ **版本边界是容器里逐版本 grep 源码定的，不是抄博客的**（网上大量文章把这次重写记在 Go 1.24 名下，那是 `internal/sync.HashTrieMap` **进标准库**的版本，不是 `sync.Map` **换上它**的版本）：
+>
+> ```bash
+> # 用 GOTOOLCHAIN 让同一台机器装多个工具链，逐版本看 sync/map.go 里到底是哪套字段
+> docker run --rm -e GOPROXY=https://goproxy.cn,direct golang:1.26-alpine \
+>   sh -c 'for v in go1.24.0 go1.25.8 go1.26.0; do R=$(GOTOOLCHAIN=$v go env GOROOT); \
+>   echo "$v: read=$(grep -c "read atomic.Pointer" $R/src/sync/map.go) trie=$(grep -c "isync.HashTrieMap" $R/src/sync/map.go)"; done'
+> ```
+>
+> ```text
+> go1.24.0: read=1 trie=0
+> go1.25.8: read=1 trie=0
+> go1.26.0: read=0 trie=1
+> ```
+>
+> `internal/sync/hashtriemap.go` 这个文件 **go1.24.0 就已经存在**（`ls $GOROOT/src/internal/sync/` 可见），
+> 但直到 go1.26.0，`sync.Map` 才把实现整体委托给它。⚠️ 顺带一条工具链口径：
+> **下载 toolchain 时不能设 `GOSUMDB=off`**（会报 `verifying module: checksum database disabled`），
+> 只设 `GOPROXY=https://goproxy.cn,direct` 即可，校验和走代理自带的 sumdb。
 
-结构骨架（**该版历史实现通称，go1.26.8 已无此代码，故未在本容器复核**；各小版本字段类型略有出入）：
+### 2.1 经典版（Go 1.9 – 1.25）：read / dirty 双 map + miss + 墓碑
 
-```text
+结构骨架（**下面几段原样复制自容器 `golang:1.26-alpine` 以 `GOTOOLCHAIN=go1.25.8` 取到的 `/usr/local/go/src/sync/map.go`**，注释一字未删——这是最后一个还用这套双 map 结构的版本）。
+行文沿用资料里的常见简称 `miss` / `Entry`，**源码真名是 `misses` / `entry`**：
+
+```go
 type Map struct {
-    mu     Mutex           // 保护 dirty / miss 的写侧
-    read   atomic.Value    // 装 readOnly，读侧无锁原子取
-    dirty  map[any]*Entry  // 可写副本，未命中 read 时才写它
-    miss   int             // read 未命中累计次数
+	_ noCopy
+
+	mu Mutex
+
+	// read contains the portion of the map's contents that are safe for
+	// concurrent access (with or without mu held).
+	//
+	// The read field itself is always safe to load, but must only be stored with
+	// mu held.
+	//
+	// Entries stored in read may be updated concurrently without mu, but updating
+	// a previously-expunged entry requires that the entry be copied to the dirty
+	// map and unexpunged with mu held.
+	read atomic.Pointer[readOnly]
+
+	// dirty contains the portion of the map's contents that require mu to be
+	// held. To ensure that the dirty map can be promoted to the read map quickly,
+	// it also includes all of the non-expunged entries in the read map.
+	//
+	// Expunged entries are not stored in the dirty map. An expunged entry in the
+	// clean map must be unexpunged and added to the dirty map before a new value
+	// can be stored to it.
+	//
+	// If the dirty map is nil, the next write to the map will initialize it by
+	// making a shallow copy of the clean map, omitting stale entries.
+	dirty map[any]*entry
+
+	// misses counts the number of loads since the read map was last updated that
+	// needed to lock mu to determine whether the key was present.
+	//
+	// Once enough misses have occurred to cover the cost of copying the dirty
+	// map, the dirty map will be promoted to the read map (in the unamended
+	// state) and the next store to the map will make a new dirty copy.
+	misses int
 }
 
 type readOnly struct {
-    m       map[any]*Entry // 只读快照
-    amended bool           // dirty 里有 read 里没有的新键
+	m       map[any]*entry
+	amended bool // true if the dirty map contains some key not in m.
 }
 
-type Entry struct { ... }  // 值槽；nil / expunged 哨兵 = 墓碑（键已删 / 待提升）
+// expunged is an arbitrary pointer that marks entries which have been deleted
+// from the dirty map.
+var expunged = new(any)
+
+// An entry is a slot in the map corresponding to a particular key.
+type entry struct {
+	// p points to the interface{} value stored for the entry.
+	//
+	// If p == nil, the entry has been deleted, and either m.dirty == nil or
+	// m.dirty[key] is e.
+	//
+	// If p == expunged, the entry has been deleted, m.dirty != nil, and the entry
+	// is missing from m.dirty.
+	//
+	// Otherwise, the entry is valid and recorded in m.read.m[key] and, if m.dirty
+	// != nil, in m.dirty[key].
+	//
+	// An entry can be deleted by atomic replacement with nil: when m.dirty is
+	// next created, it will atomically replace nil with expunged and leave
+	// m.dirty[key] unset.
+	p atomic.Pointer[any]
+}
 ```
+
+三个要点从这份源码里直接读得出来：`read` 是**原子指针**（所以读侧不需要锁）、`dirty` 是**普通 map**（所以写侧要 `mu`）、
+`misses` 只是**一个 int 计数**而不是数据结构；"墓碑"也不是特殊键，而是 `entry.p` 取 `nil` / `expunged` 两个哨兵值。
 
 ![sync.Map 经典版形态：sync.Map 里挂 read（绿色只读快照）与 dirty（蓝色可写副本）两张 map，中间是 miss 计数；dirty 攒够就把整张提升为 read、dirty 置 nil，下次写又从 read 重建](images/syncMap-read-dirty双map结构.svg)
 
@@ -77,7 +152,7 @@ type Entry struct { ... }  // 值槽；nil / expunged 哨兵 = 墓碑（键已�
 - 右边蓝色 `dirty` 是可写副本，`Store`/`Delete` 未命中 read 时**持 mu 写它**；`Entry` 值为 nil 充当"键已被删"的**墓碑**；
 - 中间黄色 `miss` 累计 read 未命中次数，红框 `提升（promote）` 在 `miss ≥ len(dirty)` 时触发：**dirty 变新 read、miss 归零、dirty 置 nil**；随后第一次写发现 dirty=nil，又**从 read 整表重建 dirty** —— 这一步就是键集翻转时抖动的来源。
 
-### 2.2 现行版（Go 1.24+，含本机 go1.26.8）：无锁哈希前缀树
+### 2.2 现行版（Go 1.26+，含本机 go1.26.8）：无锁哈希前缀树
 
 go1.26.8 的 `sync.Map` 只剩一个字段，把活全交给 `internal/sync.HashTrieMap`。`sync/map.go` 里 `Map` 结构原样：
 
@@ -137,7 +212,7 @@ const (
 
 ### 2.3 两代对照：为什么 Go 要重写
 
-| 维度 | 经典版 read/dirty（≤1.23） | 现行版哈希前缀树（1.24+） |
+| 维度 | 经典版 read/dirty（≤1.25） | 现行版哈希前缀树（1.26+） |
 |---|---|---|
 | 读 | 命中 read 无锁；未命中加锁看 dirty | 逐层 `atomic.Pointer.Load`，全程无锁 |
 | 写 | 写 dirty；提升后 dirty=nil，再写要**整表重建** | CAS 换槽 / 锁单节点，**无整表重建** |
@@ -145,13 +220,13 @@ const (
 | 键集翻转 | **退化明显**（反复重建 dirty） | 仍要新建 entry/indirect，**写密集偏慢但无"整表"抖动** |
 | Range | 需处理 read+dirty 两份 | 直接遍历树（见第 3.4 节：语义不变） |
 
-> ⚠️ 结论：**"sync.Map 内部是 read/dirty 双 map"这句话，对 Go ≤1.23 成立、对 go1.26 已不成立**。选型判据（读多写少 + 键稳定）两代一致，但"退化"的具体机制不同。
+> ⚠️ 结论：**"sync.Map 内部是 read/dirty 双 map"这句话，对 Go ≤1.25 成立、对 go1.26 已不成立**。选型判据（读多写少 + 键稳定）两代一致，但"退化"的具体机制不同。
 
 ### 2.4 Load 的查找顺序（经典版三跳）
 
 ![经典版 Load 流程：① 原子读 read，命中且 Entry 非 nil 直接返回（无锁）；② 未命中则 miss++，miss≥len(dirty) 触发提升；③ 否则加 mu 去 dirty 找](images/syncMap-Load查找顺序.svg)
 
-**图怎么读**：这张图描述**经典版**（≤1.23）的读路径 —— 只有 read 未命中时才会碰到 `miss++` 和加锁，这正是"读多写少时几乎无锁"的由来。图下半部分对照写了 **go1.26.8 现行的 Load**：`root.Load()` 起、每层 `children[(hash>>shift)&15].Load()`、空槽即未命中、entry 走 overflow 链比 key，**没有 miss 计数也没有整表提升**。
+**图怎么读**：这张图描述**经典版**（≤1.25）的读路径 —— 只有 read 未命中时才会碰到 `miss++` 和加锁，这正是"读多写少时几乎无锁"的由来。图下半部分对照写了 **go1.26.8 现行的 Load**：`root.Load()` 起、每层 `children[(hash>>shift)&15].Load()`、空槽即未命中、entry 走 overflow 链比 key，**没有 miss 计数也没有整表提升**。
 
 ---
 
@@ -273,7 +348,7 @@ m.Range(func(k, v any) bool {
 
 **本节要点**：把 4.3 第三条的"为什么"讲透。两代实现退化的机制不同，但结论一致：**反复全量重写 / 频繁增删键，是 sync.Map 的阿喀琉斯之踵**。
 
-- **经典版（≤1.23）的退化链**：`Store` 一个 read 里没有的新键 → 需要 dirty；若 dirty 刚被提升置了 nil，就得**遍历整张 read、把每个键重新 `new(Entry)` 复制进 dirty**（重建）→ 再叠上 `miss` 计数很快再次触顶提升。键集翻转时"重建 ↔ 提升"来回做，**每次全表复制** → 延迟抖动、CPU 与内存双高。
+- **经典版（≤1.25）的退化链**：`Store` 一个 read 里没有的新键 → 需要 dirty；若 dirty 刚被提升置了 nil，就得**遍历整张 read、把每个键重新 `new(Entry)` 复制进 dirty**（重建）→ 再叠上 `miss` 计数很快再次触顶提升。键集翻转时"重建 ↔ 提升"来回做，**每次全表复制** → 延迟抖动、CPU 与内存双高。
 - **现行版（哈希前缀树）的退化**：没有"整表重建"这一步了，但**每个新键都要在树上分配 entry 节点、必要时把叶子升级成一层 indirect 并重挂 16 个槽**；删除则 CAS 摘槽、空节点标 dead。**写路径的分配是实打实的** —— 实测 `126 B/op / 4 allocs/op`（vs map+Mutex 的 `15 B / 1 alloc`）就是这么来的。
 
 > ⚠️ 一个反直觉点：**"键集翻转"不需要你显式清空整表**。会话表按 sessionID 不断新建、过期就删，天然就是"键一直翻"—— 这类"看起来是缓存、其实是高 turnover"的场景，**恰恰是 sync.Map 最不擅长的**。
@@ -351,7 +426,7 @@ func (r *Resolver) Snapshot() map[string]*HostInfo {
 ## 延伸追问
 
 - **sync.Map 是"更快的 map"吗？** → 不是。它是"读多写少 + 键集稳定"的专用件；官方文档明说大多数代码应先用普通 map + 锁。写多或键频繁增删时它反而更慢、更费内存（实测 `126 B / 4 allocs` vs 加锁版 `15 B / 1 alloc`）。
-- **sync.Map 内部还是 read/dirty 双 map 吗？** → **不是了**。Go 1.24 起被重写成无锁哈希前缀树（`internal/sync.HashTrieMap`），go1.26.8 的 `Map` 只剩 `m isync.HashTrieMap[any,any]` 一个字段。"read/dirty 双 map"只适用于 Go ≤1.23。
+- **sync.Map 内部还是 read/dirty 双 map 吗？** → **不是了**。Go 1.26 起 `sync.Map` 整体委托给 `internal/sync.HashTrieMap`（无锁哈希前缀树），go1.26.8 的 `Map` 只剩 `m isync.HashTrieMap[any,any]` 一个字段。"read/dirty 双 map"适用于 Go ≤1.25。⚠️ 网上常见"Go 1.24 重写"的说法记的是 `internal/sync.HashTrieMap` **进标准库**的版本，不是 `sync.Map` **换上它**的版本（见第二节开头的逐版本 grep 判据）。
 - **两种实现的读都快，差别在哪？** → 经典版命中只读 `read` 时 `atomic.Value` 无锁读；现行版逐层 `atomic.Pointer.Load` 无锁读。区别在**写侧**：经典版有"整表提升 + dirty 重建"的抖动，现行版是"新建 entry/indirect 节点"的分配开销。
 - **`LoadOrStore` 返回的 actual 和 value 一定相同吗？** → 不一定。键已存在时返回库里既有值（`loaded=true`），你传进去的那个没被存；**要用返回的 actual**。
 - **`Delete` 是真删还是写墓碑？** → 取决于版本：经典版对已入 read 的键先写 `expunged` 墓碑、清理留到重建时；现行版直接 `children` 槽 `Store(nil)` 并把空节点标 `dead`。

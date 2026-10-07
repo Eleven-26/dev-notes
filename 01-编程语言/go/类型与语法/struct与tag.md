@@ -539,6 +539,7 @@ unsafe.Offsetof(Outer{}.Own)=32（匿名嵌入的 Inner 整体内联，Own 排�
 
 ## 关联
 
+- [指针与引用.md](指针与引用.md) — 布局决定了拷贝成本：`unsafe.Offsetof`/字段偏移的实测在彼，值拷贝的四种症状与判据也在彼
 - [类型系统.md](类型系统.md) — tag 参与类型同一性、转换忽略 tag 的实测与编译错误原文
 - [基础类型与零值.md](基础类型与零值.md) — 字段类型各自的大小/对齐、omitempty 判的"零值"口径的出处
 - [map.md](map.md) — 可比较类型才能当 key 的完整判据与 interface key 的运行时陷阱
