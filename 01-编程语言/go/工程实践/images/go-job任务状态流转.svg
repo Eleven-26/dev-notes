@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="m2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="30" y="38" font-size="19" font-weight="bold" fill="#0f172a">go-job 的任务实例状态流转</text>
+  <text x="30" y="62" font-size="12.5" fill="#64748b">图中一切均为实测：状态名与条数来自 LookupInstanceHistory / LookupInstanceLogs</text>
+
+  <rect x="40" y="100" width="160" height="56" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="120" y="134" font-size="14" fill="#334155" text-anchor="middle">Created</text>
+
+  <rect x="250" y="100" width="160" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="330" y="134" font-size="14" fill="#1e3a8a" text-anchor="middle">Scheduled</text>
+
+  <rect x="460" y="100" width="160" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="540" y="134" font-size="14" fill="#1e3a8a" text-anchor="middle">Processing</text>
+
+  <rect x="670" y="100" width="170" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="755" y="134" font-size="14" fill="#14532d" text-anchor="middle">Completed</text>
+
+  <line x1="202" y1="128" x2="246" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <line x1="412" y1="128" x2="456" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <line x1="622" y1="128" x2="666" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+
+  <rect x="460" y="238" width="160" height="56" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="540" y="272" font-size="14" fill="#7c2d12" text-anchor="middle">TimedOut</text>
+
+  <rect x="670" y="238" width="170" height="56" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="755" y="272" font-size="14" fill="#7f1d1d" text-anchor="middle">Terminated</text>
+
+  <rect x="670" y="348" width="170" height="56" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="755" y="382" font-size="14" fill="#7f1d1d" text-anchor="middle">Canceled</text>
+
+  <line x1="540" y1="158" x2="540" y2="234" stroke="#ea580c" stroke-width="1.6" marker-end="url(#m2)"/>
+  <text x="552" y="200" font-size="12" fill="#7c2d12">超时</text>
+
+  <line x1="620" y1="150" x2="668" y2="252" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <line x1="612" y1="156" x2="668" y2="360" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+  <line x1="755" y1="296" x2="755" y2="344" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+
+  <path d="M 460 266 C 380 266, 330 200, 330 160" fill="none" stroke="#ea580c" stroke-width="1.6"
+        stroke-dasharray="6 4" marker-end="url(#m2)"/>
+  <text x="180" y="228" font-size="12" fill="#7c2d12">超时属「执行层失败」→ 按 MaxRetries 重试</text>
+
+  <rect x="30" y="428" width="940" height="72" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="450" font-size="12.5" fill="#334155">实测：状态历史 4 条（Created → Scheduled → Processing → Completed）｜日志历史 6 条（executor 与状态回调里的 Infof）</text>
+  <text x="46" y="471" font-size="12.5" fill="#334155">⚠️ 重试实测：任务体 400ms &gt; 预算 200ms，MaxRetries=5 → 调用 3 次，Attempts() = 1 → 2 → 3</text>
+  <text x="46" y="492" font-size="12.5" fill="#334155">⚠️ executor 返回 error 不算失败（最终状态仍 Completed）｜⚠️ Wait() 返回 ≠ 任务已跑完（20 次里 3~7 次）</text>
+</svg>
