@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="f1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="fg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="fr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">CanSet 判定流程：mustBeAssignableSlow 的三道门</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">按 reflect/value.go:251-262 的源码顺序画；三条 panic 原文为容器 golang:1.26-alpine 实测回显</text>
+
+  <!-- 入口 -->
+  <rect x="330" y="76" width="340" height="56" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="100" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">要写值：Set / SetString / SetInt / SetBool / Call / Addr</text>
+  <text x="500" y="120" text-anchor="middle" font-size="11" fill="#334155">先过守卫 f.mustBeAssignable()，看的是 Value 第三个字 flag</text>
+  <line x1="500" y1="132" x2="500" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#f1)"/>
+
+  <!-- 门 1 -->
+  <polygon points="500,156 640,208 500,260 360,208" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="500" y="202" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">门 1：f == 0 ？</text>
+  <text x="500" y="222" text-anchor="middle" font-size="11" fill="#334155">零 Value（Kind=invalid）</text>
+  <line x1="640" y1="208" x2="700" y2="208" stroke="#dc2626" stroke-width="1.6" marker-end="url(#fr)"/>
+  <text x="668" y="198" text-anchor="middle" font-size="11" fill="#dc2626">是</text>
+  <rect x="702" y="180" width="268" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="836" y="202" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">panic ValueError</text>
+  <text x="836" y="222" text-anchor="middle" font-size="10.5" fill="#7f1d1d">reflect: call of reflect.Value.Interface on zero Value</text>
+  <line x1="500" y1="260" x2="500" y2="280" stroke="#16a34a" stroke-width="1.6" marker-end="url(#fg)"/>
+  <text x="516" y="274" font-size="11" fill="#16a34a">否</text>
+
+  <!-- 门 2 -->
+  <polygon points="500,284 650,340 500,396 350,340" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="500" y="330" text-anchor="middle" font-size="12" font-weight="bold" fill="#854d0e">门 2：f &amp; flagRO != 0 ？</text>
+  <text x="500" y="352" text-anchor="middle" font-size="11" fill="#854d0e">flagStickyRO（未导出字段）｜ flagEmbedRO（未导出嵌入）</text>
+  <line x1="650" y1="340" x2="700" y2="340" stroke="#dc2626" stroke-width="1.6" marker-end="url(#fr)"/>
+  <text x="676" y="330" text-anchor="middle" font-size="11" fill="#dc2626">是</text>
+  <rect x="702" y="308" width="268" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="836" y="330" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">只读，panic</text>
+  <text x="836" y="352" text-anchor="middle" font-size="10.5" fill="#7f1d1d">reflect: reflect.Value.Set using value</text>
+  <text x="836" y="368" text-anchor="middle" font-size="10.5" fill="#7f1d1d">obtained using unexported field</text>
+  <line x1="500" y1="396" x2="500" y2="416" stroke="#16a34a" stroke-width="1.6" marker-end="url(#fg)"/>
+  <text x="516" y="410" font-size="11" fill="#16a34a">否</text>
+
+  <!-- 门 3 -->
+  <polygon points="500,420 650,476 500,532 350,476" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="500" y="466" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">门 3：f &amp; flagAddr == 0 ？</text>
+  <text x="500" y="490" text-anchor="middle" font-size="11" fill="#1e3a8a">ptr 是否指向一块有真实地址的本体</text>
+  <line x1="650" y1="476" x2="700" y2="476" stroke="#dc2626" stroke-width="1.6" marker-end="url(#fr)"/>
+  <text x="676" y="466" text-anchor="middle" font-size="11" fill="#dc2626">是</text>
+  <rect x="702" y="446" width="268" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="836" y="468" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">副本，panic</text>
+  <text x="836" y="490" text-anchor="middle" font-size="10.5" fill="#7f1d1d">reflect: reflect.Value.Set using unaddressable value</text>
+
+  <!-- 通过 -->
+  <rect x="130" y="446" width="190" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <path d="M350,476 L326,476" stroke="#16a34a" stroke-width="1.6" marker-end="url(#fg)"/>
+  <text x="225" y="470" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">写入真实内存成功</text>
+  <text x="225" y="492" text-anchor="middle" font-size="10.5" fill="#14532d">CanSet = true（三关全过）</text>
+  <text x="338" y="466" text-anchor="middle" font-size="11" fill="#16a34a">否</text>
+
+  <!-- 左下：flag 从哪来 -->
+  <rect x="30" y="592" width="440" height="86" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="46" y="616" font-size="12" font-weight="bold" fill="#0f172a">flagAddr 由入口决定（实测判据矩阵）</text>
+  <text x="46" y="638" font-size="11" fill="#334155">ValueOf(x) → CanAddr=false CanSet=false（传值 = 副本）</text>
+  <text x="46" y="658" font-size="11" fill="#334155">ValueOf(&amp;x).Elem() → true / true　未导出字段 → true / false</text>
+
+  <!-- 右下：公式 -->
+  <rect x="490" y="592" width="480" height="86" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="506" y="616" font-size="12" font-weight="bold" fill="#0f172a">一行判据（value.go:353-355 原样）</text>
+  <text x="506" y="640" font-size="11.5" fill="#334155">func (v Value) CanSet() bool {</text>
+  <text x="506" y="660" font-size="11.5" fill="#1e3a8a">    return v.flag&amp;(flagAddr|flagRO) == flagAddr</text>
+</svg>

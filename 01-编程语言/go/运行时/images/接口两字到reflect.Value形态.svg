@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">接口头两个字如何变成 reflect.Type 与 reflect.Value</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">反射不另起一套类型系统：Type 的第二字就是 eface 的第一字，Value 的前两字复刻 eface，第三个字 flag 才是反射自己加的</text>
+
+  <!-- 源变量 -->
+  <rect x="30" y="100" width="150" height="86" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="105" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">f := File{...}</text>
+  <text x="105" y="150" text-anchor="middle" font-size="11" fill="#334155">本体有真实地址</text>
+  <text x="105" y="170" text-anchor="middle" font-size="11" fill="#334155">&amp;f 是 *main.File</text>
+
+  <!-- eface -->
+  <rect x="220" y="86" width="300" height="94" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="370" y="106" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">var ef any = &amp;f　（eface，2 字）</text>
+  <rect x="236" y="118" width="130" height="50" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="301" y="140" text-anchor="middle" font-size="11" fill="#0f172a">第 1 字</text>
+  <text x="301" y="158" text-anchor="middle" font-size="11" fill="#1e3a8a">*_type</text>
+  <rect x="376" y="118" width="130" height="50" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="441" y="140" text-anchor="middle" font-size="11" fill="#0f172a">第 2 字</text>
+  <text x="441" y="158" text-anchor="middle" font-size="11" fill="#1e3a8a">data → &amp;f</text>
+
+  <!-- iface -->
+  <rect x="220" y="196" width="300" height="94" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="370" y="216" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">var ifc Reader = &amp;f　（iface，2 字）</text>
+  <rect x="236" y="228" width="130" height="50" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="301" y="250" text-anchor="middle" font-size="11" fill="#0f172a">第 1 字</text>
+  <text x="301" y="268" text-anchor="middle" font-size="11" fill="#334155">*itab</text>
+  <rect x="376" y="228" width="130" height="50" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="441" y="250" text-anchor="middle" font-size="11" fill="#0f172a">第 2 字</text>
+  <text x="441" y="268" text-anchor="middle" font-size="11" fill="#334155">data → &amp;f</text>
+
+  <line x1="180" y1="132" x2="234" y2="132" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="180" y1="244" x2="234" y2="244" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- reflect.Type -->
+  <rect x="600" y="86" width="370" height="94" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="785" y="106" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#854d0e">rt := reflect.TypeOf(ef)　（它自己也是接口，2 字）</text>
+  <rect x="616" y="118" width="160" height="50" rx="6" fill="#ffffff" stroke="#b45309" stroke-width="1.2"/>
+  <text x="696" y="140" text-anchor="middle" font-size="11" fill="#0f172a">第 1 字 itab</text>
+  <text x="696" y="158" text-anchor="middle" font-size="11" fill="#854d0e">非空=true</text>
+  <rect x="786" y="118" width="168" height="50" rx="6" fill="#ffffff" stroke="#b45309" stroke-width="1.2"/>
+  <text x="870" y="140" text-anchor="middle" font-size="11" fill="#0f172a">第 2 字 *rtype</text>
+  <text x="870" y="158" text-anchor="middle" font-size="11" fill="#854d0e">== eface 第 1 字</text>
+
+  <!-- reflect.Value -->
+  <rect x="600" y="196" width="370" height="132" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="785" y="216" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">rv := reflect.ValueOf(ef)　（3 字，24 字节）</text>
+  <rect x="614" y="230" width="110" height="52" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="669" y="252" text-anchor="middle" font-size="11" fill="#0f172a">typ_</text>
+  <text x="669" y="270" text-anchor="middle" font-size="11" fill="#14532d">= _type</text>
+  <rect x="732" y="230" width="110" height="52" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="787" y="252" text-anchor="middle" font-size="11" fill="#0f172a">ptr</text>
+  <text x="787" y="270" text-anchor="middle" font-size="11" fill="#14532d">= data</text>
+  <rect x="850" y="230" width="104" height="52" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="902" y="252" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">flag</text>
+  <text x="902" y="270" text-anchor="middle" font-size="10.5" fill="#7f1d1d">Kind+Addr+RO</text>
+  <text x="785" y="308" text-anchor="middle" font-size="11" fill="#14532d">rv.Type()=main.File　rv.Kind()=ptr　rv.Elem().Interface()={c.txt}</text>
+
+  <line x1="520" y1="132" x2="612" y2="132" stroke="#16a34a" stroke-width="1.6" marker-end="url(#a2)"/>
+  <line x1="520" y1="244" x2="610" y2="244" stroke="#16a34a" stroke-width="1.6" marker-end="url(#a2)"/>
+  <path d="M301,168 C301,210 660,206 669,228" stroke="#2563eb" stroke-width="1.4" fill="none" stroke-dasharray="4 3" marker-end="url(#a3)"/>
+
+  <!-- 实测宽度 -->
+  <rect x="30" y="350" width="940" height="60" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="46" y="374" font-size="12" font-weight="bold" fill="#0f172a">容器 golang:1.26-alpine 实测宽度（unsafe.Sizeof）</text>
+  <text x="46" y="396" font-size="11.5" fill="#334155">Sizeof(any)=16　Sizeof(Reader)=16　Sizeof(reflect.Value)=24　Sizeof(reflect.TypeOf 返回的接口)=16　——　两种接口装同一份数据时 data 字相同=true</text>
+
+  <!-- 读图三句话 -->
+  <rect x="30" y="424" width="940" height="150" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="46" y="450" font-size="12" font-weight="bold" fill="#0f172a">读图三句话：</text>
+  <text x="46" y="476" font-size="11.5" fill="#334155">① 反射拿类型不花新成本：TypeOf 的第二字与 eface 的第一字是同一个地址（实测 true）；ValueOf 的前两字与 eface 一一对应（实测均 true）。</text>
+  <text x="46" y="500" font-size="11.5" fill="#334155">② reflect.Type 本身是个接口，第 1 字是 itab 不是类型指针——所以它跟 any 一样宽（16 字节），别拿它和 *abi.Type 比大小。</text>
+  <text x="46" y="524" font-size="11.5" fill="#334155">③ 第三个字 flag 才是反射的全部规则来源：低 5 位是 Kind，第 8 位 flagAddr 决定 CanAddr，flagStickyRO / flagEmbedRO 决定只读。</text>
+  <text x="46" y="550" font-size="11.5" fill="#7f1d1d">推论：反射读值 = 复用接口头两字（便宜）；反射写值 = 必须有真实地址 + 非只读（第二节），传值进来就只有副本可写。</text>
+</svg>

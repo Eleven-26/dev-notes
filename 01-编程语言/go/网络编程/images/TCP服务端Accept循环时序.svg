@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="760" fill="#ffffff"/>
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">TCP 服务端 Accept 循环与优雅退出时序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">net 包视角：Listen 到 Close 各角色间的调用先后；步骤 11 的报错原文来自容器实测，其余流程为示意</text>
+
+  <!-- 参与者 -->
+  <rect x="50" y="76" width="170" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="135" y="99" text-anchor="middle" font-size="13.5" fill="#1e3a8a">业务主协程</text>
+  <rect x="300" y="76" width="170" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="385" y="99" text-anchor="middle" font-size="13.5" fill="#14532d">Accept 循环协程</text>
+  <rect x="560" y="76" width="180" height="36" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="650" y="99" text-anchor="middle" font-size="13.5" fill="#854d0e">连接处理协程（每连一个）</text>
+  <rect x="810" y="76" width="150" height="36" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="885" y="99" text-anchor="middle" font-size="13.5" fill="#0f172a">客户端</text>
+
+  <!-- 生命线 -->
+  <line x1="135" y1="112" x2="135" y2="700" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <line x1="385" y1="112" x2="385" y2="700" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <line x1="650" y1="112" x2="650" y2="700" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <line x1="885" y1="112" x2="885" y2="700" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 4"/>
+
+  <!-- 1 Listen -->
+  <rect x="60" y="128" width="150" height="30" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="135" y="147" text-anchor="middle" font-size="12" fill="#1e3a8a">1 net.Listen 得 ln</text>
+
+  <!-- 2 go acceptLoop -->
+  <path d="M135 186 L377 186" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="255" y="180" text-anchor="middle" font-size="12" fill="#334155">2 go acceptLoop(ln)</text>
+
+  <!-- 3 Accept 阻塞 -->
+  <rect x="305" y="210" width="160" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="385" y="229" text-anchor="middle" font-size="12" fill="#14532d">3 ln.Accept() 阻塞挂起</text>
+
+  <!-- 4 握手 + 进队列 -->
+  <rect x="780" y="256" width="210" height="30" rx="5" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="885" y="275" text-anchor="middle" font-size="12" fill="#0f172a">4 握手完成后连接排队</text>
+  <path d="M880 286 L393 306" stroke="#64748b" stroke-width="1.5" marker-end="url(#arG)"/>
+  <text x="620" y="304" text-anchor="middle" font-size="11.5" fill="#64748b">握手原理见 TCP三次握手.md（本篇不重讲）</text>
+
+  <!-- 5 Accept 返回 -->
+  <path d="M385 336 L642 336" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arGn)"/>
+  <text x="512" y="330" text-anchor="middle" font-size="12" fill="#334155">5 Accept 返回 Conn，随即 go handle(c)</text>
+
+  <!-- 6 读写循环 -->
+  <rect x="555" y="360" width="190" height="44" rx="5" fill="#fef3c7" stroke="#b45309"/>
+  <text x="650" y="378" text-anchor="middle" font-size="11.5" fill="#854d0e">6 循环：SetReadDeadline</text>
+  <text x="650" y="395" text-anchor="middle" font-size="11.5" fill="#854d0e">Read / 处理 / Write</text>
+
+  <!-- 7 出错关闭 -->
+  <rect x="555" y="418" width="190" height="44" rx="5" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="650" y="436" text-anchor="middle" font-size="11.5" fill="#7f1d1d">7 Read 报 EOF 或超时</text>
+  <text x="650" y="453" text-anchor="middle" font-size="11.5" fill="#7f1d1d">8 defer c.Close() 结束协程</text>
+
+  <!-- 9 信号 -->
+  <rect x="60" y="486" width="150" height="30" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="135" y="505" text-anchor="middle" font-size="12" fill="#1e3a8a">9 收到退出信号</text>
+  <path d="M135 516 L377 516" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="255" y="510" text-anchor="middle" font-size="12" fill="#334155">10 ln.Close()</text>
+
+  <!-- 11 Accept 报错 -->
+  <rect x="255" y="540" width="260" height="56" rx="5" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="385" y="560" text-anchor="middle" font-size="11.5" fill="#7f1d1d">11 Accept 立刻返回错误、循环退出（实测）</text>
+  <text x="385" y="582" text-anchor="middle" font-size="11" fill="#7f1d1d">accept tcp 127.0.0.1:34601: use of closed network connection</text>
+  <text x="255" y="618" font-size="11" fill="#64748b">已建立连接的 handler 不受 10 影响，继续把手头请求做完</text>
+
+  <!-- 12 Wait -->
+  <rect x="60" y="640" width="150" height="30" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="135" y="659" text-anchor="middle" font-size="12" fill="#14532d">12 Wait 在途协程后退出</text>
+
+  <defs>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arGn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+</svg>

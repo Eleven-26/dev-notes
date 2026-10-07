@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" font-weight="bold" fill="#0f172a">slog：一条日志从调用到输出的流水线</text>
+  <text x="500" y="56" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">Logger 级别方法 → Enabled 预判 → 组装 Record → Handler 格式化 → Writer 落地</text>
+
+  <rect x="290" y="76" width="420" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="98" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#1e3a8a">业务调用级别方法</text>
+  <text x="500" y="118" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e3a8a">l.Info("ACCESS", "trace_id", ...) </text>
+
+  <polygon points="500,158 640,208 500,258 360,208" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="204" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#14532d">Handler.Enabled</text>
+  <text x="500" y="222" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d">(ctx, level) ?</text>
+
+  <rect x="40" y="176" width="270" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="175" y="200" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">false：直接丢弃</text>
+  <text x="175" y="220" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">不组装、不格式化</text>
+  <text x="175" y="236" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">实测 10 万条过滤约 6 ms</text>
+
+  <line x1="360" y1="208" x2="312" y2="208" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="312,208 322,203 322,213" fill="#64748b"/>
+  <text x="336" y="198" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">false</text>
+
+  <line x1="500" y1="258" x2="500" y2="286" stroke="#16a34a" stroke-width="1.5"/>
+  <polygon points="500,292 495,282 505,282" fill="#16a34a"/>
+  <text x="520" y="278" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#14532d">true</text>
+
+  <rect x="290" y="292" width="420" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="316" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e3a8a">组装 Record：Time / Level / Message / PC</text>
+  <text x="500" y="336" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#1e3a8a">字段进 front 内联数组，超出落 back 切片</text>
+
+  <line x1="500" y1="356" x2="500" y2="384" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="500,390 495,380 505,380" fill="#2563eb"/>
+
+  <rect x="240" y="390" width="520" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="414" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#854d0e">Handler.Handle：逐字段格式化（值先过 LogValuer）</text>
+  <text x="500" y="434" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#854d0e">每个 Attr（含 time/level 内建键）先过 ReplaceAttr 钩子</text>
+  <text x="500" y="452" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#854d0e">AddSource=true 时把调用点 source 塞进输出</text>
+
+  <line x1="500" y1="466" x2="500" y2="492" stroke="#b45309" stroke-width="1.5"/>
+  <polygon points="500,498 495,488 505,488" fill="#b45309"/>
+
+  <rect x="60" y="498" width="280" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="200" y="522" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d">TextHandler</text>
+  <text x="200" y="542" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#14532d">time=... level=INFO k=v</text>
+
+  <rect x="360" y="498" width="280" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="522" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d">JSONHandler</text>
+  <text x="500" y="542" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#14532d">{"time":"...","level":"..."}</text>
+
+  <rect x="660" y="498" width="280" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="800" y="522" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d">自写 Handler</text>
+  <text x="800" y="542" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#14532d">桥接 zap / zerolog</text>
+
+  <line x1="500" y1="556" x2="500" y2="580" stroke="#16a34a" stroke-width="1.5"/>
+  <polygon points="500,586 495,576 505,576" fill="#16a34a"/>
+
+  <rect x="130" y="586" width="740" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="608" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">io.Writer：os.Stderr / bufio 缓冲文件 / lumberjack 轮转</text>
+  <text x="500" y="628" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">采集端（Loki / ES / 云日志）按 level、trace_id、latency_ms 等结构化字段过滤与告警</text>
+</svg>

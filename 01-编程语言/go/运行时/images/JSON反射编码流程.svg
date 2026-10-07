@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="j1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="j2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="j3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 JSON 编码里 reflect 走了哪几步</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">上排＝初始化期（每个类型只做一次，之后按 reflect.Type 缓存）；下排＝编码期（每次调用都走）；调用次数为容器实测计数</text>
+
+  <!-- 初始化期标签 -->
+  <rect x="30" y="74" width="130" height="26" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="95" y="92" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">初始化期</text>
+
+  <rect x="30" y="110" width="200" height="88" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="130" y="132" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">json.Marshal(v)</text>
+  <text x="130" y="154" text-anchor="middle" font-size="11" fill="#334155">v → any（装箱 1 次）</text>
+  <text x="130" y="174" text-anchor="middle" font-size="11" fill="#334155">reflect.ValueOf → rv</text>
+  <text x="130" y="192" text-anchor="middle" font-size="11" fill="#334155">rv.Type() 取说明书</text>
+
+  <rect x="270" y="110" width="210" height="88" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="375" y="132" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">encoderCache.Load(t)</text>
+  <text x="375" y="154" text-anchor="middle" font-size="11" fill="#334155">sync.Map</text>
+  <text x="375" y="174" text-anchor="middle" font-size="11" fill="#334155">map[reflect.Type]encoderFunc</text>
+  <text x="375" y="192" text-anchor="middle" font-size="11" fill="#16a34a">命中 → 直接进编码期</text>
+
+  <rect x="520" y="110" width="220" height="88" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="630" y="132" text-anchor="middle" font-size="12" font-weight="bold" fill="#854d0e">typeFields(t)　唯一真贵的一步</text>
+  <text x="630" y="154" text-anchor="middle" font-size="11" fill="#854d0e">NumField / Field 扫全部字段</text>
+  <text x="630" y="174" text-anchor="middle" font-size="11" fill="#854d0e">Tag 解析 + 匿名嵌入摊平</text>
+  <text x="630" y="192" text-anchor="middle" font-size="11" fill="#854d0e">按 index 长度排序、查冲突</text>
+
+  <rect x="780" y="110" width="190" height="88" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="875" y="132" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">fieldCache.Store</text>
+  <text x="875" y="154" text-anchor="middle" font-size="11" fill="#334155">structFields 存进 sync.Map</text>
+  <text x="875" y="174" text-anchor="middle" font-size="11" fill="#334155">同类型后续零扫描</text>
+  <text x="875" y="192" text-anchor="middle" font-size="11" fill="#7f1d1d">代价：类型元数据长期不释放</text>
+
+  <line x1="230" y1="154" x2="268" y2="154" stroke="#334155" stroke-width="1.5" marker-end="url(#j1)"/>
+  <line x1="480" y1="154" x2="518" y2="154" stroke="#334155" stroke-width="1.5" marker-end="url(#j1)"/>
+  <text x="499" y="144" text-anchor="middle" font-size="10.5" fill="#dc2626">未命中</text>
+  <line x1="740" y1="154" x2="778" y2="154" stroke="#334155" stroke-width="1.5" marker-end="url(#j1)"/>
+
+  <!-- 编码期标签 -->
+  <rect x="30" y="232" width="130" height="26" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="95" y="250" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">编码期</text>
+
+  <rect x="30" y="268" width="215" height="94" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="137" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">for i := 0..NumField()</text>
+  <text x="137" y="312" text-anchor="middle" font-size="11" fill="#334155">rv.Field(i) 取字段值</text>
+  <text x="137" y="332" text-anchor="middle" font-size="11" fill="#334155">PkgPath 非空 → 跳过未导出</text>
+  <text x="137" y="352" text-anchor="middle" font-size="11" fill="#1e3a8a">实测 NumField=9　Field=9</text>
+
+  <rect x="285" y="268" width="200" height="94" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="385" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Tag.Lookup("json")</text>
+  <text x="385" y="312" text-anchor="middle" font-size="11" fill="#334155">无 tag → 用 Go 字段名</text>
+  <text x="385" y="332" text-anchor="middle" font-size="11" fill="#334155">"-" → 整个字段跳过</text>
+  <text x="385" y="352" text-anchor="middle" font-size="11" fill="#1e3a8a">实测 Tag.Lookup=7</text>
+
+  <rect x="525" y="268" width="215" height="94" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="632" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">switch fv.Kind()</text>
+  <text x="632" y="312" text-anchor="middle" font-size="11" fill="#14532d">String() / Int()：不装箱</text>
+  <text x="632" y="332" text-anchor="middle" font-size="11" fill="#14532d">Slice → Len/Index　Ptr → IsNil/Elem</text>
+  <text x="632" y="352" text-anchor="middle" font-size="11" fill="#1e3a8a">实测 String=3　Int=3　Interface 装箱=0</text>
+
+  <rect x="780" y="268" width="190" height="94" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="875" y="290" text-anchor="middle" font-size="12" font-weight="bold" fill="#854d0e">匿名嵌入 → 递归</text>
+  <text x="875" y="312" text-anchor="middle" font-size="11" fill="#854d0e">下钻一层继续遍历</text>
+  <text x="875" y="332" text-anchor="middle" font-size="11" fill="#854d0e">输出摊平进同一层 {}</text>
+  <text x="875" y="352" text-anchor="middle" font-size="11" fill="#854d0e">实测 递归嵌入=3</text>
+
+  <line x1="245" y1="315" x2="283" y2="315" stroke="#334155" stroke-width="1.5" marker-end="url(#j1)"/>
+  <line x1="485" y1="315" x2="523" y2="315" stroke="#334155" stroke-width="1.5" marker-end="url(#j1)"/>
+  <line x1="740" y1="315" x2="778" y2="315" stroke="#b45309" stroke-width="1.5" marker-end="url(#j3)"/>
+  <path d="M875,362 C875,400 200,398 150,364" stroke="#16a34a" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#j2)"/>
+  <text x="520" y="412" text-anchor="middle" font-size="11" fill="#14532d">递归回到字段循环（父级可寻址，下钻后仍可写）</text>
+
+  <!-- 实测输出 -->
+  <rect x="30" y="430" width="940" height="100" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="46" y="454" font-size="12" font-weight="bold" fill="#0f172a">容器实测：手写复刻的反射 encoder 与 encoding/json 逐字节比对</text>
+  <text x="46" y="476" font-size="11" fill="#334155">手写 = {"id":3,"name":"gopher","port":8080,"Ptr":{"port":9090},"Tags":["a","b"]}</text>
+  <text x="46" y="496" font-size="11" fill="#334155">标准库 = {"id":3,"name":"gopher","port":8080,"Ptr":{"port":9090},"Tags":["a","b"]} (err=&lt;nil&gt;)　→　两者逐字节相同吗？true</text>
+  <text x="46" y="516" font-size="11" fill="#7f1d1d">Ptr=nil 时：手写输出 "Tags":[]　标准库输出 "Tags":null　→　false（语义选择，不是反射流程差别）</text>
+
+  <!-- 结论 -->
+  <rect x="30" y="544" width="940" height="94" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="46" y="570" font-size="12" font-weight="bold" fill="#0f172a">读图三句话：</text>
+  <text x="46" y="592" font-size="11.5" fill="#334155">① 反射扫描集中在黄框 typeFields——它是"每个类型一次"的成本，缓存之后编码期只剩 Field/Kind/取值 三件事。</text>
+  <text x="46" y="612" font-size="11.5" fill="#334155">② 实测 Interface() 装箱次数为 0：标准库全程用 String()/Int() 这类"直接取原始值"的 API，不造 any。</text>
+  <text x="46" y="632" font-size="11.5" fill="#334155">③ 未导出字段靠 PkgPath 跳过、匿名嵌入靠递归摊平——这两条正是第三节 tag 遍历实测的同款规矩。</text>
+</svg>

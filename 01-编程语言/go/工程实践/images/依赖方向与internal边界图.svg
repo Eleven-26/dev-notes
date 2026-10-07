@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">依赖方向与 internal 可见性边界</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">左：go list 实测的单向依赖链；右：internal 边界三例（报错短语均为容器实测 stderr）</text>
+  <defs>
+    <marker id="garr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/>
+    </marker>
+    <marker id="rarr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="barr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- ============ 左面板：grow 依赖链 ============ -->
+  <rect x="30" y="80" width="460" height="470" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="52" y="108" font-size="14" font-weight="bold" fill="#0f172a">module example.com/grow</text>
+
+  <rect x="150" y="126" width="220" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="260" y="148" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">cmd/grow（package main）</text>
+  <text x="260" y="166" font-size="11" fill="#14532d" text-anchor="middle">只做装配，不写业务</text>
+
+  <rect x="60" y="200" width="400" height="300" rx="10" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="8,5"/>
+  <text x="78" y="226" font-size="13" font-weight="bold" fill="#1e3a8a">internal/ —— 模块外不可 import</text>
+
+  <rect x="84" y="248" width="110" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="139" y="281" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">handler</text>
+  <rect x="234" y="248" width="110" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="289" y="281" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">service</text>
+  <rect x="330" y="330" width="110" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="385" y="363" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">storage</text>
+
+  <line x1="216" y1="178" x2="150" y2="244" stroke="#16a34a" stroke-width="2.5" marker-end="url(#garr)"/>
+  <line x1="196" y1="276" x2="230" y2="276" stroke="#16a34a" stroke-width="2.5" marker-end="url(#garr)"/>
+  <line x1="316" y1="296" x2="360" y2="328" stroke="#16a34a" stroke-width="2.5" marker-end="url(#garr)"/>
+
+  <text x="215" y="262" font-size="11" fill="#14532d">go list 实测边集，全部外层指向内层</text>
+  <text x="385" y="410" font-size="11" fill="#64748b" text-anchor="middle">storage 的直接依赖为空</text>
+
+  <path d="M 372 386 C 372 462, 139 462, 139 306" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#rarr)"/>
+  <text x="256" y="484" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">反向边 storage import handler 若出现，</text>
+  <text x="256" y="502" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">连同正向边即成环：import cycle not allowed</text>
+
+  <text x="260" y="536" font-size="11" fill="#64748b" text-anchor="middle">go list -deps ./cmd/grow 共 65 行：本模块 4 包 + 标准库 61</text>
+
+  <!-- ============ 右面板：internal 三例 ============ -->
+  <rect x="520" y="80" width="450" height="470" rx="12" fill="#f8fafc" stroke="#0f172a" stroke-width="2"/>
+  <text x="542" y="108" font-size="14" font-weight="bold" fill="#0f172a">module example.com/app 的 internal 边界</text>
+
+  <rect x="556" y="130" width="180" height="200" rx="8" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="8,5"/>
+  <text x="566" y="152" font-size="12" font-weight="bold" fill="#1e3a8a">internal/（可见性根=app/）</text>
+  <rect x="580" y="176" width="132" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="646" y="204" font-size="13" fill="#1e3a8a" text-anchor="middle">internal/visible</text>
+  <rect x="580" y="246" width="132" height="66" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="646" y="272" font-size="12" fill="#334155" text-anchor="middle">internal/deep/</text>
+  <text x="646" y="292" font-size="11" fill="#334155" text-anchor="middle">内再嵌 internal/core：</text>
+  <text x="646" y="330" font-size="11" fill="#64748b" text-anchor="middle">core 可见性根收窄到 deep/</text>
+
+  <rect x="770" y="140" width="176" height="50" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="858" y="161" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">cmd/rootcmd（同模块）</text>
+  <text x="858" y="180" font-size="11" fill="#14532d" text-anchor="middle">visible 合法 · core 越界</text>
+  <line x1="768" y1="158" x2="716" y2="192" stroke="#16a34a" stroke-width="2" marker-end="url(#garr)"/>
+  <line x1="768" y1="178" x2="716" y2="272" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#rarr)"/>
+
+  <rect x="770" y="222" width="176" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="858" y="243" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">module app/child</text>
+  <text x="858" y="262" font-size="11" fill="#14532d" text-anchor="middle">跨模块，但路径前缀在根内 → 合法</text>
+  <line x1="768" y1="248" x2="716" y2="228" stroke="#2563eb" stroke-width="2" marker-end="url(#barr)"/>
+
+  <rect x="770" y="306" width="176" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="858" y="327" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">module example.com/outside</text>
+  <text x="858" y="346" font-size="11" fill="#7f1d1d" text-anchor="middle">前缀不在 app/ 内 → 被编译器拒绝</text>
+  <line x1="768" y1="332" x2="716" y2="246" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#rarr)"/>
+
+  <text x="545" y="392" font-size="12" fill="#7f1d1d">越界报错（实测原文）：</text>
+  <text x="545" y="412" font-size="11" fill="#334155">use of internal package …/internal/visible</text>
+  <text x="545" y="430" font-size="11" fill="#334155">not allowed</text>
+  <text x="545" y="456" font-size="12" fill="#14532d">合法判据：被导入方路径是否位于</text>
+  <text x="545" y="476" font-size="12" fill="#14532d">“internal 的父目录”对应的模块路径子树内 ——</text>
+  <text x="545" y="496" font-size="12" fill="#14532d">与是否同一 module、同一 git 仓库都无关</text>
+  <text x="545" y="524" font-size="11" fill="#64748b">child 实测输出：child module: internal/visible 已加载</text>
+
+  <text x="500" y="592" font-size="12" fill="#0f172a" text-anchor="middle">编译器只强制两件事：internal 的路径前缀边界 + 包图不成环；cmd/、api/、pkg/ 与“层级方向”全靠约定与自卫。</text>
+  <text x="500" y="622" font-size="12" fill="#64748b" text-anchor="middle">数据来自 golang:1.26-alpine（go1.26.8）对 grow/、boundary/ 实验目录的 go build / go list 实测，非示意。</text>
+</svg>

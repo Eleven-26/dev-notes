@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTP 客户端的三层结构与连接复用形态</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">Client 管策略，Transport 管连接池，persistConn 管一条真实的 TCP 与 TLS 连接</text>
+
+  <!-- 调用方 -->
+  <rect x="40" y="80" width="150" height="52" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="115" y="104" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">业务代码</text>
+  <text x="115" y="122" text-anchor="middle" font-size="11.5" fill="#334155">client.Do 一次 Get</text>
+  <path d="M190 106 L236 106" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <!-- 第一层 Client -->
+  <rect x="240" y="76" width="300" height="96" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="390" y="98" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">第一层　http.Client</text>
+  <text x="256" y="120" font-size="11.5" fill="#1e3a8a">Timeout（整次调用，含重定向与读 Body）</text>
+  <text x="256" y="138" font-size="11.5" fill="#1e3a8a">CheckRedirect（默认最多 10 跳）</text>
+  <text x="256" y="156" font-size="11.5" fill="#1e3a8a">Jar（默认 nil，不存 Cookie）</text>
+  <text x="560" y="98" font-size="11.5" fill="#334155">RoundTripper 接口</text>
+  <text x="560" y="116" font-size="11.5" fill="#334155">new(Client) 很便宜：</text>
+  <text x="560" y="134" font-size="11.5" fill="#334155">它只是个配置加超时壳，</text>
+  <text x="560" y="152" font-size="11.5" fill="#334155">连接池不在它身上</text>
+  <path d="M390 172 L390 202" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <!-- 第二层 Transport -->
+  <rect x="60" y="206" width="700" height="238" rx="12" fill="#f8fafc" stroke="#334155" stroke-width="1.8"/>
+  <text x="84" y="230" font-size="14" font-weight="bold" fill="#0f172a">第二层　http.Transport（连接池本体，必须全进程共用）</text>
+  <text x="744" y="230" text-anchor="end" font-size="11.5" fill="#64748b">DefaultTransport 实测值</text>
+
+  <!-- 空闲池 -->
+  <rect x="84" y="246" width="400" height="112" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="284" y="266" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">idleConn：按 connectMethod 分桶的 LRU 队列</text>
+  <text x="98" y="284" font-size="11.5" fill="#14532d">key = scheme 与 host:port 与 是否走代理</text>
+  <rect x="100" y="294" width="110" height="46" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="155" y="313" text-anchor="middle" font-size="11" fill="#14532d">127.0.0.1:8080</text>
+  <text x="155" y="331" text-anchor="middle" font-size="11" fill="#14532d">3 条空闲</text>
+  <rect x="228" y="294" width="110" height="46" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="283" y="313" text-anchor="middle" font-size="11" fill="#14532d">api.pay.com:443</text>
+  <text x="283" y="331" text-anchor="middle" font-size="11" fill="#14532d">2 条空闲（默认上限）</text>
+  <rect x="356" y="294" width="112" height="46" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="412" y="313" text-anchor="middle" font-size="11" fill="#14532d">取不到就新建</text>
+  <text x="412" y="331" text-anchor="middle" font-size="11" fill="#14532d">GotConn Reused=false</text>
+
+  <!-- 等待队列 -->
+  <rect x="500" y="246" width="236" height="112" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="618" y="266" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#854d0e">wantConnQueue：等连接的请求</text>
+  <text x="514" y="286" font-size="11.5" fill="#854d0e">MaxConnsPerHost 打满时，新连接</text>
+  <text x="514" y="304" font-size="11.5" fill="#854d0e">在这里排队，请求被"软限流"</text>
+  <text x="514" y="326" font-size="11.5" fill="#854d0e">实测：该值设 2、并发 20、单次 30ms</text>
+  <text x="514" y="344" font-size="11.5" fill="#854d0e">一波耗时 89ms 涨到 617ms</text>
+
+  <!-- 参数条 -->
+  <rect x="84" y="372" width="652" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="98" y="392" font-size="11.5" font-weight="bold" fill="#1e3a8a">池子三值：MaxIdleConns=100　MaxIdleConnsPerHost=0（等于用 DefaultMaxIdleConnsPerHost=2）　MaxConnsPerHost=0 不限</text>
+  <text x="98" y="412" font-size="11.5" fill="#1e3a8a">回收与超时：IdleConnTimeout=90s　TLSHandshakeTimeout=10s　ResponseHeaderTimeout=0 不设　ExpectContinueTimeout=1s</text>
+
+  <!-- 第三层 persistConn -->
+  <path d="M390 444 L390 474" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar)"/>
+  <rect x="60" y="478" width="700" height="96" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="84" y="500" font-size="13.5" font-weight="bold" fill="#0f172a">第三层　persistConn：一条真实连接加两个循环</text>
+  <rect x="92" y="512" width="196" height="50" rx="7" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+  <text x="190" y="532" text-anchor="middle" font-size="11.5" fill="#334155">net.Conn（TCP 或 TLS）</text>
+  <text x="190" y="550" text-anchor="middle" font-size="11.5" fill="#334155">bufio.Writer 与 bufio.Reader</text>
+  <rect x="308" y="512" width="180" height="50" rx="7" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+  <text x="398" y="532" text-anchor="middle" font-size="11.5" fill="#334155">writeLoop：串行写请求</text>
+  <text x="398" y="550" text-anchor="middle" font-size="11.5" fill="#334155">HTTP/1 一条连接同时只 1 个请求</text>
+  <rect x="508" y="512" width="236" height="50" rx="7" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+  <text x="626" y="532" text-anchor="middle" font-size="11.5" fill="#334155">readLoop：读响应，并把连接归还池子</text>
+  <text x="626" y="550" text-anchor="middle" font-size="11.5" fill="#334155">对端先关时在这里发现（EOF 竞态）</text>
+
+  <!-- 对端 -->
+  <path d="M760 526 L846 526" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar)"/>
+  <rect x="784" y="478" width="188" height="96" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="878" y="504" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7f1d1d">对端服务</text>
+  <text x="878" y="526" text-anchor="middle" font-size="11.5" fill="#7f1d1d">Keep-Alive 决定是否留连接</text>
+  <text x="878" y="546" text-anchor="middle" font-size="11.5" fill="#7f1d1d">自己的 IdleTimeout 可能更短</text>
+  <text x="878" y="566" text-anchor="middle" font-size="11.5" fill="#7f1d1d">两侧取值要对照着配</text>
+
+  <!-- 底部实测条 -->
+  <rect x="60" y="596" width="912" height="46" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="74" y="616" font-size="11.5" fill="#0f172a">容器实测（golang:1.26-alpine，200 次请求）：共用 Transport → dial=1、复用=199、进程 fd=10；每请求 new(Transport) → dial=200、fd=1252、TCP inuse 1245；</text>
+  <text x="74" y="634" font-size="11.5" fill="#0f172a">最后统一 CloseIdleConnections 把 200 条连接主动关掉 → fd 回落到 852、TIME_WAIT(tw) 从 0 涨到 200。</text>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

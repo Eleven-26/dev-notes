@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600">
+<rect width="1000" height="600" fill="#ffffff"/>
+<text x="500" y="36" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">runtime/trace 的两条无头读法与一条浏览器路</text>
+<text x="500" y="60" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b" text-anchor="middle">实线是容器里真跑通的路径；虚线（Web UI）未实测。百分比数字来自 go tool trace -d=footprint 实测</text>
+
+<rect x="40" y="92" width="200" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="140" y="118" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">程序内埋点</text>
+<text x="140" y="140" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">trace.Start(f) 到 f.Close()</text>
+<text x="140" y="158" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">NewTask 与 StartRegion</text>
+<text x="140" y="176" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">窗口制：先想好看什么</text>
+
+<rect x="40" y="212" width="200" height="62" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="140" y="236" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">不写代码的两条路</text>
+<text x="140" y="256" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">go test -trace=trace.out 与 pprof 端点</text>
+
+<rect x="290" y="140" width="180" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="380" y="168" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#854d0e" text-anchor="middle">trace.out</text>
+<text x="380" y="190" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">实测 11586 字节</text>
+<text x="380" y="206" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">服务里 2 秒窗口 9688 字节</text>
+
+<rect x="530" y="86" width="430" height="106" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="745" y="110" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">路一：go tool trace -pprof=TYPE 到 go tool pprof</text>
+<text x="745" y="132" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">只支持 net、sync、syscall、sched 四类（写 gc 报 unknown pprof type gc）</text>
+<text x="745" y="152" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">实测 sync：总 14600.32us，sync.WaitGroup.Wait 占 98.73%</text>
+<text x="745" y="172" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">实测 sched：总 5411.71us，最大单项 107.14us 落在 runtime.chansend1</text>
+
+<rect x="530" y="212" width="430" height="100" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="745" y="236" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">路二：go tool trace -d 看事件本身</text>
+<text x="745" y="258" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">-d=footprint：事件类型各占多少字节，用来估"能抓多久"</text>
+<text x="745" y="278" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">-d=parsed：逐条打印解析后的事件与栈，能看到 TaskBegin 与 RegionBegin</text>
+<text x="745" y="298" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">-d=wire：原始编码流，排查"文件是不是坏了"才用</text>
+
+<rect x="530" y="332" width="430" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="745" y="356" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#64748b" text-anchor="middle">路三：浏览器 UI（本篇未实测）</text>
+<text x="745" y="378" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">容器内 6 秒后端口没监听、wget 连接被拒，日志为空</text>
+<text x="745" y="398" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155" text-anchor="middle">doc.go 自陈：view trace 那页来自 Chrome 项目，只在 Chromium 上测过</text>
+
+<text x="40" y="458" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#0f172a">footprint 实测：谁把 trace 撑大的（条长按字节数等比）</text>
+<rect x="40" y="470" width="620" height="20" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+<rect x="40" y="498" width="557" height="20" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+<rect x="40" y="526" width="460" height="20" rx="3" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+<rect x="40" y="554" width="182" height="20" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+<text x="52" y="485" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a">GoStart</text>
+<text x="52" y="513" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a">GoCreate</text>
+<text x="52" y="541" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#854d0e">String</text>
+<text x="52" y="569" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#14532d">GoBlock</text>
+<text x="670" y="485" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155">2803 B，24.19%，606 条</text>
+<text x="607" y="513" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155">2518 B，21.73%，403 条</text>
+<text x="510" y="541" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155">2077 B，17.93%，76 条</text>
+<text x="232" y="569" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155">822 B，7.09%，204 条</text>
+<text x="900" y="485" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b" text-anchor="end">协程状态类合计约 73%</text>
+<text x="900" y="513" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b" text-anchor="end">另一份只埋 3 个 region</text>
+<text x="900" y="541" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b" text-anchor="end">的 trace 里 String 占</text>
+<text x="900" y="569" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b" text-anchor="end">58.30%，2223 字节</text>
+
+<path d="M240 140 L290 165" stroke="#2563eb" stroke-width="1.6" fill="none" marker-end="url(#tb)"/>
+<path d="M140 274 L290 205" stroke="#64748b" stroke-width="1.4" fill="none" marker-end="url(#tg)"/>
+<path d="M470 158 L530 138" stroke="#16a34a" stroke-width="1.6" fill="none" marker-end="url(#tn)"/>
+<path d="M470 180 L530 250" stroke="#16a34a" stroke-width="1.6" fill="none" marker-end="url(#tn)"/>
+<path d="M470 200 L530 372" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4" fill="none" marker-end="url(#tl)"/>
+<defs>
+<marker id="tb" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#2563eb"/></marker>
+<marker id="tg" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#64748b"/></marker>
+<marker id="tn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#16a34a"/></marker>
+<marker id="tl" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#cbd5e1"/></marker>
+</defs>
+</svg>
