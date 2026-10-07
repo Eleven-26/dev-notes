@@ -449,7 +449,7 @@ FROM system.query_log WHERE query LIKE '%pk_hit%' AND type = 'QueryFinish';
 
 ## 关联
 
-- [存储选型.md](../../存储选型.md) — 七类存储的定位矩阵里 ClickHouse 的位置，以及它与 ES 的分工
+- [数据库选型对比.md](../../数据库选型对比.md) — 七类存储的定位矩阵里 ClickHouse 的位置，以及它与 ES 的分工
 - [搜索与分析选型对比.md](../../搜索与分析/搜索与分析选型对比.md) — 列式存储与倒排索引为什么擅长的查询正好相反
 - [时序数据库选型对比.md](../../时序数据库/时序数据库选型对比.md) — ClickHouse 在时序场景里的定位（通用列存自建那一族）
 - [选型对比与落地案例.md](../../时序数据库/GreptimeDB/选型对比与落地案例.md) — GreptimeDB 与 ClickHouse 的对照（指标专精 vs 通用分析）

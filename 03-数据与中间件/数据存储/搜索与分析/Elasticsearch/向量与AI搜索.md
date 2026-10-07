@@ -246,6 +246,6 @@ curl -s --noproxy '*' -X POST "localhost:19210/v_bbq/_search" -H 'Content-Type: 
 - [分页与聚合.md](分页与聚合.md) — 向量检索与聚合的配合（先过滤再 knn 的候选集控制）
 - [README.md](README.md) — 版本坐标：BBQ 8.16 预览 → 8.18 GA，`semantic_text` 9.0 GA
 - [基数与频率估计.md](../../../../02-计算机基础/数据结构/高级数据结构/基数与频率估计.md) — 另一种「用近似换空间」的结构
-- [存储选型.md](../../存储选型.md) — 向量库与全文检索库的分工
+- [数据库选型对比.md](../../数据库选型对比.md) — 向量库与全文检索库的分工
 - [README.md](../../NoSQL/MongoDB/README.md) — 另一类存储（文档库）的能力对照
 > 反向引用（本篇被下列文档引到）：[向量索引与GraphRAG.md](../../图数据库/Neo4j/向量索引与GraphRAG.md)
