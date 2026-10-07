@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 490" width="1000" height="490" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="490" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">丢拍与堆积：三种并发语义的实测对照</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">间隔 10ms、任务体耗时 30ms、总时长 300ms（理论 30 拍）｜宿主 Go 1.26.5 实测</text>
+
+  <rect x="30" y="80" width="940" height="152" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="50" y="106" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 串行：任务体直接写在 tick 的分支里执行</text>
+  <text x="50" y="128" font-size="12" fill="#64748b">灰色刻度 = 到来的拍子｜蓝色方块 = 真正跑了一次任务</text>
+  <line x1="180" y1="212" x2="930" y2="212" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="180" y="228" text-anchor="middle" font-size="11" fill="#94a3b8">0ms</text>
+  <text x="430" y="228" text-anchor="middle" font-size="11" fill="#94a3b8">100ms</text>
+  <text x="680" y="228" text-anchor="middle" font-size="11" fill="#94a3b8">200ms</text>
+  <text x="930" y="228" text-anchor="middle" font-size="11" fill="#94a3b8">300ms</text>
+  <g stroke="#94a3b8" stroke-width="1.6">
+    <line x1="180" y1="204" x2="180" y2="212"/>
+    <line x1="205" y1="204" x2="205" y2="212"/>
+    <line x1="230" y1="204" x2="230" y2="212"/>
+    <line x1="255" y1="204" x2="255" y2="212"/>
+    <line x1="280" y1="204" x2="280" y2="212"/>
+    <line x1="305" y1="204" x2="305" y2="212"/>
+    <line x1="330" y1="204" x2="330" y2="212"/>
+    <line x1="355" y1="204" x2="355" y2="212"/>
+    <line x1="380" y1="204" x2="380" y2="212"/>
+    <line x1="405" y1="204" x2="405" y2="212"/>
+    <line x1="430" y1="204" x2="430" y2="212"/>
+    <line x1="455" y1="204" x2="455" y2="212"/>
+    <line x1="480" y1="204" x2="480" y2="212"/>
+    <line x1="505" y1="204" x2="505" y2="212"/>
+    <line x1="530" y1="204" x2="530" y2="212"/>
+    <line x1="555" y1="204" x2="555" y2="212"/>
+    <line x1="580" y1="204" x2="580" y2="212"/>
+    <line x1="605" y1="204" x2="605" y2="212"/>
+    <line x1="630" y1="204" x2="630" y2="212"/>
+    <line x1="655" y1="204" x2="655" y2="212"/>
+    <line x1="680" y1="204" x2="680" y2="212"/>
+    <line x1="705" y1="204" x2="705" y2="212"/>
+    <line x1="730" y1="204" x2="730" y2="212"/>
+    <line x1="755" y1="204" x2="755" y2="212"/>
+    <line x1="780" y1="204" x2="780" y2="212"/>
+    <line x1="805" y1="204" x2="805" y2="212"/>
+    <line x1="830" y1="204" x2="830" y2="212"/>
+    <line x1="855" y1="204" x2="855" y2="212"/>
+    <line x1="880" y1="204" x2="880" y2="212"/>
+    <line x1="905" y1="204" x2="905" y2="212"/>
+  </g>
+  <g fill="#dbeafe" stroke="#2563eb" stroke-width="1.2">
+    <rect x="180" y="182" width="75" height="18" rx="3"/>
+    <rect x="255" y="182" width="75" height="18" rx="3"/>
+    <rect x="330" y="182" width="75" height="18" rx="3"/>
+    <rect x="405" y="182" width="75" height="18" rx="3"/>
+    <rect x="480" y="182" width="75" height="18" rx="3"/>
+    <rect x="555" y="182" width="75" height="18" rx="3"/>
+    <rect x="630" y="182" width="75" height="18" rx="3"/>
+    <rect x="705" y="182" width="75" height="18" rx="3"/>
+    <rect x="780" y="182" width="75" height="18" rx="3"/>
+    <rect x="855" y="182" width="75" height="18" rx="3"/>
+  </g>
+  <text x="50" y="176" font-size="12.5" font-weight="bold" fill="#1e3a8a">收到 tick 10｜执行 10 次</text>
+  <text x="50" y="196" font-size="12" fill="#334155">20 拍被丢掉（通道容量 1，没取就走）</text>
+
+  <rect x="30" y="246" width="940" height="152" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="50" y="272" font-size="13.5" font-weight="bold" fill="#7c2d12">② 每个拍子起一个 goroutine：不丢拍，但并发会堆起来</text>
+  <text x="50" y="294" font-size="12" fill="#64748b">橙色刻度 = 每次触发都真的启动了任务（无需丢拍）</text>
+  <line x1="180" y1="378" x2="930" y2="378" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="180" y="394" text-anchor="middle" font-size="11" fill="#94a3b8">0ms</text>
+  <text x="430" y="394" text-anchor="middle" font-size="11" fill="#94a3b8">100ms</text>
+  <text x="680" y="394" text-anchor="middle" font-size="11" fill="#94a3b8">200ms</text>
+  <text x="930" y="394" text-anchor="middle" font-size="11" fill="#94a3b8">300ms</text>
+  <g stroke="#ea580c" stroke-width="2">
+    <line x1="180" y1="360" x2="180" y2="378"/>
+    <line x1="205" y1="360" x2="205" y2="378"/>
+    <line x1="230" y1="360" x2="230" y2="378"/>
+    <line x1="255" y1="360" x2="255" y2="378"/>
+    <line x1="280" y1="360" x2="280" y2="378"/>
+    <line x1="305" y1="360" x2="305" y2="378"/>
+    <line x1="330" y1="360" x2="330" y2="378"/>
+    <line x1="355" y1="360" x2="355" y2="378"/>
+    <line x1="380" y1="360" x2="380" y2="378"/>
+    <line x1="405" y1="360" x2="405" y2="378"/>
+    <line x1="430" y1="360" x2="430" y2="378"/>
+    <line x1="455" y1="360" x2="455" y2="378"/>
+    <line x1="480" y1="360" x2="480" y2="378"/>
+    <line x1="505" y1="360" x2="505" y2="378"/>
+    <line x1="530" y1="360" x2="530" y2="378"/>
+    <line x1="555" y1="360" x2="555" y2="378"/>
+    <line x1="580" y1="360" x2="580" y2="378"/>
+    <line x1="605" y1="360" x2="605" y2="378"/>
+    <line x1="630" y1="360" x2="630" y2="378"/>
+    <line x1="655" y1="360" x2="655" y2="378"/>
+    <line x1="680" y1="360" x2="680" y2="378"/>
+    <line x1="705" y1="360" x2="705" y2="378"/>
+    <line x1="730" y1="360" x2="730" y2="378"/>
+    <line x1="755" y1="360" x2="755" y2="378"/>
+    <line x1="780" y1="360" x2="780" y2="378"/>
+    <line x1="805" y1="360" x2="805" y2="378"/>
+    <line x1="830" y1="360" x2="830" y2="378"/>
+    <line x1="855" y1="360" x2="855" y2="378"/>
+    <line x1="880" y1="360" x2="880" y2="378"/>
+  </g>
+  <text x="50" y="342" font-size="12.5" font-weight="bold" fill="#7c2d12">收到 tick 29｜执行 29 次｜峰值并发 4</text>
+  <text x="50" y="362" font-size="12" fill="#334155">不丢拍，代价是同一时刻最多 4 个任务体在抢 CPU 与连接</text>
+
+  <text x="30" y="430" font-size="12.5" fill="#334155">⭐ 第三种语义：加信号量限并发 1（TryAcquire）→ 10 次触发对齐同一时刻时，峰值并发 1、跳过 9（既不堆积也不补跑）</text>
+  <text x="30" y="456" font-size="12.5" fill="#64748b">⭐ 三者不是好坏之分：丢拍 = 保节拍；堆积 = 保证不漏但可能压垮；排队 = 保证不漏但会越跑越滞后 —— 选哪个取决于任务语义</text>
+  <text x="30" y="480" font-size="12" fill="#64748b">注：② 只实测到「峰值并发 4」，未采样并发度随时间的变化曲线，故图中不做曲线示意</text>
+</svg>

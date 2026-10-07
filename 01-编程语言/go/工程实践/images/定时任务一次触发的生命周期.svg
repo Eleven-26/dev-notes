@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次定时任务触发的完整生命周期</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">三道判定 + 单次预算 + 收尾：漏掉任何一处，生产上都会以「重复执行」或「跑不完」的形式暴露</text>
+
+  <rect x="340" y="84" width="320" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">① 一拍到达</text>
+  <text x="500" y="128" text-anchor="middle" font-size="11.5" fill="#1d4ed8">ticker 的 tick，或 cron 算出的时刻</text>
+
+  <line x1="500" y1="138" x2="500" y2="164" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="168" width="320" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="192" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">判定 ①：同一个任务还在跑吗？</text>
+  <text x="500" y="212" text-anchor="middle" font-size="11.5" fill="#9a3412">进程内的重入保护（mutex / 信号量）</text>
+  <line x1="660" y1="195" x2="694" y2="195" stroke="#ea580c" stroke-width="1.6" marker-end="url(#a2)"/>
+  <text x="677" y="187" text-anchor="middle" font-size="11.5" fill="#ea580c">是</text>
+  <rect x="700" y="168" width="270" height="54" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="835" y="192" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">跳过本次（skipped++）</text>
+  <text x="835" y="212" text-anchor="middle" font-size="11.5" fill="#991b1b">丢拍语义，不补跑</text>
+
+  <line x1="500" y1="222" x2="500" y2="248" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="514" y="240" font-size="11.5" fill="#64748b">否</text>
+
+  <rect x="340" y="252" width="320" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="276" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">判定 ②：跨进程锁抢到了吗？</text>
+  <text x="500" y="296" text-anchor="middle" font-size="11.5" fill="#9a3412">多副本部署时必须，单机可省</text>
+  <line x1="660" y1="279" x2="694" y2="279" stroke="#ea580c" stroke-width="1.6" marker-end="url(#a2)"/>
+  <text x="677" y="271" text-anchor="middle" font-size="11.5" fill="#ea580c">否</text>
+  <rect x="700" y="252" width="270" height="54" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="835" y="276" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">跳过（lock_busy++）</text>
+  <text x="835" y="296" text-anchor="middle" font-size="11.5" fill="#991b1b">另一个副本正在跑同一任务</text>
+
+  <line x1="500" y1="306" x2="500" y2="332" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="514" y="324" font-size="11.5" fill="#64748b">是</text>
+
+  <rect x="340" y="336" width="320" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="360" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">② 建单次执行预算</text>
+  <text x="500" y="380" text-anchor="middle" font-size="11.5" fill="#1d4ed8">ctx = WithTimeout(父 ctx, 单次预算)</text>
+
+  <line x1="500" y1="390" x2="500" y2="416" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="420" width="320" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="444" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">③ 执行任务体</text>
+  <text x="500" y="464" text-anchor="middle" font-size="11.5" fill="#166534">幂等 + 在检查点看 ctx（决定能停在哪）</text>
+
+  <line x1="500" y1="474" x2="500" y2="500" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="504" width="320" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="528" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">判定 ③：超时 / 被取消？</text>
+  <text x="500" y="548" text-anchor="middle" font-size="11.5" fill="#9a3412">超时 = 调度器不再等，不等于任务已停</text>
+  <line x1="660" y1="531" x2="694" y2="531" stroke="#ea580c" stroke-width="1.6" marker-end="url(#a2)"/>
+  <text x="677" y="523" text-anchor="middle" font-size="11.5" fill="#ea580c">是</text>
+  <rect x="700" y="504" width="270" height="54" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="835" y="528" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">记 timeout / canceled</text>
+  <text x="835" y="548" text-anchor="middle" font-size="11.5" fill="#991b1b">放弃等待，但要记指标与日志</text>
+
+  <line x1="500" y1="558" x2="500" y2="584" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="514" y="576" font-size="11.5" fill="#64748b">否</text>
+
+  <rect x="340" y="588" width="320" height="54" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="612" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">④ 收尾</text>
+  <text x="500" y="632" text-anchor="middle" font-size="11.5" fill="#475569">记耗时与结果 → 释放锁 → 等下一拍</text>
+
+  <text x="30" y="678" font-size="12.5" fill="#334155">⭐ 三道判定的取值必须进指标：skipped / lock_busy / timeout 全是「任务没按预期跑」的证据，缺一个就查不出问题</text>
+  <text x="30" y="702" font-size="12.5" fill="#64748b">⚠️ 判定 ② 在单机部署时可以省，但「环境从 1 副本变 3 副本」时它会立刻变成必修项 —— 别把去重当成后期优化</text>
+</svg>
