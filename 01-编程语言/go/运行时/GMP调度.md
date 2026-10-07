@@ -20,7 +20,7 @@
 
 **约束**：`GOMAXPROCS` 决定 P 的数量；**一个 P 只能绑定一个 M**（同一时刻）。
 
-![GMP 三元组：M 是真正执行的 OS 线程，同一时刻最多绑一个 P；P 是 G 的调度器，持有 runnext、runq[256]、gFree 与 mcache，队列满时溢出到带锁的全局队列](images/GMP三元组结构.svg)
+![GMP 三元组：M 是真正执行的 OS 线程，同一时刻最多绑一个 P；P 是 G 的调度器，持有 runnext、256 格的本地环形队列 runq、gFree 与 mcache，队列满时溢出到带锁的全局队列](images/GMP三元组结构.svg)
 
 ### G 的入队过程
 

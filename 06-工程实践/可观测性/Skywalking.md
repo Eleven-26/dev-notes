@@ -193,7 +193,7 @@ TraceSegment                        // 一次请求在「一个服务实例内�
       └─ tags[] / logs[] / events[] // 标签、日志、事件（异常信息等）
 ```
 
-![TraceSegment 数据结构：refs[] 接链、spans[] 还原树形](images/TraceSegment数据结构.svg)
+![TraceSegment 数据结构：refs 字段接链、spans 数组还原树形](images/TraceSegment数据结构.svg)
 
 指标（meter）与日志（logging）也各走独立的 DataCarrier，互不阻塞。队列本身的数据结构要点：
 

@@ -15,6 +15,17 @@
 
 ### 1.1 时序图（含两端状态迁移）
 
+![TCP 四次挥手的报文时序与两端状态迁移：客户端经 FIN_WAIT_1、FIN_WAIT_2 到 TIME_WAIT 再 CLOSED，服务端经 CLOSE_WAIT、LAST_ACK 到 CLOSED](images/TCP四次挥手时序图.svg)
+
+图怎么读：左、右两条竖线是**主动关闭方（客户端）与被动关闭方（服务端）各自的生命线**，
+四根横向箭头依次是 `1. FIN, seq = u` → `2. ACK, ack = u + 1` → `3. FIN, seq = w, ack = u + 1` → `4. ACK, ack = w + 1`。
+箭头旁的深色小盒是**该报文处理完本端所处的状态**：客户端依次是 `FIN_WAIT_1`、`FIN_WAIT_2`（等对方的 FIN）、
+`TIME_WAIT`，服务端在回第 2 个报文后停在 `CLOSE_WAIT` **等应用调用 close()**，才发出自己的 FIN 进 `LAST_ACK`。
+底部三行是本篇后文要展开的三件事：`FIN` 只关一个方向（半关闭由 `shutdown(SHUT_WR)` 触发）、
+`TIME_WAIT` **只在主动关闭方**且要等 2MSL、`CLOSE_WAIT` **没有超时**所以堆积就是代码泄漏。
+
+下面这份纯文本版与图逐行对应，便于在没有渲染器时对照：
+
 ```text
 客户端（主动关闭方）                        服务端（被动关闭方）
   │                                            │
