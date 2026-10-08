@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">时间轮：环形数组 + 槽内链表，推进一格只处理一个槽</text>
+  <text x="500" y="60" text-anchor="middle" font-size="14" fill="#64748b">左＝单层时间轮（插入 O(1) / 推进 O(1)）；右＝分层时间轮（把「延迟超过一圈」下放到上一层）</text>
+
+  <defs>
+    <marker id="twHand" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="twDown" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <!-- ============ 左：单层时间轮 ============ -->
+  <rect x="30" y="86" width="440" height="386" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="250" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">① 单层时间轮（示意 8 槽，实际常取 256）</text>
+
+  <circle cx="240" cy="268" r="130" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+  <!-- 8 个槽 -->
+  <g font-size="12" font-weight="bold" text-anchor="middle">
+    <rect x="211" y="121" width="58" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="240" y="143" fill="#1e3a8a">槽 0 · 3</text>
+
+    <rect x="303" y="159" width="58" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="332" y="181" fill="#1e3a8a">槽 1 · 1</text>
+
+    <rect x="341" y="251" width="58" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+    <text x="370" y="273" fill="#166534">槽 2 · 5</text>
+
+    <rect x="303" y="343" width="58" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="332" y="365" fill="#1e3a8a">槽 3 · 0</text>
+
+    <rect x="211" y="381" width="58" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="240" y="403" fill="#1e3a8a">槽 4 · 2</text>
+
+    <rect x="119" y="343" width="58" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="148" y="365" fill="#1e3a8a">槽 5 · 0</text>
+
+    <rect x="81" y="251" width="58" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="110" y="273" fill="#1e3a8a">槽 6 · 7</text>
+
+    <rect x="119" y="159" width="58" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="148" y="181" fill="#1e3a8a">槽 7 · 1</text>
+  </g>
+
+  <!-- 指针 -->
+  <line x1="240" y1="268" x2="330" y2="268" stroke="#dc2626" stroke-width="2.5" marker-end="url(#twHand)"/>
+  <text x="240" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">cursor</text>
+  <text x="240" y="286" text-anchor="middle" font-size="11.5" fill="#64748b">本轮处理槽 2</text>
+
+  <text x="250" y="440" text-anchor="middle" font-size="12.5" fill="#334155">插入：槽号 = (cursor + 延迟) % 槽数 → 挂进该槽的链表，<tspan font-weight="bold" fill="#2563eb">O(1) 且无需比较</tspan></text>
+  <text x="250" y="460" text-anchor="middle" font-size="12.5" fill="#334155">推进：cursor 走一格，只处理这一格的链表</text>
+
+  <!-- ============ 右：分层时间轮 ============ -->
+  <rect x="530" y="86" width="440" height="386" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="750" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">② 分层时间轮（Kafka / Netty 的做法）</text>
+
+  <rect x="566" y="134" width="368" height="52" rx="8" fill="#dcfce7" stroke="#86efac"/>
+  <text x="582" y="155" font-size="13" font-weight="bold" fill="#166534">秒轮：60 槽</text>
+  <text x="582" y="175" font-size="12" fill="#334155">延迟 &lt; 60s 的任务都挂这儿，每 1s 推进一格</text>
+
+  <line x1="750" y1="186" x2="750" y2="204" stroke="#ea580c" stroke-width="2" marker-end="url(#twDown)"/>
+  <text x="762" y="200" font-size="11.5" fill="#9a3412">走完一圈 → 把到期任务下放</text>
+
+  <rect x="566" y="208" width="368" height="52" rx="8" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="582" y="229" font-size="13" font-weight="bold" fill="#9a3412">分轮：60 槽</text>
+  <text x="582" y="249" font-size="12" fill="#334155">延迟 &lt; 60min 的任务在这层，所以秒轮每格都很短</text>
+
+  <line x1="750" y1="260" x2="750" y2="278" stroke="#ea580c" stroke-width="2" marker-end="url(#twDown)"/>
+
+  <rect x="566" y="282" width="368" height="52" rx="8" fill="#ece9fe" stroke="#c4b5fd"/>
+  <text x="582" y="303" font-size="13" font-weight="bold" fill="#4c1d95">时轮：24 槽</text>
+  <text x="582" y="323" font-size="12" fill="#334155">延迟 &lt; 24h 的任务在这层；再长就再加一层（天轮）</text>
+
+  <rect x="566" y="352" width="368" height="106" rx="8" fill="#fee2e2" stroke="#fecaca"/>
+  <text x="582" y="373" font-size="13" font-weight="bold" fill="#991b1b">⚠️ 单层轮的天花板：延迟超过一圈就提前触发</text>
+  <text x="582" y="394" font-size="12" fill="#334155">根因：单层轮只存「槽号」不存「圈数」，</text>
+  <text x="582" y="412" font-size="12" fill="#334155">(cursor + delay) % 槽数 把整圈悄悄丢掉了。</text>
+  <text x="582" y="436" font-size="12" font-weight="bold" fill="#991b1b">实测：256 槽、期望第 261 个 tick 触发 → 第 6 个 tick 就触发了。</text>
+  <text x="582" y="452" font-size="12" fill="#334155">解法：分层轮，或每槽额外记「还要转几圈」。</text>
+
+  <!-- 底部实测 -->
+  <rect x="30" y="478" width="940" height="66" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="46" y="500" font-size="13" fill="#334155">实测（10000 个任务、延迟 1..200 tick、256 槽，容器 Go 1.26.8）：推进 200 个 tick 的「看过任务数」——</text>
+  <text x="46" y="522" font-size="13" fill="#334155">时间轮 <tspan font-weight="bold" fill="#16a34a">9950</tspan> 个　vs　无序列表（每 tick 扫全表）<tspan font-weight="bold" fill="#dc2626">1005000</tspan> 个 → <tspan font-weight="bold">101 倍</tspan>；最小堆出堆/下沉比较 215852 次</text>
+</svg>

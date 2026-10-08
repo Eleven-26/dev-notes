@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">布谷鸟过滤器：两个候选桶 + 踢出（cuckoo 的「占巢」）</text>
+  <text x="500" y="60" text-anchor="middle" font-size="14" fill="#64748b">每个 key 只存 8 bit 指纹，候选桶 i₁ 与 i₂ 由指纹互相 XOR 算出（所以踢出后能算回另一个桶）</text>
+
+  <defs>
+    <marker id="ckArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="ckKick" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <!-- ================= 左：正常插入 ================= -->
+  <rect x="30" y="86" width="440" height="356" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="250" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">① 两个桶里有一个空位 → 直接放入</text>
+
+  <!-- 桶 i1 -->
+  <text x="120" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">桶 i₁</text>
+  <g stroke="#2563eb" stroke-width="2" fill="#ffffff">
+    <rect x="70" y="158" width="100" height="46" rx="5"/>
+    <rect x="70" y="208" width="100" height="46" rx="5"/>
+    <rect x="70" y="258" width="100" height="46" rx="5"/>
+    <rect x="70" y="308" width="100" height="46" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+  </g>
+  <g font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">
+    <text x="120" y="188">0x3A</text>
+    <text x="120" y="238">0x7F</text>
+    <text x="120" y="288">0x11</text>
+    <text x="120" y="338" fill="#166534">空</text>
+  </g>
+
+  <!-- 桶 i2 -->
+  <text x="380" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">桶 i₂</text>
+  <g stroke="#2563eb" stroke-width="2" fill="#ffffff">
+    <rect x="330" y="158" width="100" height="46" rx="5"/>
+    <rect x="330" y="208" width="100" height="46" rx="5"/>
+    <rect x="330" y="258" width="100" height="46" rx="5"/>
+    <rect x="330" y="308" width="100" height="46" rx="5"/>
+  </g>
+  <g font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">
+    <text x="380" y="188">0x9C</text>
+    <text x="380" y="238">0x02</text>
+    <text x="380" y="288">0xE4</text>
+    <text x="380" y="338">0x5D</text>
+  </g>
+
+  <!-- 插入箭头 -->
+  <line x1="250" y1="400" x2="250" y2="380" stroke="#2563eb" stroke-width="2"/>
+  <text x="250" y="420" text-anchor="middle" font-size="13" fill="#1e3a8a">插入 x：指纹 f = 0x6B</text>
+  <line x1="250" y1="374" x2="176" y2="344" stroke="#16a34a" stroke-width="2.5" marker-end="url(#ckArrow)"/>
+  <text x="118" y="378" font-size="12" fill="#16a34a" font-weight="bold">放进 i₁ 空槽</text>
+
+  <text x="250" y="432" text-anchor="middle" font-size="12" fill="#64748b">查询 = 只看 i₁ / i₂ 两个桶里有没有 f（8 bit 比较，不碰原 key）</text>
+
+  <!-- ================= 右：踢出链 ================= -->
+  <rect x="530" y="86" width="440" height="356" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="750" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">② 两个桶全满 → 踢出一个，让它去自己的另一个桶</text>
+
+  <text x="640" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#9a3412">桶 i₁（满）</text>
+  <g stroke="#ea580c" stroke-width="2" fill="#ffffff">
+    <rect x="590" y="158" width="100" height="46" rx="5"/>
+    <rect x="590" y="208" width="100" height="46" rx="5"/>
+    <rect x="590" y="258" width="100" height="46" rx="5" fill="#ffedd5"/>
+    <rect x="590" y="308" width="100" height="46" rx="5"/>
+  </g>
+  <g font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">
+    <text x="640" y="188">0x3A</text>
+    <text x="640" y="238">0x7F</text>
+    <text x="640" y="288" fill="#9a3412">0xC7</text>
+    <text x="640" y="338">0x11</text>
+  </g>
+
+  <line x1="700" y1="281" x2="800" y2="281" stroke="#ea580c" stroke-width="2.5" marker-end="url(#ckKick)"/>
+  <text x="750" y="272" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">踢出 0xC7</text>
+
+  <text x="870" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">它的另一个桶 i₃</text>
+  <g stroke="#16a34a" stroke-width="2" fill="#ffffff">
+    <rect x="820" y="158" width="100" height="46" rx="5" fill="#dcfce7"/>
+    <rect x="820" y="208" width="100" height="46" rx="5"/>
+    <rect x="820" y="258" width="100" height="46" rx="5"/>
+    <rect x="820" y="308" width="100" height="46" rx="5"/>
+  </g>
+  <g font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">
+    <text x="870" y="188" fill="#166534">0xC7</text>
+    <text x="870" y="238">0x41</text>
+    <text x="870" y="288">0x8B</text>
+    <text x="870" y="338">0x2E</text>
+  </g>
+
+  <text x="750" y="378" text-anchor="middle" font-size="12.5" fill="#334155">i₃ 也没空位？→ 继续踢，最多 500 次；仍放不下就报「插入失败」</text>
+  <text x="750" y="400" text-anchor="middle" font-size="12.5" fill="#334155">⭐ 因为 i₂ = i₁ XOR hash(f)，从任一桶都能算回另一个 → 踢出才闭环</text>
+  <text x="750" y="424" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#dc2626">⚠️ 桶数必须是 2 的幂，否则这个 XOR 对合性被破坏 → 静默漏检</text>
+
+  <!-- 底部实测 -->
+  <rect x="30" y="458" width="440" height="62" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="46" y="480" font-size="13" fill="#334155">实测（16384 桶 × 4 槽，8 bit 指纹，容器 Go 1.26.8）：</text>
+  <text x="46" y="500" font-size="13" fill="#334155">插入 62000 个 → 负载 <tspan font-weight="bold">0.9460</tspan>、失败 0、回查<b>漏检 0</b>；误判率 <tspan font-weight="bold" fill="#2563eb">2.97%</tspan></text>
+
+  <rect x="530" y="458" width="440" height="62" rx="8" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="546" y="480" font-size="13" fill="#334155">删除 10000 个：删除命中 <tspan font-weight="bold">10000</tspan> 次，</text>
+  <text x="546" y="500" font-size="13" fill="#334155">其余 52000 个<b>被误删 0 个</b>（同空间量级下布隆 2.14%，但不支持删除）</text>
+</svg>

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">倒排索引：把「文档 → 词」倒过来，变成「词 → 文档列表」</text>
+  <text x="500" y="60" text-anchor="middle" font-size="14" fill="#64748b">词典（可用 FST 压缩）+ 倒排表（差分编码）+ 跳点（跳着找，不用顺序扫）</text>
+
+  <defs>
+    <marker id="invArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="invArrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <!-- ============ 左：正排 vs 倒排 ============ -->
+  <rect x="30" y="86" width="440" height="378" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="250" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">① 同一份数据，两种组织方式</text>
+
+  <text x="60" y="142" font-size="13.5" font-weight="bold" fill="#1e3a8a">正排（文档 → 词）</text>
+  <g font-size="13" fill="#334155">
+    <rect x="60" y="152" width="170" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+    <text x="72" y="172">doc 1 → apple, pie</text>
+    <rect x="60" y="188" width="170" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+    <text x="72" y="208">doc 2 → apple</text>
+    <rect x="60" y="224" width="170" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+    <text x="72" y="244">doc 3 → banana, pie</text>
+  </g>
+  <text x="145" y="276" text-anchor="middle" font-size="12" fill="#64748b">「这篇文档有哪些词」</text>
+  <text x="145" y="294" text-anchor="middle" font-size="12" fill="#dc2626">查「哪些文档含 apple」→ 全表扫</text>
+
+  <line x1="250" y1="250" x2="250" y2="250" stroke="none"/>
+  <text x="255" y="196" font-size="22" fill="#2563eb">→</text>
+
+  <text x="290" y="142" font-size="13.5" font-weight="bold" fill="#166534">倒排（词 → 文档列表）</text>
+  <g font-size="13" fill="#334155">
+    <rect x="290" y="152" width="165" height="30" rx="5" fill="#dcfce7" stroke="#86efac"/>
+    <text x="302" y="172">apple → [1, 2]</text>
+    <rect x="290" y="188" width="165" height="30" rx="5" fill="#dcfce7" stroke="#86efac"/>
+    <text x="302" y="208">banana → [3]</text>
+    <rect x="290" y="224" width="165" height="30" rx="5" fill="#dcfce7" stroke="#86efac"/>
+    <text x="302" y="244">pie → [1, 3]</text>
+  </g>
+  <text x="372" y="276" text-anchor="middle" font-size="12" fill="#64748b">「这个词出现在哪些文档」</text>
+  <text x="372" y="294" text-anchor="middle" font-size="12" fill="#16a34a" font-weight="bold">查「apple」→ 直接命中</text>
+
+  <rect x="60" y="312" width="395" height="136" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="76" y="334" font-size="13" font-weight="bold" fill="#334155">为什么必须倒过来</text>
+  <text x="76" y="358" font-size="12.5" fill="#334155">正排能回答「doc 1 讲了什么」，但回答不了</text>
+  <text x="76" y="378" font-size="12.5" fill="#334155">「哪些文档含 apple」——只能逐篇扫，代价 O(文档数)。</text>
+  <text x="76" y="402" font-size="12.5" fill="#334155">倒排把这个方向预先算好：一次查词典 + 读一张</text>
+  <text x="76" y="422" font-size="12.5" fill="#334155">倒排表即可。⭐ 这就是「索引」二字的全部含义：</text>
+  <text x="76" y="442" font-size="12.5" font-weight="bold" fill="#2563eb">用写入时的一次额外组织，换查询时的数量级提速。</text>
+
+  <!-- ============ 右：一个词条的物理结构 ============ -->
+  <rect x="530" y="86" width="440" height="378" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="750" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">② 一个词条在磁盘上长什么样</text>
+
+  <rect x="556" y="130" width="388" height="52" rx="8" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="570" y="151" font-size="13" font-weight="bold" fill="#1e3a8a">词典 term dictionary</text>
+  <text x="570" y="171" font-size="12.5" fill="#334155">"apple" → 指针 | df = 3 | 段内偏移（FST 压缩：共享前后缀）</text>
+
+  <line x1="750" y1="182" x2="750" y2="200" stroke="#2563eb" stroke-width="2" marker-end="url(#invArrow)"/>
+
+  <rect x="556" y="204" width="388" height="66" rx="8" fill="#dcfce7" stroke="#86efac"/>
+  <text x="570" y="225" font-size="13" font-weight="bold" fill="#166534">倒排表 posting list</text>
+  <text x="570" y="245" font-size="12.5" fill="#334155">docID：[3, 12, 45]　（要打分再加 freq / 位置，体积随之上涨）</text>
+  <text x="570" y="263" font-size="12.5" fill="#334155">⭐ 有序是硬前提：压缩、求交、跳转全都依赖它</text>
+
+  <line x1="750" y1="270" x2="750" y2="288" stroke="#ea580c" stroke-width="2" marker-end="url(#invArrow2)"/>
+
+  <rect x="556" y="292" width="388" height="76" rx="8" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="570" y="313" font-size="13" font-weight="bold" fill="#9a3412">压缩：差分 + 变长字节</text>
+  <text x="570" y="333" font-size="12.5" fill="#334155">原样 [3, 12, 45] = 12 字节 → 差分 [3, 9, 33] = 3 字节</text>
+  <text x="570" y="353" font-size="12.5" fill="#334155">其它手段：Frame-of-Reference、RoaringBitmap（分块容器）</text>
+
+  <rect x="556" y="382" width="388" height="66" rx="8" fill="#ece9fe" stroke="#c4b5fd"/>
+  <text x="570" y="403" font-size="13" font-weight="bold" fill="#4c1d95">跳点 skip pointer</text>
+  <text x="570" y="423" font-size="12.5" fill="#334155">每隔一段插一个「直接指向第 i+k 项」的指针；</text>
+  <text x="570" y="441" font-size="12.5" fill="#334155">⚠️ 它省的是随机访问 / 磁盘块读取，不是比较次数</text>
+
+  <!-- 底部实测 -->
+  <rect x="30" y="478" width="940" height="66" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="46" y="500" font-size="13" fill="#334155">实测（10 万文档 × 20 词，容器 Go 1.26.8）：倒排表差分压缩 <tspan font-weight="bold" fill="#2563eb">7884020 → 3322853 字节（42.1%）</tspan>；</text>
+  <text x="46" y="522" font-size="13" fill="#334155">求交「热词(52815) AND 冷词(690)」：线性归并 53117 次 → <tspan font-weight="bold" fill="#16a34a">短表驱动 + 二分 11578 次（4.59 倍）</tspan>；⚠️ 跳表按 √|A| 取间隔反而 0.58 倍（更慢）</text>
+</svg>
