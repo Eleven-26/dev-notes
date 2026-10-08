@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 486" width="1000" height="486" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="486" fill="#ffffff"/>
+  <text x="40" y="34" font-size="19" font-weight="bold" fill="#0f172a">DP 优化四类手法：都是「吃掉转移里的重复计算」</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">四格各是一种把 O(n²) / O(n³) 降下来的路线；括号内是容器实测（Go 1.26.8）的核心操作次数</text>
+
+  <!-- 格 1：单调队列 -->
+  <rect x="40" y="72" width="440" height="164" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="98" font-size="15" font-weight="bold" fill="#1d4ed8">① 单调队列优化</text>
+  <text x="60" y="122" font-size="12.5" fill="#334155">转移只看窗口 [i−m, i−1] 里的最值</text>
+  <text x="60" y="140" font-size="12.5" fill="#64748b">手写一个单调队列，队首即答案</text>
+  <rect x="60" y="154" width="40" height="30" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <rect x="106" y="154" width="40" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="152" y="154" width="40" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="198" y="154" width="40" height="30" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <rect x="244" y="154" width="40" height="30" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="110" y="202" font-size="12" fill="#2563eb">↑ 当前窗口</text>
+  <text x="60" y="224" font-size="12.5" fill="#16a34a">1 995 050 → 59 991（省 33 倍）</text>
+
+  <!-- 格 2：斜率优化 -->
+  <rect x="520" y="72" width="440" height="164" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="540" y="98" font-size="15" font-weight="bold" fill="#ea580c">② 斜率优化</text>
+  <text x="540" y="122" font-size="12.5" fill="#334155">转移含 dp[j] 与 S[i]·S[j] 的交叉项</text>
+  <text x="540" y="140" font-size="12.5" fill="#64748b">把候选点摆成下凸壳，切线求最小值</text>
+  <path d="M560,214 L630,196 L700,187 L770,183" fill="none" stroke="#fdba74" stroke-width="2"/>
+  <circle cx="560" cy="214" r="4" fill="#ea580c"/>
+  <circle cx="630" cy="196" r="4" fill="#ea580c"/>
+  <circle cx="700" cy="187" r="4" fill="#ea580c"/>
+  <circle cx="770" cy="183" r="4" fill="#ea580c"/>
+  <text x="546" y="232" font-size="12.5" fill="#16a34a">200 010 000 → 59 908（省 3339 倍）</text>
+
+  <!-- 格 3：决策单调性 -->
+  <rect x="40" y="248" width="440" height="164" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="274" font-size="15" font-weight="bold" fill="#16a34a">③ 决策单调性 / 四边形不等式</text>
+  <text x="60" y="298" font-size="12.5" fill="#334155">最优断点随区间单调移动：</text>
+  <text x="60" y="316" font-size="12.5" fill="#334155">opt[i][j−1] ≤ opt[i][j] ≤ opt[i+1][j]</text>
+  <line x1="80" y1="336" x2="220" y2="336" stroke="#86efac" stroke-width="8"/>
+  <line x1="150" y1="358" x2="330" y2="358" stroke="#16a34a" stroke-width="8"/>
+  <line x1="260" y1="380" x2="420" y2="380" stroke="#86efac" stroke-width="8"/>
+  <text x="360" y="332" font-size="11.5" fill="#64748b">三者层层夹逼</text>
+  <text x="60" y="402" font-size="12.5" fill="#16a34a">10 666 600 → 160 652（省 66 倍）</text>
+
+  <!-- 格 4：数据结构优化 -->
+  <rect x="520" y="248" width="440" height="164" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="540" y="274" font-size="15" font-weight="bold" fill="#7c3aed">④ 数据结构优化</text>
+  <text x="540" y="298" font-size="12.5" fill="#334155">转移要「某个前缀上的最值 / 和」</text>
+  <text x="540" y="316" font-size="12.5" fill="#64748b">用 BIT / 线段树把它压到 O(log n)</text>
+  <rect x="545" y="334" width="26" height="26" fill="#ede9fe" stroke="#c4b5fd"/>
+  <rect x="577" y="334" width="26" height="26" fill="#ede9fe" stroke="#c4b5fd"/>
+  <rect x="609" y="334" width="26" height="26" fill="#ddd6fe" stroke="#a78bfa"/>
+  <rect x="641" y="334" width="26" height="26" fill="#ede9fe" stroke="#c4b5fd"/>
+  <rect x="673" y="334" width="26" height="26" fill="#ede9fe" stroke="#c4b5fd"/>
+  <rect x="705" y="334" width="26" height="26" fill="#ddd6fe" stroke="#a78bfa"/>
+  <rect x="737" y="334" width="26" height="26" fill="#ede9fe" stroke="#c4b5fd"/>
+  <rect x="769" y="334" width="26" height="26" fill="#ede9fe" stroke="#c4b5fd"/>
+  <text x="545" y="382" font-size="11.5" fill="#7c3aed">lowbit 跳跃维护前缀最值</text>
+  <text x="540" y="402" font-size="12.5" fill="#16a34a">199 990 000 → 293 865（省 681 倍）</text>
+
+  <!-- 底部 -->
+  <rect x="40" y="428" width="920" height="42" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="60" y="454" font-size="13" fill="#1d4ed8">⭐ 四条的共同前提：优化前后 dp 值必须逐项一致 —— 本文四个场景实测全部 true，不一致就是「写错了但没报错」。</text>
+</svg>

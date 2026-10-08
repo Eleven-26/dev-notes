@@ -606,5 +606,6 @@ internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
 - [struct与tag.md](struct与tag.md) — 什么样的 struct 能当 key：可比较规则与 `invalid map key type` 的编译错误原文
 - [并发同步原语.md](../并发编程/并发同步原语.md) — `sync.Map`、分段锁与原子操作怎么选
 - [错误处理.md](错误处理.md) — 哨兵错误表 / 错误码映射用 map 时的并发与零值坑在彼
+- [开放寻址与冲突解决.md](../../../02-计算机基础/数据结构/哈希表/开放寻址与冲突解决.md) — 冲突解决的实现层：Go map 走的「开放寻址 + 溢出桶链」在三种路线里的位置
 
 > 反向引用（本篇被下列文档引到）：[sync.Map.md](../并发编程/sync.Map.md)、[for-range.md](for-range.md)、[反射与unsafe.md](../运行时/反射与unsafe.md)、[数组与链表.md](../../../02-计算机基础/数据结构/线性结构/数组与链表.md)

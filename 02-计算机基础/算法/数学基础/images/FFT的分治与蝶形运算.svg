@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 508" width="1000" height="508" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+
+  <rect width="1000" height="508" fill="#ffffff"/>
+  <text x="40" y="34" font-size="19" font-weight="bold" fill="#0f172a">FFT：把 n² 次乘加折成 n·log n 次</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">同一个卷积，两种算法的核心乘运算次数（容器实测 Go 1.26.8，n 指参与卷积的两个长度相同的序列）</text>
+
+  <!-- 左：朴素 DFT -->
+  <rect x="40" y="76" width="430" height="176" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="102" font-size="15" font-weight="bold" fill="#0f172a">朴素 DFT：每个输出独立地过一遍全部输入</text>
+  <text x="60" y="130" font-size="14" fill="#334155">X[k] = Σ</text>
+  <text x="114" y="126" font-size="10" fill="#334155">j=0..n−1</text>
+  <text x="176" y="130" font-size="14" fill="#334155">x[j] · ω</text>
+  <text x="243" y="126" font-size="10" fill="#334155">jk</text>
+  <text x="60" y="162" font-size="13" fill="#64748b">n 个输出，每个要累加 n 项</text>
+  <rect x="60" y="176" width="180" height="34" rx="6" fill="#fee2e2" stroke="#fecaca"/>
+  <text x="76" y="198" font-size="14" fill="#dc2626">乘法 n × n = n²</text>
+  <text x="60" y="234" font-size="13" fill="#334155">n = 4096 → 16 777 216 次</text>
+
+  <!-- 右：FFT 分治 -->
+  <rect x="530" y="76" width="430" height="176" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="550" y="102" font-size="15" font-weight="bold" fill="#0f172a">FFT：按下标奇偶拆成两个半规模问题</text>
+  <text x="550" y="130" font-size="14" fill="#334155">X[k] = E[k] + ω</text>
+  <text x="658" y="126" font-size="10" fill="#334155">k</text>
+  <text x="668" y="130" font-size="14" fill="#334155">· O[k]</text>
+  <text x="550" y="152" font-size="14" fill="#334155">X[k + n/2] = E[k] − ω</text>
+  <text x="700" y="148" font-size="10" fill="#334155">k</text>
+  <text x="710" y="152" font-size="14" fill="#334155">· O[k]</text>
+  <text x="550" y="180" font-size="13" fill="#64748b">T(n) = 2·T(n/2) + O(n)</text>
+  <rect x="550" y="194" width="220" height="34" rx="6" fill="#dcfce7" stroke="#bbf7d0"/>
+  <text x="566" y="216" font-size="14" fill="#16a34a">乘法 ≈ 1.5 n · log₂n</text>
+  <text x="550" y="242" font-size="13" fill="#334155">n = 4096 → 167 936 次（省 99.9 倍）</text>
+
+  <!-- 蝶形单元 -->
+  <rect x="40" y="272" width="920" height="216" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="60" y="300" font-size="15" font-weight="bold" fill="#0f172a">蝶形单元：一次复乘产出两个输出，是上面分治的一步</text>
+
+  <!-- 输入点 -->
+  <text x="72" y="356" font-size="15" fill="#0f172a">a</text>
+  <text x="72" y="426" font-size="15" fill="#0f172a">b</text>
+  <circle cx="130" cy="351" r="4" fill="#2563eb"/>
+  <circle cx="130" cy="421" r="4" fill="#2563eb"/>
+
+  <!-- 到中心 -->
+  <line x1="134" y1="351" x2="330" y2="351" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="134" y1="421" x2="330" y2="421" stroke="#94a3b8" stroke-width="1.6"/>
+
+  <!-- 乘法圈 -->
+  <circle cx="360" cy="421" r="18" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="353" y="427" font-size="14" fill="#ea580c">×ω</text>
+  <line x1="330" y1="421" x2="342" y2="421" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="378" y1="421" x2="470" y2="421" stroke="#94a3b8" stroke-width="1.6"/>
+
+  <!-- 汇合点 -->
+  <line x1="330" y1="351" x2="470" y2="351" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="470" y1="351" x2="470" y2="421" stroke="#94a3b8" stroke-width="1.6"/>
+  <circle cx="470" cy="351" r="4" fill="#0f172a"/>
+  <circle cx="470" cy="421" r="4" fill="#0f172a"/>
+
+  <!-- 输出 -->
+  <line x1="474" y1="351" x2="620" y2="330" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arwB)"/>
+  <line x1="474" y1="421" x2="620" y2="330" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arwB)"/>
+  <line x1="474" y1="351" x2="620" y2="442" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arwG)"/>
+  <line x1="474" y1="421" x2="620" y2="442" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arwG)"/>
+  <text x="636" y="334" font-size="15" fill="#2563eb">a + b·ω</text>
+  <text x="636" y="446" font-size="15" fill="#16a34a">a − b·ω</text>
+
+  <!-- 说明 -->
+  <text x="60" y="472" font-size="12.5" fill="#64748b">两个输出共用这一次复乘 —— 这就是「每一步只付一次乘法」的来处；log₂n 层叠起来即 n·log n。</text>
+
+  <!-- 单位根 / 精度提示 -->
+  <rect x="700" y="278" width="248" height="88" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="716" y="302" font-size="13" font-weight="bold" fill="#1d4ed8">两条实现路线</text>
+  <text x="716" y="324" font-size="12.5" fill="#334155">· 复数 FFT：通用，有浮点误差</text>
+  <text x="716" y="344" font-size="12.5" fill="#334155">· 模意义 NTT：结果精确，需取模</text>
+</svg>
