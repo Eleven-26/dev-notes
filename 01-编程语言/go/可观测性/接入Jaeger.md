@@ -476,4 +476,7 @@ curl -s "http://localhost:16686/api/services"
 - [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 `terminationGracePeriodSeconds`
 - [可观测性选型.md](../../../06-工程实践/可观测性/可观测性选型.md) — 链路后端与存储的选型对比
+- [日志与错误规范.md](../工程实践/日志与错误规范.md) — trace 关联日志的字段口径在彼，日志本身的结构化规矩在此
+- [手写Prometheus导出器.md](手写Prometheus导出器.md) — trace 与 metrics 的分工（一条链路 vs 一条曲线），Go 侧两条接入各一篇
+
 > 反向引用（本篇被下列文档引到）：[从零实现网关.md](../网络编程/从零实现网关.md)、[标准库实现.md](../工程实践/定时任务/标准库实现.md)、[xxl-job接入.md](../工程实践/定时任务/xxl-job接入.md)

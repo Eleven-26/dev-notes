@@ -2,7 +2,7 @@
 
 > GMP 三元组、work stealing、协程上下文切换时机
 >
-> 内容整理自大厂 Go 后端面试真题，并按《Go 语言核心编程》（李文塔）5.4.2 调度模型、5.4.3 并发和调度 的相关章节**补充了机制分析与实测**；参考资料与原始素材见 [素材清单](../../../素材清单.md)。
+> 内容整理自个人学习笔记，并按《Go 语言核心编程》（李文塔）5.4.2 调度模型、5.4.3 并发和调度 的相关章节**补充了机制分析与实测**；参考资料与原始素材见 [素材清单](../../../素材清单.md)。
 
 ---
 
@@ -234,39 +234,25 @@
 
 ### 4.4 实测：队列真的会积压（`GODEBUG=schedtrace`）
 
-给 1000 个 goroutine 每个分配约 10 ms 的纯计算量，一次全丢出去，每 150 ms 打印一次调度器状态：
+⭐ **一句话**：`schedtrace=150` 每次采样打**一行汇总**，这一行能直接回答三个问题 ——
+**并行度够不够**（`idleprocs=0` 就是打满）、**积压在谁身上**（`runqueue` 长期非零 + 方括号里各 P 的本地队列长度）、
+**线程为什么比 P 多**（`threads > gomaxprocs`）。
 
-```bash
-go build -o gmp.exe ./gmp                 # ⚠️ 先编译再运行（见下方「踩坑」）
-GODEBUG=schedtrace=150 ./gmp.exe trace
-```
+本篇只留这两个从实测里长出来的结论：
 
-```text
-SCHED 357ms: gomaxprocs=8 idleprocs=0 threads=10 spinningthreads=0 needspinning=1 idlethreads=0 runqueue=355 [ 170 35 43 51 23 82 70 61 ] schedticks=[ 14 16 15 15 16 16 17 19 ]
-SCHED 843ms: gomaxprocs=8 idleprocs=0 threads=10 spinningthreads=0 needspinning=1 idlethreads=0 runqueue=374 [ 151 18 23 32 3 61 51 41 ] schedticks=[ 33 33 35 34 36 37 36 39 ]
-```
+| 观察 | 结论 |
+|---|---|
+| P0 的本地队列最长（170 / 151），全局队列涨到 355 | goroutine 是在主协程（P0）上创建的，**新建的 G 优先进"当前 P"的本地队列**，满 256 才溢出到全局队列 |
+| `threads=10 > gomaxprocs=8` | M 不受 `GOMAXPROCS` 限制，除了 8 个干活的外还有 sysmon 等系统线程 |
 
-逐字段读：
+⚠️ **踩坑记录**：`GODEBUG` 会**同时作用在 `go run` 工具自身进程**上，所以 `GODEBUG=schedtrace=150 go run .`
+的输出里会混进 `go` 工具的调度器采样（时间戳非单调、`0ms` 反复出现，容易看成"队列一直是 0"）。
+**一定要先 `go build` 再运行二进制**。
 
-| 字段 | 例子 | 含义 |
-|---|---|---|
-| `gomaxprocs=8` | 8 | P 的数量 |
-| `idleprocs=0` | 0 | **空闲 P 数**——这里是 0，说明 8 个 P 全在干活 |
-| `threads=10` | 10 | M（操作系统线程）总数，**可以大于 P** |
-| `spinningthreads` / `needspinning` | 0 / 1 | 正在自旋找活的 M / 需要自旋的 M（`needspinning=1` 说明**活多到需要唤醒更多 M**） |
-| `idlethreads=0` | 0 | 空闲线程数 |
-| `runqueue=355` | 355 | **全局队列**长度 |
-| `[ 170 35 43 51 23 82 70 61 ]` | —— | **每个 P 的本地队列长度**（顺序对应 P0~P7） |
-| `schedticks=[...]` | —— | 每个 P 的调度次数（Go 1.26 新增字段） |
-
-⭐ **两个可以对照的点**：
-1. **P0 的本地队列最长（170 / 151）** —— 因为 goroutine 是在主协程（P0）上创建的，
-   **新建的 G 优先进"当前 P"的本地队列**，本地队列满 256 才溢出到全局队列；这也解释了为什么全局队列会涨到 355；
-2. **`threads=10 > gomaxprocs=8`** —— M 不受 `GOMAXPROCS` 限制，除了 8 个干活的外还有 sysmon 等系统线程。
-
-> ⚠️ **踩坑记录**：`GODEBUG` 会**同时作用在 `go run` 工具自身进程**上，所以 `GODEBUG=schedtrace=150 go run .`
-> 的输出里会混进 `go` 工具的调度器采样（时间戳非单调、`0ms` 反复出现，容易看成"队列一直是 0"）。
-> **一定要先 `go build` 再运行二进制**。
+逐字段的读法（每个字段对应什么判据）、`scheddetail=1` 把 P / M / G 摊开后的三段、以及 `gctrace`、
+`runtime/trace`、`MemStats` 那套自省旋钮，已经独立成篇：见 [runtime调试与trace.md](runtime调试与trace.md) 第二、三、四节。
+⚠️ 那边是**容器 4 P** 的同款实验（全局队列 395~430），本篇是**宿主机 8 P**（355 / 374）——
+**同一份代码、不同 CPU 数，绝对值不可比**，趋势一致（本地队列涨 → 溢出到全局 → 全局长期非零）。
 
 ### 4.5 队列空了会怎样：M 的自旋与休眠
 
@@ -394,4 +380,6 @@ GC 要做 STW 时，需要**所有 goroutine 都到达"安全点"**。老版本�
 - [goroutine.md](../并发编程/goroutine.md) — goroutine 本身有多轻、栈怎么长、怎么排查泄漏
 - [垃圾回收机制.md](垃圾回收机制.md) — 抢占式调度为什么是 STW 能稳定在亚毫秒的前提
 - [进程与线程.md](../../../02-计算机基础/linux/进程与线程.md) — 线程与协程的创建成本对照
-> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[并发同步原语.md](../并发编程/并发同步原语.md)
+- [runtime调试与trace.md](runtime调试与trace.md) — 第四节 `schedtrace` 的逐字段读法、`scheddetail` / `gctrace` / `runtime/trace` 全套自省旋钮（本篇只留结论）
+
+> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[sync.Map.md](../并发编程/sync.Map.md)、[并发同步原语.md](../并发编程/并发同步原语.md)、[反射与unsafe.md](反射与unsafe.md)

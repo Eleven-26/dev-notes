@@ -427,3 +427,5 @@ go build -o "$TEMP/grpclab.exe" . && cd "$TEMP" && ./grpclab.exe   # 代码存�
 - [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — HTTP/1.1 vs HTTP/2 vs gRPC 的**协议语义对照**（本篇只讲不用代码生成怎么调 / 怎么写，两者分工互补）
 - [数据序列化.md](../../../02-计算机基础/网络/数据序列化.md) — protobuf 与 JSON 的**格式选型**与体积 / 性能实测
 - [客户端真实IP与可信代理.md](../../../02-计算机基础/网络/客户端真实IP与可信代理.md) — `x-real-ip` 在 HTTP 出口与 gRPC metadata 两条路上的同源问题
+- [net包与TCP-UDP编程.md](net包与TCP-UDP编程.md) — gRPC 走 HTTP/2；TCP framing 与它怎么选、UDS 快多少在彼第十节
+- [HTTP客户端与连接池.md](HTTP客户端与连接池.md) — gRPC 复用连接的对照：HTTP 客户端的连接池与它各自的复用边界在彼

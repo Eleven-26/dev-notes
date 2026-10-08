@@ -459,4 +459,4 @@ OkHttpClient client = new OkHttpClient.Builder()
 - [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — DNS 在整条链路里的位置（应用层第一步）
 - [07-DNS服务器.md](../linux/鸟哥服务器架设篇/07-DNS服务器.md) — 实操侧：BIND 部署、zone 文件与排错
 
-> 反向引用（本篇被下列文档引到）：[06-网络配置与nmcli.md](../linux/鸟哥基础学习篇/06-网络配置与nmcli.md)、[DHCP.md](DHCP.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)、[客户端真实IP与可信代理.md](客户端真实IP与可信代理.md)、[网络通信链路详解.md](网络通信链路详解.md)、[Docker网络与镜像源.md](../../06-工程实践/部署/docker/Docker网络与镜像源.md)
+> 反向引用（本篇被下列文档引到）：[HTTP客户端与连接池.md](../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[06-网络配置与nmcli.md](../linux/鸟哥基础学习篇/06-网络配置与nmcli.md)、[DHCP.md](DHCP.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)、[客户端真实IP与可信代理.md](客户端真实IP与可信代理.md)、[网络通信链路详解.md](网络通信链路详解.md)、[Docker网络与镜像源.md](../../06-工程实践/部署/docker/Docker网络与镜像源.md)

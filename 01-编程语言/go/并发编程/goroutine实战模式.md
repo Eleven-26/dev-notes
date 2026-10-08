@@ -97,18 +97,12 @@ if err := g.Wait(); err != nil {
 }
 ```
 
-实测（5 个任务，第 2 个在 200ms 失败）：
-
-```text
-  任务 1 完成（100ms）
-  任务 4 被取消（context canceled，200ms）
-  任务 5 被取消（context canceled，200ms）
-  任务 3 被取消（context canceled，200ms）
-g.Wait() 返回：任务 2 失败（总耗时 200ms）
-```
-
-⭐ 三个自带的便利：`Add`/`Done` 不用手写、**派生出的 `ctx` 失败即取消**、错误只收敛第一条。
+⭐ **这一案例只证明一件事**：5 个任务、第 2 个在 200ms 失败时，其余三个还在跑的协程收到的是 `context canceled`，
+`g.Wait()` 返回的是**第一条**错误 —— 总耗时 200ms 而不是 500ms。
 用 `WaitGroup` + `cancel` + 错误聚合手写也能做，但很容易漏掉"取消"这一半。
+
+> ⚠️ 本篇只留最小骨架。取消语义、`SetLimit` 下"首错之后还要不要放新协程"、pipeline 的分阶段收口与
+> channel 谁来 `close`，全部在 [errgroup与pipeline.md](errgroup与pipeline.md)（同一份实验的容器实测读数也在彼）。
 
 ### 案例 5：限并发（背压）—— 带缓冲 channel 当信号量
 
@@ -562,6 +556,8 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 
 - [goroutine.md](goroutine.md) — **原理篇**：线程对照、栈的增长收缩、`g` 结构体与状态机、
   `gopark` / `goready` 的阻塞唤醒、泄漏判据（本篇只讲怎么用，不重复机制）
+- [错误处理.md](../类型与语法/错误处理.md) — 常驻 worker 的 recover 兜底写法在此，错误怎么分层传出去在彼
+- [net包与TCP-UDP编程.md](../网络编程/net包与TCP-UDP编程.md) — 每连接一协程 / worker 池的起法在此，真实读写循环与拆包在彼
 - [channel实战模式.md](channel实战模式.md) — 用 channel 组织并发的模式（信号量 / 协程池 / 生成器 / future）
 - [并发控制实战.md](并发控制实战.md) — 同一主题的可运行练习（打印升序数字、交替打印、取返回值）
 - [协程泄漏与死锁.md](协程泄漏与死锁.md) — 泄漏的十个现场与排查套路
@@ -573,4 +569,4 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 - [稳定性三件套.md](../../../04-架构与系统/分布式/服务治理/稳定性三件套.md) — 下游被打穿之后怎么办
 - [线程池.md](../../java/并发/线程池.md) — Java 侧 worker 池的对照：七参数、有界队列与四种拒绝策略
 
-> 反向引用（本篇被下列文档引到）：[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/服务治理/并发限制器.md)、[负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md)
+> 反向引用（本篇被下列文档引到）：[测试与Mock.md](../工程实践/测试与Mock.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/服务治理/并发限制器.md)、[负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md)

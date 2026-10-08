@@ -165,6 +165,7 @@
   ⭐ **也不在 Windows 宿主机起长驻进程**（服务、网关、数据库都是容器）。
   - **语言运行时跑法**（挂仓库目录 + `-w`；下面前缀不可省，见紧随的警告）：
     - Go：`MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w golang:1.26-alpine go run x.go`
+      （⚠️ **`-race` 例外，用 `golang:1.26-bookworm`** —— alpine 没有 gcc，`apk add` 依赖网络）
     - PHP：`MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w php:8.0-cli php x.php`
     - Java 8：`MSYS_NO_PATHCONV=1 docker run --rm -v <目录>:/w -w /w eclipse-temurin:8-jdk sh -c "javac X.java && java X"`
     - Node：`MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w node:20-alpine node x.js`
@@ -236,7 +237,7 @@ python .workbuddy/tmp/audit_full.py   # 全量体检
 4. 同步四处：`目录.md` 加索引行、`素材清单.md` 登记（书籍 / 博客类）、
    **给相关旧篇补指向新篇的关联行**、`regen_backrefs.py` 重算反向引用（**只传受影响文件**）；
 5. 目录级 `README.md`（**份数现算**：`find . -name README.md -not -path "./.workbuddy/*" -not -path "./.git/*" | wc -l` 再减根目录那一份；
-   2026-10-08 实测 **46 份**，分布是 `01-编程语言/` 2 份（`java/` + `go/工程实践/定时任务/`）、`02-计算机基础/` 20 份（`网络`、`操作系统`、`编译原理`、`算法` + 其 10 个子目录、
+   2026-10-08 实测 **47 份**，分布是 `01-编程语言/` 3 份（`java/` + `go/README.md`（Go 知识库总纲）+ `go/工程实践/定时任务/`）、`02-计算机基础/` 20 份（`网络`、`操作系统`、`编译原理`、`算法` + 其 10 个子目录、
    `数据结构` + `树` + `高级数据结构`、`linux/` 的三套书子目录）、`03-数据与中间件/` 18 份（`中间件/` 7 个**占位目录导读** + `数据存储/` 11 份组件目录，含 `时序数据库/` 下的 `VictoriaMetrics`、`GreptimeDB`，
    以及 `列式数据库/ClickHouse/` 组件导读）、
    `04-架构与系统/` 4 份（`分布式` + `系统设计/` 的 `弹幕系统`、`秒杀系统`、`社交互动系统`）、`05-设计模式/` 1 份、

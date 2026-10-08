@@ -153,12 +153,20 @@ FAIL
 go: -race requires cgo; enable cgo by setting CGO_ENABLED=1
 ```
 
-容器里有网，装完就能用（本篇所有 `-race` 读数都是装好后真跑的）：
+两条出路（第一条是本篇读数的原始来路，第二条是 2026-10-08 复跑时的验证路径）：
 
 ```bash
+# 出路一：alpine 内现装工具链（要有网；本轮复跑时 apk 拉包超时，未能再次验证）
 apk add --no-cache gcc musl-dev
 CGO_ENABLED=1 go test -race ./race/
+
+# 出路二：换 Debian 基础镜像，gcc 自带，直接就能跑（本轮用的就是这条）
+MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w/.workbuddy/tmp/exp/gotest \
+  golang:1.26-bookworm sh -c 'CGO_ENABLED=1 go test -race ./race/'
 ```
+
+两个镜像里 `go version` 都是 `go1.26.8 linux/amd64`，**下面的报告原文本轮在 `golang:1.26-bookworm` 里复现过**，
+除地址与 goroutine 编号外逐行一致（`--- FAIL: TestCounterRace (0.00s)` / `race detected during execution of test`）。
 
 竞态报告原文（刻意留的无锁计数器）：
 

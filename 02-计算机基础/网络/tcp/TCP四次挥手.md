@@ -304,4 +304,4 @@ netstat -ano | findstr "<端口或对端IP>"
 - [常用命令.md](../../linux/常用命令.md) — `ss` / `netstat` 查端口占用与连接状态
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 停服时的连接排空与 `terminationGracePeriodSeconds`
 
-> 反向引用（本篇被下列文档引到）：[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[抓包实战.md](../抓包实战.md)、[网络通信链路详解.md](../网络通信链路详解.md)
+> 反向引用（本篇被下列文档引到）：[HTTP客户端与连接池.md](../../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[抓包实战.md](../抓包实战.md)、[网络通信链路详解.md](../网络通信链路详解.md)

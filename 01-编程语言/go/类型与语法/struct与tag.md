@@ -547,3 +547,4 @@ unsafe.Offsetof(Outer{}.Own)=32（匿名嵌入的 Inner 整体内联，Own 排�
 - [内存分配器.md](../运行时/内存分配器.md) — struct 大小映射到 size class，重排收益的放大机制
 - [内存逃逸.md](../运行时/内存逃逸.md) — 热点 struct 的尺寸如何影响堆分配成本
 - [依赖注入.md](../工程实践/依赖注入.md) — reflect 读 tag 后按类型装配的工程应用
+- [反射与unsafe.md](../运行时/反射与unsafe.md) — tag 的 reflect 读取机制在此只给字段遍历的形态，Type/Value 两件套、CanSet 判据与耗时实测在彼

@@ -157,3 +157,4 @@ go test -count=1 -gcflags="all=-N -l" ./...  # 调测试必加 -count=1
 - [编译与gcflags.md](编译与gcflags.md) — 断点打不上时先看编译优化开关
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — 卡死现场怎么用 pprof / dlv 抓
 - [性能排查.md](../../../02-计算机基础/linux/性能排查.md) — 线上没有 IDE 时的排查手段
+- [runtime调试与trace.md](../运行时/runtime调试与trace.md) — IDE/dlv 断点之外的运行期自省入口（GODEBUG、runtime/trace、metrics）在彼

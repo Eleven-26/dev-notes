@@ -362,4 +362,4 @@ for {
 - [context.md](../工程实践/context.md) — 用取消信号替代「探测式写入」
 - [并发控制实战.md](并发控制实战.md) — 可运行的交替打印与有序输出
 
-> 反向引用（本篇被下列文档引到）：[channel实战模式.md](channel实战模式.md)、[共享内存与CSP.md](共享内存与CSP.md)
+> 反向引用（本篇被下列文档引到）：[channel实战模式.md](channel实战模式.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[共享内存与CSP.md](共享内存与CSP.md)

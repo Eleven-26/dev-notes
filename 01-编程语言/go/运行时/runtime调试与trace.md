@@ -286,7 +286,12 @@ f.Close()
 
 另外两条不写代码的路：**`go test -trace=trace.out ./pkg`**（测试态抓），和 **`net/http/pprof` 自带端点** `http://host/debug/pprof/trace?seconds=5`（线上按需抓，抓完再拿回本机看）。
 
-实测生成：`./rt trace` 写出 **11586 字节** 的 `trace.out`（200 个协程、含 channel 往返与互斥锁）；服务里 `GET /debug/trace?s=2` 写出 **9688 字节**（2 秒窗口，见「使用」一节）。
+实测生成：`./rt trace` 写出约 **11.5 KB** 的 `trace.out`（200 个协程、含 channel 往返与互斥锁）——
+同一份代码复跑 5 次的文件字节数是 11547 / 11558 / 11567 / 11586 / 11620，
+**±0.6% 的浮动来自时间戳与批事件编码，别当成规格**。服务侧同理：`GET /debug/trace?s=2`
+空载复跑三次是 9230 / 9234 / 9470 字节（「使用」那一轮量到的是 9688 字节），
+而同一服务先打一次 `/work`（8 MiB 堆 + 200 个睡 10ms 的协程）再抓同样的 2 秒窗口，
+直接涨到 **14759 字节** —— **体积由窗口里发生了多少事件决定**，不是由 `seconds` 参数决定。
 
 ### 4.2 无头实测：`-pprof` 与 `-d` 两条不依赖浏览器的路
 
@@ -306,8 +311,8 @@ Supported profile types are:
 **路一：把 trace 里的四类"等待"倒成 pprof 再看。** 只有 `net / sync / syscall / sched` 四种，写 `gc` 会直接失败：
 
 ```bash
-go tool trace -pprof=sched trace.out > /tmp/sched.pprof   # rc=0, 372 字节
-go tool trace -pprof=sync  trace.out > /tmp/sync.pprof    # rc=0, 355 字节
+go tool trace -pprof=sched trace.out > /tmp/sched.pprof   # rc=0, 369 字节
+go tool trace -pprof=sync  trace.out > /tmp/sync.pprof    # rc=0, 359 字节
 go tool trace -pprof=gc    trace.out                      # rc=1: unknown pprof type gc
 go tool pprof -top -nodecount=5 /tmp/sync.pprof
 ```
@@ -315,30 +320,42 @@ go tool pprof -top -nodecount=5 /tmp/sync.pprof
 ```text
 Main binary filename not available.
 Type: delay
-Showing nodes accounting for 14600.32us, 100% of 14600.32us total
+Showing nodes accounting for 10717.89us, 100% of 10717.89us total
       flat  flat%   sum%        cum   cum%
-14414.91us 98.73% 98.73% 14414.91us 98.73%  sync.(*WaitGroup).Wait
-  185.41us  1.27%  100%   185.41us  1.27%  runtime.chanrecv1
+10550.46us 98.44% 98.44% 10550.46us 98.44%  sync.(*WaitGroup).Wait
+  167.42us  1.56%   100%   167.42us  1.56%  runtime.chanrecv1
 ```
 
-同一份 trace 的 `sched` 视图（调度延迟）总量只有 `5411.71us`，最大单项 `107.14us` 挂在 `runtime.chansend1` —— **这就是"锁等待远大于调度排队"的判据**，全程没开浏览器。
+⚠️ **`us` 数值每抓一次都不同**：上一轮那份 11586 字节的 trace 是 `14414.91us / 185.41us`，
+本轮这份 11547 字节的是 `10550.46us / 167.42us`（总时长跟着程序跑到哪一步停表走）。
+**能复现的只有比例**：`WaitGroup.Wait` 占 **98.4%~98.7%**、`chanrecv1` 占 1.3%~1.6%。
+
+同一份 trace 的 `sched` 视图（调度延迟）总量 `5856.26us`，最大单项 `112.83us` 挂在
+`runtime.chansend1`（上一轮是 `5411.71us` / `107.14us`，同一形状）——
+**锁等待的最大项比调度延迟的最大项大近百倍**，这就是"该跑却没跑"要看 sync 而不是 sched 的判据，
+全程没开浏览器。
 
 **路二：`-d` 直接看 trace 的内部结构。** `-d=footprint` 告诉你**事件类型各占多少字节**（决定"抓多久会撑爆"）：
 
 ```text
 Event                Bytes  %       Count  %
-GoStart              2803   24.19%  606    30.25%
-GoCreate             2518   21.73%  403    20.12%
-String               2077   17.93%  76     3.79%
-GoUnblock            1100  9.49%   201    10.03%
-GoBlock              822    7.09%   204    10.18%
-GoDestroy            800    6.90%   400    19.97%
-ProcStart            38     0.33%   8      0.40%
-ProcSteal            13     0.11%   2      0.10%
-STWBegin             4       0.03%   1      0.05%
+-                    -      -       -      -
+GoStart              2800   24.25%  605    30.40%
+GoCreate             2514   21.77%  403    20.25%
+String               2077   17.99%  76     3.82%
+GoUnblock            1101   9.53%   201    10.10%
+GoBlock              822    7.12%   204    10.25%
+GoDestroy            800    6.93%   400    20.10%
+ProcStart            24     0.21%  5      0.25%
+ProcSteal            7      0.06%   1      0.05%
+STWBegin             4      0.03%   1      0.05%
 ```
 
-协程状态类事件（`GoStart/GoCreate/GoBlock/GoUnblock/GoDestroy`）占了 **73%** 的体积 —— 所以**高并发服务的 trace 窗口要短**（1~3 秒），否则光协程创建销毁就能写几十 MB。`-d=parsed` 则逐条打印解析后的事件，能直接看到 `/sched/gomaxprocs:threads` 这类指标事件与栈：
+协程状态类事件（`GoStart/GoCreate/GoBlock/GoUnblock/GoDestroy`）占了 **69.6%** 的体积 ——
+就是那五行字节数相加：`2800+2514+1101+822+800 = 8037`，除以整份 11547 字节。
+四份独立抓取的同一比值分别是 **69.35% / 69.40% / 69.54% / 69.80%**（比例稳、绝对字节数每次差几十个）。
+所以**高并发服务的 trace 窗口要短**（1~3 秒），否则光协程创建销毁就能写几十 MB。
+`-d=parsed` 则逐条打印解析后的事件，能直接看到 `/sched/gomaxprocs:threads` 这类指标事件与栈：
 
 ```text
 M=7 P=3 G=1 Metric Time=882243152448 Name="/sched/gomaxprocs:threads" Value=Value{Uint64(4)}
@@ -378,7 +395,7 @@ M=626 P=1 G=1 RegionBegin Time=1355356724736 Task=1 Type="validate"
 
 ![trace 的两条无头读法：trace.out 之后分叉，一支走 go tool trace -pprof 四类等待再喂给 pprof，一支走 -d=footprint 与 -d=parsed 直接看事件；浏览器 UI 一条虚线标注未实测](images/trace无头解析路径.svg)
 
-图怎么读：实线是本次容器里真跑通的路径，虚线（浏览器 UI）是没有跑通的；`73%` 与 `58.30%` 两个数字来自 `-d=footprint` 的实测表，其余为结构示意。
+图怎么读：实线是本次容器里真跑通的路径，虚线（浏览器 UI）是没有跑通的；`69.6%` 与 `58.30%` 两个数字来自 `-d=footprint` 的实测表，其余为结构示意。
 
 ### 4.5 pprof 与 trace 的分工判据
 
@@ -698,7 +715,7 @@ end
 |---|---|---|
 | 常驻可开 | `runtime/metrics`、pprof 各 profile（默认采样率）、`NumGoroutine` | metrics 无 STW；pprof 默认档开销可控 |
 | 短期可开 | `gctrace=1`、`scavtrace=1`、`schedtrace=1000` 以上间隔、`inittrace=1` | 只往 stderr 打一行；日志量是唯一成本 |
-| 窗口制（几十秒内必须关） | `trace.Start`、`pprof.StartCPUProfile` | trace 体积主要来自协程状态事件（实测 73%）；CPU profile 要 100 Hz 采样 |
+| 窗口制（几十秒内必须关） | `trace.Start`、`pprof.StartCPUProfile` | trace 体积主要来自协程状态事件（实测 69.6%）；CPU profile 要 100 Hz 采样 |
 | 只在复现环境 | `scheddetail=1`、`gccheckmark=1`、`clobberfree=1`、`efence=1`、`gcstoptheworld=1`、`GOTRACEBACK=crash` | 刷屏或直接把分配器/GC 变慢几个量级，`crash` 还会发信号杀自己 |
 
 ---
@@ -810,7 +827,7 @@ goroutine profile: total 3
 - **`HeapSys` 为什么不随 `FreeOSMemory` 下降？** → 它的定义是"堆申请过的地址空间、估计的历史峰值"（`go doc runtime.MemStats` 原话：HeapSys estimates the largest size the heap has had）；归还看 `HeapReleased` 或 `scavtrace` 的 `now`。
 - **`NumGoroutine()` 能对上 pprof 的数字吗？** → 对不上。它 `= gcount(false)`，**减掉了跑系统栈的 runtime 协程与各级 G 空闲表**；实测同一时刻 `scheddetail` 列 10 个 G、`NumGoroutine` 报 1；服务里 `NumGoroutine=3` 而 `/sched/goroutines=13`。
 - **没有浏览器怎么看 trace？** → `go tool trace -pprof={net,sync,syscall,sched} trace.out | go tool pprof -top`，或用 `-d=footprint` / `-d=parsed` 直接看事件构成。`gc`、`threadcreate` **不是** 支持的类型（实测 `unknown pprof type gc`）。
-- **trace 文件为什么这么大？** → `-d=footprint` 实测协程状态类事件占 73% 字节；埋 region 的字符串表还可能再翻一倍（示例程序里 `String` 占 58.30%）。窗口压到 1~3 秒、region 名保持有限集合。
+- **trace 文件为什么这么大？** → `-d=footprint` 实测协程状态类事件占 69.6% 字节（四份独立抓取 69.35%~69.80%）；埋 region 的字符串表还可能再翻一倍（示例程序里 `String` 占 58.30%）。窗口压到 1~3 秒、region 名保持有限集合。
 - **`GOMEMLIMIT` 设得比存活集小会怎样？** → GC 连续重启：实测存活 120 MiB、限制 80 MiB 时，`NumGC` 从 5（60 轮）跳到 19（90 轮）再到 47（120 轮），`GCCPUFraction` 抬头到 0.064。限制只对"能腾出空间"的部分有效。
 - **`GODEBUG=asyncpreemptoff=1` 现在还有效吗？** → 有效（Go 1.26 的 `extern.go` 仍列出并实测可开），关掉后**基于信号的异步抢占与保守栈扫描一起失效**，长循环会变成不可抢占；量化对照见 [GMP调度.md](GMP调度.md) 第五节。
 
@@ -822,10 +839,10 @@ goroutine profile: total 3
 - [垃圾回收机制.md](垃圾回收机制.md) — 本篇第三节搬自其 `gctrace` 一节；`GOGC` / `GOMEMLIMIT` 的调参实测在那里
 - [内存分配器.md](内存分配器.md) — `MemStats` 各 `XSys` 字段背后的 mspan / mcache / tcmalloc 结构
 - [内存逃逸.md](内存逃逸.md) — 编译期就能看出"堆上要长多少东西"，与本篇的运行期观测互补
-- [../并发编程/协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — pprof 侧的泄漏聚类定位；本篇只补 `NumGoroutine` 与 metrics 的口径差
-- [../并发编程/goroutine.md](../并发编程/goroutine.md) — `NumGoroutine` 看趋势的用法与泄漏三类根因
+- [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — pprof 侧的泄漏聚类定位；本篇只补 `NumGoroutine` 与 metrics 的口径差
+- [goroutine.md](../并发编程/goroutine.md) — `NumGoroutine` 看趋势的用法与泄漏三类根因
 - [编译与gcflags.md](../工程实践/编译与gcflags.md) — 编译期旗标（`-N -l`、`-gcflags`），与运行期 `GODEBUG` 是两套体系
-- [../工程实践/调试与IDE配置.md](../工程实践/调试与IDE配置.md) — dlv 断点式调试；本篇全是"不停顿"的观测手段
-- [../../../02-计算机基础/linux/内存管理.md](../../../02-计算机基础/linux/内存管理.md) — `MemStats` 与 RSS 的边界（cgo、mmap 不进 Go 堆）
-- [../../../02-计算机基础/linux/性能排查.md](../../../02-计算机基础/linux/性能排查.md) — 跨语言排查动线里 Go 这一段该看哪些指标
-- [../../../06-工程实践/可观测性/可观测性选型.md](../../../06-工程实践/可观测性/可观测性选型.md) — 指标 / 追踪 / 日志三类信号的选型；本篇全在"指标 + 现场采样"这一侧
+- [调试与IDE配置.md](../工程实践/调试与IDE配置.md) — dlv 断点式调试；本篇全是"不停顿"的观测手段
+- [内存管理.md](../../../02-计算机基础/linux/内存管理.md) — `MemStats` 与 RSS 的边界（cgo、mmap 不进 Go 堆）
+- [性能排查.md](../../../02-计算机基础/linux/性能排查.md) — 跨语言排查动线里 Go 这一段该看哪些指标
+- [可观测性选型.md](../../../06-工程实践/可观测性/可观测性选型.md) — 指标 / 追踪 / 日志三类信号的选型；本篇全在"指标 + 现场采样"这一侧

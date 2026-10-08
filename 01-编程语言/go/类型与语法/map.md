@@ -605,5 +605,6 @@ internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
 - [基础类型与零值.md](基础类型与零值.md) — nil map 写入为什么 panic（实测原文 `assignment to entry in nil map`）与"零值能不能直接用"的总判据
 - [struct与tag.md](struct与tag.md) — 什么样的 struct 能当 key：可比较规则与 `invalid map key type` 的编译错误原文
 - [并发同步原语.md](../并发编程/并发同步原语.md) — `sync.Map`、分段锁与原子操作怎么选
+- [错误处理.md](错误处理.md) — 哨兵错误表 / 错误码映射用 map 时的并发与零值坑在彼
 
-> 反向引用（本篇被下列文档引到）：[for-range.md](for-range.md)、[数组与链表.md](../../../02-计算机基础/数据结构/线性结构/数组与链表.md)
+> 反向引用（本篇被下列文档引到）：[sync.Map.md](../并发编程/sync.Map.md)、[for-range.md](for-range.md)、[反射与unsafe.md](../运行时/反射与unsafe.md)、[数组与链表.md](../../../02-计算机基础/数据结构/线性结构/数组与链表.md)

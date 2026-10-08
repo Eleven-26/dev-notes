@@ -109,8 +109,7 @@ by Wait.
 就是在违反 WaitGroup 的 Add/Wait 顺序 —— 轻则 `Wait` 提前返回、漏等任务，
 重则触发运行时的 WaitGroup 误用检查。
 
-⚠️ 关于"并发调用 `Go` 与 `Wait` 会不会报 `-race`"：**本机容器 `golang:1.26-alpine` 无 gcc、`-race` 需要 cgo，
-实测无法启用**（`-race requires cgo`）。因此这一条我不给 race 报告，直接引用上面 errgroup 官方注释原文
+⚠️ 关于"并发调用 `Go` 与 `Wait` 会不会报 `-race`"：**默认镜像 `golang:1.26-alpine` 没有 gcc，`-race` 需要 cgo，实测直接跑会报 `-race requires cgo`**（`go env CGO_ENABLED` 为 `0`）。因此这一条我不给 race 报告，直接引用上面 errgroup 官方注释原文
 「The first call to Go must happen before a Wait」作为权威依据 —— 文档已经把它定为**契约级错误**，
 不需要 race 报告来证明。
 
@@ -334,8 +333,7 @@ err := g.Wait()
 这是 pipeline 最容易出错、也最容易被追问的点。规则只有一条：
 
 > **一个 channel 只能由"确认所有发送方都已结束"的那一方 close，且只 close 一次。**
-> **多个生产者各自 `close` 同一个 channel = panic（close of closed channel）；生产者都不 close、
-> 由消费者 close = 同样错**。
+> **多个生产者各自 `close` 同一个 channel = panic（close of closed channel）；生产者都不 close、由消费者 close = 同样错。**
 
 所以多生产者 stage 的收口必须引入一个"协调协程"：用 `WaitGroup` 等齐所有 worker，再由**它一个**去 `close(out)`。
 这正是 [channel实战模式.md](channel实战模式.md) 第三节"多生产者 + 单消费者两个同步点"的结论，本篇把它接到 errgroup 上：
@@ -561,6 +559,10 @@ if err := eg.Wait(); err != nil {
 协程数：进入前 5 → 收口后 4（差值应回落，未泄漏）
 ```
 
+> ⚠️ `NumGoroutine` 的**绝对值会随同一测试二进制里其它用例的存活情况浮动**：复跑同一份实验拿到过
+> `进入前 2 → 收口后 2` 的一组读数。**能断言的只有趋势**（收口后回落到基线、不单调上涨），
+> 别把某一次的绝对数字当判据 —— 要判"有没有泄漏"，就在同一进程里跑前后两轮取差值。
+
 > ⚠️ 这个"本批只落库 5 行"要正确理解：`zzz` 被丢弃、其余 5 个成功落库；
 > 命中失败点的抓取 worker 立即 `return`，其它 stage 在 `rowCh` 排空后收口 ——
 > 它落了几行取决于调度时机，**不是确定的 N 行**。
@@ -596,4 +598,4 @@ if err := eg.Wait(); err != nil {
 - [channel原理与底层实现.md](channel原理与底层实现.md) — 无缓冲收发即背压的底层机制
 - [channel使用陷阱.md](channel使用陷阱.md) — 关闭语义与"关闭后仍可读"，pipeline 收口的判据来源
 
-> 反向引用（本篇被下列文档引到）：（本篇为新建，暂无）
+> 反向引用（本篇被下列文档引到）：[错误处理.md](../类型与语法/错误处理.md)

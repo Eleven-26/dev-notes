@@ -367,14 +367,15 @@ func fetchAll(ctx context.Context, urls []string) error {
 }
 ```
 
-行为要点：
+行为要点（**只站在 context 这一侧**）：
 
-- **`g.Go` 用的必须是 `errgroup` 返回的 ctx**，否则某个分支失败时其他分支收不到取消信号；
-- **任一分支返回 error，派生 ctx 立即被取消**，剩下的分支只要检查 ctx 就能提前收工；
-- `g.Wait()` **返回第一个非 nil 错误**（后续错误被丢弃）；
-  `Wait` 返回时该 ctx 也一定被取消，所以**不需要额外 `defer cancel()`**；
-- 与 `sync.WaitGroup` 的取舍：`WaitGroup` 只管"等齐"，**不收集错误、不传播取消**；
-  `errgroup` 管"等齐 + 首个错误 + 级联取消"，缺点是丢了后续分支的具体错误。
+- **`g.Go` 里用的必须是 `errgroup.WithContext` 返回的那个 ctx**，不是外面传进来的原 ctx ——
+  否则某个分支失败时，其他分支收不到取消信号；
+- `g.Wait()` 返回时派生 ctx **一定已被取消**，所以这里**不需要额外 `defer cancel()`**（取消泄漏的判据见下条链接）。
+
+`errgroup` 自身的语义 —— 首错怎么传播、`SetLimit` 下"首错之后还放不放新协程"、`Wait` 到底给哪三件事、
+扇出扇入时 channel 由谁 `close` —— 已在 [errgroup与pipeline.md](../并发编程/errgroup与pipeline.md) 整篇讲透并配容器实测，**本篇不重讲**。
+与 `sync.WaitGroup` 的分工判据一句话：`WaitGroup` 只管"等齐"，**不收集错误、不传播取消**。
 
 ### 常见组合模式：先到先用（First-Result Wins）
 
@@ -504,9 +505,12 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 ## 关联
 
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — 取消信号传不下去就会漏协程
+- [errgroup与pipeline.md](../并发编程/errgroup与pipeline.md) — 第五节的 errgroup 语义（首错传播 / `SetLimit` / 取消不泄漏 / channel 谁来 close）在彼整篇展开
 - [channel原理与底层实现.md](../并发编程/channel原理与底层实现.md) — 取消传播本质是 close 广播
 - [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — 客户端侧的请求取消与超时
 - [稳定性三件套.md](../../../04-架构与系统/分布式/服务治理/稳定性三件套.md) — 超时预算与熔断的关系
 - [数据导入导出设计.md](../../../04-架构与系统/系统设计/数据导入导出设计.md) — 异步任务的取消与超时：ctx 要贯穿到每一批提交的安全点
+- [错误处理.md](../类型与语法/错误处理.md) — 取消（context.Canceled / DeadlineExceeded）也是错误值，判定与包装在彼
+- [日志与错误规范.md](日志与错误规范.md) — trace_id / 请求上下文怎么随日志字段一起走（slog 的 attrs 与 context 传播）在彼
 
-> 反向引用（本篇被下列文档引到）：[不使用protoc的gRPC.md](../网络编程/不使用protoc的gRPC.md)、[Kratos框架.md](框架/微服务/Kratos框架.md)、[标准库实现.md](定时任务/标准库实现.md)、[配置热重载与快照.md](配置热重载与快照.md)、[channel使用陷阱.md](../并发编程/channel使用陷阱.md)、[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[并发控制实战.md](../并发编程/并发控制实战.md)、[限流器.md](../并发编程/限流器.md)、[接入Jaeger.md](../可观测性/接入Jaeger.md)、[接入Skywalking.md](../可观测性/接入Skywalking.md)、[服务注册与发现的Go实现.md](../../../04-架构与系统/分布式/服务治理/服务注册与发现的Go实现.md)
+> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../可观测性/接入Jaeger.md)、[接入Skywalking.md](../可观测性/接入Skywalking.md)、[标准库实现.md](定时任务/标准库实现.md)、[Kratos框架.md](框架/微服务/Kratos框架.md)、[测试与Mock.md](测试与Mock.md)、[配置热重载与快照.md](配置热重载与快照.md)、[项目结构.md](项目结构.md)、[channel使用陷阱.md](../并发编程/channel使用陷阱.md)、[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[并发控制实战.md](../并发编程/并发控制实战.md)、[限流器.md](../并发编程/限流器.md)、[HTTP客户端与连接池.md](../网络编程/HTTP客户端与连接池.md)、[net包与TCP-UDP编程.md](../网络编程/net包与TCP-UDP编程.md)、[不使用protoc的gRPC.md](../网络编程/不使用protoc的gRPC.md)、[服务注册与发现的Go实现.md](../../../04-架构与系统/分布式/服务治理/服务注册与发现的Go实现.md)
