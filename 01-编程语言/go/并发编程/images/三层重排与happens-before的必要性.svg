@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">内存模型要管的是什么：从源码到生效的三层重排</text>
+
+  <rect x="40" y="66" width="920" height="104" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="60" y="98" font-size="16" font-weight="bold" fill="#2563eb">① 编译器</text>
+  <text x="60" y="122" font-size="13" fill="#334155">重排 / 提升</text>
+  <text x="60" y="144" font-size="12" fill="#64748b">在「单线程语义不变」</text>
+  <text x="60" y="161" font-size="12" fill="#64748b">的前提下换顺序</text>
+  <text x="210" y="100" font-size="14" fill="#0f172a">只要单线程看不出来，编译器就可以把语句换序、把变量提升进寄存器</text>
+  <text x="210" y="128" font-size="13" fill="#334155">a = 1; b = 2   →   可能变成   b = 2; a = 1</text>
+  <text x="210" y="154" font-size="13" fill="#334155">for !done {}   →   可能被优化成「永远不退出」</text>
+
+  <rect x="40" y="184" width="920" height="104" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="60" y="216" font-size="16" font-weight="bold" fill="#ea580c">② CPU</text>
+  <text x="60" y="240" font-size="13" fill="#334155">乱序执行</text>
+  <text x="60" y="262" font-size="12" fill="#64748b">写缓冲让「后面的读」</text>
+  <text x="60" y="279" font-size="12" fill="#64748b">先于「前面的写」完成</text>
+  <text x="210" y="218" font-size="14" fill="#0f172a">处理器不按程序顺序提交结果，只要数据依赖满足就往下走</text>
+  <text x="210" y="246" font-size="13" fill="#334155">x86 是较强的 TSO 模型；ARM / RISC-V 重排空间更大</text>
+  <text x="210" y="272" font-size="13" fill="#334155">所以「看起来一样」的两段代码，换架构就可能露出竞争</text>
+
+  <rect x="40" y="302" width="920" height="104" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="60" y="334" font-size="16" font-weight="bold" fill="#16a34a">③ 缓存</text>
+  <text x="60" y="358" font-size="13" fill="#334155">写传播不瞬时</text>
+  <text x="60" y="380" font-size="12" fill="#64748b">每个核心有自己的</text>
+  <text x="60" y="397" font-size="12" fill="#64748b">缓存副本</text>
+  <text x="210" y="336" font-size="14" fill="#0f172a">核心 A 写了 x，核心 B 的缓存里可能还是旧值 —— 何时刷新没有统一时刻</text>
+  <text x="210" y="364" font-size="13" fill="#334155">这是「可见性」问题的物理来源：写发出去了，读还看不到</text>
+  <text x="210" y="390" font-size="13" fill="#334155">也解释了为什么需要一个「保证看到」的机制，而不是「等一会儿」</text>
+
+  <rect x="40" y="424" width="920" height="92" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="452" font-size="15" font-weight="bold" fill="#0f172a">⭐ 三层都「不违反单线程语义」—— 所以单线程程序永远看不出问题，只有并发才暴露</text>
+  <text x="60" y="480" font-size="14" fill="#334155">内存模型的职责因此很明确：不去规定硬件怎么做（那是实现细节），只规定</text>
+  <text x="60" y="504" font-size="14" font-weight="bold" fill="#2563eb">「一个 goroutine 的写，另一个 goroutine 在什么条件下必须看见」—— 这就是 happens-before</text>
+</svg>

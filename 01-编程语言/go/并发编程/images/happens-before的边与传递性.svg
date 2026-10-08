@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="g2a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="g2b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="g2r" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">happens-before 的边：有边才是保证，没边只是碰巧</text>
+
+  <rect x="20" y="60" width="480" height="370" rx="8" fill="#f8fafc" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="40" y="92" font-size="15" font-weight="bold" fill="#16a34a">✅ 有边：规范保证读到新值</text>
+
+  <text x="40" y="146" font-size="13" font-weight="bold" fill="#334155">G1</text>
+  <line x1="75" y1="141" x2="480" y2="141" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="60" y="120" width="110" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="115" y="146" text-anchor="middle" font-size="13" fill="#0f172a">写 x = 42</text>
+  <line x1="170" y1="141" x2="200" y2="141" stroke="#334155" stroke-width="1.4" marker-end="url(#g2b)"/>
+  <rect x="200" y="120" width="120" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="260" y="146" text-anchor="middle" font-size="13" fill="#0f172a">close(done)</text>
+
+  <text x="40" y="296" font-size="13" font-weight="bold" fill="#334155">G2</text>
+  <line x1="75" y1="291" x2="480" y2="291" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="200" y="270" width="120" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="260" y="296" text-anchor="middle" font-size="13" fill="#0f172a">&lt;- done</text>
+  <line x1="320" y1="291" x2="350" y2="291" stroke="#334155" stroke-width="1.4" marker-end="url(#g2b)"/>
+  <rect x="350" y="270" width="110" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="405" y="296" text-anchor="middle" font-size="13" fill="#0f172a">读 x = 42</text>
+
+  <line x1="260" y1="162" x2="260" y2="270" stroke="#16a34a" stroke-width="2" marker-end="url(#g2a)"/>
+  <text x="275" y="212" font-size="12" font-weight="bold" fill="#16a34a">happens-before</text>
+  <text x="275" y="232" font-size="11" fill="#64748b">（规范规则 5：close hb 收到零值）</text>
+
+  <text x="40" y="410" font-size="13" fill="#334155">⭐ 结果必然 42：不是运气好，是规范要求它必须读到</text>
+
+  <rect x="510" y="60" width="470" height="370" rx="8" fill="#f8fafc" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="530" y="92" font-size="15" font-weight="bold" fill="#dc2626">❌ 无边：只是碰巧</text>
+
+  <text x="530" y="146" font-size="13" font-weight="bold" fill="#334155">G1</text>
+  <line x1="565" y1="141" x2="960" y2="141" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="550" y="120" width="110" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="605" y="146" text-anchor="middle" font-size="13" fill="#0f172a">写 x = 42</text>
+
+  <text x="530" y="296" font-size="13" font-weight="bold" fill="#334155">G2</text>
+  <line x1="565" y1="291" x2="960" y2="291" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+  <rect x="550" y="270" width="120" height="42" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="610" y="296" text-anchor="middle" font-size="13" fill="#0f172a">Sleep(1ms)</text>
+  <line x1="670" y1="291" x2="700" y2="291" stroke="#334155" stroke-width="1.4" marker-end="url(#g2b)"/>
+  <rect x="700" y="270" width="120" height="42" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="760" y="296" text-anchor="middle" font-size="13" fill="#0f172a">读 x = ?</text>
+
+  <line x1="605" y1="162" x2="605" y2="270" stroke="#dc2626" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#g2r)"/>
+  <text x="622" y="205" font-size="12" font-weight="bold" fill="#dc2626">❌ 不受 happens-before 排序</text>
+  <text x="622" y="225" font-size="11" fill="#64748b">Sleep 不在规则表里 → 不建立任何边</text>
+
+  <text x="530" y="410" font-size="13" fill="#334155">⚠️ 可能读到 0、也可能读到 42 —— 两者都不可依赖，race 照报</text>
+
+  <rect x="20" y="450" width="960" height="72" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="478" font-size="14" font-weight="bold" fill="#0f172a">传递性：A happens-before B，B happens-before C  ⇒  A happens-before C</text>
+  <text x="44" y="504" font-size="13" fill="#334155">判断并发正不正确只有一条路：在「写」与「读」之间找出那条边；找不到 = 没有保证，即使它跑起来是对的</text>
+</svg>

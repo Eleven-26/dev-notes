@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <defs>
+    <marker id="h1a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次连接的生命周期，与四个超时各自罩住的那一段</text>
+
+  <text x="40" y="92" font-size="13" fill="#64748b">时间 →</text>
+  <line x1="110" y1="88" x2="960" y2="88" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#h1a)"/>
+
+  <line x1="150" y1="120" x2="150" y2="420" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4,4"/>
+  <text x="150" y="440" text-anchor="middle" font-size="12" fill="#334155">连接建立</text>
+  <line x1="320" y1="120" x2="320" y2="420" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4,4"/>
+  <text x="320" y="440" text-anchor="middle" font-size="12" fill="#334155">请求头读完</text>
+  <line x1="620" y1="120" x2="620" y2="420" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4,4"/>
+  <text x="620" y="440" text-anchor="middle" font-size="12" fill="#334155">请求体读完 / 处理中</text>
+  <line x1="830" y1="120" x2="830" y2="420" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4,4"/>
+  <text x="830" y="440" text-anchor="middle" font-size="12" fill="#334155">响应写完</text>
+
+  <rect x="150" y="130" width="170" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="235" y="152" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">ReadHeaderTimeout</text>
+  <text x="235" y="169" text-anchor="middle" font-size="11" fill="#334155">只罩「头读完」</text>
+
+  <rect x="150" y="196" width="470" height="46" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="385" y="218" text-anchor="middle" font-size="13" font-weight="bold" fill="#ea580c">ReadTimeout</text>
+  <text x="385" y="235" text-anchor="middle" font-size="11" fill="#334155">罩「建立 → 整个 body 读完」，比上面那段更宽</text>
+
+  <rect x="320" y="262" width="510" height="46" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="575" y="284" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">WriteTimeout</text>
+  <text x="575" y="301" text-anchor="middle" font-size="11" fill="#334155">起点是「请求头读完」，不是连接建立；到点直接关连接</text>
+
+  <rect x="830" y="328" width="130" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="895" y="350" text-anchor="middle" font-size="13" font-weight="bold" fill="#16a34a">IdleTimeout</text>
+  <text x="895" y="367" text-anchor="middle" font-size="11" fill="#334155">两次请求之间</text>
+
+  <rect x="40" y="458" width="920" height="46" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="486" font-size="13" fill="#0f172a">⭐ 必须设 ReadHeaderTimeout 与 WriteTimeout；IdleTimeout 要比前面的负载均衡器空闲超时更长，否则会出现偶发 502</text>
+</svg>

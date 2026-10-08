@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="sq1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">连接池：三个计数在第几层，四个旋钮各管什么</text>
+
+  <rect x="40" y="120" width="140" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="110" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">业务代码</text>
+  <text x="110" y="167" text-anchor="middle" font-size="12" fill="#334155">借连接 / 还连接</text>
+
+  <line x1="180" y1="150" x2="200" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#sq1)"/>
+
+  <rect x="200" y="88" width="560" height="124" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="216" y="112" font-size="13" font-weight="bold" fill="#334155">sql.DB（连接池）</text>
+  <rect x="216" y="126" width="122" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="277" y="150" text-anchor="middle" font-size="13" fill="#0f172a">InUse</text>
+  <text x="277" y="168" text-anchor="middle" font-size="11" fill="#64748b">已借出</text>
+  <rect x="352" y="126" width="122" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="413" y="150" text-anchor="middle" font-size="13" fill="#0f172a">InUse</text>
+  <text x="413" y="168" text-anchor="middle" font-size="11" fill="#64748b">已借出</text>
+  <rect x="488" y="126" width="122" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="549" y="150" text-anchor="middle" font-size="13" fill="#0f172a">Idle</text>
+  <text x="549" y="168" text-anchor="middle" font-size="11" fill="#64748b">待命复用</text>
+  <rect x="624" y="126" width="122" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="685" y="150" text-anchor="middle" font-size="13" fill="#0f172a">Idle</text>
+  <text x="685" y="168" text-anchor="middle" font-size="11" fill="#64748b">待命复用</text>
+
+  <line x1="760" y1="150" x2="780" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#sq1)"/>
+
+  <rect x="780" y="120" width="150" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="855" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#ea580c">数据库</text>
+  <text x="855" y="167" text-anchor="middle" font-size="12" fill="#334155">连接总数是全局约束</text>
+
+  <text x="40" y="240" font-size="13" fill="#334155">⭐ OpenConnections = InUse + Idle（池里一共几条）；WaitCount = 因为池满而排过队的次数</text>
+
+  <rect x="40" y="266" width="225" height="256" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="54" y="294" font-size="13" font-weight="bold" fill="#2563eb">SetMaxOpenConns</text>
+  <text x="54" y="320" font-size="12" fill="#dc2626">默认 0（无上限）</text>
+  <line x1="54" y1="334" x2="251" y2="334" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="54" y="360" font-size="12" fill="#334155">管：同时打开的</text>
+  <text x="54" y="380" font-size="12" fill="#334155">连接上限</text>
+  <text x="54" y="418" font-size="12" font-weight="bold" fill="#0f172a">不设会怎样</text>
+  <text x="54" y="442" font-size="12" fill="#334155">峰值可能打爆</text>
+  <text x="54" y="462" font-size="12" fill="#334155">数据库的连接配额</text>
+  <text x="54" y="496" font-size="11" fill="#64748b">打满后请求排队，</text>
+  <text x="54" y="513" font-size="11" fill="#64748b">看 WaitCount</text>
+
+  <rect x="278" y="266" width="225" height="256" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="292" y="294" font-size="13" font-weight="bold" fill="#16a34a">SetMaxIdleConns</text>
+  <text x="292" y="320" font-size="12" fill="#dc2626">默认 2（最容易忽略）</text>
+  <line x1="292" y1="334" x2="489" y2="334" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="292" y="360" font-size="12" fill="#334155">管：空闲待命的</text>
+  <text x="292" y="380" font-size="12" fill="#334155">连接上限</text>
+  <text x="292" y="418" font-size="12" font-weight="bold" fill="#0f172a">不设会怎样</text>
+  <text x="292" y="442" font-size="12" fill="#334155">脉冲流量下多建的</text>
+  <text x="292" y="462" font-size="12" fill="#334155">连接会被关掉</text>
+  <text x="292" y="496" font-size="11" fill="#64748b">实测并发 6 个：</text>
+  <text x="292" y="513" font-size="11" fill="#64748b">Open 6 / Close 4</text>
+
+  <rect x="516" y="266" width="225" height="256" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="530" y="294" font-size="13" font-weight="bold" fill="#ea580c">SetConnMaxLifetime</text>
+  <text x="530" y="320" font-size="12" fill="#dc2626">默认 0（永不过期）</text>
+  <line x1="530" y1="334" x2="727" y2="334" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="530" y="360" font-size="12" fill="#334155">管：一条连接最长</text>
+  <text x="530" y="380" font-size="12" fill="#334155">能存活多久</text>
+  <text x="530" y="418" font-size="12" font-weight="bold" fill="#0f172a">不设会怎样</text>
+  <text x="530" y="442" font-size="12" fill="#334155">服务端断连后，靠</text>
+  <text x="530" y="462" font-size="12" fill="#334155">驱动探测自愈</text>
+  <text x="530" y="496" font-size="11" fill="#64748b">实测多付一次探测，</text>
+  <text x="530" y="513" font-size="11" fill="#64748b">设了则为 0 次</text>
+
+  <rect x="754" y="266" width="225" height="256" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="768" y="294" font-size="13" font-weight="bold" fill="#334155">SetConnMaxIdleTime</text>
+  <text x="768" y="320" font-size="12" fill="#dc2626">默认 0（永不回收）</text>
+  <line x1="768" y1="334" x2="965" y2="334" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="768" y="360" font-size="12" fill="#334155">管：空闲多久之后</text>
+  <text x="768" y="380" font-size="12" fill="#334155">被回收</text>
+  <text x="768" y="418" font-size="12" font-weight="bold" fill="#0f172a">不设会怎样</text>
+  <text x="768" y="442" font-size="12" fill="#334155">长期低峰时仍然</text>
+  <text x="768" y="462" font-size="12" fill="#334155">占着数据库连接</text>
+  <text x="768" y="496" font-size="11" fill="#64748b">多实例部署时</text>
+  <text x="768" y="513" font-size="11" fill="#64748b">尤其要注意</text>
+</svg>
