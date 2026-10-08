@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="mt" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0d9488"/></marker>
+    <marker id="mp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7c3aed"/></marker>
+    <marker id="ma" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d97706"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">四种模式差在「各方向能传几条」：1↔1、1→N、N→1、N↔N</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">四条链路共用同一条 HTTP/2 连接，箭头上的条数由 StreamDesc 的两个方向标志声明</text>
+
+  <rect x="20" y="76" width="470" height="170" rx="10" fill="#f8fafc" stroke="#dbeafe" stroke-width="1.4"/>
+  <text x="36" y="98" font-size="13" font-weight="bold" fill="#1e3a8a">① 一元　Methods 表</text>
+  <line x1="90" y1="128" x2="472" y2="128" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="30" y="132" font-size="10.5" fill="#334155">客户端</text>
+  <line x1="90" y1="196" x2="472" y2="196" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="30" y="200" font-size="10.5" fill="#334155">服务端</text>
+  <line x1="200" y1="128" x2="200" y2="196" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mb)"/>
+  <text x="152" y="168" font-size="10.5" fill="#1d4ed8">1 条</text>
+  <line x1="320" y1="196" x2="320" y2="128" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mb)"/>
+  <text x="284" y="168" font-size="10.5" fill="#1d4ed8">1 条</text>
+  <text x="36" y="226" font-size="10" fill="#334155">实测：unary resp.seq=1 body=echo:hello cost=4ms（多轮 2~4 ms）</text>
+  <text x="36" y="242" font-size="10" fill="#64748b">结果就是返回的那个 error，没有半关闭、不需要 EOF</text>
+
+  <rect x="510" y="76" width="470" height="170" rx="10" fill="#f8fafc" stroke="#ccfbf1" stroke-width="1.4"/>
+  <text x="526" y="98" font-size="13" font-weight="bold" fill="#134e4a">② 服务端流　Streams + ServerStreams=true</text>
+  <line x1="580" y1="128" x2="962" y2="128" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="520" y="132" font-size="10.5" fill="#334155">客户端</text>
+  <line x1="580" y1="196" x2="962" y2="196" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="520" y="200" font-size="10.5" fill="#334155">服务端</text>
+  <line x1="640" y1="128" x2="640" y2="196" stroke="#0d9488" stroke-width="1.6" marker-end="url(#mt)"/>
+  <text x="604" y="168" font-size="10.5" fill="#0f766e">1 条</text>
+  <line x1="760" y1="196" x2="760" y2="128" stroke="#0d9488" stroke-width="1.5" marker-end="url(#mt)"/>
+  <line x1="810" y1="196" x2="810" y2="128" stroke="#0d9488" stroke-width="1.5" marker-end="url(#mt)"/>
+  <line x1="860" y1="196" x2="860" y2="128" stroke="#0d9488" stroke-width="1.5" marker-end="url(#mt)"/>
+  <line x1="910" y1="196" x2="910" y2="128" stroke="#0d9488" stroke-width="1.5" marker-end="url(#mt)"/>
+  <text x="766" y="168" font-size="10.5" fill="#0f766e">N 条（本实验 N=5）</text>
+  <text x="526" y="226" font-size="10" fill="#334155">实测：recv=5 firstByte=17ms total=81ms endErr=EOF last.body=srv-5</text>
+  <text x="526" y="242" font-size="10" fill="#64748b">handler 每 15 ms 推一条 —— 总耗时由推送节奏决定，不是被网络拖慢</text>
+
+  <rect x="20" y="256" width="470" height="170" rx="10" fill="#f8fafc" stroke="#ede9fe" stroke-width="1.4"/>
+  <text x="36" y="278" font-size="13" font-weight="bold" fill="#4c1d95">③ 客户端流　Streams + ClientStreams=true</text>
+  <line x1="90" y1="308" x2="472" y2="308" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="30" y="312" font-size="10.5" fill="#334155">客户端</text>
+  <line x1="90" y1="376" x2="472" y2="376" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="30" y="380" font-size="10.5" fill="#334155">服务端</text>
+  <line x1="150" y1="308" x2="150" y2="376" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#mp)"/>
+  <line x1="200" y1="308" x2="200" y2="376" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#mp)"/>
+  <line x1="250" y1="308" x2="250" y2="376" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#mp)"/>
+  <line x1="300" y1="308" x2="300" y2="376" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#mp)"/>
+  <text x="156" y="348" font-size="10.5" fill="#6d28d9">N 条（本实验 N=5）</text>
+  <path d="M336,308 H352" stroke="#e11d48" stroke-width="1.8"/>
+  <text x="326" y="300" font-size="10" fill="#881337">CloseSend</text>
+  <line x1="420" y1="376" x2="420" y2="308" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#mp)"/>
+  <text x="384" y="348" font-size="10.5" fill="#6d28d9">1 条</text>
+  <text x="36" y="406" font-size="10" fill="#334155">实测：sent=5 msgs/10 bytes → resp.body="server got 5 msgs / 10 bytes"</text>
+  <text x="36" y="422" font-size="10" fill="#64748b">服务端只在 RecvMsg 拿到 io.EOF 之后才回那条汇总 —— 不 CloseSend 就永远等</text>
+
+  <rect x="510" y="256" width="470" height="170" rx="10" fill="#f8fafc" stroke="#fef3c7" stroke-width="1.6"/>
+  <text x="526" y="278" font-size="13" font-weight="bold" fill="#7c2d12">④ 双向流　两个标志都为 true</text>
+  <line x1="580" y1="308" x2="962" y2="308" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="520" y="312" font-size="10.5" fill="#334155">客户端</text>
+  <line x1="580" y1="376" x2="962" y2="376" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="520" y="380" font-size="10.5" fill="#334155">服务端</text>
+  <line x1="630" y1="308" x2="630" y2="376" stroke="#d97706" stroke-width="1.5" marker-end="url(#ma)"/>
+  <line x1="668" y1="376" x2="668" y2="308" stroke="#d97706" stroke-width="1.5" marker-end="url(#ma)"/>
+  <line x1="720" y1="308" x2="720" y2="376" stroke="#d97706" stroke-width="1.5" marker-end="url(#ma)"/>
+  <line x1="758" y1="376" x2="758" y2="308" stroke="#d97706" stroke-width="1.5" marker-end="url(#ma)"/>
+  <line x1="810" y1="308" x2="810" y2="376" stroke="#d97706" stroke-width="1.5" marker-end="url(#ma)"/>
+  <line x1="848" y1="376" x2="848" y2="308" stroke="#d97706" stroke-width="1.5" marker-end="url(#ma)"/>
+  <text x="636" y="348" font-size="10.5" fill="#b45309">边收边发（本实验各 3 条）</text>
+  <text x="526" y="406" font-size="10" fill="#334155">实测：sent=3 recv=3 firstAck=ack:m1 endErr=EOF</text>
+  <text x="526" y="422" font-size="10" fill="#64748b">handler 是 for i := 1; ; i++，只有 io.EOF 或真错误能结束它</text>
+
+  <rect x="20" y="436" width="960" height="150" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="40" y="462" font-size="12.5" font-weight="bold" fill="#0f172a">方向标志不是注释：它声明「哪个方向可以有多条消息」，且真的传到拦截器</text>
+  <text x="40" y="486" font-size="11" fill="#334155">Streams: []grpc.StreamDesc{{StreamName:"ServerStream", ServerStreams:true}, {StreamName:"ClientStream", ClientStreams:true}, {StreamName:"BiDi", ServerStreams:true, ClientStreams:true}}</text>
+  <text x="40" y="510" font-size="11" fill="#334155">实测读数：interceptor stream: [stream-in /demo.Echo/BiDi clientStreams=true serverStreams=true stream-out err=&lt;nil&gt;]　⚠️ 标志与实现不一致会在运行期报错，不是编译期</text>
+  <text x="40" y="536" font-size="11.5" font-weight="bold" fill="#0d9488">服务端全局计数（四种模式跑在同一个 conn 上）：streams=3　msgsIn=8　msgsOut=9　unaryCalls=1</text>
+  <text x="40" y="558" font-size="11" fill="#334155">msgsIn=8 是双向的 3 加客户端流的 5；msgsOut=9 是服务端流的 5 加客户端流的 1 加双向的 3 —— 一元不计入这三个数，另记 unaryCalls=1</text>
+  <text x="40" y="578" font-size="11" fill="#64748b">Java 侧连跑三轮，这三个计数与 Go 逐字一致；耗时差值（一元首调 751~1433 ms）是 JVM 预热与 Netty 建连，不是协议差异</text>
+</svg>

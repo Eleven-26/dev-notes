@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">gRPC 生态组件地图：框架内、框架内的可插拔件、外挂，三条带各管一件事</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">判据是「要不要额外进程」：不需要额外进程的是框架内，独立服务或边车是外挂</text>
+
+  <rect x="20" y="72" width="960" height="116" rx="10" fill="#f8fafc" stroke="#dbeafe" stroke-width="1.5"/>
+  <text x="36" y="94" font-size="12.5" font-weight="bold" fill="#1e3a8a">框架内 —— 改的是「这次调用怎么被处理」，不需要额外进程</text>
+  <rect x="36" y="104" width="300" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="50" y="122" font-size="11" font-weight="bold" fill="#1e3a8a">拦截器 / 中间件</text>
+  <text x="50" y="140" font-size="9.5" fill="#334155">Go：UnaryInterceptor / ChainUnaryInterceptor（流用 StreamInterceptor）</text>
+  <text x="50" y="156" font-size="9.5" fill="#334155">Java：ServerInterceptor / ClientInterceptor + ServerInterceptors.intercept</text>
+  <text x="50" y="170" font-size="9.5" fill="#1d4ed8">洋葱序：先注册的先执行</text>
+  <rect x="350" y="104" width="300" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="364" y="122" font-size="11" font-weight="bold" fill="#1e3a8a">codec（载荷装箱方式）</text>
+  <text x="364" y="140" font-size="9.5" fill="#334155">Go：encoding.RegisterCodec + CallContentSubtype("json")</text>
+  <text x="364" y="156" font-size="9.5" fill="#334155">Java：Marshaller 四件套（marshal / parse / stream ...）</text>
+  <text x="364" y="170" font-size="9.5" fill="#881337">⚠️ 只注册不声明没用，只声明不注册也没用</text>
+  <rect x="664" y="104" width="300" height="72" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.3"/>
+  <text x="678" y="122" font-size="11" font-weight="bold" fill="#881337">本实验踩过的那一条</text>
+  <text x="678" y="140" font-size="9.5" fill="#334155">server.go:1284 把 s.opts.unaryInt 当参数传进 md.Handler，</text>
+  <text x="678" y="156" font-size="9.5" fill="#334155">不替你调用 → 老式一元 handler 必须自己调 interceptor(ctx, in, info, handler)</text>
+  <text x="678" y="170" font-size="9.5" fill="#881337">症状是没有任何报错，只拿到空数组 interceptor srv: []</text>
+
+  <rect x="20" y="200" width="960" height="116" rx="10" fill="#f8fafc" stroke="#ede9fe" stroke-width="1.5"/>
+  <text x="36" y="222" font-size="12.5" font-weight="bold" fill="#4c1d95">框架内的可插拔件 —— 接口由框架开出，实现可以内建、也可以自己写</text>
+  <rect x="36" y="232" width="300" height="72" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.3"/>
+  <text x="50" y="250" font-size="11" font-weight="bold" fill="#4c1d95">resolver：名字 → 一组地址</text>
+  <text x="50" y="268" font-size="9.5" fill="#334155">输出只有 State.Addresses，不做健康判断、不选连接</text>
+  <text x="50" y="284" font-size="9.5" fill="#334155">Go：resolver.Builder + resolver.Register</text>
+  <text x="50" y="298" font-size="9.5" fill="#334155">Java：NameResolverProvider + nameResolverFactory</text>
+  <rect x="350" y="232" width="300" height="72" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.3"/>
+  <text x="364" y="250" font-size="11" font-weight="bold" fill="#4c1d95">balancer：选哪条子连接</text>
+  <text x="364" y="268" font-size="9.5" fill="#334155">内建 pick_first / round_robin，grpclb 走 LoadBalancerProvider</text>
+  <text x="364" y="284" font-size="9.5" fill="#6d28d9">pick_first 会把一个客户端压在一台上</text>
+  <text x="364" y="298" font-size="9.5" fill="#6d28d9">round_robin 必须 resolver 给出多地址才有意义</text>
+  <rect x="664" y="232" width="300" height="72" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.3"/>
+  <text x="678" y="250" font-size="11" font-weight="bold" fill="#4c1d95">target 的四种写法</text>
+  <text x="678" y="268" font-size="9.5" fill="#334155">host:port、dns:///host:port → A/AAAA 外加一次 TXT</text>
+  <text x="678" y="284" font-size="9.5" fill="#0d9488">passthrough:///host:port → 不解析，省掉那次 TXT</text>
+  <text x="678" y="298" font-size="9.5" fill="#334155">unix:///path.sock → 同机 UDS 直连</text>
+
+  <rect x="20" y="328" width="960" height="116" rx="10" fill="#f8fafc" stroke="#ccfbf1" stroke-width="1.5"/>
+  <text x="36" y="350" font-size="12.5" font-weight="bold" fill="#134e4a">外挂 —— 独立服务或边车，gRPC 只负责把接口留下来</text>
+  <rect x="36" y="360" width="300" height="72" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.3"/>
+  <text x="50" y="378" font-size="11" font-weight="bold" fill="#134e4a">健康检查　grpc.health.v1.Health</text>
+  <text x="50" y="396" font-size="9.5" fill="#334155">Check / Watch 两个方法，就是普通 gRPC 服务</text>
+  <text x="50" y="412" font-size="9.5" fill="#0d9488">可以走同一个端口、同一次连接，不必另开 HTTP 端点</text>
+  <text x="50" y="426" font-size="9.5" fill="#881337">⚠️ 写死返回 SERVING 的探针等于没探</text>
+  <rect x="350" y="360" width="300" height="72" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.3"/>
+  <text x="364" y="378" font-size="11" font-weight="bold" fill="#134e4a">反射　grpc.reflection.v1</text>
+  <text x="364" y="396" font-size="9.5" fill="#334155">Go：reflection.Register(srv)；Java：ProtoReflectionService</text>
+  <text x="364" y="412" font-size="9.5" fill="#334155">让 grpcurl / grpcui 在手上没有 .proto 时也能列服务与方法</text>
+  <text x="364" y="426" font-size="9.5" fill="#64748b">本目录只讲了它的位置，未实跑（已知缺口）</text>
+  <rect x="664" y="360" width="300" height="72" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.3"/>
+  <text x="678" y="378" font-size="11" font-weight="bold" fill="#134e4a">网关 / 可观测</text>
+  <text x="678" y="396" font-size="9.5" fill="#334155">nginx grpc_pass、Envoy、自研网关；</text>
+  <text x="678" y="412" font-size="9.5" fill="#334155">trace / metrics / log 都埋在拦截器里做</text>
+  <text x="678" y="426" font-size="9.5" fill="#881337">⚠️ proxy_pass 用 HTTP/1.1 说话，一定失败</text>
+
+  <rect x="20" y="456" width="960" height="146" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="40" y="482" font-size="12.5" font-weight="bold" fill="#0f172a">四句要在脑子里钉死的分工</text>
+  <text x="40" y="508" font-size="11" fill="#334155">① resolver 与 balancer 不要合并：合并之后「DNS 解析失败」与「实例不可用」这两类问题就分不清了。</text>
+  <text x="40" y="530" font-size="11" fill="#334155">② 每条子连接对应一条 TCP，LB 选的是「用哪一条」；改策略改的是选择逻辑，不会让已建好的连接变多。</text>
+  <text x="40" y="552" font-size="11" fill="#0d9488">　　证据：proxy: tcpConns=1　/　unary x200: dialCalls=1 serverAcceptedConns=1　/　3 条并发流之后 accept 仍是 1(+0)。</text>
+  <text x="40" y="574" font-size="11" fill="#334155">③ K8s 下要 headless Service（clusterIP: None）给出全部 Pod 地址 + 客户端 round_robin；普通 ClusterIP 只给一个 VIP，轮转不起来。</text>
+  <text x="40" y="594" font-size="11" fill="#334155">④ 长连接会让 LB 长期只往同一批 Pod 打：服务端设 MaxConnectionAge（配 keepalive.ServerParameters），让连接定期重建才有重平衡。</text>
+</svg>

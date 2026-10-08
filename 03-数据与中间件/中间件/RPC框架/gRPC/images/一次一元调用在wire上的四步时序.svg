@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="r" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="s" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#0d9488"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次一元调用在 wire 上的四步：惰性建连 → HEADERS → DATA → trailer</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">中间那条「代理」是本实验自己写的 TCP 透明代理，只数连接、按帧头解表；本机没有 tcpdump / tshark</text>
+
+  <rect x="112" y="76" width="176" height="34" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="200" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">客户端（grpc-go）</text>
+  <rect x="432" y="76" width="176" height="34" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="520" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">TCP 透明代理</text>
+  <rect x="752" y="76" width="176" height="34" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+  <text x="840" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#134e4a">服务端</text>
+
+  <line x1="200" y1="110" x2="200" y2="588" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <line x1="520" y1="110" x2="520" y2="588" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <line x1="840" y1="110" x2="840" y2="588" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+  <rect x="16" y="122" width="30" height="26" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="31" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">①</text>
+  <text x="56" y="140" font-size="11.5" font-weight="bold" fill="#0f172a">grpc.NewClient 是惰性的：返回时并没有建 TCP，状态停在 IDLE</text>
+  <path d="M200,156 H320 V176 H200" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#r)"/>
+  <text x="330" y="164" font-size="10.5" fill="#1d4ed8">真实触发者二选一：显式 conn.Connect()，或者第一条 RPC 自己把连接拉起来</text>
+  <text x="330" y="182" font-size="10.5" fill="#64748b">第一版探针写「等状态离开 IDLE」→ WaitForStateChange 等了 30 秒没有任何变化</text>
+  <line x1="200" y1="196" x2="840" y2="196" stroke="#2563eb" stroke-width="1.5" marker-end="url(#r)"/>
+  <text x="330" y="192" font-size="10.5" fill="#1d4ed8">TCP 拨号　读数：dialCalls=1　serverAcceptedConns=1（两端数的是同一件事）</text>
+
+  <rect x="16" y="214" width="30" height="26" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="31" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">②</text>
+  <text x="56" y="232" font-size="11.5" font-weight="bold" fill="#0f172a">HEADERS：一个正常 HTTP/2 请求的头</text>
+  <line x1="200" y1="252" x2="840" y2="252" stroke="#2563eb" stroke-width="1.6" marker-end="url(#r)"/>
+  <text x="520" y="248" text-anchor="middle" font-size="11" fill="#1d4ed8">HEADERS(stream=1, len=93, flags=0x04 END_HEADERS)</text>
+  <text x="56" y="272" font-size="10.5" fill="#334155">:method = POST　　:path = /demo.Echo/Unary（格式固定 /&lt;服务全名&gt;/&lt;方法名&gt;）　　content-type = application/grpc+json　　te = trailers（按规范转述，代理不解 HPACK）</text>
+  <text x="56" y="290" font-size="10.5" fill="#64748b">:path 就是「方法名只是一个字符串」的落点：服务端拿它去注册表里查 MethodDesc，查到谁就执行谁的 handler</text>
+
+  <rect x="16" y="306" width="30" height="26" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="31" y="324" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">③</text>
+  <text x="56" y="324" font-size="11.5" font-weight="bold" fill="#0f172a">DATA：Length-Prefixed-Message，不是裸消息体</text>
+  <line x1="200" y1="344" x2="840" y2="344" stroke="#2563eb" stroke-width="1.6" marker-end="url(#r)"/>
+  <text x="520" y="340" text-anchor="middle" font-size="11" fill="#1d4ed8">DATA(stream=1, len=17, flags=0x01 END_STREAM)</text>
+  <rect x="286" y="352" width="428" height="24" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="296" y="368" font-size="10.5" fill="#4c1d95">1 字节压缩标志 + 4 字节大端长度 + 载荷</text>
+  <text x="724" y="368" font-size="10.5" fill="#6d28d9">12 + 5 = 17</text>
+  <text x="56" y="394" font-size="10.5" fill="#334155">三个样本全部正好多出 5 字节：{"n":3} 7→12　{"body":"w"} 12→17　{"seq":1,"body":"w"} 20→25；flags=0x01 对应客户端发完就 CloseSend() 半关闭</text>
+
+  <rect x="16" y="410" width="30" height="26" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="31" y="428" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">④</text>
+  <text x="56" y="428" font-size="11.5" font-weight="bold" fill="#0f172a">收尾：响应头 → 响应体 → trailer 带状态</text>
+  <line x1="840" y1="448" x2="200" y2="448" stroke="#0d9488" stroke-width="1.6" marker-end="url(#s)"/>
+  <text x="520" y="444" text-anchor="middle" font-size="11" fill="#0f766e">HEADERS（响应头）　respHeader.x-handler=[unary]　x-md-count=[1]</text>
+  <line x1="840" y1="478" x2="200" y2="478" stroke="#0d9488" stroke-width="1.6" marker-end="url(#s)"/>
+  <text x="520" y="474" text-anchor="middle" font-size="11" fill="#0f766e">DATA（响应体）</text>
+  <line x1="840" y1="508" x2="200" y2="508" stroke="#e11d48" stroke-width="1.8" marker-end="url(#s)"/>
+  <text x="520" y="504" text-anchor="middle" font-size="11" font-weight="bold" fill="#881337">trailer：grpc-status / grpc-message　＋　respTrailer.x-trailer-note=[set-in-unary-handler]</text>
+  <text x="56" y="530" font-size="10.5" fill="#334155">客户端读到的就是结构化的三样：code=OK 成功 / code=NotFound msg="no such key: 42" 业务失败 / code=DeadlineExceeded（60 ms 预算 vs handler 300 ms，cost=60ms）</text>
+  <text x="56" y="550" font-size="10.5" fill="#64748b">trailer 是 gRPC 在 HTTP/2 上表达「结果是什么」的通道：header 在响应开始前送达，trailer 在流结束后送达</text>
+  <text x="56" y="576" font-size="10.5" fill="#0d9488">跨容器一轮：probe ready state=READY cost=26ms → invoke#1 3ms、#2 3ms、#3 15ms（时序类只断言趋势）</text>
+
+  <rect x="16" y="600" width="968" height="84" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="34" y="624" font-size="12" font-weight="bold" fill="#7c2d12">⭐ 第二次调用不再走 ①：同一 conn 上另开一条流，HEADERS 的 stream ID 换号即可</text>
+  <text x="34" y="648" font-size="10.5" fill="#9a3412">wire 一轮 5 条流共用一条 TCP：streamIDs [1 3 5 7 9] 全为奇数（客户端发起）；同样的头块第二次只花 15 字节（HPACK 动态表，第一条 93 字节）</text>
+  <text x="34" y="670" font-size="10.5" fill="#9a3412">复用计数：unary x200 → ok=200 cost=13ms dialCalls=1；随后 3 条并发流跑完 serverAcceptedConns=1(+0)、msgsOut=60 —— 并发度涨了，连接数不涨</text>
+</svg>

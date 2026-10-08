@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一个 gRPC 服务的工程布局：api 是唯一真源，gen 是编译产物，人只审前者</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">不用 protoc 时，gen 那一层由「契约 + 描述 + codec」的共享包替代，职责边界一条都不少</text>
+
+  <rect x="30" y="74" width="470" height="292" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="46" y="98" font-size="12" font-weight="bold" fill="#0f172a">可抄的目录布局</text>
+  <text x="46" y="122" font-size="10.5" font-weight="bold" fill="#334155">ordersvc/</text>
+  <text x="46" y="146" font-size="10.5" fill="#334155">├── api/</text>
+  <text x="250" y="146" font-size="10" font-weight="bold" fill="#1e3a8a">契约层：里面只有 .proto</text>
+  <text x="46" y="166" font-size="10.5" fill="#64748b">│   └── order/v1/order.proto</text>
+  <text x="46" y="190" font-size="10.5" fill="#334155">├── gen/</text>
+  <text x="250" y="190" font-size="10" font-weight="bold" fill="#4c1d95">生成物：提交进仓库</text>
+  <text x="46" y="210" font-size="10.5" fill="#64748b">│   └── order/v1/{order.pb.go, order_grpc.pb.go}</text>
+  <text x="46" y="234" font-size="10.5" fill="#334155">├── cmd/</text>
+  <text x="250" y="234" font-size="10" font-weight="bold" fill="#881337">只做装配，不写业务</text>
+  <text x="46" y="254" font-size="10.5" fill="#64748b">│   └── server/main.go</text>
+  <text x="46" y="278" font-size="10.5" fill="#334155">├── internal/service/</text>
+  <text x="250" y="278" font-size="10" font-weight="bold" fill="#0d9488">只依赖 gen 的接口类型</text>
+  <text x="46" y="302" font-size="10.5" fill="#334155">├── client/order.go</text>
+  <text x="250" y="302" font-size="10" font-weight="bold" fill="#0d9488">连接复用 + 拦截器</text>
+  <text x="46" y="326" font-size="10.5" fill="#334155">└── buf.yaml　buf.gen.yaml　go.mod</text>
+  <text x="250" y="326" font-size="10" fill="#64748b">工具链配置</text>
+  <text x="46" y="348" font-size="10" fill="#334155">四条边界：api 只有 .proto；gen 人手不进去改；</text>
+  <text x="46" y="362" font-size="10" fill="#334155">cmd 读配置 / 建连接 / 注册服务 / 起监听；业务与传输层解耦</text>
+
+  <rect x="520" y="74" width="450" height="140" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="536" y="98" font-size="12" font-weight="bold" fill="#4c1d95">不用 protoc 时，gen 那一层由谁替代（本实验的 svc/）</text>
+  <text x="536" y="122" font-size="10.5" fill="#334155">.proto 声明服务与方法　→ 常量：ServiceName = "demo.Echo"、MethodName = "Unary"</text>
+  <text x="536" y="142" font-size="10.5" fill="#334155">生成的 stub 与注册代码　→ 手写 grpc.ServiceDesc（Methods + Streams）</text>
+  <text x="536" y="162" font-size="10.5" fill="#334155">生成代码里的 codec 绑定　→ init() 里 encoding.RegisterCodec + ForceServerCodec</text>
+  <text x="536" y="182" font-size="10.5" fill="#334155">生成的 Client 结构体　→ 客户端直接 conn.Invoke(ctx, "/demo.Echo/Unary", ...)</text>
+  <text x="536" y="204" font-size="10.5" font-weight="bold" fill="#881337">⚠️ 副作用：一元 handler 必须自己调拦截器，否则静默失效（拿到 interceptor srv: []）</text>
+
+  <rect x="520" y="226" width="450" height="140" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="536" y="250" font-size="12" font-weight="bold" fill="#1e3a8a">怎么审：只审 .proto，生成物当编译产物</text>
+  <text x="536" y="274" font-size="10.5" fill="#334155">PR 里要人看的是 api/ 下的 diff：字段号有没有被复用、reserved 有没有补、枚举值有没有被挪位</text>
+  <text x="536" y="296" font-size="10.5" fill="#334155">破坏性变更的门禁：buf breaking --against '.git#branch=main'</text>
+  <text x="536" y="318" font-size="10.5" fill="#334155">对齐检查：buf generate &amp;&amp; git diff --exit-code（有人改了 .proto 忘了重新生成）</text>
+  <text x="536" y="340" font-size="10.5" fill="#334155">再加一道：go build ./...　—— 顺带验生成物与 grpc 运行时版本有没有打架</text>
+  <text x="536" y="358" font-size="10" fill="#64748b">gen 配空 owner 或在 PR 模板里注明跳过：逐行读生成物没有新信息</text>
+
+  <rect x="30" y="378" width="940" height="118" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="46" y="402" font-size="12" font-weight="bold" fill="#7c2d12">生成物要不要提交进仓库：用「仓库体积 + diff 噪音」换掉「人人装同版本工具链」与「版本漂移」</text>
+  <rect x="46" y="414" width="440" height="70" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="60" y="434" font-size="11" font-weight="bold" fill="#1e3a8a">提交进仓库（多数公司内网服务的默认）</text>
+  <text x="60" y="454" font-size="10" fill="#334155">只有改 .proto 的人需要工具链；生成物的 diff 在 PR 里一眼可见；</text>
+  <text x="60" y="472" font-size="10" fill="#334155">生成物与 .proto 同一次 review，版本容易对齐　⚠️ 代价：仓库变大</text>
+  <rect x="504" y="414" width="440" height="70" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="518" y="434" font-size="11" font-weight="bold" fill="#0f172a">不提交、构建时生成</text>
+  <text x="518" y="454" font-size="10" fill="#334155">仓库干净　⚠️ 所有人加所有 CI runner 都要装同版本 protoc 与插件；</text>
+  <text x="518" y="472" font-size="10" fill="#881337">生成物不进 diff，「接口变了」可能被漏审 → 必须把版本钉进 CI 镜像并做对齐检查</text>
+
+  <rect x="30" y="510" width="940" height="112" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="46" y="534" font-size="12" font-weight="bold" fill="#0f172a">上线前十条的分类（每条都有本实验的实测或源码依据，细节见第四节）</text>
+  <text x="46" y="558" font-size="10.5" fill="#881337">配错直接报错的四条：① 4 MiB 四个开关按方向成对放开　② 头表 16 MiB 撞线报 RST_STREAM / FRAME_SIZE_ERROR</text>
+  <text x="60" y="576" font-size="10.5" fill="#881337">　　　　　　　　　　　③ 一元拦截器是否真生效　④ 就绪探针要能证明「连得上」（NewClient 是惰性的）</text>
+  <text x="46" y="596" font-size="10.5" fill="#7c2d12">配错静默出问题的四条：⑤ 首连被 DNS TXT 拖 8 秒　⑥ 过网关必须 grpc_pass　⑦ GracefulStop + preStop　⑧ deadline 要显式给</text>
+  <text x="46" y="614" font-size="10.5" fill="#0d9488">外圈两条：⑨ 连接复用要拿 dialCalls=1 / serverAcceptedConns=1 证明　⑩ metadata 不放敏感信息且 key 会小写</text>
+</svg>

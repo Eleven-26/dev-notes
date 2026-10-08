@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="k1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">左边选模式：三条判据顺着问；右边定结束：一次 RecvMsg 返回只有三种落点</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">落点是业务语义，不是性能 —— 流式省的是「等整批数据准备好」，不是省时间</text>
+
+  <rect x="20" y="72" width="470" height="30" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="255" y="92" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">选型：按「谁需要连续发」顺着问三条</text>
+
+  <rect x="34" y="114" width="266" height="54" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="48" y="134" font-size="11" font-weight="bold" fill="#1e3a8a">Q1　服务端要不要主动连续推？</text>
+  <text x="48" y="152" font-size="10" fill="#334155">一元做不到「服务端多次回话」</text>
+  <path d="M300,141 H324" fill="none" stroke="#64748b" stroke-width="1.4" marker-end="url(#k1)"/>
+  <rect x="328" y="124" width="150" height="34" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.4"/>
+  <text x="403" y="146" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#134e4a">是 → 至少服务端流</text>
+
+  <rect x="34" y="182" width="266" height="54" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="48" y="202" font-size="11" font-weight="bold" fill="#1e3a8a">Q2　客户端要不要连续推？</text>
+  <text x="48" y="220" font-size="10" fill="#334155">批量上报、日志汇聚、分块上传</text>
+  <path d="M300,209 H324" fill="none" stroke="#64748b" stroke-width="1.4" marker-end="url(#k1)"/>
+  <rect x="328" y="192" width="150" height="34" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="403" y="214" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#4c1d95">是 → 至少客户端流</text>
+
+  <rect x="34" y="250" width="266" height="54" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="48" y="270" font-size="11" font-weight="bold" fill="#1e3a8a">Q3　两端要不要同时连续推？</text>
+  <text x="48" y="288" font-size="10" fill="#334155">「同时」而不是「轮流」</text>
+  <path d="M300,277 H324" fill="none" stroke="#64748b" stroke-width="1.4" marker-end="url(#k1)"/>
+  <rect x="328" y="260" width="150" height="34" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="403" y="282" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#7c2d12">是 → 双向流（最贵）</text>
+
+  <line x1="167" y1="168" x2="167" y2="180" stroke="#64748b" stroke-width="1.3" marker-end="url(#k1)"/>
+  <line x1="167" y1="236" x2="167" y2="248" stroke="#64748b" stroke-width="1.3" marker-end="url(#k1)"/>
+  <text x="176" y="180" font-size="9.5" fill="#64748b">否</text>
+  <text x="176" y="248" font-size="9.5" fill="#64748b">否</text>
+
+  <path d="M167,304 V318 H255 V330" fill="none" stroke="#64748b" stroke-width="1.3" marker-end="url(#k1)"/>
+  <text x="176" y="318" font-size="9.5" fill="#64748b">三问全否（双方都是固定单条）</text>
+  <rect x="34" y="334" width="444" height="40" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="48" y="352" font-size="11" font-weight="bold" fill="#0f172a">用一元 —— 实测 cost=4ms，最省心的形态</text>
+  <text x="48" y="368" font-size="10" fill="#334155">多轮波动区间 2~4 ms；没有流生命周期、不看 ctx.Done()、不处理半关闭</text>
+
+  <rect x="20" y="386" width="470" height="112" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="36" y="410" font-size="12" font-weight="bold" fill="#7c2d12">⚠️ 三条反向判据（能降级就别上流）</text>
+  <text x="36" y="434" font-size="10.5" fill="#9a3412">① 能「一元 + 轮询」解决的，别上服务端流；② 两端只是轮流说话，别上双向流；</text>
+  <text x="36" y="454" font-size="10.5" fill="#9a3412">③ 上流就要接住三件事：连接生命周期变长、要看 ctx.Done()、要处理对端半关闭</text>
+  <text x="36" y="478" font-size="10.5" fill="#9a3412">⭐ 流式的收益是「不用等整批数据准备好」，不是「更快」—— 落点是业务语义</text>
+
+  <rect x="510" y="72" width="470" height="30" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.4"/>
+  <text x="745" y="92" text-anchor="middle" font-size="12" font-weight="bold" fill="#134e4a">结束语义：err := stream.RecvMsg(m) 之后只有三种落点</text>
+
+  <rect x="524" y="114" width="442" height="44" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.4"/>
+  <text x="538" y="134" font-size="11" font-weight="bold" fill="#134e4a">入口：对端 CloseSend()（Java 请求侧 onCompleted()）之后</text>
+  <text x="538" y="150" font-size="10" fill="#334155">下一次 RecvMsg 一定拿到一个非 nil 的 error —— 先分类再处理</text>
+  <line x1="745" y1="158" x2="745" y2="170" stroke="#64748b" stroke-width="1.3" marker-end="url(#k1)"/>
+
+  <rect x="524" y="174" width="442" height="60" rx="8" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.5"/>
+  <text x="538" y="194" font-size="11" font-weight="bold" fill="#134e4a">① err == io.EOF　正常收尾，不是错误</text>
+  <text x="538" y="212" font-size="10" fill="#0f766e">读法：break / return nil　｜　实测 endErr=EOF 出现在服务端流与双向流的正常收尾</text>
+  <text x="538" y="228" font-size="10" fill="#0f766e">Java 对应物：响应侧观察者的 onCompleted()（与请求侧同名不同义）</text>
+
+  <rect x="524" y="246" width="442" height="54" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="538" y="266" font-size="11" font-weight="bold" fill="#881337">② err != nil 且不是 EOF　真错误</text>
+  <text x="538" y="284" font-size="10" fill="#334155">读法：return err 向上抛　｜　一元没有这个概念，结果就在返回的 error 里（code=NotFound）</text>
+  <text x="538" y="298" font-size="10" fill="#881337">⚠️ 写成 if err != nil { return err } 把 EOF 一并吞掉 = 成功当失败</text>
+
+  <rect x="524" y="312" width="442" height="60" rx="8" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.5"/>
+  <text x="538" y="332" font-size="11" font-weight="bold" fill="#881337">③ 传输层掐流：RST_STREAM / deadline 到期</text>
+  <text x="538" y="350" font-size="10" fill="#334155">撞头表限额：code=Internal msg="stream terminated by RST_STREAM ... FRAME_SIZE_ERROR"</text>
+  <text x="538" y="366" font-size="10" fill="#334155">预算用完：code=DeadlineExceeded —— 与 EOF 完全不同，它是链路上把流掐掉</text>
+
+  <rect x="510" y="386" width="470" height="112" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="526" y="410" font-size="12" font-weight="bold" fill="#0f172a">漏掉「结束」的两种代价（都能从服务端代码直接看出来）</text>
+  <text x="526" y="434" font-size="10.5" fill="#334155">① 客户端忘 CloseSend（Java 忘 onCompleted）：clientStreamHandler 要等 io.EOF 才回汇总，</text>
+  <text x="526" y="452" font-size="10.5" fill="#334155">　 bidiHandler 是 for i := 1; ; i++ —— 没有结束条件，服务端一直挂着直到超时或断连</text>
+  <text x="526" y="474" font-size="10.5" fill="#334155">② handler 不看 ctx.Done()、不看 SendMsg 的 error：对端已放弃你还在发。实测给 60 ms 预算、</text>
+  <text x="526" y="490" font-size="10.5" fill="#334155">　 handler 睡 300 ms，写 select 之后 cost=60ms 就退出，不写就把 300 ms 睡完</text>
+
+  <rect x="20" y="512" width="960" height="132" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <text x="40" y="538" font-size="12.5" font-weight="bold" fill="#0f172a">Go / Java 的对应物：三个动作，两套名字</text>
+  <rect x="40" y="552" width="300" height="36" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="54" y="568" font-size="10.5" font-weight="bold" fill="#1e3a8a">我发完了（半关闭）</text>
+  <text x="54" y="583" font-size="10" fill="#334155">Go 客户端 CloseSend()　｜　Java 请求侧 onCompleted()</text>
+  <rect x="356" y="552" width="300" height="36" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="1.3"/>
+  <text x="370" y="568" font-size="10.5" font-weight="bold" fill="#134e4a">对端发完了（正常结束）</text>
+  <text x="370" y="583" font-size="10" fill="#334155">Go RecvMsg 返回 io.EOF　｜　Java 响应侧 onCompleted()</text>
+  <rect x="672" y="552" width="288" height="36" rx="8" fill="#ffffff" stroke="#e11d48" stroke-width="1.3"/>
+  <text x="686" y="568" font-size="10.5" font-weight="bold" fill="#881337">异常结束</text>
+  <text x="686" y="583" font-size="10" fill="#334155">Go 非 EOF 的 error　｜　Java onError(Throwable)</text>
+  <text x="40" y="616" font-size="11" fill="#7c2d12">⚠️ 同一个 onCompleted 在请求侧是「我发完了」、在响应侧是「对端正常结束」—— 一个方法名两种语义，是流式代码最容易读绕的地方</text>
+  <text x="40" y="636" font-size="11" fill="#64748b">阻塞式 blockingXxx 与异步式 asyncXxx 不要混着等：异步式要自己等 onCompleted / onError，否则主线程先退出、观察者还没回调</text>
+</svg>

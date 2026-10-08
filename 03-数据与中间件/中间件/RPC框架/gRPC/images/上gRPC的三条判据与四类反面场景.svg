@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="y1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">该不该上 gRPC：判据一与判据二是合取，判据三只是加分条件</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">「先不先进」不在判据里 —— 前两条缺一条，收益就大打折扣</text>
+
+  <rect x="30" y="76" width="300" height="112" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="46" y="100" font-size="12" font-weight="bold" fill="#1e3a8a">判据一　愿不愿意共同维护 schema</text>
+  <text x="46" y="122" font-size="10" fill="#334155">改字段要提 PR、要过兼容门禁、要通知对端重新生成</text>
+  <text x="46" y="142" font-size="10" fill="#334155">否证：上游是外部合作方、跨团队沟通成本极高，</text>
+  <text x="46" y="160" font-size="10" fill="#334155">或干脆是「接口改了我改下文档就够了」的协作方式</text>
+  <text x="46" y="180" font-size="10" fill="#881337">这类场景上 gRPC，收益会被流程成本吃掉</text>
+
+  <path d="M330,132 H346" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#y1)"/>
+  <text x="332" y="122" font-size="10" fill="#0d9488">是</text>
+
+  <rect x="350" y="76" width="300" height="112" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.6"/>
+  <text x="366" y="100" font-size="12" font-weight="bold" fill="#134e4a">判据二　四条同时成立才划算</text>
+  <text x="366" y="122" font-size="10" fill="#334155">服务间（对外 API 另有约束）　调用密集（收益按次数摊薄）</text>
+  <text x="366" y="142" font-size="10" fill="#334155">低延迟诉求（省每请求编解码与建连）　多语言（一份 .proto 多份 stub）</text>
+  <text x="366" y="162" font-size="10" fill="#0f766e">一天调几次的场景，连接复用与 HPACK 的收益约等于零</text>
+  <text x="366" y="180" font-size="10" fill="#881337">本仓库的 Go 与 Java 两侧实现就是「多语言」那条的现成对照</text>
+
+  <path d="M500,188 V206 H200 V222" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#y1)"/>
+  <text x="510" y="212" font-size="10" fill="#e11d48">任一为否</text>
+  <path d="M650,132 H666" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#y1)"/>
+  <text x="652" y="122" font-size="10" fill="#0d9488">是</text>
+
+  <rect x="670" y="76" width="300" height="112" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="686" y="100" font-size="12" font-weight="bold" fill="#4c1d95">判据三　要不要流式（加分项）</text>
+  <text x="686" y="122" font-size="10" fill="#334155">服务端持续推 / 客户端持续灌 / 双向持续换</text>
+  <text x="686" y="142" font-size="10" fill="#334155">这三种形态在 gRPC 是协议层自带的，</text>
+  <text x="686" y="160" font-size="10" fill="#334155">不用自己约定分帧与结束标志</text>
+  <text x="686" y="180" font-size="10" fill="#6d28d9">用不上它也不亏：一元调用照样能跑</text>
+
+  <path d="M820,188 V206 H600 V222" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#y1)"/>
+
+  <rect x="480" y="226" width="300" height="100" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="1.8"/>
+  <text x="630" y="252" text-anchor="middle" font-size="13" font-weight="bold" fill="#134e4a">⭐ 上 gRPC</text>
+  <text x="496" y="276" font-size="10" fill="#0f766e">契约先定、双方按契约生成代码、字段号管兼容</text>
+  <text x="496" y="294" font-size="10" fill="#0f766e">配套要求：schema 纪律（reserved + buf 门禁）、显式 deadline、</text>
+  <text x="496" y="312" font-size="10" fill="#0f766e">连接对象被复用、代理层认协议 —— 缺一条都会翻车</text>
+
+  <rect x="40" y="226" width="300" height="100" rx="10" fill="#ffe4e6" stroke="#e11d48" stroke-width="1.6"/>
+  <text x="190" y="252" text-anchor="middle" font-size="13" font-weight="bold" fill="#881337">先别上：REST + JSON</text>
+  <text x="56" y="276" font-size="10" fill="#334155">判据一不成立 → 流程成本高于收益</text>
+  <text x="56" y="294" font-size="10" fill="#334155">判据二不成立 → 省下来的那点和延迟</text>
+  <text x="56" y="312" font-size="10" fill="#334155">⭐ 台阶：只把「高频、小报文、低延迟」那条链路换掉，其余不动</text>
+
+  <rect x="30" y="344" width="940" height="216" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="46" y="370" font-size="12.5" font-weight="bold" fill="#0f172a">反面清单：这四类场景该用 JSON（判据的否证长什么样）</text>
+  <rect x="46" y="384" width="212" height="70" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="58" y="404" font-size="10.5" font-weight="bold" fill="#1e3a8a">对外开放 API / 第三方接入</text>
+  <text x="58" y="424" font-size="9.5" fill="#334155">不该要求外部装 protoc 与各语言插件；</text>
+  <text x="58" y="442" font-size="9.5" fill="#334155">curl 就能调、浏览器就能看</text>
+  <rect x="272" y="384" width="212" height="70" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="284" y="404" font-size="10.5" font-weight="bold" fill="#1e3a8a">浏览器直连</text>
+  <text x="284" y="424" font-size="9.5" fill="#334155">浏览器没有原生 gRPC 支持，</text>
+  <text x="284" y="442" font-size="9.5" fill="#334155">要加 grpc-web 代理，跨域与网关更复杂</text>
+  <rect x="498" y="384" width="212" height="70" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="510" y="404" font-size="10.5" font-weight="bold" fill="#1e3a8a">报文要在日志 / DB 里人工读</text>
+  <text x="510" y="424" font-size="9.5" fill="#334155">二进制落进日志就是读不了的一串字节；</text>
+  <text x="510" y="442" font-size="9.5" fill="#334155">JSON 可以直接 grep（客服、对账、审计）</text>
+  <rect x="724" y="384" width="230" height="70" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="736" y="404" font-size="10.5" font-weight="bold" fill="#1e3a8a">结构运行时才知道</text>
+  <text x="736" y="424" font-size="9.5" fill="#334155">动态表单、透传字段：</text>
+  <text x="736" y="442" font-size="9.5" fill="#334155">Protobuf 字段编译期定死，map 型结构 JSON 更自然</text>
+  <text x="46" y="480" font-size="11.5" font-weight="bold" fill="#7c2d12">四类的共同点：「契约不在双方手上」或「报文要给人看」—— 两条都与 gRPC 的强类型、二进制假设正面冲突</text>
+  <text x="46" y="506" font-size="11" fill="#334155">⭐ 这条判据与「是否需要预定义消息协议」同源：JSON 不预定义就能跑，Protobuf 必须先有 .proto —— 体积与耗时读数见 数据序列化.md 第一节</text>
+  <text x="46" y="530" font-size="11" fill="#64748b">实测对照：同一条 User 消息 JSON 54 字节 / Protobuf 26 字节，序列化+反序列化 1278 ns/op → 373.1 ns/op（约 3 倍）</text>
+</svg>
