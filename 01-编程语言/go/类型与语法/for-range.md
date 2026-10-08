@@ -250,3 +250,4 @@ for i := range s {
 - [map.md](map.md) — range map 的顺序与迭代器语义
 - [channel原理与底层实现.md](../并发编程/channel原理与底层实现.md) — range channel 与 close 的配合
 - [并发控制实战.md](../并发编程/并发控制实战.md) — range 变量捕获的经典坑
+> 反向引用（本篇被下列文档引到）：[测试与Mock.md](../工程实践/测试与Mock.md)

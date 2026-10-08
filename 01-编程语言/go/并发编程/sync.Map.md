@@ -445,3 +445,4 @@ func (r *Resolver) Snapshot() map[string]*HostInfo {
 - [sync.Pool.md](sync.Pool.md) — 同目录另一个"为特定并发模式而生"的组件：按 P 分片对象池
 - [限流器.md](限流器.md) — 令牌桶里的计数 / 时间戳同样要选对同步原语
 - [GMP调度.md](../运行时/GMP调度.md) — 加锁阻塞与自旋在调度器上的代价
+> 反向引用（本篇被下列文档引到）：[atomic操作.md](atomic操作.md)、[并发容器.md](../../java/并发/并发容器.md)

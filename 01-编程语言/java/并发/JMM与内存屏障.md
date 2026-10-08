@@ -278,3 +278,4 @@ private final AtomicReference<List<String>> snapshot =
 - [atomic操作.md](../../go/并发编程/atomic操作.md) — ⚠️ 关键差异：Go 的 `sync/atomic` 全部是**顺序一致**（没有 relaxed / acquire-release 可选），
   Java 的 `VarHandle` / `AtomicXxx` 却能按 AccessMode 选内存序；类型族、64 位对齐坑与 CAS 循环写法在彼
 - [服务发现的Java实现.md](../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md) — 「使用」一节的代码出处：不可变快照 + `AtomicReference` 整体替换
+> 反向引用（本篇被下列文档引到）：[Go内存模型.md](../../go/并发编程/Go内存模型.md)

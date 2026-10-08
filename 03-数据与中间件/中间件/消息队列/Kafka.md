@@ -2,7 +2,7 @@
 
 > 覆盖 Kafka 的定位与核心概念、分区/副本存储原理、端到端可靠性参数、消费者组与重平衡，以及 Go / Java 双端完整示例、部署配置与运维排障要点。
 >
-> 内容整理自个人学习笔记。四款消息队列的横向对比与选型见 [消息队列选型.md](消息队列选型.md)。
+> 内容整理自个人学习笔记。四款消息队列的横向对比与选型见 [消息队列选型对比.md](消息队列选型对比.md)。
 
 ## 一、一句话定位与它凭什么
 
@@ -12,7 +12,7 @@
 
 > **与传统 MQ 最本质的差异**：传统 MQ **消费即删**（队列只是暂存管道），Kafka **消费后不删除**，靠 Offset 标记进度，清理交给时间（`log.retention.hours`）或大小（`log.retention.bytes`）到期删除——因此数据模型是一条 append-only、不可变、可截断的分区日志，且保留了「可回退重放」的能力。
 > ⭐ 一句话记忆：**Kafka 的 Topic 是一条只会追加、不会插队的日志；消费者不是「拿走」消息，而是「往前挪自己的书签」。**
-> ⚠️ 也正因为这套设定，Kafka **没有原生延迟消息、没有消息级 TTL、也没有半消息事务回查**；选型时这三项最容易直接筛掉它，详见 [消息队列选型.md](消息队列选型.md)。
+> ⚠️ 也正因为这套设定，Kafka **没有原生延迟消息、没有消息级 TTL、也没有半消息事务回查**；选型时这三项最容易直接筛掉它，详见 [消息队列选型对比.md](消息队列选型对比.md)。
 
 ## 二、核心概念 ⭐
 
@@ -134,7 +134,7 @@ props.put("max.in.flight.requests.per.connection", 5); // 开启幂等后可 >1 
 | **不重（幂等）** | `enable.idempotence=true` | —— | **消费端幂等**：唯一键去重表 / Redis SETNX / 状态机 CAS |
 | **恰好一次（流内近似）** | 事务 + `transactional.id` | `transaction.state.log.replication.factor≥3` | `isolation.level=read_committed` + 位点写入同一事务 |
 
-> ⭐ 现实结论：Kafka 只能保证 At Least Once 的「不丢」，**「不重」必须靠消费端幂等**，「恰好一次」只在 Kafka 内部流处理链路（读 Topic → 写 Topic）严格成立；跨系统（写 MySQL / 发 HTTP）永远做不到，只能幂等等价实现。幂等的四种做法见 [消息队列选型.md](消息队列选型.md)。
+> ⭐ 现实结论：Kafka 只能保证 At Least Once 的「不丢」，**「不重」必须靠消费端幂等**，「恰好一次」只在 Kafka 内部流处理链路（读 Topic → 写 Topic）严格成立；跨系统（写 MySQL / 发 HTTP）永远做不到，只能幂等等价实现。幂等的四种做法见 [消息队列选型对比.md](消息队列选型对比.md)。
 
 ## 五、消费者组与重平衡
 
@@ -522,7 +522,7 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group or
 
 ### 重复消费
 
-Kafka 只保证 At Least Once，以下场景必然重复：消费者处理完但**提交位点前崩溃**、重平衡后位点回退、`auto.offset.reset` 误配。幂等必须落在**消费端**（唯一键去重表 / Redis SETNX / 状态机 CAS / DB 唯一索引，详见 [消息队列选型.md](消息队列选型.md)），且 ⚠️ 用**业务唯一键**做去重，不要用 offset 当幂等键。
+Kafka 只保证 At Least Once，以下场景必然重复：消费者处理完但**提交位点前崩溃**、重平衡后位点回退、`auto.offset.reset` 误配。幂等必须落在**消费端**（唯一键去重表 / Redis SETNX / 状态机 CAS / DB 唯一索引，详见 [消息队列选型对比.md](消息队列选型对比.md)），且 ⚠️ 用**业务唯一键**做去重，不要用 offset 当幂等键。
 
 ### 顺序性被破坏的常见原因
 
@@ -557,7 +557,7 @@ Kafka 只保证 At Least Once，以下场景必然重复：消费者处理完但
 
 ## 关联
 
-- [消息队列选型.md](消息队列选型.md) — 五款 MQ 的横向对比与决策
+- [消息队列选型对比.md](消息队列选型对比.md) — 五款 MQ 的横向对比与决策
 - [Pulsar.md](Pulsar.md) — 存算分离的对照路线：把「分区 Leader + ISR 复制」换成「无状态 Broker + BookKeeper quorum」
 - [RocketMQ.md](RocketMQ.md) — 存储与可靠性设计的另一种路线
 - [日志与持久化.md](../../数据存储/关系型/MySQL/日志与持久化.md) — 顺序追加与页缓存

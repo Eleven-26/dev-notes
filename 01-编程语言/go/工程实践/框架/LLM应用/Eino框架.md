@@ -118,6 +118,141 @@
 
 ---
 
+### 1.7 版本与模块结构（实测取证）
+
+容器 `golang:1.26-alpine` 里实测拉依赖：
+
+```text
+go: added github.com/cloudwego/eino v0.9.21
+
+require github.com/cloudwego/eino v0.9.21
+```
+
+⭐⭐ **一条很容易撞到的坑**：**Eino 的子包是各自独立的 module**，
+只 `go get` 主模块**不能**直接用 `schema` / `compose` / `components/*`：
+
+```text
+missing go.sum entry for module providing package github.com/nikolalohinski/gonja
+  (imported by github.com/cloudwego/eino/schema); to add:
+	go get github.com/cloudwego/eino/schema@v0.9.21
+missing go.sum entry for module providing package github.com/wk8/go-ordered-map/v2
+  (imported by github.com/cloudwego/eino/schema); to add:
+	go get github.com/cloudwego/eino/schema@v0.9.21
+```
+
+正确姿势是**按用到的子包逐个拉、且版本要对齐**：
+
+```bash
+go get github.com/cloudwego/eino@v0.9.21
+go get github.com/cloudwego/eino/schema@v0.9.21
+go get github.com/cloudwego/eino/compose@v0.9.21
+go get github.com/cloudwego/eino/components/model@v0.9.21
+```
+
+⚠️ **版本必须显式写一致** —— 子包各自独立发版，只写 `@latest` 会拉到不同的版本号组合。
+
+**依赖面**（实测 `go mod tidy` 之后）：主模块 + **29 个间接依赖**，其中值得一提的：
+
+| 依赖 | 用途 |
+|---|---|
+| `nikolalohinski/gonja` | **Jinja 风格模板引擎** —— 这就是 Template 组件渲染占位符的底座 |
+| `wk8/go-ordered-map/v2` | 有序 map（工具参数的顺序有语义） |
+| `eino-contrib/jsonschema` | 工具（Tool）的参数 schema |
+| `bytedance/sonic` | 字节自家的 JSON 库 |
+
+⭐ 判据：**引入 Eino 等于引入一套不小的依赖树**，如果项目只是"调一次 HTTP 接口问大模型"，
+直接写 `net/http` 反而更轻 —— Eino 的价值在**多组件编排**，不在单次调用。
+
+### 1.8 核心抽象的真实签名（`go doc` 取证，v0.9.21）
+
+⚠️ 这一节的字段与签名**逐字取自 `go doc`**，不是凭记忆写的 ——
+LLM 框架这类快速演进的库，凭记忆写 API 几乎必错。
+
+**① `schema.Message`**（`go doc github.com/cloudwego/eino/schema Message`）：
+
+```go
+type Message struct {
+	Role    RoleType   `json:"role"`    // "system" / "user" / "assistant" / "tool"
+	Content string     `json:"content"` // 用户文本输入 / 模型文本输出
+
+	// MultiContent 已废弃，改用下面两个
+	UserInputMultiContent  []MessageInputPart  // 多模态输入（图 / 音频…）
+	AssistantGenMultiContent []MessageOutputPart // 多模态输出
+
+	Name string // 可选：多角色场景
+
+	ToolCalls  []ToolCall // 仅 assistant：模型要求调用哪些工具
+	ToolCallID string     // 仅 tool：对应哪一次调用
+	ToolName   string     // 仅 tool
+
+	ResponseMeta *ResponseMeta // token 用量、finish_reason 等
+
+	ReasoningContent string        // 思考过程（带推理能力的模型会返回）
+	Extra            map[string]any
+}
+```
+
+⭐ 三条从字段里读出来的东西：
+
+1. **消息是一条结构体、角色只是一个字符串字段** —— 所谓"系统提示 + 历史 + 当前问题"，
+   落到这里就是**一个 `[]*schema.Message` 切片**，顺序即语义；
+2. **多模态是"内容部分"的扩展**（`UserInputMultiContent`），不是另一种消息类型；
+3. **`ToolCalls` / `ToolCallID` 是工具调用闭环的关键字段** —— 模型返回 `ToolCalls`，
+   你执行工具，再把结果以 `Role=tool` + `ToolCallID` 发回去。
+
+**② `model.BaseChatModel`**：
+
+```go
+type BaseChatModel = BaseModel[*schema.Message]
+```
+
+⭐ **它是 `BaseModel` 针对 `*schema.Message` 的类型别名**（向后兼容设计），两种交互模式：
+
+| 模式 | 行为 |
+|---|---|
+| `Generate` | **阻塞**直到模型返回完整响应 |
+| `Stream` | 返回 `schema.StreamReader`，**逐块产出**消息片段 |
+
+输入统一是 `[]*schema.Message`（一段对话）。
+
+⚠️ 注意真正的接口是 `ChatModel = BaseChatModel + BindTools`：
+
+```go
+type ChatModel interface {
+	BaseChatModel
+	BindTools(tools []*schema.ToolInfo) error
+}
+```
+
+**③ `compose.Chain`**：
+
+```go
+type Chain[I, O any] struct { /* 未导出字段 */ }
+```
+
+⭐⭐ 这条**印证了"强类型 + 编译期校验"的说法** —— `Chain[I, O any]` 是**泛型**，
+输入输出类型被写进类型参数里，拼错在**编译期**就报错。
+官方注释还说明了两点：
+
+- 节点可以是**并行 / 分支 / 顺序**三种形态；
+- **builder 模式，使用前必须 `Compile()`**。
+
+### 1.9 ⚠️ 本篇的实测边界
+
+按本仓的诚实口径，把"哪些跑过、哪些没跑"写清楚：
+
+- ✅ **已实测**：依赖可拉取（`v0.9.21`）、子包必须单独 `go get`、依赖树规模、
+  `schema.Message` / `BaseChatModel` / `Chain[I,O]` 的**真实签名**；
+- ⚠️ **未实测**：**真实模型调用**（需要 OpenAI / 豆包 / Ollama 的 endpoint 与凭据）、
+  **完整编排的运行**（Chain/Graph 的 `Compile` + `Invoke`）、**端到端流式输出**。
+  上面 1.1~1.6 关于"三步走""组件清单""两种智能体范式"的叙述属于**官方口径与文档阅读**，
+  不是本机跑出来的读数。
+
+⭐ 判据：引用本篇内容时，**签名与版本可以放心引用**（取证过）；
+**行为与性能相关的说法要自己跑一遍再下结论**。
+
+---
+
 ## 延伸追问
 
 - **Eino 和 LangChain 有什么区别？** → Eino 是 Go 生态、**强类型 + 编译期校验**组件图（Graph / Chain 都是泛型拼装），LangChain 是 Python 的动态链式；Eino 更贴 Go 的工程习惯，代价是灵活度不如动态语言。

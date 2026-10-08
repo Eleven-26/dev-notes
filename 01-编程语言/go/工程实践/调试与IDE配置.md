@@ -152,9 +152,161 @@ go test -count=1 -gcflags="all=-N -l" ./...  # 调测试必加 -count=1
 
 ---
 
+## 三、远程与容器内调试：headless 模式
+
+**本节要点**：本机 VSCode 那一套解决不了"程序跑在容器 / 服务器上"的情况。
+远程调试只有一种标准形态：**在目标机上起 `dlv` 的 headless 服务，本地连过去**。
+
+### 3.1 Delve 的三种启动方式
+
+```bash
+go install github.com/go-delve/delve/cmd/dlv@latest   # 装（实测版本见下）
+dlv debug    # 直接编译并调试当前包（临时产物，用完即弃）
+dlv exec ./app          # 调试一个已经编好的二进制
+dlv attach <pid>        # ⚠️ 挂到正在运行的进程上（会把它暂停）
+dlv test                # 调试测试
+```
+
+实测（容器 `golang:1.26-alpine`，go1.26.8）：
+
+```text
+Delve Debugger
+Version: 1.27.2
+Build: $Id: 360e7b2181d3da54115aaee4f569954bca95cfe3 $
+```
+
+### 3.2 ⭐ 调试构建必须关掉优化与内联
+
+```bash
+go build -gcflags="all=-N -l" -o app-dbg .
+```
+
+- `-N`：关闭优化
+- `-l`：关闭内联
+
+实测体积：
+
+```text
+  默认构建       2397478 字节
+  -N -l 构建     2334532 字节
+```
+
+⚠️ 不关这两个的后果（这是 Go 调试最高频的困惑）：
+
+1. **断点打不上**（目标行被内联进调用者）；
+2. **变量显示 `<optimized out>`**（它已被优化掉，没有存储位置）；
+3. **单步执行会"跳行"**（指令顺序和源码顺序不一致）。
+
+⭐ 判据：**凡是要挂调试器，就一定用 `-N -l` 重新构建**；生产产物不要用这份（详见
+[编译与gcflags.md](编译与gcflags.md) 第二节）。
+
+### 3.3 headless 模式实测
+
+在目标机（容器里）起服务端：
+
+```bash
+dlv exec ./app-dbg --headless --listen=:40000 --api-version=2 --accept-multiclient
+```
+
+实测服务端输出：
+
+```text
+API server listening at: [::]:40000
+connections are not authenticated nor encrypted
+```
+
+⭐⭐ **第二行是 dlv 自己的安全警告，必须当回事**：
+headless 的远程连接**既不认证也不加密** —— 任何能连到这个端口的人都可以
+**任意读写目标进程的内存、甚至注入代码执行**。所以：
+
+- **不要把它暴露到公网 / 生产网段**；
+- 常见做法：只监听回环地址（`--listen=127.0.0.1:40000`），再用 **ssh 隧道**把端口转到本地；
+- **用完即关**，不要常驻。
+
+客户端连上之后（`break main.main` → `continue` → `bt`）的实测：
+
+```text
+Breakpoint 1 set at 0x4bcc0e for main.main() ./main.go:13
+> [Breakpoint 1] main.main() ./main.go:13 (hits goroutine(1):1 total:1) (PC: 0x4bcc0e)
+    14:		r := compute(10)
+0  0x00000000004bcc0e in main.main
+   at ./main.go:13
+```
+
+⚠️ 两条说明：
+
+1. **断点地址（这里是 `0x4bcc0e`）在同一份二进制下是固定的**，换一份构建就会变 ——
+   引用时以"函数名 + 源码行号"为准；
+2. **`dlv exec` 启动时停在运行时最入口**（`_rt0_amd64_linux`），
+   想看到 `main` 必须先 `break main.main` 再 `continue` —— 这是新手最常见的"bt 出来一片问号"的原因。
+
+### 3.4 VSCode 连远程的 `launch.json`
+
+```json
+{
+  "name": "Attach to remote dlv",
+  "type": "go",
+  "request": "attach",
+  "mode": "remote",
+  "port": 40000,
+  "host": "127.0.0.1",
+  "remotePath": "/app",
+  "substitutePath": [
+    { "from": "${workspaceFolder}", "to": "/app" }
+  ]
+}
+```
+
+⭐ **`substitutePath` 是最关键的一行**：它把"容器里的源码路径"映射回"本地工作区路径"，
+不配它就会报"找不到源文件"。
+
+### 3.5 `dlv attach` 的两条纪律
+
+⚠️ **`attach` 会暂停目标进程** —— 在生产上等于一次局部停机：
+
+1. **只在排查窗口内 attach**，且提前告知；
+2. **准备好"调试完立刻 detach"**；detach 不干净会让进程卡在暂停态。
+
+---
+
+## 四、线上调试的三条纪律
+
+**本节要点**：线上不是"能调试"就"该调试"。这三条是本仓认为必须守住的边界。
+
+1. **优先用可观测性而不是调试器** —— 指标、日志、trace 是无侵入的；
+   调试器是**侵入式**的（改状态、暂停进程）。顺序应该是
+   **[runtime调试与trace.md](../运行时/runtime调试与trace.md)** →
+   [pprof性能分析.md](../运行时/pprof性能分析.md) → 实在不行才 dlv。
+
+2. **调试器只连"一次性排查实例"** —— 从负载均衡后面摘掉一台，或者起一个专门的副本，
+   在它上面挂调试器。**不要在扛流量的实例上 attach**。
+
+3. **任何调试动作都要有"退出条件"** —— 提前写好"看什么、看到什么就收手、最多花多久"，
+   超时就放弃、换方案。
+
+⚠️ 还有一条**禁止项**：**不要在常驻服务上长期开着 headless dlv**
+（3.3 那条安全警告 + 它是一个可任意读写进程内存的后门）。
+
+### 延伸追问
+
+- **为什么我的断点打不上？** → 大概率没加 `-gcflags="all=-N -l"`：
+  目标行被内联进调用者了（3.2 实测：不关优化与内联会出现 `<optimized out>`）。
+- **为什么 `bt` 出来一片 `???`？** → `dlv exec` 启动时停在**运行时最入口**（`_rt0_amd64_linux`），
+  要先 `break main.main` 再 `continue`（3.3 实测）。
+- **远程调试安全吗？** → **不安全**。dlv 自己会打印
+  `connections are not authenticated nor encrypted` —— 只监听回环 + ssh 隧道，用完即关（3.3）。
+- **`dlv attach` 会影响线上服务吗？** → 会，**它会暂停目标进程**。
+  只在摘掉流量的实例上做，且提前告知（3.5 / 第四节）。
+- **VSCode 连容器调试为什么找不到源码？** → 缺 `substitutePath`（把容器路径映射回本地，3.4）。
+- **调试构建能用在生产吗？** → 不要。`-N -l` 关掉了优化与内联，产物行为与生产不一致
+  （详见 [编译与gcflags.md](编译与gcflags.md)）。
+
+---
+
 ## 关联
 
 - [编译与gcflags.md](编译与gcflags.md) — 断点打不上时先看编译优化开关
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — 卡死现场怎么用 pprof / dlv 抓
 - [性能排查.md](../../../02-计算机基础/linux/性能排查.md) — 线上没有 IDE 时的排查手段
 - [runtime调试与trace.md](../运行时/runtime调试与trace.md) — IDE/dlv 断点之外的运行期自省入口（GODEBUG、runtime/trace、metrics）在彼
+> 反向引用（本篇被下列文档引到）：[测试与Mock.md](测试与Mock.md)

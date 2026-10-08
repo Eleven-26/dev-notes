@@ -411,3 +411,4 @@ func Update(timeout, retries int, debug bool) {
 - [限流器.md](限流器.md) — 计数器 / 令牌数用 atomic 的具体落点
 - [熔断器.md](../../../04-架构与系统/分布式/服务治理/熔断器.md) — "是否打开"状态位的发布落点
 - [测试与Mock.md](../工程实践/测试与Mock.md) — 原子性与伪共享的实测要配 -race / -bench，测试架与旗标口径在彼
+> 反向引用（本篇被下列文档引到）：[Go内存模型.md](Go内存模型.md)、[JMM与内存屏障.md](../../java/并发/JMM与内存屏障.md)

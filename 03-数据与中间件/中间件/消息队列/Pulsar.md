@@ -2,7 +2,7 @@
 
 > 覆盖 Pulsar 的定位与核心概念、存算分离（Broker + BookKeeper）的架构原理、四种订阅类型、端到端可靠性与回溯语义，以及 Go / Java 双端完整示例、部署配置与运维排障要点。
 >
-> 内容整理自个人学习笔记。五款消息队列的横向对比与选型见 [消息队列选型.md](消息队列选型.md)；同类技术路线的对照篇见 [Kafka.md](Kafka.md)、[RocketMQ.md](RocketMQ.md)、[Nats.md](Nats.md)。
+> 内容整理自个人学习笔记。五款消息队列的横向对比与选型见 [消息队列选型对比.md](消息队列选型对比.md)；同类技术路线的对照篇见 [Kafka.md](Kafka.md)、[RocketMQ.md](RocketMQ.md)、[Nats.md](Nats.md)。
 
 ---
 
@@ -22,7 +22,7 @@
 核心卖点之外，还有三项「业务消息」常用能力是 Kafka 没有的：**任意时刻的延迟投递**（`deliverAt`）、**原生死信/重试队列**、**按生产者序号的消息去重（幂等）**。
 
 > ⭐ 一句话记忆：**Kafka 是「数据跟着分区走」，Pulsar 是「数据跟着 BookKeeper 走，Broker 只是随时可换的临时工」。**
-> ⚠️ 代价也很直白：**组件最多**（Broker + BookKeeper + 元数据存储）、**写路径多一跳网络**（BookKeeper quorum 确认）、**流处理生态远小于 Kafka**。选型结论见 [消息队列选型.md](消息队列选型.md)。
+> ⚠️ 代价也很直白：**组件最多**（Broker + BookKeeper + 元数据存储）、**写路径多一跳网络**（BookKeeper quorum 确认）、**流处理生态远小于 Kafka**。选型结论见 [消息队列选型对比.md](消息队列选型对比.md)。
 
 ---
 
@@ -184,7 +184,7 @@ Broker 收到订阅的请求后从 BookKeeper 拉 Entry，按订阅类型分发�
 | **不重（幂等）** | 开命名空间去重 + 稳定 `SequenceID` | —— | ⚠️ 仍需业务幂等：唯一键去重表 / 状态机 CAS |
 | **恰好一次** | 事务 API（较新、默认关闭） | 事务协调器 + ledger | 只在同集群流内成立，跨系统仍靠幂等 |
 
-> ⭐ 现实结论与 Kafka 相同：**中间件只能做到 At Least Once，「不重」靠消费端幂等**。幂等的四种做法见 [消息队列选型.md](消息队列选型.md)。
+> ⭐ 现实结论与 Kafka 相同：**中间件只能做到 At Least Once，「不重」靠消费端幂等**。幂等的四种做法见 [消息队列选型对比.md](消息队列选型对比.md)。
 
 ---
 
@@ -203,7 +203,7 @@ producer.newMessage().key("ORDER_1003").value(json)
 | 能力 | ⭐ **每条消息独立的绝对时间**，不需要像 RocketMQ 4.x 那样预置 18 个级别 |
 | 实现 | Broker 侧用延迟投递 tracker（按时间索引暂存），到点再投给订阅 |
 | 保护 | 命名空间策略 `maxMessagesInDelayedDelivery`（默认 100）：延迟消息数超过阈值时不再保证精延迟，会**提前投递** |
-| 边界 | 跨天/跨周的长延迟任务不建议用 MQ 承载，用「定时任务 + 状态表」（理由见 [消息队列选型.md](消息队列选型.md) 延迟队列一节） |
+| 边界 | 跨天/跨周的长延迟任务不建议用 MQ 承载，用「定时任务 + 状态表」（理由见 [消息队列选型对比.md](消息队列选型对比.md) 延迟队列一节） |
 
 ### 6.2 消息去重（生产者幂等）
 
@@ -896,7 +896,7 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 
 ## 关联
 
-- [消息队列选型.md](消息队列选型.md) — 五款 MQ 的横向对比与选型决策（含「契合语言」维度）
+- [消息队列选型对比.md](消息队列选型对比.md) — 五款 MQ 的横向对比与选型决策（含「契合语言」维度）
 - [Kafka.md](Kafka.md) — 存算一体的对照路线：分区/ISR、acks、零拷贝为什么快
 - [RocketMQ.md](RocketMQ.md) — 业务消息功能最全的另一条路线（半消息事务、18 级延迟）
 - [Nats.md](Nats.md) — 轻量派：Core NATS + JetStream，Go 生态里 Pulsar 之外的另一选择

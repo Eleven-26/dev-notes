@@ -28,14 +28,14 @@
 | ⑧ | [并发同步原语.md](并发编程/并发同步原语.md) + [并发控制实战.md](并发编程/并发控制实战.md) | 同步机制 |
 | ⑨ | [sync.Map.md](并发编程/sync.Map.md) + [atomic操作.md](并发编程/atomic操作.md) + [sync.Pool.md](并发编程/sync.Pool.md) | 三个「要不要用」的原语 |
 | ⑩ | [goroutine实战模式.md](并发编程/goroutine实战模式.md) + [channel实战模式.md](并发编程/channel实战模式.md) + [errgroup与pipeline.md](并发编程/errgroup与pipeline.md) | 并发怎么写 |
-| ⑪ | [channel使用陷阱.md](并发编程/channel使用陷阱.md) + [共享内存与CSP.md](并发编程/共享内存与CSP.md) + [线程安全.md](并发编程/线程安全.md) | 并发哲学与边界 |
+| ⑪ | [channel使用陷阱.md](并发编程/channel使用陷阱.md) + [共享内存与CSP.md](并发编程/共享内存与CSP.md) + [线程安全.md](并发编程/线程安全.md) + [Go内存模型.md](并发编程/Go内存模型.md) | 并发哲学与边界 |
 | ⑫ | [协程泄漏与死锁.md](并发编程/协程泄漏与死锁.md) + [限流器.md](并发编程/限流器.md) | 生产问题 |
 | ⑬ | [GMP调度.md](运行时/GMP调度.md) + [内存分配器.md](运行时/内存分配器.md) | 调度与内存 |
 | ⑭ | [垃圾回收机制.md](运行时/垃圾回收机制.md) + [内存逃逸.md](运行时/内存逃逸.md) | GC |
 | ⑮ | [程序启动流程.md](运行时/程序启动流程.md) + [零拷贝.md](运行时/零拷贝.md) + [反射与unsafe.md](运行时/反射与unsafe.md) + [runtime调试与trace.md](运行时/runtime调试与trace.md) | 底层机制与观测 |
 | ⑯ | [context.md](工程实践/context.md) + [依赖注入.md](工程实践/依赖注入.md) + [项目结构.md](工程实践/项目结构.md) | 工程基础 |
 | ⑰ | [日志与错误规范.md](工程实践/日志与错误规范.md) + [测试与Mock.md](工程实践/测试与Mock.md) | 工程规范 |
-| ⑱ | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) + [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) + [网关路由匹配.md](网络编程/网关路由匹配.md) + [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) + [从零实现网关.md](网络编程/从零实现网关.md) | 网络与综合实战 |
+| ⑱ | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) + [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) + [HTTP服务端与优雅关停.md](网络编程/HTTP服务端与优雅关停.md) + [网关路由匹配.md](网络编程/网关路由匹配.md) + [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) + [从零实现网关.md](网络编程/从零实现网关.md) | 网络与综合实战 |
 | ⑲ | [接入Jaeger.md](可观测性/接入Jaeger.md) + [接入Skywalking.md](可观测性/接入Skywalking.md) + [手写Prometheus导出器.md](可观测性/手写Prometheus导出器.md) | 链路追踪与指标 |
 
 ---
@@ -62,7 +62,7 @@
 | [错误处理.md](类型与语法/错误处理.md) | 错误是值不是异常、`%w` 包装链、`Is` / `As` / `Join` 判定、panic 与 recover 的闸门 |
 | [函数调用与栈.md](类型与语法/函数调用与栈.md) | 调用过程、栈帧里有什么、栈扩容时旧指针怎么调整 |
 
-### 2.2 并发编程/（15 篇）
+### 2.2 并发编程/（16 篇）
 
 | 篇 | 讲什么 |
 |---|---|
@@ -78,6 +78,7 @@
 | [errgroup与pipeline.md](并发编程/errgroup与pipeline.md) | `errgroup` 的语义与硬约束、pipeline 的 stage 拆分与 channel 收口 |
 | [并发控制实战.md](并发编程/并发控制实战.md) | 打印升序数字、交替打印奇偶数、获取协程返回值 |
 | [共享内存与CSP.md](并发编程/共享内存与CSP.md) | 「不要通过共享内存来通信」到底在说什么、两条路线的边界 |
+| [Go内存模型.md](并发编程/Go内存模型.md) | 三层重排、`happens-before` 边、数据竞争为何是未定义行为、atomic 的顺序一致立场、`-race` 能测什么、与 Java JMM 的逐条对照 |
 | [线程安全.md](并发编程/线程安全.md) | 并发读写 map 的后果、线程安全的定义、三类线程安全类型 |
 | [协程泄漏与死锁.md](并发编程/协程泄漏与死锁.md) | 泄漏四类成因与复现代码、pprof 排查、死锁四条件 |
 | [限流器.md](并发编程/限流器.md) | `x/time/rate` 的三种接入骨架、把读数量出来的实测、三个必踩的坑 |
@@ -95,7 +96,7 @@
 | [反射与unsafe.md](运行时/反射与unsafe.md) | 三条反射法则与 `CanSet`、tag 遍历、json 背后的反射、`unsafe` 分界、反射慢多少的实测区间 |
 | [runtime调试与trace.md](运行时/runtime调试与trace.md) | `GODEBUG` 旋钮体系、`schedtrace` / `gctrace` 逐字段、`runtime/trace` 的无头解析、MemStats 与 debug 包 |
 
-### 2.4 工程实践/（9 篇直属 + 框架 2 篇 + 定时任务 4 篇）
+### 2.4 工程实践/（10 篇直属 + 框架 2 篇 + 定时任务 4 篇）
 
 | 篇 | 讲什么 |
 |---|---|
@@ -108,16 +109,18 @@
 | [调试与IDE配置.md](工程实践/调试与IDE配置.md) | Delve、IDE 配置、可复现的调试环境 |
 | [国际化.md](工程实践/国际化.md) | 语言包与本地化落地 |
 | [配置热重载与快照.md](工程实践/配置热重载与快照.md) | 快照式配置、校验挡在启动前、热重载的原子替换 |
+| [数据访问与连接池.md](工程实践/数据访问与连接池.md) | `sql.DB` 是池不是连接、`sql.Open` 惰性建连、四个旋钮的默认值陷阱、`rows` 生命周期与 `context` 打断、池开多大、与 GORM 的关系 |
 | [Kratos框架.md](工程实践/框架/微服务/Kratos框架.md) | 集成 ent / validate、注册发现与容器化、服务间鉴权与元数据传递 |
 | [Eino框架.md](工程实践/框架/LLM应用/Eino框架.md) | 字节 Eino 大模型应用框架 |
 | [定时任务/](工程实践/定时任务/README.md) 四篇 | 进程内与中心化调度四条路线：[标准库实现.md](工程实践/定时任务/标准库实现.md)、[go-cron实现.md](工程实践/定时任务/go-cron实现.md)、[go-job实现.md](工程实践/定时任务/go-job实现.md)、[xxl-job接入.md](工程实践/定时任务/xxl-job接入.md)，导读见 [README.md](工程实践/定时任务/README.md) |
 
-### 2.5 网络编程/（5 篇）
+### 2.5 网络编程/（6 篇）
 
 | 篇 | 讲什么 |
 |---|---|
 | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) | `Listener` / `Conn` / `PacketConn` 三接口、粘包与拆包三解法、deadline 报错原文、双栈与选项、UDP 边界、Unix socket |
 | [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) | Client → Transport → 连接池三层、`MaxIdleConnsPerHost` 默认 2 的坑、超时三件套、Body 两条铁律、重试与真实报错原文 |
+| [HTTP服务端与优雅关停.md](网络编程/HTTP服务端与优雅关停.md) | `http.Server` 五个超时各防什么、`Handler` 与中间件的装饰器写法、1.22 起的 `ServeMux` 路由增强、`Shutdown` 的排空语义与自己的超时 |
 | [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) | 没有 `protoc` 时怎么跑 gRPC：手写 pb、动态注册与实测 |
 | [网关路由匹配.md](网络编程/网关路由匹配.md) | 路由树、通配与优先级、匹配性能实测 |
 | [从零实现网关.md](网络编程/从零实现网关.md) | 综合实战：七模块流水线、一次请求的完整时序、熔断与一致性哈希 |

@@ -310,5 +310,5 @@ eBPF 可用，且常见 CNI 会做 NAT 破坏源地址）；
 - [04-HTTP框架执行流程.md](04-HTTP框架执行流程.md) — `add_header ... always` 与状态码白名单
 - [08-upstream与子请求.md](08-upstream与子请求.md) — 下游是 QUIC、上游仍是 TCP
 - [QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md) — **协议本身**（流级重传、0-RTT 代价、连接迁移）
-- [网关选型.md](../../../03-数据与中间件/中间件/网关与代理/网关选型.md) — Nginx 作网关的能力边界
+- [网关选型对比.md](../../../03-数据与中间件/中间件/网关与代理/网关选型对比.md) — Nginx 作网关的能力边界
 > 反向引用（本篇被下列文档引到）：[14-OpenResty生态.md](14-OpenResty生态.md)、[15-Tengine生态.md](15-Tengine生态.md)

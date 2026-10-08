@@ -339,5 +339,5 @@ Tengine / OpenResty 的国密分支。3.x 改用 **Tongsuo**（蚂蚁的 OpenSSL
 - [08-upstream与子请求.md](08-upstream与子请求.md) — 被动健康检查（开源版现状）与 `next upstream`
 - [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md) — 另一条增强路线（加语言 vs 加功能）
 - [14-OpenResty生态.md](14-OpenResty生态.md) — 生态与版本增量视角
-- [网关选型.md](../../../03-数据与中间件/中间件/网关与代理/网关选型.md) — Nginx 作网关的能力边界四组实测
+- [网关选型对比.md](../../../03-数据与中间件/中间件/网关与代理/网关选型对比.md) — Nginx 作网关的能力边界四组实测
 > 反向引用（本篇被下列文档引到）：[13-njs模块与动态脚本.md](13-njs模块与动态脚本.md)

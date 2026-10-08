@@ -415,3 +415,4 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 - [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
 - [镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `COPY --from` 与 initContainer 两种 agent 分发方式
 - [JVM与垃圾回收.md](运行时/JVM与垃圾回收.md) — agent 带来的额外内存开销与 GC 影响
+> 反向引用（本篇被下列文档引到）：[接入gRPC.md](接入gRPC.md)

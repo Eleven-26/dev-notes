@@ -374,4 +374,4 @@ go func() { wg.Wait(); close(ch) }()   // 等所有发送者退出，再关
 - [GC基础算法.md](../../../02-计算机基础/垃圾回收/GC基础算法.md) — 挂起与唤醒背后的调度与 GC 协作
 - [goroutine.md](goroutine.md) — 阻塞的 goroutine 挂到哪里去了
 
-> 反向引用（本篇被下列文档引到）：[context.md](../工程实践/context.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[for-range.md](../类型与语法/for-range.md)、[IO多路复用.md](../../../02-计算机基础/网络/IO多路复用.md)、[接入与推送.md](../../../04-架构与系统/系统设计/弹幕系统/接入与推送.md)
+> 反向引用（本篇被下列文档引到）：[context.md](../工程实践/context.md)、[Go内存模型.md](Go内存模型.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[for-range.md](../类型与语法/for-range.md)、[IO多路复用.md](../../../02-计算机基础/网络/IO多路复用.md)、[接入与推送.md](../../../04-架构与系统/系统设计/弹幕系统/接入与推送.md)

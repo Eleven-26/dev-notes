@@ -94,7 +94,7 @@ JMM与内存屏障.md        ① 内存模型与可见性 —— 并发问题的
 
 ## 五、已知缺口
 
-⭐ **2026-10-01 已补齐四项**（原先记在本节的缺口）：
+⭐ **2026-10-01 已补齐四项，2026-10-08 再补一项**（原先记在本节的缺口）：
 
 | 原缺口 | 现在在哪 |
 |---|---|
@@ -102,6 +102,7 @@ JMM与内存屏障.md        ① 内存模型与可见性 —— 并发问题的
 | 集合容器 | [集合容器.md](集合容器.md)（ArrayList / LinkedList / HashMap / 树化） |
 | Spring | [Spring-boot核心.md](Spring-boot核心.md)（IoC / 依赖注入 / AOP / 自动装配） |
 | JMM | [JMM与内存屏障.md](并发/JMM与内存屏障.md)（`happens-before`、伪共享、安全发布） |
+| gRPC 接入 | [接入gRPC.md](接入gRPC.md)（手写 `MethodDescriptor` + `Marshaller`、四种模式、拦截器与 metadata；本体篇在 [gRPC 目录](../../03-数据与中间件/中间件/RPC框架/gRPC/README.md)） |
 
 **仍然缺的**：
 

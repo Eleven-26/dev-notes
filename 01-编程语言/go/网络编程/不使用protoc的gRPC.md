@@ -429,3 +429,6 @@ go build -o "$TEMP/grpclab.exe" . && cd "$TEMP" && ./grpclab.exe   # 代码存�
 - [客户端真实IP与可信代理.md](../../../02-计算机基础/网络/客户端真实IP与可信代理.md) — `x-real-ip` 在 HTTP 出口与 gRPC metadata 两条路上的同源问题
 - [net包与TCP-UDP编程.md](net包与TCP-UDP编程.md) — gRPC 走 HTTP/2；TCP framing 与它怎么选、UDS 快多少在彼第十节
 - [HTTP客户端与连接池.md](HTTP客户端与连接池.md) — gRPC 复用连接的对照：HTTP 客户端的连接池与它各自的复用边界在彼
+- [基础概念.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/基础概念.md) — 本篇主题的**本体篇**：第六节正面回答「不用 protoc 也能调，那 protoc 到底省了什么」，含默认限额与 wire 层实测
+- [Protobuf.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/Protobuf.md) — 换掉 codec 之后仍需的那份契约：Protobuf 的编码、`reserved` 纪律与 schema 演进
+> 反向引用（本篇被下列文档引到）：[HTTP服务端与优雅关停.md](HTTP服务端与优雅关停.md)、[接入gRPC.md](../../java/接入gRPC.md)、[RPC框架选型对比.md](../../../03-数据与中间件/中间件/RPC框架/RPC框架选型对比.md)、[四种通信模式.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/四种通信模式.md)、[生态与实战.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/生态与实战.md)

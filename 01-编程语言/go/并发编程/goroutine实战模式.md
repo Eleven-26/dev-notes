@@ -569,4 +569,4 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 - [稳定性三件套.md](../../../04-架构与系统/分布式/服务治理/稳定性三件套.md) — 下游被打穿之后怎么办
 - [线程池.md](../../java/并发/线程池.md) — Java 侧 worker 池的对照：七参数、有界队列与四种拒绝策略
 
-> 反向引用（本篇被下列文档引到）：[测试与Mock.md](../工程实践/测试与Mock.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/服务治理/并发限制器.md)、[负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md)
+> 反向引用（本篇被下列文档引到）：[测试与Mock.md](../工程实践/测试与Mock.md)、[Go内存模型.md](Go内存模型.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/服务治理/并发限制器.md)、[负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md)

@@ -297,3 +297,4 @@ go test -bench=. -benchmem -run=^$ ./...     # 看 allocs/op 与 B/op 是否真�
 - [并发同步原语.md](并发同步原语.md) — Mutex / RWMutex / Once / WaitGroup / atomic 的取舍
 - [内存分配器.md](../运行时/内存分配器.md) — 不用 Pool 时，小对象走哪条分配路径
 - [goroutine.md](goroutine.md) — 每个 goroutine 的成本，以及"用协程池还是信号量"的取舍
+> 反向引用（本篇被下列文档引到）：[sync.Map.md](sync.Map.md)、[指针与引用.md](../类型与语法/指针与引用.md)、[反射与unsafe.md](../运行时/反射与unsafe.md)

@@ -2,7 +2,7 @@
 
 > NATS 的定位与核心概念、Core NATS / JetStream 两套语义、部署与鉴权、Go 与 Java 双端示例、可靠性设计要点。
 >
-> 内容整理自个人学习笔记，并结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的实际用法整理。消息队列整体选型见 [消息队列选型.md](消息队列选型.md)。
+> 内容整理自个人学习笔记，并结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的实际用法整理。消息队列整体选型见 [消息队列选型对比.md](消息队列选型对比.md)。
 
 ## 一、一句话定位
 
@@ -507,7 +507,7 @@ nc.close();
 
 ## 关联
 
-- [消息队列选型.md](消息队列选型.md) — 什么时候该选 NATS
+- [消息队列选型对比.md](消息队列选型对比.md) — 什么时候该选 NATS
 - [Kafka.md](Kafka.md) — 日志型流平台的对照
 - [Pulsar.md](Pulsar.md) — 同样做「服务端订阅 + 通配符 + 重放」，但用存算分离换 durability，代价是四五个服务组件
 - [发布订阅.md](../../数据存储/NoSQL/Redis/发布订阅.md) — 轻量 Pub/Sub 的边界

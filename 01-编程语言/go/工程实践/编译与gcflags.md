@@ -197,6 +197,233 @@ go build -n .                   # 只打印不执行，确认参数拼接
 
 ---
 
+## 四、`-ldflags`：把信息烧进二进制，以及给它瘦身
+
+**本节要点**：`-gcflags` 管**编译器**，`-ldflags` 管**链接器**。链接期能做的两件最实用的事：
+**注入版本信息** 和 **裁掉符号表**。
+
+### 4.1 `-X` 注入版本信息（实测）
+
+```go
+package main
+
+import "fmt"
+
+// ⚠️ -X 只能注入「包级的 string 变量」—— const 不行、非 string 不行
+var (
+	version = "dev"
+	commit  = "unknown"
+)
+
+func main() {
+	fmt.Printf("version = %s\n", version)
+	fmt.Printf("commit  = %s\n", commit)
+}
+```
+
+```bash
+go run .                                                        # dev / unknown
+go run -ldflags "-X main.version=1.2.3 -X main.commit=abc1234" . # 1.2.3 / abc1234
+```
+
+实测（容器 go1.26.8）：
+
+```text
+  默认构建：
+version = dev
+commit  = unknown
+  注入后：
+version = 1.2.3
+commit  = abc1234
+```
+
+⚠️ 三条限制：
+
+1. **只能改 `string` 类型的包级变量**（`const` 注入不了，因为它根本没有地址）；
+2. **完整路径要写对**：`-X <包路径>.<变量名>`，主包是 `main.xxx`，其它包要写**完整 import 路径**；
+3. ⚠️ **`-X` 在编译缓存下可能失效** —— 改了 `-ldflags` 参数而源码没变时，
+   某些 Go 版本会命中缓存给出旧产物。CI 里用 `-a`（强制重编）或直接写进 Makefile 更稳。
+
+⭐ 惯例：把 version / commit / buildTime 三个变量集中在一个文件里（如 `internal/version/version.go`），
+这样 `-ldflags` 只有一条固定的模板。
+
+### 4.2 `-s -w` 裁符号表（实测体积）
+
+```bash
+go build -ldflags "-s -w" -o app .
+```
+
+- `-s`：去掉符号表（symbol table）
+- `-w`：去掉 DWARF 调试信息
+
+实测：
+
+```text
+  默认                        2409948 字节
+  -ldflags "-s -w"           1597602 字节   ← 少了 33.7%
+  CGO_ENABLED=0 + -s -w      1597602 字节
+```
+
+⭐ 两条判据：
+
+1. **生产产物一律加 `-s -w`**（省三分之一，代价只是不能用 `dlv` 看符号）；
+2. ⚠️ 上面第三行和第一组一样，是因为 **alpine 镜像里 `CGO_ENABLED` 默认就是 0** ——
+   在 debian 系镜像（如 `golang:1.26-bookworm`）里默认才是 1，那里的数字会不一样（见第七节）。
+
+---
+
+## 五、build tags：编译期的开关
+
+**本节要点**：同一份源码产出两种行为，靠的就是 build tags ——
+它比运行时 if 更彻底：**调试代码根本不进生产产物**。
+
+```go
+// on.go
+//go:build debug
+
+package main
+
+const debugMode = true
+
+// off.go
+//go:build !debug
+
+package main
+
+const debugMode = false
+```
+
+```bash
+go run .            # debugMode = false
+go run -tags debug . # debugMode = true
+```
+
+实测：
+
+```text
+  默认构建：
+debugMode = false
+  -tags debug：
+debugMode = true
+```
+
+⭐ 三条写法纪律：
+
+1. **Go 1.17+ 用 `//go:build`，旧的 `// +build` 只是兼容**（两个都写时要保持一致，`gofmt` 会自动同步）；
+2. **`//go:build` 与 `package` 之间必须有空行** —— 没空行它就是普通注释，会被静默忽略；
+3. **文件名的后缀也是 tag**（`xxx_linux.go`、`xxx_amd64.go`、`xxx_test.go` 都是这个机制的内置形态）。
+
+⭐ 常见用法：
+
+| 场景 | tag |
+|---|---|
+| 调试版 vs 发布版 | `debug` |
+| 集成测试要走真数据库 | `integration` |
+| 不同驱动实现（musl / glibc） | `musl` |
+| 企业版功能 | `enterprise` |
+
+⚠️ 预置 tag：`go tool dist list` 列出的平台组合共 **47** 个，另有 `gc`、`gccgo`、`cgo`、`race`、`msan` 等编译器相关 tag。
+
+---
+
+## 六、交叉编译：`GOOS` / `GOARCH` 与产物魔数
+
+**本节要点**：Go 的交叉编译**不需要装任何工具链** —— 设定两个环境变量就能产出别的平台的二进制。
+
+```bash
+CGO_ENABLED=0 GOOS=linux   GOARCH=arm64  go build -o app-arm64 .
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64  go build -o app.exe .
+CGO_ENABLED=0 GOOS=darwin  GOARCH=arm64  go build -o app-mac .
+```
+
+实测（同一份代码，容器 go1.26.8）：
+
+```text
+  linux/arm64    2333836 字节  魔数  7f 45 4c 46   ← ELF
+  windows/amd64  2475008 字节  魔数  4d 5a         ← PE
+  darwin/arm64   2492722 字节  魔数  cf fa ed fe   ← Mach-O
+```
+
+⭐ 判据表：
+
+| 魔数（前 4 字节） | 格式 | 平台 |
+|---|---|---|
+| `7f 45 4c 46`（`\x7fELF`） | **ELF** | Linux / BSD |
+| `4d 5a`（`MZ`） | **PE** | Windows |
+| `cf fa ed fe` | **Mach-O** | macOS（arm64 / x86 字节序不同） |
+
+⚠️ 两条必知：
+
+1. **`CGO_ENABLED=0` 在交叉编译时几乎是必须的** —— 开 cgo 就得有目标平台的 C 交叉编译器，非常麻烦；
+2. **交叉编译的产物不能在本机跑** —— 验证只能靠目标平台或模拟器（QEMU）。
+
+---
+
+## 七、`CGO_ENABLED`：静态链接与"not found"事故
+
+**本节要点**：这是 Go 部署里**最常见也最难懂**的一个坑 ——
+二进制明明在，执行却报 **`not found`**。原因不是文件丢了，是**缺 glibc**。
+
+### 7.1 实测：同一个程序，两种链接方式
+
+用 `os/user` 做例子（它在 `CGO_ENABLED=1` 时走 glibc，关掉后走纯 Go 实现），
+在 **debian 系镜像**（`golang:1.26-bookworm`，`CGO_ENABLED` 默认为 1）里编译：
+
+```text
+CGO_ENABLED=1 产物字节: 2477693
+  ldd: linux-vdso.so.1  libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6
+CGO_ENABLED=0 产物字节: 2504699
+  ldd: not a dynamic executable
+```
+
+⭐ 三点读数：
+
+1. **`CGO_ENABLED=1` 的产物是动态链接的**（依赖 `libc.so.6`）；
+2. **`CGO_ENABLED=0` 的产物是静态的**（`ldd` 说它不是一个动态可执行文件）；
+3. ⚠️ **静态的反而更大**（2504699 > 2477693）—— 因为纯 Go 实现（`os/user`、`net` 的解析器等）
+   被整体编进了二进制。**"静态 = 更小"是个常见误解**。
+
+⚠️ 补一条：**`CGO_ENABLED=1` 不等于动态链接**。上面的程序真的用到了 cgo（`os/user`）才是动态的；
+如果是个纯 Go 程序（不碰 `net` / `os/user` / `runtime/cgo`），即便 `CGO_ENABLED=1` 产物仍是静态的
+（实测：一个只 `fmt.Println` 的程序在 bookworm 下 `ldd` 也是 `not a dynamic executable`）。
+
+### 7.2 ⭐ 经典事故：debian 编译 → alpine 运行
+
+把上面两个产物放进 **alpine**（musl libc）容器里执行：
+
+```text
+--- CGO_ENABLED=1 产物（debian 编的）---
+sh: /lab/dyn.out: not found
+EXIT=127
+--- CGO_ENABLED=0 产物（静态）---
+uid=0 name=root
+EXIT=0
+```
+
+⭐⭐ **`not found` 不是"文件不存在"，是"找不到动态链接器 / glibc"**。
+`EXIT=127` 是 shell 的 "command not found" —— 而那个文件**明明就在那里、也有执行权限**。
+
+**三条规避做法**（任选其一）：
+
+1. **`CGO_ENABLED=0` 编译**（最常用）；
+2. **在和目标运行环境**同族**的基础镜像里编译**（目标 alpine → 用 `golang:1.26-alpine` 编）；
+3. **多阶段构建**：build 阶段用完整镜像，run 阶段用 `scratch` / `alpine`，中间产物必须是静态的。
+
+### 7.3 镜像瘦身的三档
+
+| run 阶段镜像 | 要求 | 体积量级 |
+|---|---|---|
+| `scratch`（空镜像） | **必须静态**，且要自己塞 CA 证书（HTTPS 用） | 最小（≈ 二进制大小） |
+| `alpine` | 静态或有 musl 依赖 | 小（几 MB + 二进制） |
+| `debian:*-slim` | 可以有 glibc 依赖 | 较大 |
+
+⚠️ 两个 `scratch` 场景的必踩点：
+
+- **HTTPS 请求需要 CA 证书** → 要从 build 阶段拷 `/etc/ssl/certs/ca-certificates.crt`；
+- **`scratch` 里没有 shell** → `docker exec` 进不去，排查只能靠看日志与 metrics。
+
+---
+
 ## 关联
 
 - [调试与IDE配置.md](调试与IDE配置.md) — `-N -l` 关优化之后怎么真正打断点

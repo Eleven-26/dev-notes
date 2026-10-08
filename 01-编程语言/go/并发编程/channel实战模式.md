@@ -429,3 +429,4 @@ func (f *future) get() string { return <-f.ch }
 - [channel使用陷阱.md](channel使用陷阱.md) — 关闭语义与死锁判据
 - [并发控制实战.md](并发控制实战.md) — 同一主题的可运行练习
 - [稳定性三件套.md](../../../04-架构与系统/分布式/服务治理/稳定性三件套.md) — 用 channel 做信号量式并发控制的上层用法
+> 反向引用（本篇被下列文档引到）：[errgroup与pipeline.md](errgroup与pipeline.md)
