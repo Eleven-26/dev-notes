@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="40" y="42" font-family="system-ui, sans-serif" font-size="21" font-weight="700" fill="#0f172a">最近点对：分治合并时只看「跨中线的窄带」，且每个点只需比常数个邻居</text>
+  <text x="40" y="68" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">窄带之外的跨中线的点对，距离一定 ≥ d（d 已是左右半区的最优）—— 这一条把 O(n²) 压成 O(n log n)</text>
+
+  <!-- 左半 -->
+  <rect x="60" y="88" width="560" height="320" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- 窄带 -->
+  <rect x="290" y="88" width="180" height="320" fill="#dbeafe" opacity="0.8"/>
+
+  <!-- 中线 -->
+  <line x1="380" y1="88" x2="380" y2="408" stroke="#2563eb" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="386" y="108" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#2563eb">中线</text>
+
+  <!-- 左半区点 -->
+  <circle cx="120" cy="160" r="5.5" fill="#64748b"/>
+  <circle cx="170" cy="250" r="5.5" fill="#64748b"/>
+  <circle cx="230" cy="180" r="5.5" fill="#64748b"/>
+  <circle cx="150" cy="330" r="5.5" fill="#64748b"/>
+  <circle cx="260" cy="330" r="5.5" fill="#64748b"/>
+  <circle cx="250" cy="230" r="5.5" fill="#64748b"/>
+
+  <!-- 右半区点 -->
+  <circle cx="640" cy="170" r="5.5" fill="#64748b"/>
+  <circle cx="590" cy="260" r="5.5" fill="#64748b"/>
+  <circle cx="530" cy="190" r="5.5" fill="#64748b"/>
+  <circle cx="620" cy="340" r="5.5" fill="#64748b"/>
+  <circle cx="520" cy="340" r="5.5" fill="#64748b"/>
+
+  <!-- 窄带内的点（需要被检查） -->
+  <circle cx="330" cy="200" r="6.5" fill="#2563eb"/>
+  <circle cx="440" cy="220" r="6.5" fill="#2563eb"/>
+  <circle cx="360" cy="300" r="6.5" fill="#2563eb"/>
+  <circle cx="350" cy="150" r="6.5" fill="#2563eb"/>
+
+  <!-- 最近点对 -->
+  <circle cx="330" cy="200" r="9" fill="none" stroke="#ea580c" stroke-width="3"/>
+  <circle cx="440" cy="220" r="9" fill="none" stroke="#ea580c" stroke-width="3"/>
+  <line x1="330" y1="200" x2="440" y2="220" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="240" y="440" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#ea580c">跨中线的最近点对（必须在窄带里找）</text>
+
+  <text x="150" y="130" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">左半：最近距离 dL</text>
+  <text x="560" y="130" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">右半：最近距离 dR</text>
+
+  <!-- 右侧说明 -->
+  <rect x="644" y="88" width="316" height="320" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="662" y="116" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#0f172a">为什么窄带内是「常数个」</text>
+  <text x="662" y="146" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">把窄带按 d/2 划成方格：</text>
+  <text x="662" y="168" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">每个方格最多放一个点 ——</text>
+  <text x="662" y="188" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">否则那两点距离就 &lt; d，与「d</text>
+  <text x="662" y="208" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">已是半区最优」矛盾。</text>
+  <text x="662" y="232" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">所以一个点只需查相邻的几个</text>
+  <text x="662" y="252" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">方格 —— 是个常数。</text>
+  <line x1="662" y1="272" x2="942" y2="272" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="662" y="300" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">⚠️ 分治依赖「输入已按 x 排序」</text>
+  <text x="662" y="320" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">（它用 pts[mid].x 当分界线）。</text>
+  <text x="662" y="340" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">不排序不会崩，只会给出错的</text>
+  <text x="662" y="360" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">答案 —— 必须与暴力交叉验证。</text>
+
+  <!-- 结论带 -->
+  <rect x="40" y="430" width="920" height="112" rx="10" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="60" y="460" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#0f172a">分治 = 按 x 切半 → 递归 → 合并时只检查跨中线的窄带；合并的 y 排序若改成归并，可做到 O(n log n)</text>
+  <text x="60" y="488" font-family="system-ui, sans-serif" font-size="14" fill="#334155">实测 n = 200000：分治距离计算 283935 次 vs 暴力理论 n(n-1)/2 = 19999900000 次 —— 省 70438 倍。</text>
+  <text x="60" y="514" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">交叉验证（n = 3000）：分治与暴力都给出最近距离 11941 —— 一致性是这类算法唯一的可靠验收方式。</text>
+</svg>

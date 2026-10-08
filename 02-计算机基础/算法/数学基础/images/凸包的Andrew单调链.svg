@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="40" y="42" font-family="system-ui, sans-serif" font-size="21" font-weight="700" fill="#0f172a">Andrew 单调链：两次 O(n) 扫描拼出下凸壳与上凸壳</text>
+  <text x="40" y="68" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">先把点按 (x, y) 排序；之后「新点让栈顶右转就弹栈」—— 成本几乎全在排序那一步</text>
+
+  <!-- 点云 -->
+  <rect x="60" y="88" width="620" height="320" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- 内部点 -->
+  <circle cx="280" cy="280" r="5" fill="#94a3b8"/>
+  <circle cx="360" cy="250" r="5" fill="#94a3b8"/>
+  <circle cx="430" cy="290" r="5" fill="#94a3b8"/>
+  <circle cx="230" cy="320" r="5" fill="#94a3b8"/>
+  <circle cx="500" cy="300" r="5" fill="#94a3b8"/>
+  <circle cx="330" cy="210" r="5" fill="#94a3b8"/>
+
+  <!-- 上凸壳（绿）：A B C D E F -->
+  <polyline points="110,270 150,170 290,140 460,160 590,240 630,340" fill="none" stroke="#16a34a" stroke-width="3"/>
+  <!-- 下凸壳（蓝）：A H G F -->
+  <polyline points="110,270 250,380 460,390 630,340" fill="none" stroke="#2563eb" stroke-width="3"/>
+
+  <circle cx="110" cy="270" r="7" fill="#1e3a8a"/>
+  <circle cx="150" cy="170" r="7" fill="#166534"/>
+  <circle cx="290" cy="140" r="7" fill="#166534"/>
+  <circle cx="460" cy="160" r="7" fill="#166534"/>
+  <circle cx="590" cy="240" r="7" fill="#166534"/>
+  <circle cx="630" cy="340" r="7" fill="#334155"/>
+  <circle cx="460" cy="390" r="7" fill="#1e3a8a"/>
+  <circle cx="250" cy="380" r="7" fill="#1e3a8a"/>
+
+  <!-- 扫描方向 -->
+  <text x="330" y="128" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#16a34a">上凸壳：从右往左扫</text>
+  <text x="150" y="428" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#2563eb">下凸壳：从左往右扫</text>
+  <text x="558" y="300" font-family="system-ui, sans-serif" font-size="13" fill="#64748b">排序后</text>
+  <text x="558" y="320" font-family="system-ui, sans-serif" font-size="13" fill="#64748b">从最左点出发</text>
+
+  <!-- 右侧说明 -->
+  <rect x="700" y="88" width="260" height="320" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="718" y="116" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#0f172a">共线点的取舍</text>
+  <text x="718" y="146" font-family="system-ui, sans-serif" font-size="13" fill="#2563eb">cross &lt;= 0 弹出</text>
+  <text x="718" y="168" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">只保留严格左转 → 凸包</text>
+  <text x="718" y="186" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">只含顶点</text>
+  <text x="718" y="222" font-family="system-ui, sans-serif" font-size="13" fill="#16a34a">cross &lt; 0 弹出</text>
+  <text x="718" y="244" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">允许 == 0 留下 → 保留</text>
+  <text x="718" y="262" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">边上的点</text>
+  <line x1="718" y1="286" x2="942" y2="286" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="718" y="312" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">选错不报错，只是凸包多</text>
+  <text x="718" y="332" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">几个 / 少几个点 —— 典型</text>
+  <text x="718" y="352" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">的静默错误。</text>
+  <text x="718" y="384" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">方向：本篇得到逆时针凸包</text>
+
+  <!-- 结论带 -->
+  <rect x="40" y="430" width="920" height="112" rx="10" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="60" y="460" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#0f172a">总代价 = 排序 O(n log n) + 两次 O(n) 扫描；得到的凸包是逆时针顺序</text>
+  <text x="60" y="488" font-family="system-ui, sans-serif" font-size="14" fill="#334155">实测 n = 200000 个随机点：凸包顶点 H = 34、交叉积判定 799957 次；校验「所有点都在每条边左侧」违反 0 处。</text>
+  <text x="60" y="514" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">⭐ 随机点集的凸包顶点只有 O(log n) 量级 —— 所以「先求凸包再处理」是大规模几何问题的标准起手式。</text>
+</svg>

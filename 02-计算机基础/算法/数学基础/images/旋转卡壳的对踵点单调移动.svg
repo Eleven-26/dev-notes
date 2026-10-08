@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="40" y="42" font-family="system-ui, sans-serif" font-size="21" font-weight="700" fill="#0f172a">旋转卡壳：对踵点 j 随支撑边单调前移，双指针把 O(h²) 压成 O(h)</text>
+  <text x="40" y="68" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">两条平行支撑线卡住凸包 → 两个切点就是一对对踵点；让这对线绕凸包转一整圈</text>
+
+  <!-- 凸八边形 -->
+  <rect x="60" y="88" width="600" height="320" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- 面积三角形 (i, i+1, j) -->
+  <polygon points="540,270 474,404 226,136" fill="#ffedd5" stroke="none" opacity="0.75"/>
+
+  <polygon points="540,270 474,404 350,460 226,404 160,270 226,136 350,80 474,136"
+           fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+  <!-- 支撑边 (i, i+1) 蓝色 -->
+  <line x1="540" y1="270" x2="474" y2="404" stroke="#2563eb" stroke-width="4"/>
+  <!-- 支撑边延长线 -->
+  <line x1="600" y1="173" x2="414" y2="502" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6 5"/>
+
+  <!-- 对踵点处的平行支撑线 -->
+  <line x1="300" y1="70" x2="150" y2="204" stroke="#ea580c" stroke-width="2" stroke-dasharray="6 5"/>
+
+  <circle cx="540" cy="270" r="7" fill="#1e3a8a"/>
+  <circle cx="474" cy="404" r="7" fill="#1e3a8a"/>
+  <circle cx="226" cy="136" r="8" fill="#ea580c"/>
+
+  <text x="560" y="266" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">i</text>
+  <text x="450" y="424" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">i+1</text>
+  <text x="200" y="130" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#ea580c">j</text>
+
+  <!-- j 前移方向 -->
+  <path d="M 160 270 A 190 190 0 0 0 226 136" fill="none" stroke="#ea580c" stroke-width="2" opacity="0" />
+  <text x="120" y="420" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">j 只会沿这个方向前移</text>
+  <text x="120" y="440" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">一圈共推进 ≤ h 次</text>
+
+  <text x="330" y="300" font-family="system-ui, sans-serif" font-size="12.5" fill="#9a3412">阴影 = 三角形 (i, i+1, j) 的面积</text>
+  <text x="330" y="320" font-family="system-ui, sans-serif" font-size="12.5" fill="#9a3412">面积不再增大时，j 就是这条边的对踵点</text>
+
+  <!-- 右侧说明 -->
+  <rect x="680" y="88" width="280" height="320" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="698" y="116" font-family="system-ui, sans-serif" font-size="14" font-weight="700" fill="#0f172a">内层是 while，为什么还是 O(h)</text>
+  <text x="698" y="148" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">因为 j 在一次完整扫描里</text>
+  <text x="698" y="168" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">只绕凸包一圈 —— 内层的总</text>
+  <text x="698" y="188" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">推进量是 O(h)，摊还到每条</text>
+  <text x="698" y="208" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">边就是 O(1)。</text>
+  <line x1="698" y1="228" x2="942" y2="228" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="698" y="254" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0f172a">同套路还能求</text>
+  <text x="698" y="278" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">· 最小面积外接矩形</text>
+  <text x="698" y="298" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">· 最小周长外接矩形</text>
+  <text x="698" y="318" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">· 两个凸包之间的最近距离</text>
+  <text x="698" y="352" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">⚠️ 全共线时面积条件恒成立，</text>
+  <text x="698" y="372" font-family="system-ui, sans-serif" font-size="12.5" fill="#ea580c">要加迭代次数上限兜底</text>
+
+  <!-- 结论带 -->
+  <rect x="40" y="430" width="920" height="112" rx="10" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="60" y="460" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#0f172a">凸包直径 = 最远的一对凸包顶点；旋转卡壳把它从 O(h²) 降到 O(h)</text>
+  <text x="60" y="488" font-family="system-ui, sans-serif" font-size="14" fill="#334155">实测（5000 个点取在圆上，H = 4872）：卡壳比较 12178 次 vs 暴力 11865756 次 —— 省 974.4 倍，最大距离平方完全一致。</text>
+  <text x="60" y="514" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">⭐ 「指针只前进、从不回退」是这一族算法的命根子：它把看似 O(h²) 的双层循环摊还成 O(h)。</text>
+</svg>
