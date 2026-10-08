@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="480" fill="#ffffff"/>
+  <defs>
+    <marker id="hp1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一份 heap profile，两种口径给出完全不同的答案</text>
+
+  <rect x="400" y="62" width="200" height="56" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="500" y="86" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">heap.pprof</text>
+  <text x="500" y="106" text-anchor="middle" font-size="11" fill="#64748b">（同一份文件）</text>
+
+  <line x1="460" y1="118" x2="250" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#hp1)"/>
+  <line x1="540" y1="118" x2="750" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#hp1)"/>
+  <text x="330" y="128" font-size="12" font-weight="bold" fill="#2563eb">-sample_index=alloc_space</text>
+  <text x="600" y="128" font-size="12" font-weight="bold" fill="#16a34a">-sample_index=inuse_space</text>
+
+  <rect x="40" y="158" width="420" height="210" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="60" y="188" font-size="14" font-weight="bold" fill="#2563eb">alloc_space：累计分配过多少</text>
+  <text x="60" y="212" font-size="12" fill="#334155">（含已经释放的那些）</text>
+  <line x1="60" y1="228" x2="440" y2="228" stroke="#94a3b8" stroke-width="1"/>
+  <text x="60" y="256" font-size="13" fill="#0f172a">main.retain            305.32MB  50.26%</text>
+  <text x="60" y="282" font-size="13" fill="#0f172a">main.allocateAndFree   301.19MB  49.58%</text>
+  <text x="60" y="312" font-size="12" fill="#334155">总计约 607MB —— 两个函数都在榜上</text>
+  <text x="60" y="344" font-size="12" font-weight="bold" fill="#2563eb">用它回答：GC 压力大不大、分配速率高不高</text>
+
+  <rect x="540" y="158" width="420" height="210" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="560" y="188" font-size="14" font-weight="bold" fill="#16a34a">inuse_space：此刻还占着多少</text>
+  <text x="560" y="212" font-size="12" fill="#334155">（取之前必须先 runtime.GC()）</text>
+  <line x1="560" y1="228" x2="940" y2="228" stroke="#94a3b8" stroke-width="1"/>
+  <text x="560" y="256" font-size="13" fill="#0f172a">main.retain            305.32MB  99.51%</text>
+  <text x="560" y="282" font-size="13" font-weight="bold" fill="#dc2626">main.allocateAndFree   已消失（不在榜上）</text>
+  <text x="560" y="312" font-size="12" fill="#334155">总计约 307MB —— 只剩真正持有的那一半</text>
+  <text x="560" y="344" font-size="12" font-weight="bold" fill="#16a34a">用它回答：内存涨不涨、是不是泄漏</text>
+
+  <rect x="40" y="386" width="920" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="64" y="414" font-size="13" font-weight="bold" fill="#0f172a">⭐ 判据：内存持续上涨 → inuse_space；内存不涨但 GC 频繁 → alloc_space（该优化的是「分配次数」，不是「内存占用」）</text>
+  <text x="64" y="438" font-size="12" fill="#64748b">⚠️ 上面那些 MB 数值是一次运行的样例读数，随采样小幅波动；稳定的是「谁在榜上、谁不在」这个结构</text>
+  <text x="64" y="456" font-size="12" fill="#64748b">另有 alloc_objects / inuse_objects 两个口径，数的是对象个数而不是字节数</text>
+</svg>

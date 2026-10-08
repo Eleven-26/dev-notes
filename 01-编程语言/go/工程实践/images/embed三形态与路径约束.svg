@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" width="1000" height="440" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">//go:embed 的三种形态与四条路径约束</text>
+
+  <rect x="30" y="62" width="300" height="240" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="46" y="94" font-size="15" font-weight="bold" fill="#2563eb">形态一：string</text>
+  <line x1="46" y1="108" x2="314" y2="108" stroke="#94a3b8" stroke-width="1"/>
+  <text x="46" y="136" font-size="12" fill="#0f172a">//go:embed version.txt</text>
+  <text x="46" y="156" font-size="12" fill="#0f172a">var version string</text>
+  <text x="46" y="190" font-size="12" font-weight="bold" fill="#334155">实测</text>
+  <text x="46" y="212" font-size="12" fill="#0f172a">version = "v1.2.3\n" 长度 7</text>
+  <text x="46" y="242" font-size="12" font-weight="bold" fill="#dc2626">⚠️ 原样保留字节，不做 trim</text>
+  <text x="46" y="266" font-size="12" fill="#64748b">当版本号用要自己 TrimSpace</text>
+
+  <rect x="350" y="62" width="300" height="240" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="366" y="94" font-size="15" font-weight="bold" fill="#ea580c">形态二：[]byte</text>
+  <line x1="366" y1="108" x2="634" y2="108" stroke="#94a3b8" stroke-width="1"/>
+  <text x="366" y="136" font-size="12" fill="#0f172a">//go:embed version.txt</text>
+  <text x="366" y="156" font-size="12" fill="#0f172a">var versionBytes []byte</text>
+  <text x="366" y="190" font-size="12" font-weight="bold" fill="#334155">实测</text>
+  <text x="366" y="212" font-size="12" fill="#0f172a">长度 7，首字节 "v"</text>
+  <text x="366" y="242" font-size="12" font-weight="bold" fill="#16a34a">✅ 适合二进制内容</text>
+  <text x="366" y="266" font-size="12" fill="#64748b">模板 / 图片 / SQL 迁移脚本</text>
+
+  <rect x="670" y="62" width="300" height="240" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="686" y="94" font-size="15" font-weight="bold" fill="#16a34a">形态三：embed.FS</text>
+  <line x1="686" y1="108" x2="954" y2="108" stroke="#94a3b8" stroke-width="1"/>
+  <text x="686" y="136" font-size="12" fill="#0f172a">//go:embed assets</text>
+  <text x="686" y="156" font-size="12" fill="#0f172a">var assets embed.FS</text>
+  <text x="686" y="190" font-size="12" font-weight="bold" fill="#334155">实测</text>
+  <text x="686" y="212" font-size="12" fill="#0f172a">2 项：a.txt(6 B) b.txt(5 B)</text>
+  <text x="686" y="242" font-size="12" font-weight="bold" fill="#16a34a">✅ 只读 io/fs 实现</text>
+  <text x="686" y="266" font-size="12" fill="#64748b">可直接喂 http.FileServer</text>
+
+  <rect x="30" y="318" width="940" height="104" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="50" y="346" font-size="13" font-weight="bold" fill="#dc2626">四条硬约束（实测错误原文在上面右侧小节）：</text>
+  <text x="50" y="370" font-size="12" fill="#334155">① 不能逃出当前目录：pattern ../outside.txt → invalid pattern syntax</text>
+  <text x="50" y="390" font-size="12" fill="#334155">② 不能是绝对路径（不能以 / 开头）　　③ 每个 pattern 必须至少命中一个文件（目录要非空）</text>
+  <text x="50" y="410" font-size="12" font-weight="bold" fill="#dc2626">④ //go:embed 必须紧邻它修饰的包级变量（中间不能有空行）—— 否则静默失效、变量是空的、构建不报错</text>
+</svg>
