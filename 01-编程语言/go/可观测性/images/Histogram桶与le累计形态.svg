@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">Histogram 的桶与 le 累计形态</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">手选桶 0.05 / 0.1 / 0.5 / 1；8 个观测值全部来自容器实跑（client_golang v1.24.1）</text>
+
+  <!-- 坐标轴 -->
+  <line x1="80" y1="400" x2="960" y2="400" stroke="#0f172a" stroke-width="1.8"/>
+  <text x="965" y="404" font-size="12" fill="#0f172a">s</text>
+  <g font-size="12" fill="#64748b" text-anchor="middle">
+    <text x="80" y="420">0</text>
+    <text x="205" y="420">0.05</text>
+    <text x="330" y="420">0.10</text>
+    <text x="580" y="420">0.50</text>
+    <text x="705" y="420">1.00</text>
+    <text x="920" y="420">+Inf</text>
+  </g>
+  <g stroke="#cbd5e1" stroke-dasharray="4 4">
+    <line x1="205" y1="150" x2="205" y2="400"/>
+    <line x1="330" y1="150" x2="330" y2="400"/>
+    <line x1="580" y1="150" x2="580" y2="400"/>
+    <line x1="705" y1="150" x2="705" y2="400"/>
+  </g>
+
+  <!-- 累计阶梯（真实读数：1/3/5/6/8） -->
+  <polyline points="80,360 205,360 205,310 330,310 330,260 580,260 580,210 705,210 705,160 920,160"
+            fill="none" stroke="#2563eb" stroke-width="2.6"/>
+
+  <g font-size="12" font-weight="bold" fill="#1e3a8a">
+    <text x="150" y="352" text-anchor="middle">le="0.05" → 1</text>
+    <text x="272" y="302" text-anchor="middle">le="0.1" → 3</text>
+    <text x="460" y="252" text-anchor="middle">le="0.5" → 5</text>
+    <text x="645" y="202" text-anchor="middle">le="1" → 6</text>
+    <text x="820" y="152" text-anchor="middle">le="+Inf" → 8 = _count</text>
+  </g>
+
+  <!-- 8 个观测值 -->
+  <g fill="#16a34a">
+    <circle cx="125" cy="385" r="6"/>
+    <circle cx="177" cy="385" r="6"/>
+    <circle cx="200" cy="385" r="6"/>
+    <circle cx="265" cy="385" r="6"/>
+    <circle cx="405" cy="385" r="6"/>
+    <circle cx="530" cy="385" r="6"/>
+    <circle cx="743" cy="385" r="6"/>
+    <circle cx="880" cy="385" r="6"/>
+  </g>
+  <text x="80" y="445" font-size="12" fill="#14532d">观测值：0.02 0.06 0.08 0.2 0.4 0.7 1.6 3.0（横坐标按秒线性映射，仅示意落点位置）</text>
+
+  <!-- 右侧结论框 -->
+  <rect x="600" y="80" width="360" height="60" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="780" y="103" font-size="12" fill="#7f1d1d" text-anchor="middle">桶外的值只能落到 +Inf：1.6 与 3.0 都只增加 le="+Inf"</text>
+  <text x="780" y="122" font-size="12" fill="#7f1d1d" text-anchor="middle">想区分 1~5s 就得把桶开到 2.5 / 5，否则分位数被抹平</text>
+
+  <rect x="80" y="465" width="880" height="42" rx="6" fill="#f8fafc" stroke="#64748b"/>
+  <text x="520" y="483" font-size="12" fill="#0f172a" text-anchor="middle">图怎么读：阶梯是「累计计数」而非「本桶数量」——每根横线 = 耗时 ≤ 该 le 的请求个数</text>
+  <text x="520" y="500" font-size="12" fill="#334155" text-anchor="middle">histogram_quantile 在相邻两个 le 之间线性插值，桶越稀，P95 估得越粗</text>
+</svg>

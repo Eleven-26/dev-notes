@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">Go 进程 → /metrics → Prometheus 抓取 → TSDB → 查询</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">调用时序图；读数来自容器实跑（golang:1.26.8 + prom/prometheus，scrape_interval=2s）</text>
+
+  <!-- 参与者 -->
+  <g font-size="13" font-weight="bold">
+    <rect x="30" y="80" width="140" height="42" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="100" y="106" fill="#1e3a8a" text-anchor="middle">HTTP 请求</text>
+    <rect x="200" y="80" width="140" height="42" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="270" y="106" fill="#14532d" text-anchor="middle">Go 业务代码</text>
+    <rect x="370" y="80" width="140" height="42" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="440" y="100" fill="#14532d" text-anchor="middle">Registry</text>
+    <text x="440" y="116" fill="#14532d" text-anchor="middle">client_golang</text>
+    <rect x="540" y="80" width="140" height="42" rx="6" fill="#fef3c7" stroke="#b45309"/>
+    <text x="610" y="100" fill="#854d0e" text-anchor="middle">promhttp</text>
+    <text x="610" y="116" fill="#854d0e" text-anchor="middle">/metrics 处理器</text>
+    <rect x="710" y="80" width="130" height="42" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="775" y="106" fill="#1e3a8a" text-anchor="middle">Prometheus</text>
+    <rect x="860" y="80" width="120" height="42" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="920" y="100" fill="#0f172a" text-anchor="middle">TSDB +</text>
+    <text x="920" y="116" fill="#0f172a" text-anchor="middle">PromQL 查询</text>
+  </g>
+
+  <!-- 生命线 -->
+  <g stroke="#cbd5e1" stroke-width="1.5">
+    <line x1="100" y1="122" x2="100" y2="560"/>
+    <line x1="270" y1="122" x2="270" y2="560"/>
+    <line x1="440" y1="122" x2="440" y2="560"/>
+    <line x1="610" y1="122" x2="610" y2="560"/>
+    <line x1="775" y1="122" x2="775" y2="560"/>
+    <line x1="920" y1="122" x2="920" y2="560"/>
+  </g>
+
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#334155"/>
+    </marker>
+    <marker id="arrb" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- 1 请求进入 -->
+  <line x1="100" y1="150" x2="262" y2="150" stroke="#334155" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="180" y="143" font-size="12" fill="#334155" text-anchor="middle">① 请求进入</text>
+
+  <!-- 2 只改内存 -->
+  <rect x="216" y="172" width="108" height="46" rx="6" fill="#f8fafc" stroke="#16a34a" stroke-dasharray="4 3"/>
+  <text x="270" y="190" font-size="12" fill="#14532d" text-anchor="middle">② Inc() Observe()</text>
+  <text x="270" y="206" font-size="12" fill="#14532d" text-anchor="middle">只写内存计数器</text>
+
+  <!-- 3 抓取 -->
+  <line x1="775" y1="248" x2="618" y2="248" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrb)"/>
+  <text x="697" y="241" font-size="12" fill="#1e3a8a" text-anchor="middle">③ 每 2s GET /metrics</text>
+
+  <!-- 4 Gather -->
+  <line x1="610" y1="292" x2="448" y2="292" stroke="#334155" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="529" y="285" font-size="12" fill="#334155" text-anchor="middle">④ Gather()</text>
+
+  <!-- 5 Collect -->
+  <line x1="440" y1="336" x2="278" y2="336" stroke="#334155" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="359" y="329" font-size="12" fill="#334155" text-anchor="middle">⑤ Collect(ch)</text>
+  <line x1="270" y1="372" x2="432" y2="372" stroke="#334155" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+  <text x="351" y="365" font-size="12" fill="#64748b" text-anchor="middle">ConstMetric</text>
+
+  <!-- 6 渲染文本 -->
+  <line x1="440" y1="410" x2="602" y2="410" stroke="#334155" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+  <text x="521" y="403" font-size="12" fill="#334155" text-anchor="middle">⑥ 191 行 / 12486 字节</text>
+  <line x1="610" y1="446" x2="767" y2="446" stroke="#334155" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="688" y="439" font-size="12" fill="#334155" text-anchor="middle">⑦ text/plain; version=0.0.4</text>
+
+  <!-- 8 入库 -->
+  <line x1="775" y1="486" x2="912" y2="486" stroke="#334155" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="843" y="479" font-size="12" fill="#334155" text-anchor="middle">⑧ 96 样本 + up=1</text>
+
+  <!-- 9 查询 -->
+  <rect x="640" y="510" width="330" height="50" rx="6" fill="#f8fafc" stroke="#64748b"/>
+  <text x="805" y="530" font-size="12" fill="#0f172a" text-anchor="middle">⑨ rate(shop_api_requests_total[1m]) = 4.29</text>
+  <text x="805" y="548" font-size="12" fill="#0f172a" text-anchor="middle">histogram_quantile(0.95, …) = 0.4637s</text>
+  <line x1="920" y1="510" x2="920" y2="486" stroke="#64748b" stroke-width="1.2"/>
+
+  <text x="500" y="592" font-size="12" fill="#64748b" text-anchor="middle">② 与 ③~⑦ 是两条独立时间线：业务路径不做网络 IO，抓取时刻才现场渲染（scrape_duration 实测 0.007~0.072s 波动）</text>
+  <text x="500" y="612" font-size="12" fill="#64748b" text-anchor="middle">进程一旦停止抓取，Prometheus 只把 up 置 0，已入库的历史样本不受影响</text>
+</svg>
