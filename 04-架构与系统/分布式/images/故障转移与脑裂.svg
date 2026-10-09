@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">故障转移与脑裂：分区之后「两边都以为对方死了」</text>
+
+  <!-- ① 正常 -->
+  <text x="30" y="76" font-size="14" fill="#0f172a">① 正常：1 主 2 从</text>
+  <rect x="60" y="90" width="90" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="105" y="115" font-size="13" fill="#14532d" text-anchor="middle">从</text>
+  <rect x="250" y="90" width="90" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="295" y="115" font-size="13" fill="#1e3a8a" text-anchor="middle">主</text>
+  <rect x="440" y="90" width="90" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="485" y="115" font-size="13" fill="#14532d" text-anchor="middle">从</text>
+  <text x="30" y="155" font-size="12" fill="#64748b">主接受写，日志复制到两个从；多数派 = 3 个中的任意 2 个</text>
+
+  <!-- ② 分区 -->
+  <text x="30" y="196" font-size="14" fill="#0f172a">② 网络分区：切成 2 + 1 两半</text>
+  <rect x="30" y="212" width="250" height="158" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="155" y="238" font-size="14" fill="#14532d" text-anchor="middle">多数派侧（2 / 3）</text>
+  <rect x="52" y="252" width="94" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="99" y="275" font-size="13" fill="#1e3a8a" text-anchor="middle">新主</text>
+  <rect x="164" y="252" width="94" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="211" y="275" font-size="13" fill="#14532d" text-anchor="middle">从</text>
+  <text x="155" y="316" font-size="13" fill="#166534" text-anchor="middle">凑够多数派 → 选出新主</text>
+  <text x="155" y="340" font-size="13" fill="#166534" text-anchor="middle">继续提供读写服务</text>
+
+  <rect x="310" y="212" width="250" height="158" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="435" y="238" font-size="14" fill="#7f1d1d" text-anchor="middle">少数派侧（1 / 3）</text>
+  <rect x="388" y="252" width="94" height="36" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="435" y="275" font-size="13" fill="#7f1d1d" text-anchor="middle">旧主</text>
+  <text x="435" y="316" font-size="13" fill="#991b1b" text-anchor="middle">够不到多数派，但自己不知道</text>
+  <text x="435" y="340" font-size="13" fill="#991b1b" text-anchor="middle">仍自认为是主 → 双写分叉</text>
+
+  <line x1="295" y1="205" x2="295" y2="375" stroke="#dc2626" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="295" y="392" font-size="12" fill="#dc2626" text-anchor="middle">网络分区</text>
+
+  <!-- 两种防法 -->
+  <text x="590" y="76" font-size="14" fill="#0f172a">两种防法</text>
+  <rect x="590" y="90" width="190" height="158" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="685" y="116" font-size="14" fill="#0f172a" text-anchor="middle">多数派仲裁</text>
+  <text x="608" y="142" font-size="12" fill="#334155">不足多数派的一侧</text>
+  <text x="608" y="164" font-size="12" fill="#334155">选不出主、也提交不了写</text>
+  <text x="608" y="192" font-size="12" fill="#166534">→ 少数派只能拒绝写</text>
+  <text x="608" y="222" font-size="12" fill="#64748b">要求：节点数够 + 取奇数</text>
+
+  <rect x="790" y="90" width="190" height="158" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="885" y="116" font-size="14" fill="#0f172a" text-anchor="middle">fencing token</text>
+  <text x="808" y="142" font-size="12" fill="#334155">每次选主发一个</text>
+  <text x="808" y="164" font-size="12" fill="#334155">单调递增的令牌</text>
+  <text x="808" y="192" font-size="12" fill="#166534">→ 旧主的写被拒收</text>
+  <text x="808" y="222" font-size="12" fill="#64748b">要求：存储侧真的校验</text>
+
+  <rect x="590" y="266" width="390" height="104" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="608" y="292" font-size="14" fill="#0f172a">另外两条：物理隔离与第三方仲裁</text>
+  <text x="608" y="318" font-size="12" fill="#334155">STONITH / 隔离：先把旧主断电或断网，再让新主上任</text>
+  <text x="608" y="342" font-size="12" fill="#334155">witness 仲裁：两地各一主 + 第三方投票点，避免 2 节点对等分裂</text>
+
+  <!-- 注记 -->
+  <text x="30" y="428" font-size="13" fill="#64748b">要点：脑裂的起点是「判断」而不是「切换」—— 两侧都以为对方已死，各自选主、各自接受写，数据就分叉了。</text>
+  <text x="30" y="450" font-size="13" fill="#64748b">防法只有一类思路：让「少数派那一侧根本无法提交写」。多数派与 fencing token 都是这个思路的不同实现。</text>
+  <text x="30" y="474" font-size="12" fill="#94a3b8">注意：图中 3 节点是多数派所需的最小结构示意；实际部署还要考虑故障域隔离（机架 / 可用区）。</text>
+</svg>
