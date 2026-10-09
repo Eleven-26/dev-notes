@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HPACK：同样的头第二次只花 1 字节</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">用 grpc-go 同款实现（golang.org/x/net/http2/hpack）量出的字节数；hex 与长度全部抄自 out/hpack.txt</text>
+
+  <text x="30" y="88" font-size="13" font-weight="bold" fill="#0f172a">① 两张表：静态表写死在规范里，动态表按「先进先出」在连接内累积</text>
+  <rect x="30" y="98" width="460" height="72" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="46" y="120" font-size="11.5" font-weight="bold" fill="#1d4ed8">静态表：61 条（RFC 7541 附录 A）</text>
+  <text x="46" y="140" font-size="10.5" fill="#1d4ed8">:method POST = 索引 3　:scheme http = 索引 6　:authority = 索引 1</text>
+  <text x="46" y="158" font-size="10.5" fill="#1d4ed8">不占内存、不随时间变；编解码双方都背得出来</text>
+  <rect x="510" y="98" width="460" height="72" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="526" y="120" font-size="11.5" font-weight="bold" fill="#15803d">动态表：默认 4096 字节（hpack/encode.go:13）</text>
+  <text x="526" y="140" font-size="10.5" fill="#15803d">索引从 62 开始，最新的条目拿最小索引；满了从最老的淘汰</text>
+  <text x="526" y="158" font-size="10.5" fill="#15803d">条目大小 = 名字长 + 值长 + 32（按未压缩长度算）</text>
+
+  <text x="30" y="200" font-size="13" font-weight="bold" fill="#0f172a">② 四种编码形态的字节开销（每条用一个全新编码器，排除动态表干扰）</text>
+  <rect x="30" y="210" width="940" height="132" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.3"/>
+  <text x="48" y="234" font-size="11" fill="#15803d">命中：名与值都在静态表里　　:method POST　　　　　　→　 1 字节　hex=83</text>
+  <text x="48" y="256" font-size="11" fill="#c2410c">部分：只命中名字　　　　　　:method CUSTOM　　　　　→　 8 字节　hex=4306435553544f4d</text>
+  <text x="48" y="278" font-size="11" fill="#c2410c">部分：只命中名字　　　　　　content-type text/plain　→　 9 字节　hex=5f87497ca58ae819aa</text>
+  <text x="48" y="300" font-size="11" fill="#b91c1c">全新：名与值都不在　　　　　x-not-in-static POST　　 →　18 字节　hex=408bf2b5474ac6a9642469313f04504f5354</text>
+  <text x="48" y="324" font-size="10.5" fill="#475569">首字节高位决定形态：1xxxxxxx = 纯索引；01xxxxxx = 增量索引字面量；0000xxxx / 0001xxxx = 不索引（敏感头走这条）</text>
+
+  <text x="30" y="370" font-size="13" font-weight="bold" fill="#0f172a">③ 同一个编码器连编三次：落差 10 倍；只换一条 :path 就要付 18 字节</text>
+  <rect x="30" y="380" width="290" height="88" rx="9" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="175" y="404" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">第 1 次：70 字节</text>
+  <text x="175" y="426" text-anchor="middle" font-size="10.5" fill="#7f1d1d">动态表是空的</text>
+  <text x="175" y="446" text-anchor="middle" font-size="10.5" fill="#7f1d1d">7 条头全部走字面量</text>
+  <rect x="355" y="380" width="290" height="88" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="404" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">第 2 次：7 字节</text>
+  <text x="500" y="426" text-anchor="middle" font-size="10.5" fill="#166534">完全相同的头</text>
+  <text x="500" y="446" text-anchor="middle" font-size="10.5" fill="#166534">7 条各 1 字节索引</text>
+  <rect x="680" y="380" width="290" height="88" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="825" y="404" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2410c">第 3 次：25 字节</text>
+  <text x="825" y="426" text-anchor="middle" font-size="10.5" fill="#9a3412">只把 :path 换成别的方法</text>
+  <text x="825" y="446" text-anchor="middle" font-size="10.5" fill="#9a3412">25 − 7 = 18 字节 = 一条新值的代价</text>
+
+  <text x="30" y="504" font-size="13" font-weight="bold" fill="#0f172a">④ 逐条首次编码：头块大小是由「带值的头」决定的</text>
+  <rect x="30" y="514" width="940" height="76" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.3"/>
+  <text x="48" y="538" font-size="11" fill="#166534">:method 1　　:scheme 1　　:path 14　　:authority 13　　content-type 18　　user-agent 12　　te 11　　→　合计 70 字节</text>
+  <text x="48" y="560" font-size="10.5" fill="#475569">:method / :scheme 各 1 字节，而 content-type（18）、:path（14）、:authority（13）才是大头</text>
+  <text x="48" y="580" font-size="10.5" fill="#b91c1c">所以：自定义头越多、值越长，第一条请求越贵；每多一个方法名，头块就多一次字面量开销</text>
+
+  <rect x="30" y="608" width="940" height="86" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="46" y="632" font-size="12" font-weight="bold" fill="#1d4ed8">⑤ 与真实帧对照：wire.txt 里第一个 HEADERS 93 字节，后续 15 / 29 字节 —— 机制同向，但这两组数不能直接相减</text>
+  <text x="46" y="654" font-size="10.5" fill="#1e40af">服务端侧能取到的请求头只剩 3 条（:authority / content-type / user-agent），:method / :scheme / :path 与 te 都被框架剥掉了</text>
+  <text x="46" y="674" font-size="10.5" fill="#1e40af">本实验的 TCP 代理只解帧头、不解 HPACK —— 要精确复算 93 / 15 必须逐字节解出真实头块，这一项没有做</text>
+  <text x="46" y="688" font-size="10.5" font-weight="bold" fill="#1e40af">结论分两层：机制（§③的 70→7 就是同一机制的量化）确定；每条头各花多少属「按规则推断」</text>
+
+  <rect x="30" y="710" width="940" height="70" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="46" y="734" font-size="12" font-weight="bold" fill="#0f172a">⭐ 一条边界：动态表是「连接级」的状态 —— 换一条连接，压缩率从头再来</text>
+  <text x="46" y="756" font-size="11" fill="#334155">所以别把连接池开得太散：连接越多，每条连接各自的动态表都从 70 字节这种「冷启动」状态开始</text>
+  <text x="46" y="774" font-size="11" fill="#64748b">条目大小按「未压缩长度 + 32」计，这一点在头表限额那一侧同样成立（见 HTTP2机制.md 第七节）</text>
+</svg>

@@ -2,7 +2,7 @@
 
 > 探针式 APM 的完整拆解：TraceSegment 与 span 树的核心概念、OAP 四层架构与数据流、Java / Go / PHP / Node.js 四类探针的实现原理（含轻量级队列内核与 Dubbo 插件生命周期）、UI 六大面板的读法、部署形态与本机 11.0.0 实跑结论。
 >
-> ⭐ 边界先说清：本篇讲**探针式 APM**（SkyWalking 自有协议 + Agent）。「OTel 路线怎么落地」的完整推导见 [Jaeger.md](Jaeger.md)；「三支柱怎么选、五层怎么配、UI 怎么比」见 [可观测性选型.md](可观测性选型.md)；**指标数学**（分位数怎么算才可聚合，APM 面板的 P99 曲线同源）不在本篇展开。各语言的接入代码按语言拆成分册，见第七节。
+> ⭐ 边界先说清：本篇讲**探针式 APM**（SkyWalking 自有协议 + Agent）。「OTel 路线怎么落地」的完整推导见 [Jaeger.md](Jaeger.md)；「三支柱怎么选、五层怎么配、UI 怎么比」见 [可观测性选型对比.md](可观测性选型对比.md)；**指标数学**（分位数怎么算才可聚合，APM 面板的 P99 曲线同源）不在本篇展开。各语言的接入代码按语言拆成分册，见第七节。
 >
 > 内容整理自个人学习笔记。**当前参考版本为 11.0.0**（本机 Docker 实跑：OAP 11.0.0 + BanyanDB 0.11.0 + `apache/skywalking-ui:latest`），版本差异与实测读数见第五节。
 
@@ -47,7 +47,7 @@ SkyWalking 是 Apache 顶级项目，一个针对分布式系统的 **APM（应�
 | 采样 | `agent.sample_n_per_3_secs`（每 3 秒 N 条） | SDK Sampler（比例 / ParentBased） | 命名与粒度不同 |
 | 组件标识 | `componentId`（`component-libraries.yml`） | `attribute` 里的组件名 | OAP 靠它识别框架 |
 
-⚠️ **混用坑**：上游注入 `traceparent`、下游只认 `sw8`，链路会断成两段互不相干的 trace。全链路头格式必须端到端统一（传播机制见 [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md)）。
+⚠️ **混用坑**：上游注入 `traceparent`、下游只认 `sw8`，链路会断成两段互不相干的 trace。全链路头格式必须端到端统一（传播机制见 [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md)）。
 
 ---
 
@@ -244,7 +244,7 @@ Dubbo 插件的生命周期可拆成四个阶段，理解它就能理解所有 J
 1. **插件发现（JVM 启动期）**：agent 扫描 `plugins/` 与 `bootstrap-plugins/` 下的 jar，解析各自的 `skywalking-plugin.def`，构建 `PluginFinder`。插件除了「要增强哪些类」，还会声明 **witness 类**（Dubbo 插件的 witness 类是 Dubbo 自身的核心类，如 `org.apache.dubbo.rpc.Invoker`）：**只有宿主应用真的加载了这些类，插件才被认为生效**，避免增强一个根本没用的框架、平白增加启动开销。
 2. **类增强（类加载期）**：Dubbo 的协议类 / 调用入口类被加载时 `PluginFinder` 匹配命中，ByteBuddy 在目标方法前后织入拦截器。拦截点分两侧——**Consumer 侧**（发起调用的一方）与 **Provider 侧**（被调用的一方）。
 3. **运行期拦截**：Consumer 发起调用前创建 **Exit span**，并通过 Dubbo 的隐式参数（attachment）把上下文以 `sw8` 头的形式带出去；Provider 收到请求后读取 attachment 创建 **Entry span**，从而用同一个 `traceId` 把「服务 A → 服务 B」两个 segment 串起来，拓扑图的边也是这样产生的；调用抛异常时走 `handleMethodException`，把 span 标记为 error 并记录异常堆栈。
-4. **停止与 flush（JVM 退出期）**：agent 启动时注册了 ShutdownHook，JVM 退出时触发 AgentService 停止——先停消费者线程并 **flush 队列中还未发送的数据**，再关闭 gRPC 通道。**这也意味着 `kill -9` 会导致最后一批链路数据丢失**，优雅停机对可观测性同样重要（PHP 侧的相关讨论见 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md)）。
+4. **停止与 flush（JVM 退出期）**：agent 启动时注册了 ShutdownHook，JVM 退出时触发 AgentService 停止——先停消费者线程并 **flush 队列中还未发送的数据**，再关闭 gRPC 通道。**这也意味着 `kill -9` 会导致最后一批链路数据丢失**，优雅停机对可观测性同样重要（PHP 侧的相关讨论见 [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md)）。
 
 ![Dubbo 插件四阶段：attachment 携带 sw8，Consumer 的 Exit span 接上 Provider 的 Entry span](images/Dubbo插件生命周期时序.svg)
 
@@ -262,7 +262,7 @@ Dubbo 插件的生命周期可拆成四个阶段，理解它就能理解所有 J
 go build -toolexec="/path/go-agent" -a -o demo .
 ```
 
-通过 `-toolexec` 拦截编译过程，在 AST 里插入探针代码。代价是三条：配置在编译期写死进二进制，**运行期改不了也摘不掉**；插件只覆盖官方列出的框架版本区间；需要 Go ≥ 1.18，module 路径不能含空格 / 中文。「为什么 Go 团队更该走 OTel 路线」的选型判据在 [可观测性选型.md](可观测性选型.md) 第二节，本篇不重述；机制与落地细节见 [接入Skywalking.md](../../01-编程语言/go/可观测性/接入Skywalking.md)。
+通过 `-toolexec` 拦截编译过程，在 AST 里插入探针代码。代价是三条：配置在编译期写死进二进制，**运行期改不了也摘不掉**；插件只覆盖官方列出的框架版本区间；需要 Go ≥ 1.18，module 路径不能含空格 / 中文。「为什么 Go 团队更该走 OTel 路线」的选型判据在 [可观测性选型对比.md](可观测性选型对比.md) 第二节，本篇不重述；机制与落地细节见 [接入Skywalking.md](../../../01-编程语言/go/可观测性/接入Skywalking.md)。
 
 ### 3.6 PHP：扩展形式与 SAPI 五阶段
 
@@ -272,13 +272,13 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 
 1. **MINIT（模块初始化）**：PHP 随服务器启动，通过 php-fpm（SAPI）与 Nginx 相连；加载每个扩展的代码并调用其模块初始化方法（MINIT），分配资源、注册资源处理器（**常驻进程**，只执行一次）。
 2. **RINIT（请求初始化）**：PHP 等待 SAPI 请求要处理的请求，每个请求都会执行 RINIT，相当于重新调用每个扩展的模块请求初始化函数（每个请求执行一次）。
-3. **PHP 脚本执行**：业务代码运行，扩展在此阶段采集 span 与日志，经 unix socket 交给 master 在启动时 fork 出的上报 worker（对接细节见 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md)）。
+3. **PHP 脚本执行**：业务代码运行，扩展在此阶段采集 span 与日志，经 unix socket 交给 master 在启动时 fork 出的上报 worker（对接细节见 [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md)）。
 4. **RSHUTDOWN（请求关闭）**：脚本结束，PHP 调用每个扩展的模块请求关闭方法（RSHUTDOWN），执行相关的 gc 操作，并把本次请求的链路数据交给上报逻辑。
 5. **MSHUTDOWN（模块关闭）**：如果要关闭对应的 SAPI（这里是 fpm），PHP 调用每个扩展关闭函数（MSHUTDOWN），并最终关闭自己的内存核心。
 
 ![PHP 探针的 SAPI 生命周期：MINIT 常驻、RINIT/RSHUTDOWN 每请求一次、上报走 fork 出的 worker](images/PHP探针SAPI生命周期.svg)
 
-与 Java 的差异要点：PHP 扩展只能在扩展能 hook 到的层面工作（内置函数、curl / PDO / redis 等扩展，以及配合 SDK 对框架层做适配），**无法像 javaagent 那样全量字节码增强**；且 php-fpm 是多进程模型，上报 worker 由 master 在 module init 时 fork、靠 unix socket 与 PHP 进程通信，因此 `runtime_dir` 的可写性与前台 / daemon 启动方式必须一起考虑（见 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 的「容器化接入的四个坑」一节）。
+与 Java 的差异要点：PHP 扩展只能在扩展能 hook 到的层面工作（内置函数、curl / PDO / redis 等扩展，以及配合 SDK 对框架层做适配），**无法像 javaagent 那样全量字节码增强**；且 php-fpm 是多进程模型，上报 worker 由 master 在 module init 时 fork、靠 unix socket 与 PHP 进程通信，因此 `runtime_dir` 的可写性与前台 / daemon 启动方式必须一起考虑（见 [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) 的「容器化接入的四个坑」一节）。
 
 ### 3.7 Node.js：monkey patch
 
@@ -293,7 +293,7 @@ PHP 探针不是 JVM 那种 agent，而是以 **PHP 扩展（.so）** 形式存�
 
 ## 四、UI 六个面板分别解决什么问题？
 
-**本节要点**：六个面板是排障链条上的六段——**Dashboard 看异常 → 拓扑图看调用关系 → Trace 看具体链路 → Profile 看代码级瓶颈 → 日志反查根因 → 告警回溯时间**。三个 UI（SkyWalking / Jaeger / Grafana）的定位差异与组合建议统一在 [可观测性选型.md](可观测性选型.md) 第六节讲，本篇只讲 SkyWalking 面板怎么读。
+**本节要点**：六个面板是排障链条上的六段——**Dashboard 看异常 → 拓扑图看调用关系 → Trace 看具体链路 → Profile 看代码级瓶颈 → 日志反查根因 → 告警回溯时间**。三个 UI（SkyWalking / Jaeger / Grafana）的定位差异与组合建议统一在 [可观测性选型对比.md](可观测性选型对比.md) 第六节讲，本篇只讲 SkyWalking 面板怎么读。
 
 先用五个真实场景对齐「面板 ↔ 问题」：
 
@@ -332,7 +332,7 @@ Dashboard 是「先看整体，再决定往哪钻」的第一落点，顶部可�
 
 使用方式：用左上角 **Service Group / 服务名** 下拉框限定范围；悬停节点显示该服务的简化指标（CPM、成功率、延迟），点击进入服务详情，再点端点进入 Trace（节点大小通常与 CPM 正相关）。
 
-⚠️ **拓扑图的边是从 Trace 数据里「推」出来的**——只有服务间的调用被探针采集到、且上下文（`sw8` 头）正确传递时，边才会出现。所以「该有的边没出现」往往意味着上下文没透传（例如经过 Nginx / 网关时 header 被裁剪，正是 [可观测性选型.md](可观测性选型.md) 第 1.1 节里那种「三方相互推诿」的典型场景）。
+⚠️ **拓扑图的边是从 Trace 数据里「推」出来的**——只有服务间的调用被探针采集到、且上下文（`sw8` 头）正确传递时，边才会出现。所以「该有的边没出现」往往意味着上下文没透传（例如经过 Nginx / 网关时 header 被裁剪，正是 [可观测性选型对比.md](可观测性选型对比.md) 第 1.1 节里那种「三方相互推诿」的典型场景）。
 
 ### 4.3 Trace
 
@@ -366,7 +366,7 @@ Trace 面板回答「这一次请求到底发生了什么」，界面分三栏�
 
 ### 4.5 日志
 
-日志面板解决「日志在业务组手里、链路在 APM 里，两边对不上」的问题，做法是把日志**按 Trace 上下文上报到同一套存储**（Java 侧由 log4j / logback 的 toolkit 上报，PHP 侧见 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 的 PSR-3 日志上报与 `inject_context`）。
+日志面板解决「日志在业务组手里、链路在 APM 里，两边对不上」的问题，做法是把日志**按 Trace 上下文上报到同一套存储**（Java 侧由 log4j / logback 的 toolkit 上报，PHP 侧见 [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) 的 PSR-3 日志上报与 `inject_context`）。
 
 查询条件：**Service / 实例** 限定服务与实例；**Trace ID** 是最常用的入口（先从 Trace 面板拿到 traceId，粘贴回日志面板，直接捞出这一次请求的所有日志）；**内容关键词 / 内容不包含关键词** 做正反向过滤；**标签** 按上报时打的 tag 过滤（日志级别、业务标记等）。结果表字段为 `当前服务 / 当前实例 / 时间 / 内容类型 / 标记 / 内容 / 追溯 ID`，**追溯 ID 即 Trace ID**，点进去可回到对应链路。
 
@@ -471,35 +471,35 @@ services:
 
 - **OAP 集群**：无状态，可水平扩；内部通过 gRPC 做流式聚合与遥测数据分片。
 - **BanyanDB 集群**：为链路 + 时序模型设计，比 ES 更省资源，支持分层存储（热 / 温 / 冷）。
-- **存储后端选择**：BanyanDB（官方推荐，新项目默认）/ Elasticsearch（生态成熟、按 tag 检索强）/ MySQL / PostgreSQL（小规模、复用既有 DB）。**ES 与 BanyanDB 怎么选**看查询模式，判据见 [可观测性选型.md](可观测性选型.md) 第五节。
+- **存储后端选择**：BanyanDB（官方推荐，新项目默认）/ Elasticsearch（生态成熟、按 tag 检索强）/ MySQL / PostgreSQL（小规模、复用既有 DB）。**ES 与 BanyanDB 怎么选**看查询模式，判据见 [可观测性选型对比.md](可观测性选型对比.md) 第五节。
 - **采样旋钮**：`agent.sample_n_per_3_secs=-1` 全采（开发、压测定位）；`=N` 每 3 秒最多 N 条（生产默认，按服务 QPS 与预算设）；`agent.force_sample=true` 强制采样（排障时临时开，用于给错误请求留档）。
 
-⭐ 生产推荐**限制每 3 秒条数**而不是按比例：保证采样决策不受 QPS 波动影响；同时给错误请求配强制采样，否则最需要看的故障反而采不到。「头部采样 vs 尾部采样」的成本权衡见 [Jaeger.md](Jaeger.md) 第 4.3 节与 [可观测性选型.md](可观测性选型.md) 第八节，本篇不重述。
+⭐ 生产推荐**限制每 3 秒条数**而不是按比例：保证采样决策不受 QPS 波动影响；同时给错误请求配强制采样，否则最需要看的故障反而采不到。「头部采样 vs 尾部采样」的成本权衡见 [Jaeger.md](Jaeger.md) 第 4.3 节与 [可观测性选型对比.md](可观测性选型对比.md) 第八节，本篇不重述。
 
 ---
 
 ## 六、与 OTel / Jaeger 的边界在哪？
 
-**本节要点**：两条路线的差别只在「谁来产生数据」；**选型判据与 UI 对比一律看 [可观测性选型.md](可观测性选型.md)**，本篇只留概念层的一一对齐（第 1.1 节）与一句边界结论。
+**本节要点**：两条路线的差别只在「谁来产生数据」；**选型判据与 UI 对比一律看 [可观测性选型对比.md](可观测性选型对比.md)**，本篇只留概念层的一一对齐（第 1.1 节）与一句边界结论。
 
 - **SkyWalking = 探针式 APM**：自有协议（`sw8` + gRPC）+ 自研 Agent，自带拓扑、指标大盘与告警，开箱即用；代价是与自家 Agent / 存储生态绑定。
 - **OTel = 采集与协议标准**：埋点标准化、后端可替换（Jaeger / Tempo / SkyWalking 都能收 OTLP）；代价是指标、告警、拓扑要自己配。
 - ⚠️ **SkyWalking 也在兼容 OTel**：Receiver 支持 OTLP / Zipkin v1/v2 / Jaeger 格式，但核心体验（拓扑、剖析、动态配置）仍以自研 Agent 为主。
 - ⚠️ **不要并行双报**：两套探针 = 双份开销 + 两套 UI，值班同事不知道看哪个。选一条主线，另一条只在按 TraceID 精查时临时打开。
 
-「Java 为主选谁、Go 为主选谁、多语言混合怎么选」的完整推导（含各语言探针成熟度对照表）见 [可观测性选型.md](可观测性选型.md) 第二节。
+「Java 为主选谁、Go 为主选谁、多语言混合怎么选」的完整推导（含各语言探针成熟度对照表）见 [可观测性选型对比.md](可观测性选型对比.md) 第二节。
 
 ---
 
 ## 七、使用方法
 
-本篇只讲概念、架构、探针原理、面板读法与部署；接入代码按语言拆成分册，与 [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) 同一命名口径：
+本篇只讲概念、架构、探针原理、面板读法与部署；接入代码按语言拆成分册，与 [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) 同一命名口径：
 
 | 语言 | 分册 | 覆盖内容 |
 | --- | --- | --- |
-| Go | [接入Skywalking.md](../../01-编程语言/go/可观测性/接入Skywalking.md) | 编译期注入（`-toolexec`）、`toolkit/trace` 手动埋点、跨 goroutine 快照、OTel SDK + OTLP 备选路线、两条路线对比与「不要同开」 |
-| Java | [接入Skywalking.md](../../01-编程语言/java/接入Skywalking.md) | `-javaagent` 接入、配置优先级、插件目录机制、Spring Boot / Dockerfile / K8s、日志与跨线程关联、优雅停机 |
-| PHP | [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) | 扩展安装、php.ini、三种 reporter、容器化四坑、PSR-3 日志上报 |
+| Go | [接入Skywalking.md](../../../01-编程语言/go/可观测性/接入Skywalking.md) | 编译期注入（`-toolexec`）、`toolkit/trace` 手动埋点、跨 goroutine 快照、OTel SDK + OTLP 备选路线、两条路线对比与「不要同开」 |
+| Java | [接入Skywalking.md](../../../01-编程语言/java/接入Skywalking.md) | `-javaagent` 接入、配置优先级、插件目录机制、Spring Boot / Dockerfile / K8s、日志与跨线程关联、优雅停机 |
+| PHP | [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) | 扩展安装、php.ini、三种 reporter、容器化四坑、PSR-3 日志上报 |
 
 ---
 
@@ -512,7 +512,7 @@ services:
 - **Duration 和 Self Duration 为什么要分开看？** → Duration 含子调用，Self 才是「这个 span 自己花了多少」。只有 Self 大的 span 才是真的在干活或真的卡住；否则你会去优化一个只是在等下游的服务。
 - **线上查询变慢，怎么用面板判断是应用还是依赖？** → 先看该接口的**自身耗时 vs 下游耗时占比**（瀑布图 + Self Duration），再看依赖的系统指标；这一层拆分能省掉大量猜测。
 - **为什么 SkyWalking 的拓扑图很有价值？** → 它是从 Trace 数据里「推」出来的，**边出现即证明上下文透传成功**。跨组排查时，拓扑图能直接展示「服务间调用关系断了没有」，而不是各执一词。
-- **BanyanDB 和 Elasticsearch 怎么选？** → BanyanDB 官方自研，专为链路 + 时序模型设计，比 ES 省资源、可分层存储；ES 生态成熟、聚合与按 tag 检索强。判据（按查询模式选存储）见 [可观测性选型.md](可观测性选型.md) 第五节。
+- **BanyanDB 和 Elasticsearch 怎么选？** → BanyanDB 官方自研，专为链路 + 时序模型设计，比 ES 省资源、可分层存储；ES 生态成熟、聚合与按 tag 检索强。判据（按查询模式选存储）见 [可观测性选型对比.md](可观测性选型对比.md) 第五节。
 - **10.x / 11.x 升级要留意什么？** → ① **H2 存储已在 10.2 移除**，试用形态也要换 BanyanDB；② **10.4 起 BatchQueue 替代 DataCarrier**，队列语义不变、线程模型变了；③ **告警默认规则改为 MQE 表达式**（`expression` + `recovery-observation-period`）；④ **11.x 的 UI 镜像换成 Horizon**，环境变量与端口全换（详见第 5.1 节）。
 - **Java 侧和其他 javaAgent 冲突怎么办？** → 开 ByteBuddy 类缓存（`-Dskywalking.agent.is_cache_enhanced_class=true -Dskywalking.agent.class_cache_mode=MEMORY`），避免随机类名导致的 retransform 冲突。
 
@@ -520,13 +520,13 @@ services:
 
 ## 关联
 
-- [可观测性选型.md](可观测性选型.md) — **选型主线**：三支柱定位、五层选型、契合语言与 UI 体验两个横切维度、三套推荐组合
+- [可观测性选型对比.md](可观测性选型对比.md) — **选型主线**：三支柱定位、五层选型、契合语言与 UI 体验两个横切维度、三套推荐组合
 - [Jaeger.md](Jaeger.md) — **本篇的直接对照面**：OTel 路线的 Trace/Span 概念、部署、采样策略
-- [接入Skywalking.md](../../01-编程语言/go/可观测性/接入Skywalking.md) — Go 侧编译期注入与 OTel 备选路线
-- [接入Skywalking.md](../../01-编程语言/java/接入Skywalking.md) — Java 侧 `-javaagent` 接入、日志关联、跨线程与优雅停机
-- [接入Skywalking.md](../../01-编程语言/php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤
-- [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
-- [K8s部署与生命周期面试题.md](../部署/k8s/K8s部署与生命周期面试题.md) — OAP / UI 的部署形态与生命周期
+- [接入Skywalking.md](../../../01-编程语言/go/可观测性/接入Skywalking.md) — Go 侧编译期注入与 OTel 备选路线
+- [接入Skywalking.md](../../../01-编程语言/java/接入Skywalking.md) — Java 侧 `-javaagent` 接入、日志关联、跨线程与优雅停机
+- [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
+- [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — OAP / UI 的部署形态与生命周期
 - [可观测性 README.md](README.md) — 本目录的学习路径与版本坐标
 
-> 反向引用（本篇被下列文档引到）：[TCP三次握手.md](../../02-计算机基础/网络/tcp/TCP三次握手.md)、[ActiveMQ.md](../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)、[缓存运维与排查.md](../../03-数据与中间件/数据存储/缓存/缓存运维与排查.md)、[缓存问题与方案.md](../../03-数据与中间件/数据存储/缓存/缓存问题与方案.md)、[分布式与微服务.md](../../04-架构与系统/分布式/分布式与微服务.md)
+> 反向引用（本篇被下列文档引到）：[TCP三次握手.md](../../../02-计算机基础/网络/tcp/TCP三次握手.md)、[ActiveMQ.md](../消息队列/ActiveMQ.md)、[缓存运维与排查.md](../../数据存储/缓存/缓存运维与排查.md)、[缓存问题与方案.md](../../数据存储/缓存/缓存问题与方案.md)、[分布式与微服务.md](../../../04-架构与系统/分布式/分布式与微服务.md)

@@ -271,5 +271,5 @@ curl -X POST \
 - [写入协议与数据接入.md](写入协议与数据接入.md) — Prometheus remote write 写进来的数据长什么样（`greptime_value` / `greptime_timestamp`）
 - [Flow流计算引擎.md](Flow流计算引擎.md) — 用 Flow 把常用聚合物化，减少面板侧的重复计算
 - [../VictoriaMetrics/MetricsQL查询.md](../VictoriaMetrics/MetricsQL查询.md) — 另一个兼容 PromQL 的时序库，可对照两者的兼容策略
-- [../../../../06-工程实践/可观测性/可观测性选型.md](../../../../06-工程实践/可观测性/可观测性选型.md) — 指标监控层面的选型对比（本篇不重复）
+- [可观测性选型对比.md](../../../中间件/可观测性/可观测性选型对比.md) — 指标监控层面的选型对比（本篇不重复）
 > 反向引用（本篇被下列文档引到）：[选型对比与落地案例.md](选型对比与落地案例.md)

@@ -856,7 +856,7 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 | broker / bookie JVM 指标 | Prometheus 端点（Broker 8080 `/metrics`、Bookie 8000） | 容量与 GC |
 | TraceId 透传 | 消息 `Properties` / OpenTelemetry 集成 | 跨系统链路追踪 |
 
-> 💡 接入方式与指标口径见 [可观测性选型.md](../../../06-工程实践/可观测性/可观测性选型.md)。
+> 💡 接入方式与指标口径见 [可观测性选型对比.md](../可观测性/可观测性选型对比.md)。
 
 ---
 
@@ -901,6 +901,6 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 - [RocketMQ.md](RocketMQ.md) — 业务消息功能最全的另一条路线（半消息事务、18 级延迟）
 - [Nats.md](Nats.md) — 轻量派：Core NATS + JetStream，Go 生态里 Pulsar 之外的另一选择
 - [一致性与CAP.md](../../../04-架构与系统/分布式/理论/一致性与CAP.md) — BookKeeper quorum 写与多数派的对应关系
-- [可观测性选型.md](../../../06-工程实践/可观测性/可观测性选型.md) — 订阅积压指标的采集与告警口径
+- [可观测性选型对比.md](../可观测性/可观测性选型对比.md) — 订阅积压指标的采集与告警口径
 
 > 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[RabbitMQ.md](RabbitMQ.md)

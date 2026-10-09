@@ -601,4 +601,4 @@ curl -s -u admin:admin "http://127.0.0.1:8161/api/jolokia/read/org.apache.active
 - [RocketMQ.md](RocketMQ.md) — 事务/延迟消息的另一种实现（半消息 vs AMQ_SCHEDULED_*）
 - [Pulsar.md](Pulsar.md) — 存算分离路线：把 KahaDB 单 store 换成 BookKeeper
 - [Nats.md](Nats.md) — Go 系轻量通信的对照选项
-- [Skywalking.md](../../../06-工程实践/可观测性/Skywalking.md) — 消息链路的 trace 埋点思路相通
+- [Skywalking.md](../可观测性/Skywalking.md) — 消息链路的 trace 埋点思路相通

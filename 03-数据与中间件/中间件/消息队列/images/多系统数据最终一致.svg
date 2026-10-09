@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mq06" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="mq06d" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">用 MQ 保证多系统间的数据最终一致</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本地事务与消息投递配合达成最终一致；消费端幂等 + 对账兜底缺一不可</text>
+
+  <rect x="20" y="76" width="960" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="40" y="150" width="254" height="140" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="167" y="180" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">服务 A（消息生产方）</text>
+  <text x="56" y="208" font-size="11.5" fill="#1e3a8a">① 本地事务：写业务表</text>
+  <text x="56" y="232" font-size="11.5" fill="#1e3a8a">② 写消息：同事务 / 本地消息表</text>
+  <text x="56" y="256" font-size="11.5" fill="#1e3a8a">③ 投递成功才更新消息状态</text>
+  <text x="56" y="280" font-size="11.5" fill="#1e3a8a">（顺序不能反：先落库再投递）</text>
+
+  <line x1="298" y1="220" x2="342" y2="220" stroke="#334155" stroke-width="1.6" marker-end="url(#mq06)"/>
+
+  <rect x="346" y="180" width="156" height="80" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="424" y="212" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">MQ</text>
+  <text x="424" y="234" text-anchor="middle" font-size="11.5" fill="#7c2d12">至少一次投递</text>
+
+  <line x1="506" y1="220" x2="596" y2="152" stroke="#334155" stroke-width="1.4" marker-end="url(#mq06)"/>
+  <line x1="506" y1="220" x2="596" y2="288" stroke="#334155" stroke-width="1.4" marker-end="url(#mq06)"/>
+
+  <rect x="600" y="120" width="276" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="738" y="156" text-anchor="middle" font-size="12.5" fill="#14532d">服务 B（幂等消费）</text>
+  <rect x="600" y="260" width="276" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="738" y="296" text-anchor="middle" font-size="12.5" fill="#14532d">服务 C（幂等消费）</text>
+
+  <line x1="167" y1="292" x2="167" y2="322" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#mq06d)"/>
+  <rect x="40" y="326" width="330" height="60" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="205" y="352" text-anchor="middle" font-size="12.5" fill="#334155">对账 / 补偿（定时核对差异）</text>
+  <text x="205" y="372" text-anchor="middle" font-size="11.5" fill="#475569">漏投、丢消息由这里兜回来</text>
+
+  <text x="20" y="452" font-size="12.5" fill="#0f172a">⚠️ 消费端必须幂等（唯一键去重表 / 状态机 / DB 唯一索引）：消息可能被重复投递，去重逻辑不可省。</text>
+  <text x="20" y="478" font-size="12.5" fill="#0f172a">⭐ 事务消息只保证「本地事务 ↔ 消息投递」最终一致，多服务各自的业务一致性仍要靠幂等、对账与补偿兜底。</text>
+</svg>

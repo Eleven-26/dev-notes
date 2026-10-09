@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Java 侧接入 Jaeger 的完整手册，按**前提认知 → 路线 A（OTel Java Agent 无侵入）→ 路线 B（Spring Boot 3 + Micrometer Tracing）→ 两条路线取舍 → 日志关联 → 跨线程 → 优雅停机 → 从 jaeger-client 迁移 → 验证排查**组织。
 >
-> Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md)；SkyWalking 路线见 [接入Skywalking.md](接入Skywalking.md)。
+> Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [Jaeger.md](../../03-数据与中间件/中间件/可观测性/Jaeger.md)；SkyWalking 路线见 [接入Skywalking.md](接入Skywalking.md)。
 
 ---
 
@@ -18,9 +18,9 @@
 | 前提 | 无（任何 JVM 应用） | Spring Boot **3.x**（2.x 的 Sleuth 已停更） |
 | 适合 | 存量系统、快速接入、多框架混用 | Spring Boot 3 新项目、要与 Micrometer 指标统一 |
 
-两条路最终都是 **OTel SDK → OTLP**，所以 Jaeger 后端与部署方式完全一致（见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) 第四节）。
+两条路最终都是 **OTel SDK → OTLP**，所以 Jaeger 后端与部署方式完全一致（见 [Jaeger.md](../../03-数据与中间件/中间件/可观测性/Jaeger.md) 第四节）。
 
-⚠️ **两个 agent 不能同时挂**：OTel Java Agent 与 SkyWalking agent 同时 `-javaagent` 会在同一个入口生成两份 span，Jaeger/SkyWalking 两侧各自收到一条链路，指标翻倍、`trace_id` 还不一致。选一条主线（分工见 [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md)）。
+⚠️ **两个 agent 不能同时挂**：OTel Java Agent 与 SkyWalking agent 同时 `-javaagent` 会在同一个入口生成两份 span，Jaeger/SkyWalking 两侧各自收到一条链路，指标翻倍、`trace_id` 还不一致。选一条主线（分工见 [可观测性选型对比.md](../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md)）。
 
 ---
 
@@ -136,7 +136,7 @@ spring:
     name: order-service                       # 即 service.name，UI 上显示的名字
 ```
 
-⚠️ 两个易错点：① 走 HTTP 时 endpoint 必须带 `/v1/traces` 路径，端口是 **4318**；走 gRPC 则用 `4317` 且不带路径。② `probability` 是**头部采样**，父子决策由 Spring 保证一致，但它无法「只保留错误请求」——要那个能力得在 Collector 侧做尾部采样（见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) 4.3）。
+⚠️ 两个易错点：① 走 HTTP 时 endpoint 必须带 `/v1/traces` 路径，端口是 **4318**；走 gRPC 则用 `4317` 且不带路径。② `probability` 是**头部采样**，父子决策由 Spring 保证一致，但它无法「只保留错误请求」——要那个能力得在 Collector 侧做尾部采样（见 [Jaeger.md](../../03-数据与中间件/中间件/可观测性/Jaeger.md) 4.3）。
 
 ### 3.3 自动埋点
 
@@ -327,7 +327,7 @@ void shutdownTracing() {
 | 私有 `uber-trace-id` 头 | W3C `traceparent`（OTel 默认，无需配置） |
 | Jaeger Thrift / UDP agent | **OTLP**（gRPC 4317 / HTTP 4318） |
 
-迁移时最容易漏的是**传播头**：存量服务发的是 `uber-trace-id`，新服务发的是 `traceparent`，两边混跑会让链路断成两段。要么全量迁移，要么在过渡期让 Jaeger 同时开 `jaeger` receiver 兼容旧协议（部署见 [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) 第四节）。
+迁移时最容易漏的是**传播头**：存量服务发的是 `uber-trace-id`，新服务发的是 `traceparent`，两边混跑会让链路断成两段。要么全量迁移，要么在过渡期让 Jaeger 同时开 `jaeger` receiver 兼容旧协议（部署见 [Jaeger.md](../../03-数据与中间件/中间件/可观测性/Jaeger.md) 第四节）。
 
 ---
 
@@ -408,10 +408,10 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 
 ## 关联
 
-- [Jaeger.md](../../06-工程实践/可观测性/Jaeger.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
+- [Jaeger.md](../../03-数据与中间件/中间件/可观测性/Jaeger.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
 - [接入Skywalking.md](接入Skywalking.md) — javaagent 路线的对照（同为字节码增强，但协议是 `sw8`）
 - [接入Jaeger.md](../go/可观测性/接入Jaeger.md) — 同一套 OTel 埋点在 Go 侧的写法
-- [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路后端与「契合语言」维度的横向对比
+- [可观测性选型对比.md](../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 链路后端与「契合语言」维度的横向对比
 - [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
 - [镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `COPY --from` 与 initContainer 两种 agent 分发方式
 - [JVM与垃圾回收.md](运行时/JVM与垃圾回收.md) — agent 带来的额外内存开销与 GC 影响

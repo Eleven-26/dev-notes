@@ -268,6 +268,6 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 - [TCP滑动窗口.md](TCP滑动窗口.md) — 窗口与 SYN 洪泛半连接堆积
 - [TCP四次挥手.md](TCP四次挥手.md) — 连接的关闭侧：`FIN_WAIT` / `CLOSE_WAIT` / `TIME_WAIT` 与半关闭
 - [HTTPS与TLS.md](../HTTPS与TLS.md) — 握手之上的 TLS 握手
-- [Skywalking.md](../../../06-工程实践/可观测性/Skywalking.md) — 线上观测建连耗时的手段
+- [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md) — 线上观测建连耗时的手段
 
 > 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[DNS解析.md](../DNS解析.md)、[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[TCP拥塞控制算法.md](../TCP拥塞控制算法.md)、[抓包实战.md](../抓包实战.md)、[网络分层与数据包旅程.md](../网络分层与数据包旅程.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[通信选型.md](../通信选型.md)

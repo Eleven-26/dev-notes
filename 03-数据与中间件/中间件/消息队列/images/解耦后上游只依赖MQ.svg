@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" width="1000" height="440" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mq04" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">解耦后：上游只依赖 MQ，下游各自订阅</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">上下游不再互相持有对方的接口与地址，各自独立开发、联调、上线</text>
+
+  <rect x="20" y="78" width="960" height="286" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="56" y="158" width="180" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="146" y="194" text-anchor="middle" font-size="13" fill="#1e3a8a">订单服务（上游）</text>
+
+  <line x1="240" y1="189" x2="330" y2="189" stroke="#334155" stroke-width="1.6" marker-end="url(#mq04)"/>
+
+  <rect x="334" y="138" width="200" height="102" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="434" y="174" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">MQ（Topic）</text>
+  <text x="434" y="196" text-anchor="middle" font-size="11.5" fill="#7c2d12">只认「消息契约」</text>
+  <text x="434" y="216" text-anchor="middle" font-size="11.5" fill="#7c2d12">不认下游是谁</text>
+
+  <line x1="538" y1="189" x2="646" y2="126" stroke="#334155" stroke-width="1.4" marker-end="url(#mq04)"/>
+  <line x1="538" y1="189" x2="646" y2="184" stroke="#334155" stroke-width="1.4" marker-end="url(#mq04)"/>
+  <line x1="538" y1="189" x2="646" y2="242" stroke="#334155" stroke-width="1.4" marker-end="url(#mq04)"/>
+  <line x1="538" y1="189" x2="646" y2="300" stroke="#334155" stroke-width="1.4" marker-end="url(#mq04)"/>
+
+  <rect x="650" y="100" width="290" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="795" y="132" text-anchor="middle" font-size="12.5" fill="#14532d">库存服务（订阅）</text>
+  <rect x="650" y="158" width="290" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="795" y="190" text-anchor="middle" font-size="12.5" fill="#14532d">积分服务（订阅）</text>
+  <rect x="650" y="216" width="290" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="795" y="248" text-anchor="middle" font-size="12.5" fill="#14532d">物流服务（订阅）</text>
+  <rect x="650" y="274" width="290" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="795" y="306" text-anchor="middle" font-size="12.5" fill="#14532d">通知服务（订阅）</text>
+
+  <text x="20" y="392" font-size="12.5" fill="#0f172a">⭐ 收益：上游只发一条消息；下游增删一个订阅方，上游一行代码都不用改，排期也不再互相牵制。</text>
+  <text x="20" y="418" font-size="12.5" fill="#0f172a">⚠️ 代价：契约要版本化（字段只加不删、兼容旧消费者），否则耦合只是从代码挪到了消息格式上。</text>
+</svg>

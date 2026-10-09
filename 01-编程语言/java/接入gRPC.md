@@ -687,4 +687,4 @@ status: code=NOT_FOUND desc=no such key: 42 isNotFound=true
 - [实战示例.md](../../03-数据与中间件/中间件/RPC框架/gRPC/实战示例.md) — 该主题的本体篇：工程布局、`.proto` 审查、上线前十条
 - [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — 那篇的「使用二：Java」讲的是 JDK `HttpClient` / OkHttp 的**连接池与超时参数**，本篇讲的是 **gRPC 存根层**（`MethodDescriptor` / `StreamObserver` / 拦截器），两者在 Java 侧一个管通用 HTTP 客户端、一个管 gRPC 调用栈，不重叠
 - [数据序列化.md](../../02-计算机基础/网络/数据序列化.md) — Protobuf 与 JSON 的格式选型、体积与耗时读数，以及「Go 要装几个 protoc 插件」的对照
-> 反向引用（本篇被下列文档引到）：[RPC框架选型对比.md](../../03-数据与中间件/中间件/RPC框架/RPC框架选型对比.md)、[生态与实战.md](../../03-数据与中间件/中间件/RPC框架/gRPC/生态与实战.md)
+> 反向引用（本篇被下列文档引到）：[RPC框架选型对比.md](../../03-数据与中间件/中间件/RPC框架/RPC框架选型对比.md)、[生态与网关.md](../../03-数据与中间件/中间件/RPC框架/gRPC/生态与网关.md)

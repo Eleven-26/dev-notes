@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Java 侧接入 SkyWalking 的完整手册，按**javaagent 为什么能零改码 → 接入清单 → 配置优先级 → 插件目录 → Spring Boot / Dockerfile / K8s → 日志关联 → 跨线程 → 优雅停机 → 验证排查**组织。
 >
-> SkyWalking 本体原理（javaAgent 机制、ByteBuddy 织入、轻量级队列内核、Dubbo 插件生命周期）、OAP 架构与 UI 六大面板见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md)；同命名口径的另两篇是 [接入Skywalking.md](../go/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../php/接入Skywalking.md)。
+> SkyWalking 本体原理（javaAgent 机制、ByteBuddy 织入、轻量级队列内核、Dubbo 插件生命周期）、OAP 架构与 UI 六大面板见 [Skywalking.md](../../03-数据与中间件/中间件/可观测性/Skywalking.md)；同命名口径的另两篇是 [接入Skywalking.md](../go/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../php/接入Skywalking.md)。
 
 ---
 
@@ -203,7 +203,7 @@ String traceId = TraceContext.traceId();  // 未接入 agent 时返回 ""
 
 从 `optional-plugins/` 拷日志上报插件到 `plugins/`，再加对应 toolkit 依赖（`apm-toolkit-logback-1.x` 的 `LogbackAppender`）。上报后在 UI 的**日志面板**按 Trace ID 查询，能直接捞出这一次请求的所有日志。
 
-标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**（日志面板用法见 [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) 2.5 节）。
+标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**（日志面板用法见 [Skywalking.md](../../03-数据与中间件/中间件/可观测性/Skywalking.md) 2.5 节）。
 
 ⚠️ 日志上报走的是**与链路同一条 gRPC 通道**，所以「链路有、日志没有」通常是日志侧开关或消息体大小超限，而不是网络问题。大对象日志要在打印前裁剪，超限会被静默丢弃。
 
@@ -327,11 +327,11 @@ grep -m1 'TID' /path/to/app.log
 
 ## 关联
 
-- [Skywalking.md](../../06-工程实践/可观测性/Skywalking.md) — javaAgent 与 ByteBuddy 织入原理、轻量级队列内核、Dubbo 插件生命周期、OAP 架构、UI 六大面板
+- [Skywalking.md](../../03-数据与中间件/中间件/可观测性/Skywalking.md) — javaAgent 与 ByteBuddy 织入原理、轻量级队列内核、Dubbo 插件生命周期、OAP 架构、UI 六大面板
 - [接入Jaeger.md](接入Jaeger.md) — OTel Java Agent / Micrometer Tracing 两条路线的对照
 - [接入Skywalking.md](../go/可观测性/接入Skywalking.md) — 编译期注入路线，对照「运行期字节码增强 vs 编译期 AST 注入」的差异
 - [接入Skywalking.md](../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型与 `exec` 信号转发
-- [可观测性选型.md](../../06-工程实践/可观测性/可观测性选型.md) — 链路追踪五方案横向对比与「契合语言」维度
+- [可观测性选型对比.md](../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 链路追踪五方案横向对比与「契合语言」维度
 - [K8s部署与生命周期面试题.md](../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机、SIGTERM 与宽限期
 - [镜像构建与缓存.md](../../06-工程实践/部署/docker/镜像构建与缓存.md) — `COPY --from` 多阶段构建与镜像瘦身
 > 反向引用（本篇被下列文档引到）：[接入gRPC.md](接入gRPC.md)
