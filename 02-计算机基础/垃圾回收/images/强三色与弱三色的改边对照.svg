@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="bl3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">两条路线：各自盯住哪一条边</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">强三色破条件 1（不让新增边消失），弱三色破条件 2（不让删除无痕）</text>
+
+  <!-- 左：强三色 -->
+  <rect x="40" y="86" width="448" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="40" y="86" width="448" height="46" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="62" y="115" font-size="14" font-weight="bold" fill="#1e40af">强三色：拦截「新增边」</text>
+  <text x="352" y="115" font-size="11.5" fill="#1e40af">Dijkstra 插入屏障 / 增量更新</text>
+
+  <circle cx="170" cy="248" r="26" fill="#0f172a" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="170" y="254" text-anchor="middle" font-size="13" fill="#f8fafc">黑 B</text>
+  <circle cx="380" cy="248" r="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="380" y="254" text-anchor="middle" font-size="13" fill="#334155">白 W</text>
+  <line x1="199" y1="248" x2="350" y2="248" stroke="#2563eb" stroke-width="2" marker-end="url(#bl3)"/>
+  <text x="274" y="226" text-anchor="middle" font-size="11.5" fill="#1e40af">mutator 新增 B → W</text>
+
+  <rect x="64" y="312" width="400" height="94" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="82" y="338" font-size="12" font-weight="bold" fill="#1e40af">屏障动作</text>
+  <text x="82" y="362" font-size="11.5" fill="#334155">新边生成时触发：把新值 W 染灰</text>
+  <text x="82" y="384" font-size="11.5" fill="#334155">条件 1 被破坏，新增边不会悄悄消失</text>
+
+  <!-- 右：弱三色 -->
+  <rect x="512" y="86" width="448" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="512" y="86" width="448" height="46" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="534" y="115" font-size="14" font-weight="bold" fill="#14532d">弱三色：拦截「删除边」</text>
+  <text x="828" y="115" font-size="11.5" fill="#14532d">SATB 快照 / 删除屏障</text>
+
+  <circle cx="642" cy="248" r="26" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="642" y="254" text-anchor="middle" font-size="13" fill="#334155">灰 G</text>
+  <circle cx="852" cy="248" r="26" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="852" y="254" text-anchor="middle" font-size="13" fill="#334155">白 W</text>
+  <line x1="671" y1="248" x2="822" y2="248" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="739" y1="238" x2="755" y2="258" stroke="#dc2626" stroke-width="2"/>
+  <line x1="755" y1="238" x2="739" y2="258" stroke="#dc2626" stroke-width="2"/>
+  <text x="746" y="226" text-anchor="middle" font-size="11.5" fill="#b91c1c">mutator 删除 G 到 W 的边</text>
+
+  <rect x="536" y="312" width="400" height="94" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="554" y="338" font-size="12" font-weight="bold" fill="#14532d">屏障动作</text>
+  <text x="554" y="362" font-size="11.5" fill="#334155">前写屏障在删除前看到旧值 W</text>
+  <text x="554" y="384" font-size="11.5" fill="#334155">条件 2 被破坏，被删的引用留下凭据</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="446" width="920" height="94" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="60" y="474" font-size="12.5" font-weight="bold" fill="#1e40af">要点：两条路线都只破坏漏标的一个必要条件，代价结构却完全不同</text>
+  <text x="60" y="500" font-size="11.5" fill="#334155">增量更新的重标记暂停随引用修改次数增长；SATB 只消化缓冲区，对写引用频率不敏感。</text>
+  <text x="60" y="524" font-size="11.5" fill="#334155">前者浮动垃圾少，后者浮动垃圾是内生账单。</text>
+</svg>

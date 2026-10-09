@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ok" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="no" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">三色抽象：颜色定义「谁还能指向谁」</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">白=未访问、灰=待扫描、黑=已完成；不变式就是对「允许出现哪种边」的约束</text>
+
+  <!-- 三张颜色卡 -->
+  <rect x="40" y="80" width="290" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="62" y="98" width="34" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="112" y="122" font-size="15" font-weight="bold" fill="#0f172a">白 · 未访问</text>
+  <text x="62" y="158" font-size="12" fill="#334155">标记线程还没看到它</text>
+  <text x="62" y="180" font-size="12" fill="#334155">可达性尚无定论</text>
+  <text x="62" y="202" font-size="12" fill="#334155">标记结束仍是白 → 当垃圾清掉</text>
+
+  <rect x="355" y="80" width="290" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="377" y="98" width="34" height="34" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="427" y="122" font-size="15" font-weight="bold" fill="#0f172a">灰 · 待扫描</text>
+  <text x="377" y="158" font-size="12" fill="#334155">自身已确认存活</text>
+  <text x="377" y="180" font-size="12" fill="#334155">但它的出边还没处理</text>
+  <text x="377" y="202" font-size="12" fill="#334155">标记线程马上会扫描它</text>
+
+  <rect x="670" y="80" width="290" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="692" y="98" width="34" height="34" rx="6" fill="#0f172a" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="742" y="122" font-size="15" font-weight="bold" fill="#0f172a">黑 · 已完成</text>
+  <text x="692" y="158" font-size="12" fill="#334155">它和它的出边都处理完了</text>
+  <text x="692" y="180" font-size="12" fill="#334155">不会再被重新扫描</text>
+  <text x="692" y="202" font-size="12" fill="#334155">它之后指向谁，谁不会被再看到</text>
+
+  <!-- 边的方向示意 -->
+  <rect x="40" y="258" width="920" height="146" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="510" y1="274" x2="510" y2="388" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="62" y="288" font-size="12.5" font-weight="bold" fill="#16a34a">安全的边</text>
+  <circle cx="150" cy="347" r="25" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="150" y="352" text-anchor="middle" font-size="13" fill="#334155">灰</text>
+  <circle cx="340" cy="347" r="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="340" y="352" text-anchor="middle" font-size="13" fill="#334155">白</text>
+  <line x1="177" y1="347" x2="312" y2="347" stroke="#16a34a" stroke-width="2" marker-end="url(#ok)"/>
+  <text x="245" y="302" text-anchor="middle" font-size="12.5" fill="#16a34a">灰 → 白</text>
+  <text x="62" y="394" font-size="11.5" fill="#334155">灰指向白是安全的：白仍在待扫描队列里，迟早被扫到</text>
+
+  <text x="532" y="288" font-size="12.5" font-weight="bold" fill="#dc2626">需要约束的边</text>
+  <circle cx="640" cy="347" r="25" fill="#0f172a" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="640" y="352" text-anchor="middle" font-size="13" fill="#f8fafc">黑</text>
+  <circle cx="830" cy="347" r="25" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="830" y="352" text-anchor="middle" font-size="13" fill="#334155">白</text>
+  <line x1="667" y1="347" x2="802" y2="347" stroke="#dc2626" stroke-width="2" marker-end="url(#no)"/>
+  <text x="735" y="302" text-anchor="middle" font-size="12.5" fill="#dc2626">黑 → 白</text>
+  <text x="532" y="394" font-size="11.5" fill="#334155">强三色禁止它；弱三色允许，但白必须仍从灰可达</text>
+
+  <!-- 两个不变式 -->
+  <rect x="40" y="420" width="450" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="60" y="448" font-size="13.5" font-weight="bold" fill="#1e40af">强三色不变式：管「边」</text>
+  <text x="60" y="478" font-size="11.5" fill="#334155">任何黑对象都不得直接指向白对象</text>
+  <text x="60" y="502" font-size="11.5" fill="#334155">黑=我扫完了、不会再看，所以黑指向谁，谁至少是灰</text>
+  <text x="60" y="526" font-size="11.5" fill="#334155">要盯的是每次「新增边」</text>
+  <text x="60" y="552" font-size="11.5" fill="#1e40af">代表：Dijkstra 插入屏障 / 增量更新</text>
+
+  <rect x="510" y="420" width="450" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="530" y="448" font-size="13.5" font-weight="bold" fill="#14532d">弱三色不变式：管「路径」</text>
+  <text x="530" y="478" font-size="11.5" fill="#334155">允许黑直接指向白</text>
+  <text x="530" y="502" font-size="11.5" fill="#334155">但该白必须仍有一条从某个灰对象出发的可达路径</text>
+  <text x="530" y="526" font-size="11.5" fill="#334155">删除这条路径的尝试会被记账，要盯的是「删除边」</text>
+  <text x="530" y="552" font-size="11.5" fill="#14532d">代表：SATB 快照 / 删除屏障</text>
+</svg>

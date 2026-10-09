@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">重新标记（remark）在两种方案里各扫什么</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">重新标记是 STW 的：先看清它扫的是「黑对象」还是「缓冲区」</text>
+
+  <!-- 左：增量更新 -->
+  <rect x="40" y="86" width="448" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="40" y="86" width="448" height="46" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="62" y="115" font-size="14" font-weight="bold" fill="#1e40af">增量更新（CMS）</text>
+  <text x="330" y="115" font-size="11.5" fill="#1e40af">破坏条件 1</text>
+
+  <rect x="66" y="160" width="8" height="8" rx="2" fill="#2563eb"/>
+  <text x="86" y="169" font-size="12" fill="#334155">并发期记下的「被改动黑对象」为根</text>
+  <rect x="66" y="204" width="8" height="8" rx="2" fill="#2563eb"/>
+  <text x="86" y="213" font-size="12" fill="#334155">重扫这些对象的字段，补回漏掉的新边</text>
+  <rect x="66" y="248" width="8" height="8" rx="2" fill="#2563eb"/>
+  <text x="86" y="257" font-size="12" fill="#334155">暂停正比于引用修改次数与对象大小</text>
+
+  <rect x="66" y="292" width="400" height="72" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="84" y="318" font-size="11.5" fill="#334155">记的是「哪条边被加进来了」：</text>
+  <text x="84" y="342" font-size="11.5" fill="#334155">所以重新标记要顺着黑对象把新边补扫一遍</text>
+
+  <!-- 右：SATB -->
+  <rect x="512" y="86" width="448" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="512" y="86" width="448" height="46" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="534" y="115" font-size="14" font-weight="bold" fill="#14532d">SATB（G1）</text>
+  <text x="812" y="115" font-size="11.5" fill="#14532d">破坏条件 2</text>
+
+  <rect x="538" y="160" width="8" height="8" rx="2" fill="#16a34a"/>
+  <text x="558" y="169" font-size="12" fill="#334155">把残余的 SATB 缓冲区与标记栈处理完</text>
+  <rect x="538" y="204" width="8" height="8" rx="2" fill="#16a34a"/>
+  <text x="558" y="213" font-size="12" fill="#334155">把剩下的灰对象扫描干净，涂完颜色</text>
+  <rect x="538" y="248" width="8" height="8" rx="2" fill="#16a34a"/>
+  <text x="558" y="257" font-size="12" fill="#334155">暂停正比于缓冲区残余量</text>
+
+  <rect x="538" y="292" width="400" height="72" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="556" y="318" font-size="11.5" fill="#334155">记的是「哪个旧值被删掉了」：</text>
+  <text x="556" y="342" font-size="11.5" fill="#334155">所以重新标记只需消化缓冲区，对写频率不敏感</text>
+
+  <!-- 公共账 -->
+  <rect x="40" y="406" width="920" height="90" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="60" y="434" font-size="12.5" font-weight="bold" fill="#1e40af">公共账（两方案都逃不掉）</text>
+  <text x="60" y="460" font-size="11.5" fill="#334155">根重新扫描（线程栈、JNI 等）与弱/软/虚引用处理，这两项与引用修改频率无关，通常才是重新标记暂停的稳定构成。</text>
+  <text x="60" y="484" font-size="11.5" fill="#334155">所以比较两者暂停时，要先把这笔公共账刨掉，再看各自真正有差异的那部分。</text>
+</svg>

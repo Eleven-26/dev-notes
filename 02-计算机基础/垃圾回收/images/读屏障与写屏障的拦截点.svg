@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="s5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">读屏障与写屏障：拦在「使用边」还是「增删边」</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">漏标的两个条件都发生在写入侧，所以并发标记的正确性问题用写屏障就够</text>
+
+  <!-- 写屏障 -->
+  <text x="60" y="106" font-size="13" font-weight="bold" fill="#1e40af">写屏障：拦在引用图的增删（store 附近）</text>
+  <rect x="60" y="126" width="180" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="150" y="158" text-anchor="middle" font-size="12.5" fill="#334155">写引用（store）</text>
+  <line x1="244" y1="153" x2="278" y2="153" stroke="#64748b" stroke-width="2" marker-end="url(#s5)"/>
+  <rect x="282" y="126" width="180" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="372" y="158" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e40af">写屏障拦截</text>
+  <line x1="466" y1="153" x2="500" y2="153" stroke="#64748b" stroke-width="2" marker-end="url(#s5)"/>
+  <rect x="504" y="126" width="180" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="594" y="158" text-anchor="middle" font-size="12.5" fill="#334155">引用图增删</text>
+  <text x="706" y="142" font-size="11.5" fill="#334155">适合：并发标记正确性</text>
+  <text x="706" y="166" font-size="11.5" fill="#334155">与分代记账</text>
+
+  <line x1="40" y1="216" x2="960" y2="216" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- 读屏障 -->
+  <text x="60" y="252" font-size="13" font-weight="bold" fill="#14532d">读屏障：拦在引用图的使用（load 之后、解引用之前）</text>
+  <rect x="60" y="272" width="180" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="150" y="304" text-anchor="middle" font-size="12.5" fill="#334155">读引用（load）</text>
+  <line x1="244" y1="299" x2="278" y2="299" stroke="#64748b" stroke-width="2" marker-end="url(#s5)"/>
+  <rect x="282" y="272" width="180" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="372" y="304" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">读屏障拦截</text>
+  <line x1="466" y1="299" x2="500" y2="299" stroke="#64748b" stroke-width="2" marker-end="url(#s5)"/>
+  <rect x="504" y="272" width="180" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="594" y="304" text-anchor="middle" font-size="12.5" fill="#334155">解引用 / 使用对象</text>
+  <text x="706" y="288" font-size="11.5" fill="#334155">适合：并发移动</text>
+  <text x="706" y="312" font-size="11.5" fill="#334155">（指针修正 / 自恢复）</text>
+
+  <!-- 注意 -->
+  <rect x="60" y="366" width="880" height="140" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="80" y="394" font-size="12.5" font-weight="bold" fill="#b45309">注意：两者的风险方向相反</text>
+  <text x="80" y="424" font-size="11.5" fill="#334155">读远多于写，读屏障几乎打扰所有热点路径；写屏障虽然只在写入侧，但写风暴时缓冲区会积压、标记追不上分配。</text>
+  <text x="80" y="452" font-size="11.5" fill="#334155">前写屏障在写入前看到旧值，适合「保护被删除的引用」（SATB）；后写屏障在写入后拿到新值，适合分代记账。</text>
+  <text x="80" y="480" font-size="11.5" fill="#334155">读屏障的典型实现是测试指针色位、陷阱地址；写屏障是置脏卡、SATB 缓冲入队、当场染灰。</text>
+</svg>

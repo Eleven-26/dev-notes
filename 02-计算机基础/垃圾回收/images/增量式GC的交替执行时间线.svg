@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="7" markerHeight="7" refX="6.5" refY="3" orient="auto"><path d="M0,0 6.5,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwR" markerWidth="7" markerHeight="7" refX="6.5" refY="3" orient="auto"><path d="M0,0 6.5,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="390" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">增量式 GC：GC 与 mutator 一小段一小段交替</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">把一次长停顿拆成很多次短停顿，单次暂停时间因此被压短</text>
+
+  <rect x="412" y="78" width="136" height="42" rx="10" fill="#f8fafc" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="480" y="105" text-anchor="middle" font-size="15" fill="#ea580c">GC 开始</text>
+  <line x1="480" y1="120" x2="480" y2="137" stroke="#ea580c" stroke-width="1.5"/>
+
+  <rect x="772" y="78" width="136" height="42" rx="10" fill="#f8fafc" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="840" y="105" text-anchor="middle" font-size="15" fill="#ea580c">GC 结束</text>
+  <line x1="840" y1="120" x2="840" y2="137" stroke="#ea580c" stroke-width="1.5"/>
+
+  <text x="60" y="148" text-anchor="middle" font-size="15" fill="#334155">mutator</text>
+  <line x1="105" y1="142" x2="950" y2="142" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <path d="M140,142 L470,142" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arwB)"/>
+  <path d="M548,142 L595,142" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arwB)"/>
+  <path d="M668,142 L715,142" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arwB)"/>
+  <path d="M788,142 L835,142" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arwB)"/>
+  <path d="M848,142 L940,142" fill="none" stroke="#2563eb" stroke-width="3" marker-end="url(#arwB)"/>
+
+  <text x="60" y="258" text-anchor="middle" font-size="15" fill="#334155">GC</text>
+  <line x1="105" y1="252" x2="950" y2="252" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <path d="M486,252 L540,252" fill="none" stroke="#dc2626" stroke-width="4" marker-end="url(#arwR)"/>
+  <path d="M606,252 L660,252" fill="none" stroke="#dc2626" stroke-width="4" marker-end="url(#arwR)"/>
+  <path d="M726,252 L780,252" fill="none" stroke="#dc2626" stroke-width="4" marker-end="url(#arwR)"/>
+
+  <line x1="480" y1="137" x2="480" y2="258" stroke="#ea580c" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="840" y1="137" x2="840" y2="258" stroke="#ea580c" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <line x1="480" y1="306" x2="840" y2="306" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="480" y1="300" x2="480" y2="312" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="840" y1="300" x2="840" y2="312" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="660" y="294" text-anchor="middle" font-size="14" fill="#ea580c">一次 GC 被拆成多段小停顿</text>
+
+  <text x="40" y="344" font-size="13.5" fill="#334155">要点：GC 与 mutator 轮流执行，每一小段都短，所以最长的一次暂停被压下来了。</text>
+  <text x="40" y="368" font-size="13.5" fill="#64748b">注意：总工作量没有减少，多出来的开销来自写入屏障，吞吐量因此下降。</text>
+</svg>
