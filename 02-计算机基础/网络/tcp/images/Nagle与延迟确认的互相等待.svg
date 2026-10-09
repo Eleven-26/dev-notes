@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Nagle 与延迟确认的互相等待</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">发送方因存在未确认数据而攒住第二个小段，接收方又推迟 ACK；双方各自等对方的动作，直到接收方的延迟定时器到期</text>
+
+  <defs>
+    <marker id="arwN" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arwN2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+
+  <rect x="20" y="74" width="960" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="98" font-size="15" font-weight="bold" fill="#0f172a">时序：两个小段，一个被推迟</text>
+  <text x="34" y="116" font-size="10.5" fill="#64748b">前提：Nagle 开启（NoDelay = false），且接收方启用了延迟确认</text>
+
+  <rect x="150" y="132" width="200" height="42" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="250" y="158" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">发送方</text>
+  <rect x="650" y="132" width="200" height="42" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="750" y="158" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">接收方</text>
+
+  <line x1="250" y1="174" x2="250" y2="330" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4"/>
+  <line x1="750" y1="174" x2="750" y2="330" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4"/>
+
+  <line x1="250" y1="186" x2="744" y2="186" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwN)"/>
+  <text x="500" y="180" text-anchor="middle" font-size="10.5" fill="#1e40af">① 发小段 A：没有未确认数据，立即发出</text>
+
+  <text x="240" y="214" text-anchor="end" font-size="10" fill="#991b1b">应用又写小段 B</text>
+  <text x="240" y="230" text-anchor="end" font-size="10" fill="#991b1b">→ 已有未确认数据</text>
+  <text x="240" y="246" text-anchor="end" font-size="10" fill="#991b1b">→ Nagle 把它攒住，等 ACK</text>
+
+  <rect x="600" y="204" width="250" height="34" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="725" y="226" text-anchor="middle" font-size="10" fill="#92400e">延迟确认：等自己的定时器</text>
+
+  <line x1="750" y1="266" x2="256" y2="266" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwN2)"/>
+  <text x="500" y="260" text-anchor="middle" font-size="10.5" fill="#92400e">② 定时器到期（Linux 约 40ms / Windows 约 200ms）→ 回 ACK</text>
+
+  <line x1="250" y1="292" x2="744" y2="292" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwN)"/>
+  <text x="500" y="286" text-anchor="middle" font-size="10.5" fill="#1e40af">③ 收到 ACK → Nagle 立即把攒住的 B 发出去</text>
+
+  <text x="34" y="322" font-size="10" fill="#991b1b">④ 结果：B 的发送被推迟了「接收方延迟定时器」那么久 —— 这就是「互相伤害」的全部机理</text>
+
+  <rect x="20" y="364" width="960" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="388" font-size="15" font-weight="bold" fill="#0f172a">两个可操作的动作，与一个判据</text>
+
+  <rect x="34" y="404" width="300" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="184" y="424" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">发送方关掉 Nagle</text>
+  <text x="184" y="444" text-anchor="middle" font-size="9.5" fill="#14532d">SetNoDelay(true)；Go 默认已是这个值</text>
+  <text x="184" y="458" text-anchor="middle" font-size="9.5" fill="#14532d">只解决发送方这一半</text>
+
+  <rect x="348" y="404" width="300" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="498" y="424" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">应用层合并成一次写</text>
+  <text x="498" y="444" text-anchor="middle" font-size="9.5" fill="#14532d">一个请求一次 Write，别拆成多次小写</text>
+  <text x="498" y="458" text-anchor="middle" font-size="9.5" fill="#14532d">这样接收方也不会被半截请求触发</text>
+
+  <rect x="662" y="404" width="300" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="812" y="424" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1e40af">接收方的定时器不必去调</text>
+  <text x="812" y="444" text-anchor="middle" font-size="9.5" fill="#1e40af">它是实现相关的行为，不是协议常数</text>
+  <text x="812" y="458" text-anchor="middle" font-size="9.5" fill="#1e40af">把它当成「环境条件」而不是旋钮</text>
+
+  <rect x="34" y="478" width="928" height="46" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="498" y="497" text-anchor="middle" font-size="10" fill="#334155">判据：抓包里看第二个小段的发出时刻是否被推迟。把 NoDelay 从 false 改成 true 再跑同一请求，RTT 明显下降即可确认踩坑</text>
+  <text x="498" y="515" text-anchor="middle" font-size="9.5" fill="#64748b">若接收方恰好有数据要回，ACK 会被捎带，僵局不会出现 —— 所以它只是「可能的延迟」，不是必然的固定值</text>
+</svg>

@@ -4,7 +4,7 @@
 >
 > 内容整理自个人学习笔记，实测基于本机 Docker Desktop（容器 `golang:1.26-alpine` 内 go1.26.8 + grpc-go v1.84.0；HPACK 一节用 grpc-go 同款实现 `golang.org/x/net/http2/hpack`），原始输出见 `.workbuddy/tmp/exp/grpclab/out/` 的 `wire.txt` / `limits.txt` / `hpack.txt`。素材见 [素材清单](../../../../素材清单.md)。
 >
-> 本篇讲**机制**；「一次调用分几步、连接怎么复用、限额撞线报什么错」这些读数的第一遍交代在 [基础概念.md](基础概念.md)。HTTP/2 相对 HTTP/1.1 的五点改进、队头阻塞成因那一段在 [HTTP与gRPC.md](../../../../02-计算机基础/网络/HTTP与gRPC.md)。
+> 本篇讲**机制**；「一次调用分几步、连接怎么复用、限额撞线报什么错」这些读数的第一遍交代在 [基础概念.md](基础概念.md)。HTTP/2 相对 HTTP/1.1 的完整差异（连接与并发模型、消息定界、HPACK、两级流控、队头阻塞的边界）在 [HTTP1.1与HTTP2的区别.md](../../../../02-计算机基础/网络/HTTP1.1与HTTP2的区别.md)。
 
 ---
 
@@ -439,7 +439,8 @@ payload := make([]byte, n)
 ## 关联
 
 - [基础概念.md](基础概念.md) — 本篇的「读数版」：一次调用的四步时序、连接复用、限额撞线第一遍
-- [HTTP与gRPC.md](../../../../02-计算机基础/网络/HTTP与gRPC.md) — HTTP/2 相对 HTTP/1.1 的五点改进与队头阻塞成因
+- [HTTP1.1与HTTP2的区别.md](../../../../02-计算机基础/网络/HTTP1.1与HTTP2的区别.md) — **为什么要建在 HTTP/2 上**的那一层背景：1.1 与 2 的连接模型、定界、流控与队头阻塞差异
+- [HTTP与gRPC.md](../../../../02-计算机基础/网络/HTTP与gRPC.md) — gRPC 与 HTTP 的关系、连接池与客户端实现（HTTP/1.1 与 HTTP/2 的机制已收归上面那篇）
 - [四种通信模式.md](四种通信模式.md) — `END_STREAM` 在半关闭语义上落成了 `EOF` / `onCompleted`
 - [连接与生命周期.md](连接与生命周期.md) — 状态机、`GOAWAY` 的两种实测来源、keepalive 与 ping 违规
 - [拦截器与元数据.md](拦截器与元数据.md) — header 与 trailer 在协议上就是 HEADERS 帧的两条路
@@ -447,3 +448,4 @@ payload := make([]byte, n)
 - [Protobuf.md](Protobuf.md) — `DATA` 帧里那层载荷的编码规则
 - [README.md](README.md) — 本目录的目录导读（gRPC 知识库总纲）
 - [不使用protoc的gRPC.md](../../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) — 换 codec 换的只是 `DATA` 里那层，帧与流一层都不动
+> 反向引用（本篇被下列文档引到）：[gRPC-Web与Connect.md](gRPC-Web与Connect.md)、[可观测性.md](可观测性.md)、[安全与认证.md](安全与认证.md)、[性能与调优.md](性能与调优.md)、[故障排查与调试.md](故障排查与调试.md)

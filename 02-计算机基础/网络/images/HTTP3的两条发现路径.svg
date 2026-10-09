@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTP/3 的两条发现路径与回退</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">DNS 的 HTTPS/SVCB 记录在解析阶段就宣告 h3；Alt-Svc 响应头必须先进来一次才被缓存；QUIC 不可用时客户端回退到 TCP 版本</text>
+
+  <defs>
+    <marker id="arwQ" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arwA2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker>
+    <marker id="arwR2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+
+  <rect x="20" y="74" width="460" height="228" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="98" font-size="15" font-weight="bold" fill="#0f172a">路径一：DNS 的 HTTPS / SVCB 记录</text>
+  <text x="34" y="118" font-size="10.5" fill="#64748b">解析阶段就拿到 alpn=h3，首次访问即可尝试 QUIC</text>
+
+  <rect x="34" y="134" width="190" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="129" y="159" text-anchor="middle" font-size="11" fill="#1e40af">客户端发起 DNS 查询</text>
+  <rect x="256" y="134" width="210" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="361" y="153" text-anchor="middle" font-size="11" fill="#1e40af">权威返回 type 65 记录</text>
+  <text x="361" y="168" text-anchor="middle" font-size="9.5" fill="#1e40af">alpn = h3,h2 ＋ ipv4hint</text>
+  <line x1="224" y1="154" x2="250" y2="154" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwQ)"/>
+
+  <rect x="34" y="192" width="432" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="250" y="217" text-anchor="middle" font-size="11" fill="#14532d">结论：h3 出现在 alpn 里 → 客户端尝试 QUIC</text>
+
+  <text x="34" y="256" font-size="10" fill="#991b1b">没有 h3 只说明「这条路径没宣告」，不等于站点不支持</text>
+  <text x="34" y="276" font-size="10" fill="#64748b">宣告是逐域名配置的：同一家 CDN 有的站点宣告、有的不宣告</text>
+
+  <rect x="520" y="74" width="460" height="228" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="534" y="98" font-size="15" font-weight="bold" fill="#0f172a">路径二：Alt-Svc 响应头或 ALTSVC 帧</text>
+  <text x="534" y="118" font-size="10.5" fill="#64748b">必须先有一次 TCP 访问，之后才把这个替代服务缓存下来</text>
+
+  <rect x="534" y="134" width="190" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="629" y="153" text-anchor="middle" font-size="11" fill="#1e40af">首次访问走 TCP</text>
+  <text x="629" y="168" text-anchor="middle" font-size="9.5" fill="#1e40af">还不知道有 h3</text>
+  <rect x="756" y="134" width="210" height="40" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="861" y="153" text-anchor="middle" font-size="11" fill="#92400e">响应头带回宣告</text>
+  <text x="861" y="168" text-anchor="middle" font-size="9.5" fill="#92400e">Alt-Svc: h3=":443"; ma=86400</text>
+  <line x1="724" y1="154" x2="750" y2="154" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwA2)"/>
+
+  <rect x="534" y="192" width="432" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="750" y="217" text-anchor="middle" font-size="11" fill="#14532d">结论：缓存有效期内，后续请求才尝试 h3</text>
+
+  <text x="534" y="256" font-size="10" fill="#991b1b">所以只靠 Alt-Svc 宣告的站点，第一次访问通常还是 TCP</text>
+  <text x="534" y="276" font-size="10" fill="#64748b">存活时间由 ma 决定，过期后要重新发现</text>
+
+  <rect x="20" y="322" width="960" height="178" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="346" font-size="15" font-weight="bold" fill="#0f172a">尝试失败后的回退：默认行为，不是异常</text>
+
+  <rect x="34" y="362" width="280" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="174" y="382" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#991b1b">UDP 443 被限速或封禁</text>
+  <text x="174" y="400" text-anchor="middle" font-size="9.5" fill="#991b1b">QUIC 首包等到超时</text>
+
+  <rect x="360" y="362" width="280" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="500" y="382" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#991b1b">QUIC 握手失败</text>
+  <text x="500" y="400" text-anchor="middle" font-size="9.5" fill="#991b1b">中间设备不认、MTU 问题等</text>
+
+  <rect x="686" y="362" width="280" height="52" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="826" y="382" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#92400e">ALPN 无交集</text>
+  <text x="826" y="400" text-anchor="middle" font-size="9.5" fill="#92400e">握手成功但协商结果为空</text>
+
+  <line x1="174" y1="414" x2="174" y2="432" stroke="#dc2626" stroke-width="1.4" marker-end="url(#arwR2)"/>
+  <line x1="500" y1="414" x2="500" y2="432" stroke="#dc2626" stroke-width="1.4" marker-end="url(#arwR2)"/>
+  <line x1="826" y1="414" x2="826" y2="432" stroke="#b45309" stroke-width="1.4" marker-end="url(#arwA2)"/>
+
+  <rect x="34" y="436" width="932" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="500" y="456" text-anchor="middle" font-size="11" fill="#14532d">三种情况都会回退到 TCP 上的 h2 或 1.1：失败表现为「慢一下」，而不是「打不开」</text>
+  <text x="500" y="474" text-anchor="middle" font-size="9.5" fill="#14532d">所以在 UDP 被封的网络里强开 HTTP/3，反而只会更慢</text>
+</svg>

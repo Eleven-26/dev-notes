@@ -168,19 +168,31 @@
 全连接队列实际上限 = min(应用传入的 backlog, net.core.somaxconn)
 ```
 
-⚠️ **这是最常见的配置陷阱**：应用传了 `backlog = 1024`，但 `net.core.somaxconn` 是默认的 `128` → **实际只有 128**。Nginx 与 Go 的 `net.Listen` 都受 `somaxconn` 封顶（Go 在 `somaxconn` 可读时会用它作为 backlog）。
+⚠️ **这是最常见的配置陷阱**：应用传了 `backlog = 1024`，但 `net.core.somaxconn` 只有 `128` → **实际只有 128**。Nginx 与 Go 的 `net.Listen` 都受 `somaxconn` 封顶（Go 在 `somaxconn` 可读时会用它作为 backlog）。
+
+⚠️ **`somaxconn` 的默认值要按内核版本说，别背一个数**：
+
+| 内核口径 | 默认值 | 说明 |
+|---|---|---|
+| **Linux 5.4 及以后** | **4096** | 从 5.4 起上游把默认值从 128 提到 4096 |
+| 更早的内核（3.x / 4.x 常见发行版） | **128** | 「默认 128」这个流传最广的说法来自这里 |
+| 运行时实际值 | — | ⭐ 以 `sysctl net.core.somaxconn` 的读数为准；发行版与容器运行时都可能改写 |
 
 半连接队列的上限则主要由 `net.ipv4.tcp_max_syn_backlog` 决定（并与 `somaxconn`、`tcp_syncookies` 联动）。
 
 ### 2.3 队列满了会怎样（三种表现完全不同）
 
+> ⚠️ 先记住一个前提：**下面这些是 Linux 侧的典型行为**，而且**是否触发、触发哪一种，还取决于内核版本、是否已有 SYN 重传、以及队列当时的状态**。把它们当成「Linux 上值得优先怀疑的排查线索」，而不是所有系统、所有状态下的普遍定律。
+
 | 哪个队列满 | 默认行为 | 客户端看到的现象 |
 | --- | --- | --- |
 | **半连接队列满**（未开 syncookies） | **丢弃新 SYN**，不回应 | 客户端 `connect()` 阻塞后重传 SYN（`tcp_syn_retries` 次）→ **建连变慢**，最终超时 |
-| **全连接队列满**（`tcp_abort_on_overflow=0`，默认） | **丢弃客户端发来的第三次 ACK** | ⭐ 客户端 `connect()` **返回成功**（它认为连上了），发数据也可能成功；服务端稍后重传 SYN+ACK，客户端重发 ACK……最终才超时或 RST → 表现为**「偶发连接超时/重置」** |
+| **全连接队列满**（`tcp_abort_on_overflow=0`，默认） | ⭐ **丢弃第三次 ACK**（Linux 侧行为） | 客户端 `connect()` **可能返回成功**（它已经收到 SYN+ACK 并回了 ACK），发数据也可能成功一段；服务端会重传 SYN+ACK，客户端再重发 ACK……最终才超时或 RST → 表现为**「偶发连接超时/重置」** |
 | **全连接队列满**（`tcp_abort_on_overflow=1`） | 直接回 **RST** | 客户端立刻拿到 `Connection reset by peer` → 失败得很「干脆」 |
 
 ⭐⭐ **默认行为之所以危险，是因为它「假装成功」**：客户端侧看是成功的连接，实际上从未进入应用；等到真正通信时才暴露。所以「客户端说连上了、服务端日志里却没有这条连接」这种排查困境，第一嫌疑就是全连接队列溢出。
+
+> ⚠️ **不要把它当成「必然」**：客户端最终**也可能**收到 RST 或超时（取决于重传次数是否耗尽、期间队列有没有腾出空间让新连接进来）。准确的说法是「**失败被推迟到真正通信时才暴露**」，而不是「客户端一定拿到成功、服务端一定丢掉 ACK」。
 
 ### 2.4 怎么观测（三步定位）
 
@@ -201,7 +213,7 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 
 | 参数 | 作用 | 建议 |
 | --- | --- | --- |
-| `net.core.somaxconn` | **全连接队列上限的封顶值** | 高并发服务调到 1024~4096；⚠️ 只改应用 backlog 不改它等于没改 |
+| `net.core.somaxconn` | **全连接队列上限的封顶值** | 高并发服务调到 1024~4096；⚠️ 只改应用 backlog 不改它等于没改；默认值按内核版本（5.4+ 为 4096，更早常见 128），**以 `sysctl` 读数为准** |
 | 应用侧 backlog | 声明需求值 | Go 通常用 `somaxconn`；Java `ServerSocket(port, backlog)`、Tomcat `acceptCount` |
 | `net.ipv4.tcp_max_syn_backlog` | 半连接队列上限 | 抗握手洪峰时调大（如 4096+） |
 | `net.ipv4.tcp_syncookies` | 队列满时用 cookie 建连而非丢弃 | 默认开启；⚠️ 代价是**不能携带窗口缩放等选项**，只在压力下使用 |
@@ -217,6 +229,39 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 - **负载均衡的健康检查**：探测频率低 + 队列浅，会出现「探测通过但真实流量排队溢出」；
 - **accept 速度**：应用 `accept()` 慢（单线程 accept + 复杂逻辑）会让全连接队列堆积，即使队列上限很大也会满；
 - **accept 前就被丢**：Go 的 `Accept` 出错后若没有立即重试，会漏掉队列中的连接（`net/http` 已在内部处理 `Temporary` 错误的重试）。
+
+---
+
+## 三、TCP Fast Open：握手阶段就能带数据？
+
+**本节要点**：TFO 把「第一份应用数据」提前到握手阶段发送，**收益上限是一个 RTT**；但它是**实验性标准**（RFC 7413），且带应用层重放风险，能不能用必须按两端与中间设备确认。
+
+### 3.1 它解决什么问题
+
+一次冷启动的 HTTPS 请求至少 3 个往返（DNS + TCP + TLS，见 [网络通信链路详解.md](../网络通信链路详解.md) 2.3）。TFO 的思路是让**数据搭上握手的车**：
+
+```text
+首次连接（拿 Cookie）：
+  客户端 ── SYN + TFO 选项（Cookie 为空） ──► 服务端
+  客户端 ◄── SYN+ACK + TFO 选项（签发 Cookie）── 服务端
+
+后续连接（Cookie 命中，数据随 SYN 一起发）：
+  客户端 ── SYN + Cookie + 应用数据 ──► 服务端（校验通过后直接交付给应用）
+  客户端 ◄── SYN+ACK + 响应 ──────────── 服务端
+```
+
+⭐ **收益上限就是「一个 RTT」**：它不能让握手变短，只是把「等握手完成再发数据」变成「握手的同时把数据发出去」。所以它**不会让小请求少一次往返**，只会让**第一个字节更早到达**。
+
+### 3.2 四个必须知道的前提
+
+| 前提 | 说明 |
+|---|---|
+| **它是实验性标准** | 规范是 [RFC 7413](https://www.rfc-editor.org/rfc/rfc7413.html)，标注 Experimental；各系统默认关闭（Linux 由 `net.ipv4.tcp_fastopen` 的位掩码分别控制客户端与服务端） |
+| **依赖 Cookie 缓存** | Cookie 由服务端签发、客户端缓存；**跨机部署、负载均衡换了节点、客户端清缓存**都会退化成普通握手 |
+| **中间设备兼容性存疑** | 防火墙 / NAT 可能剥离不认识的 TCP 选项（对照 [网络通信链路详解.md](../网络通信链路详解.md) 第三节「每一跳改写什么」），导致 TFO **静默失效**——这正好是「看起来配了、实际没生效」的典型 |
+| ⚠️ **重放风险** | 带数据的 SYN 可以被录制后重发，服务端会**再次**把数据交给应用。所以**只能用于幂等请求**（GET 之类），并配合服务端单次 Cookie 校验 |
+
+> ⭐ 工程结论：**TFO 是优化项，不是基线**。设计时按「最坏情况退化为普通三次握手」来做，不要假设它一定生效；也别把它当成安全机制。
 
 ---
 
@@ -254,9 +299,9 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 - **握手报文能携带数据吗？** → 能。按 RFC 9293，"握手阶段携带数据是**完全合法的**"，
   前提是接收方在连接进入 `ESTABLISHED` 之前**不把数据交付给应用**（先缓冲）——
   因为三次握手的意义正是降低"假连接"的概率。实践中前两个 SYN 报文一般不带数据，
-  第 3 个 ACK 通常是一个**空段**。
-- **全连接队列溢出时，为什么客户端显示「连接成功」？** → 默认 `tcp_abort_on_overflow=0` 时内核**丢弃第三次 ACK**，不通知客户端。客户端已完成三次握手的一半逻辑（收到 SYN+ACK 并回了 ACK）故认为连上了，服务端却还把它留在 `SYN_RCVD` 并重传 SYN+ACK——直到超时或 RST 才暴露。要快速失败就得设 `=1`。
-- **`backlog` 设大了为什么没效果？** → 全连接队列的真实上限是 `min(backlog, net.core.somaxconn)`，`somaxconn` 默认只有 128。**只改应用参数不改内核参数等于没改**，这是最典型的配置被「悄悄打折」。
+  第 3 个 ACK 通常是一个**空段**。⚠️ 注意区分：**TFO（第三节）走的是另一条路**——它靠 Cookie 授权服务端在握手阶段就把数据交付给应用，所以**收益与风险都和普通握手带数据不同**。
+- **全连接队列溢出时，为什么客户端显示「连接成功」？** → Linux 默认 `tcp_abort_on_overflow=0` 时内核**丢弃第三次 ACK**，不主动通知客户端。客户端已经收到 SYN+ACK 并回了 ACK，于是认为连上了，服务端却还把它留在 `SYN_RCVD` 并重传 SYN+ACK——直到超时或 RST 才暴露。要快速失败就得设 `=1`。⚠️ 这是**Linux 侧的典型行为**，且失败形态还取决于重传次数与队列后续状态，不要当成所有系统的定律。
+- **`backlog` 设大了为什么没效果？** → 全连接队列的真实上限是 `min(backlog, net.core.somaxconn)`。`somaxconn` 的默认值**要按内核版本说**：Linux 5.4 起是 **4096**，更早的内核常见 **128**；实际以 `sysctl net.core.somaxconn` 为准。**只改应用参数不改内核参数等于没改**，这是最典型的配置被「悄悄打折」。
 - **服务端「偶发连接超时」怎么查？** → 三步：①`ss -lnt` 看 `Recv-Q`（当前排队）与 `Send-Q`（队列上限）②`netstat -s | grep -i listen` 看 `listen queue overflowed` 是否在增长③确认应用 `accept()` 是否够快、backlog 与 `somaxconn` 是否匹配。
 - **半连接队列和全连接队列分别由谁控制？** → 半连接队列由 `net.ipv4.tcp_max_syn_backlog`（配合 `tcp_syncookies`）控制；全连接队列由 `min(应用 backlog, net.core.somaxconn)` 控制。
 
@@ -270,4 +315,4 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 - [HTTPS与TLS.md](../HTTPS与TLS.md) — 握手之上的 TLS 握手
 - [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md) — 线上观测建连耗时的手段
 
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[DNS解析.md](../DNS解析.md)、[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[TCP拥塞控制算法.md](../TCP拥塞控制算法.md)、[抓包实战.md](../抓包实战.md)、[网络分层与数据包旅程.md](../网络分层与数据包旅程.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[通信选型.md](../通信选型.md)
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[DNS解析.md](../DNS解析.md)、[IP与路由基础.md](../IP与路由基础.md)、[QUIC与HTTP3.md](../QUIC与HTTP3.md)、[TCP拥塞控制算法.md](../TCP拥塞控制算法.md)、[抓包实战.md](../抓包实战.md)、[网络分层与数据包旅程.md](../网络分层与数据包旅程.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[通信选型.md](../通信选型.md)

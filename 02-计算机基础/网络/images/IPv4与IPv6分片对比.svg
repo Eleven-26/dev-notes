@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">IPv4 与 IPv6 的分片规则完全不同</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">IPv4 允许源端与中间路由器分片、可用 DF 位禁止；IPv6 只有源端能分片，路由器超限一律丢弃并回 ICMPv6 Packet Too Big</text>
+
+  <rect x="20" y="74" width="460" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="98" font-size="15" font-weight="bold" fill="#0f172a">IPv4：源端与中间路由器都可分片</text>
+  <text x="34" y="118" font-size="10.5" fill="#64748b">分片信息放在 IPv4 首部：flags 的 MF 位 + 13 位 fragment offset</text>
+
+  <text x="34" y="144" font-size="10.5" fill="#334155">原始 IP 包 4000 字节（20 首部 + 3980 载荷）</text>
+  <rect x="34" y="152" width="320" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="46" y="171" font-size="10" fill="#1e40af">① 1500 B　MF = 1　offset 0</text>
+  <rect x="34" y="184" width="320" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="46" y="203" font-size="10" fill="#1e40af">② 1500 B　MF = 1　offset 185</text>
+  <rect x="34" y="216" width="320" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="46" y="235" font-size="10" fill="#1e40af">③ 1040 B　MF = 0　offset 370</text>
+
+  <text x="34" y="264" font-size="10" fill="#64748b">offset 以 8 字节为单位，每个分片都自带 20 字节 IP 首部</text>
+  <text x="34" y="288" font-size="10" fill="#991b1b">DF = 1 时禁止分片：丢弃并回 ICMP type 3 code 4</text>
+  <text x="34" y="308" font-size="10" fill="#991b1b">（报文里带上建议 MTU，发送方据此调小）</text>
+
+  <rect x="520" y="74" width="460" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="534" y="98" font-size="15" font-weight="bold" fill="#0f172a">IPv6：只有源端能分片</text>
+  <text x="534" y="118" font-size="10.5" fill="#64748b">分片信息放在 Fragment 扩展头，IPv6 首部固定 40 字节且无分片字段</text>
+
+  <text x="534" y="144" font-size="10.5" fill="#334155">原始 IPv6 报文 4000 字节</text>
+  <rect x="534" y="152" width="320" height="28" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="546" y="171" font-size="10" fill="#14532d">① 40 首部 + 分片头 + 载荷　源端切好</text>
+  <rect x="534" y="184" width="320" height="28" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="546" y="203" font-size="10" fill="#14532d">② 每片独立可重组，分片头带 offset</text>
+  <rect x="534" y="216" width="320" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="546" y="235" font-size="10" fill="#991b1b">③ 路由器超限：丢弃，不做分片</text>
+
+  <text x="534" y="264" font-size="10" fill="#991b1b">回 ICMPv6 type 2 Packet Too Big</text>
+  <text x="534" y="284" font-size="10" fill="#991b1b">（带上下一跳可用的 MTU 值）</text>
+  <text x="534" y="308" font-size="10" fill="#64748b">IPv6 要求链路 MTU 至少 1280 字节（RFC 8200）</text>
+
+  <rect x="20" y="344" width="960" height="164" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="368" font-size="15" font-weight="bold" fill="#0f172a">MSS 与路径 MTU：为什么「小包正常、大包卡住」</text>
+  <text x="34" y="396" font-size="10.5" fill="#334155">MSS = MTU − IP 首部 − TCP 首部：IPv4 1500 − 20 − 20 = 1460，IPv6 1500 − 40 − 20 = 1440</text>
+  <text x="34" y="420" font-size="10.5" fill="#334155">TCP 按 MSS 主动切段，正常路径走不到 IP 分片；UDP 不看 MSS，大包直接落到 IP 层</text>
+  <text x="34" y="444" font-size="10.5" fill="#334155">PMTUD 靠 ICMP 回传更小的 MTU；ICMP 被中间设备静默丢弃就是 PMTU 黑洞</text>
+  <text x="34" y="468" font-size="10.5" fill="#991b1b">症状判据：握手正常、小请求正常，一发大数据就卡住直到超时</text>
+  <text x="34" y="492" font-size="10" fill="#64748b">不依赖 ICMP 的替代方案是 PLPMTUD（RFC 8899）：发送方自己探测并二分收敛</text>
+</svg>
