@@ -250,6 +250,12 @@ TypeOf(nil) == nil Type？true；对零 Type 调 String()：runtime error: inval
 法则二是新手最容易忽略的：**未导出字段"看得见但改不了"**——
 `NumField()` 会把它一起数进来（实测 1.1 的字段 6），`Interface()` 拿到它却会 panic。
 
+![reflect.Value 的内部两个字与可寻址性：为什么 ValueOf(x) 不能 Set、而 ValueOf(&x).Elem() 可以](images/reflect.Value可寻址性形态.svg)
+
+图怎么读：左右两条路径只有一处不同——**`ValueOf(x)` 的数据指针指向一份副本（`flag` 无 `flagAddr`），`ValueOf(&x).Elem()` 指向 `x` 本身（有 `flagAddr`）**，
+所以左边 `Set` 直接 panic、右边写回真实内存成功。⚠️ 图里的第三种情况最容易漏：**即使走了右边的可寻址路径，未导出字段仍然 `CanSet == false`**
+（`StructField.PkgPath` 非空即打上 `flagRO`），强行 `Set` 的报错原文见 2.5；panic 文案取自 2.4。
+
 ### 2.2 守卫的源码：`CanAddr` / `CanSet` / flag 位
 
 以下四段是 `/usr/local/go/src/reflect/value.go` 的**原样复制**（行号也来自该文件：
