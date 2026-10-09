@@ -2,7 +2,7 @@
 
 > GitLab Runner、Docker-outside-of-Docker 模式、构建与部署两阶段
 >
-> 本篇按**常见问法**组织（每题带 `**本节要点**`）。**语法与用法手册**见 [GitLab CI-CD.md](GitLab CI-CD.md)——
+> 本篇按**常见问法**组织（每题带 `**本节要点**`）。**语法与用法手册**见 [GitLab CI-CD.md](GitLab-CI-CD.md)——
 > 两篇分工明确、不重复：本篇讲"工程取舍与事故"，那篇讲"YAML 怎么写、怎么本地验证"。
 >
 > 内容整理自大厂 Go 后端面试真题，参考资料与原始素材见 [素材清单](../../素材清单.md)；本轮补充（镜像 tag 与缓存策略、Runner executor 选型、声明式部署与回滚、流水线事故）参考《Docker 技术入门与实战》（第 3 版，杨保华 / 戴王剑 / 曹亚仑）。
@@ -268,7 +268,7 @@ deploy:
 
 ## 关联
 
-- [GitLab CI-CD.md](GitLab CI-CD.md) — **语法与用法手册**：`rules` 求值、`extends` / `!reference` / `include`、变量 10 级优先级、`cache` vs `artifacts`、`needs` DAG、触发方式，配本机 `gitlab-ci-local` 实测
+- [GitLab CI-CD.md](GitLab-CI-CD.md) — **语法与用法手册**：`rules` 求值、`extends` / `!reference` / `include`、变量 10 级优先级、`cache` vs `artifacts`、`needs` DAG、触发方式，配本机 `gitlab-ci-local` 实测
 - [镜像构建与缓存.md](docker/镜像构建与缓存.md) — 流水线里构建镜像这一段
 - [镜像瘦身与构建缓存.md](docker/镜像瘦身与构建缓存.md) — CI 上的缓存复用
 - [K8s部署与生命周期面试题.md](k8s/K8s部署与生命周期面试题.md) — 声明式部署与回滚

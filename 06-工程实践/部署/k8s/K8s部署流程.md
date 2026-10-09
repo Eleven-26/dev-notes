@@ -691,7 +691,7 @@ kubectl -n shop rollout undo deploy/app     # 排不出来就先止血，再回�
 
 - [K8s部署与生命周期面试题.md](K8s部署与生命周期面试题.md) — 每条机制背后的原理与常见问法：Helm、QoS、三探针、滚动与回滚、PDB
 - [CI-CD面试题.md](../CI-CD面试题.md) — 镜像 tag 策略与声明式部署：本篇第六节的上游
-- [GitLab CI-CD.md](../GitLab CI-CD.md) — 流水线怎么写；本篇是它部署阶段的下游
+- [GitLab CI-CD.md](../GitLab-CI-CD.md) — 流水线怎么写；本篇是它部署阶段的下游
 - [容器与编排选型.md](../容器与编排选型.md) — 托管 / 自建 / 轻量发行版怎么选
 - [镜像构建与缓存.md](../docker/镜像构建与缓存.md) — 要部署的那个镜像怎么构建出来
 - [镜像瘦身与构建缓存.md](../docker/镜像瘦身与构建缓存.md) — 冷启动与发布时长的镜像侧收益
