@@ -94,6 +94,7 @@
 | [程序启动流程.md](运行时/程序启动流程.md) | `_rt0` 入口、栈 / 分配器 / 调度器初始化、启动全景图 |
 | [零拷贝.md](运行时/零拷贝.md) | 四次拷贝两次系统调用、mmap / sendfile / splice、Go 里的自动优化 |
 | [反射与unsafe.md](运行时/反射与unsafe.md) | 三条反射法则与 `CanSet`、tag 遍历、json 背后的反射、`unsafe` 分界、反射慢多少的实测区间 |
+| [pprof性能分析.md](运行时/pprof性能分析.md) | 五种 profile 各测什么、三种采集入口、⭐ 无头环境（没有浏览器）下怎么读、`heap` 的 `alloc_space` 与 `inuse_space` 两种口径、`block` / `mutex` 要先开采样开关、一套能落地的优化闭环 |
 | [runtime调试与trace.md](运行时/runtime调试与trace.md) | `GODEBUG` 旋钮体系、`schedtrace` / `gctrace` 逐字段、`runtime/trace` 的无头解析、MemStats 与 debug 包 |
 
 ### 2.4 工程实践/（10 篇直属 + 框架 2 篇 + 定时任务 4 篇）
@@ -110,6 +111,7 @@
 | [国际化.md](工程实践/国际化.md) | 语言包与本地化落地 |
 | [配置热重载与快照.md](工程实践/配置热重载与快照.md) | 快照式配置、校验挡在启动前、热重载的原子替换 |
 | [数据访问与连接池.md](工程实践/数据访问与连接池.md) | `sql.DB` 是池不是连接、`sql.Open` 惰性建连、四个旋钮的默认值陷阱、`rows` 生命周期与 `context` 打断、池开多大、与 GORM 的关系 |
+| [代码生成与资源嵌入.md](工程实践/代码生成与资源嵌入.md) | `go:generate` 的约定与四类常见生成器、用 `go/ast` + `go/parser` + `go/format` 手写生成器、⭐ `//go:embed` 的三种形态与路径约束、生成代码的提交策略与 CI 校验 |
 | [Kratos框架.md](工程实践/框架/微服务/Kratos框架.md) | 集成 ent / validate、注册发现与容器化、服务间鉴权与元数据传递 |
 | [Eino框架.md](工程实践/框架/LLM应用/Eino框架.md) | 字节 Eino 大模型应用框架 |
 | [定时任务/](工程实践/定时任务/README.md) 四篇 | 进程内与中心化调度四条路线：[标准库实现.md](工程实践/定时任务/标准库实现.md)、[go-cron实现.md](工程实践/定时任务/go-cron实现.md)、[go-job实现.md](工程实践/定时任务/go-job实现.md)、[xxl-job接入.md](工程实践/定时任务/xxl-job接入.md)，导读见 [README.md](工程实践/定时任务/README.md) |
