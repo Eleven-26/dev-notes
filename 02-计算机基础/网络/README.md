@@ -59,39 +59,39 @@
 
 | 目的 | 按这个顺序读 |
 |---|---|
-| **排查"慢 / 不通"** | 网络通信链路详解（五、症状→层级→证据→工具表）→ IP 与路由基础（第八节 MTU / PMTUD）→ DNS 解析（排查命令速查）→ tcp/TCP四次挥手（`CLOSE_WAIT` 堆积） |
-| **复习 TCP** | TCP报文结构 → 三次握手 → 滑动窗口 → Nagle 与延迟确认 → 拥塞控制算法 → 四次挥手 |
-| **搞懂 IP 与路由** | IP 与路由基础（地址 / CIDR → 路由表 → ARP/NDP → ICMP → MTU/分片）→ 网络通信链路详解（逐跳改写） |
-| **做技术选型** | 通信选型 → HTTP1.1与HTTP2的区别 → HTTP与gRPC → 数据序列化 |
-| **只想搞懂 HTTP 版本差异** | HTTP1.1与HTTP2的区别（连接模型 / 定界 / 头部压缩 / 流控 / 队头阻塞边界）→ HTTP与gRPC（gRPC 与 HTTP 的关系、连接池）→ QUIC与HTTP3（TCP 层阻塞怎么根治） |
-| **只想搞懂一次访问** | ① ② 两篇总纲 + 网络通信链路详解的「13 步全景」表 |
-| **只看 HTTP/3 相关** | QUIC与HTTP3 → HTTPS与TLS（ALPN 与证书）→ tcp/TCP三次握手（对照它被压成 1-RTT） |
-| **要动手抓一次包** | 抓包实战 → 网络通信链路详解（五、分层观测点，先定位再抓） |
-| **做反向代理 / 网关** | 反向代理原理与实现 → 客户端真实IP与可信代理 → 通信选型 |
-| **排查「客户端 IP 不对 / 限流按 IP 误伤」** | 客户端真实IP与可信代理（可信代理链）→ 反向代理原理与实现（XFF 由谁写、为什么不能手写） |
+| **排查"慢 / 不通"** | [网络通信链路详解.md](网络通信链路详解.md)（五、症状→层级→证据→工具表）→ [IP与路由基础.md](IP与路由基础.md)（第八节 MTU / PMTUD）→ [DNS解析.md](DNS解析.md)（排查命令速查）→ [tcp/TCP四次挥手.md](tcp/TCP四次挥手.md)（`CLOSE_WAIT` 堆积） |
+| **复习 TCP** | [tcp/TCP报文结构.md](tcp/TCP报文结构.md) → [tcp/TCP三次握手.md](tcp/TCP三次握手.md) → [tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) → [tcp/TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md) → [TCP拥塞控制算法.md](TCP拥塞控制算法.md) → [tcp/TCP四次挥手.md](tcp/TCP四次挥手.md) |
+| **搞懂 IP 与路由** | [IP与路由基础.md](IP与路由基础.md)（地址 / CIDR → 路由表 → ARP/NDP → ICMP → MTU/分片）→ [网络通信链路详解.md](网络通信链路详解.md)（逐跳改写） |
+| **做技术选型** | [通信选型.md](通信选型.md) → [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) → [HTTP与gRPC.md](HTTP与gRPC.md) → [数据序列化.md](数据序列化.md) |
+| **只想搞懂 HTTP 版本差异** | [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)（连接模型 / 定界 / 头部压缩 / 流控 / 队头阻塞边界）→ [HTTP与gRPC.md](HTTP与gRPC.md)（gRPC 与 HTTP 的关系、连接池）→ [QUIC与HTTP3.md](QUIC与HTTP3.md)（TCP 层阻塞怎么根治） |
+| **只想搞懂一次访问** | ① [网络分层与数据包旅程.md](网络分层与数据包旅程.md) ② [网络通信链路详解.md](网络通信链路详解.md) 两篇总纲 + 后者的「13 步全景」表 |
+| **只看 HTTP/3 相关** | [QUIC与HTTP3.md](QUIC与HTTP3.md) → [HTTPS与TLS.md](HTTPS与TLS.md)（ALPN 与证书）→ [tcp/TCP三次握手.md](tcp/TCP三次握手.md)（对照它被压成 1-RTT） |
+| **要动手抓一次包** | [抓包实战.md](抓包实战.md) → [网络通信链路详解.md](网络通信链路详解.md)（五、分层观测点，先定位再抓） |
+| **做反向代理 / 网关** | [反向代理原理与实现.md](反向代理原理与实现.md) → [客户端真实IP与可信代理.md](客户端真实IP与可信代理.md) → [通信选型.md](通信选型.md) |
+| **排查「客户端 IP 不对 / 限流按 IP 误伤」** | [客户端真实IP与可信代理.md](客户端真实IP与可信代理.md)（可信代理链）→ [反向代理原理与实现.md](反向代理原理与实现.md)（XFF 由谁写、为什么不能手写） |
 
 ### 2.3 依赖关系（谁要前置）
 
 | 本篇 | 建议先读 | 为什么 |
 |---|---|---|
-| 网络通信链路详解 | 网络分层与数据包旅程 | 先有「层」，才看得懂「每跳改的是哪一层」 |
-| IP 与路由基础 | 网络分层与数据包旅程 | 先知道「为什么要两套地址」，再谈怎么寻址与选路 |
-| UDP 与数据报传输 | IP 与路由基础 | 大包与分片的代价要先懂 MTU |
-| tcp/TCP三次握手 | tcp/TCP报文结构 | 握手报文就是带 `SYN` / `ACK` 标志位的首部 |
-| tcp/TCP滑动窗口 | tcp/TCP报文结构、三次握手 | 窗口字段在首部里；连接建好才谈吞吐 |
-| tcp/TCP的Nagle与延迟确认 | tcp/TCP滑动窗口 | 都是传输效率问题，放一起看 |
-| TCP拥塞控制算法 | tcp/TCP滑动窗口 | `min(rwnd, cwnd)` 的另一半 |
-| tcp/TCP四次挥手 | tcp/TCP三次握手 | 关闭是握手的镜像，`TIME_WAIT` 在这一步出现 |
-| HTTPS与TLS | tcp/TCP三次握手、DNS解析 | TLS 跑在 TCP 之上；证书要靠 SNI 选 |
-| HTTP1.1与HTTP2的区别 | HTTPS与TLS、tcp/TCP报文结构 | 版本是 ALPN 协商的结果；定界的根因是「TCP 是字节流、没有边界」 |
-| HTTP与gRPC | HTTPS与TLS、HTTP1.1与HTTP2的区别 | 应用层在 TLS 之上；HTTP/2 是 gRPC 的地基（机制在上一条，本文只留 gRPC 相关结论） |
-| QUIC与HTTP3 | HTTPS与TLS、tcp/TCP三次握手、UDP与数据报传输 | 要懂 1-RTT / 0-RTT 的价值，先知道 TCP + TLS 要几次往返 |
-| 数据序列化 | HTTP与gRPC | 请求体怎么编码 |
-| 反向代理原理与实现 | HTTP与gRPC、tcp/TCP报文结构 | 要懂逐跳头与连接复用，才看得懂「哪些头必须剥、哪些必须补」 |
-| 客户端真实IP与可信代理 | 反向代理原理与实现 | 先知道代理这一跳写了什么头，再谈「信哪个」 |
-| 抓包实战 | 网络通信链路详解、tcp/ 五篇 | 先知道"该看什么"，抓包才有意义 |
-| 通信选型 | 前面大部分 | 没见过各层，选型表看不出取舍 |
-| DHCP、DNS解析、IO多路复用 | — | 独立成篇，随时可读 |
+| [网络通信链路详解.md](网络通信链路详解.md) | [网络分层与数据包旅程.md](网络分层与数据包旅程.md) | 先有「层」，才看得懂「每跳改的是哪一层」 |
+| [IP与路由基础.md](IP与路由基础.md) | [网络分层与数据包旅程.md](网络分层与数据包旅程.md) | 先知道「为什么要两套地址」，再谈怎么寻址与选路 |
+| [UDP与数据报传输.md](UDP与数据报传输.md) | [IP与路由基础.md](IP与路由基础.md) | 大包与分片的代价要先懂 MTU |
+| [tcp/TCP三次握手.md](tcp/TCP三次握手.md) | [tcp/TCP报文结构.md](tcp/TCP报文结构.md) | 握手报文就是带 `SYN` / `ACK` 标志位的首部 |
+| [tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) | [tcp/TCP报文结构.md](tcp/TCP报文结构.md)、[tcp/TCP三次握手.md](tcp/TCP三次握手.md) | 窗口字段在首部里；连接建好才谈吞吐 |
+| [tcp/TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md) | [tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) | 都是传输效率问题，放一起看 |
+| [TCP拥塞控制算法.md](TCP拥塞控制算法.md) | [tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) | `min(rwnd, cwnd)` 的另一半 |
+| [tcp/TCP四次挥手.md](tcp/TCP四次挥手.md) | [tcp/TCP三次握手.md](tcp/TCP三次握手.md) | 关闭是握手的镜像，`TIME_WAIT` 在这一步出现 |
+| [HTTPS与TLS.md](HTTPS与TLS.md) | [tcp/TCP三次握手.md](tcp/TCP三次握手.md)、[DNS解析.md](DNS解析.md) | TLS 跑在 TCP 之上；证书要靠 SNI 选 |
+| [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) | [HTTPS与TLS.md](HTTPS与TLS.md)、[tcp/TCP报文结构.md](tcp/TCP报文结构.md) | 版本是 ALPN 协商的结果；定界的根因是「TCP 是字节流、没有边界」 |
+| [HTTP与gRPC.md](HTTP与gRPC.md) | [HTTPS与TLS.md](HTTPS与TLS.md)、[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) | 应用层在 TLS 之上；HTTP/2 是 gRPC 的地基（机制在上一条，本文只留 gRPC 相关结论） |
+| [QUIC与HTTP3.md](QUIC与HTTP3.md) | [HTTPS与TLS.md](HTTPS与TLS.md)、[tcp/TCP三次握手.md](tcp/TCP三次握手.md)、[UDP与数据报传输.md](UDP与数据报传输.md) | 要懂 1-RTT / 0-RTT 的价值，先知道 TCP + TLS 要几次往返 |
+| [数据序列化.md](数据序列化.md) | [HTTP与gRPC.md](HTTP与gRPC.md) | 请求体怎么编码 |
+| [反向代理原理与实现.md](反向代理原理与实现.md) | [HTTP与gRPC.md](HTTP与gRPC.md)、[tcp/TCP报文结构.md](tcp/TCP报文结构.md) | 要懂逐跳头与连接复用，才看得懂「哪些头必须剥、哪些必须补」 |
+| [客户端真实IP与可信代理.md](客户端真实IP与可信代理.md) | [反向代理原理与实现.md](反向代理原理与实现.md) | 先知道代理这一跳写了什么头，再谈「信哪个」 |
+| [抓包实战.md](抓包实战.md) | [网络通信链路详解.md](网络通信链路详解.md)、[tcp/](tcp/) | 先知道"该看什么"，抓包才有意义 |
+| [通信选型.md](通信选型.md) | 前面大部分 | 没见过各层，选型表看不出取舍 |
+| [DHCP.md](DHCP.md)、[DNS解析.md](DNS解析.md)、[IO多路复用.md](IO多路复用.md) | — | 独立成篇，随时可读 |
 
 > ⚠️ **两条"反直觉"的顺序提醒**：
 > 1. **DHCP 排在 DNS 之前**——没有 IP / 掩码 / 网关 / DNS 这四参数，连 DNS 查询都发不出去；

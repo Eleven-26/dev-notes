@@ -249,6 +249,10 @@ HTTP/2 有 `PRIORITY` 帧与依赖树，但 gRPC 规范**不使用 HTTP/2 的优
 
 ### 6.1 五态
 
+![HTTP/2 流的状态机：idle 经 HEADERS 到 open、再经 END_STREAM 到 half-closed 最后收尾到 closed 的主链，reserved 的推送旁支，以及任何状态经 RST_STREAM 直达 closed 的红线](images/HTTP2流的五态状态机.svg)
+
+图怎么读：实线是 **gRPC 实际走的三条路径**（`HEADERS` 建流 → `END_STREAM` 半关闭 → 对端 `END_STREAM` 收尾），虚线是**只有服务端推送才会用到**的 `reserved` 旁支，红线是「任何状态 → `closed`」的 `RST_STREAM`。⚠️ 第二节那张图**下半部分的右侧**还有一个缩小版的同一状态机，这里把它放大并补上「gRPC 走哪几条边」与两种掐断；图上的 `FRAME_SIZE_ERROR(0x6)`、`ENHANCE_YOUR_CALM(too_many_pings)`、`NO_ERROR(graceful_stop)` 三个读数抄自下面 6.2、6.3 与 `out/limits.txt`，不是示意。
+
 ```text
                  +--------+
         send PP  |        | recv PP

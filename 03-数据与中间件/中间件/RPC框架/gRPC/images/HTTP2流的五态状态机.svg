@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sArrowB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="sArrowG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/></marker>
+    <marker id="sArrowR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTP/2 流的状态机：gRPC 实际只走三条路径</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">5 个状态名、7 个框；正常收尾靠 END_STREAM 走完 half-closed，异常只有 RST_STREAM 与 GOAWAY 两种表达</text>
+
+  <rect x="20" y="84" width="960" height="356" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+
+  <rect x="50" y="140" width="150" height="64" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="125" y="168" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">idle</text>
+  <text x="125" y="190" text-anchor="middle" font-size="10" fill="#475569">默认起点</text>
+
+  <rect x="290" y="140" width="150" height="64" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="365" y="168" text-anchor="middle" font-size="15" font-weight="bold" fill="#1d4ed8">open</text>
+  <text x="365" y="190" text-anchor="middle" font-size="10" fill="#1d4ed8">双向可收发</text>
+
+  <rect x="530" y="140" width="200" height="64" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="630" y="166" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">half-closed (local)</text>
+  <text x="630" y="188" text-anchor="middle" font-size="10" fill="#166534">本地已发完（CloseSend）</text>
+
+  <rect x="800" y="140" width="150" height="64" rx="9" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="875" y="168" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">closed</text>
+  <text x="875" y="190" text-anchor="middle" font-size="10" fill="#7f1d1d">流作废</text>
+
+  <line x1="200" y1="172" x2="284" y2="172" stroke="#2563eb" stroke-width="1.6" marker-end="url(#sArrowB)"/>
+  <text x="245" y="158" text-anchor="middle" font-size="9" fill="#1d4ed8">send / recv</text>
+  <text x="245" y="196" text-anchor="middle" font-size="9" font-weight="bold" fill="#1d4ed8">HEADERS</text>
+
+  <line x1="440" y1="172" x2="524" y2="172" stroke="#2563eb" stroke-width="1.6" marker-end="url(#sArrowB)"/>
+  <text x="482" y="158" text-anchor="middle" font-size="9" fill="#1d4ed8">send</text>
+  <text x="482" y="196" text-anchor="middle" font-size="9" font-weight="bold" fill="#1d4ed8">END_STREAM</text>
+
+  <line x1="730" y1="172" x2="794" y2="172" stroke="#16a34a" stroke-width="1.6" marker-end="url(#sArrowG)"/>
+  <text x="762" y="158" text-anchor="middle" font-size="9" fill="#166534">recv</text>
+  <text x="762" y="196" text-anchor="middle" font-size="9" font-weight="bold" fill="#166534">END_STREAM</text>
+
+  <rect x="50" y="280" width="240" height="60" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="170" y="306" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">reserved（local / remote）</text>
+  <text x="170" y="326" text-anchor="middle" font-size="9.5" fill="#64748b">只在服务端推送时用到</text>
+
+  <rect x="530" y="280" width="200" height="60" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="630" y="306" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">half-closed (remote)</text>
+  <text x="630" y="326" text-anchor="middle" font-size="9.5" fill="#64748b">对端已发完</text>
+
+  <line x1="125" y1="204" x2="125" y2="274" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#sArrowG)"/>
+  <text x="146" y="246" font-size="9" fill="#475569">send / recv PUSH_PROMISE</text>
+
+  <line x1="290" y1="310" x2="524" y2="310" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#sArrowG)"/>
+  <text x="407" y="300" text-anchor="middle" font-size="9" fill="#475569">send HEADERS</text>
+
+  <path d="M 730 310 L 830 310 L 830 210" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#sArrowG)"/>
+  <text x="778" y="300" text-anchor="middle" font-size="9" fill="#475569">send END_STREAM</text>
+
+  <path d="M 50 396 L 905 396 L 905 210" fill="none" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#sArrowR)"/>
+  <text x="486" y="388" text-anchor="middle" font-size="9.5" fill="#b91c1c">任何状态 → closed：任一方发 RST_STREAM（掐一条流，载荷带 4 字节错误码）</text>
+
+  <rect x="20" y="460" width="460" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="484" font-size="12.5" font-weight="bold" fill="#0f172a">gRPC 实际只走这三条路径</text>
+  <text x="36" y="510" font-size="10" fill="#334155">① idle → open：客户端发 HEADERS（不带 END_STREAM）</text>
+  <text x="36" y="532" font-size="10" fill="#334155">② open → half-closed(local)：发完带 END_STREAM 的 DATA</text>
+  <text x="36" y="554" font-size="10" fill="#334155">　（即 CloseSend 的半关闭）</text>
+  <text x="36" y="576" font-size="10" fill="#334155">③ half-closed(local) → closed：收到服务端带 END_STREAM 的帧</text>
+  <text x="36" y="598" font-size="10" fill="#16a34a">④ closed 也可能由任一方发 RST_STREAM 直接到达</text>
+  <text x="36" y="622" font-size="10" fill="#14532d">要点：END_STREAM 是「半关闭」而不是「关闭」——</text>
+  <text x="36" y="644" font-size="10" fill="#14532d">　「io.EOF 算正常收尾」的协议根因就在这条边上</text>
+
+  <rect x="510" y="460" width="470" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="526" y="484" font-size="12.5" font-weight="bold" fill="#0f172a">两种掐断与错误码</text>
+  <text x="526" y="510" font-size="10" fill="#334155">RST_STREAM：只掐一条流，连接照常；载荷是 4 字节错误码</text>
+  <text x="526" y="532" font-size="10" fill="#334155">　实测见到的是 FRAME_SIZE_ERROR(0x6)</text>
+  <text x="526" y="554" font-size="10" fill="#334155">GOAWAY：掐整条连接，载荷含最后处理的流 ID 与错误码</text>
+  <text x="526" y="576" font-size="10" fill="#334155">　实测来源一：ping 过快 → ENHANCE_YOUR_CALM(too_many_pings)</text>
+  <text x="526" y="598" font-size="10" fill="#334155">　实测来源二：优雅退出 → NO_ERROR(graceful_stop)</text>
+  <text x="526" y="622" font-size="10" fill="#92400e">注意：5 个状态名对应图上 7 个框，因为 reserved 与</text>
+  <text x="526" y="644" font-size="10" fill="#92400e">　half-closed 各有 local / remote 两个方向</text>
+</svg>
