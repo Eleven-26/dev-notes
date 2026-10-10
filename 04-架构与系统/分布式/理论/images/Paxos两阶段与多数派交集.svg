@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="40" y="42" font-size="19" fill="#0f172a">Basic Paxos 两阶段：先问「有没有人选过」，再提值</text>
+  <text x="40" y="70" font-size="13" fill="#64748b">多数派交集 ⟹ 新提案必见旧值；必须继承旧值 ⟹ 已选定值不可改</text>
+
+  <!-- Proposer -->
+  <rect x="50" y="100" width="180" height="230" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="140" y="205" font-size="15" fill="#1e3a8a" text-anchor="middle">Proposer</text>
+  <text x="140" y="227" font-size="12" fill="#1e3a8a" text-anchor="middle">提议者</text>
+
+  <!-- Acceptor -->
+  <rect x="770" y="100" width="180" height="230" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="860" y="205" font-size="15" fill="#14532d" text-anchor="middle">Acceptor</text>
+  <text x="860" y="227" font-size="12" fill="#14532d" text-anchor="middle">× 多数派</text>
+
+  <!-- 阶段一 -->
+  <rect x="250" y="110" width="500" height="95" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="266" y="132" font-size="13" fill="#0f172a">阶段一　Prepare / Promise</text>
+  <line x1="266" y1="154" x2="732" y2="154" stroke="#2563eb" stroke-width="1.4"/>
+  <polygon points="740,154 728,149 728,159" fill="#2563eb"/>
+  <text x="266" y="150" font-size="11" fill="#1e3a8a">① Prepare(n)</text>
+  <line x1="734" y1="182" x2="268" y2="182" stroke="#16a34a" stroke-width="1.4"/>
+  <polygon points="260,182 272,177 272,187" fill="#16a34a"/>
+  <text x="266" y="198" font-size="11" fill="#166534">② Promise：不再接受 &lt; n；返回已接受的最大编号提案</text>
+
+  <!-- 阶段二 -->
+  <rect x="250" y="215" width="500" height="95" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="266" y="237" font-size="13" fill="#0f172a">阶段二　Accept / Accepted</text>
+  <line x1="266" y1="259" x2="732" y2="259" stroke="#2563eb" stroke-width="1.4"/>
+  <polygon points="740,259 728,254 728,264" fill="#2563eb"/>
+  <text x="266" y="255" font-size="11" fill="#1e3a8a">③ Accept(n, v)　（v 必为「已接受值里编号最大者」）</text>
+  <line x1="734" y1="287" x2="268" y2="287" stroke="#16a34a" stroke-width="1.4"/>
+  <polygon points="260,287 272,282 272,292" fill="#16a34a"/>
+  <text x="266" y="303" font-size="11" fill="#166534">④ Accepted　多数派接受 ⇒ 该值被选定（chosen）</text>
+
+  <!-- 小结 -->
+  <rect x="40" y="368" width="920" height="76" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="394" font-size="13" fill="#0f172a">要点：两个「多数派」必有交集，所以阶段一一定问到了见过旧值的 Acceptor；</text>
+  <text x="60" y="418" font-size="13" fill="#0f172a">而 Acceptor 承诺「不再接受更小编号」，逼新提案继承旧值 —— 两条合起来就是安全性。</text>
+</svg>

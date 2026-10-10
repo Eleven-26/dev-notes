@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="450" viewBox="0 0 1000 450" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+  <text x="40" y="42" font-size="19" fill="#0f172a">Multi-Paxos 与 Raft 对照：同一套词汇，两种完整度</text>
+  <text x="40" y="70" font-size="13" fill="#64748b">Raft ≈ 把 Multi-Paxos 的「实现惯例」写进了协议本身</text>
+
+  <!-- 表头 -->
+  <rect x="40" y="92" width="440" height="38" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="260" y="117" font-size="14" fill="#1e3a8a" text-anchor="middle">Multi-Paxos</text>
+  <rect x="520" y="92" width="440" height="38" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="740" y="117" font-size="14" fill="#14532d" text-anchor="middle">Raft</text>
+
+  <!-- 行1 领导者 -->
+  <rect x="40" y="138" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="160" font-size="12" fill="#334155">领导者：有，但「怎么选」协议不管</text>
+  <text x="56" y="179" font-size="11" fill="#64748b">交给实现自己定</text>
+  <rect x="520" y="138" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="536" y="160" font-size="12" fill="#334155">领导者：协议内置选举</text>
+  <text x="536" y="179" font-size="11" fill="#64748b">任期 term + 随机选举超时</text>
+
+  <!-- 行2 日志 -->
+  <rect x="40" y="198" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="220" font-size="12" fill="#334155">日志：允许空洞</text>
+  <text x="56" y="239" font-size="11" fill="#64748b">槽位可乱序提交</text>
+  <rect x="520" y="198" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="536" y="220" font-size="12" fill="#334155">日志：强制连续</text>
+  <text x="536" y="239" font-size="11" fill="#64748b">Leader 负责补齐 / 截断</text>
+
+  <!-- 行3 成员变更 -->
+  <rect x="40" y="258" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="280" font-size="12" fill="#334155">成员变更：未规定</text>
+  <text x="56" y="299" font-size="11" fill="#64748b">需自行设计</text>
+  <rect x="520" y="258" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="536" y="280" font-size="12" fill="#334155">成员变更：联合共识</text>
+  <text x="536" y="299" font-size="11" fill="#64748b">过渡期新旧配置同时生效，防脑裂</text>
+
+  <!-- 行4 常规路径 -->
+  <rect x="40" y="318" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="340" font-size="12" fill="#334155">常规路径：一次 Prepare 多次 Accept</text>
+  <text x="56" y="359" font-size="11" fill="#64748b">阶段一「批量化」，降到一轮往返</text>
+  <rect x="520" y="318" width="440" height="52" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="536" y="340" font-size="12" fill="#334155">常规路径：同样一轮往返</text>
+  <text x="536" y="359" font-size="11" fill="#64748b">但由协议规定，不靠实现默契</text>
+
+  <!-- 小结 -->
+  <text x="40" y="404" font-size="13" fill="#0f172a">要点：两者安全内核相同（多数派 + 编号 + 状态机复制）；差别在「协议完整度」——</text>
+  <text x="40" y="426" font-size="13" fill="#0f172a">Paxos 给的是安全内核，Raft 给的是可直接实现的完整协议，因此工程上只见 Raft。</text>
+</svg>
