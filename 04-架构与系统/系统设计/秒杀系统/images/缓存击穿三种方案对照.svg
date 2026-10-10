@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">缓存击穿：热点 key 过期那一瞬间，1000 个请求同时到</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">先让热点 key（item:7）刚好失效，再放 1000 个并发请求同时读它</text>
+
+  <!-- A -->
+  <rect x="30" y="82" width="300" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="110" font-size="15" fill="#0f172a">A 无保护</text>
+  <text x="46" y="132" font-size="11" fill="#475569">没命中就回源</text>
+  <text x="46" y="162" font-size="11.5" fill="#334155">打 DB 975</text>
+  <text x="46" y="186" font-size="11.5" fill="#334155">总耗时 1.569s</text>
+  <text x="46" y="210" font-size="11.5" fill="#334155">最慢一次 1.557s</text>
+  <rect x="46" y="224" width="268" height="46" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="58" y="244" font-size="11" fill="#991b1b">库在 1.5 秒内被同一 key</text>
+  <text x="58" y="261" font-size="11" fill="#991b1b">打了 975 次。</text>
+
+  <!-- B -->
+  <rect x="345" y="82" width="300" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="361" y="110" font-size="15" fill="#0f172a">B singleflight</text>
+  <text x="361" y="132" font-size="11" fill="#475569">合并同 key 的并发回源</text>
+  <text x="361" y="162" font-size="11.5" fill="#334155">打 DB 1</text>
+  <text x="361" y="186" font-size="11.5" fill="#334155">总耗时 22ms</text>
+  <text x="361" y="210" font-size="11.5" fill="#334155">最慢一次 21ms</text>
+  <rect x="361" y="224" width="268" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="373" y="244" font-size="11" fill="#14532d">让请求等：1000 个请求被合并成</text>
+  <text x="373" y="261" font-size="11" fill="#14532d">1 次查询后一起拿到结果。</text>
+
+  <!-- C -->
+  <rect x="660" y="82" width="300" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="676" y="110" font-size="15" fill="#0f172a">C 逻辑过期</text>
+  <text x="676" y="132" font-size="11" fill="#475569">key 不物理过期</text>
+  <text x="676" y="162" font-size="11.5" fill="#334155">打 DB 1</text>
+  <text x="676" y="186" font-size="11.5" fill="#334155">总耗时 563ms</text>
+  <text x="676" y="210" font-size="11.5" fill="#334155">最慢一次 557ms</text>
+  <rect x="676" y="224" width="268" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="688" y="244" font-size="11" fill="#1e3a8a">让请求不等：拿旧值返回，</text>
+  <text x="688" y="261" font-size="11" fill="#1e3a8a">只让一个人去后台刷新。</text>
+
+  <g transform="translate(20,296)">
+    <rect x="0" y="0" width="960" height="152" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">逻辑过期的前提：key 必须永不物理过期（否则 C 组退化回 A 组）</text>
+
+    <text x="18" y="54" font-size="11" fill="#334155">预热：SET item:7 &lt;json&gt;（不设 TTL）　+　SET item:7:expire &lt;过期时间戳&gt;（过期信息放在值外面）</text>
+    <text x="18" y="76" font-size="11" fill="#334155">读取：GET item:7 一定命中；GET item:7:expire 发现已过期 → 只让一个人后台刷新，请求照常拿旧值、绝不等库。</text>
+    <text x="18" y="98" font-size="11" fill="#991b1b">注意：第一版用 DEL item:7 制造失效 → C 组打库 990 次（几乎和 A 一样），因为 key 真的不存在了。</text>
+
+    <line x1="18" y1="110" x2="942" y2="110" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="18" y="130" font-size="11.5" fill="#475569">选型：大多数业务、改动最小 → singleflight；极热点且能容忍秒级陈旧 → 逻辑过期；</text>
+    <text x="18" y="146" font-size="11.5" fill="#475569">数据绝对不能陈旧（如库存）→ 两个都别用 —— 它本来就不该缓存。</text>
+  </g>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">超时关单扫表：一条索引的差距</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">订单表 20 万行，其中 1 万行是「待支付且已超过 30 分钟」</text>
+
+  <!-- ① 无索引 -->
+  <rect x="30" y="82" width="300" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="110" font-size="15" fill="#0f172a">① 无索引</text>
+  <text x="46" y="140" font-size="11.5" fill="#334155">命中 10000 行</text>
+  <text x="46" y="163" font-size="11.5" fill="#334155">实际耗时 153ms</text>
+  <text x="46" y="186" font-size="11.5" fill="#334155">执行计划：Table scan 20 万行</text>
+  <rect x="46" y="204" width="268" height="74" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="58" y="226" font-size="11" fill="#991b1b">开销随订单表线性上涨，</text>
+  <text x="58" y="244" font-size="11" fill="#991b1b">而且每次扫都占 IO。</text>
+  <text x="58" y="266" font-size="11" fill="#991b1b">「没做过索引治理」的现状。</text>
+
+  <!-- ② 联合索引 -->
+  <rect x="345" y="82" width="300" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="361" y="110" font-size="15" fill="#0f172a">② 联合索引 (status, created_at)</text>
+  <text x="361" y="140" font-size="11.5" fill="#334155">命中 10000 行</text>
+  <text x="361" y="163" font-size="11.5" fill="#334155">实际耗时 16ms（约 10 倍）</text>
+  <text x="361" y="186" font-size="11.5" fill="#334155">Covering index range scan 1.9 万行</text>
+  <rect x="361" y="204" width="268" height="74" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="373" y="226" font-size="11" fill="#14532d">索引本身有序，</text>
+  <text x="373" y="244" font-size="11" fill="#14532d">status = ? AND created_at &lt; ?</text>
+  <text x="373" y="266" font-size="11" fill="#14532d">直接落进区间，不必回表。</text>
+
+  <!-- ③ 主键分片小批量 -->
+  <rect x="660" y="82" width="300" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="676" y="110" font-size="15" fill="#0f172a">③ 主键分片小批量（每批 1000）</text>
+  <text x="676" y="140" font-size="11.5" fill="#334155">分 10 批扫完，命中 9999 行</text>
+  <text x="676" y="163" font-size="11.5" fill="#334155">总耗时 75ms</text>
+  <text x="676" y="186" font-size="11.5" fill="#334155">比全表扫快、比覆盖索引慢</text>
+  <rect x="676" y="204" width="268" height="74" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="688" y="226" font-size="11" fill="#92400e">用「多批」换「单批时长」 ——</text>
+  <text x="688" y="244" font-size="11" fill="#92400e">避免一次锁太多行、事务太长。</text>
+  <text x="688" y="266" font-size="11" fill="#92400e">批大小就是「每次扫多少」的旋钮。</text>
+
+  <g transform="translate(20,308)">
+    <rect x="0" y="0" width="960" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="30" font-size="15" fill="#0f172a">判据与顺序</text>
+    <text x="18" y="58" font-size="12" fill="#475569">① 优先联合索引 (status, created_at)：让范围条件也一起走索引（16ms vs 153ms）。</text>
+    <text x="18" y="80" font-size="12" fill="#475569">② 必须扫表时用小批量，单批别太大（避免长事务与长持锁）—— 但 75ms 仍慢于覆盖索引。</text>
+    <text x="18" y="102" font-size="12" fill="#94a3b8">注意：扫到的「待支付」单在处理瞬间可能刚支付成功，归还库存前必须再查一次状态（带条件 UPDATE 影响 0 行就跳过）。</text>
+  </g>
+</svg>

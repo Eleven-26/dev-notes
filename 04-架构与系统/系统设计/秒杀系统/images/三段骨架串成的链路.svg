@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="sans-serif">
+  <defs>
+    <marker id="arrH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">三段骨架串成的链路：Lua 预扣 → 异步入队 → 消费落库</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">一次判定 + 一次入队 + 一次落库的最小闭环；三段都是骨架片段，错误处置方向必须写死</text>
+
+  <g transform="translate(20,82)">
+    <rect x="0" y="0" width="960" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+
+    <rect x="30" y="22" width="270" height="164" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="44" y="48" font-size="13" fill="#1e3a8a">① Lua 预扣（原子判定）</text>
+    <text x="44" y="76" font-size="10.5" fill="#1e3a8a">返回值 &gt;= 0 抢到；-1 key 不存在；</text>
+    <text x="44" y="94" font-size="10.5" fill="#1e3a8a">-2 库存不足</text>
+    <text x="44" y="118" font-size="10.5" fill="#1e3a8a">SETNX 一人一单（示意，未实测）</text>
+    <text x="44" y="146" font-size="10.5" fill="#991b1b">err != nil 时故意不 Del 占位</text>
+    <text x="44" y="164" font-size="10.5" fill="#991b1b">（防超卖；只有「确定脚本没跑」</text>
+    <text x="44" y="180" font-size="10.5" fill="#991b1b">才释放）</text>
+
+    <path d="M 300 104 L 343 104" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrH)"/>
+
+    <rect x="345" y="22" width="270" height="164" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="359" y="48" font-size="13" fill="#7c2d12">② 异步入队（入队必须快）</text>
+    <text x="359" y="76" font-size="10.5" fill="#7c2d12">PublishAsync：不阻塞请求方</text>
+    <text x="359" y="100" font-size="10.5" fill="#7c2d12">f 是落盘确认句柄</text>
+    <text x="359" y="124" font-size="10.5" fill="#991b1b">丢了句柄 = 丢消息且无信号</text>
+    <text x="359" y="152" font-size="10.5" fill="#7c2d12">同步 Publish 会掉到几百条/秒</text>
+    <text x="359" y="170" font-size="10.5" fill="#7c2d12">→ 削峰失败（见 1.4 的 ②）</text>
+
+    <path d="M 615 104 L 658 104" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrH)"/>
+
+    <rect x="660" y="22" width="270" height="164" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="674" y="48" font-size="13" fill="#14532d">③ 消费落库 + 幂等</text>
+    <text x="674" y="76" font-size="10.5" fill="#14532d">INSERT IGNORE 去重</text>
+    <text x="674" y="100" font-size="10.5" fill="#14532d">条件 UPDATE ... WHERE stock &gt; 0</text>
+    <text x="674" y="124" font-size="10.5" fill="#14532d">必须看 RowsAffected</text>
+    <text x="674" y="152" font-size="10.5" fill="#991b1b">影响 0 行 ≠ 已修好：重投会被</text>
+    <text x="674" y="170" font-size="10.5" fill="#991b1b">n == 0 分支 Ack，补扣不发生</text>
+  </g>
+
+  <g transform="translate(20,306)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">串起来就是完整链路</text>
+
+    <rect x="30" y="42" width="230" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="145" y="67" font-size="11" fill="#1e3a8a" text-anchor="middle">Lua 预扣（挡住 99% 的请求）</text>
+    <path d="M 260 62 L 318 62" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrH)"/>
+    <rect x="320" y="42" width="230" height="40" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="435" y="67" font-size="11" fill="#7c2d12" text-anchor="middle">入队（17ms 吸走洪峰）</text>
+    <path d="M 550 62 L 608 62" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrH)"/>
+    <rect x="610" y="42" width="320" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="770" y="67" font-size="11" fill="#14532d" text-anchor="middle">消费落库（按下游节奏慢慢做）</text>
+
+    <line x1="18" y1="98" x2="942" y2="98" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="18" y="120" font-size="11" fill="#334155">本机实测（第三段，MySQL 8.0.46）：stock 被另一活动扣成 0 后，只判 err → 积压 5 条 → 确认 5 条、订单 5 条、stock 0→0。</text>
+    <text x="18" y="140" font-size="11" fill="#334155">改判 RowsAffected → 不 Ack 5 条；把这 5 条重投一遍 → 确认 5 条、补扣 0 条（重投不会自愈）。</text>
+    <text x="18" y="162" font-size="11.5" fill="#991b1b">结论：补偿落点只能在 1.7 的对账 —— 捞出「订单已落库但 sku_stock 未扣」，人工确认后补扣或撤单。</text>
+  </g>
+</svg>

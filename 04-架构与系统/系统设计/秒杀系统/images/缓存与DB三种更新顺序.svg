@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="sans-serif">
+  <defs>
+    <marker id="arrE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">缓存与 DB 的三种更新顺序：DEL 删不掉「在路上的旧值」</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">精确构造「读库 → 回填」交错窗口：读线程读到旧值 100，80ms 后才回填；写线程把 DB 100 改成 99</text>
+
+  <g transform="translate(20,82)">
+    <rect x="0" y="0" width="960" height="168" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">80ms 交错窗口（读线程与写线程谁也没写错）</text>
+
+    <rect x="30" y="46" width="240" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="150" y="67" font-size="11" fill="#1e3a8a" text-anchor="middle">读线程：造 miss → 读 DB 旧值 100</text>
+
+    <rect x="380" y="38" width="340" height="66" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="550" y="60" font-size="11.5" fill="#92400e" text-anchor="middle">80ms 窗口</text>
+    <text x="550" y="82" font-size="11" fill="#92400e" text-anchor="middle">写线程：收到通知 → 改 DB 100→99 → 删缓存</text>
+
+    <rect x="800" y="46" width="130" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="865" y="67" font-size="11" fill="#1e3a8a" text-anchor="middle">回填 100</text>
+
+    <line x1="40" y1="126" x2="920" y2="126" stroke="#cbd5e1" stroke-width="1.4" marker-end="url(#arrE)"/>
+    <text x="928" y="130" font-size="10.5" fill="#64748b">时间</text>
+    <text x="18" y="152" font-size="11.5" fill="#475569">共同点：DEL 只能删掉缓存里已有的值，删不掉「已经在路上、即将被回填」的旧值 —— 这就是 A、B 都逃不掉的原因。</text>
+  </g>
+
+  <g transform="translate(20,262)">
+    <rect x="0" y="0" width="960" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+
+    <rect x="14" y="30" width="924" height="60" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
+    <rect x="14" y="30" width="6" height="60" fill="#dc2626"/>
+    <text x="30" y="55" font-size="12" fill="#991b1b">A 先删缓存，再写库</text>
+    <text x="30" y="76" font-size="10.5" fill="#991b1b">删早了</text>
+    <text x="290" y="58" font-size="11.5" fill="#334155">读线程在「删缓存之后、写库之前」读到旧值</text>
+    <text x="290" y="78" font-size="11.5" fill="#334155">写线程随后改成 99，读线程 80ms 后把 100 回填</text>
+    <text x="700" y="68" font-size="11.5" fill="#991b1b">不一致 5/5 轮   缓存 100 / DB 99</text>
+
+    <rect x="14" y="100" width="924" height="60" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
+    <rect x="14" y="100" width="6" height="60" fill="#dc2626"/>
+    <text x="30" y="125" font-size="12" fill="#991b1b">B 先写库，再删缓存</text>
+    <text x="30" y="146" font-size="10.5" fill="#991b1b">删晚了</text>
+    <text x="290" y="128" font-size="11.5" fill="#334155">读线程在「写库之前」就拿到旧值、已在路上</text>
+    <text x="290" y="148" font-size="11.5" fill="#334155">写线程删完缓存后，读线程再把 100 回填</text>
+    <text x="700" y="138" font-size="11.5" fill="#991b1b">不一致 5/5 轮   缓存 100 / DB 99</text>
+
+    <rect x="14" y="170" width="924" height="50" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1"/>
+    <rect x="14" y="170" width="6" height="50" fill="#16a34a"/>
+    <text x="30" y="193" font-size="12" fill="#14532d">C 先写库 + 删缓存 + 延迟再删一次</text>
+    <text x="30" y="211" font-size="10.5" fill="#14532d">延迟双删</text>
+    <text x="290" y="200" font-size="11.5" fill="#334155">第二次删的时候，「在路上的旧值」早已回填完毕，被一并清掉</text>
+    <text x="700" y="200" font-size="11.5" fill="#14532d">不一致 0/5 轮 → 一致</text>
+  </g>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="566" viewBox="0 0 1000 566" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="566" fill="#ffffff"/>
+  <text x="30" y="40" font-size="20" fill="#0f172a">弹幕系统的四层架构：限流 → 双路径 → 缓存 → 扇出</text>
+
+  <!-- 第 1 层 -->
+  <rect x="30" y="64" width="940" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="48" y="84" width="76" height="60" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="86" y="110" font-size="13" fill="#1e3a8a" text-anchor="middle">第 1 层</text>
+  <text x="86" y="130" font-size="12" fill="#1e3a8a" text-anchor="middle">接入限流</text>
+  <text x="140" y="92" font-size="16" fill="#0f172a">接入限流（防刷屏）</text>
+  <text x="140" y="120" font-size="13" fill="#475569">按用户 / 设备 ID / 客户端限频，如 10 分钟 1 条、1 分钟 1 条（由业务需求决定）</text>
+  <text x="140" y="144" font-size="13" fill="#475569">触发限流 → 直接丢弃，不再往下走</text>
+  <path d="M 500 164 L 500 184" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 第 2 层 -->
+  <rect x="30" y="184" width="940" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="48" y="204" width="76" height="60" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="86" y="230" font-size="13" fill="#7c2d12" text-anchor="middle">第 2 层</text>
+  <text x="86" y="250" font-size="12" fill="#7c2d12" text-anchor="middle">双路径分流</text>
+  <text x="140" y="212" font-size="16" fill="#0f172a">双路径分流</text>
+  <text x="140" y="240" font-size="13" fill="#475569">推送链路：推送到前端实时展示</text>
+  <text x="140" y="264" font-size="13" fill="#475569">持久化链路：保存数据，供直播回放展示或弹幕数据分析</text>
+  <path d="M 500 284 L 500 304" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 第 3 层 -->
+  <rect x="30" y="304" width="940" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="48" y="324" width="76" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="86" y="350" font-size="13" fill="#14532d" text-anchor="middle">第 3 层</text>
+  <text x="86" y="370" font-size="12" fill="#14532d" text-anchor="middle">缓存持久化</text>
+  <text x="140" y="332" font-size="16" fill="#0f172a">缓存持久化（为什么必须走缓存）</text>
+  <text x="140" y="360" font-size="13" fill="#475569">先写入 Redis 缓存，再用定时任务或消息队列批量落库</text>
+  <text x="140" y="384" font-size="13" fill="#475569">落库目标可选关系型数据库或 MongoDB 这类文档型数据库</text>
+  <path d="M 500 404 L 500 424" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 第 4 层 -->
+  <rect x="30" y="424" width="940" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="48" y="444" width="76" height="60" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="86" y="470" font-size="13" fill="#1e3a8a" text-anchor="middle">第 4 层</text>
+  <text x="86" y="490" font-size="12" fill="#1e3a8a" text-anchor="middle">发布订阅扇出</text>
+  <text x="140" y="452" font-size="16" fill="#0f172a">发布订阅扇出（用 Redis 发布订阅打通分布式节点）</text>
+  <text x="140" y="480" font-size="13" fill="#475569">所有服务器订阅同一主题；收到弹幕的节点 PUBLISH 到该主题</text>
+  <text x="140" y="504" font-size="13" fill="#475569">所有持有 WebSocket 连接的服务器收到后，各自推送给自己的在线用户</text>
+
+  <text x="30" y="552" font-size="12" fill="#64748b">要点：先给框架（限流 → 双路径），再讲关键权衡（可容忍丢失 → 缓存优先、批量落库），最后暴露分布式的坑（连接位置不确定 → 发布订阅）。</text>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">文件放哪：把无状态服务做成有状态，是这条设计线的核心代价</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">业务服务器要尽可能做到无状态 —— 本地不保存任何数据，只做计算</text>
+
+  <rect x="30" y="86" width="170" height="46" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="8"/>
+  <text x="115" y="114" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">维度</text>
+  <rect x="200" y="86" width="385" height="46" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2" rx="8"/>
+  <text x="392" y="114" font-size="13" font-weight="bold" fill="#7c2d12" text-anchor="middle">文件放业务服务器（本地）</text>
+  <rect x="585" y="86" width="385" height="46" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="777" y="114" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">文件放文件服务器（中心化）</text>
+
+  <rect x="30" y="132" width="170" height="66" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="42" y="170" font-size="12" font-weight="bold" fill="#0f172a">服务状态</text>
+  <rect x="200" y="132" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="212" y="158" font-size="11" fill="#334155">每个节点存的内容都不一样（A 存 A、B 存 B）</text>
+  <text x="212" y="180" font-size="11" fill="#334155">→ 变成有状态服务，跟数据库一样</text>
+  <rect x="585" y="132" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="597" y="158" font-size="11" fill="#334155">业务节点不存任何数据，只做计算</text>
+  <text x="597" y="180" font-size="11" fill="#14532d">→ 无状态</text>
+
+  <rect x="30" y="198" width="170" height="66" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="42" y="236" font-size="12" font-weight="bold" fill="#0f172a">扩缩容</text>
+  <rect x="200" y="198" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="212" y="224" font-size="11" fill="#334155">扩容的新节点没有历史文件；缩容要撤的节点</text>
+  <text x="212" y="246" font-size="11" fill="#334155">上还挂着文件 → 不敢缩</text>
+  <rect x="585" y="198" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="597" y="224" font-size="11" fill="#334155">加机器 / 减机器只影响算力，</text>
+  <text x="597" y="246" font-size="11" fill="#14532d">随时可扩可缩</text>
+
+  <rect x="30" y="264" width="170" height="66" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="42" y="302" font-size="12" font-weight="bold" fill="#0f172a">路由复杂度</text>
+  <rect x="200" y="264" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="212" y="290" font-size="11" fill="#334155">负载均衡过后「到底该访问哪台」不知道 →</text>
+  <text x="212" y="312" font-size="11" fill="#334155">只能再维护一份「文件 ↔ 节点」映射</text>
+  <rect x="585" y="264" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="597" y="290" font-size="11" fill="#334155">文件的定位由文件系统自己解决，</text>
+  <text x="597" y="312" font-size="11" fill="#334155">业务侧不关心</text>
+
+  <rect x="30" y="330" width="170" height="66" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="42" y="368" font-size="12" font-weight="bold" fill="#0f172a">本质</text>
+  <rect x="200" y="330" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="212" y="356" font-size="11" fill="#334155">相当于自己在开发一套文件系统，</text>
+  <text x="212" y="378" font-size="11" fill="#334155">而且和业务深度耦合</text>
+  <rect x="585" y="330" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="597" y="356" font-size="11" fill="#334155">业务只调标准接口 / SDK，</text>
+  <text x="597" y="378" font-size="11" fill="#334155">背后怎么实现完全隐藏</text>
+
+  <rect x="30" y="396" width="170" height="66" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="42" y="434" font-size="12" font-weight="bold" fill="#0f172a">带宽</text>
+  <rect x="200" y="396" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="212" y="422" font-size="11" fill="#334155">客户端 → 业务服务器 → 文件系统，</text>
+  <text x="212" y="444" font-size="11" fill="#334155">走两次网络</text>
+  <rect x="585" y="396" width="385" height="66" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="597" y="422" font-size="11" fill="#14532d">直传只走一次（见 1.4）</text>
+
+  <rect x="30" y="478" width="940" height="66" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="502" font-size="11.5" fill="#334155">好处：流量激增直接加机器加节点、流量回落把多余资源撤下来，整个过程没有任何数据迁移问题。</text>
+  <text x="46" y="524" font-size="11.5" fill="#334155">这与「用中心化 Redis、中心化 DB」是同一件事：数据放数据中心、缓存放缓存中心、文件放文件中心。</text>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="556" viewBox="0 0 1000 556" font-family="sans-serif">
+  <defs>
+    <marker id="arF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="556" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">朋友圈 feed 的分层：写时铺、读时取</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">发布量 &lt;&lt; 查看量：按「两天内的热点」分层缓存，写侧双写、读侧先命中缓存、未命中再回源。</text>
+
+  <!-- 写路径 -->
+  <rect x="40" y="102" width="180" height="300" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="130" y="132" font-size="14" fill="#7c2d12" text-anchor="middle">写：发布</text>
+  <text x="130" y="158" font-size="11" fill="#7c2d12" text-anchor="middle">双写：写库 + 写缓存</text>
+  <text x="130" y="180" font-size="11" fill="#7c2d12" text-anchor="middle">或启动时预热</text>
+  <text x="130" y="202" font-size="11" fill="#7c2d12" text-anchor="middle">（加载两天内数据）</text>
+  <line x1="130" y1="222" x2="130" y2="382" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arF)"/>
+  <text x="130" y="256" font-size="11" fill="#334155" text-anchor="middle">写少、代价可控</text>
+
+  <!-- 读路径 -->
+  <rect x="780" y="102" width="180" height="300" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="870" y="132" font-size="14" fill="#1e3a8a" text-anchor="middle">读：拉取</text>
+  <text x="870" y="158" font-size="11" fill="#1e3a8a" text-anchor="middle">命中缓存直接返回</text>
+  <text x="870" y="180" font-size="11" fill="#1e3a8a" text-anchor="middle">两天前回源 DB</text>
+  <text x="870" y="202" font-size="11" fill="#1e3a8a" text-anchor="middle">（缓存设一天有效期）</text>
+  <line x1="870" y1="382" x2="870" y2="222" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arF)"/>
+  <text x="870" y="256" font-size="11" fill="#334155" text-anchor="middle">读多、必须快</text>
+
+  <!-- 第3层 -->
+  <rect x="250" y="102" width="500" height="92" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="268" y="128" font-size="14" fill="#1e3a8a">③ 应用层 / 客户端</text>
+  <text x="268" y="156" font-size="12" fill="#334155">分页加载：一页 10~20 条，最多不超过 50 条</text>
+  <text x="268" y="180" font-size="12" fill="#334155">本地缓存：退出再进，已有数据不再拉</text>
+
+  <!-- 第2层 -->
+  <rect x="250" y="222" width="500" height="104" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="268" y="248" font-size="14" fill="#7c2d12">② 缓存层（Redis）：两天内的热点</text>
+  <text x="268" y="276" font-size="12" fill="#7c2d12">动态数据：两天内全量缓存（双写 / 启动预热）</text>
+  <text x="268" y="300" font-size="12" fill="#7c2d12">用户-动态关系：缓存后直接拿到「两天内能看的朋友圈」，无需回表</text>
+
+  <!-- 第1层 -->
+  <rect x="250" y="354" width="500" height="104" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="268" y="380" font-size="14" fill="#14532d">① DB 层（按数据特征选型）</text>
+  <text x="268" y="408" font-size="12" fill="#334155">MySQL：用户、朋友关系、评论、点赞（结构化）</text>
+  <text x="268" y="432" font-size="12" fill="#334155">MongoDB：动态（图文 / 视频 / 链接，格式不固定）</text>
+
+  <!-- 层间箭头 -->
+  <line x1="330" y1="194" x2="330" y2="220" stroke="#64748b" stroke-width="1.6" marker-end="url(#arF)"/>
+  <line x1="670" y1="194" x2="670" y2="220" stroke="#64748b" stroke-width="1.6" marker-end="url(#arF)"/>
+  <line x1="330" y1="326" x2="330" y2="352" stroke="#64748b" stroke-width="1.6" marker-end="url(#arF)"/>
+  <line x1="670" y1="326" x2="670" y2="352" stroke="#64748b" stroke-width="1.6" marker-end="url(#arF)"/>
+
+  <!-- 底部注记 -->
+  <rect x="40" y="474" width="920" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="500" font-size="13" fill="#334155">为什么要分层：全放数据库扛不住，全放缓存又浪费大量空间 —— 所以只按「两天内的热点」缓存。</text>
+  <text x="60" y="524" font-size="12" fill="#64748b">顺序靠时间倒序：用发号器（雪花算法）生成有序 ID，按 ID 倒序即等价于按时间倒序，避免同秒无法区分先后。</text>
+</svg>

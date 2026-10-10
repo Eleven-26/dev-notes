@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <defs>
+    <marker id="arrF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrFg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">支付回调异步通知时序：不丢、不重、扛住乱序</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">订单状态只由「异步回调 + 主动查单」驱动；同步返回只代表渠道受理</text>
+
+  <g transform="translate(20,82)">
+    <rect x="0" y="0" width="960" height="460" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+
+    <!-- 参与者 -->
+    <rect x="90" y="16" width="100" height="32" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+    <text x="140" y="37" font-size="11.5" fill="#334155" text-anchor="middle">渠道</text>
+    <rect x="330" y="16" width="140" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="400" y="37" font-size="11.5" fill="#1e3a8a" text-anchor="middle">支付服务</text>
+    <rect x="590" y="16" width="140" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="660" y="37" font-size="11.5" fill="#14532d" text-anchor="middle">订单 / 流水库</text>
+    <rect x="810" y="16" width="120" height="32" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+    <text x="870" y="37" font-size="11.5" fill="#334155" text-anchor="middle">下游</text>
+
+    <!-- 生命线 -->
+    <line x1="140" y1="48" x2="140" y2="430" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="400" y1="48" x2="400" y2="430" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="660" y1="48" x2="660" y2="430" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="870" y1="48" x2="870" y2="430" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <!-- ① 异步回调 -->
+    <text x="270" y="72" font-size="11" fill="#1e3a8a" text-anchor="middle">① 异步回调 SUCCESS（钱到账 = 支付成功判据）</text>
+    <line x1="140" y1="80" x2="396" y2="80" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrF)"/>
+
+    <!-- ② 自处理 -->
+    <text x="410" y="114" font-size="11" fill="#1e3a8a">② 验签 + 先落通知原文（崩了能重放）</text>
+    <path d="M 400 96 L 452 96 L 452 122 L 404 122" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrF)"/>
+
+    <!-- ③ 幂等落流水 -->
+    <text x="530" y="148" font-size="11" fill="#14532d" text-anchor="middle">③ 幂等落支付流水（uk_channel_trade_no）</text>
+    <line x1="400" y1="156" x2="656" y2="156" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrFg)"/>
+
+    <!-- ④ 带旧状态改订单 -->
+    <text x="530" y="184" font-size="11" fill="#14532d" text-anchor="middle">④ 带旧状态改订单 WHERE status='PENDING_PAY'</text>
+    <line x1="400" y1="192" x2="656" y2="192" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrFg)"/>
+
+    <!-- ⑤ 影响 0 行 -->
+    <rect x="400" y="206" width="400" height="42" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="412" y="224" font-size="11" fill="#92400e">⑤ 影响 0 行 → 必须再查一次当前状态：</text>
+    <text x="412" y="240" font-size="11" fill="#92400e">区分「重复回调（直接 ack）」与「迟到回调（要发起退款）」</text>
+
+    <!-- ⑥ 本地消息表 -->
+    <text x="530" y="270" font-size="11" fill="#14532d" text-anchor="middle">⑥ 写本地消息表（与业务同库同事务）</text>
+    <line x1="400" y1="278" x2="656" y2="278" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrFg)"/>
+
+    <!-- ⑦ 异步投递 -->
+    <text x="635" y="306" font-size="11" fill="#1e3a8a" text-anchor="middle">⑦ 异步投递 → 下游幂等消费</text>
+    <line x1="400" y1="314" x2="866" y2="314" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrF)"/>
+
+    <!-- ⑧ 主动查单兜底 -->
+    <text x="270" y="352" font-size="11" fill="#991b1b" text-anchor="middle">⑧ 超 N 分钟无回调 → 主动查单兜底</text>
+    <line x1="400" y1="360" x2="144" y2="360" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrFg)"/>
+
+    <text x="18" y="398" font-size="11.5" fill="#475569">不丢：先落库再处理 + 失败重试 + 主动查单兜底（「回调没来」≠「支付没成功」）。</text>
+    <text x="18" y="420" font-size="11.5" fill="#475569">不重：双方都要幂等（我方唯一索引 / 状态幂等，对方也要）。乱序：本地终态不可回退 + 以渠道最终状态为准。</text>
+  </g>
+</svg>

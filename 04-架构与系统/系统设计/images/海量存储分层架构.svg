@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" width="1000" height="590" font-family="sans-serif">
+  <defs>
+    <marker id="ar6" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">海量存储分层架构：按数据类型选存储 + 分布式分层</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">两个突破点：按数据类型选存储（类型维度）、按量级分层（时间维度）</text>
+
+  <rect x="30" y="82" width="600" height="446" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="106" font-size="13.5" font-weight="bold" fill="#0f172a">系统分层（业务节点无状态，可水平扩容）</text>
+
+  <rect x="46" y="118" width="568" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="330" y="149" font-size="12" fill="#1e3a8a" text-anchor="middle">接入层：IM 网关（长连接）+ 短连接 API，承载连接与鉴权</text>
+
+  <line x1="330" y1="172" x2="330" y2="186" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar6)"/>
+
+  <rect x="46" y="190" width="568" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="330" y="221" font-size="12" fill="#1e3a8a" text-anchor="middle">业务层：消息收发、会话服务、用户服务（无状态，可水平扩容）</text>
+
+  <line x1="330" y1="244" x2="330" y2="258" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar6)"/>
+
+  <rect x="46" y="262" width="568" height="34" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2" rx="8"/>
+  <text x="330" y="284" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">存储层（按数据类型分）</text>
+
+  <rect x="60" y="302" width="540" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="72" y="323" font-size="11.5" fill="#334155">用户信息 / 关系</text>
+  <text x="72" y="341" font-size="11.5" fill="#1e3a8a">→ 分库分表的 MySQL（或分布式关系型）</text>
+
+  <rect x="60" y="352" width="540" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="72" y="373" font-size="11.5" fill="#334155">聊天记录（海量时序）</text>
+  <text x="72" y="391" font-size="11.5" fill="#7c2d12">→ 按 用户 / 会话 维度分片；冷热分层</text>
+
+  <rect x="60" y="402" width="540" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="72" y="423" font-size="11.5" fill="#334155">图片 / 视频 / 文件</text>
+  <text x="72" y="441" font-size="11.5" fill="#14532d">→ 对象存储 + CDN</text>
+
+  <line x1="330" y1="452" x2="330" y2="466" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar6)"/>
+
+  <rect x="46" y="470" width="568" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="330" y="501" font-size="12" fill="#14532d" text-anchor="middle">缓存层：Redis 缓存 7 天内的热点消息与会话元数据</text>
+
+  <rect x="650" y="82" width="320" height="446" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="666" y="106" font-size="13.5" font-weight="bold" fill="#0f172a">冷热分层（时间维度）</text>
+
+  <rect x="664" y="118" width="292" height="66" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2" rx="8"/>
+  <text x="676" y="142" font-size="12.5" font-weight="bold" fill="#7c2d12">热数据：7 天以内</text>
+  <text x="676" y="164" font-size="11" fill="#7c2d12">缓存（Redis 等），快是第一优先级</text>
+
+  <rect x="664" y="192" width="292" height="66" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="676" y="216" font-size="12.5" font-weight="bold" fill="#1e3a8a">温数据：1 个月以内</text>
+  <text x="676" y="238" font-size="11" fill="#1e3a8a">性能与成本折中（普通磁盘 DB / 冷热混合）</text>
+
+  <rect x="664" y="266" width="292" height="66" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="8"/>
+  <text x="676" y="290" font-size="12.5" font-weight="bold" fill="#334155">冷数据：1 个月以前</text>
+  <text x="676" y="312" font-size="11" fill="#334155">低成本大容量（对象存储 / 归档存储）</text>
+
+  <text x="664" y="368" font-size="13.5" font-weight="bold" fill="#0f172a">数据类型选型（类型维度）</text>
+  <text x="664" y="392" font-size="11.5" fill="#334155">用户信息 → 关系型数据库（MySQL）</text>
+  <text x="664" y="418" font-size="11.5" fill="#334155">聊天记录（时序）→ MongoDB / 时序库</text>
+  <text x="664" y="444" font-size="11.5" fill="#334155">文件（大对象）→ 对象存储 / 分布式文件系统</text>
+  <text x="664" y="470" font-size="11.5" fill="#334155">分片后配一致性哈希，减少增删节点的迁移</text>
+  <text x="664" y="496" font-size="11.5" fill="#334155">单用户 / 单会话内部强一致，跨用户最终一致</text>
+
+  <rect x="30" y="544" width="940" height="36" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="8"/>
+  <text x="46" y="567" font-size="11.5" fill="#334155">分层的本质：把不同访问频率的数据放到不同「价位的介质」上 —— 让「快」的只服务少数请求，让「大」的用便宜介质兜住</text>
+</svg>

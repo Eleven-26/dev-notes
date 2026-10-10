@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">秒杀全链路：五道关依次削掉注定失败的请求</text>
+  <text x="30" y="66" font-size="13" fill="#64748b">本机实测口径：1000 库存 / 5000~10000 并发；每一步回答的是「它在挡什么」</text>
+
+  <!-- 关 1 接入限流 -->
+  <rect x="30" y="84" width="940" height="86" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="46" y="100" width="150" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="121" y="123" font-size="14" fill="#1e3a8a" text-anchor="middle">① 接入限流</text>
+  <text x="121" y="143" font-size="12" fill="#1e3a8a" text-anchor="middle">挡掉大部分请求</text>
+  <text x="220" y="118" font-size="13" fill="#0f172a">手段：前端按钮置灰 → 接入层答题 → 网关多维度限流</text>
+  <text x="220" y="140" font-size="12" fill="#475569">要点：按「用户 ID 优先、IP 兜底」，别一刀切按 IP —— NAT 后面是一整栋楼</text>
+
+  <path d="M 500 170 L 500 190" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrA)"/>
+
+  <!-- 关 2 库存扣减 -->
+  <rect x="30" y="196" width="940" height="86" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="46" y="212" width="150" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="121" y="235" font-size="14" fill="#1e3a8a" text-anchor="middle">② 库存扣减</text>
+  <text x="121" y="255" font-size="12" fill="#1e3a8a" text-anchor="middle">原子判定</text>
+  <text x="220" y="230" font-size="13" fill="#0f172a">手段：Redis Lua 把「读-判-写」压进一次服务端执行</text>
+  <text x="220" y="252" font-size="12" fill="#475569">读数：Lua 成功 1000 / 库存 0；「GET 检查 → DECR」两步是成功 5000 / 库存 -4000</text>
+
+  <path d="M 500 282 L 500 302" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrA)"/>
+
+  <!-- 关 3 削峰入队 -->
+  <rect x="30" y="308" width="940" height="86" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="46" y="324" width="150" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="121" y="347" font-size="14" fill="#7c2d12" text-anchor="middle">③ 削峰入队</text>
+  <text x="121" y="367" font-size="12" fill="#7c2d12" text-anchor="middle">异步批量</text>
+  <text x="220" y="342" font-size="13" fill="#0f172a">手段：订单请求异步入队（PublishAsync），消费者按自己节奏取</text>
+  <text x="220" y="364" font-size="12" fill="#475569">读数：同步入队约 625 条/秒 vs 异步 71949 条/秒 —— 差两个数量级</text>
+
+  <path d="M 500 394 L 500 414" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrA)"/>
+
+  <!-- 关 4 消费落库 -->
+  <rect x="30" y="420" width="940" height="86" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="46" y="436" width="150" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="121" y="459" font-size="14" fill="#14532d" text-anchor="middle">④ 消费落库</text>
+  <text x="121" y="479" font-size="12" fill="#14532d" text-anchor="middle">幂等 + 最终一致</text>
+  <text x="220" y="454" font-size="13" fill="#0f172a">手段：唯一索引幂等落库 + 带条件 UPDATE 扣库存，看 RowsAffected</text>
+  <text x="220" y="476" font-size="12" fill="#475569">读数：单行 UPDATE 上限约 833 次/秒 —— 同一行必须串行</text>
+
+  <path d="M 500 506 L 500 526" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrA)"/>
+
+  <!-- 关 5 兜底 -->
+  <rect x="30" y="532" width="940" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="46" y="544" width="150" height="46" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+  <text x="121" y="572" font-size="14" fill="#334155" text-anchor="middle">⑤ 兜底</text>
+  <text x="220" y="560" font-size="13" fill="#0f172a">手段：超时回收 + 幂等 + 对账（对不上先告警、不自动改）</text>
+  <text x="220" y="582" font-size="12" fill="#475569">要点：对账从订单表出发捞差集，捞出「订单已落库但库存未扣」的那批</text>
+</svg>

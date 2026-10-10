@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrCg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">订单状态机与合法转移：终态不可再转</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">箭头 = 合法转移（触发方标在箭头上）；灰底方框 = 终态，不可再转</text>
+
+  <g transform="translate(20,86)">
+    <rect x="0" y="0" width="960" height="384" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+
+    <!-- 主干：待支付 → 已支付 → 已发货 → 已完成 -->
+    <rect x="30" y="150" width="160" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="110" y="174" font-size="13" fill="#1e3a8a" text-anchor="middle">待支付</text>
+    <text x="110" y="192" font-size="9.5" fill="#2563eb" text-anchor="middle">PENDING_PAY</text>
+
+    <rect x="330" y="120" width="160" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="410" y="144" font-size="13" fill="#1e3a8a" text-anchor="middle">已支付</text>
+    <text x="410" y="162" font-size="9.5" fill="#2563eb" text-anchor="middle">PAID</text>
+
+    <rect x="610" y="120" width="160" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="690" y="144" font-size="13" fill="#1e3a8a" text-anchor="middle">已发货</text>
+    <text x="690" y="162" font-size="9.5" fill="#2563eb" text-anchor="middle">SHIPPED</text>
+
+    <rect x="800" y="120" width="140" height="54" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+    <text x="870" y="144" font-size="13" fill="#334155" text-anchor="middle">已完成</text>
+    <text x="870" y="162" font-size="9.5" fill="#64748b" text-anchor="middle">COMPLETED</text>
+    <text x="870" y="196" font-size="10" fill="#64748b" text-anchor="middle">终态</text>
+
+    <!-- 分会支：已取消 / 退款中 / 已退款 -->
+    <rect x="30" y="300" width="160" height="54" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+    <text x="110" y="324" font-size="13" fill="#334155" text-anchor="middle">已取消</text>
+    <text x="110" y="342" font-size="9.5" fill="#64748b" text-anchor="middle">CANCELED</text>
+    <text x="110" y="376" font-size="10" fill="#64748b" text-anchor="middle">终态</text>
+
+    <rect x="330" y="300" width="160" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="410" y="324" font-size="13" fill="#1e3a8a" text-anchor="middle">退款中</text>
+    <text x="410" y="342" font-size="9.5" fill="#2563eb" text-anchor="middle">REFUNDING</text>
+
+    <rect x="610" y="300" width="160" height="54" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+    <text x="690" y="324" font-size="13" fill="#334155" text-anchor="middle">已退款</text>
+    <text x="690" y="342" font-size="9.5" fill="#64748b" text-anchor="middle">REFUNDED</text>
+    <text x="690" y="376" font-size="10" fill="#64748b" text-anchor="middle">终态</text>
+
+    <!-- 转移箭头 -->
+    <path d="M 190 165 L 330 147" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrC)"/>
+    <text x="252" y="140" font-size="11" fill="#1e3a8a" text-anchor="middle">支付回调</text>
+
+    <path d="M 110 204 L 110 300" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrC)"/>
+    <text x="122" y="256" font-size="11" fill="#1e3a8a">用户取消 / 超时关单</text>
+
+    <path d="M 490 147 L 610 147" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrC)"/>
+    <text x="550" y="139" font-size="11" fill="#1e3a8a" text-anchor="middle">商家发货</text>
+
+    <path d="M 410 174 L 410 300" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrC)"/>
+    <text x="422" y="240" font-size="11" fill="#1e3a8a">用户申请退款</text>
+
+    <path d="M 770 147 L 800 147" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrC)"/>
+    <text x="780" y="180" font-size="10.5" fill="#1e3a8a" text-anchor="middle">确认收货</text>
+
+    <path d="M 490 327 L 610 327" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrC)"/>
+    <text x="550" y="319" font-size="11" fill="#1e3a8a" text-anchor="middle">退款回调</text>
+  </g>
+
+  <g transform="translate(20,486)">
+    <rect x="0" y="0" width="960" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">并发下两个合法转移同时到：只有一个能生效</text>
+    <rect x="18" y="42" width="452" height="54" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="30" y="64" font-size="11" fill="#991b1b">无条件 UPDATE SET status=?（后写覆盖前写）</text>
+    <text x="30" y="84" font-size="11" fill="#991b1b">支付 / 关单都报告成功：1 / 1 → 最终状态 PAID</text>
+    <rect x="490" y="42" width="452" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="502" y="64" font-size="11" fill="#14532d">带条件 ... AND status=?  （旧状态写进 WHERE）</text>
+    <text x="502" y="84" font-size="11" fill="#14532d">支付 / 关单报告：0 / 1 → 最终状态 CANCELED</text>
+  </g>
+</svg>

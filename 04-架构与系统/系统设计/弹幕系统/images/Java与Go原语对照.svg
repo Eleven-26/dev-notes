@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="552" viewBox="0 0 1000 552" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="552" fill="#ffffff"/>
+  <text x="30" y="40" font-size="20" fill="#0f172a">Java 与 Go 的原语对照：两处最容易走样的地方</text>
+
+  <!-- 表头 -->
+  <rect x="40" y="62" width="340" height="36" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="210" y="86" font-size="14" fill="#1e3a8a" text-anchor="middle">Go（四段骨架）</text>
+  <rect x="400" y="62" width="300" height="36" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="550" y="86" font-size="14" fill="#14532d" text-anchor="middle">Java（本节）</text>
+  <rect x="720" y="62" width="240" height="36" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="840" y="86" font-size="14" fill="#334155" text-anchor="middle">差在哪</text>
+
+  <!-- 行 1 -->
+  <rect x="40" y="106" width="920" height="72" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="134" font-size="13" fill="#1e3a8a">atomic.Pointer[[]*Sub]</text>
+  <text x="56" y="158" font-size="12" fill="#64748b">整个切片当不可变值整体替换</text>
+  <text x="416" y="134" font-size="13" fill="#14532d">AtomicReference&lt;List&lt;Sub&gt;&gt;</text>
+  <text x="416" y="158" font-size="12" fill="#64748b">整体替换，绝不原地 add / remove</text>
+  <text x="736" y="134" font-size="12" fill="#475569">快照必须不可变</text>
+  <text x="736" y="158" font-size="12" fill="#475569">否则读侧看到写者中间状态</text>
+
+  <!-- 行 2 -->
+  <rect x="40" y="178" width="920" height="72" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="56" y="206" font-size="13" fill="#1e3a8a">select { case ch &lt;- m: default }</text>
+  <text x="56" y="230" font-size="12" fill="#64748b">不阻塞地试一次</text>
+  <text x="416" y="206" font-size="13" fill="#14532d">queue.offer(m)</text>
+  <text x="416" y="230" font-size="12" fill="#64748b">满了返回 false</text>
+  <text x="736" y="206" font-size="12" fill="#475569">一模一样：非阻塞</text>
+  <text x="736" y="230" font-size="12" fill="#475569">满了返回 false</text>
+
+  <!-- 行 3 -->
+  <rect x="40" y="250" width="920" height="72" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="278" font-size="13" fill="#1e3a8a">close(s.out)</text>
+  <text x="56" y="302" font-size="12" fill="#64748b">关通道，广播给所有读者</text>
+  <text x="416" y="278" font-size="13" fill="#14532d">塞一个 POISON 毒丸</text>
+  <text x="416" y="302" font-size="12" fill="#64748b">让消费线程自己退出</text>
+  <text x="736" y="278" font-size="12" fill="#475569">真差异：Java 没有</text>
+  <text x="736" y="302" font-size="12" fill="#475569">关通道广播读者的原语</text>
+
+  <!-- 行 4 -->
+  <rect x="40" y="322" width="920" height="72" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="56" y="350" font-size="13" fill="#1e3a8a">chan Msg（带缓冲）</text>
+  <text x="56" y="374" font-size="12" fill="#64748b">缓冲可为 0</text>
+  <text x="416" y="350" font-size="13" fill="#14532d">ArrayBlockingQueue&lt;Msg&gt;</text>
+  <text x="416" y="374" font-size="12" fill="#64748b">Java 没有 0 缓冲队列</text>
+  <text x="736" y="350" font-size="12" fill="#475569">buf 至少 1</text>
+
+  <!-- 实测 -->
+  <rect x="40" y="418" width="920" height="112" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="56" y="446" font-size="14" fill="#7c2d12">三条只有把两边都跑过才讲得出的话：</text>
+  <text x="56" y="470" font-size="12" fill="#9a3412">① 广播的贵不在队列，而在叫醒 1000 个内核线程：无消费者 ≈69~83ns，接内核线程 ≈3.2~4.1µs（唤醒占 ≈98%）。</text>
+  <text x="56" y="492" font-size="12" fill="#9a3412">② Java 21 虚拟线程只改创建方式即回到 Go 量级 ≈180~264ns（Go ≈242~303ns）。</text>
+  <text x="56" y="514" font-size="12" fill="#9a3412">③ close(chan) 在 Java 里没有等价物，只能塞毒丸，而毒丸可能被满队列挡住。</text>
+</svg>

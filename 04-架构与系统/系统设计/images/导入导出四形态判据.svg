@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">导入导出的四种形态：先过三条判据，再定形态</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">② 和 ③ 的分界线不是「数据量」本身，而是「用户还能不能等」</text>
+
+  <text x="30" y="88" font-size="14" font-weight="bold" fill="#0f172a">三条判据（先过这三问）</text>
+  <rect x="30" y="100" width="300" height="74" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="180" y="124" font-size="12.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">① 会不会撞上超时？</text>
+  <text x="180" y="144" font-size="11" fill="#1e3a8a" text-anchor="middle">网关 / 浏览器 / 用户耐心</text>
+  <text x="180" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">Nginx 默认 60s 往往是真实天花板</text>
+
+  <rect x="350" y="100" width="300" height="74" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="500" y="124" font-size="12.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">② 用户要不要「立刻」拿到？</text>
+  <text x="500" y="144" font-size="11" fill="#1e3a8a" text-anchor="middle">要（点完就要文件）→ 同步</text>
+  <text x="500" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">不要（报表类）→ 异步</text>
+
+  <rect x="670" y="100" width="300" height="74" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="820" y="124" font-size="12.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">③ 失败了要能重跑吗？</text>
+  <text x="820" y="144" font-size="11" fill="#1e3a8a" text-anchor="middle">要（中间产物要保留）→ 异步</text>
+  <text x="820" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">不要 → 同步</text>
+
+  <text x="30" y="206" font-size="14" font-weight="bold" fill="#0f172a">四种形态（判据的落点）</text>
+
+  <rect x="30" y="218" width="455" height="176" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="10"/>
+  <text x="46" y="244" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 同步即时返回</text>
+  <text x="46" y="268" font-size="11.5" fill="#1e3a8a">触发：用户点按钮</text>
+  <text x="46" y="288" font-size="11.5" fill="#1e3a8a">用户看到：直接拿到内容（JSON / 小文件）</text>
+  <text x="46" y="308" font-size="11.5" fill="#1e3a8a">适合量级：千行级、毫秒级</text>
+  <text x="46" y="328" font-size="11.5" fill="#1e3a8a">失败：当场报错，用户重试</text>
+  <text x="46" y="350" font-size="11.5" font-weight="bold" fill="#14532d">内存 O(行数)，最省事</text>
+
+  <rect x="515" y="218" width="455" height="176" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="10"/>
+  <text x="531" y="244" font-size="13.5" font-weight="bold" fill="#14532d">② 同步流式下载</text>
+  <text x="531" y="268" font-size="11.5" fill="#14532d">触发：用户点按钮</text>
+  <text x="531" y="288" font-size="11.5" fill="#14532d">用户看到：浏览器开始下载，边生成边传输</text>
+  <text x="531" y="308" font-size="11.5" fill="#14532d">适合量级：万行级、秒级</text>
+  <text x="531" y="328" font-size="11.5" fill="#14532d">失败：传输中断 → 从头再来</text>
+  <text x="531" y="350" font-size="11.5" font-weight="bold" fill="#14532d">内存 O(1)，首字节提前到第一行查完</text>
+
+  <rect x="30" y="408" width="455" height="176" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2" rx="10"/>
+  <text x="46" y="434" font-size="13.5" font-weight="bold" fill="#7c2d12">③ 异步任务 + 进度</text>
+  <text x="46" y="458" font-size="11.5" fill="#7c2d12">触发：用户点按钮</text>
+  <text x="46" y="478" font-size="11.5" fill="#7c2d12">用户看到：拿到 task_id，轮询 / 推送看进度</text>
+  <text x="46" y="498" font-size="11.5" fill="#7c2d12">适合量级：十万行以上、分钟级</text>
+  <text x="46" y="518" font-size="11.5" fill="#7c2d12">失败：任务表记录，可重跑</text>
+  <text x="46" y="540" font-size="11.5" font-weight="bold" fill="#7c2d12">代价：任务表 + 进度接口 + 文件清理</text>
+
+  <rect x="515" y="408" width="455" height="176" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="10"/>
+  <text x="531" y="434" font-size="13.5" font-weight="bold" fill="#334155">④ 定时批处理</text>
+  <text x="531" y="458" font-size="11.5" fill="#334155">触发：调度器（xxl-job 等）</text>
+  <text x="531" y="478" font-size="11.5" fill="#334155">用户看到：不直接面向用户</text>
+  <text x="531" y="498" font-size="11.5" fill="#334155">产出：落盘 / 落库</text>
+  <text x="531" y="518" font-size="11.5" fill="#334155">适合：与业务量相关</text>
+  <text x="531" y="540" font-size="11.5" font-weight="bold" fill="#334155">失败：调度器自带重试策略</text>
+
+  <rect x="30" y="600" width="940" height="82" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="624" font-size="13" font-weight="bold" fill="#0f172a">量级口径（工程上的通常口径，不是硬阈值）</text>
+  <text x="46" y="646" font-size="11.5" fill="#334155">&lt; 1 万行：同步即时返回，返回 []byte 都无所谓</text>
+  <text x="46" y="666" font-size="11.5" fill="#334155">1 万 ~ 10 万行：同步流式（io.Writer 直写响应），配 gzip</text>
+  <text x="520" y="646" font-size="11.5" fill="#334155">&gt; 10 万行 或 耗时不定的加工：异步任务 + 进度接口</text>
+</svg>

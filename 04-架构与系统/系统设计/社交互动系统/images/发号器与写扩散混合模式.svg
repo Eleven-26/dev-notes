@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="542" viewBox="0 0 1000 542" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="542" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">发号器 + 写扩散 + 混合模式：一份能跑的骨架</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">先用单调 ID 定顺序，再按「粉丝数是否超阈值」决定写扩散还是只写 1 份 —— 数字替设计做注脚。</text>
+
+  <!-- 发号器 -->
+  <rect x="40" y="100" width="300" height="252" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <rect x="40" y="100" width="300" height="40" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="190" y="126" font-size="14" fill="#1e3a8a" text-anchor="middle">发号器 Flake：定顺序</text>
+  <text x="58" y="170" font-size="12" fill="#334155">位分配：41 位毫秒 | 10 位机器 | 12 位序列</text>
+  <rect x="60" y="184" width="156" height="26" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="138" y="202" font-size="11" fill="#1e3a8a" text-anchor="middle">41 位时间戳</text>
+  <rect x="216" y="184" width="38" height="26" rx="4" fill="#ffffff" stroke="#2563eb"/>
+  <text x="235" y="202" font-size="11" fill="#1e3a8a" text-anchor="middle">10 位</text>
+  <rect x="254" y="184" width="46" height="26" rx="4" fill="#ffffff" stroke="#2563eb"/>
+  <text x="277" y="202" font-size="11" fill="#1e3a8a" text-anchor="middle">12 位</text>
+  <text x="58" y="238" font-size="12" fill="#334155">单调 ID：排序、游标分页、断线补漏共用同一个数</text>
+  <text x="58" y="262" font-size="12" fill="#334155">时钟回拨：沿用旧毫秒位、只递增序列号，绝不回绕</text>
+  <text x="58" y="286" font-size="12" fill="#14532d">实测：单实例 20 万个号无重复且单调递增</text>
+  <text x="58" y="312" font-size="11" fill="#64748b">从 ID 反解时间：游标只需存 ID，不用存时间</text>
+  <text x="58" y="336" font-size="11" fill="#64748b">拼接：毫秒 &lt;&lt; (机器位+序列位) | 机器 &lt;&lt; 序列位 | 序列</text>
+
+  <!-- 写扩散 -->
+  <rect x="360" y="100" width="280" height="252" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.6"/>
+  <rect x="360" y="100" width="280" height="40" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="500" y="126" font-size="14" fill="#14532d" text-anchor="middle">写扩散 Push：发布时铺开</text>
+  <text x="378" y="170" font-size="12" fill="#334155">发布 → 写给每个粉丝（去重后含自己）</text>
+  <text x="378" y="196" font-size="12" fill="#14532d">200 粉 → 写 202 份；读 0.4µs</text>
+  <text x="378" y="222" font-size="12" fill="#334155">5 万粉纯写扩散 → 写 50002 份</text>
+  <text x="378" y="248" font-size="12" fill="#334155">写成本 ∝ 粉丝数；读成本 O(1)</text>
+  <line x1="378" y1="268" x2="622" y2="268" stroke="#e2e8f0"/>
+  <text x="378" y="292" font-size="12" fill="#334155">读首页 20 条（关注 50/300/1000）</text>
+  <text x="378" y="316" font-size="12" fill="#14532d">→ 0.43 / 0.60 / 0.32µs（常数）</text>
+  <text x="378" y="340" font-size="11" fill="#64748b">按 ID 插到有序位置，读时直接切前 N 条</text>
+
+  <!-- 混合 -->
+  <rect x="660" y="100" width="300" height="252" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.6"/>
+  <rect x="660" y="100" width="300" height="40" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="810" y="126" font-size="14" fill="#7c2d12" text-anchor="middle">混合 Hybrid：按阈值分流</text>
+  <text x="678" y="170" font-size="12" fill="#334155">粉丝数 &gt; 阈值（示例 10000）？</text>
+  <text x="678" y="196" font-size="12" fill="#7c2d12">　是（大 V）→ 只写 1 份，读时归并</text>
+  <text x="678" y="222" font-size="12" fill="#334155">　否（普通人）→ 照常写扩散</text>
+  <text x="678" y="248" font-size="12" fill="#14532d">大 V：写 1 份，读 155µs</text>
+  <line x1="678" y1="268" x2="942" y2="268" stroke="#e2e8f0"/>
+  <text x="678" y="292" font-size="12" fill="#334155">读首页 20 条（关注 50/300/1000）</text>
+  <text x="678" y="316" font-size="12" fill="#7c2d12">→ 5.04 / 35.48 / 155.48µs</text>
+  <text x="678" y="340" font-size="11" fill="#64748b">代价正比于「关注的大 V 数」，不是关注总数</text>
+
+  <!-- 底部收口 -->
+  <rect x="40" y="372" width="920" height="150" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="400" font-size="15" fill="#0f172a">一句话收口：用数字选，而不是用感觉选</text>
+  <line x1="60" y1="412" x2="940" y2="412" stroke="#e2e8f0"/>
+  <text x="60" y="438" font-size="12" fill="#334155">① 顺序 → 单调 ID（时间位｜机器位｜序列位）：排序、游标分页、断线补漏共用同一个数</text>
+  <text x="60" y="462" font-size="12" fill="#334155">② 选型 → 粉丝数 &gt; 阈值 ? 只写 1 份读时归并 : 推给每个粉丝（阈值是配置项，不是业务语义）</text>
+  <text x="60" y="486" font-size="12" fill="#334155">③ 代价 → 写扩散：写 202 份 / 读 0.4µs；读扩散：写 1 份 / 读 811µs（关注 1000 人）</text>
+  <text x="60" y="510" font-size="11" fill="#64748b">读扩散的读放大线性于关注数：50/300/1000 关注 = 25.65 / 192.04 / 810.73µs。</text>
+</svg>

@@ -3,11 +3,13 @@
 > 同一套四层设计，用 Java 逐类型搬一遍并**重新实测**——重点看两处最容易走样的原语：
 > `atomic.Pointer[[]*Sub]` → `AtomicReference<List<Sub>>`、`select{case ch<-m: default}` → `offer` + 有界 `ArrayBlockingQueue`。
 >
-> 内容整理自大厂 Go 后端面试真题，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）的伸缩性与可用性章节；参考资料与原始素材见 [素材清单](../../../素材清单.md)。
+> 内容整理自个人学习笔记，并参考《大型网站技术架构：核心原理与案例分析》（李智慧）的伸缩性与可用性章节；参考资料与原始素材见 [素材清单](../../../素材清单.md)。
 >
 > **校验口径**：JBR 17 主实验、JBR 21 做虚拟线程对照组，与 Go 侧的数字逐项对照。
 
-## 一、Java 版骨架：同一套四层，逐类型搬一遍并重新实测 ⭐
+## 一、Java 版骨架：同一套四层怎么逐类型搬？
+
+**本节要点**：同一套四层逐类型搬到 Java 并重新实测；重点是三处原语走样——COW 快照、非阻塞投递、关通道退出。
 
 > **校验口径**：`BarrageDesign.java` 用 IDEA 自带的 JBR 实际编译并运行过——
 > `javac -Xlint:all -encoding UTF-8` **无 error 无 warning**，跑了 5 次取数字区间。
@@ -42,6 +44,8 @@ JBR21="<GoLand 安装目录>/jbr/bin"  # 虚拟线程要 JDK 21，用 GoLand 自
 | `go func(){ for range ch }` | `new Thread(...)` | ★ 一个连接 = **一个内核线程**，成本见下面第四组 |
 | `context.WithCancel` | `volatile` 标志位 + 线程 `interrupt` | — |
 | `sync.Once` | `AtomicBoolean.compareAndSet` | — |
+
+![Java 与 Go 的原语对照：COW 快照与 select+default ↔ offer](images/Java与Go原语对照.svg)
 
 **片段一：一条连接 = 有界队列 + 非阻塞投递 + 毒丸退出**（对应 `barrage_2.go` 的 `Sub`）
 
@@ -248,7 +252,9 @@ JBR21="<GoLand 安装目录>/jbr/bin"  # 虚拟线程要 JDK 21，用 GoLand 自
 
 ---
 
-## 二、一句话收口
+## 二、这套四层怎么一句话收口？
+
+**本节要点**：四层骨架收口成三件事——入口挡掉不合规、扇出隔离慢连接、落库把散的攒起来。
 
 > 四层的骨架其实只有三件事：**入口把不合规的挡掉（限流直接丢**）、
 > **扇出把慢的隔离掉（有界缓冲 + 非阻塞投递 + COW 快照**）、

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="528" viewBox="0 0 1000 528" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="528" fill="#ffffff"/>
+  <text x="30" y="40" font-size="20" fill="#0f172a">BatchWriter：批量落库的三个开关</text>
+
+  <!-- 数据流 -->
+  <rect x="40" y="86" width="170" height="80" rx="8" fill="#e2e8f0" stroke="#64748b"/>
+  <text x="125" y="120" font-size="14" fill="#334155" text-anchor="middle">生产者 Enqueue</text>
+  <text x="125" y="144" font-size="12" fill="#475569" text-anchor="middle">非阻塞入队</text>
+  <text x="125" y="164" font-size="12" fill="#475569" text-anchor="middle">返回 false = 被丢</text>
+
+  <path d="M 212 126 L 246 126" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="250" y="86" width="190" height="80" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="345" y="120" font-size="14" fill="#7c2d12" text-anchor="middle">有界队列</text>
+  <text x="345" y="144" font-size="12" fill="#9a3412" text-anchor="middle">队列容量 500</text>
+  <text x="345" y="164" font-size="12" fill="#9a3412" text-anchor="middle">chan Msg</text>
+
+  <path d="M 442 126 L 476 126" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="480" y="86" width="200" height="80" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="580" y="120" font-size="14" fill="#1e3a8a" text-anchor="middle">Run 消费循环</text>
+  <text x="580" y="144" font-size="12" fill="#1e3a8a" text-anchor="middle">攒批 + 定时 flush</text>
+  <text x="580" y="164" font-size="12" fill="#1e3a8a" text-anchor="middle">单批 100</text>
+
+  <path d="M 682 126 L 716 126" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="720" y="86" width="240" height="80" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="840" y="120" font-size="14" fill="#14532d" text-anchor="middle">Sink 落库</text>
+  <text x="840" y="144" font-size="12" fill="#166534" text-anchor="middle">生产是 batch insert</text>
+  <text x="840" y="164" font-size="12" fill="#166534" text-anchor="middle">失败不重试</text>
+
+  <!-- 背压 -->
+  <path d="M 345 166 L 345 206" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arrO)"/>
+  <rect x="240" y="206" width="210" height="56" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="345" y="230" font-size="13" fill="#7c2d12" text-anchor="middle">队列满 → 丢弃并计数</text>
+  <text x="345" y="250" font-size="12" fill="#9a3412" text-anchor="middle">保内存、保推送链路</text>
+
+  <!-- 三个开关 -->
+  <rect x="40" y="286" width="300" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="314" font-size="14" fill="#0f172a">开关①：攒够 N 条就 flush</text>
+  <text x="56" y="340" font-size="12" fill="#475569">单批 max = 100</text>
+  <text x="56" y="362" font-size="12" fill="#475569">为的是吞吐：避免「每条新数据都写一次库」</text>
+
+  <rect x="350" y="286" width="300" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="366" y="314" font-size="14" fill="#0f172a">开关②：超过 T 时间也 flush</text>
+  <text x="366" y="340" font-size="12" fill="#475569">否则低峰期弹幕一直躺在内存里</text>
+  <text x="366" y="362" font-size="12" fill="#475569">进程一挂全丢，这是可避免的丢</text>
+
+  <rect x="660" y="286" width="300" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="676" y="314" font-size="14" fill="#0f172a">开关③：缓冲满即丢并计数</text>
+  <text x="676" y="340" font-size="12" fill="#475569">背压：丢掉新的，不阻塞生产者</text>
+  <text x="676" y="362" font-size="12" fill="#475569">阻塞会一路卡住 WebSocket 读循环</text>
+
+  <text x="30" y="446" font-size="12" fill="#64748b">实测③（队列容量 500、单批 100、入队 2000 条）：出口不阻塞时入队 500、丢弃 1500；出口 5ms 时入队 600、丢弃 1400。</text>
+  <text x="30" y="472" font-size="12" fill="#64748b">结论：队列一满就开始丢，落库变快变慢都救不回来；真正能救的是加大队列 + 加消费协程，或反过来给入口限流。</text>
+  <text x="30" y="498" font-size="12" fill="#94a3b8">flush 失败不重试——弹幕是可容忍丢失的娱乐性数据；换成订单 / 余额则必须「落本地 WAL + 重试 + 告警」。</text>
+</svg>

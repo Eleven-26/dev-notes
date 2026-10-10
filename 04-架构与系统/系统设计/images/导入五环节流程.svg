@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="sans-serif">
+  <defs>
+    <marker id="ar3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">导入的五个环节：顺序不能乱，最容易做错的是 ② 和 ③ 的先后</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">输入不由你控制，目标是把一份不受控的文件安全地变成可控的数据库变更</text>
+
+  <rect x="30" y="92" width="160" height="128" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3" rx="10"/>
+  <text x="110" y="122" font-size="15" font-weight="bold" fill="#334155" text-anchor="middle">① 解析</text>
+  <text x="110" y="148" font-size="11" fill="#334155" text-anchor="middle">解析层</text>
+  <text x="110" y="170" font-size="11" fill="#334155" text-anchor="middle">把字节变成行</text>
+
+  <rect x="225" y="92" width="160" height="128" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3" rx="10"/>
+  <text x="305" y="122" font-size="15" font-weight="bold" fill="#1e3a8a" text-anchor="middle">② 校验</text>
+  <text x="305" y="148" font-size="11" fill="#1e3a8a" text-anchor="middle">业务层</text>
+  <text x="305" y="170" font-size="11" fill="#1e3a8a" text-anchor="middle">逐行 / 跨行检查</text>
+  <text x="305" y="190" font-size="11" fill="#1e3a8a" text-anchor="middle">产出错误清单</text>
+
+  <rect x="420" y="92" width="160" height="128" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3" rx="10"/>
+  <text x="500" y="122" font-size="15" font-weight="bold" fill="#7c2d12" text-anchor="middle">③ 写库</text>
+  <text x="500" y="148" font-size="11" fill="#7c2d12" text-anchor="middle">存储层</text>
+  <text x="500" y="170" font-size="11" fill="#7c2d12" text-anchor="middle">分小事务批量写</text>
+
+  <rect x="615" y="92" width="160" height="128" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3" rx="10"/>
+  <text x="695" y="122" font-size="15" font-weight="bold" fill="#14532d" text-anchor="middle">④ 回报</text>
+  <text x="695" y="148" font-size="11" fill="#14532d" text-anchor="middle">已写入行数</text>
+  <text x="695" y="170" font-size="11" fill="#14532d" text-anchor="middle">错误行数 / 进度</text>
+
+  <rect x="810" y="92" width="160" height="128" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3" rx="10"/>
+  <text x="890" y="122" font-size="15" font-weight="bold" fill="#334155" text-anchor="middle">⑤ 收尾</text>
+  <text x="890" y="148" font-size="11" fill="#334155" text-anchor="middle">幂等标记 / 通知</text>
+  <text x="890" y="170" font-size="11" fill="#334155" text-anchor="middle">清理临时文件</text>
+
+  <line x1="192" y1="156" x2="219" y2="156" stroke="#64748b" stroke-width="1.8" marker-end="url(#ar3)"/>
+  <line x1="387" y1="156" x2="414" y2="156" stroke="#64748b" stroke-width="1.8" marker-end="url(#ar3)"/>
+  <line x1="582" y1="156" x2="609" y2="156" stroke="#64748b" stroke-width="1.8" marker-end="url(#ar3)"/>
+  <line x1="777" y1="156" x2="804" y2="156" stroke="#64748b" stroke-width="1.8" marker-end="url(#ar3)"/>
+
+  <rect x="30" y="252" width="940" height="216" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="278" font-size="13.5" font-weight="bold" fill="#0f172a">② 和 ③ 的先后：判据是「部分成功」能不能接受</text>
+
+  <rect x="46" y="292" width="908" height="50" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="60" y="313" font-size="12" font-weight="bold" fill="#1e3a8a">先全量校验，再统一写</text>
+  <text x="60" y="332" font-size="11" fill="#1e3a8a">适合：财务、订单这类「要么全对要么不动」；代价：内存 O(行数)，或需要两遍读文件</text>
+
+  <rect x="46" y="352" width="908" height="50" fill="#ffedd5" stroke="#ea580c" stroke-width="1" rx="8"/>
+  <text x="60" y="373" font-size="12" font-weight="bold" fill="#7c2d12">边校验边写（每行通过就写当前小事务）</text>
+  <text x="60" y="392" font-size="11" fill="#7c2d12">适合：批量建客户、导入名单这类「允许部分成功」；代价：可能拿到「成功 800 行失败 200 行」的半成品</text>
+
+  <rect x="46" y="412" width="908" height="46" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="60" y="432" font-size="12" font-weight="bold" fill="#14532d">先干跑（dry-run）</text>
+  <text x="60" y="450" font-size="11" fill="#14532d">第一遍只校验并输出预览，用户确认后再第二遍真正写；代价：要读两遍，或把解析结果缓存起来</text>
+</svg>

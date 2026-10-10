@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="sans-serif">
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">削峰入队速率对照：同一个队列，入队方式决定成败</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">洪峰 10000 请求 = 下游能力（并发 50、每条 20ms ≈ 2500 条/秒）的 4.0 倍</text>
+
+  <!-- 面板 A -->
+  <rect x="30" y="82" width="300" height="204" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="110" font-size="15" fill="#0f172a">① 同步直连（无队列）</text>
+  <text x="46" y="142" font-size="11.5" fill="#334155">洪峰 10000 请求直接打下游</text>
+  <text x="46" y="166" font-size="11.5" fill="#334155">成功 50 / 被拒 9950</text>
+  <text x="46" y="190" font-size="11.5" fill="#334155">耗时 23ms</text>
+  <rect x="46" y="210" width="268" height="62" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="58" y="232" font-size="11" fill="#991b1b">洪峰没有被消化，只是被拒绝了 ——</text>
+  <text x="58" y="250" font-size="11" fill="#991b1b">被拒的 9950 个就是真实丢掉的订单。</text>
+  <text x="58" y="266" font-size="11" fill="#991b1b">这就是「没有削峰」的样子。</text>
+
+  <!-- 面板 B -->
+  <rect x="345" y="82" width="300" height="204" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="361" y="110" font-size="15" fill="#0f172a">② 同步 Publish</text>
+  <text x="361" y="142" font-size="11.5" fill="#334155">入队 10000 条：15.983s</text>
+  <text x="361" y="166" font-size="11.5" fill="#334155">≈ 625 条/秒（慢于下游 4 倍）</text>
+  <text x="361" y="190" font-size="11.5" fill="#334155">排队：第 1 条 7ms → 最后 15.987s</text>
+  <rect x="361" y="210" width="268" height="62" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="373" y="232" font-size="11" fill="#92400e">每条消息都等一次落盘 ack，</text>
+  <text x="373" y="250" font-size="11" fill="#92400e">10000 条串行等下来 16 秒 ——</text>
+  <text x="373" y="266" font-size="11" fill="#92400e">队列成了新的瓶颈（积压一上来就满）。</text>
+
+  <!-- 面板 C -->
+  <rect x="660" y="82" width="300" height="204" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="676" y="110" font-size="15" fill="#0f172a">③ 异步批量 PublishAsync</text>
+  <text x="676" y="142" font-size="11.5" fill="#334155">入队 10000 条：139ms</text>
+  <text x="676" y="166" font-size="11.5" fill="#334155">≈ 71949 条/秒（快 115 倍）</text>
+  <text x="676" y="190" font-size="11.5" fill="#334155">排队：第 1 条 7ms，后面慢慢消费</text>
+  <rect x="676" y="210" width="268" height="62" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="688" y="232" font-size="11" fill="#14532d">异步批量 + 一次等落盘，洪峰 139ms</text>
+  <text x="688" y="250" font-size="11" fill="#14532d">被「吸」进队列 —— 一条没丢，</text>
+  <text x="688" y="266" font-size="11" fill="#14532d">下游并发始终不超过 50。</text>
+
+  <!-- 底部：入队速率对照（对数刻度） -->
+  <rect x="30" y="300" width="930" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="328" font-size="15" fill="#0f172a">入队 / 消费速率对照（对数刻度，条/秒）</text>
+
+  <!-- 坐标刻度：100 → 100000，3 个数量级铺 699px（每十倍 233px） -->
+  <line x1="250" y1="352" x2="250" y2="470" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="250" y="344" font-size="10" fill="#64748b" text-anchor="middle">100</text>
+  <line x1="483" y1="352" x2="483" y2="470" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="483" y="344" font-size="10" fill="#64748b" text-anchor="middle">1000</text>
+  <line x1="716" y1="352" x2="716" y2="470" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="716" y="344" font-size="10" fill="#64748b" text-anchor="middle">10000</text>
+  <line x1="949" y1="352" x2="949" y2="470" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="949" y="344" font-size="10" fill="#64748b" text-anchor="middle">100000</text>
+
+  <text x="60" y="378" font-size="11.5" fill="#1e3a8a">下游消费能力</text>
+  <rect x="250" y="362" width="326" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="586" y="379" font-size="11" fill="#1e3a8a">2500（基准）</text>
+
+  <text x="60" y="414" font-size="11.5" fill="#7c2d12">② 同步 Publish</text>
+  <rect x="250" y="398" width="186" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="446" y="415" font-size="11" fill="#7c2d12">625 —— 比下游还慢</text>
+
+  <text x="60" y="450" font-size="11.5" fill="#14532d">③ 异步批量</text>
+  <rect x="250" y="434" width="667" height="24" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="925" y="451" font-size="11" fill="#14532d">71949</text>
+
+  <text x="46" y="486" font-size="12" fill="#475569">要点：削峰 = 让「入队速率」远大于「下游速率」；判据看积压曲线 —— 真的削峰是「瞬间冲高，然后线性下降」。</text>
+  <text x="46" y="504" font-size="12" fill="#94a3b8">注意：②③ 绝对值依赖宿主机磁盘；四次连跑区间为 ② 225~625、③ 21721~71949 条/秒 —— 要记的是「差两个数量级」。</text>
+</svg>

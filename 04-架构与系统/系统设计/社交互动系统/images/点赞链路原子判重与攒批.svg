@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="sans-serif">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">点赞链路：原子判重 + 后台攒批</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">判重与计数压进一次服务端执行；落库交给后台攒批，摊薄的是 fsync。</text>
+
+  <!-- ① 请求 -->
+  <rect x="40" y="100" width="190" height="110" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="135" y="128" font-size="14" fill="#1e3a8a" text-anchor="middle">① 点赞请求</text>
+  <line x1="52" y1="142" x2="218" y2="142" stroke="#e2e8f0"/>
+  <text x="135" y="166" font-size="12" fill="#334155" text-anchor="middle">uid + post_id</text>
+  <text x="135" y="190" font-size="12" fill="#64748b" text-anchor="middle">高频低价值写入</text>
+
+  <!-- ② Lua -->
+  <rect x="270" y="92" width="360" height="126" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="450" y="120" font-size="14" fill="#1e3a8a" text-anchor="middle">② Lua 脚本：判重 + 计数一次完成</text>
+  <line x1="284" y1="132" x2="616" y2="132" stroke="#93c5fd"/>
+  <text x="284" y="156" font-size="12" fill="#1e3a8a">SADD like:set:{post_id} uid → 返回 1/0</text>
+  <text x="284" y="180" font-size="12" fill="#334155">返回 1：INCR like:count（首次点赞）</text>
+  <text x="284" y="204" font-size="12" fill="#334155">返回 0：丢弃（已赞过，不计数）</text>
+
+  <!-- ③ 计数器 -->
+  <rect x="670" y="100" width="290" height="110" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="815" y="128" font-size="14" fill="#1e3a8a" text-anchor="middle">③ Redis 计数器</text>
+  <line x1="684" y1="142" x2="946" y2="142" stroke="#e2e8f0"/>
+  <text x="815" y="166" font-size="12" fill="#334155" text-anchor="middle">读：GET 恒 O(1)</text>
+  <text x="815" y="190" font-size="12" fill="#64748b" text-anchor="middle">实测 126~302µs，无趋势</text>
+
+  <line x1="230" y1="155" x2="266" y2="155" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar2)"/>
+  <line x1="630" y1="155" x2="666" y2="155" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar2)"/>
+
+  <!-- 判重为什么要原子 -->
+  <rect x="40" y="252" width="190" height="112" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="135" y="278" font-size="13" fill="#7c2d12" text-anchor="middle">判重为什么要原子</text>
+  <line x1="52" y1="290" x2="218" y2="290" stroke="#fed7aa"/>
+  <text x="135" y="312" font-size="11" fill="#7c2d12" text-anchor="middle">同一用户点 1000 次</text>
+  <text x="135" y="334" font-size="11" fill="#7c2d12" text-anchor="middle">无去重 → 计数 1000</text>
+  <text x="135" y="356" font-size="11" fill="#7c2d12" text-anchor="middle">SADD 判重 → 计数 1</text>
+
+  <!-- ④ 攒批 -->
+  <rect x="270" y="240" width="360" height="126" rx="10" fill="#ffffff" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="450" y="268" font-size="14" fill="#14532d" text-anchor="middle">④ 后台攒批落库</text>
+  <line x1="284" y1="280" x2="616" y2="280" stroke="#e2e8f0"/>
+  <text x="284" y="304" font-size="12" fill="#334155">每 100ms 或攒够 1000 条，先到先刷</text>
+  <text x="284" y="328" font-size="12" fill="#14532d">实测 2000 条：13.709s → 136ms</text>
+  <text x="284" y="352" font-size="12" fill="#64748b">代价：窗口内崩溃 → 整批丢失</text>
+
+  <!-- ⑤ 落库 -->
+  <rect x="670" y="248" width="290" height="110" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="815" y="274" font-size="14" fill="#14532d" text-anchor="middle">⑤ 批量 INSERT → MySQL</text>
+  <line x1="684" y1="286" x2="946" y2="286" stroke="#86efac"/>
+  <text x="815" y="310" font-size="12" fill="#14532d" text-anchor="middle">一次提交落多条，摊薄 fsync</text>
+  <text x="815" y="334" font-size="12" fill="#334155" text-anchor="middle">唯一索引 (post_id, uid) 兜底</text>
+
+  <line x1="450" y1="218" x2="450" y2="236" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar2)"/>
+  <line x1="630" y1="303" x2="666" y2="303" stroke="#64748b" stroke-width="1.6" marker-end="url(#ar2)"/>
+
+  <!-- 底部注记 -->
+  <rect x="40" y="404" width="920" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="430" font-size="13" fill="#334155">判重名单会丢（TTL / 重启 / 内存淘汰），所以 DB 唯一索引是最后一层兜底；判重键里必须有 uid。</text>
+  <text x="60" y="456" font-size="12" fill="#64748b">异步的收益本质是摊薄 fsync，不是「写 Redis 快」：即使不用 Redis，2000 条攒一批收益同样存在。</text>
+</svg>

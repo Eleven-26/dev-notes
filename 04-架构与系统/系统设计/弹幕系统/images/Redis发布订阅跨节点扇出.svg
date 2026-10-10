@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/>
+    </marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="30" y="40" font-size="20" fill="#0f172a">Redis 发布订阅：跨节点扇出弹幕</text>
+
+  <!-- 上半：一条弹幕 PUBLISH 到主题 -->
+  <rect x="40" y="86" width="170" height="52" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="125" y="117" font-size="14" fill="#0f172a" text-anchor="middle">一条弹幕</text>
+  <path d="M 210 112 L 264 112" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="268" y="86" width="250" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="393" y="117" font-size="14" fill="#1e3a8a" text-anchor="middle">服务器 1 号（先收到弹幕）</text>
+  <path d="M 518 112 L 604 112" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arrO)"/>
+  <text x="561" y="104" font-size="12" fill="#ea580c" text-anchor="middle">PUBLISH</text>
+  <rect x="608" y="86" width="352" height="52" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="784" y="117" font-size="14" fill="#7c2d12" text-anchor="middle">Redis 主题（所有服务器订阅同一主题）</text>
+
+  <!-- 扇出到各节点 -->
+  <path d="M 700 138 L 260 300" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrB)"/>
+  <path d="M 784 138 L 520 300" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrB)"/>
+  <path d="M 868 138 L 780 300" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrB)"/>
+  <text x="470" y="250" font-size="12" fill="#2563eb" text-anchor="middle">SUBSCRIBE</text>
+
+  <!-- 下半：三台服务器各自推给本机连接 -->
+  <rect x="90" y="300" width="220" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="200" y="336" font-size="14" fill="#0f172a" text-anchor="middle">服务器 1 号</text>
+  <text x="200" y="360" font-size="12" fill="#475569" text-anchor="middle">收到通知，推给本机连接</text>
+  <rect x="390" y="300" width="220" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="336" font-size="14" fill="#0f172a" text-anchor="middle">服务器 2 号</text>
+  <text x="500" y="360" font-size="12" fill="#475569" text-anchor="middle">收到通知，推给本机连接</text>
+  <rect x="690" y="300" width="220" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="800" y="336" font-size="14" fill="#0f172a" text-anchor="middle">服务器 3 号</text>
+  <text x="800" y="360" font-size="12" fill="#475569" text-anchor="middle">收到通知，推给本机连接</text>
+
+  <path d="M 200 380 L 200 428" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 380 L 500 428" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 800 380 L 800 428" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="90" y="428" width="220" height="48" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="200" y="457" font-size="13" fill="#14532d" text-anchor="middle">本机 WebSocket 连接</text>
+  <rect x="390" y="428" width="220" height="48" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="500" y="457" font-size="13" fill="#14532d" text-anchor="middle">本机 WebSocket 连接</text>
+  <rect x="690" y="428" width="220" height="48" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="800" y="457" font-size="13" fill="#14532d" text-anchor="middle">本机 WebSocket 连接</text>
+
+  <text x="30" y="514" font-size="12" fill="#64748b">要点：负载均衡下「连接落在哪台、弹幕从哪台进来」都不确定；订阅同一主题后，收到弹幕的节点 PUBLISH，所有持有连接的节点各自推送。</text>
+  <text x="30" y="536" font-size="12" fill="#64748b">于是弹幕推送不再依赖「用户恰好连在哪台机器」。</text>
+</svg>

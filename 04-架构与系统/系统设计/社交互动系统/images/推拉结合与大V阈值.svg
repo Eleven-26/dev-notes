@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="524" viewBox="0 0 1000 524" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="524" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">推拉结合与大 V 阈值：把成本放到哪一侧</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">发一条内容，是立刻写给所有粉丝（推），还是等粉丝来读时再聚合（拉）—— 两者的代价结构正好相反。</text>
+
+  <!-- 推 -->
+  <rect x="40" y="100" width="450" height="248" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <rect x="40" y="100" width="450" height="42" rx="12" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="265" y="127" font-size="15" fill="#1e3a8a" text-anchor="middle">推（写扩散）：发布时铺开</text>
+  <text x="60" y="172" font-size="12" fill="#334155">① 发 1 条 → 写 10000 个粉丝收件箱</text>
+  <text x="60" y="196" font-size="12" fill="#334155">　 耗时 117ms（10000 次 LPUSH，批量）</text>
+  <text x="60" y="226" font-size="12" fill="#334155">② 读自己的收件箱 1 次：314µs（O(1)）</text>
+  <text x="60" y="250" font-size="12" fill="#2563eb">③ 写成本 ∝ 粉丝数；读成本 O(1)</text>
+  <line x1="60" y1="270" x2="470" y2="270" stroke="#e2e8f0"/>
+  <text x="60" y="294" font-size="12" fill="#334155">适合：粉丝数 &gt;&gt; 关注数、读远多于写</text>
+  <text x="60" y="318" font-size="12" fill="#64748b">代价：取关残留 / 新关注漏推，要读时过滤</text>
+
+  <!-- 拉 -->
+  <rect x="510" y="100" width="450" height="248" rx="12" fill="#ffffff" stroke="#ea580c" stroke-width="1.6"/>
+  <rect x="510" y="100" width="450" height="42" rx="12" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="735" y="127" font-size="15" fill="#7c2d12" text-anchor="middle">拉（读扩散）：读时聚合</text>
+  <text x="530" y="172" font-size="12" fill="#334155">① 发 1 条 → 只写自己的发件箱</text>
+  <text x="530" y="196" font-size="12" fill="#334155">　 耗时 303µs（写 1 份）</text>
+  <text x="530" y="226" font-size="12" fill="#334155">② 读时聚合 3 个关注对象：894µs</text>
+  <text x="530" y="250" font-size="12" fill="#ea580c">③ 写成本 O(1)；读成本 ∝ 关注数</text>
+  <line x1="530" y1="270" x2="940" y2="270" stroke="#e2e8f0"/>
+  <text x="530" y="294" font-size="12" fill="#334155">适合：关注数大、粉丝少、写远多于读</text>
+  <text x="530" y="318" font-size="12" fill="#64748b">代价：读要归并排序 + 去重</text>
+
+  <!-- 大 V 阈值 -->
+  <rect x="40" y="366" width="920" height="138" rx="12" fill="#f8fafc" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="60" y="394" font-size="15" fill="#14532d">大 V 阈值：粉丝数超阈值就转拉（写次数从「粉丝数」降到 1）</text>
+  <line x1="60" y1="406" x2="940" y2="406" stroke="#e2e8f0"/>
+  <text x="60" y="432" font-size="12" fill="#334155">判据：比「粉丝数 × 发帖频次」与「关注数 × 读频次」—— 谁大，谁让另一侧承担。</text>
+  <text x="60" y="458" font-size="12" fill="#14532d">阈值示例 10 万：10 万粉 → 纯推写 100000 次，混合只写 1 次。</text>
+  <text x="60" y="484" font-size="12" fill="#14532d">500 万粉 → 纯推写 5000000 次，混合 1 次：扩散成本从粉丝数降到 1。</text>
+  <text x="60" y="504" font-size="11" fill="#64748b">阈值按「粉丝数 × 发帖频次」估写放大，超可接受写 QPS 才转拉（本机 1 万次 = 117ms）。</text>
+</svg>

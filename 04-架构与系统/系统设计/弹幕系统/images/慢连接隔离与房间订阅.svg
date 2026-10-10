@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="30" y="40" font-size="20" fill="#0f172a">慢连接隔离与房间订阅：COW 快照 + 有界缓冲 + 非阻塞投递</text>
+
+  <!-- Room -->
+  <rect x="30" y="110" width="260" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="160" y="142" font-size="16" fill="#0f172a" text-anchor="middle">Room（房间订阅集合）</text>
+  <text x="50" y="174" font-size="13" fill="#475569">subs：map[string]*Sub</text>
+  <text x="50" y="200" font-size="13" fill="#475569">snap：atomic.Pointer[[]*Sub]</text>
+  <text x="50" y="226" font-size="13" fill="#475569">Join / Leave 时换一份新切片</text>
+  <text x="50" y="252" font-size="13" fill="#2563eb">读多写少：广播只 Load 指针</text>
+  <text x="50" y="278" font-size="13" fill="#2563eb">遍历快照时不持锁</text>
+
+  <path d="M 290 205 L 326 205" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- Broadcast -->
+  <rect x="330" y="175" width="180" height="60" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="420" y="203" font-size="14" fill="#1e3a8a" text-anchor="middle">Broadcast(m)</text>
+  <text x="420" y="223" font-size="12" fill="#1e3a8a" text-anchor="middle">尽力投递，返回成功条数</text>
+
+  <path d="M 510 200 L 556 150" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 510 212 L 556 320" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 快连接 -->
+  <rect x="560" y="95" width="410" height="120" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="765" y="126" font-size="16" fill="#14532d" text-anchor="middle">快连接（正常消费）</text>
+  <text x="580" y="154" font-size="13" fill="#166534">有界缓冲：out chan Msg（如 1024）</text>
+  <text x="580" y="178" font-size="13" fill="#166534">trySend：select { case out&lt;-m: }</text>
+  <text x="580" y="202" font-size="13" fill="#166534">写协程持续消费；sent++</text>
+
+  <!-- 慢连接 -->
+  <rect x="560" y="262" width="410" height="142" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="765" y="293" font-size="16" fill="#7c2d12" text-anchor="middle">慢连接（弱网 / 手机切后台）</text>
+  <text x="580" y="321" font-size="13" fill="#9a3412">同一份有界缓冲（如 1024），不是无界队列</text>
+  <text x="580" y="345" font-size="13" fill="#9a3412">trySend 走 select 的 default 分支</text>
+  <text x="580" y="369" font-size="13" fill="#9a3412">丢弃这一条并 dropped++（绝不阻塞广播）</text>
+  <text x="580" y="393" font-size="13" fill="#7c2d12">丢弃率是弹幕系统的健康度指标</text>
+
+  <text x="30" y="474" font-size="12" fill="#64748b">要点：一个卡住的客户端会把整房间消息堆在自己队列里，OOM 的是服务端；所以每连接一个有界缓冲，投递用非阻塞发送。</text>
+  <text x="30" y="496" font-size="12" fill="#64748b">慢连接的成本被 default 分支单独吃掉，快连接始终不受牵连；订阅集合用 COW 快照，增删才复制整份切片。</text>
+</svg>

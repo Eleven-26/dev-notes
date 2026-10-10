@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="550" viewBox="0 0 1000 550" font-family="sans-serif">
+  <defs>
+    <marker id="ar3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="550" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">ZSET 为什么快：哈希表存分、跳表存序</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">排行榜的三个操作 —— 按分数定位名次、范围取前 N 名、改分数 —— 决定了只能选「有序结构 + O(log N) 改分」。</text>
+
+  <!-- 左：两套结构 -->
+  <rect x="40" y="96" width="560" height="368" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="124" font-size="15" fill="#0f172a">Redis ZSET = 两套结构一起维护</text>
+
+  <!-- 哈希表 -->
+  <rect x="58" y="138" width="524" height="86" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="74" y="164" font-size="13" fill="#1e3a8a">哈希表 dict：成员 → 分数</text>
+  <text x="74" y="190" font-size="12" fill="#334155">O(1) 查分（ZSCORE / 按成员定位）</text>
+  <text x="74" y="212" font-size="12" fill="#64748b">例：uid:1001 → 80　uid:1002 → 500</text>
+
+  <!-- 跳表 -->
+  <rect x="58" y="236" width="524" height="214" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="74" y="262" font-size="13" fill="#1e3a8a">跳表 skiplist：分数 → 成员的有序链（每层带 span）</text>
+
+  <!-- L2 -->
+  <rect x="234" y="282" width="32" height="20" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="250" y="296" font-size="11" fill="#1e3a8a" text-anchor="middle">5</text>
+  <!-- L1 -->
+  <rect x="84" y="318" width="32" height="20" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="100" y="332" font-size="11" fill="#1e3a8a" text-anchor="middle">1</text>
+  <rect x="234" y="318" width="32" height="20" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="250" y="332" font-size="11" fill="#1e3a8a" text-anchor="middle">5</text>
+  <rect x="384" y="318" width="32" height="20" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="400" y="332" font-size="11" fill="#1e3a8a" text-anchor="middle">9</text>
+  <!-- L0 -->
+  <rect x="84" y="360" width="32" height="20" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="100" y="374" font-size="11" fill="#334155" text-anchor="middle">1</text>
+  <rect x="159" y="360" width="32" height="20" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="175" y="374" font-size="11" fill="#334155" text-anchor="middle">2</text>
+  <rect x="234" y="360" width="32" height="20" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="250" y="374" font-size="11" fill="#334155" text-anchor="middle">5</text>
+  <rect x="309" y="360" width="32" height="20" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="325" y="374" font-size="11" fill="#334155" text-anchor="middle">7</text>
+  <rect x="384" y="360" width="32" height="20" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="400" y="374" font-size="11" fill="#334155" text-anchor="middle">9</text>
+
+  <!-- 横向链 -->
+  <line x1="116" y1="328" x2="234" y2="328" stroke="#2563eb" stroke-width="1.4"/>
+  <line x1="266" y1="328" x2="384" y2="328" stroke="#2563eb" stroke-width="1.4"/>
+  <line x1="116" y1="370" x2="159" y2="370" stroke="#64748b" stroke-width="1.4"/>
+  <line x1="191" y1="370" x2="234" y2="370" stroke="#64748b" stroke-width="1.4"/>
+  <line x1="266" y1="370" x2="309" y2="370" stroke="#64748b" stroke-width="1.4"/>
+  <line x1="341" y1="370" x2="384" y2="370" stroke="#64748b" stroke-width="1.4"/>
+  <!-- 纵向指针 -->
+  <line x1="100" y1="318" x2="100" y2="360" stroke="#94a3b8" stroke-dasharray="3 3"/>
+  <line x1="250" y1="318" x2="250" y2="360" stroke="#94a3b8" stroke-dasharray="3 3"/>
+  <line x1="400" y1="318" x2="400" y2="360" stroke="#94a3b8" stroke-dasharray="3 3"/>
+  <line x1="250" y1="282" x2="250" y2="318" stroke="#94a3b8" stroke-dasharray="3 3"/>
+
+  <text x="430" y="304" font-size="11" fill="#64748b">顶层索引（节点少、跳跃大）</text>
+  <text x="430" y="340" font-size="11" fill="#64748b">中层索引</text>
+  <text x="430" y="382" font-size="11" fill="#64748b">数据层 = 全部成员</text>
+  <text x="74" y="414" font-size="11" fill="#1e3a8a">span：每层记录跨越的节点数 → 定位第 K 名是 O(log N) 的跳跃，不是逐个走</text>
+  <text x="74" y="436" font-size="11" fill="#64748b">范围取前 M 名：定位起点后沿途顺链 → O(log N + M)</text>
+
+  <!-- 右：操作与复杂度 -->
+  <rect x="620" y="96" width="340" height="368" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="640" y="124" font-size="15" fill="#0f172a">三个操作各要什么</text>
+  <line x1="640" y1="138" x2="940" y2="138" stroke="#e2e8f0"/>
+
+  <text x="640" y="166" font-size="12" fill="#334155">按分数定位名次　ZREVRANK</text>
+  <text x="640" y="188" font-size="12" fill="#1e3a8a">→ O(log N)</text>
+  <text x="640" y="218" font-size="12" fill="#334155">范围取前 N 名　ZREVRANGE</text>
+  <text x="640" y="240" font-size="12" fill="#1e3a8a">→ O(log N + M)</text>
+  <text x="640" y="270" font-size="12" fill="#334155">改分数　ZINCRBY</text>
+  <text x="640" y="292" font-size="12" fill="#1e3a8a">→ O(log N)</text>
+
+  <line x1="640" y1="312" x2="940" y2="312" stroke="#e2e8f0"/>
+  <text x="640" y="338" font-size="13" fill="#0f172a">为什么不用平衡树</text>
+  <text x="640" y="362" font-size="12" fill="#334155">范围查询天然顺链，不用中序递归</text>
+  <text x="640" y="384" font-size="12" fill="#334155">单线程执行，并发局部修改的优势用不上</text>
+  <text x="640" y="406" font-size="12" fill="#334155">实现与调试成本更低</text>
+  <rect x="640" y="420" width="300" height="30" rx="6" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="655" y="440" font-size="11" fill="#7c2d12">同分按 (score, member) 排，member 是字典序</text>
+
+  <!-- 底部注记 -->
+  <rect x="40" y="478" width="920" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="504" font-size="13" fill="#334155">ZSET 是内存结构：一条成员占两份存储（哈希项 + 跳表节点）。</text>
+  <text x="60" y="524" font-size="12" fill="#64748b">百万级榜单常驻内存，要么给榜单设有效期（日榜 / 周榜），要么只保留 top N 把长尾踢出。</text>
+</svg>

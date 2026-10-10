@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="372" viewBox="0 0 1000 372" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="372" fill="#ffffff"/>
+  <text x="30" y="40" font-size="20" fill="#0f172a">Node.Accept：一个方法里的四层编排顺序</text>
+
+  <!-- 卡 1 -->
+  <rect x="40" y="96" width="200" height="150" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="140" y="128" font-size="15" fill="#1e3a8a" text-anchor="middle">① 限流</text>
+  <text x="140" y="158" font-size="12" fill="#1e3a8a" text-anchor="middle">limiter.Allow(ctx, uid)</text>
+  <text x="140" y="182" font-size="12" fill="#1e3a8a" text-anchor="middle">触发 → return false</text>
+  <text x="140" y="206" font-size="12" fill="#1e3a8a" text-anchor="middle">不进入后续任何链路</text>
+  <text x="140" y="230" font-size="12" fill="#1e3a8a" text-anchor="middle">调用方不要重试</text>
+
+  <path d="M 242 171 L 276 171" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 卡 2 -->
+  <rect x="280" y="96" width="200" height="150" rx="10" fill="#e2e8f0" stroke="#64748b"/>
+  <text x="380" y="128" font-size="15" fill="#334155" text-anchor="middle">② 分配 Seq</text>
+  <text x="380" y="158" font-size="12" fill="#334155" text-anchor="middle">pub.Seq(ctx, topic)</text>
+  <text x="380" y="182" font-size="12" fill="#334155" text-anchor="middle">m.Seq = seq</text>
+  <text x="380" y="206" font-size="12" fill="#334155" text-anchor="middle">序号在入口统一分配</text>
+  <text x="380" y="230" font-size="12" fill="#334155" text-anchor="middle">它是「补漏」的依据</text>
+
+  <path d="M 482 171 L 516 171" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 卡 3 -->
+  <rect x="520" y="96" width="200" height="150" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="620" y="128" font-size="15" fill="#7c2d12" text-anchor="middle">③ Publish 扇出</text>
+  <text x="620" y="158" font-size="12" fill="#9a3412" text-anchor="middle">pub.Publish(ctx, topic, m)</text>
+  <text x="620" y="182" font-size="12" fill="#9a3412" text-anchor="middle">广播给所有节点</text>
+  <text x="620" y="206" font-size="12" fill="#9a3412" text-anchor="middle">本机连接由 ServeTopic 收到</text>
+  <text x="620" y="230" font-size="12" fill="#9a3412" text-anchor="middle">房间名 = topic 名</text>
+
+  <path d="M 722 171 L 756 171" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 卡 4 -->
+  <rect x="760" y="96" width="200" height="150" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="860" y="128" font-size="15" fill="#14532d" text-anchor="middle">④ Enqueue 落库</text>
+  <text x="860" y="158" font-size="12" fill="#166534" text-anchor="middle">bw.Enqueue(m)</text>
+  <text x="860" y="182" font-size="12" fill="#166534" text-anchor="middle">进批量缓冲</text>
+  <text x="860" y="206" font-size="12" fill="#166534" text-anchor="middle">不直写 DB</text>
+  <text x="860" y="230" font-size="12" fill="#166534" text-anchor="middle">bw 为 nil 时跳过</text>
+
+  <text x="30" y="294" font-size="12" fill="#64748b">要点：第 1~4 层的顺序就在 Accept 一个方法里——先限流、再分配 Seq、再 Publish 扇出、最后 Enqueue 落库；推送与落库是「两条路同时喂」。</text>
+  <text x="30" y="318" font-size="12" fill="#64748b">实测：FixedWindow（1 分钟/人）同一 uid 尝试 1000 条只放行 1 条；广播 2000 条 × 1000 连接 = 2,000,000 次投递 484ms，单次投递 ≈242ns、单条扇出 ≈242µs。</text>
+  <text x="30" y="342" font-size="12" fill="#94a3b8">「两条路同时喂」的关键是任一侧阻塞都不拖累另一侧，所以中间必须有队列，而不是靠调用顺序。</text>
+</svg>
