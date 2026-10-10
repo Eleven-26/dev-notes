@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="570" viewBox="0 0 1000 570" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">重试与退避：同样都能成功，无效请求数差一倍以上</text>
+  <text x="30" y="61" font-size="13" fill="#64748b">下游约 500ms 后恢复；固定间隔 50ms 最多 10 次 → 请求 11 次、耗时 505ms；指数退避 50/100/200/400/800ms 最多 5 次 → 请求 5 次、耗时 752ms</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="258" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">时间轴：每个竖刻度是一次真实发出的请求</text>
+    <text x="18" y="44" font-size="10.5" fill="#94a3b8">刻度位置按正文的间隔序列与总耗时铺开（示意），请求条数与耗时取本机实测读数</text>
+
+    <line x1="650" y1="64" x2="650" y2="200" stroke="#b45309" stroke-width="1.2" stroke-dasharray="6 4"/>
+    <text x="658" y="60" font-size="10.5" fill="#92400e">下游在 500ms 后恢复</text>
+
+    <text x="18" y="96" font-size="11.5" fill="#1e3a8a">① 固定间隔</text>
+    <line x1="200" y1="92" x2="880" y2="92" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="200" y1="85" x2="200" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="245" y1="85" x2="245" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="290" y1="85" x2="290" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="335" y1="85" x2="335" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="380" y1="85" x2="380" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="425" y1="85" x2="425" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="470" y1="85" x2="470" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="515" y1="85" x2="515" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="560" y1="85" x2="560" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="605" y1="85" x2="605" y2="99" stroke="#dc2626" stroke-width="2"/>
+    <line x1="650" y1="84" x2="650" y2="100" stroke="#16a34a" stroke-width="2.5"/>
+
+    <text x="200" y="116" font-size="10.5" fill="#991b1b">还没恢复的这 500ms 里请求被一次次打出去，前面大多是无效请求；第 11 次在 500ms 处成功 → 总耗时 505ms。</text>
+
+    <text x="18" y="164" font-size="11.5" fill="#1e3a8a">② 指数退避</text>
+    <line x1="200" y1="160" x2="880" y2="160" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="200" y1="153" x2="200" y2="167" stroke="#dc2626" stroke-width="2"/>
+    <line x1="245" y1="153" x2="245" y2="167" stroke="#dc2626" stroke-width="2"/>
+    <line x1="335" y1="153" x2="335" y2="167" stroke="#dc2626" stroke-width="2"/>
+    <line x1="515" y1="153" x2="515" y2="167" stroke="#dc2626" stroke-width="2"/>
+    <line x1="875" y1="152" x2="875" y2="168" stroke="#16a34a" stroke-width="2.5"/>
+    <text x="200" y="184" font-size="10.5" fill="#1e3a8a">间隔 50 → 100 → 200 → 400ms 由短拉长，正好跨过恢复窗口；第 5 次在 750ms 处成功 → 总耗时 752ms。</text>
+
+    <text x="18" y="212" font-size="11.5" fill="#334155">⭐ 两者成功耗时接近（505ms vs 752ms），差别全在无效请求数 —— 退避不是让自己更快，是在替下游省压力。</text>
+
+    <line x1="200" y1="230" x2="880" y2="230" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="200" y="246" font-size="10" fill="#64748b" text-anchor="middle">0ms</text>
+    <text x="380" y="246" font-size="10" fill="#64748b" text-anchor="middle">200ms</text>
+    <text x="560" y="246" font-size="10" fill="#64748b" text-anchor="middle">400ms</text>
+    <text x="740" y="246" font-size="10" fill="#64748b" text-anchor="middle">600ms</text>
+    <text x="880" y="246" font-size="10" fill="#64748b" text-anchor="middle">800ms</text>
+  </g>
+
+  <g transform="translate(20,354)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">判据：取决于「重复执行一次安不安全」，不取决于「失败了几次」</text>
+
+    <rect x="18" y="44" width="452" height="112" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="30" y="66" font-size="12" fill="#14532d">✅ 可以重试</text>
+    <text x="30" y="88" font-size="10.5" fill="#14532d">连接超时 / 抖动 / 5xx —— 瞬时故障，退避后大概率恢复</text>
+    <text x="30" y="108" font-size="10.5" fill="#14532d">被限流 429 —— 下游在明确说「慢点打」，要带退避</text>
+    <text x="30" y="128" font-size="10.5" fill="#14532d">回调通知失败 —— 重复由接收方幂等兜住</text>
+
+    <rect x="490" y="44" width="452" height="112" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="502" y="66" font-size="12" fill="#991b1b">❌ 绝不能盲重试</text>
+    <text x="502" y="88" font-size="10.5" fill="#991b1b">非幂等操作（没带幂等键的「发起退款」）—— 可能退两次款</text>
+    <text x="502" y="108" font-size="10.5" fill="#991b1b">4xx 业务失败（余额不足、签名错）—— 重试一万次也一样</text>
+    <text x="502" y="128" font-size="10.5" fill="#991b1b">熔断已打开 —— 直接快速失败，不再重试</text>
+
+    <text x="18" y="176" font-size="11" fill="#334155">要重试就先给幂等键；上限次数与总超时都要设，别无限退避；没有幂等键的失败只能告警 + 人工。</text>
+    <text x="18" y="192" font-size="10.5" fill="#94a3b8">代码侧的对应写法：RetryWithBackoff 里先过 retryable(last)，4xx 与非幂等副作用直接 return。</text>
+  </g>
+</svg>

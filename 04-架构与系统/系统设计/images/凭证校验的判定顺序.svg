@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="740" viewBox="0 0 1000 740" font-family="sans-serif">
+  <defs>
+    <marker id="vfB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">凭证校验的顺序：先验签，再信字段</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">对应「使用」小节的 Verify 判定链与篡改测试表：每种拒绝原因分开打点，不合并成一个模糊的 403</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="470" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 自上而下：前一步不过，后面一步都不做</text>
+
+    <rect x="30" y="44" width="430" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="44" y="62" font-size="11" font-weight="bold" fill="#1e3a8a">1 服务端未配置 secret</text>
+    <text x="44" y="80" font-size="10" fill="#1e3a8a">ErrNoSecret</text>
+
+    <rect x="30" y="102" width="430" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="44" y="120" font-size="11" font-weight="bold" fill="#1e3a8a">2 key / sig / exp 缺任意一个</text>
+    <text x="44" y="138" font-size="10" fill="#1e3a8a">ErrNoCred 凭证字段缺失</text>
+
+    <rect x="30" y="160" width="430" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+    <text x="44" y="178" font-size="11" font-weight="bold" fill="#92400e">3 用原始字符串重算签名并比对</text>
+    <text x="44" y="196" font-size="10" fill="#92400e">ErrBadSign 签名不匹配（被篡改或密钥不一致）</text>
+
+    <rect x="30" y="218" width="430" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="44" y="236" font-size="11" font-weight="bold" fill="#1e3a8a">4 解析 max / exp</text>
+    <text x="44" y="254" font-size="10" fill="#1e3a8a">ErrBadFormat 签发端与校验端格式不一致</text>
+
+    <rect x="30" y="276" width="430" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="44" y="294" font-size="11" font-weight="bold" fill="#1e3a8a">5 比较 now 与 exp</text>
+    <text x="44" y="312" font-size="10" fill="#1e3a8a">ErrExpired 凭证已过期</text>
+
+    <rect x="30" y="334" width="430" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="44" y="352" font-size="11" font-weight="bold" fill="#1e3a8a">6 实际大小与声明类型</text>
+    <text x="44" y="370" font-size="10" fill="#1e3a8a">ErrTooLarge 超过授权大小 / ErrBadType 类型不符</text>
+
+    <rect x="30" y="392" width="430" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="44" y="410" font-size="11" font-weight="bold" fill="#1e3a8a">7 文件头魔数 CheckMagic</text>
+    <text x="44" y="428" font-size="10" fill="#1e3a8a">ErrBadMagic 伪造扩展名</text>
+
+    <line x1="245" y1="88" x2="245" y2="98" stroke="#2563eb" stroke-width="1.5" marker-end="url(#vfB)"/>
+    <line x1="245" y1="146" x2="245" y2="156" stroke="#2563eb" stroke-width="1.5" marker-end="url(#vfB)"/>
+    <line x1="245" y1="204" x2="245" y2="214" stroke="#2563eb" stroke-width="1.5" marker-end="url(#vfB)"/>
+    <line x1="245" y1="262" x2="245" y2="272" stroke="#2563eb" stroke-width="1.5" marker-end="url(#vfB)"/>
+    <line x1="245" y1="320" x2="245" y2="330" stroke="#2563eb" stroke-width="1.5" marker-end="url(#vfB)"/>
+    <line x1="245" y1="378" x2="245" y2="388" stroke="#2563eb" stroke-width="1.5" marker-end="url(#vfB)"/>
+
+    <text x="510" y="176" font-size="11.5" font-weight="bold" fill="#92400e">第 3 步之前，字段一律不可信</text>
+    <text x="510" y="198" font-size="10.5" fill="#92400e">未验签的输入不能用来判大小和过期</text>
+    <text x="510" y="218" font-size="10.5" fill="#92400e">比对用 hmac.Equal，不是 ==</text>
+
+    <text x="510" y="290" font-size="10.5" fill="#334155">第 4 步解析失败，只可能是</text>
+    <text x="510" y="310" font-size="10.5" fill="#334155">两端格式不一致，不是攻击输入</text>
+
+    <text x="510" y="348" font-size="10.5" fill="#334155">第 5 步判的是服务端 now</text>
+    <text x="510" y="368" font-size="10.5" fill="#334155">不是客户端时间</text>
+
+    <text x="510" y="406" font-size="10.5" fill="#334155">第 7 步不能省：扩展名和 Content-Type</text>
+    <text x="510" y="426" font-size="10.5" fill="#334155">都客户端说了算，只有魔数挡得住</text>
+
+    <text x="18" y="456" font-size="11" fill="#475569">签发与校验共用同一个 canonical 与 signWith；两处各写一遍，早晚会不一致（表现为一部分前端突然全 403）。</text>
+  </g>
+
+  <g transform="translate(20,570)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 顺序颠倒的后果，与实测怎么对上</text>
+
+    <rect x="20" y="44" width="450" height="86" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="34" y="66" font-size="11.5" font-weight="bold" fill="#991b1b">反例：先解析 max / exp 再判大小与过期</text>
+    <text x="34" y="88" font-size="10.5" fill="#991b1b">攻击者改一个字段就能绕开限制</text>
+    <text x="34" y="108" font-size="10.5" fill="#991b1b">顺序本身就是安全属性，不是风格问题</text>
+
+    <rect x="490" y="44" width="450" height="86" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="504" y="66" font-size="11.5" font-weight="bold" fill="#14532d">实测对上：篡改测试表的返回码</text>
+    <text x="504" y="88" font-size="10.5" fill="#14532d">改 max、延有效期、换 key、清 ctype 全是签名不匹配</text>
+    <text x="504" y="108" font-size="10.5" fill="#14532d">去掉 sig 才是凭证字段缺失；过期用是凭证已过期</text>
+
+    <text x="18" y="138" font-size="11" fill="#475569">声明 image/png 实际发 HTML：类型不符或文件头认不出——授权字段与真实内容都要各查一遍。</text>
+  </g>
+</svg>

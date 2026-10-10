@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">两层缓存与冷热分层：时间线存指针，内容本体另存</text>
+  <text x="30" y="68" font-size="13" fill="#64748b">左：读一页时「指针 → 批量回填本体」的取数关系；右：时间线层与内容层的冷热边界、预热对象与时机</text>
+
+  <!-- 左：指针与本体 -->
+  <rect x="30" y="88" width="470" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="50" y="116" font-size="14" fill="#0f172a">时间线层：只存「内容 ID + 排序键」</text>
+  <text x="50" y="138" font-size="11.5" fill="#64748b">inbox:{uid} 里的每个条目都是一个指针，不是正文</text>
+
+  <rect x="50" y="152" width="180" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="64" y="170" font-size="11" fill="#1e3a8a">时间线条目（第 1 页）</text>
+  <text x="64" y="188" font-size="10.5" fill="#1e3a8a">内容 A 的 ID + score</text>
+
+  <rect x="50" y="212" width="180" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="64" y="230" font-size="11" fill="#1e3a8a">时间线条目</text>
+  <text x="64" y="248" font-size="10.5" fill="#1e3a8a">内容 B 的 ID + score</text>
+
+  <rect x="50" y="272" width="180" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="64" y="290" font-size="11" fill="#1e3a8a">时间线条目（第 1 页末条）</text>
+  <text x="64" y="308" font-size="10.5" fill="#1e3a8a">内容 C 的 ID + score</text>
+
+  <line x1="230" y1="174" x2="280" y2="174" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <line x1="230" y1="234" x2="280" y2="234" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <line x1="230" y1="294" x2="280" y2="294" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="280" y="152" width="190" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="294" y="170" font-size="11" fill="#334155">内容本体 A</text>
+  <text x="294" y="188" font-size="10.5" fill="#475569">权威源：MySQL / MongoDB</text>
+
+  <rect x="280" y="212" width="190" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="294" y="230" font-size="11" fill="#334155">内容本体 B</text>
+  <text x="294" y="248" font-size="10.5" fill="#475569">按 ID 精确点查</text>
+
+  <rect x="280" y="272" width="190" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="294" y="290" font-size="11" fill="#334155">内容本体 C</text>
+  <text x="294" y="308" font-size="10.5" fill="#475569">图片视频在对象存储</text>
+
+  <rect x="50" y="332" width="420" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="64" y="354" font-size="11.5" fill="#14532d">一页 N 条 → 按 ID 批量回填（MGET / 批量查 DB），减少往返</text>
+  <text x="64" y="376" font-size="11" fill="#14532d">内容编辑、删除只改本体，不用回头改所有时间线</text>
+
+  <text x="50" y="416" font-size="11" fill="#64748b">判据：时间线是「索引」，内容本体才是「真相」——</text>
+  <text x="50" y="436" font-size="11" fill="#64748b">前者丢了可按内容库与关注关系重建，后者不能。</text>
+  <text x="50" y="458" font-size="11" fill="#64748b">两者不该放同一种存储，也不该有同一个生命周期。</text>
+  <text x="50" y="480" font-size="11" fill="#64748b">时间线条目数远多于内容数，所以省内存的关键</text>
+  <text x="50" y="502" font-size="11" fill="#64748b">就是线里只放指针，正文按页回填。</text>
+
+  <!-- 右：冷热与预热 -->
+  <rect x="520" y="88" width="450" height="440" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="540" y="116" font-size="14" fill="#0f172a">两层缓存与冷热边界</text>
+  <text x="540" y="138" font-size="11.5" fill="#64748b">「缓存」在这里有两层：时间线结构本身，和它引用的内容本体</text>
+
+  <rect x="540" y="152" width="410" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="554" y="174" font-size="11.5" fill="#14532d">热：最近 N 条 —— 绝大多数读都落在这里</text>
+  <text x="554" y="196" font-size="11" fill="#14532d">时间线层常驻 Redis，极热的可再放本地内存</text>
+
+  <rect x="540" y="220" width="410" height="56" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="554" y="242" font-size="11.5" fill="#92400e">温：N 条之外、仍可能被深度翻页读到</text>
+  <text x="554" y="264" font-size="11" fill="#92400e">放 DB，按作者 + 时间建索引，回源查询</text>
+
+  <rect x="540" y="288" width="410" height="56" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="554" y="310" font-size="11.5" fill="#334155">冷：很早的内容，几乎不被读到</text>
+  <text x="554" y="332" font-size="11" fill="#475569">归档 / 低频存储</text>
+
+  <rect x="540" y="356" width="410" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="554" y="378" font-size="11.5" fill="#1e3a8a">预热：冷启动或缓存重建后，第一个读请求最贵</text>
+  <text x="554" y="400" font-size="11" fill="#1e3a8a">对象：活跃用户 inbox 的最近若干条</text>
+  <text x="554" y="422" font-size="11" fill="#1e3a8a">时机：服务启动、大版本发布后、缓存集群扩容后</text>
+
+  <text x="540" y="458" font-size="11" fill="#64748b">边界：只预热最近一段，不把整条时间线拉进内存。</text>
+  <text x="540" y="478" font-size="11" fill="#64748b">「热」的边界来自访问分布，不是「几天以前」的拍脑袋。</text>
+  <text x="540" y="498" font-size="11" fill="#64748b">有界时间线之外：回源（慢但完整）或明确「到底了」。</text>
+</svg>

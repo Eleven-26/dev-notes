@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="570" viewBox="0 0 1000 570" font-family="sans-serif">
+  <defs>
+    <marker id="arrF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">推荐的两张判据图：三级兜底的退路顺序，与不探索的自我强化闭环</text>
+
+  <g transform="translate(20,58)">
+    <rect x="0" y="0" width="960" height="272" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 三级退路：一级比一级简单、一级比一级不依赖实时计算</text>
+
+    <rect x="18" y="44" width="90" height="44" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="63" y="71" font-size="11" fill="#475569" text-anchor="middle">正常</text>
+    <rect x="118" y="44" width="250" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="243" y="71" font-size="10.5" fill="#1e3a8a" text-anchor="middle">rankPipeline 成功且非空</text>
+    <line x1="368" y1="66" x2="398" y2="66" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrF)"/>
+    <rect x="402" y="44" width="540" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="416" y="71" font-size="10.5" fill="#14532d">走完整条模型链路：召回 → 粗排 → 精排 → 重排</text>
+
+    <rect x="18" y="98" width="90" height="44" rx="6" fill="#fef3c7" stroke="#b45309"/>
+    <text x="63" y="125" font-size="11" fill="#92400e" text-anchor="middle">一级</text>
+    <rect x="118" y="98" width="250" height="44" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="243" y="125" font-size="10.5" fill="#991b1b" text-anchor="middle">某一路召回 / 某模块超时</text>
+    <line x1="368" y1="120" x2="398" y2="120" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrF)"/>
+    <rect x="402" y="98" width="540" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="416" y="125" font-size="10.5" fill="#14532d">局部降级：用其余路或上一层的结果继续，用户几乎无感</text>
+
+    <rect x="18" y="152" width="90" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="63" y="179" font-size="11" fill="#7c2d12" text-anchor="middle">二级</text>
+    <rect x="118" y="152" width="250" height="44" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="243" y="179" font-size="10.5" fill="#991b1b" text-anchor="middle">精排或重排整体不可用</text>
+    <line x1="368" y1="174" x2="398" y2="174" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrF)"/>
+    <rect x="402" y="152" width="540" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="416" y="179" font-size="10.5" fill="#14532d">去模型：退到排序简单的缓存结果，如预生成的热门榜、上次成功的结果</text>
+
+    <rect x="18" y="206" width="90" height="44" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="63" y="233" font-size="11" fill="#991b1b" text-anchor="middle">三级</text>
+    <rect x="118" y="206" width="250" height="44" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="243" y="233" font-size="10.5" fill="#991b1b" text-anchor="middle">推荐服务或特征存储整体不可用</text>
+    <line x1="368" y1="228" x2="398" y2="228" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrF)"/>
+    <rect x="402" y="206" width="540" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="416" y="233" font-size="10.5" fill="#14532d">静态兜底：运营配置的内容（编辑精选、固定坑位、默认列表）——一定有东西可返回</text>
+  </g>
+
+  <g transform="translate(20,346)">
+    <rect x="0" y="0" width="960" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 只利用不探索：新内容怎样被循环饿死</text>
+
+    <rect x="18" y="46" width="200" height="46" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="118" y="74" font-size="10.5" fill="#1e3a8a" text-anchor="middle">只按当前预估分排序</text>
+    <rect x="262" y="46" width="200" height="46" rx="6" fill="#fef3c7" stroke="#b45309"/>
+    <text x="362" y="74" font-size="10.5" fill="#92400e" text-anchor="middle">新内容没数据，分低</text>
+    <rect x="506" y="46" width="200" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="606" y="74" font-size="10.5" fill="#991b1b" text-anchor="middle">拿不到曝光</text>
+    <rect x="750" y="46" width="190" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="845" y="74" font-size="10.5" fill="#991b1b" text-anchor="middle">更没数据</text>
+
+    <line x1="218" y1="69" x2="258" y2="69" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrF)"/>
+    <line x1="462" y1="69" x2="502" y2="69" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrF)"/>
+    <line x1="706" y1="69" x2="746" y2="69" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrF)"/>
+    <path d="M 845 92 L 845 120 L 118 120 L 118 96" fill="none" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrE)"/>
+    <text x="482" y="114" font-size="10" fill="#991b1b" text-anchor="middle">自我强化：头部越来越集中，长尾与新内容饿死，用户觉得翻来覆去就那几条</text>
+
+    <text x="18" y="150" font-size="10.5" fill="#334155">打断循环的手段：流量池分段放量、每屏配额保底、bandit 类探索算法、精排分上加随机扰动。</text>
+    <text x="18" y="172" font-size="10.5" fill="#334155">旋钮往哪边拧：探索少 → 体验稳但生态集中；探索多 → 生态健康但短期点击与转化通常略降，用 A/B 调。</text>
+    <text x="18" y="194" font-size="10.5" fill="#991b1b">边界：给探索设上限（固定占比或固定坑位），可关闭、可度量，别整屏都是试验内容。</text>
+  </g>
+</svg>

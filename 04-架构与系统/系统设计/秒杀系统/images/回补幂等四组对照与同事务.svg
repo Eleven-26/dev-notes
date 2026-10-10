@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="650" viewBox="0 0 1000 650" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">回补本身还要再幂等一次：四组对照 + 同事务对照</text>
+  <text x="30" y="61" font-size="13" fill="#64748b">账本口径：total=100、已真实发放 1 张（uid=7）→ 正确 remain = 99；模拟同一笔白扣的回补被重复执行 3 次（MySQL 8.0.46）</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="290" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">M4：重复回补 3 次之后的 remain</text>
+
+    <line x1="60" y1="240" x2="900" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="60" y1="40" x2="60" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="60" y1="150" x2="900" y2="150" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="66" y="146" font-size="10" fill="#14532d">正确线 99</text>
+
+    <rect x="80" y="195" width="120" height="45" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+    <text x="140" y="188" font-size="12" fill="#334155" text-anchor="middle">98</text>
+    <text x="140" y="256" font-size="10" fill="#334155" text-anchor="middle">回补前</text>
+    <text x="140" y="272" font-size="10" fill="#64748b" text-anchor="middle">白扣 1 次后</text>
+
+    <rect x="240" y="60" width="120" height="180" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="300" y="53" font-size="12" fill="#991b1b" text-anchor="middle">101</text>
+    <text x="300" y="80" font-size="10" fill="#991b1b" text-anchor="middle">虚增 2 张</text>
+    <text x="300" y="256" font-size="10" fill="#334155" text-anchor="middle">A 无守卫</text>
+    <text x="300" y="272" font-size="10" fill="#64748b" text-anchor="middle">无幂等键</text>
+
+    <rect x="400" y="105" width="120" height="135" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="460" y="98" font-size="12" fill="#991b1b" text-anchor="middle">100</text>
+    <text x="460" y="125" font-size="10" fill="#991b1b" text-anchor="middle">虚增 1 张</text>
+    <text x="460" y="256" font-size="10" fill="#334155" text-anchor="middle">B 只加守卫</text>
+    <text x="460" y="272" font-size="10" fill="#64748b" text-anchor="middle">remain 小于 total</text>
+
+    <rect x="560" y="150" width="120" height="90" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="620" y="143" font-size="12" fill="#14532d" text-anchor="middle">99</text>
+    <text x="620" y="170" font-size="10" fill="#14532d" text-anchor="middle">账本对</text>
+    <text x="620" y="256" font-size="10" fill="#334155" text-anchor="middle">C 幂等键</text>
+    <text x="620" y="272" font-size="10" fill="#64748b" text-anchor="middle">req_id 重试不变</text>
+
+    <rect x="720" y="105" width="120" height="135" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="780" y="98" font-size="12" fill="#991b1b" text-anchor="middle">100</text>
+    <text x="780" y="125" font-size="10" fill="#991b1b" text-anchor="middle">虚增 1 张</text>
+    <text x="780" y="256" font-size="10" fill="#334155" text-anchor="middle">D 幂等键</text>
+    <text x="780" y="272" font-size="10" fill="#64748b" text-anchor="middle">req_id 每次新生成</text>
+
+    <text x="60" y="216" font-size="10.5" fill="#475569">纵轴起点为 97，柱高按 remain 读数铺开（条形为示意，数值取自实测）。</text>
+  </g>
+
+  <g transform="translate(20,386)">
+    <rect x="0" y="0" width="960" height="244" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">M4-tx：幂等键与回补必须在同一个事务里</text>
+
+    <rect x="18" y="44" width="452" height="116" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="30" y="68" font-size="11.5" fill="#991b1b">分两次提交：幂等行先提交、UPDATE 报错</text>
+    <text x="30" y="92" font-size="10.5" fill="#991b1b">失败后 remain=98，幂等行已留下 1 行</text>
+    <text x="30" y="112" font-size="10.5" fill="#991b1b">同一 req_id 重试 → k==0 被挡下 → 不执行 UPDATE</text>
+    <text x="30" y="138" font-size="10.5" fill="#991b1b">⛔ 白扣永远还不回来：应为 99、实际 98，券永久少发</text>
+
+    <rect x="490" y="44" width="452" height="116" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="502" y="68" font-size="11.5" fill="#14532d">同事务：失败时幂等行被一起回滚</text>
+    <text x="502" y="92" font-size="10.5" fill="#14532d">第一次失败 → remain=98、幂等行 0 行</text>
+    <text x="502" y="112" font-size="10.5" fill="#14532d">重试能重新插入 → 回补成功 → remain=99</text>
+    <text x="502" y="138" font-size="10.5" fill="#14532d">成功后再重投 → done=false，remain 仍 99（幂等没坏）</text>
+
+    <text x="18" y="182" font-size="11" fill="#334155">⭐ 判据：remain 必须恒等于 total − 实际已发放张数；「remain 小于 total」只封顶账面越界，不保证账实一致。</text>
+    <text x="18" y="206" font-size="11" fill="#334155">B 组最值得盯：账面没越界，但 remain 与真实发放量已经脱钩 1 —— 守卫防越界、幂等键防重复回补，两者要一起做。</text>
+    <text x="18" y="230" font-size="10.5" fill="#94a3b8">⚠️ 前提两条：调用方重试时 req_id 保持不变；req_id 必须由服务端生成 —— 客户端自带就能把自己的回补永久抑制掉。</text>
+  </g>
+</svg>

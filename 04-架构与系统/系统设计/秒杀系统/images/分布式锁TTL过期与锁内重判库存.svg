@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" font-family="sans-serif">
+  <defs>
+    <marker id="arrK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrKg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrKr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">分布式锁时序：TTL 到期之后，第二个人也进了同一个临界区</text>
+  <text x="30" y="61" font-size="13" fill="#64748b">库存 1 件、两个 worker 抢、抢不到就轮询重试，业务耗时固定约 300ms；判定口径：库存被扣成负数 = 超卖</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+
+    <rect x="92" y="20" width="160" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="172" y="42" font-size="12" fill="#1e3a8a" text-anchor="middle">worker1</text>
+    <rect x="392" y="20" width="160" height="34" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+    <text x="472" y="42" font-size="12" fill="#334155" text-anchor="middle">Redis（锁 + 库存）</text>
+    <rect x="692" y="20" width="160" height="34" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="772" y="42" font-size="12" fill="#991b1b" text-anchor="middle">worker2</text>
+
+    <line x1="172" y1="54" x2="172" y2="284" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="472" y1="54" x2="472" y2="284" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="772" y1="54" x2="772" y2="284" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="322" y="76" font-size="10.5" fill="#1e3a8a" text-anchor="middle">A 组 TTL=100ms：SetNX 拿到锁</text>
+    <line x1="180" y1="82" x2="464" y2="82" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrK)"/>
+    <text x="322" y="106" font-size="10.5" fill="#334155" text-anchor="middle">ok = true，进入临界区</text>
+    <line x1="464" y1="112" x2="180" y2="112" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arrKg)"/>
+
+    <rect x="164" y="120" width="16" height="104" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="192" y="142" font-size="10.5" fill="#1e3a8a">业务约 300ms，还没做完</text>
+
+    <line x1="120" y1="152" x2="820" y2="152" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="6 4"/>
+    <text x="600" y="148" font-size="10.5" fill="#991b1b" text-anchor="middle">TTL 100ms 到点，锁自动过期</text>
+
+    <text x="622" y="182" font-size="10.5" fill="#991b1b" text-anchor="middle">轮询重试的 worker2：SetNX 再次成功</text>
+    <line x1="764" y1="188" x2="480" y2="188" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrKr)"/>
+    <rect x="764" y="196" width="16" height="60" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="792" y="216" font-size="10.5" fill="#991b1b">也进了同一个临界区</text>
+
+    <text x="322" y="242" font-size="10.5" fill="#1e3a8a" text-anchor="middle">worker1：DECR stock → 0</text>
+    <line x1="180" y1="248" x2="464" y2="248" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrK)"/>
+    <text x="622" y="266" font-size="10.5" fill="#991b1b" text-anchor="middle">worker2：DECR stock → -1（超卖）</text>
+    <line x1="764" y1="272" x2="480" y2="272" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arrKr)"/>
+  </g>
+
+  <g transform="translate(20,396)">
+    <rect x="0" y="0" width="960" height="132" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">三种 TTL 策略的 5 轮统计</text>
+
+    <text x="18" y="54" font-size="11" fill="#991b1b">A TTL=100ms（小于业务 300ms），不续期</text>
+    <text x="380" y="54" font-size="11" fill="#991b1b">库存扣到 -1</text>
+    <text x="560" y="54" font-size="11" fill="#991b1b">超卖 5 轮 · 抢锁超时放弃 0 次</text>
+
+    <text x="18" y="76" font-size="11" fill="#14532d">B TTL=1s（大于业务 300ms），不续期</text>
+    <text x="380" y="76" font-size="11" fill="#14532d">库存扣到 0</text>
+    <text x="560" y="76" font-size="11" fill="#14532d">超卖 0 轮 · 抢锁超时放弃 0 次</text>
+
+    <text x="18" y="98" font-size="11" fill="#14532d">C TTL=100ms + 后台续期（看门狗）</text>
+    <text x="380" y="98" font-size="11" fill="#14532d">库存扣到 0</text>
+    <text x="560" y="98" font-size="11" fill="#14532d">超卖 0 轮 · 抢锁超时放弃 0 次</text>
+
+    <text x="18" y="120" font-size="10.5" fill="#475569">「放弃 0 次」也是正确性的一部分：抢不到的那个 worker 靠轮询等到了锁，而不是被硬拒（拒绝执行不等于不扣减）。</text>
+  </g>
+
+  <g transform="translate(20,544)">
+    <rect x="0" y="0" width="960" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">锁只保护临界区，不保护业务边界</text>
+    <text x="18" y="56" font-size="11" fill="#991b1b">❌ 拿到锁就直接 Decr：互斥解决了，「进来时库存还剩没有」没解决 —— 两个 worker 依次进来各扣 1 → -1。</text>
+    <text x="18" y="78" font-size="11" fill="#14532d">✅ 锁内重新 GET 判 cur &gt; 0 再扣；释放必须比对 token 再删；耗时要么短于 TTL，要么由看门狗续期兜住。</text>
+    <text x="18" y="102" font-size="11.5" fill="#334155">⭐ 补上这道判断之后，A 才只在「锁过期」这一种情况下超卖，B、C 归零 —— 锁负责排队，判断得自己做。</text>
+    <text x="18" y="126" font-size="10.5" fill="#94a3b8">同一形态的坑在审计、扣款、发券里都存在：凡是「先拿锁、再操作共享资源」，资源够不够必须在临界区内重新判一遍。</text>
+  </g>
+</svg>

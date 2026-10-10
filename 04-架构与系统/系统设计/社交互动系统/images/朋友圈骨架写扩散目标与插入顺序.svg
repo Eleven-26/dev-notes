@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="sans-serif">
+  <defs>
+    <marker id="arWs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">写扩散发布链路：目标去重与插入位置的两个坑</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">Publish 只写「粉丝 + 自己」；实测抓出的两个实现级 bug 都在这条链路上 —— 一个在顺序，一个在插法。</text>
+
+  <!-- 链路 -->
+  <rect x="40" y="110" width="160" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="120" y="134" font-size="11.5" fill="#1e3a8a" text-anchor="middle">① Followers(author)</text>
+  <text x="120" y="156" font-size="10.5" fill="#1e3a8a" text-anchor="middle">取粉丝集合</text>
+
+  <rect x="230" y="110" width="160" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="310" y="134" font-size="11.5" fill="#1e3a8a" text-anchor="middle">② append(author)</text>
+  <text x="310" y="156" font-size="10.5" fill="#1e3a8a" text-anchor="middle">自己也要有时间线</text>
+
+  <rect x="420" y="110" width="160" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="500" y="134" font-size="11.5" fill="#14532d" text-anchor="middle">③ dedup</text>
+  <text x="500" y="156" font-size="10.5" fill="#14532d" text-anchor="middle">保序去重</text>
+
+  <rect x="610" y="110" width="160" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="690" y="134" font-size="11.5" fill="#14532d" text-anchor="middle">④ 逐个 insertDesc</text>
+  <text x="690" y="156" font-size="10.5" fill="#14532d" text-anchor="middle">按 ID 插到有序位置</text>
+
+  <rect x="800" y="110" width="160" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="880" y="134" font-size="11" fill="#1e3a8a" text-anchor="middle">⑤ writes += 份数</text>
+  <text x="880" y="156" font-size="10.5" fill="#1e3a8a" text-anchor="middle">写放大的直接指标</text>
+
+  <line x1="200" y1="142" x2="226" y2="142" stroke="#64748b" stroke-width="1.6" marker-end="url(#arWs)"/>
+  <line x1="390" y1="142" x2="416" y2="142" stroke="#64748b" stroke-width="1.6" marker-end="url(#arWs)"/>
+  <line x1="580" y1="142" x2="606" y2="142" stroke="#64748b" stroke-width="1.6" marker-end="url(#arWs)"/>
+  <line x1="770" y1="142" x2="796" y2="142" stroke="#64748b" stroke-width="1.6" marker-end="url(#arWs)"/>
+
+  <rect x="40" y="188" width="920" height="30" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="56" y="208" font-size="11" fill="#64748b">顺序必须是「先追加自己、再整体去重」—— ②③ 反过来写，坑 1 就回来（Java 移植实测验证过）。</text>
+
+  <!-- 坑 1 -->
+  <rect x="40" y="228" width="450" height="150" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="60" y="254" font-size="13" font-weight="bold" fill="#991b1b">坑 1：目标集合没去重</text>
+  <text x="60" y="278" font-size="11" fill="#991b1b">自关注 / 互关：Followers(author) 里已经有 author</text>
+  <text x="60" y="300" font-size="11" fill="#991b1b">再无脑 append → 同一条动态写两份（写 3 而不是 2）</text>
+  <text x="60" y="322" font-size="11" fill="#991b1b">表现：「上一页 7 条、下一页还是这 7 条」；</text>
+  <text x="60" y="344" font-size="11" fill="#991b1b">Java 首版顺序写反：翻页 60 条里重复 16 条</text>
+  <text x="60" y="366" font-size="11" fill="#14532d">改法：dedup(append(Followers, author))，先追加再整体去重</text>
+
+  <!-- 坑 2 -->
+  <rect x="510" y="228" width="450" height="150" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="530" y="254" font-size="13" font-weight="bold" fill="#92400e">坑 2：头部插入代替按 ID 插入</text>
+  <text x="530" y="278" font-size="11" fill="#92400e">扩散是异步的（MQ、多节点、失败重投），</text>
+  <text x="530" y="300" font-size="11" fill="#92400e">ID 小的动态可能后到 —— 头部插入让列表失序，</text>
+  <text x="530" y="322" font-size="11" fill="#92400e">游标分页重复并且漏条目</text>
+  <text x="530" y="344" font-size="11" fill="#92400e">改法：insertDesc 按 ID 找位置，列表始终倒序</text>
+  <text x="530" y="366" font-size="11" fill="#14532d">实测：逆序发布后游标翻 9 页取 60 条，重复 0、缺失 0</text>
+
+  <!-- 底部注记 -->
+  <rect x="40" y="394" width="920" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="422" font-size="12" fill="#334155">这两条都不是设计层面的错 ——「发布时维护多对多关系」依然成立；错的是实现细节：顺序（②③）与插法（④）。</text>
+  <text x="60" y="446" font-size="12" fill="#334155">能讲出「我这样测才发现它重复 / 漏，改法是什么」，比背一遍方案更能证明真做过。</text>
+  <text x="60" y="472" font-size="11" fill="#64748b">普通人 200 粉 → 写 202 份；写放大的直接指标就是 Publish 返回并累加的份数（含去重后的自己）。</text>
+</svg>

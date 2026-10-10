@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="30" y="36" font-size="20" font-weight="bold" fill="#0f172a">E2EE 的多设备同步：逐设备加密与密钥恢复的三角取舍</text>
+  <text x="30" y="58" font-size="12.5" fill="#475569">私钥不出设备，所以一条消息要对每台设备各加密一份；要「新设备能看历史」就必须再送一遍密钥</text>
+
+  <rect x="24" y="76" width="540" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="38" y="100" font-size="15" font-weight="bold" fill="#0f172a">一条消息要解给几台设备</text>
+  <text x="38" y="120" font-size="10.5" fill="#64748b">每台设备有自己的设备身份密钥，与账号级身份密钥分开</text>
+
+  <rect x="52" y="140" width="120" height="40" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="112" y="165" font-size="12" fill="#1e3a8a" text-anchor="middle">发送方</text>
+  <rect x="330" y="136" width="210" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="330" y="180" width="210" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="330" y="224" width="210" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="435" y="156" font-size="11" fill="#14532d" text-anchor="middle">设备 1 公钥加密的那一份</text>
+  <text x="435" y="200" font-size="11" fill="#14532d" text-anchor="middle">设备 2 公钥加密的那一份</text>
+  <text x="435" y="244" font-size="11" fill="#14532d" text-anchor="middle">设备 3 公钥加密的那一份</text>
+
+  <line x1="172" y1="156" x2="326" y2="152" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="172" y1="160" x2="326" y2="196" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="172" y1="164" x2="326" y2="240" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <text x="52" y="268" font-size="11" fill="#334155">写放大 = 设备数：与群消息的写扩散同构，只是扩散维度换成设备数</text>
+
+  <rect x="584" y="76" width="392" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="598" y="100" font-size="15" font-weight="bold" fill="#0f172a">新设备登录：历史从哪来</text>
+  <rect x="598" y="116" width="364" height="44" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="608" y="134" font-size="11" fill="#334155">① 不迁移：新设备只看登录之后的消息</text>
+  <text x="608" y="152" font-size="10.5" fill="#991b1b">代价：换个手机历史全没了，体验最差</text>
+  <rect x="598" y="168" width="364" height="44" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="608" y="186" font-size="11" fill="#92400e">② 服务端备份密钥（再用口令加密）</text>
+  <text x="608" y="204" font-size="10.5" fill="#92400e">风险：备份口令成为新的信任点，服务端又能碰到密钥</text>
+  <rect x="598" y="220" width="364" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="608" y="238" font-size="11" fill="#1e3a8a">③ 由老设备把密钥材料传给新设备</text>
+  <text x="608" y="256" font-size="10.5" fill="#1e3a8a">代价：老设备要在线或在场，流程更麻烦</text>
+
+  <rect x="24" y="296" width="540" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="38" y="320" font-size="15" font-weight="bold" fill="#0f172a">三条边不可能同时拉满，必须选两条</text>
+  <rect x="38" y="336" width="140" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="198" y="336" width="140" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="358" y="336" width="140" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="108" y="358" font-size="11.5" fill="#14532d" text-anchor="middle">多端体验</text>
+  <text x="268" y="358" font-size="11.5" fill="#14532d" text-anchor="middle">可恢复性</text>
+  <text x="428" y="358" font-size="11.5" fill="#991b1b" text-anchor="middle">抗服务端</text>
+  <text x="38" y="396" font-size="11" fill="#334155">要「多端 + 可恢复」：服务端代管可解密备份，抗服务端这一角被削掉</text>
+  <text x="38" y="418" font-size="11" fill="#334155">要「多端 + 抗服务端」：密钥只能在设备间转移，丢设备就丢历史</text>
+  <text x="38" y="448" font-size="11.5" fill="#92400e">判据：密钥备份要当成明确的产品决策写出来，而不是悄悄做掉</text>
+
+  <rect x="584" y="296" width="392" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="598" y="320" font-size="15" font-weight="bold" fill="#0f172a">设备目录本身是个信任点</text>
+  <text x="598" y="346" font-size="11" fill="#334155">发送方怎么知道对方现在有哪几台设备？</text>
+  <text x="598" y="370" font-size="11" fill="#334155">靠服务端维护的设备目录</text>
+  <text x="598" y="394" font-size="11" fill="#991b1b">而设备目录正是服务端可以动手脚的地方</text>
+  <text x="598" y="424" font-size="11.5" fill="#334155">密钥一旦可以恢复，就存在一个能恢复它的人</text>
+  <text x="598" y="448" font-size="11.5" fill="#334155">这与第六节的公钥偷换是同一类支点</text>
+
+  <rect x="24" y="486" width="952" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="44" y="512" font-size="12" fill="#0f172a">要点：一台设备一把密钥，密文份数随设备数增长；新设备天然解不开旧消息，所以必须额外设计密钥备份或设备间转移。</text>
+  <text x="44" y="536" font-size="12" fill="#475569">取舍：凡是「能不能解密」由服务端说了算的功能，本质上就把 E2EE 削掉了一角，这类功能要单独列出来评审。</text>
+  <text x="44" y="560" font-size="12" fill="#94a3b8">注意：本篇未做实测，无读数；本图为结构示意，不含设备数量或写放大倍数数字。</text>
+</svg>

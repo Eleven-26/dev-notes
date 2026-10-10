@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="sans-serif">
+  <defs>
+    <marker id="stB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">通知回执状态机：只允许前进，不允许回退</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">对应正文 4.3 与「使用」第三段的 Apply：回执异步且会乱序，所以用最终态覆盖，不用计数加一</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 三个状态与仅有的两条前进转移</text>
+
+    <rect x="40" y="46" width="230" height="66" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="155" y="72" font-size="12.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">sent 已发送</text>
+    <text x="155" y="94" font-size="10" fill="#1e3a8a" text-anchor="middle">调用渠道成功，留下投递记录</text>
+
+    <rect x="360" y="46" width="230" height="66" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="475" y="72" font-size="12.5" font-weight="bold" fill="#7c2d12" text-anchor="middle">delivered 已送达</text>
+    <text x="475" y="94" font-size="10" fill="#7c2d12" text-anchor="middle">渠道回执确认送到</text>
+
+    <rect x="680" y="46" width="240" height="66" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="800" y="72" font-size="12.5" font-weight="bold" fill="#14532d" text-anchor="middle">clicked 已点击</text>
+    <text x="800" y="94" font-size="10" fill="#14532d" text-anchor="middle">深度链接回跳，终态</text>
+
+    <line x1="270" y1="79" x2="354" y2="79" stroke="#2563eb" stroke-width="1.6" marker-end="url(#stB)"/>
+    <line x1="590" y1="79" x2="674" y2="79" stroke="#2563eb" stroke-width="1.6" marker-end="url(#stB)"/>
+    <text x="312" y="132" font-size="10.5" fill="#1e3a8a" text-anchor="middle">送达回执到达</text>
+    <text x="632" y="132" font-size="10.5" fill="#1e3a8a" text-anchor="middle">点击回执到达</text>
+
+    <text x="18" y="162" font-size="11" fill="#334155">Apply 里只有两条前进条件：cur=sent 收到 delivered 才转 delivered；cur=delivered 收到 clicked 才转 clicked。</text>
+    <text x="18" y="186" font-size="11" fill="#334155">其余一律返回 cur：已经处在更靠后的状态时，旧回执直接忽略，不做回退。</text>
+    <text x="18" y="214" font-size="11" fill="#64748b">「发出去了」与「用户看到了」是两件事，必须分开统计——送达与点击是两条独立回执链路。</text>
+  </g>
+
+  <g transform="translate(20,344)">
+    <rect x="0" y="0" width="960" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 为什么不能用「计数 +1」</text>
+
+    <rect x="20" y="44" width="440" height="98" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="34" y="66" font-size="12" font-weight="bold" fill="#991b1b">反例：计数法</text>
+    <text x="34" y="88" font-size="10.5" fill="#991b1b">先收到 clicked、后收到 delivered 也合法</text>
+    <text x="34" y="108" font-size="10.5" fill="#991b1b">两条各自加一，重复回调还会再加</text>
+    <text x="34" y="128" font-size="10.5" fill="#991b1b">乱序之下状态算错，事后无从判断谁是真</text>
+
+    <rect x="500" y="44" width="440" height="98" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="514" y="66" font-size="12" font-weight="bold" fill="#14532d">正解：最终态覆盖</text>
+    <text x="514" y="88" font-size="10.5" fill="#14532d">只允许状态前进、不回退</text>
+    <text x="514" y="108" font-size="10.5" fill="#14532d">重复回执与乱序回执天然幂等</text>
+    <text x="514" y="128" font-size="10.5" fill="#14532d">要清的只有「当前处在哪一态」</text>
+
+    <text x="18" y="162" font-size="11" fill="#475569">另外两条：回执回调的流量由外部驱动、峰值不可控，入口要限流；渠道回执可能丢，要定期用对账单补齐。</text>
+  </g>
+</svg>

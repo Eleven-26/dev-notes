@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">上传状态机：进度只活在客户端本地</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#475569">四态取自 4.3 表；右侧接语音 6.3 的录制与取消边界（状态机示意，不含任何耗时数字）</text>
+
+  <!-- 左：状态机 -->
+  <rect x="24" y="82" width="640" height="368" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="108" font-size="14" font-weight="bold" fill="#334155">待上传 → 上传中 → 成功 / 失败</text>
+
+  <rect x="56" y="150" width="130" height="62" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="121" y="174" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">待上传</text>
+  <text x="121" y="192" text-anchor="middle" font-size="9.5" fill="#1e3a8a">灰底占位 + 进度圈</text>
+
+  <rect x="220" y="150" width="130" height="62" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="285" y="174" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">上传中</text>
+  <text x="285" y="192" text-anchor="middle" font-size="9.5" fill="#1e3a8a">进度条 / 百分比</text>
+
+  <rect x="384" y="150" width="130" height="62" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="449" y="174" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">上传成功</text>
+  <text x="449" y="192" text-anchor="middle" font-size="9.5" fill="#14532d">正常气泡</text>
+
+  <rect x="220" y="264" width="130" height="62" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="285" y="288" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">上传失败</text>
+  <text x="285" y="306" text-anchor="middle" font-size="9.5" fill="#7c2d12">感叹号 + 重试入口</text>
+
+  <rect x="548" y="150" width="104" height="62" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="600" y="174" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">投递</text>
+  <text x="600" y="192" text-anchor="middle" font-size="9.5" fill="#334155">走消息通道</text>
+
+  <line x1="186" y1="181" x2="220" y2="181" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="350" y1="181" x2="384" y2="181" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="514" y1="181" x2="548" y2="181" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M 285 212 L 285 264" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M 220 295 L 121 295 L 121 212" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <text x="188" y="138" font-size="9.5" fill="#334155">开始分片上传</text>
+  <text x="352" y="138" font-size="9.5" fill="#334155">逐片推进，可暂停</text>
+  <text x="518" y="138" font-size="9.5" fill="#334155">组装消息体</text>
+  <text x="296" y="242" font-size="9.5" fill="#334155">失败</text>
+  <text x="130" y="250" font-size="9.5" fill="#334155">用户点重试，回到待上传</text>
+  <text x="552" y="240" font-size="9.5" fill="#64748b">此后交给投递链路</text>
+
+  <rect x="56" y="352" width="596" height="66" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="72" y="376" font-size="10.5" fill="#334155">边界：服务端只知道「消息有没有发进来」，不知道「字节传到第几片」</text>
+  <text x="72" y="398" font-size="10.5" fill="#334155">所以「上传态」和「投递态」要分开维护，不能互相推断</text>
+
+  <!-- 右：语音前置 -->
+  <rect x="680" y="82" width="296" height="368" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="700" y="108" font-size="14" font-weight="bold" fill="#334155">语音：录制状态接在上传之前</text>
+  <text x="700" y="128" font-size="10.5" fill="#64748b">「按住说话」的三种收尾（6.3）</text>
+
+  <rect x="700" y="142" width="256" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="716" y="162" font-size="10.5" font-weight="bold" fill="#1e3a8a">按住即录</text>
+  <text x="716" y="180" font-size="9.5" fill="#1e3a8a">开始采集，实时算时长与波形</text>
+
+  <rect x="700" y="198" width="256" height="48" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="716" y="218" font-size="10.5" font-weight="bold" fill="#14532d">松手即发</text>
+  <text x="716" y="236" font-size="9.5" fill="#14532d">停止采集、上传、组装消息</text>
+
+  <rect x="700" y="254" width="256" height="48" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="716" y="274" font-size="10.5" font-weight="bold" fill="#7c2d12">上滑取消</text>
+  <text x="716" y="292" font-size="9.5" fill="#7c2d12">识别为手势取消，不上传不发消息</text>
+
+  <rect x="700" y="310" width="256" height="64" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="716" y="332" font-size="10.5" font-weight="bold" fill="#7c2d12">取消必须在上传之前</text>
+  <text x="716" y="350" font-size="9.5" fill="#7c2d12">一旦开始上传再取消，就要处理</text>
+  <text x="716" y="366" font-size="9.5" fill="#7c2d12">「已传部分怎么清理」</text>
+
+  <text x="700" y="404" font-size="9.5" fill="#64748b">丢弃的是本地录制，服务端无感知</text>
+
+  <!-- 底部注记 -->
+  <rect x="24" y="466" width="952" height="72" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="490" font-size="11" fill="#334155">对照：语音的「已听 / 未听」是用户级状态，挂在「用户 × 消息」上、与已读回执同源，不在这台客户端状态机里（6.4）</text>
+  <text x="44" y="514" font-size="10" fill="#64748b">要点：上传的进度是本地的，投递的进度才是服务端的；先上传成功再发消息，顺序反了就会出现「已发送却永远取不到」</text>
+</svg>

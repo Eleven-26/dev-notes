@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="pgB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="pgG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">异步导入进度的调用时序：数据与进度是两套提交</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">对应正文 4.2「位置决定可见性」与 4.4「取消在安全点退出」</text>
+
+  <rect x="30" y="80" width="180" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="120" y="105" font-size="11.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">前端</text>
+  <rect x="290" y="80" width="180" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="380" y="105" font-size="11.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">任务 worker</text>
+  <rect x="550" y="80" width="180" height="40" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="640" y="105" font-size="11.5" font-weight="bold" fill="#14532d" text-anchor="middle">数据表</text>
+  <rect x="780" y="80" width="180" height="40" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="870" y="105" font-size="11.5" font-weight="bold" fill="#14532d" text-anchor="middle">任务表（进度列）</text>
+
+  <line x1="120" y1="120" x2="120" y2="470" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="380" y1="120" x2="380" y2="470" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="640" y1="120" x2="640" y2="470" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="870" y1="120" x2="870" y2="470" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <line x1="120" y1="150" x2="374" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#pgB)"/>
+  <text x="247" y="141" font-size="10.5" fill="#1e3a8a" text-anchor="middle">提交导入任务</text>
+
+  <line x1="380" y1="188" x2="634" y2="188" stroke="#2563eb" stroke-width="1.5" marker-end="url(#pgB)"/>
+  <text x="507" y="179" font-size="10.5" fill="#1e3a8a" text-anchor="middle">小事务：批量写这一批</text>
+  <line x1="640" y1="220" x2="386" y2="220" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#pgG)"/>
+  <text x="513" y="236" font-size="10" fill="#14532d" text-anchor="middle">第一套提交（数据落库）</text>
+
+  <line x1="380" y1="272" x2="864" y2="272" stroke="#2563eb" stroke-width="1.5" marker-end="url(#pgB)"/>
+  <text x="622" y="263" font-size="10.5" fill="#1e3a8a" text-anchor="middle">在事务外更新已处理行数</text>
+  <line x1="870" y1="304" x2="386" y2="304" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#pgG)"/>
+  <text x="628" y="320" font-size="10" fill="#14532d" text-anchor="middle">第二套提交（进度可见）</text>
+
+  <line x1="120" y1="352" x2="864" y2="352" stroke="#2563eb" stroke-width="1.5" marker-end="url(#pgB)"/>
+  <text x="492" y="343" font-size="10.5" fill="#1e3a8a" text-anchor="middle">轮询进度</text>
+  <line x1="870" y1="384" x2="126" y2="384" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#pgG)"/>
+  <text x="498" y="400" font-size="10" fill="#14532d" text-anchor="middle">读到 100 / 200 / … / 1000，不是全程 0%</text>
+
+  <line x1="120" y1="432" x2="374" y2="432" stroke="#2563eb" stroke-width="1.5" marker-end="url(#pgB)"/>
+  <text x="247" y="423" font-size="10.5" fill="#1e3a8a" text-anchor="middle">点取消：调 cancelFunc</text>
+
+  <rect x="290" y="440" width="380" height="30" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="480" y="460" font-size="10" fill="#92400e" text-anchor="middle">跑完当前这一批并提交后，检查 ctx.Err() 才退出</text>
+
+  <g transform="translate(20,488)">
+    <rect x="0" y="0" width="960" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <rect x="20" y="16" width="450" height="80" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="34" y="38" font-size="11.5" font-weight="bold" fill="#991b1b">反例：进度写在数据事务内</text>
+    <text x="34" y="60" font-size="10.5" fill="#991b1b">另一连接读到的序列 = [0 0 0 0 0 0 0 0 0 0]</text>
+    <text x="34" y="80" font-size="10.5" fill="#991b1b">提交后才读到 1000 —— 隔离性让进度不可见</text>
+
+    <rect x="490" y="16" width="450" height="80" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="504" y="38" font-size="11.5" font-weight="bold" fill="#14532d">频率：按时间节流，不按行数</text>
+    <text x="504" y="60" font-size="10.5" fill="#14532d">实测每行写一次：20000 次、慢 8.5 倍</text>
+    <text x="504" y="80" font-size="10.5" fill="#14532d">每 100 行一次：200 次、1.8 倍 —— 1 秒一次足够</text>
+
+    <text x="18" y="106" font-size="10.5" fill="#64748b">补回真实网络往返（固定 0.3ms/次）后，每行一次与只在结束一次的差距是 68 倍。</text>
+  </g>
+</svg>

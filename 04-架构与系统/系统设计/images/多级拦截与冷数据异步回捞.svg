@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次「拉历史消息」的逐层拦截，与命中冷区后的异步回捞</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">分层口径：热 = 7 天以内、温 = 1 个月以内、冷 = 1 个月以前；本题是纯设计题，图中不含实测延迟数字</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="176" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 多级缓存逐层拦截：越往下越贵，命中就停</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">最近的消息天天看，久远的几乎不看 —— 所以前两层拦住绝大多数读</text>
+
+    <rect x="14" y="60" width="168" height="84" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="24" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">客户端本地</text>
+    <text x="24" y="100" font-size="9.5" fill="#1e40af">最近看过的会话</text>
+    <text x="24" y="118" font-size="9.5" fill="#1e40af">命中不出网络</text>
+
+    <rect x="205" y="60" width="168" height="84" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="215" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">接入层缓存</text>
+    <text x="215" y="100" font-size="9.5" fill="#1e40af">网关侧热点</text>
+    <text x="215" y="118" font-size="9.5" fill="#1e40af">挡住重复请求</text>
+
+    <rect x="396" y="60" width="168" height="84" fill="#ccfbf1" stroke="#0d9488" stroke-width="1" rx="8"/>
+    <text x="406" y="80" font-size="11.5" font-weight="bold" fill="#0f766e">Redis 热层</text>
+    <text x="406" y="100" font-size="9.5" fill="#0f766e">7 天以内的消息</text>
+    <text x="406" y="118" font-size="9.5" fill="#0f766e">快是第一优先级</text>
+
+    <rect x="587" y="60" width="168" height="84" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="597" y="80" font-size="11.5" font-weight="bold" fill="#92400e">存储分片（温）</text>
+    <text x="597" y="100" font-size="9.5" fill="#92400e">1 个月以内</text>
+    <text x="597" y="118" font-size="9.5" fill="#92400e">按用户 / 会话分片</text>
+
+    <rect x="778" y="60" width="168" height="84" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="788" y="80" font-size="11.5" font-weight="bold" fill="#991b1b">归档 / 对象（冷）</text>
+    <text x="788" y="100" font-size="9.5" fill="#991b1b">1 个月以前</text>
+    <text x="788" y="118" font-size="9.5" fill="#991b1b">低成本大容量</text>
+
+    <line x1="182" y1="102" x2="203" y2="102" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="373" y1="102" x2="394" y2="102" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="564" y1="102" x2="585" y2="102" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <line x1="755" y1="102" x2="776" y2="102" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="150" y="160" font-size="9.5" fill="#64748b">未命中就往下一层穿透；红色那一段是「下沉」，冷数据平时不服务读请求</text>
+  </g>
+
+  <g transform="translate(20,270)">
+    <rect x="0" y="0" width="620" height="250" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 命中冷区：不能同步等归档，要异步回捞</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">冷数据回捞延迟大 → 异步回捞 + 缓存预热；可预判的场景提前加载</text>
+
+    <rect x="14" y="58" width="592" height="36" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="26" y="81" font-size="10.5" fill="#991b1b">① 请求落在冷区（1 个月以前，成本优先的介质上）</text>
+    <line x1="310" y1="94" x2="310" y2="106" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="14" y="106" width="592" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="26" y="129" font-size="10.5" fill="#1e40af">② 不同步等：先回「加载中 / 占位」，起一个异步回捞任务</text>
+    <line x1="310" y1="142" x2="310" y2="154" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="14" y="154" width="592" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="26" y="177" font-size="10.5" fill="#1e40af">③ 捞回来后回写热层（预热），客户端再取就是命中</text>
+    <line x1="310" y1="190" x2="310" y2="202" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="14" y="202" width="592" height="36" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="26" y="225" font-size="10.5" fill="#14532d">④ 可预判就提前加载：跳转历史消息前先把这一段捞上来</text>
+  </g>
+
+  <g transform="translate(660,270)">
+    <rect x="0" y="0" width="320" height="250" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">C. 分片键选谁</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">一个键只能优化一个方向</text>
+
+    <rect x="14" y="58" width="292" height="48" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="26" y="78" font-size="10.5" font-weight="bold" fill="#1e40af">按用户分片</text>
+    <text x="26" y="98" font-size="10" fill="#1e40af">「拉我的会话列表」最快</text>
+
+    <rect x="14" y="116" width="292" height="48" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="26" y="136" font-size="10.5" font-weight="bold" fill="#1e40af">按会话分片</text>
+    <text x="26" y="156" font-size="10" fill="#1e40af">单会话读写不跨片</text>
+
+    <rect x="14" y="174" width="292" height="60" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="26" y="194" font-size="10.5" font-weight="bold" fill="#92400e">群聊读写跨用户</text>
+    <text x="26" y="214" font-size="10" fill="#92400e">→ 群消息按群 ID 单独分片</text>
+    <text x="26" y="230" font-size="10" fill="#92400e">成员侧只存引用 / 收件箱</text>
+  </g>
+</svg>

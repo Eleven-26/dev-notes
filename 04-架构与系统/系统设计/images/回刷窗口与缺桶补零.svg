@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 484" width="1000" height="484" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="484" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">回刷窗口取几天，决定迟到数据能不能被吸收；缺桶又要单独补零</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">场景与读数都取自「实测：幂等、回刷窗口、以及查询成本转移」那张表：09-22 的一条明细在 09-24 才补传上来</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="540" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 同一条迟到明细，两种窗口的两种结局</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">任务体只有三步：筛窗口 → 纯函数聚合 → 整行覆盖 upsert</text>
+
+    <rect x="14" y="56" width="242" height="124" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="24" y="76" font-size="11.5" font-weight="bold" fill="#991b1b">窗口 = 1 天（只算昨天）</text>
+    <text x="24" y="96" font-size="9.5" fill="#991b1b">昨天 = 09-23，任务只扫它</text>
+    <text x="24" y="114" font-size="9.5" fill="#991b1b">09-22 不在扫描范围里</text>
+    <text x="24" y="132" font-size="9.5" fill="#991b1b">实测 2026-09-22/view</text>
+    <text x="24" y="150" font-size="9.5" fill="#991b1b">存在 = false</text>
+    <text x="24" y="170" font-size="9.5" font-weight="bold" fill="#991b1b">永久漏掉，事后重跑也救不回</text>
+
+    <rect x="284" y="56" width="242" height="124" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="294" y="76" font-size="11.5" font-weight="bold" fill="#14532d">窗口 = 3 天（回刷一遍）</text>
+    <text x="294" y="96" font-size="9.5" fill="#14532d">09-22 到 09-24 整体重算</text>
+    <text x="294" y="114" font-size="9.5" fill="#14532d">补传的这条落进窗口</text>
+    <text x="294" y="132" font-size="9.5" fill="#14532d">实测 2026-09-22/view</text>
+    <text x="294" y="150" font-size="9.5" fill="#14532d">PV 2 UV 2，存在 = true</text>
+    <text x="294" y="170" font-size="9.5" font-weight="bold" fill="#14532d">迟到数据被窗口吸收掉</text>
+
+    <text x="14" y="208" font-size="10" fill="#334155">同一批明细连跑 3 次：每次都「写 5 行，2026-09-24/view = PV 3 UV 2」，</text>
+    <text x="14" y="228" font-size="10" fill="#334155">重跑不翻倍 —— 聚合是纯函数、写库是整行覆盖，两种结局只差在窗口取几天。</text>
+    <text x="14" y="256" font-size="10.5" font-weight="bold" fill="#92400e">两个理由要回刷：迟到数据（客户端批量补传、跨天边界请求）、</text>
+    <text x="14" y="276" font-size="10.5" font-weight="bold" fill="#92400e">口径变更（统计规则改了，历史要能跟上）。</text>
+  </g>
+
+  <g transform="translate(580,74)">
+    <rect x="0" y="0" width="400" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 结果表里「没有行」不是「是 0」</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">这是预聚合最阴的一个坑，页面渲染直接把它放大</text>
+
+    <rect x="14" y="56" width="372" height="60" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+    <text x="24" y="76" font-size="11" font-weight="bold" fill="#991b1b">现象</text>
+    <text x="24" y="94" font-size="9.5" fill="#991b1b">缺桶时页面渲染成空白，或干脆跳过那天</text>
+    <text x="24" y="110" font-size="9.5" fill="#991b1b">用户看到的就是「22 号没人访问」</text>
+
+    <rect x="14" y="126" width="372" height="74" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="24" y="146" font-size="11" font-weight="bold" fill="#1e40af">修法一：查询侧按日期补零</text>
+    <text x="24" y="166" font-size="9.5" fill="#1e40af">正文原话：查询侧必须按日期补零</text>
+    <text x="24" y="184" font-size="9.5" fill="#1e40af">页面拿到连续日期，不再出现空洞</text>
+
+    <rect x="14" y="210" width="372" height="74" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="24" y="230" font-size="11" font-weight="bold" fill="#1e40af">修法二：任务落全维度笛卡尔积</text>
+    <text x="24" y="250" font-size="9.5" fill="#1e40af">正文括号里那句：对全维度笛卡尔积落行</text>
+    <text x="24" y="268" font-size="9.5" fill="#1e40af">没数据的桶也有行，值就是 0</text>
+  </g>
+
+  <g transform="translate(20,394)">
+    <rect x="0" y="0" width="960" height="74" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="11.5" font-weight="bold" fill="#92400e">窗口取多大</text>
+    <text x="110" y="24" font-size="10.5" fill="#92400e">N 取「业务能容忍的迟到时长」，不是越大越好 —— 窗口越长，单次任务要扫的明细越多。</text>
+    <text x="14" y="48" font-size="10.5" fill="#92400e">实时看板另说：历史区间走预计算结果表，当天走实时聚合 + 缓存，第二天由定时任务合并（见延伸追问）。</text>
+    <text x="14" y="68" font-size="10.5" fill="#92400e">口径变了靠重跑，不靠实时查询兜底 —— 所以「支持按日期重跑」必须在骨架里就写对。</text>
+  </g>
+</svg>

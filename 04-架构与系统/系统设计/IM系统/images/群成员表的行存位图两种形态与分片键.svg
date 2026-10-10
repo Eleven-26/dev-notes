@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="30" y="36" font-size="20" font-weight="bold" fill="#0f172a">群成员表的两种形态与分片键选择</text>
+  <text x="30" y="58" font-size="12.5" fill="#475569">要按成员存属性就一行一成员；只做集合判定与计数就用位图；分片键跟着主查询走</text>
+
+  <rect x="24" y="76" width="460" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="38" y="100" font-size="15" font-weight="bold" fill="#0f172a">形态一：一行一成员（行存）</text>
+  <text x="38" y="120" font-size="10.5" fill="#64748b">（groupID, userID）一行，属性挂在这行上</text>
+
+  <rect x="38" y="134" width="84" height="28" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="126" y="134" width="84" height="28" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="214" y="134" width="84" height="28" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="302" y="134" width="84" height="28" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="390" y="134" width="84" height="28" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="80" y="152" font-size="10" fill="#1e3a8a" text-anchor="middle">groupID</text>
+  <text x="168" y="152" font-size="10" fill="#1e3a8a" text-anchor="middle">userID</text>
+  <text x="256" y="152" font-size="10" fill="#1e3a8a" text-anchor="middle">Role</text>
+  <text x="344" y="152" font-size="10" fill="#14532d" text-anchor="middle">JoinSeq</text>
+  <text x="432" y="152" font-size="10" fill="#14532d" text-anchor="middle">MutedUntil</text>
+
+  <text x="38" y="184" font-size="11" fill="#334155">适合：需要按成员存属性（角色 / 入群位点 / 禁言截止）</text>
+  <text x="38" y="208" font-size="11" fill="#334155">代价：成员多时行数大，全量扫描贵，要靠分页拉取</text>
+  <text x="38" y="232" font-size="11" fill="#334155">成员数另存：memberCount 与变更同事务，需可对账</text>
+
+  <rect x="516" y="76" width="460" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="530" y="100" font-size="15" font-weight="bold" fill="#0f172a">形态二：位图（bitmap）</text>
+  <text x="530" y="120" font-size="10.5" fill="#64748b">groupID 对应一串位，按 userID 的稠密编号占一位</text>
+
+  <rect x="530" y="134" width="30" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="564" y="134" width="30" height="30" rx="4" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="598" y="134" width="30" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="632" y="134" width="30" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="666" y="134" width="30" height="30" rx="4" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="700" y="134" width="30" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="734" y="134" width="30" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="768" y="134" width="30" height="30" rx="4" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="545" y="154" font-size="10" fill="#14532d" text-anchor="middle">1</text>
+  <text x="579" y="154" font-size="10" fill="#991b1b" text-anchor="middle">0</text>
+  <text x="613" y="154" font-size="10" fill="#14532d" text-anchor="middle">1</text>
+  <text x="647" y="154" font-size="10" fill="#14532d" text-anchor="middle">1</text>
+  <text x="681" y="154" font-size="10" fill="#991b1b" text-anchor="middle">0</text>
+  <text x="715" y="154" font-size="10" fill="#14532d" text-anchor="middle">1</text>
+  <text x="749" y="154" font-size="10" fill="#14532d" text-anchor="middle">1</text>
+  <text x="783" y="154" font-size="10" fill="#991b1b" text-anchor="middle">0</text>
+  <text x="816" y="154" font-size="10.5" fill="#64748b">1 = 在群里</text>
+
+  <text x="530" y="184" font-size="11" fill="#334155">适合：判断是否成员 / 求成员数 / 求两个群的交集</text>
+  <text x="530" y="208" font-size="11" fill="#334155">一次位运算就够，不用逐行扫描</text>
+  <text x="530" y="232" font-size="11" fill="#991b1b">代价：存不下属性，要求 userID 是稠密整数编号</text>
+
+  <rect x="24" y="292" width="460" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="38" y="316" font-size="15" font-weight="bold" fill="#0f172a">组合：大群的常见做法</text>
+  <text x="38" y="340" font-size="11" fill="#334155">属性落行 + 位图做快速判定与计数</text>
+  <text x="38" y="362" font-size="11" fill="#334155">两份数据要同步：成员变更同时改行与位</text>
+  <text x="38" y="392" font-size="11.5" fill="#92400e">判据：要不要按成员存属性——要就落行，</text>
+  <text x="38" y="414" font-size="11.5" fill="#92400e">只要集合运算与计数就用位图</text>
+
+  <rect x="516" y="292" width="460" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="530" y="316" font-size="15" font-weight="bold" fill="#0f172a">分片键：跟着主查询走</text>
+  <text x="530" y="340" font-size="11" fill="#14532d">按 groupID（推荐）：拉成员 / 改成员落同一分片</text>
+  <text x="530" y="362" font-size="11" fill="#991b1b">代价：查某人加入了哪些群要跨分片</text>
+  <text x="530" y="384" font-size="11" fill="#334155">按 userID：查某人的群方便，主查询反而跨分片</text>
+  <text x="530" y="414" font-size="11" fill="#334155">超大群可单独拆表 / 拆片，避开热点群拖累整分片</text>
+
+  <rect x="24" y="462" width="952" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="44" y="488" font-size="12" fill="#0f172a">要点：判据是「这份数据是否随成员数 N 线性增长」——成员表、通知目标、逐人回执都随 N 增长，必须各有分页 / 缓存 / 聚合之一。</text>
+  <text x="44" y="514" font-size="12" fill="#475569">入群位点 JoinSeq 存在成员表里，因为它是「人 × 群」的属性；历史可见性用 seq 裁剪而非时间戳，且过滤必须在服务端做。</text>
+  <text x="44" y="540" font-size="12" fill="#94a3b8">注意：本篇未做实测，无读数；本图为结构示意，不含成员规模或扫描成本数字。</text>
+</svg>

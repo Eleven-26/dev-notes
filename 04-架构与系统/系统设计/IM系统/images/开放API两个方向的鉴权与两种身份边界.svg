@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="30" y="36" font-size="20" font-weight="bold" fill="#0f172a">开放 API 两个方向的鉴权与两种身份边界</text>
+  <text x="30" y="58" font-size="12.5" fill="#475569">主动调用（你调平台）用签名或令牌，被动接收（平台调你）用回调签名校验，两套不能互相替代</text>
+
+  <rect x="24" y="76" width="460" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="38" y="100" font-size="15" font-weight="bold" fill="#0f172a">方向一：你主动调平台</text>
+  <rect x="44" y="116" width="400" height="48" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="54" y="134" font-size="11" fill="#1e3a8a">AppID + 密钥签名：服务端到服务端</text>
+  <text x="54" y="152" font-size="10" fill="#1e40af">每次带 AppID、时间戳、随机数，用 AppSecret 对请求内容签名</text>
+  <rect x="44" y="176" width="400" height="48" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="54" y="194" font-size="11" fill="#14532d">OAuth 令牌：代表某个用户操作</text>
+  <text x="54" y="212" font-size="10" fill="#14532d">走授权流程拿到 access token，权限可撤销</text>
+  <text x="38" y="246" font-size="11" fill="#92400e">签名管「来源可信、请求没被篡改」，</text>
+  <text x="38" y="268" font-size="11" fill="#92400e">令牌管「你到底有没有这个权限」</text>
+  <text x="38" y="294" font-size="11" fill="#334155">健全的开放平台通常两者都要：先证明来源，再查权限</text>
+
+  <rect x="516" y="76" width="460" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="530" y="100" font-size="15" font-weight="bold" fill="#0f172a">方向二：平台回调你的端点</text>
+  <rect x="536" y="116" width="420" height="40" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="546" y="141" font-size="11" fill="#92400e">验签四要素：签名头 · 时间戳 · nonce · 自己重算比对</text>
+  <text x="530" y="180" font-size="11" fill="#334155">时间戳与 nonce 配合，校验是否在合理时间窗内</text>
+  <text x="530" y="202" font-size="11" fill="#334155">用同一套规则重算签名，比对一致才处理</text>
+  <text x="530" y="232" font-size="11.5" fill="#991b1b">关键顺序：先验签，再判重，再处理，最后回 2xx</text>
+  <text x="530" y="258" font-size="11" fill="#334155">先处理再验签，等于把未验证的请求当成真的</text>
+  <text x="530" y="282" font-size="11" fill="#334155">先判重再验签，会给伪造请求写去重表的机会</text>
+
+  <rect x="24" y="326" width="460" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="38" y="350" font-size="15" font-weight="bold" fill="#0f172a">两种身份不能混</text>
+  <text x="38" y="376" font-size="11" fill="#1e3a8a">应用身份（AppID / AppSecret）：这个 Bot 自己发的</text>
+  <text x="38" y="398" font-size="11" fill="#14532d">用户身份（OAuth 授权）：代某个真实用户操作</text>
+  <text x="38" y="424" font-size="11" fill="#991b1b">混用的后果：轻则越权，</text>
+  <text x="38" y="446" font-size="11" fill="#991b1b">重则变成「这个应用能看所有人的消息」</text>
+
+  <rect x="516" y="326" width="460" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="530" y="350" font-size="15" font-weight="bold" fill="#0f172a">密钥保管与开放地基</text>
+  <text x="530" y="376" font-size="11" fill="#334155">密钥只放服务端，绝不下发到客户端</text>
+  <text x="530" y="398" font-size="11" fill="#334155">支持轮换：允许新旧密钥并存一段时间</text>
+  <text x="530" y="420" font-size="11" fill="#334155">最小权限：一个应用的密钥只做被授权的事</text>
+  <text x="530" y="446" font-size="11" fill="#92400e">地基三件套：鉴权、配额、审计，不是上线后再补</text>
+
+  <rect x="24" y="476" width="952" height="90" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="44" y="502" font-size="12" fill="#0f172a">要点：两个方向两套校验——你调平台靠签名或令牌，平台调你靠回调验签；只做一头，另一头就是敞口。</text>
+  <text x="44" y="526" font-size="12" fill="#475569">判据：审计是封禁的依据，封禁是审计的出口；开放平台的默认姿态要保守——低配额、需审核，由运营逐步放开。</text>
+  <text x="44" y="550" font-size="12" fill="#94a3b8">注意：本篇未做实测，无读数；本图为结构示意，不含任何配额、吞吐或成功率数字。</text>
+</svg>

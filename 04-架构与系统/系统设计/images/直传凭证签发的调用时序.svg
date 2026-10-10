@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="sans-serif">
+  <defs>
+    <marker id="sqB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="sqG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">直传凭证的调用时序：永久密钥不出后端</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">对应正文 1.5 的三步（换临时密钥 → 生成预签名 URL → 前端 PUT）与「使用」小节的凭证实现</text>
+
+  <rect x="60" y="84" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="160" y="112" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">客户端 / 前端</text>
+  <rect x="400" y="84" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="112" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">业务后端</text>
+  <rect x="740" y="84" width="200" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="840" y="112" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">对象存储 COS / OSS</text>
+
+  <line x1="160" y1="128" x2="160" y2="436" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="500" y1="128" x2="500" y2="436" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="840" y1="128" x2="840" y2="436" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <line x1="160" y1="156" x2="494" y2="156" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sqB)"/>
+  <text x="327" y="146" font-size="10.5" fill="#1e3a8a" text-anchor="middle">申请一次上传授权</text>
+
+  <line x1="500" y1="196" x2="834" y2="196" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sqB)"/>
+  <text x="667" y="186" font-size="10.5" fill="#1e3a8a" text-anchor="middle">第 1 步：永久密钥换临时密钥</text>
+
+  <line x1="840" y1="234" x2="506" y2="234" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#sqG)"/>
+  <text x="673" y="252" font-size="10" fill="#14532d" text-anchor="middle">临时密钥，有效期 30 分钟 / 1 小时</text>
+
+  <line x1="500" y1="288" x2="166" y2="288" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sqB)"/>
+  <text x="333" y="278" font-size="10.5" fill="#1e3a8a" text-anchor="middle">第 2 步：预签名 URL，只有 sig</text>
+  <text x="333" y="308" font-size="10" fill="#1e3a8a" text-anchor="middle">key / max / ctype / exp 全签进签名</text>
+
+  <line x1="160" y1="346" x2="834" y2="346" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sqB)"/>
+  <text x="497" y="336" font-size="10.5" fill="#1e3a8a" text-anchor="middle">第 3 步：PUT，以二进制方式传输文件内容</text>
+
+  <line x1="840" y1="384" x2="166" y2="384" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#sqG)"/>
+  <text x="503" y="374" font-size="10.5" fill="#14532d" text-anchor="middle">HTTP 200 即表示上传成功</text>
+
+  <line x1="160" y1="420" x2="834" y2="420" stroke="#2563eb" stroke-width="1.5" marker-end="url(#sqB)"/>
+  <text x="497" y="410" font-size="10.5" fill="#1e3a8a" text-anchor="middle">用返回的访问地址下载核对内容</text>
+
+  <g transform="translate(20,448)">
+    <rect x="0" y="0" width="960" height="58" rx="10" fill="#fef3c7" stroke="#b45309"/>
+    <text x="18" y="22" font-size="11" font-weight="bold" fill="#92400e">泄露面：永久密钥只留在业务后端与厂商之间，前端全程只碰有时效的临时凭证与预签名 URL。</text>
+    <text x="18" y="42" font-size="11" fill="#92400e">即使凭证泄露也只在有效期内可用；改其中任何一项授权字段，签名就废（篡改测试逐条见「使用」小节）。</text>
+  </g>
+</svg>

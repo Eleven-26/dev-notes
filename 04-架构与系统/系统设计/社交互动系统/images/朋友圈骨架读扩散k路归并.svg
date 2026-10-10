@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="548" viewBox="0 0 1000 548" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="548" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">读扩散的 k 路归并：每轮 peek k 个列表头，取最大 ID</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">Feed 不预存合并结果 —— 读时把「关注 + 自己」的列表按 ID 倒序逐条归并，读放大直接落在关注数上。</text>
+
+  <!-- A. 归并结构 -->
+  <rect x="40" y="96" width="600" height="356" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="126" font-size="15" fill="#0f172a">结构：k 个作者列表边归并（k = 关注数）</text>
+  <text x="60" y="148" font-size="11" fill="#64748b">authors = dedup(Following(uid) + 自己)；每个作者的动态各自按 ID 倒序成一条列表</text>
+
+  <rect x="70" y="164" width="150" height="26" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="145" y="182" font-size="11.5" fill="#1e3a8a" text-anchor="middle">作者 a₁ · heads[0]</text>
+  <rect x="70" y="196" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="145" y="215" font-size="11" fill="#334155" text-anchor="middle">ID 128</text>
+  <rect x="70" y="228" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="145" y="247" font-size="11" fill="#334155" text-anchor="middle">ID 120</text>
+  <rect x="70" y="260" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="145" y="279" font-size="11" fill="#334155" text-anchor="middle">ID 105</text>
+
+  <rect x="260" y="164" width="150" height="26" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="335" y="182" font-size="11.5" fill="#1e3a8a" text-anchor="middle">作者 a₂ · heads[1]</text>
+  <rect x="260" y="196" width="150" height="28" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="335" y="215" font-size="11" font-weight="bold" fill="#14532d" text-anchor="middle">ID 131（本轮最大）</text>
+  <rect x="260" y="228" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="335" y="247" font-size="11" fill="#334155" text-anchor="middle">ID 117</text>
+  <rect x="260" y="260" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="335" y="279" font-size="11" fill="#334155" text-anchor="middle">ID 99</text>
+
+  <rect x="450" y="164" width="150" height="26" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="525" y="182" font-size="11.5" fill="#1e3a8a" text-anchor="middle">作者 aₖ · heads[k-1]</text>
+  <rect x="450" y="196" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="525" y="215" font-size="11" fill="#334155" text-anchor="middle">ID 126</text>
+  <rect x="450" y="228" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="525" y="247" font-size="11" fill="#334155" text-anchor="middle">ID 112</text>
+  <rect x="450" y="260" width="150" height="28" rx="4" fill="#ffffff" stroke="#64748b"/>
+  <text x="525" y="279" font-size="11" fill="#334155" text-anchor="middle">ID 104</text>
+
+  <text x="60" y="316" font-size="12" fill="#14532d">这一轮 peek 3 个表头：128 / 131 / 126 → 取最大 ID 131 输出，heads[1] 前进一格</text>
+  <text x="60" y="338" font-size="12" fill="#334155">before 游标：ID ≥ before 的条目直接跳过（heads[i] 继续前进）</text>
+  <text x="60" y="360" font-size="11" fill="#64748b">归并前提：ID 唯一（发号器保证）+ 每条列表倒序（insertDesc 维持）</text>
+  <text x="60" y="382" font-size="11" fill="#64748b">Scanned = 需归并的列表数：dedup(Following(uid) + uid)，自关注 / 互关不重复计入</text>
+
+  <!-- B. 实测读放大 -->
+  <rect x="660" y="96" width="300" height="356" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="680" y="126" font-size="15" fill="#0f172a">实测读放大</text>
+  <text x="680" y="148" font-size="11" fill="#64748b">读首页 20 条，5000 次 × 3 轮取最小（本机、纯内存）</text>
+  <line x1="680" y1="160" x2="940" y2="160" stroke="#e2e8f0"/>
+  <text x="680" y="186" font-size="12" fill="#334155">关注 50 → 25.65µs（归并 50 个列表）</text>
+  <text x="680" y="212" font-size="12" fill="#334155">关注 300 → 192.04µs</text>
+  <text x="680" y="238" font-size="12" fill="#334155">关注 1000 → 810.73µs</text>
+  <text x="680" y="268" font-size="12" fill="#14532d">形状：线性于关注数，O(limit × k)</text>
+
+  <rect x="680" y="286" width="260" height="88" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="696" y="308" font-size="11" fill="#991b1b">1000 关注要归并 1001 个列表（含自己）</text>
+  <text x="696" y="328" font-size="11" fill="#991b1b">线上就是 1001 次范围查询</text>
+  <text x="696" y="348" font-size="11" fill="#991b1b">= 1001 次网络往返，比实测更贵几个数量级</text>
+
+  <text x="680" y="400" font-size="11" fill="#64748b">写扩散对照：0.43 / 0.60 / 0.32µs，恒定</text>
+  <text x="680" y="422" font-size="11" fill="#64748b">（0.2~0.6µs 的来回是 GC 噪声，不是趋势）</text>
+
+  <!-- 底部注记 -->
+  <rect x="40" y="468" width="920" height="60" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="494" font-size="12" fill="#334155">每多关注一个人，读一次就要多扫一段 —— 读放大 = 关注数；大 V 关注数没有限制，纯读扩散撑不住「关注了 2000 人」的用户。</text>
+  <text x="60" y="516" font-size="11" fill="#64748b">同一份关注列表，写扩散读是常数（只切列表头 20 条），读扩散线性于关注数，混合正比于「关注的大 V 数」。</text>
+</svg>

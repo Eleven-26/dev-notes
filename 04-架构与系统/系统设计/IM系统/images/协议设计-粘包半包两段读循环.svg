@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">粘包半包处理：长度前缀 + 两段读 + 循环</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#475569">TCP 只保证字节顺序，不保证消息边界；一条完整帧 = 13 字节定长头 + length 字节 body</text>
+
+  <!-- 左：形态 -->
+  <rect x="24" y="82" width="390" height="392" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="108" font-size="14" font-weight="bold" fill="#334155">先看清字节流的两种畸形形态</text>
+  <text x="44" y="128" font-size="10.5" fill="#64748b">对方 write 的次数，与你能 read 的次数毫无对应关系</text>
+
+  <rect x="44" y="142" width="350" height="108" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="56" y="164" font-size="12" font-weight="bold" fill="#334155">半包：一次 read 只拿到半条</text>
+  <rect x="56" y="176" width="104" height="26" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="108" y="193" text-anchor="middle" font-size="10" fill="#1e3a8a">头 13 B</text>
+  <rect x="164" y="176" width="104" height="26" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="216" y="193" text-anchor="middle" font-size="10" fill="#1e3a8a">body 前半</text>
+  <rect x="272" y="176" width="104" height="26" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="324" y="193" text-anchor="middle" font-size="10" fill="#64748b">还没到</text>
+  <text x="56" y="230" font-size="10" fill="#64748b">帧头本身也会被拆：必须 io.ReadFull 按固定长度读满</text>
+
+  <rect x="44" y="262" width="350" height="118" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="56" y="284" font-size="12" font-weight="bold" fill="#334155">粘包：一次 read 拿到一条半</text>
+  <rect x="56" y="296" width="96" height="26" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="104" y="313" text-anchor="middle" font-size="10" fill="#14532d">帧B 整条 28 B</text>
+  <rect x="156" y="296" width="80" height="26" rx="4" fill="#fef3c7" stroke="#b45309"/>
+  <text x="196" y="313" text-anchor="middle" font-size="10" fill="#92400e">帧C 头</text>
+  <rect x="240" y="296" width="120" height="26" rx="4" fill="#fef3c7" stroke="#b45309"/>
+  <text x="300" y="313" text-anchor="middle" font-size="10" fill="#92400e">帧C body 半条</text>
+  <text x="56" y="348" font-size="10" fill="#64748b">一次 read 可能拿到半条、一条或三条消息</text>
+  <text x="56" y="366" font-size="10" fill="#64748b">28 B = 13 B 头 + 15 B body（2.4 节示例帧）</text>
+
+  <text x="44" y="404" font-size="10.5" fill="#334155">读满头 → 算出「还差多少字节」→ 按 length 继续读</text>
+  <text x="44" y="424" font-size="10.5" fill="#334155">定界的唯一依据是头里的 length，没有它切不出消息</text>
+
+  <!-- 右：流程 -->
+  <rect x="430" y="82" width="546" height="392" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="450" y="108" font-size="14" font-weight="bold" fill="#334155">处理顺序：收到任意字节流都这么走</text>
+  <text x="450" y="128" font-size="10.5" fill="#64748b">对应正文第四节的 ①~⑤，循环不止</text>
+
+  <rect x="450" y="142" width="440" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="670" y="167" text-anchor="middle" font-size="11" fill="#1e3a8a">① 读满定长帧头（13 B），io.ReadFull</text>
+  <line x1="670" y1="182" x2="670" y2="192" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="450" y="192" width="440" height="40" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="670" y="217" text-anchor="middle" font-size="11" fill="#92400e">② 校验 magic / version / length ≤ maxFrame</text>
+  <line x1="670" y1="232" x2="670" y2="242" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="450" y="242" width="440" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="670" y="267" text-anchor="middle" font-size="11" fill="#1e3a8a">③ 再读 length 字节 body</text>
+  <line x1="670" y1="282" x2="670" y2="292" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="450" y="292" width="440" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="670" y="317" text-anchor="middle" font-size="11" fill="#1e3a8a">④ 交给类型分发，未知 type 忽略并继续</text>
+  <line x1="670" y1="332" x2="670" y2="342" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="450" y="342" width="440" height="40" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="670" y="367" text-anchor="middle" font-size="11" fill="#14532d">⑤ 回到 ①，缓冲里可能还剩半条或多条</text>
+
+  <path d="M 890 362 L 920 362 L 920 162 L 894 162" fill="none" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrG)"/>
+  <text x="924" y="266" font-size="9.5" fill="#14532d">循环读</text>
+
+  <rect x="450" y="396" width="440" height="60" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="466" y="418" font-size="10.5" font-weight="bold" fill="#991b1b">超限：立即断开并告警，不能「读一点丢一点」</text>
+  <text x="466" y="440" font-size="10" fill="#991b1b">上限校验必须在分配 body 缓冲之前，否则先 OOM 再校验</text>
+
+  <!-- 底部注记 -->
+  <rect x="24" y="488" width="952" height="84" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="512" font-size="11" fill="#334155">IM 特有的坑：读缓冲复用时，把指向复用缓冲的切片交给异步协程会被下一条覆盖——要么拷出来，要么引用计数</text>
+  <text x="44" y="536" font-size="10" fill="#64748b">要点：先读满头、校验在分配之前、再按 length 读 body，循环消化粘包与半包；大消息不靠调大上限，走分片或先上传拿 URL。</text>
+</svg>

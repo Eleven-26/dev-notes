@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" font-family="sans-serif">
+  <defs>
+    <marker id="arrU" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">防刷两道防线：Redis 原子判重挡绝大多数，唯一索引兜住被绕过的那部分</text>
+  <text x="30" y="61" font-size="13" fill="#64748b">构造：库里有 100 张券，同一个用户（uid=7）并发发 50 个领取请求，每人限领 1 张；判据是「这个用户来过没有」，一个集合操作</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="290" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">一次领取要连着过两道闸门</text>
+
+    <rect x="18" y="100" width="170" height="60" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+    <text x="103" y="126" font-size="11" fill="#334155" text-anchor="middle">uid=7 并发 50 个</text>
+    <text x="103" y="146" font-size="11" fill="#334155" text-anchor="middle">领取请求</text>
+    <path d="M 188 130 L 226 130" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrU)"/>
+
+    <rect x="228" y="70" width="270" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="240" y="94" font-size="11.5" fill="#1e3a8a">第一道：Lua 里 SADD 判重</text>
+    <text x="240" y="118" font-size="10.5" fill="#1e3a8a">GET 库存 → SADD 名单 → DECR</text>
+    <text x="240" y="138" font-size="10.5" fill="#1e3a8a">added == 0 → 返回 2（已领过）</text>
+    <text x="240" y="162" font-size="10.5" fill="#1e3a8a">名单判定与扣减必须在同一次</text>
+    <text x="240" y="180" font-size="10.5" fill="#1e3a8a">原子执行里，分开就又有窗口</text>
+
+    <rect x="228" y="206" width="270" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="240" y="234" font-size="11" fill="#14532d">被去重挡下 49 次（性能好、无锁）</text>
+
+    <path d="M 498 130 L 536 130" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrU)"/>
+
+    <rect x="538" y="70" width="270" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="550" y="94" font-size="11.5" fill="#1e3a8a">第二道：唯一索引 + INSERT IGNORE</text>
+    <text x="550" y="118" font-size="10.5" fill="#1e3a8a">uk(coupon_id, uid)</text>
+    <text x="550" y="138" font-size="10.5" fill="#1e3a8a">RowsAffected = 0 → 已经领过</text>
+    <text x="550" y="162" font-size="10.5" fill="#1e3a8a">缓存被清、名单 key 过期、代码</text>
+    <text x="550" y="180" font-size="10.5" fill="#1e3a8a">引入 bug 时，它是最后一道</text>
+
+    <rect x="538" y="206" width="270" height="46" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="550" y="234" font-size="11" fill="#92400e">被唯一键挡下 49 次 → 白扣要回补</text>
+
+    <path d="M 808 130 L 846 130" fill="none" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrU)"/>
+    <rect x="848" y="94" width="94" height="120" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="895" y="132" font-size="11" fill="#14532d" text-anchor="middle">领到 1 张</text>
+    <text x="895" y="158" font-size="10.5" fill="#14532d" text-anchor="middle">全表 1 条</text>
+
+    <text x="18" y="272" font-size="11" fill="#991b1b">A 组（无去重 + 无唯一索引，只扣库存）：该用户领到 50 张、全表 50 条 —— 脚本刷券就是这么来的。</text>
+  </g>
+
+  <g transform="translate(20,386)">
+    <rect x="0" y="0" width="960" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">三组实测读数（库里 100 张券，同一个用户发 50 个并发请求）</text>
+    <text x="18" y="54" font-size="11" fill="#991b1b">A 无去重 + 无唯一索引（只扣库存）：该用户领到 50 张 · 全表 50 条</text>
+    <text x="490" y="54" font-size="11" fill="#475569">连跑 5 轮，同一用户最多领到 50 张</text>
+    <text x="18" y="78" font-size="11" fill="#14532d">B Lua 里 SADD 判重（原子）：该用户领到 1 张 · 全表 1 条（被去重挡下 49 次）</text>
+    <text x="18" y="102" font-size="11" fill="#14532d">C MySQL 唯一索引 + INSERT IGNORE：该用户领到 1 张 · 全表 1 条（被唯一键挡下 49 次）</text>
+    <text x="18" y="122" font-size="10.5" fill="#94a3b8">⚠️ A 组的口径必须先摘掉唯一索引 —— 不摘就插不进去，看不出「只扣库存不判重」的问题。</text>
+  </g>
+
+  <g transform="translate(20,532)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">唯一索引要付的两笔代价</text>
+
+    <rect x="18" y="40" width="452" height="72" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="30" y="62" font-size="11.5" fill="#92400e">代价一：库存会被白扣一次</text>
+    <text x="30" y="84" font-size="10.5" fill="#92400e">库里拦下这个请求时，Redis 里那次扣减已经发生</text>
+    <text x="30" y="104" font-size="10.5" fill="#92400e">不回补 → 明明 1 个人领到，库存却掉了 2（券凭空少一张）</text>
+
+    <rect x="490" y="40" width="452" height="72" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="502" y="62" font-size="11.5" fill="#92400e">代价二：有脏数据的表补不上索引</text>
+    <text x="502" y="84" font-size="10.5" fill="#92400e">ERROR 1062 Duplicate entry '1-7' for key uk_coupon_uid</text>
+    <text x="502" y="104" font-size="10.5" fill="#92400e">得先清理重复行再建索引 —— 出事那天反而补不上</text>
+
+    <text x="18" y="132" font-size="11" fill="#334155">⭐ 结论：「上唯一索引」必须在建表时就带上，不能作为事后补救的最后手段；回补的幂等写法见「使用」第二段。</text>
+  </g>
+</svg>

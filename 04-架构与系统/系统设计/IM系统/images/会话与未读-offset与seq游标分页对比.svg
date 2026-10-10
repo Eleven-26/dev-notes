@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">上下文分页：游标用 seq，锚点双向各取一屏</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#475569">offset 假设位置稳定，而消息流每来一条就整体后移（页内数字为示意，N 为每页条数）</text>
+
+  <!-- 上：offset 错位形态 -->
+  <rect x="24" y="82" width="952" height="176" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="108" font-size="14" font-weight="bold" fill="#334155">offset 为什么错位：消息流是前插的</text>
+
+  <text x="44" y="138" font-size="10.5" fill="#334155">第一页取 offset 0-2（每页 3 条）：</text>
+  <rect x="250" y="120" width="58" height="26" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="279" y="137" text-anchor="middle" font-size="11" fill="#14532d">13</text>
+  <rect x="312" y="120" width="58" height="26" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="341" y="137" text-anchor="middle" font-size="11" fill="#14532d">12</text>
+  <rect x="374" y="120" width="58" height="26" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="403" y="137" text-anchor="middle" font-size="11" fill="#14532d">11</text>
+  <text x="452" y="137" font-size="10" fill="#64748b">左为最新，页尾是 11</text>
+
+  <text x="44" y="188" font-size="10.5" fill="#334155">新消息 14 前插后，第二页取 offset 3-5：</text>
+  <rect x="286" y="170" width="58" height="26" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="315" y="187" text-anchor="middle" font-size="11" fill="#334155">14</text>
+  <rect x="348" y="170" width="58" height="26" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="377" y="187" text-anchor="middle" font-size="11" fill="#334155">13</text>
+  <rect x="410" y="170" width="58" height="26" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="439" y="187" text-anchor="middle" font-size="11" fill="#334155">12</text>
+  <rect x="472" y="170" width="58" height="26" rx="4" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="501" y="187" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c2d12">11</text>
+  <rect x="534" y="170" width="58" height="26" rx="4" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="563" y="187" text-anchor="middle" font-size="11" fill="#7c2d12">10</text>
+  <rect x="596" y="170" width="58" height="26" rx="4" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="625" y="187" text-anchor="middle" font-size="11" fill="#7c2d12">9</text>
+  <text x="670" y="187" font-size="10" fill="#7c2d12">← offset 3 落到了 11</text>
+
+  <text x="44" y="222" font-size="10.5" fill="#7c2d12">「11」在第一页已经出现过——offset 的「第 N 条」在新数据插入后指向了不同消息，重复/跳漏必然发生</text>
+  <text x="44" y="244" font-size="10.5" fill="#7c2d12">另一半代价：offset M 要求先扫过 M 条，翻到很后面时查询越来越慢（深分页变慢）</text>
+
+  <!-- 中：seq 游标 -->
+  <rect x="24" y="274" width="952" height="196" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="300" font-size="14" font-weight="bold" fill="#334155">游标 = seq：先定锚点，再各取一屏</text>
+
+  <text x="44" y="340" font-size="10.5" fill="#334155">会话消息流（seq 升序，示意）：</text>
+  <rect x="250" y="322" width="58" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="279" y="342" text-anchor="middle" font-size="11" fill="#1e3a8a">9</text>
+  <rect x="312" y="322" width="58" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="341" y="342" text-anchor="middle" font-size="11" fill="#1e3a8a">10</text>
+  <rect x="374" y="322" width="58" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="403" y="342" text-anchor="middle" font-size="11" fill="#1e3a8a">11</text>
+  <rect x="436" y="322" width="58" height="30" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="465" y="342" text-anchor="middle" font-size="11" fill="#1e3a8a">12</text>
+  <rect x="498" y="322" width="58" height="30" rx="4" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="527" y="342" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c2d12">13</text>
+  <rect x="560" y="322" width="58" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="589" y="342" text-anchor="middle" font-size="11" fill="#14532d">14</text>
+  <rect x="622" y="322" width="58" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="651" y="342" text-anchor="middle" font-size="11" fill="#14532d">15</text>
+  <rect x="684" y="322" width="58" height="30" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="713" y="342" text-anchor="middle" font-size="11" fill="#14532d">16</text>
+  <text x="527" y="316" text-anchor="middle" font-size="10" fill="#7c2d12">锚点 seq=13</text>
+
+  <line x1="466" y1="366" x2="290" y2="366" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="378" y="382" text-anchor="middle" font-size="10" fill="#1e3a8a">往上：查 seq &lt; 锚点 的最近 N 条，倒序</text>
+  <line x1="588" y1="366" x2="660" y2="366" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="624" y="382" text-anchor="middle" font-size="10" fill="#14532d">往下：查 seq &gt; 锚点 的最近 N 条</text>
+
+  <text x="44" y="412" font-size="10.5" fill="#334155">新消息前插不影响游标：它们的 seq 更大，不在 seq &lt; cursor 的范围里；游标推进到本页最小 seq</text>
+  <text x="44" y="434" font-size="10.5" fill="#334155">两次查询都返回「有没有更多」的标记，继续翻时各自推进游标；深分页与已翻页数无关，永远 O(N)</text>
+
+  <!-- 底：注记 -->
+  <rect x="24" y="486" width="952" height="72" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="510" font-size="11" fill="#334155">交互口径：锚点通常是「用户点进来的那条消息的 seq」或「最新 seq」；上下两路各自推进游标、互不影响</text>
+  <text x="44" y="534" font-size="10" fill="#64748b">要点：跳到某条历史消息再继续读，正是双向游标分页天然适配的场景；offset 只适合位置稳定的数据集</text>
+</svg>

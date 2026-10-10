@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arrS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">一条弹幕的调用时序：客户端 → 节点编排 → 扇出 / 落库 → 断线补漏</text>
+
+  <g transform="translate(20,58)">
+    <rect x="0" y="0" width="960" height="382" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">A. 先后顺序：限流 → 发号 → 两条路同时喂 → 重连后按 Seq 补</text>
+
+    <rect x="40" y="40" width="140" height="34" rx="6" fill="#e2e8f0" stroke="#64748b"/>
+    <text x="110" y="62" font-size="11.5" fill="#334155" text-anchor="middle">客户端</text>
+    <rect x="220" y="40" width="150" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="295" y="62" font-size="11.5" fill="#1e3a8a" text-anchor="middle">Node.Accept</text>
+    <rect x="410" y="40" width="160" height="34" rx="6" fill="#fef3c7" stroke="#b45309"/>
+    <text x="490" y="62" font-size="11.5" fill="#92400e" text-anchor="middle">Publisher / topic</text>
+    <rect x="610" y="40" width="140" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="680" y="62" font-size="11.5" fill="#14532d" text-anchor="middle">Room → Sub</text>
+    <rect x="790" y="40" width="160" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+    <text x="870" y="62" font-size="11.5" fill="#334155" text-anchor="middle">BatchWriter → Sink</text>
+
+    <line x1="110" y1="74" x2="110" y2="356" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="295" y1="74" x2="295" y2="356" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="490" y1="74" x2="490" y2="356" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="680" y1="74" x2="680" y2="356" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="870" y1="74" x2="870" y2="356" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <line x1="110" y1="100" x2="291" y2="100" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrS)"/>
+    <text x="200" y="94" font-size="10" fill="#1e3a8a" text-anchor="middle">① Accept 一条弹幕</text>
+
+    <text x="305" y="126" font-size="10" fill="#991b1b">② 限流不过 → return false，调用方不要重试</text>
+
+    <line x1="295" y1="152" x2="486" y2="152" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrS)"/>
+    <text x="390" y="146" font-size="10" fill="#1e3a8a" text-anchor="middle">③ pub.Seq(topic) 发号</text>
+
+    <line x1="295" y1="180" x2="486" y2="180" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrS)"/>
+    <text x="390" y="174" font-size="10" fill="#1e3a8a" text-anchor="middle">④ Publish(topic, m)</text>
+
+    <line x1="490" y1="208" x2="676" y2="208" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrG)"/>
+    <text x="583" y="202" font-size="10" fill="#14532d" text-anchor="middle">⑤ 订阅回调投本机连接</text>
+
+    <text x="690" y="234" font-size="10" fill="#14532d">⑥ 快连接 sent++；慢连接走 default → dropped++</text>
+
+    <line x1="295" y1="260" x2="866" y2="260" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrG)"/>
+    <text x="470" y="254" font-size="10" fill="#14532d" text-anchor="middle">⑦ 持久化链路：bw.Enqueue(m) 非阻塞入队，队列满即丢并计数</text>
+
+    <path d="M 870 282 L 908 282 L 908 298 L 874 298" fill="none" stroke="#16a34a" stroke-width="1.4" marker-end="url(#arrG)"/>
+    <text x="620" y="288" font-size="10" fill="#14532d" text-anchor="middle">⑧ Run 攒够 N 条或超过 T 时间 → Sink.Write(batch)，失败不重试</text>
+
+    <line x1="866" y1="316" x2="114" y2="316" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arrR)"/>
+    <text x="490" y="310" font-size="10" fill="#991b1b" text-anchor="middle">⑨ 断线重连：带已收到的最大 Seq 从库里补拉，再用 Seq 去重入轴</text>
+
+    <text x="18" y="348" font-size="10.5" fill="#64748b">Pub/Sub 不保留消息：订阅之前发出的永久丢失，所以「推送 + 落库」两条路径互补而非冗余；序号只在入口分配，广播层不得改写 m.Seq。</text>
+    <text x="18" y="370" font-size="10.5" fill="#64748b">房间名 = topic 名，不给「发错房间」留机会；bw 为 nil 时是纯推送节点，不负责落库。</text>
+  </g>
+
+  <g transform="translate(20,458)">
+    <rect x="0" y="0" width="960" height="148" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">B. 实测对照：丢在扇出还是丢在连接（本机单进程、内存版 Bus）</text>
+
+    <rect x="18" y="42" width="290" height="88" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="32" y="64" font-size="11.5" font-weight="bold" fill="#991b1b">① 只有单机内存映射</text>
+    <text x="32" y="84" font-size="10.5" fill="#991b1b">A 收到 100，投递 64</text>
+    <text x="32" y="102" font-size="10.5" fill="#991b1b">B 收到 0，投递 0</text>
+    <text x="32" y="120" font-size="10.5" fill="#991b1b">B 上那个用户永远看不到</text>
+
+    <rect x="330" y="42" width="290" height="88" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="344" y="64" font-size="11.5" font-weight="bold" fill="#14532d">② 接入 Pub/Sub</text>
+    <text x="344" y="84" font-size="10.5" fill="#166534">A、B 各收到 100</text>
+    <text x="344" y="102" font-size="10.5" fill="#166534">两端连接各收到 64 条</text>
+    <text x="344" y="120" font-size="10.5" fill="#166534">连接落点与弹幕入口无关</text>
+
+    <rect x="640" y="42" width="300" height="88" rx="8" fill="#fef3c7" stroke="#b45309"/>
+    <text x="654" y="64" font-size="11.5" font-weight="bold" fill="#92400e">③ topic 没有任何节点订阅</text>
+    <text x="654" y="84" font-size="10.5" fill="#92400e">Unsubscribed = 1：静默消失</text>
+    <text x="654" y="102" font-size="10.5" fill="#92400e">重连也补不回来</text>
+    <text x="654" y="120" font-size="10.5" fill="#92400e">这就是必须配持久化链路的理由</text>
+  </g>
+</svg>

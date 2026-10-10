@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="690" viewBox="0 0 1000 690" font-family="sans-serif">
+  <defs>
+    <marker id="arwS" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#94a3b8"/></marker>
+    <marker id="arwO" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#ea580c"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">关系链在变：新关注漏推、取关残留、跨阈值重叠</text>
+  <text x="30" y="68" font-size="13" fill="#64748b">三种变化各自的「漏什么、重什么、怎么补」；默认补法都落在读侧，不在切换点做原子对齐</text>
+
+  <!-- ① 新关注 -->
+  <rect x="30" y="88" width="300" height="256" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="48" y="116" font-size="14" fill="#0f172a">① 新关注：B 关注 A</text>
+  <text x="48" y="140" font-size="11.5" fill="#64748b">写扩散只在「发布那一刻」写给</text>
+  <text x="48" y="160" font-size="11.5" fill="#64748b">当时还在粉丝列表里的人</text>
+  <rect x="48" y="174" width="264" height="40" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="62" y="191" font-size="11.5" fill="#991b1b">漏：A 关注之前发的历史内容</text>
+  <text x="62" y="208" font-size="11.5" fill="#991b1b">不会被补提进 B 的时间线</text>
+  <rect x="48" y="226" width="264" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="62" y="245" font-size="11.5" fill="#14532d">做法一（推荐）：接受不补</text>
+  <text x="62" y="268" font-size="11" fill="#14532d">刷新看的是关注之后的新内容</text>
+  <text x="48" y="304" font-size="11" fill="#475569">做法二：关注时把 A 最近 N 条</text>
+  <text x="48" y="322" font-size="11" fill="#475569">ZADD 合并进 B 的时间线</text>
+  <text x="48" y="338" font-size="11" fill="#92400e">代价：关注动作变重，还要防重复推</text>
+
+  <!-- ② 取关 -->
+  <rect x="350" y="88" width="300" height="256" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="368" y="116" font-size="14" fill="#0f172a">② 取关：B 取消关注 A</text>
+  <text x="368" y="140" font-size="11.5" fill="#64748b">推是「写下去就留在那」的：</text>
+  <text x="368" y="160" font-size="11.5" fill="#64748b">A 之前推来的条目还在 B 线里</text>
+  <rect x="368" y="174" width="264" height="40" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="382" y="191" font-size="11.5" fill="#991b1b">重：已取关作者的内容仍被翻到</text>
+  <text x="382" y="208" font-size="11.5" fill="#991b1b">散布在时间线各处，没有索引</text>
+  <rect x="368" y="226" width="264" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="382" y="245" font-size="11.5" fill="#14532d">做法一（推荐）：读时过滤</text>
+  <text x="382" y="268" font-size="11" fill="#14532d">用当前关注集合把已取关的滤掉</text>
+  <text x="368" y="304" font-size="11" fill="#475569">做法二：取关时写时删除</text>
+  <text x="368" y="322" font-size="11" fill="#475569">要先定位具体条目；没有按作者</text>
+  <text x="368" y="338" font-size="11" fill="#92400e">索引就得扫整条时间线，非常贵</text>
+
+  <!-- ③ 跨阈值 -->
+  <rect x="670" y="88" width="300" height="256" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="688" y="116" font-size="14" fill="#0f172a">③ 跨过阈值：模式切换</text>
+  <rect x="688" y="132" width="264" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="702" y="151" font-size="11.5" fill="#1e3a8a">普通 → 大 V：从推改走拉</text>
+  <text x="702" y="174" font-size="11" fill="#1e3a8a">旧条目在 inbox，新内容只在 outbox</text>
+  <rect x="688" y="200" width="264" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="702" y="219" font-size="11.5" fill="#14532d">大 V → 普通：从拉改回推</text>
+  <text x="702" y="242" font-size="11" fill="#14532d">窗口内既被推一份又被拉一份</text>
+  <text x="688" y="280" font-size="11.5" fill="#9a3412">两个方向都会短暂出现重叠窗口：</text>
+  <text x="688" y="300" font-size="11.5" fill="#9a3412">同一内容从两路各冒出来一次</text>
+  <text x="688" y="322" font-size="11.5" fill="#0f172a">补法：不追求切换点对齐，</text>
+  <text x="688" y="340" font-size="11.5" fill="#0f172a">由读侧合并时的去重天然吸收</text>
+
+  <!-- 下：重叠窗口与名单 -->
+  <rect x="30" y="364" width="940" height="292" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="50" y="392" font-size="14" fill="#0f172a">重叠窗口怎么读：一个账号在时刻 T 从「推」切到「拉」</text>
+
+  <rect x="50" y="410" width="340" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="64" y="434" font-size="12" fill="#1e3a8a">T 之前：按普通用户发布</text>
+  <text x="64" y="456" font-size="12" fill="#1e3a8a">内容已推入每个粉丝的 inbox</text>
+
+  <rect x="430" y="410" width="340" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="444" y="434" font-size="12" fill="#14532d">T 之后：已进大 V 名单</text>
+  <text x="444" y="456" font-size="12" fill="#14532d">内容只写自己的 outbox</text>
+
+  <line x1="410" y1="400" x2="410" y2="484" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="366" y="500" font-size="11" fill="#64748b">切换时刻 T</text>
+
+  <line x1="220" y1="474" x2="300" y2="518" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+  <line x1="600" y1="474" x2="500" y2="518" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+  <rect x="200" y="522" width="600" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="500" y="546" font-size="12" fill="#7c2d12" text-anchor="middle">窗口内粉丝读取 = inbox 里推来的旧条目 + 现场拉的 outbox 新内容</text>
+  <text x="500" y="568" font-size="11.5" fill="#9a3412" text-anchor="middle">归并时按内容 ID 去重，重复与残留都在这一步被吸收</text>
+
+  <text x="50" y="608" font-size="11.5" fill="#64748b">大 V 名单由离线任务定期按「粉丝数 × 发帖频次」重算；读侧只读名单，不改名单，发布路径不依赖易变量。</text>
+  <text x="50" y="628" font-size="11.5" fill="#64748b">名单滞后的代价：刚涨粉的账号在名单刷新前仍按普通用户推，会有一两天的过渡性扇出放大。</text>
+  <text x="50" y="648" font-size="11.5" fill="#64748b">边界：关系链怎么存归社交互动系统那篇；本篇只管一条内容怎么沿边扩散成时间线条目。</text>
+</svg>

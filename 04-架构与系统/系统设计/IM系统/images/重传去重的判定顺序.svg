@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="780" viewBox="0 0 1000 780" font-family="sans-serif">
+  <defs>
+    <marker id="arrD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">重传与去重：三条重传来源，一套判定顺序</text>
+  <text x="30" y="62" font-size="13" fill="#64748b">去重的键必须是客户端就能确定、重传时不变的东西 —— 消息 ID；顺序不能反</text>
+
+  <g transform="translate(20,78)">
+    <rect x="0" y="0" width="960" height="326" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">① 三条来源都会让同一条消息出现两次以上</text>
+
+    <rect x="20" y="44" width="280" height="56" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="160" y="66" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">上行超时</text>
+    <text x="160" y="86" font-size="10.5" fill="#7c2d12" text-anchor="middle">没等到上行 ACK，客户端重发</text>
+
+    <rect x="340" y="44" width="280" height="56" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="480" y="66" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">下行未确认</text>
+    <text x="480" y="86" font-size="10.5" fill="#7c2d12" text-anchor="middle">没收到下行 ACK，重建后重推</text>
+
+    <rect x="660" y="44" width="280" height="56" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="800" y="66" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">用户手动重发</text>
+    <text x="800" y="86" font-size="10.5" fill="#7c2d12" text-anchor="middle">弱网下连点发送</text>
+
+    <line x1="160" y1="100" x2="160" y2="120" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="480" y1="100" x2="480" y2="120" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="800" y1="100" x2="800" y2="120" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="160" y1="120" x2="800" y2="120" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="480" y1="120" x2="480" y2="140" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrD)"/>
+
+    <rect x="320" y="142" width="320" height="48" rx="8" fill="#e0e7ff" stroke="#4f46e5"/>
+    <text x="480" y="162" font-size="11.5" font-weight="bold" fill="#312e81" text-anchor="middle">先去重：查唯一键</text>
+    <text x="480" y="180" font-size="10.5" fill="#312e81" text-anchor="middle">发送方 + 消息 ID（不含会话）</text>
+
+    <line x1="400" y1="190" x2="200" y2="214" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrG)"/>
+    <line x1="560" y1="190" x2="760" y2="214" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrD)"/>
+
+    <rect x="20" y="216" width="360" height="62" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="200" y="240" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">命中：这是重传</text>
+    <text x="200" y="262" font-size="10.5" fill="#14532d" text-anchor="middle">直接返回已有 seq，不再落库、不再扇出</text>
+
+    <rect x="580" y="216" width="360" height="62" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="760" y="240" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">未命中：这是新消息</text>
+    <text x="760" y="262" font-size="10.5" fill="#1e3a8a" text-anchor="middle">分配 seq → 落库 → 按连接路由扇出</text>
+
+    <text x="18" y="302" font-size="11" fill="#475569">键里带上发送方，是防御同一个 ID 被不同的人复用；消息 ID 本身已全局唯一，所以键里不含会话。</text>
+  </g>
+
+  <g transform="translate(20,414)">
+    <rect x="0" y="0" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">② 去重要发生在三层，各挡各的重复</text>
+
+    <rect x="20" y="44" width="290" height="104" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="165" y="68" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">服务端收件侧</text>
+    <text x="165" y="90" font-size="10.5" fill="#1e3a8a" text-anchor="middle">会话 + 发送方 + 消息 ID</text>
+    <text x="165" y="110" font-size="10.5" fill="#1e3a8a" text-anchor="middle">建唯一键</text>
+    <text x="165" y="134" font-size="10.5" fill="#334155" text-anchor="middle">重复写入直接忽略</text>
+
+    <rect x="335" y="44" width="290" height="104" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="480" y="68" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">客户端收件侧</text>
+    <text x="480" y="90" font-size="10.5" fill="#1e3a8a" text-anchor="middle">本地已处理消息 ID 集合</text>
+    <text x="480" y="110" font-size="10.5" fill="#1e3a8a" text-anchor="middle">（展示前判一次）</text>
+    <text x="480" y="134" font-size="10.5" fill="#334155" text-anchor="middle">兜住服务端下行重推</text>
+
+    <rect x="650" y="44" width="290" height="104" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="795" y="68" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">去重表带 TTL</text>
+    <text x="795" y="90" font-size="10.5" fill="#1e3a8a" text-anchor="middle">只保留近期</text>
+    <text x="795" y="110" font-size="10.5" fill="#1e3a8a" text-anchor="middle">（可能重传的窗口）</text>
+    <text x="795" y="134" font-size="10.5" fill="#334155" text-anchor="middle">否则存储无限膨胀</text>
+
+    <text x="18" y="172" font-size="11" fill="#475569">键必须客户端就能确定、重传时不变 —— 这正是消息 ID 的作用；本地临时 ID 只活在客户端，服务端确认后才换成真正的消息 ID。</text>
+  </g>
+
+  <g transform="translate(20,620)">
+    <rect x="0" y="0" width="960" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">③ 顺序反了会留下一个永远无人认领的空洞</text>
+
+    <rect x="20" y="44" width="440" height="76" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="40" y="68" font-size="12" font-weight="bold" fill="#7f1d1d">反例：先分配 seq，再判断重复</text>
+    <text x="40" y="90" font-size="10.5" fill="#7f1d1d">重传的消息占用了新的 seq，消息却被丢弃</text>
+    <text x="40" y="110" font-size="10.5" fill="#7f1d1d">会话里留下一条永远无人认领的空洞</text>
+
+    <rect x="500" y="44" width="440" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="520" y="68" font-size="12" font-weight="bold" fill="#14532d">正解：判重通过才分配 seq</text>
+    <text x="520" y="90" font-size="10.5" fill="#14532d">重传命中已有记录，直接复用已有 seq</text>
+    <text x="520" y="110" font-size="10.5" fill="#14532d">会话内 seq 保持稠密，补漏才有依据</text>
+
+    <line x1="460" y1="82" x2="496" y2="82" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arrR)"/>
+  </g>
+</svg>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="sans-serif">
+  <defs>
+    <marker id="arFd2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arFd2r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arFd2g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="40" y="44" font-size="19" fill="#0f172a">好友变更的缓存失效时序：一次变更删两份</text>
+  <text x="40" y="72" font-size="13" fill="#64748b">B 同意 A 的申请 —— 事务先写两行、提交成功后必须同时删 friends:{A} 与 friends:{B}；只删一侧就是「单向好友」事故。</text>
+
+  <rect x="40" y="84" width="920" height="356" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+
+  <!-- 生命线头部 -->
+  <rect x="40" y="92" width="160" height="30" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="120" y="112" font-size="12" fill="#334155" text-anchor="middle">A / B 客户端</text>
+  <rect x="300" y="92" width="160" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="380" y="112" font-size="12" fill="#1e3a8a" text-anchor="middle">好友服务</text>
+  <rect x="540" y="92" width="160" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="620" y="112" font-size="12" fill="#14532d" text-anchor="middle">MySQL</text>
+  <rect x="780" y="92" width="180" height="30" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="870" y="112" font-size="11.5" fill="#7c2d12" text-anchor="middle">Redis friends:{uid}</text>
+
+  <line x1="120" y1="122" x2="120" y2="436" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="380" y1="122" x2="380" y2="436" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="620" y1="122" x2="620" y2="436" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="870" y1="122" x2="870" y2="436" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ① -->
+  <line x1="120" y1="156" x2="376" y2="156" stroke="#64748b" stroke-width="1.5" marker-end="url(#arFd2)"/>
+  <text x="248" y="148" font-size="11" fill="#334155" text-anchor="middle">① B 同意 A 的好友申请</text>
+
+  <!-- ② -->
+  <line x1="380" y1="196" x2="616" y2="196" stroke="#64748b" stroke-width="1.5" marker-end="url(#arFd2)"/>
+  <text x="498" y="188" font-size="11" fill="#334155" text-anchor="middle">② 开事务：更新申请状态 + 写 friend_edge</text>
+  <text x="498" y="212" font-size="10" fill="#64748b" text-anchor="middle">两行 (A,B)(B,A) 在同一事务里</text>
+
+  <!-- ③ -->
+  <line x1="620" y1="248" x2="384" y2="248" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arFd2g)"/>
+  <text x="498" y="240" font-size="11" fill="#14532d" text-anchor="middle">③ COMMIT —— 提交成功才允许失效缓存</text>
+
+  <!-- ④ -->
+  <line x1="380" y1="292" x2="866" y2="292" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arFd2r)"/>
+  <text x="623" y="284" font-size="11" fill="#991b1b" text-anchor="middle">④ DEL friends:{A} 与 DEL friends:{B}（一次删两个 key）</text>
+  <text x="623" y="310" font-size="10" fill="#991b1b" text-anchor="middle">只删 friends:{A} → A 看到 B、B 看不到 A —— 最常见的事故</text>
+
+  <!-- ⑤ -->
+  <line x1="120" y1="344" x2="866" y2="344" stroke="#64748b" stroke-width="1.5" marker-end="url(#arFd2)"/>
+  <text x="493" y="336" font-size="11" fill="#334155" text-anchor="middle">⑤ A 打开 App：GET friends:{A} → 未命中</text>
+
+  <!-- ⑥ -->
+  <line x1="380" y1="384" x2="616" y2="384" stroke="#64748b" stroke-width="1.5" marker-end="url(#arFd2)"/>
+  <text x="498" y="376" font-size="11" fill="#334155" text-anchor="middle">⑥ 回源：WHERE user_id = A</text>
+
+  <!-- ⑦ -->
+  <line x1="380" y1="420" x2="866" y2="420" stroke="#64748b" stroke-width="1.5" marker-end="url(#arFd2)"/>
+  <text x="623" y="412" font-size="11" fill="#334155" text-anchor="middle">⑦ SET friends:{A} 重建，带 TTL 兜底</text>
+
+  <!-- 注记面板 -->
+  <rect x="40" y="452" width="920" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="480" font-size="15" fill="#0f172a">三条配套规则</text>
+  <line x1="60" y1="490" x2="940" y2="490" stroke="#e2e8f0"/>
+  <text x="60" y="512" font-size="11.5" fill="#334155">为什么删而不是改：改缓存要算新值（还得知道旧值）；删让下次读重建 —— 读多写少时「删除」优于「更新」。</text>
+  <text x="60" y="534" font-size="11.5" fill="#334155">删失败的补偿：设缓存 TTL 兜底，或订阅 Binlog 异步清理 —— TTL 是最后一道保险，兜住「缓存里的旧好友列表」。</text>
+  <text x="60" y="556" font-size="11.5" fill="#334155">改备注是单侧属性 → 只删 friends:{A}；拉黑 → 删两份并清 pending；冷启动直接读 DB 回填，不做全量预热。</text>
+</svg>

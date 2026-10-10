@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <defs>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">缓存穿透：根本没有这个数据，所以缓存永远加载不上</text>
+  <text x="30" y="61" font-size="13" fill="#64748b">构造：反复查一个数据库里也不存在的商品（id=999999），共 1000 次；A 无保护打 DB 1000 次、B 空值缓存 1 次、C 布隆前置 0 次</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">判定顺序：布隆在前，缓存与库在后</text>
+
+    <rect x="18" y="86" width="150" height="60" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+    <text x="93" y="112" font-size="11" fill="#334155" text-anchor="middle">读请求</text>
+    <text x="93" y="132" font-size="10.5" fill="#334155" text-anchor="middle">id=999999</text>
+    <path d="M 168 116 L 186 116" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrP)"/>
+
+    <rect x="188" y="86" width="170" height="60" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="273" y="110" font-size="11" fill="#92400e" text-anchor="middle">布隆过滤器（应用侧）</text>
+    <text x="273" y="132" font-size="10.5" fill="#92400e" text-anchor="middle">bitmap + 3 哈希</text>
+    <path d="M 358 116 L 376 116" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrP)"/>
+    <text x="348" y="72" font-size="10" fill="#92400e" text-anchor="middle">「可能在」才往下走</text>
+
+    <rect x="378" y="86" width="170" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="463" y="110" font-size="11" fill="#1e3a8a" text-anchor="middle">GET 缓存</text>
+    <text x="463" y="132" font-size="10.5" fill="#1e3a8a" text-anchor="middle">先认哨兵，再反序列化</text>
+    <path d="M 548 116 L 566 116" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrP)"/>
+    <text x="556" y="72" font-size="10" fill="#1e3a8a" text-anchor="middle">Miss</text>
+
+    <rect x="568" y="86" width="170" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="653" y="110" font-size="11" fill="#1e3a8a" text-anchor="middle">真回源查库</text>
+    <text x="653" y="132" font-size="10.5" fill="#1e3a8a" text-anchor="middle">库里也确实没有</text>
+    <path d="M 738 116 L 756 116" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrP)"/>
+
+    <rect x="758" y="86" width="184" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="850" y="110" font-size="11" fill="#14532d" text-anchor="middle">写哨兵 NULL + 短 TTL</text>
+    <text x="850" y="132" font-size="10.5" fill="#14532d" text-anchor="middle">下次命中 Null → 直接 404</text>
+
+    <text x="18" y="168" font-size="11" fill="#334155">布隆说「一定不在」→ 可信，直接返回 404，连一次网络往返都不需要；说「可能在」→ 还是要走正常读路径（假阳性）。</text>
+    <text x="18" y="190" font-size="11" fill="#334155">所以生产上两者不是二选一：布隆挡住绝大多数不存在的 id，缓存（含空值缓存）兜住剩下的那部分。</text>
+  </g>
+
+  <g transform="translate(20,302)">
+    <rect x="0" y="0" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">读取端必须能区分三种状态（这一节最初就是错在这里）</text>
+
+    <rect x="18" y="44" width="290" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="32" y="68" font-size="11.5" fill="#1e3a8a">Miss</text>
+    <text x="32" y="88" font-size="10.5" fill="#1e3a8a">没缓存过 → 要回源</text>
+
+    <rect x="332" y="44" width="290" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="346" y="68" font-size="11.5" fill="#14532d">Null</text>
+    <text x="346" y="88" font-size="10.5" fill="#14532d">缓存过，库里确实没有 → 直接 404</text>
+
+    <rect x="646" y="44" width="296" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="660" y="68" font-size="11.5" fill="#1e3a8a">Hit</text>
+    <text x="660" y="88" font-size="10.5" fill="#1e3a8a">缓存过，有数据 → 返回</text>
+
+    <text x="18" y="122" font-size="11" fill="#991b1b">❌ 最初 B 组打库 1000 次：哨兵值写成 "NULL"，它不是合法 JSON → Unmarshal 失败被当成「未命中」，每次照样打库。</text>
+    <text x="18" y="144" font-size="11" fill="#475569">现象不是报错，而是「缓存好像没起作用」—— 写入端明明缓存了，读取端认不出来。</text>
+    <text x="18" y="162" font-size="10.5" fill="#94a3b8">⚠️ 布隆不能删元素：商品下架后位图里那几位还是 1 → 接受一次无效查询、用计数布隆，或定期重建。</text>
+  </g>
+
+  <g transform="translate(20,488)">
+    <rect x="0" y="0" width="960" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">三种方案实测对照（1000 次查不存在的商品）</text>
+    <text x="18" y="54" font-size="11" fill="#991b1b">A 无保护（查不到就不缓存）：打 DB 1000 · 打 Redis 1000 —— 缓存对不存在的 key 完全失效</text>
+    <text x="18" y="76" font-size="11" fill="#14532d">B 空值缓存（哨兵值 + 短 TTL）：打 DB 1 · 打 Redis 1000 —— 要占内存，还要短 TTL 防堆积</text>
+    <text x="18" y="98" font-size="11" fill="#14532d">C 布隆过滤器前置（bitmap + 3 哈希）：打 DB 0 · 打 Redis 0 —— 有误判，需要预热与维护位图</text>
+    <text x="18" y="120" font-size="11" fill="#334155">⭐ 击穿是「有这个数据、只是没命中」，穿透是「根本没有」—— 前者靠合并回源，后者靠让「空」也进缓存。</text>
+  </g>
+</svg>

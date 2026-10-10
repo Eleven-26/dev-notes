@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="720" viewBox="0 0 1000 720" font-family="sans-serif">
+  <defs>
+    <marker id="arrS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">占位释放还是保留：判据是「能不能确定脚本没执行」</text>
+  <text x="30" y="61" font-size="13" fill="#64748b">SETNX 占位 + Lua 预扣的三个出口；「确定没抢到」释放占位（少卖），「不确定有没有扣成」保留占位（防超卖）</text>
+
+  <g transform="translate(20,82)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">① 请求路径上的三个出口</text>
+
+    <rect x="18" y="110" width="130" height="48" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+    <text x="83" y="138" font-size="12" fill="#334155" text-anchor="middle">Seckill 请求</text>
+
+    <path d="M 148 134 L 168 134" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrS)"/>
+
+    <rect x="170" y="104" width="230" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="182" y="128" font-size="12" fill="#1e3a8a">SETNX 占位 bought:sku:uid</text>
+    <text x="182" y="150" font-size="10.5" fill="#2563eb">占位 24h（示意，未单独实测）</text>
+
+    <rect x="170" y="32" width="230" height="44" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+    <text x="182" y="58" font-size="11" fill="#334155">ok = false → ErrAlreadyBought</text>
+    <path d="M 285 104 L 285 78" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrS)"/>
+
+    <path d="M 400 134 L 420 134" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrS)"/>
+
+    <rect x="422" y="104" width="230" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="434" y="128" font-size="12" fill="#1e3a8a">Eval luaDeduct 读-判-扣</text>
+    <text x="434" y="150" font-size="10.5" fill="#2563eb">服务端一次执行，返回值定分支</text>
+
+    <rect x="680" y="30" width="262" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="692" y="52" font-size="11" fill="#14532d">left &gt;= 0 → 抢到，返回剩余库存</text>
+    <text x="692" y="72" font-size="10" fill="#14532d">返回值就是扣完后的库存数</text>
+
+    <rect x="680" y="100" width="262" height="58" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="692" y="122" font-size="11" fill="#92400e">left &lt; 0 → Del 占位 + ErrSoldOut</text>
+    <text x="692" y="142" font-size="10" fill="#92400e">这里能确定脚本跑完了，占位要还回去</text>
+
+    <rect x="680" y="170" width="262" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="692" y="192" font-size="11" fill="#991b1b">err != nil → 进 ② 判定</text>
+    <text x="692" y="212" font-size="10" fill="#991b1b">故意不 Del：扣减可能已经生效</text>
+
+    <path d="M 652 118 L 678 59" fill="none" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arrS)"/>
+    <path d="M 652 134 L 678 129" fill="none" stroke="#b45309" stroke-width="1.6" marker-end="url(#arrS)"/>
+    <path d="M 652 150 L 678 199" fill="none" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arrS)"/>
+  </g>
+
+  <g transform="translate(20,348)">
+    <rect x="0" y="0" width="960" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" fill="#0f172a">② isScriptNotRun：判据写成黑名单，default 必须 return false</text>
+
+    <rect x="18" y="44" width="452" height="170" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="30" y="68" font-size="12" fill="#14532d">true → 释放占位（Del hold）</text>
+    <text x="30" y="94" font-size="10.5" fill="#14532d">errors.Is 能断定的确定型错误（穷举）：</text>
+    <text x="30" y="114" font-size="10.5" fill="#14532d">NOSCRIPT → 服务端没有这个脚本，必然没执行</text>
+    <text x="30" y="134" font-size="10.5" fill="#14532d">ERR Error compiling script → 编译期就失败</text>
+    <text x="30" y="154" font-size="10.5" fill="#14532d">ERR wrong number of arguments → 入口就拒</text>
+    <text x="30" y="182" font-size="10.5" fill="#14532d">共同点：错误可枚举，且与本次执行结果无关</text>
+
+    <rect x="490" y="44" width="452" height="170" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="502" y="68" font-size="12" fill="#991b1b">false → 保留占位（不 Del）</text>
+    <text x="502" y="94" font-size="10.5" fill="#991b1b">i/o timeout / connection reset by peer</text>
+    <text x="502" y="114" font-size="10.5" fill="#991b1b">context deadline exceeded、任何未列举到的错误</text>
+    <text x="502" y="140" font-size="10.5" fill="#991b1b">⛔ 兜底必须 false，不允许 default: return true</text>
+    <text x="502" y="160" font-size="10.5" fill="#991b1b">错误串用相等 / 前缀匹配，不能用 Contains</text>
+    <text x="502" y="188" font-size="10.5" fill="#991b1b">判据是「能不能确定脚本没执行」，不是「有没有报错」</text>
+  </g>
+
+  <g transform="translate(20,596)">
+    <rect x="0" y="0" width="960" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" fill="#0f172a">③ 两种错误的代价不对称，所以默认值必须偏保守</text>
+    <text x="18" y="50" font-size="11" fill="#991b1b">误判释放（脚本其实已执行完 DECRBY）→ 用户重试再扣一次 → 超卖一件，不可逆。</text>
+    <text x="18" y="70" font-size="11" fill="#14532d">漏判保留（脚本没跑）→ 只有这个用户被卡 24h，别人不受影响，代价可对账、可补偿。</text>
+    <text x="18" y="94" font-size="10.5" fill="#94a3b8">⚠️ 两个判据与 redis.ErrScriptNotExists 哨兵均未实测；已实测的只有「left &lt; 0 那个 Del」的语义。</text>
+  </g>
+</svg>
