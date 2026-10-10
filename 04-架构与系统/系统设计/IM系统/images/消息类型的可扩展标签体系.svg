@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <rect x="24" y="86" width="952" height="96" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="44" y="124" width="210" height="40" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="266" y="124" width="210" height="40" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="488" y="124" width="210" height="40" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="710" y="124" width="246" height="40" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+
+  <rect x="24" y="200" width="304" height="288" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="24" y="200" width="304" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="348" y="200" width="304" height="288" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="348" y="200" width="304" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="672" y="200" width="304" height="288" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="672" y="200" width="304" height="34" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">消息类型：可扩展的标签，而非穷举的枚举</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#475569">type 决定 payload 怎么解、怎么渲染；未知 type 必须优雅降级，不能丢弃或断开</text>
+
+  <text x="44" y="112" font-size="14" font-weight="700" fill="#334155">消息信封（Envelope）</text>
+  <text x="149" y="149" text-anchor="middle" font-size="12" fill="#1e3a8a">type（标签）</text>
+  <text x="371" y="149" text-anchor="middle" font-size="12" fill="#1e3a8a">version（版本）</text>
+  <text x="593" y="149" text-anchor="middle" font-size="12" fill="#1e3a8a">payload（内容）</text>
+  <text x="833" y="149" text-anchor="middle" font-size="12" fill="#7c2d12">extensions（横切扩展）</text>
+
+  <text x="40" y="223" font-size="13" font-weight="700" fill="#1e3a8a">内置类型（平台定义）</text>
+  <text x="40" y="260" font-size="12" fill="#334155">文本 / 图片 / 语音 / 视频</text>
+  <text x="40" y="286" font-size="12" fill="#334155">文件 / 位置 / 名片</text>
+  <text x="40" y="312" font-size="12" fill="#334155">合并转发 / 系统消息</text>
+  <text x="40" y="338" font-size="12" fill="#334155">语义由协议固定，不随业务变</text>
+  <text x="40" y="364" font-size="12" fill="#334155">type 与 payload 结构一一对应</text>
+  <text x="40" y="390" font-size="12" fill="#334155">所有端都认识，拿到即可渲染</text>
+  <text x="40" y="416" font-size="12" fill="#1e3a8a">无需协商</text>
+  <text x="40" y="442" font-size="12" fill="#64748b">示例 type = 0x01（文本）</text>
+
+  <text x="364" y="223" font-size="13" font-weight="700" fill="#14532d">自定义类型（业务注册）</text>
+  <text x="364" y="260" font-size="12" fill="#334155">业务方自定义 type 段</text>
+  <text x="364" y="286" font-size="12" fill="#334155">从 0x8000 起，避开内置段</text>
+  <text x="364" y="312" font-size="12" fill="#334155">① 向类型注册表登记</text>
+  <text x="364" y="338" font-size="12" fill="#334155">② 握手时交换支持集合</text>
+  <text x="364" y="364" font-size="12" fill="#334155">③ 服务端取双方交集判定</text>
+  <text x="364" y="390" font-size="12" fill="#334155">④ 不认识则改发文本兜底</text>
+  <text x="364" y="416" font-size="12" fill="#14532d">承载关键信息才必须协商</text>
+  <text x="364" y="442" font-size="12" fill="#64748b">示例 type = 0x8001（订单卡片）</text>
+
+  <text x="688" y="223" font-size="13" font-weight="700" fill="#7c2d12">未知类型（优雅降级）</text>
+  <text x="688" y="260" font-size="12" fill="#334155">保留原始 payload，不丢弃</text>
+  <text x="688" y="286" font-size="12" fill="#334155">渲染占位：暂不支持</text>
+  <text x="688" y="312" font-size="12" fill="#334155">绝不因未知 type 断开连接</text>
+  <text x="688" y="338" font-size="12" fill="#334155">客户端升级后可重新解码</text>
+  <text x="688" y="364" font-size="12" fill="#334155">未知 type ≠ 错误</text>
+  <text x="688" y="390" font-size="12" fill="#7c2d12">协议向前兼容的底线</text>
+  <text x="688" y="416" font-size="12" fill="#64748b">依据见 协议设计.md 第 5 节</text>
+  <text x="688" y="442" font-size="12" fill="#64748b">示例：收到 0x9000 → 占位</text>
+
+  <text x="500" y="516" text-anchor="middle" font-size="11" fill="#64748b">要点：type 是「标签 + 版本 + 可降级」；当成穷举枚举设计，第一次加新类型就要被迫升协议版本</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- ===== 所有矩形 ===== -->
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <rect x="50" y="100" width="560" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="50" y="178" width="560" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="50" y="256" width="560" height="64" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="50" y="334" width="560" height="64" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+
+  <rect x="650" y="100" width="320" height="298" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="50" y="424" width="920" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- ===== 分层箭头 ===== -->
+  <path d="M 330 165 L 330 177" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 330 243 L 330 255" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 330 321 L 330 333" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- ===== 标题 ===== -->
+  <text x="30" y="40" font-size="21" font-weight="bold" fill="#0f172a">IM 限流键的分层设计</text>
+  <text x="30" y="68" font-size="13" fill="#475569">同一个用户被多层键同时约束；命中任意一层即拦下，逐层收紧。</text>
+
+  <!-- ===== 四层键 ===== -->
+  <text x="70" y="124" font-size="14" font-weight="bold" fill="#1e3a8a">① 按用户（uid）</text>
+  <text x="70" y="146" font-size="12" fill="#1e3a8a">个人总发送配额，跨会话累计 —— 防无差别群发</text>
+
+  <text x="70" y="202" font-size="14" font-weight="bold" fill="#14532d">② 按会话（uid + convID）</text>
+  <text x="70" y="224" font-size="12" fill="#166534">单会话刷屏 —— 最常用、也最贴近体验的一层</text>
+
+  <text x="70" y="280" font-size="14" font-weight="bold" fill="#7c2d12">③ 按群（群维度 / @所有人）</text>
+  <text x="70" y="302" font-size="12" fill="#9a3412">群发与批量 @ 的额度，与单条发送分开计</text>
+
+  <text x="70" y="358" font-size="14" font-weight="bold" fill="#334155">④ 按 IP / 设备</text>
+  <text x="70" y="380" font-size="12" fill="#475569">多开、匿名入口、批量注册引流 —— 兜底与风控交叉</text>
+
+  <!-- ===== 右侧：键怎么选 ===== -->
+  <text x="670" y="128" font-size="14" font-weight="bold" fill="#0f172a">键怎么选</text>
+  <text x="670" y="160" font-size="12.5" fill="#334155">维度：用户 / 会话 / 群 / IP</text>
+  <text x="670" y="188" font-size="12.5" fill="#334155">粒度：越细越准，也越容易被绕</text>
+  <text x="670" y="216" font-size="12.5" fill="#334155">取值：单条与批量分开计</text>
+  <text x="670" y="244" font-size="12.5" fill="#334155">分片：按 uid 哈希，避开热点键</text>
+  <text x="670" y="284" font-size="12.5" fill="#7c2d12">关键判据：限的是「刷屏额度」，</text>
+  <text x="670" y="308" font-size="12.5" fill="#7c2d12">不是「消息数」——同样的条数，</text>
+  <text x="670" y="332" font-size="12.5" fill="#7c2d12">短时间连发才是刷屏。</text>
+  <text x="670" y="372" font-size="12.5" fill="#0f172a">命中任一键即拦，逐层收紧。</text>
+
+  <!-- ===== 底部要点 ===== -->
+  <text x="70" y="456" font-size="13" font-weight="bold" fill="#0f172a">要点：限流键是「约束谁」的坐标；用户 / 会话 / 群 / IP 四层同时生效，命中任意一层即拦下。</text>
+  <text x="70" y="484" font-size="12" fill="#334155">判据：限的是「刷屏额度」而不是「消息数」；同样一批消息，慢慢发完和瞬间连发完全不是一回事。</text>
+  <text x="70" y="510" font-size="12" fill="#64748b">注意：本篇未做实测，无读数；阈值一律不给具体数字，本图只给分层结构。</text>
+</svg>

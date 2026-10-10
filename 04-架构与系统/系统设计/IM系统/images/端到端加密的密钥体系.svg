@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- ===== 所有矩形（必须先于全部文字绘制）===== -->
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <rect x="50" y="100" width="560" height="62" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="50" y="178" width="560" height="62" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="50" y="256" width="560" height="62" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="50" y="334" width="560" height="62" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+
+  <rect x="650" y="100" width="320" height="296" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="50" y="424" width="920" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- ===== 派生箭头 ===== -->
+  <path d="M 330 163 L 330 175" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 330 241 L 330 253" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 330 319 L 330 331" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- ===== 标题 ===== -->
+  <text x="30" y="40" font-size="21" font-weight="bold" fill="#0f172a">端到端加密的分层密钥体系</text>
+  <text x="30" y="68" font-size="13" fill="#475569">一把根密钥（身份私钥）只留在本机，向下逐层派生；服务器只经手公钥与密文。</text>
+
+  <!-- ===== 左侧密钥层次 ===== -->
+  <text x="70" y="124" font-size="14" font-weight="bold" fill="#1e3a8a">① 身份密钥（长期）</text>
+  <text x="70" y="146" font-size="12" fill="#1e3a8a">公私钥对：公钥可公开，私钥只在本机保存</text>
+
+  <text x="70" y="202" font-size="14" font-weight="bold" fill="#14532d">② 一次性预密钥（发布到服务器）</text>
+  <text x="70" y="224" font-size="12" fill="#166534">预生成一批并发布公钥，供首条消息取用，用完即弃</text>
+
+  <text x="70" y="280" font-size="14" font-weight="bold" fill="#7c2d12">③ 会话密钥（中期）</text>
+  <text x="70" y="302" font-size="12" fill="#9a3412">双方各出一半密钥材料协商得到，一个会话一份</text>
+
+  <text x="70" y="358" font-size="14" font-weight="bold" fill="#334155">④ 消息密钥（每条消息一把）</text>
+  <text x="70" y="380" font-size="12" fill="#475569">由会话密钥经棘轮链式派生，一条消息用完即弃</text>
+
+  <!-- ===== 右侧：服务器可见性 ===== -->
+  <text x="670" y="128" font-size="14" font-weight="bold" fill="#0f172a">服务器能看到什么</text>
+  <text x="670" y="162" font-size="12.5" fill="#334155">能看到：公钥、一次性预密钥、密文</text>
+  <text x="670" y="190" font-size="12.5" fill="#334155">以及收发双方、时间等元数据</text>
+  <text x="670" y="234" font-size="14" font-weight="bold" fill="#0f172a">服务器看不到什么</text>
+  <text x="670" y="264" font-size="12.5" fill="#7c2d12">看不到：明文、身份私钥</text>
+  <text x="670" y="292" font-size="12.5" fill="#7c2d12">也看不到会话密钥与消息密钥</text>
+  <text x="670" y="336" font-size="12.5" fill="#64748b">注意：元数据仍暴露给服务器，</text>
+  <text x="670" y="360" font-size="12.5" fill="#64748b">E2EE 不保护「谁在跟谁说话」。</text>
+
+  <!-- ===== 底部要点 ===== -->
+  <text x="70" y="456" font-size="13" font-weight="bold" fill="#0f172a">要点：根密钥只在本机，逐层派生出会话密钥与消息密钥；服务器只经手公钥与密文。</text>
+  <text x="70" y="484" font-size="12" fill="#334155">棘轮：消息密钥只向前推进，拿到当前密钥也解不开过去；每一步混入新随机，对方临时密钥泄露也解不开之后。</text>
+  <text x="70" y="510" font-size="12" fill="#64748b">注意：本篇未做实测，无读数；本图为结构示意，具体算法细节不在本篇展开。</text>
+</svg>

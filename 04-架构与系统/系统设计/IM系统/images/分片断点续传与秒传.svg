@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <rect x="40" y="72" width="440" height="520" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="520" y="72" width="440" height="520" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+
+  <rect x="70" y="120" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <rect x="70" y="182" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <rect x="70" y="244" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <rect x="70" y="306" width="380" height="46" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <rect x="70" y="368" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <rect x="70" y="430" width="380" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <rect x="70" y="492" width="380" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+
+  <rect x="550" y="140" width="380" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <rect x="550" y="212" width="380" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <rect x="550" y="284" width="380" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <rect x="550" y="356" width="380" height="52" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <rect x="550" y="440" width="380" height="90" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3" stroke-dasharray="5 4"/>
+
+  <path d="M 260 166 L 260 180" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 260 228 L 260 242" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 260 290 L 260 304" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 260 352 L 260 366" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 260 414 L 260 428" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 260 476 L 260 490" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 740 192 L 740 210" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 740 264 L 740 282" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 740 336 L 740 354" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <text x="30" y="42" font-size="19" fill="#0f172a">分片断点续传与秒传：左边补齐字节，右边绕开字节</text>
+
+  <text x="64" y="104" font-size="15" fill="#1e3a8a">分片上传 + 断点续传</text>
+  <text x="260" y="148" font-size="14" fill="#1e3a8a" text-anchor="middle">① 待上传的大文件</text>
+  <text x="260" y="210" font-size="14" fill="#1e3a8a" text-anchor="middle">② 切分为 N 个分片（每片带哈希）</text>
+  <text x="260" y="272" font-size="14" fill="#1e3a8a" text-anchor="middle">③ 逐片上传，服务端逐片校验</text>
+  <text x="260" y="334" font-size="14" fill="#7c2d12" text-anchor="middle">④ 中断：切网 / 超时 / 进程被杀</text>
+  <text x="260" y="396" font-size="14" fill="#1e3a8a" text-anchor="middle">⑤ 恢复时先问「已传了哪几片」</text>
+  <text x="260" y="458" font-size="14" fill="#1e3a8a" text-anchor="middle">⑥ 只补缺失的片（断点续传）</text>
+  <text x="260" y="520" font-size="14" fill="#14532d" text-anchor="middle">⑦ 全部到齐 → 合并 → 整体校验</text>
+
+  <text x="544" y="104" font-size="15" fill="#14532d">秒传（内容哈希去重）</text>
+  <text x="740" y="172" font-size="14" fill="#1e3a8a" text-anchor="middle">① 上传前先算整块内容哈希</text>
+  <text x="740" y="244" font-size="14" fill="#1e3a8a" text-anchor="middle">② 问服务端：这个 hash 存在吗？</text>
+  <text x="740" y="316" font-size="14" fill="#14532d" text-anchor="middle">③ 命中 → 直接返回已有 URL（不传字节）</text>
+  <text x="740" y="388" font-size="14" fill="#7c2d12" text-anchor="middle">④ 未命中 → 走左侧的分片上传</text>
+  <text x="568" y="472" font-size="13" fill="#7c2d12">★ 安全边界：内容可以全局去重，引用必须按人隔离。</text>
+  <text x="568" y="500" font-size="13" fill="#7c2d12">命中后返回「属于当前用户的新引用」，不给原直链；</text>
+  <text x="568" y="524" font-size="13" fill="#7c2d12">并选用抗碰撞更强的哈希，防止哈希碰撞造成误命中。</text>
+
+  <text x="40" y="624" font-size="12" fill="#64748b">说明：本图为流程示意，非实测；未标注任何分片大小、并发数或哈希算法的具体取值。</text>
+</svg>

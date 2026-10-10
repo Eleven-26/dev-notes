@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- ===== 所有矩形 ===== -->
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <rect x="400" y="100" width="200" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="400" y="196" width="200" height="56" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+
+  <rect x="60" y="300" width="260" height="88" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="370" y="300" width="260" height="88" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="680" y="300" width="260" height="88" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+
+  <rect x="60" y="440" width="880" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="60" y="524" width="880" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- ===== 箭头 ===== -->
+  <path d="M 500 157 L 500 194" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 253 L 500 278 L 190 278 L 190 298" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 253 L 500 298" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 278 L 810 278 L 810 298" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <path d="M 190 389 L 190 438" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 389 L 500 438" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 810 389 L 810 438" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- ===== 标题 ===== -->
+  <text x="30" y="40" font-size="21" font-weight="bold" fill="#0f172a">限流命中后消息的处理路径</text>
+  <text x="30" y="68" font-size="13" fill="#475569">限流不是"丢掉了事"：通过就投递、能等就排队、不行就报错，绝不允许静默丢弃。</text>
+
+  <!-- ===== 上两步 ===== -->
+  <text x="500" y="134" font-size="14" font-weight="bold" fill="#1e3a8a" text-anchor="middle">① 消息到达网关</text>
+  <text x="500" y="230" font-size="14" font-weight="bold" fill="#334155" text-anchor="middle">② 多层限流检查</text>
+
+  <!-- ===== 三个分支 ===== -->
+  <text x="190" y="330" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">通过</text>
+  <text x="190" y="356" font-size="12" fill="#166534" text-anchor="middle">分配 seq 并正常投递</text>
+  <text x="190" y="378" font-size="12" fill="#166534" text-anchor="middle">延迟最低，处理最简单</text>
+
+  <text x="500" y="330" font-size="14" font-weight="bold" fill="#7c2d12" text-anchor="middle">命中：可排队</text>
+  <text x="500" y="356" font-size="12" fill="#9a3412" text-anchor="middle">瞬时速率超了，但额度没超</text>
+  <text x="500" y="378" font-size="12" fill="#9a3412" text-anchor="middle">排队延迟发送，或提示稍后重试</text>
+
+  <text x="810" y="330" font-size="14" font-weight="bold" fill="#7c2d12" text-anchor="middle">命中：拒绝</text>
+  <text x="810" y="356" font-size="12" fill="#9a3412" text-anchor="middle">超出额度或命中风控</text>
+  <text x="810" y="378" font-size="12" fill="#9a3412" text-anchor="middle">明确报错：错误码 + 重试建议</text>
+
+  <!-- ===== 统一回执 ===== -->
+  <text x="500" y="478" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">③ 统一回执：客户端必须收到明确状态，不允许静默丢弃</text>
+
+  <!-- ===== 底部要点 ===== -->
+  <text x="80" y="552" font-size="13" font-weight="bold" fill="#0f172a">要点：限流命中后必须给明确结果——通过就投递、能等就排队、不行就报错。</text>
+  <text x="80" y="580" font-size="12" fill="#334155">呼应上行 ACK 的口径：客户端要么拿到确认，要么拿到一个可解释的失败，而不是石沉大海。</text>
+  <text x="80" y="600" font-size="12" fill="#64748b">注意：本篇未做实测，无读数；本图只给处理路径，不给任何配额或速率数字。</text>
+</svg>

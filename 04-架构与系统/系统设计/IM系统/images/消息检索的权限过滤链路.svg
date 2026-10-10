@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <rect x="50" y="130" width="280" height="76" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="360" y="130" width="280" height="76" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="670" y="130" width="280" height="76" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+
+  <rect x="50" y="280" width="280" height="76" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="360" y="280" width="280" height="76" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="670" y="280" width="280" height="76" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+
+  <rect x="50" y="412" width="900" height="120" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+
+  <path d="M 334 168 L 356 168" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 644 168 L 666 168" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 810 206 L 810 240 L 190 240 L 190 276" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 334 318 L 356 318" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 644 318 L 666 318" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 356 L 500 408" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <text x="30" y="42" font-size="19" fill="#0f172a">消息检索的权限过滤链路：收窄在前，校验在后</text>
+
+  <text x="190" y="162" font-size="14" fill="#1e3a8a" text-anchor="middle">① 搜索请求</text>
+  <text x="190" y="186" font-size="12" fill="#334155" text-anchor="middle">uid + 关键词</text>
+
+  <text x="500" y="162" font-size="14" fill="#1e3a8a" text-anchor="middle">② 取「我所在的会话」集合</text>
+  <text x="500" y="186" font-size="12" fill="#334155" text-anchor="middle">权限域来自会话侧，不由索引决定</text>
+
+  <text x="810" y="162" font-size="14" fill="#14532d" text-anchor="middle">③ 带会话过滤查索引</text>
+  <text x="810" y="186" font-size="12" fill="#334155" text-anchor="middle">索引是写扩散的检索副本</text>
+
+  <text x="190" y="312" font-size="14" fill="#334155" text-anchor="middle">④ 候选命中</text>
+  <text x="190" y="336" font-size="12" fill="#334155" text-anchor="middle">可能含陈旧的成员快照</text>
+
+  <text x="500" y="312" font-size="14" fill="#7c2d12" text-anchor="middle">⑤ 逐条二次权限校验</text>
+  <text x="500" y="336" font-size="12" fill="#7c2d12" text-anchor="middle">向权威侧确认「此刻能否看到」</text>
+
+  <text x="810" y="312" font-size="14" fill="#14532d" text-anchor="middle">⑥ 高亮片段 + 按 seq 定位</text>
+  <text x="810" y="336" font-size="12" fill="#334155" text-anchor="middle">跳转后复用会话的游标分页</text>
+
+  <text x="70" y="448" font-size="14" fill="#7c2d12">★ 索引不是权限边界：过滤条件只是「收窄」，不是「保证」。</text>
+  <text x="70" y="484" font-size="14" fill="#7c2d12">索引异步滞后（刚被移出群 / 消息刚被撤回），命中后必须逐条回到权威侧再确认一次。</text>
+  <text x="70" y="520" font-size="14" fill="#7c2d12">撤回 / 删除要同步清掉索引；索引一律可重建，权威源永远是消息库。</text>
+
+  <text x="50" y="578" font-size="12" fill="#64748b">说明：本图为流程示意，非实测；未标注任何检索耗时、召回率或索引体积数字。</text>
+</svg>

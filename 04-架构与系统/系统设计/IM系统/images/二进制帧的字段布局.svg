@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="384" viewBox="0 0 1000 384" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="384" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">二进制帧的字段布局</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#475569">定长头 13 字节 + 变长 body；length 是切出消息边界的唯一依据</text>
+
+  <rect x="24" y="92" width="952" height="150" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="40" y="124" width="92" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="138" y="124" width="86" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="230" y="124" width="86" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="322" y="124" width="104" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="432" y="124" width="104" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="542" y="124" width="116" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="664" y="124" width="296" height="56" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <line x1="40" y1="192" x2="658" y2="192" stroke="#2563eb" stroke-width="1.5"/>
+  <line x1="40" y1="188" x2="40" y2="196" stroke="#2563eb" stroke-width="1.5"/>
+  <line x1="658" y1="188" x2="658" y2="196" stroke="#2563eb" stroke-width="1.5"/>
+  <line x1="664" y1="192" x2="960" y2="192" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="664" y1="188" x2="664" y2="196" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="960" y1="188" x2="960" y2="196" stroke="#ea580c" stroke-width="1.5"/>
+
+  <text x="40" y="114" font-size="10" fill="#94a3b8">0x00</text>
+  <text x="138" y="114" font-size="10" fill="#94a3b8">0x02</text>
+  <text x="230" y="114" font-size="10" fill="#94a3b8">0x03</text>
+  <text x="322" y="114" font-size="10" fill="#94a3b8">0x04</text>
+  <text x="432" y="114" font-size="10" fill="#94a3b8">0x05</text>
+  <text x="542" y="114" font-size="10" fill="#94a3b8">0x09</text>
+  <text x="664" y="114" font-size="10" fill="#94a3b8">0x0D</text>
+
+  <text x="86" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">magic</text>
+  <text x="86" y="170" text-anchor="middle" font-size="11" fill="#334155">2 B</text>
+  <text x="181" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">version</text>
+  <text x="181" y="170" text-anchor="middle" font-size="11" fill="#334155">1 B</text>
+  <text x="273" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">type</text>
+  <text x="273" y="170" text-anchor="middle" font-size="11" fill="#334155">1 B</text>
+  <text x="374" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">flags</text>
+  <text x="374" y="170" text-anchor="middle" font-size="11" fill="#334155">1 B</text>
+  <text x="484" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">seq</text>
+  <text x="484" y="170" text-anchor="middle" font-size="11" fill="#334155">4 B</text>
+  <text x="600" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">length</text>
+  <text x="600" y="170" text-anchor="middle" font-size="11" fill="#334155">4 B</text>
+  <text x="812" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#7c2d12">body（变长）</text>
+  <text x="812" y="170" text-anchor="middle" font-size="11" fill="#334155">≤ 帧上限（如 1 MiB）</text>
+
+  <text x="349" y="216" text-anchor="middle" font-size="12" fill="#2563eb">头 13 字节（定长）—— 收到头就能算出 body 还有多长</text>
+  <text x="812" y="216" text-anchor="middle" font-size="12" fill="#ea580c">body（变长）：长度由 length 字段给出</text>
+
+  <rect x="24" y="252" width="952" height="110" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="282" font-size="14" font-weight="700" fill="#334155">例：一条上行消息（type = 0x11，seq = 42，body 15 B）</text>
+  <text x="44" y="312" font-size="12" fill="#1e3a8a">49 4D │ 01 │ 11 │ 00 │ 00 00 00 2A │ 00 00 00 0F │ &lt;15 字节 body&gt;</text>
+  <text x="44" y="340" font-size="12" fill="#64748b">读到 length = 15，就知道还要再收 15 字节才凑成一条完整帧 —— 这就是「循环读」的依据</text>
+
+  <text x="500" y="378" text-anchor="middle" font-size="11" fill="#94a3b8">注意：帧头 seq 是连接内报文序号（配对 ACK），与会话内消息 seq 不是一回事</text>
+</svg>

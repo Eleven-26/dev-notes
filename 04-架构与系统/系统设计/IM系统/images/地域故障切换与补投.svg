@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <rect x="30" y="110" width="210" height="90" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="260" y="110" width="210" height="90" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="490" y="110" width="210" height="90" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="720" y="110" width="210" height="90" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+
+  <rect x="30" y="260" width="900" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="50" y="300" width="270" height="90" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="350" y="300" width="270" height="90" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <rect x="650" y="300" width="270" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+
+  <path d="M 240 155 L 260 155" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M 470 155 L 490 155" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M 700 155 L 720 155" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M 500 200 L 500 260" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <text x="30" y="40" font-size="19" fill="#0f172a">地域故障切换与补投：切换窗口内的丢与重</text>
+  <text x="30" y="68" font-size="12" fill="#64748b">从检测到恢复的四步；每一步都有明确的「谁可能丢、靠什么补」</text>
+
+  <text x="135" y="146" font-size="13" fill="#1e3a8a" text-anchor="middle">① 故障检测</text>
+  <text x="135" y="170" font-size="12" fill="#1e3a8a" text-anchor="middle">健康探测失败 / 心跳超时</text>
+  <text x="135" y="188" font-size="12" fill="#1e3a8a" text-anchor="middle">复制延迟超阈</text>
+
+  <text x="365" y="146" font-size="13" fill="#1e3a8a" text-anchor="middle">② 流量切换</text>
+  <text x="365" y="170" font-size="12" fill="#1e3a8a" text-anchor="middle">DNS / GSLB 改解析</text>
+  <text x="365" y="188" font-size="12" fill="#1e3a8a" text-anchor="middle">客户端重连到新地域</text>
+
+  <text x="595" y="146" font-size="13" fill="#7c2d12" text-anchor="middle">③ 切换窗口</text>
+  <text x="595" y="170" font-size="12" fill="#7c2d12" text-anchor="middle">连接重建期间在途消息</text>
+  <text x="595" y="188" font-size="12" fill="#7c2d12" text-anchor="middle">可能丢，也可能重</text>
+
+  <text x="825" y="146" font-size="13" fill="#14532d" text-anchor="middle">④ 恢复后对账</text>
+  <text x="825" y="170" font-size="12" fill="#14532d" text-anchor="middle">按位点与日志比对</text>
+  <text x="825" y="188" font-size="12" fill="#14532d" text-anchor="middle">补投缺失、丢弃重复</text>
+
+  <text x="50" y="284" font-size="14" fill="#0f172a">切换期间必须盯住的三件事</text>
+
+  <text x="185" y="326" font-size="13" fill="#1e3a8a" text-anchor="middle">① 连接重建</text>
+  <text x="185" y="350" font-size="12" fill="#1e3a8a" text-anchor="middle">客户端指数退避重连</text>
+  <text x="185" y="372" font-size="12" fill="#1e3a8a" text-anchor="middle">在新地域重新注册路由</text>
+
+  <text x="485" y="326" font-size="13" fill="#7c2d12" text-anchor="middle">② 消息去重</text>
+  <text x="485" y="350" font-size="12" fill="#7c2d12" text-anchor="middle">跨地域重传靠消息 ID</text>
+  <text x="485" y="372" font-size="12" fill="#7c2d12" text-anchor="middle">消费端必须幂等</text>
+
+  <text x="785" y="326" font-size="13" fill="#14532d" text-anchor="middle">③ 位点补齐</text>
+  <text x="785" y="350" font-size="12" fill="#14532d" text-anchor="middle">上线按 lastSeq 拉齐</text>
+  <text x="785" y="372" font-size="12" fill="#14532d" text-anchor="middle">这是最后的兜底</text>
+
+  <text x="30" y="452" font-size="12" fill="#94a3b8">说明：本图为流程示意，不含切换耗时、丢消息比例或恢复时间等任何数字；真实行为依赖多地域部署与真实故障演练，正文均标为「未实测」。</text>
+  <text x="30" y="480" font-size="12" fill="#94a3b8">要点：切换不可能「零丢失」，要预先承认丢与重都可能发生，并把补投与幂等做成常态。</text>
+  <text x="30" y="508" font-size="12" fill="#94a3b8">判据：先定「能接受多长时间的不可用、能接受多少重」，再决定切换是自动还是人工。</text>
+
+  <text x="30" y="548" font-size="12" fill="#475569">补充：切换不只是改解析，还包括连接迁移、路由表重建与消息对账，三者缺一都会表现为「用户那边消息不对」。</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <rect x="30" y="110" width="200" height="90" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="270" y="110" width="200" height="90" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="510" y="110" width="200" height="90" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="750" y="110" width="200" height="90" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+
+  <rect x="30" y="250" width="940" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="50" y="290" width="270" height="90" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <rect x="350" y="290" width="270" height="90" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <rect x="650" y="290" width="270" height="90" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+
+  <path d="M 230 155 L 270 155" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M 470 155 L 510 155" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M 710 155 L 750 155" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M 610 200 L 610 250" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <text x="30" y="40" font-size="19" fill="#0f172a">开放平台回调的重试与幂等：从事件产生到确认</text>
+
+  <text x="130" y="146" font-size="13" fill="#1e3a8a" text-anchor="middle">① 平台产生事件</text>
+  <text x="130" y="172" font-size="12" fill="#1e3a8a" text-anchor="middle">（携带 event ID）</text>
+
+  <text x="370" y="146" font-size="13" fill="#1e3a8a" text-anchor="middle">② 回调投递</text>
+  <text x="370" y="172" font-size="12" fill="#1e3a8a" text-anchor="middle">HTTP POST + 签名</text>
+
+  <text x="610" y="146" font-size="13" fill="#7c2d12" text-anchor="middle">③ 未收到 2xx？</text>
+  <text x="610" y="172" font-size="12" fill="#7c2d12" text-anchor="middle">按退避策略重试</text>
+
+  <text x="850" y="146" font-size="13" fill="#14532d" text-anchor="middle">④ 消费端去重</text>
+  <text x="850" y="172" font-size="12" fill="#14532d" text-anchor="middle">按 event ID 幂等</text>
+
+  <text x="50" y="284" font-size="14" fill="#0f172a">回调可靠性的三条要求：缺一都会表现为「重复或丢失」</text>
+
+  <text x="185" y="324" font-size="13" fill="#7c2d12" text-anchor="middle">① 重试</text>
+  <text x="185" y="350" font-size="12" fill="#7c2d12" text-anchor="middle">至少一次投递</text>
+  <text x="185" y="368" font-size="12" fill="#7c2d12" text-anchor="middle">退避 + 抖动，超次进死信</text>
+
+  <text x="485" y="324" font-size="13" fill="#7c2d12" text-anchor="middle">② 去重</text>
+  <text x="485" y="350" font-size="12" fill="#7c2d12" text-anchor="middle">按 event ID 判重</text>
+  <text x="485" y="368" font-size="12" fill="#7c2d12" text-anchor="middle">同一事件只处理一次</text>
+
+  <text x="785" y="324" font-size="13" fill="#7c2d12" text-anchor="middle">③ 验签</text>
+  <text x="785" y="350" font-size="12" fill="#7c2d12" text-anchor="middle">回调体带签名</text>
+  <text x="785" y="368" font-size="12" fill="#7c2d12" text-anchor="middle">验签通过后再处理</text>
+
+  <text x="30" y="432" font-size="12" fill="#94a3b8">说明：本图为回调可靠性与幂等处理的流程示意，不含任何重试次数、耗时段数或成功率数字；正文均标为「未实测」。</text>
+  <text x="30" y="460" font-size="12" fill="#94a3b8">要点：回调是「至少一次」投递，平台会重试，因此你方必然可能收到重复事件。</text>
+  <text x="30" y="488" font-size="12" fill="#94a3b8">判据：先有事件 ID 与幂等处理，再谈重试；顺序反了，重试就会变成重复写入。</text>
+</svg>
