@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">分桶对账：把「全表 diff」拆成「逐桶比」</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#475569">两侧用同一套分桶函数，先把差异缩小到少数桶，再下钻到行与字段</text>
+
+  <rect x="40" y="84" width="420" height="120" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="112" font-size="15" font-weight="700" fill="#1e3a8a">源库</text>
+  <text x="60" y="140" font-size="12" fill="#475569">每行：bucket = hash(主键) % N（N 两侧一致）</text>
+  <text x="60" y="162" font-size="12" fill="#475569">每桶：行数 + 主键集合摘要 + 行内容校验和</text>
+  <text x="60" y="184" font-size="12" fill="#64748b">只扫桶键与校验和列，不拉全表</text>
+
+  <rect x="540" y="84" width="420" height="120" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="560" y="112" font-size="15" font-weight="700" fill="#14532d">目标库</text>
+  <text x="560" y="140" font-size="12" fill="#475569">每行：bucket = hash(主键) % N（同一套实现）</text>
+  <text x="560" y="162" font-size="12" fill="#475569">每桶：行数 + 主键集合摘要 + 行内容校验和</text>
+  <text x="560" y="184" font-size="12" fill="#64748b">同一主键必须落进同一个桶</text>
+
+  <line x1="250" y1="204" x2="250" y2="244" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="750" y1="204" x2="750" y2="244" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="250" y="248" width="500" height="70" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="278" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">逐桶比桶摘要（行数 + 主键摘要 + 校验和）</text>
+  <text x="500" y="300" text-anchor="middle" font-size="12" fill="#334155">摘要相同即整桶放过；只有不同的桶才继续往下走</text>
+
+  <line x1="500" y1="318" x2="500" y2="338" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="250" y1="338" x2="750" y2="338" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="250" y1="338" x2="250" y2="356" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="750" y1="338" x2="750" y2="356" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="60" y="360" width="380" height="100" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="250" y="392" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">摘要一致 → 整桶放过</text>
+  <text x="250" y="420" text-anchor="middle" font-size="12" fill="#334155">绝大多数桶走这条：便宜</text>
+  <text x="250" y="444" text-anchor="middle" font-size="12" fill="#64748b">不拉明细、不逐行比</text>
+
+  <rect x="560" y="360" width="380" height="100" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="750" y="392" text-anchor="middle" font-size="14" font-weight="700" fill="#7c2d12">摘要不同 → 下钻</text>
+  <text x="750" y="420" text-anchor="middle" font-size="12" fill="#334155">少数桶：差异定位范围</text>
+  <text x="750" y="444" text-anchor="middle" font-size="12" fill="#7c2d12">拉主键差 + 逐字段比</text>
+
+  <line x1="750" y1="460" x2="750" y2="496" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="60" y="500" width="880" height="96" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="500" y="528" text-anchor="middle" font-size="14" font-weight="700" fill="#7c2d12">下钻 → 差异明细 → 修复</text>
+  <text x="500" y="554" text-anchor="middle" font-size="12" fill="#334155">拉该桶主键集合差 → 定位主键 → 逐字段精确比 → 写入差异明细表</text>
+  <text x="500" y="580" text-anchor="middle" font-size="12" fill="#1e3a8a">修复：按主键 upsert / delete（幂等，可重跑）</text>
+
+  <text x="500" y="622" text-anchor="middle" font-size="11" fill="#94a3b8">本图仅示机制；本仓未实测，无读数</text>
+</svg>

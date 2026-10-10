@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">CDC 在同步体系中的位置</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#475569">源库写日志 → CDC 组件读日志解析成事件 → 下游按事件更新自己</text>
+
+  <rect x="24" y="90" width="240" height="250" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="144" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">① 源：变更日志</text>
+  <rect x="44" y="140" width="200" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="144" y="168" text-anchor="middle" font-size="12" fill="#334155">MySQL binlog（ROW）</text>
+  <rect x="44" y="194" width="200" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="144" y="222" text-anchor="middle" font-size="12" fill="#334155">PostgreSQL WAL</text>
+  <rect x="44" y="248" width="200" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="144" y="276" text-anchor="middle" font-size="12" fill="#334155">MongoDB oplog</text>
+  <text x="144" y="318" text-anchor="middle" font-size="11" fill="#64748b">每条变更都在日志里</text>
+
+  <line x1="268" y1="215" x2="308" y2="215" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="308,209 322,215 308,221" fill="#2563eb"/>
+
+  <rect x="326" y="90" width="348" height="250" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">② CDC 组件</text>
+  <rect x="348" y="140" width="304" height="48" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="500" y="162" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">读日志 · 定位点</text>
+  <text x="500" y="180" text-anchor="middle" font-size="11" fill="#475569">从哪续：file+pos / GTID / offset</text>
+  <rect x="348" y="198" width="304" height="48" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="500" y="220" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">解析 · 成事件</text>
+  <text x="500" y="238" text-anchor="middle" font-size="11" fill="#475569">谁改了哪一行 → insert/update/delete</text>
+  <rect x="348" y="256" width="304" height="48" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="500" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">投递 · 不丢不重</text>
+  <text x="500" y="296" text-anchor="middle" font-size="11" fill="#475569">至少一次 → 下游按主键 upsert</text>
+
+  <line x1="678" y1="215" x2="718" y2="215" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="718,209 732,215 718,221" fill="#16a34a"/>
+
+  <rect x="736" y="90" width="240" height="250" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="856" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">③ 下游</text>
+  <rect x="756" y="140" width="200" height="44" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="856" y="168" text-anchor="middle" font-size="12" fill="#334155">检索副本（ES）</text>
+  <rect x="756" y="194" width="200" height="44" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="856" y="222" text-anchor="middle" font-size="12" fill="#334155">分析副本（数仓 / 列存）</text>
+  <rect x="756" y="248" width="200" height="44" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="856" y="276" text-anchor="middle" font-size="12" fill="#334155">消息队列 / 另一业务库</text>
+  <text x="856" y="318" text-anchor="middle" font-size="11" fill="#64748b">与源库引擎无关</text>
+
+  <text x="500" y="378" text-anchor="middle" font-size="12" fill="#64748b">要点：CDC 组件要同时解决「从哪读（位点）」「读成什么（事件格式）」「怎么保证下游不丢不重（投递与幂等）」</text>
+  <text x="500" y="402" text-anchor="middle" font-size="12" fill="#64748b">注意：源库必须开启并保留日志，否则 CDC 拿不到原料 —— 日志保留期决定你能落后多久</text>
+  <text x="500" y="426" text-anchor="middle" font-size="11" fill="#94a3b8">本目录四篇均未实测，仅给结构与流程</text>
+</svg>

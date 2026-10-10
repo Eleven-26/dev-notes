@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">全量快照与增量衔接的完整流程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#475569">阶段一建立基线、锚定位点；阶段二跟住变化、用幂等收敛重叠</text>
+
+  <rect x="24" y="80" width="952" height="180" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="110" font-size="15" font-weight="700" fill="#1e3a8a">阶段一：建立基线（全量快照 + 位点锚定）</text>
+
+  <rect x="56" y="132" width="280" height="100" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="196" y="168" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">① 加锁取位点</text>
+  <text x="196" y="196" text-anchor="middle" font-size="11" fill="#334155">短暂持锁，记下位点 P</text>
+  <text x="196" y="216" text-anchor="middle" font-size="10" fill="#475569">GTID / LSN / resume token</text>
+
+  <line x1="342" y1="182" x2="356" y2="182" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="356,177 368,182 356,187" fill="#2563eb"/>
+
+  <rect x="372" y="132" width="280" height="100" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="512" y="168" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">② 无锁分片读快照</text>
+  <text x="512" y="196" text-anchor="middle" font-size="11" fill="#334155">按主键切片 · 并发读</text>
+  <text x="512" y="216" text-anchor="middle" font-size="11" fill="#334155">单片可重试（支持续传）</text>
+
+  <line x1="658" y1="182" x2="672" y2="182" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="672,177 684,182 672,187" fill="#2563eb"/>
+
+  <rect x="688" y="132" width="264" height="100" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="820" y="168" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">③ 同时记录 P 起变更</text>
+  <text x="820" y="196" text-anchor="middle" font-size="11" fill="#334155">快照期间的变更先记下</text>
+  <text x="820" y="216" text-anchor="middle" font-size="11" fill="#334155">供下一步合并</text>
+
+  <text x="500" y="252" text-anchor="middle" font-size="11" fill="#475569">要点：位点 P 必须早于所有快照读取 —— 它是整条流程的锚点</text>
+
+  <rect x="24" y="280" width="952" height="180" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="310" font-size="15" font-weight="700" fill="#14532d">阶段二：跟住变化（增量 + 收敛）</text>
+
+  <rect x="56" y="332" width="280" height="100" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="196" y="368" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">④ 位点持久化</text>
+  <text x="196" y="396" text-anchor="middle" font-size="11" fill="#334155">与下游写入同边界更新</text>
+  <text x="196" y="416" text-anchor="middle" font-size="11" fill="#334155">先写下游、再记位点</text>
+
+  <line x1="342" y1="382" x2="356" y2="382" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="356,377 368,382 356,387" fill="#16a34a"/>
+
+  <rect x="372" y="332" width="280" height="100" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="512" y="368" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">⑤ 合并后切纯增量</text>
+  <text x="512" y="396" text-anchor="middle" font-size="11" fill="#334155">先应用 P 起的记录变更</text>
+  <text x="512" y="416" text-anchor="middle" font-size="11" fill="#334155">此后只处理新变更</text>
+
+  <line x1="658" y1="382" x2="672" y2="382" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="672,377 684,382 672,387" fill="#16a34a"/>
+
+  <rect x="688" y="332" width="264" height="100" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="820" y="368" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">⑥ 断点续读 + 幂等</text>
+  <text x="820" y="396" text-anchor="middle" font-size="11" fill="#334155">重启从已确认位点续读</text>
+  <text x="820" y="416" text-anchor="middle" font-size="11" fill="#334155">按主键 upsert 收敛</text>
+
+  <text x="500" y="452" text-anchor="middle" font-size="11" fill="#475569">要点：至少一次 → 用「重叠」换「不丢」，用「幂等」换「不重」</text>
+
+  <text x="500" y="492" text-anchor="middle" font-size="12" fill="#475569">收敛：快照读旧值 + 增量读新值 → 重叠；只要增量覆盖位点 P 之后的一切、且按主键幂等，最终值收敛</text>
+  <text x="500" y="518" text-anchor="middle" font-size="12" fill="#ea580c">注意：位点若取得比某些分片还晚，那段变更会漏 —— 顺序上必须先取位点、再读快照</text>
+  <text x="500" y="544" text-anchor="middle" font-size="11" fill="#94a3b8">本图仅示机制；本仓未实测，无读数</text>
+</svg>

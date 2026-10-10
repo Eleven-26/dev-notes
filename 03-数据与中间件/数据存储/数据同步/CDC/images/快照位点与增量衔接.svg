@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">快照与增量的位点衔接</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#475569">位点必须锚定在「快照一致性时点」，否则接缝里会漏数据</text>
+
+  <rect x="24" y="84" width="952" height="180" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="112" font-size="15" font-weight="700" fill="#14532d">正确：位点锚定快照一致性时点</text>
+  <rect x="120" y="128" width="520" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="380" y="150" text-anchor="middle" font-size="12" fill="#1e3a8a">全量快照（不加锁读，窗口内允许多次读）</text>
+  <rect x="120" y="172" width="800" height="34" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="520" y="194" text-anchor="middle" font-size="12" fill="#7c2d12">增量：从位点 P 起（与快照区间重叠也无妨 → 靠 upsert 覆盖）</text>
+  <line x1="120" y1="120" x2="120" y2="214" stroke="#16a34a" stroke-width="2"/>
+  <circle cx="120" cy="155" r="5" fill="#16a34a"/>
+  <text x="120" y="238" text-anchor="middle" font-size="11" fill="#14532d">位点 P（快照开始时取得）</text>
+  <text x="920" y="238" text-anchor="end" font-size="11" fill="#64748b">日志随后续读</text>
+  <text x="500" y="256" text-anchor="middle" font-size="11" fill="#64748b">重叠不丢：重复投递的变更由目标侧按主键 upsert 消化，结果收敛</text>
+
+  <rect x="24" y="288" width="952" height="196" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="316" font-size="15" font-weight="700" fill="#7c2d12">错误：先读完快照，再取「当前位点」当起点</text>
+  <rect x="120" y="332" width="520" height="34" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="380" y="354" text-anchor="middle" font-size="12" fill="#334155">全量快照（先读完）</text>
+  <rect x="640" y="348" width="280" height="34" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-dasharray="5 3"/>
+  <text x="780" y="370" text-anchor="middle" font-size="12" fill="#7c2d12">增量：从位点 P′ 起</text>
+  <line x1="640" y1="324" x2="640" y2="402" stroke="#ea580c" stroke-width="2" stroke-dasharray="5 3"/>
+  <circle cx="640" cy="362" r="5" fill="#ea580c"/>
+  <text x="650" y="330" font-size="11" fill="#7c2d12">位点 P′（快照结束后才取）</text>
+  <rect x="120" y="412" width="520" height="20" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-dasharray="5 3"/>
+  <text x="380" y="456" text-anchor="middle" font-size="11" fill="#7c2d12">这一段对已读行的变更：既不在快照里（快照取的是更早的值），也不在增量里 → 永久漏</text>
+
+  <text x="500" y="508" text-anchor="middle" font-size="11" fill="#94a3b8">本图仅示机制；本仓未实测 CDC，无读数</text>
+</svg>
