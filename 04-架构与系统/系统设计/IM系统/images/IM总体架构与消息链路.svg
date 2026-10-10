@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">IM 总体架构与消息链路：四层加一条推送通道</text>
+
+  <!-- 左栏：四层 -->
+  <rect x="20" y="64" width="676" height="420" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <!-- 第 1 层：客户端 -->
+  <text x="40" y="92" font-size="11" fill="#64748b">客户端（多端在线）</text>
+  <rect x="40" y="100" width="200" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="140" y="128" font-size="14" fill="#1e3a8a" text-anchor="middle">手机端</text>
+  <rect x="260" y="100" width="200" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="360" y="128" font-size="14" fill="#1e3a8a" text-anchor="middle">桌面端</text>
+  <rect x="480" y="100" width="200" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="580" y="128" font-size="14" fill="#1e3a8a" text-anchor="middle">平板端</text>
+
+  <path d="M 140 146 L 220 196" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 360 146 L 360 196" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 580 146 L 500 196" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 第 2 层：接入层 -->
+  <rect x="40" y="200" width="640" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="360" y="226" font-size="15" fill="#7c2d12" text-anchor="middle">接入层：网关 A / B / C（各持有若干条长连接）</text>
+  <text x="360" y="250" font-size="12" fill="#7c2d12" text-anchor="middle">用户连在哪台网关由连接路由决定 —— 不能只靠进程内 map</text>
+
+  <path d="M 240 266 L 240 306" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 266 L 500 306" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 第 3 层：逻辑层 -->
+  <rect x="40" y="310" width="290" height="66" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="185" y="336" font-size="14" fill="#1e3a8a" text-anchor="middle">消息服务</text>
+  <text x="185" y="360" font-size="12" fill="#1e3a8a" text-anchor="middle">seq 分配 / 存储转发 / ACK</text>
+  <rect x="390" y="310" width="290" height="66" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="535" y="336" font-size="14" fill="#1e3a8a" text-anchor="middle">会话服务</text>
+  <text x="535" y="360" font-size="12" fill="#1e3a8a" text-anchor="middle">会话列表 / 未读计数 / 已读收敛</text>
+
+  <path d="M 185 376 L 185 410" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 360 376 L 360 410" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 535 376 L 535 410" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 第 4 层：存储层 -->
+  <rect x="40" y="414" width="200" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="140" y="446" font-size="13" fill="#14532d" text-anchor="middle">消息存储</text>
+  <rect x="260" y="414" width="200" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="360" y="446" font-size="13" fill="#14532d" text-anchor="middle">会话与未读</text>
+  <rect x="480" y="414" width="200" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="580" y="446" font-size="13" fill="#14532d" text-anchor="middle">连接路由表</text>
+
+  <!-- 右栏：推送通道 -->
+  <rect x="716" y="64" width="264" height="420" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="848" y="92" font-size="14" fill="#0f172a" text-anchor="middle">推送通道</text>
+
+  <rect x="736" y="106" width="224" height="92" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="848" y="132" font-size="13" fill="#7c2d12" text-anchor="middle">跨节点扇出</text>
+  <text x="848" y="154" font-size="12" fill="#7c2d12" text-anchor="middle">发布订阅广播给所有网关</text>
+  <text x="848" y="176" font-size="12" fill="#7c2d12" text-anchor="middle">各自推给自己持有的连接</text>
+
+  <rect x="736" y="214" width="224" height="132" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+  <text x="848" y="240" font-size="13" fill="#334155" text-anchor="middle">离线推送降级</text>
+  <text x="848" y="266" font-size="12" fill="#334155" text-anchor="middle">对端不在线时改走系统通道</text>
+  <text x="848" y="290" font-size="12" fill="#334155" text-anchor="middle">APNs / FCM / 厂商通道</text>
+  <text x="848" y="314" font-size="12" fill="#334155" text-anchor="middle">只保证到达提醒，不保证送达</text>
+  <text x="848" y="336" font-size="12" fill="#334155" text-anchor="middle">真消息靠上线后拉取补齐</text>
+
+  <path d="M 700 236 L 736 152" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 700 300 L 736 280" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 注记 -->
+  <text x="30" y="520" font-size="13" fill="#64748b">要点：一条消息的生命周期 —— 客户端经网关上行 → 消息服务分配 seq 并落库 → 按连接路由扇出 → 对端在线即推、离线则降级到系统通道；</text>
+  <text x="30" y="544" font-size="13" fill="#64748b">对端上线后再按 seq 拉取补齐。四个硬问题分别落在：连接路由（谁在线）、存储转发（怎么不丢）、seq（怎么有序去重）、会话与未读（多端怎么同步）。</text>
+  <text x="30" y="576" font-size="12" fill="#94a3b8">注意：图中网关与存储节点数均为示意；「离线推送只保证提醒」是系统通道的普遍约束，具体行为以各平台文档为准。</text>
+  <text x="30" y="600" font-size="12" fill="#94a3b8">本图为结构示意，未标注任何性能数字；正文涉及真实长连接与多机的部分均为「未实测」骨架。</text>
+</svg>

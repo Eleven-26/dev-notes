@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">连接路由与离线推送降级：两条路由路径，一条降级链路</text>
+
+  <!-- 消息服务 -->
+  <rect x="380" y="68" width="240" height="50" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="99" font-size="14" fill="#334155" text-anchor="middle">消息服务：要推一条消息</text>
+
+  <path d="M 440 118 L 200 166" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="300" y="140" font-size="12" fill="#64748b" text-anchor="middle">查路由</text>
+  <path d="M 560 118 L 800 166" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="700" y="140" font-size="12" fill="#64748b" text-anchor="middle">不查路由，直接广播</text>
+
+  <!-- 集中式路由表 -->
+  <rect x="40" y="170" width="280" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="180" y="196" font-size="14" fill="#1e3a8a" text-anchor="middle">集中式路由表</text>
+  <text x="180" y="222" font-size="12" fill="#1e3a8a" text-anchor="middle">uid → 网关实例（带 TTL 与续期）</text>
+  <text x="180" y="244" font-size="12" fill="#1e3a8a" text-anchor="middle">网关宕机靠 TTL 自动过期</text>
+
+  <!-- 广播 -->
+  <rect x="680" y="170" width="280" height="92" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="820" y="196" font-size="14" fill="#7c2d12" text-anchor="middle">广播（发布订阅）</text>
+  <text x="820" y="222" font-size="12" fill="#7c2d12" text-anchor="middle">所有网关都收到，各自查本地 map</text>
+  <text x="820" y="244" font-size="12" fill="#7c2d12" text-anchor="middle">用带宽换简单，无需全局查表</text>
+
+  <path d="M 180 262 L 180 296" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 820 262 L 820 296" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 网关 -->
+  <rect x="80" y="300" width="200" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="180" y="326" font-size="14" fill="#14532d" text-anchor="middle">网关 A</text>
+  <text x="180" y="348" font-size="12" fill="#14532d" text-anchor="middle">本机持有该连接</text>
+  <rect x="700" y="300" width="240" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="820" y="326" font-size="14" fill="#14532d" text-anchor="middle">网关 B / C</text>
+  <text x="820" y="348" font-size="12" fill="#14532d" text-anchor="middle">各自查本地 map 决定是否推</text>
+
+  <path d="M 180 356 L 180 392" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 820 356 L 820 392" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- 降级链路 -->
+  <rect x="40" y="396" width="920" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="424" font-size="13" fill="#0f172a">对端不在线时的降级链路：系统推送只做唤起，真正送达靠上线拉取</text>
+
+  <rect x="60" y="444" width="270" height="96" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="195" y="472" font-size="13" fill="#1e3a8a" text-anchor="middle">① 无活跃长连接</text>
+  <text x="195" y="498" font-size="12" fill="#1e3a8a" text-anchor="middle">客户端在后台运行</text>
+  <text x="195" y="520" font-size="12" fill="#1e3a8a" text-anchor="middle">或网络不可达、未重连上</text>
+
+  <path d="M 330 492 L 366 492" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="370" y="444" width="270" height="96" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="505" y="472" font-size="13" fill="#7c2d12" text-anchor="middle">② 系统推送唤起</text>
+  <text x="505" y="498" font-size="12" fill="#7c2d12" text-anchor="middle">APNs / FCM / 厂商通道</text>
+  <text x="505" y="520" font-size="12" fill="#7c2d12" text-anchor="middle">不保证送达与顺序</text>
+
+  <path d="M 640 492 L 676 492" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="680" y="444" width="280" height="96" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="820" y="472" font-size="13" fill="#14532d" text-anchor="middle">③ 上线后按位点拉取补齐</text>
+  <text x="820" y="498" font-size="12" fill="#14532d" text-anchor="middle">拉回 lastReadSeq 之后的消息</text>
+  <text x="820" y="520" font-size="12" fill="#14532d" text-anchor="middle">这一步才是真正的送达</text>
+
+  <!-- 注记 -->
+  <text x="30" y="592" font-size="12" fill="#94a3b8">注意：本图为流程与结构示意，不含任何送达率、连接数或延迟数字；路由与推送的实际行为依赖真实多机部署与真机环境，正文均标为「未实测」。</text>
+  <text x="30" y="612" font-size="12" fill="#94a3b8">要点：进程内 map 只是局部状态，跨网关必须靠集中式路由表或广播；无论走哪条路径，丢了的消息都由位点拉取兜底。</text>
+</svg>

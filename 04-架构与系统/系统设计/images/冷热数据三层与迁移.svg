@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="40" y="42" font-size="19" fill="#0f172a">冷热数据三层与迁移：让成本匹配访问频率</text>
+  <text x="40" y="70" font-size="13" fill="#64748b">判据：热由访问分布定义，不由时间远近拍脑袋</text>
+
+  <!-- 下沉箭头 -->
+  <line x1="74" y1="104" x2="74" y2="316" stroke="#94a3b8" stroke-width="1.4"/>
+  <polygon points="74,324 69,314 79,314" fill="#94a3b8"/>
+  <text x="88" y="216" font-size="12" fill="#64748b">下沉</text>
+
+  <!-- 热 -->
+  <rect x="150" y="96" width="320" height="62" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="170" y="122" font-size="14" fill="#7c2d12">热 · Redis / 本地缓存</text>
+  <text x="170" y="144" font-size="12" fill="#334155">高频读 · 小体量 · 最近会话 / 当前库存 / 热门内容</text>
+
+  <!-- 温 -->
+  <rect x="240" y="176" width="420" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="260" y="202" font-size="14" fill="#1e3a8a">温 · MySQL 分区表 / 归档表</text>
+  <text x="260" y="224" font-size="12" fill="#334155">中频 · 中等体量 · 近几个月订单 / 仍可能被查的历史</text>
+
+  <!-- 冷 -->
+  <rect x="330" y="256" width="520" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="350" y="282" font-size="14" fill="#14532d">冷 · 对象存储 + Parquet</text>
+  <text x="350" y="304" font-size="12" fill="#334155">极低频 · 体量大 · 一年前日志 / 历史归档 / 备份</text>
+
+  <!-- 小结 -->
+  <rect x="40" y="344" width="920" height="92" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="370" font-size="13" fill="#0f172a">下沉策略：按时间（N 天后下沉）/ 按热度（LFU 淘汰冷条目）/ 按容量水位（到上限就下沉最老）。</text>
+  <text x="60" y="394" font-size="13" fill="#0f172a">统一查询层：上层按 ID 查，下层按「热 → 温 → 冷」逐级找，并把命中结果回填热层（要限频）。</text>
+  <text x="60" y="418" font-size="13" fill="#64748b">注意：分层不等于删除 —— 冷层仍要可查，只是慢。</text>
+</svg>

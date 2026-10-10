@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="40" y="42" font-size="19" fill="#0f172a">多存储同步三条路线：谁是首选？</text>
+  <text x="40" y="70" font-size="13" fill="#64748b">一旦拆了副本，就要回答「副本怎么跟权威源保持一致」</text>
+
+  <!-- 左：权威源 -->
+  <rect x="40" y="100" width="160" height="292" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="120" y="238" font-size="15" fill="#1e3a8a" text-anchor="middle">权威源</text>
+  <text x="120" y="262" font-size="13" fill="#1e3a8a" text-anchor="middle">MySQL</text>
+
+  <!-- 右：副本 -->
+  <rect x="800" y="100" width="160" height="292" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="880" y="238" font-size="15" fill="#334155" text-anchor="middle">派生副本</text>
+  <text x="880" y="262" font-size="12" fill="#64748b" text-anchor="middle">ES / 列存 / Redis</text>
+
+  <!-- 行1 CDC -->
+  <rect x="230" y="100" width="550" height="84" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="250" y="126" font-size="14" fill="#14532d">① CDC（变更数据捕获）　首选</text>
+  <text x="250" y="148" font-size="12" fill="#334155">订阅权威源日志（binlog）→ 解析 → 投给副本</text>
+  <text x="250" y="168" font-size="12" fill="#334155">不侵入业务 · 天然有序 · 延迟秒级</text>
+
+  <!-- 行2 双写 -->
+  <rect x="230" y="204" width="550" height="84" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="250" y="230" font-size="14" fill="#7c2d12">② 应用双写 + 对账</text>
+  <text x="250" y="252" font-size="12" fill="#334155">业务代码同时写权威源与副本，另跑对账任务补差</text>
+  <text x="250" y="272" font-size="12" fill="#334155">写后立即可见 · 但双写非原子，必须配对账兜底</text>
+
+  <!-- 行3 全量+增量 -->
+  <rect x="230" y="308" width="550" height="84" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="250" y="334" font-size="14" fill="#1e3a8a">③ 定时全量 + 增量</text>
+  <text x="250" y="356" font-size="12" fill="#334155">定期全量重建副本，中间用增量补</text>
+  <text x="250" y="376" font-size="12" fill="#334155">小体量 · 可容忍小时 / 天级延迟</text>
+
+  <!-- 连接线 -->
+  <line x1="200" y1="142" x2="230" y2="142" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="780" y1="142" x2="800" y2="142" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="200" y1="246" x2="230" y2="246" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="780" y1="246" x2="800" y2="246" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="200" y1="350" x2="230" y2="350" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="780" y1="350" x2="800" y2="350" stroke="#94a3b8" stroke-width="1.2"/>
+
+  <!-- 小结 -->
+  <text x="40" y="428" font-size="13" fill="#0f172a">要点：默认 CDC（不侵入、不易漏、天然有序）；双写只在「写后立刻可见且体量小」时用，且必须配对账。</text>
+</svg>

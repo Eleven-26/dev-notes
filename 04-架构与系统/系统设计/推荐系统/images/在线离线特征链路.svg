@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">在线与离线两条链路：三条来源汇入特征存储，在线请求读出</text>
+
+  <!-- 三条来源 -->
+  <rect x="40" y="90" width="280" height="90" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="60" y="120" font-size="15" fill="#1e3a8a">离线（天 / 小时）</text>
+  <text x="60" y="146" font-size="12" fill="#1e3a8a">用户画像 / 物品统计</text>
+  <text x="60" y="166" font-size="12" fill="#1e3a8a">模型文件（算得慢、样本全）</text>
+
+  <rect x="360" y="90" width="280" height="90" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="380" y="120" font-size="15" fill="#14532d">近线（秒 ~ 分钟）</text>
+  <text x="380" y="146" font-size="12" fill="#14532d">滑动窗口行为统计</text>
+  <text x="380" y="166" font-size="12" fill="#14532d">新内容初始热度</text>
+
+  <rect x="680" y="90" width="280" height="90" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="700" y="120" font-size="15" fill="#7c2d12">实时（请求内）</text>
+  <text x="700" y="146" font-size="12" fill="#7c2d12">本次会话刚点的</text>
+  <text x="700" y="166" font-size="12" fill="#7c2d12">当前上下文（此刻要什么）</text>
+
+  <!-- 写入箭头 -->
+  <path d="M 180 180 L 300 246" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 500 180 L 500 246" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M 820 180 L 700 246" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="512" y="222" font-size="11" fill="#64748b">写入</text>
+
+  <!-- 特征存储 -->
+  <rect x="200" y="250" width="600" height="80" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="284" font-size="15" fill="#0f172a" text-anchor="middle">特征存储（实体 ID → 特征向量）</text>
+  <text x="500" y="310" font-size="12" fill="#475569" text-anchor="middle">低延迟 / 批量读 / 线上线下同一份口径</text>
+
+  <!-- 读取箭头 -->
+  <path d="M 500 330 L 500 376" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="512" y="358" font-size="11" fill="#64748b">读取</text>
+
+  <!-- 在线服务 -->
+  <rect x="200" y="380" width="600" height="80" rx="10" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="414" font-size="15" fill="#334155" text-anchor="middle">在线服务：召回 → 精排</text>
+  <text x="500" y="440" font-size="12" fill="#475569" text-anchor="middle">只读已算好的特征，加少量实时信号，毫秒内完成</text>
+
+  <!-- 注记 -->
+  <text x="30" y="495" font-size="13" fill="#64748b">要点：离线全量覆盖写、近线增量更新、实时请求内现算——三条来源汇入同一个特征存储，供在线读取。</text>
+  <text x="30" y="518" font-size="12" fill="#94a3b8">注：训练与线上必须读同一份口径（同一实现 / 同一取值时间点），否则出现训练-服务偏差。</text>
+</svg>

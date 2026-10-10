@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">Feed 推拉混合扇出：发布侧按阈值分流，读取侧多路合并</text>
+  <text x="30" y="68" font-size="13" fill="#64748b">扇出系数 = 一次发布产生的时间线写入条目数：普通用户 = 粉丝数 F，大 V = 1</text>
+
+  <!-- 发布 -->
+  <rect x="360" y="92" width="280" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="500" y="119" font-size="14" fill="#7c2d12" text-anchor="middle">用户 A 发布 1 条内容</text>
+  <text x="500" y="140" font-size="12" fill="#9a3412" text-anchor="middle">落库并算好排序键</text>
+
+  <!-- 分流线 -->
+  <line x1="500" y1="154" x2="500" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="350" y1="176" x2="650" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="350" y1="176" x2="350" y2="200" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="650" y1="176" x2="650" y2="200" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- 左：普通用户 写扩散 -->
+  <rect x="210" y="200" width="280" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="350" y="226" font-size="14" fill="#1e3a8a" text-anchor="middle">普通用户 走写扩散（推）</text>
+  <text x="350" y="248" font-size="12" fill="#1e3a8a" text-anchor="middle">写给 F 个粉丝的 inbox；扇出 = F</text>
+
+  <!-- 右：大 V 读扩散 -->
+  <rect x="510" y="200" width="280" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="650" y="226" font-size="14" fill="#14532d" text-anchor="middle">大 V 走读扩散（拉）</text>
+  <text x="650" y="248" font-size="12" fill="#14532d" text-anchor="middle">只写自己的 outbox；扇出 = 1</text>
+
+  <line x1="350" y1="266" x2="350" y2="292" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="650" y1="266" x2="650" y2="292" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- 存储 -->
+  <rect x="210" y="292" width="280" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="350" y="319" font-size="13" fill="#0f172a" text-anchor="middle">inbox:{fan} — 有序集合</text>
+  <text x="350" y="341" font-size="12" fill="#475569" text-anchor="middle">成员 = 内容 ID，分数 = 排序键</text>
+
+  <rect x="510" y="292" width="280" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="650" y="319" font-size="13" fill="#0f172a" text-anchor="middle">outbox:{author} — 有序集合</text>
+  <text x="650" y="341" font-size="12" fill="#475569" text-anchor="middle">成员 = 内容 ID，分数 = 排序键</text>
+
+  <line x1="350" y1="362" x2="350" y2="388" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="650" y1="362" x2="650" y2="388" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- 读取 -->
+  <rect x="210" y="388" width="280" height="56" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="350" y="421" font-size="13" fill="#334155" text-anchor="middle">读取自己的 inbox（推来的）</text>
+
+  <rect x="510" y="388" width="280" height="56" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="650" y="421" font-size="13" fill="#334155" text-anchor="middle">现场拉关注的大 V（拉的）</text>
+
+  <line x1="350" y1="444" x2="350" y2="472" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="650" y1="444" x2="650" y2="472" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="350" y1="472" x2="650" y2="472" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="500" y1="472" x2="500" y2="494" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- 合并去重 -->
+  <rect x="300" y="494" width="400" height="82" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="500" y="522" font-size="14" fill="#7c2d12" text-anchor="middle">多路合并去重</text>
+  <text x="500" y="546" font-size="12" fill="#9a3412" text-anchor="middle">按 (排序键, 内容 ID) 归并</text>
+  <text x="500" y="566" font-size="12" fill="#9a3412" text-anchor="middle">按内容 ID 去重，取够一页即停</text>
+
+  <!-- 注记 -->
+  <text x="30" y="612" font-size="12" fill="#64748b">要点：发布侧按大 V 阈值分流（普通用户推、大 V 拉）；读取侧把「推来的」与「现场拉的」两路归并去重。</text>
+  <text x="30" y="634" font-size="12" fill="#64748b">模式切换、重叠关注都会让同一内容从两路冒出，去重必须在读取合并这一步做，键用内容 ID。</text>
+</svg>

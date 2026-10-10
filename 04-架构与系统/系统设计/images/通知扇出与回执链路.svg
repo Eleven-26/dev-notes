@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arrN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrNg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">通知扇出与回执链路：加工 → 路由 → 渠道 → 回执</text>
+  <text x="30" y="63" font-size="13" fill="#64748b">一条业务事件先加工（去重 / 合并 / 频控 / 渲染），再按路由扇到多渠道，最后用回执回写状态</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="960" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">① 加工与路由：一条事件扇到多个渠道</text>
+
+    <rect x="42" y="42" width="875" height="54" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="479.5" y="64" font-size="12.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">去重（同一幂等键只发一次）→ 合并（N 条同质合成 1 条）→ 频控 → 模板渲染</text>
+    <text x="479.5" y="84" font-size="10.5" fill="#1e3a8a" text-anchor="middle">幂等键 = 事件类型 + 业务对象 + 关键状态；夜间免打扰改的是「走哪些渠道」，不是丢弃</text>
+
+    <line x1="479.5" y1="96" x2="479.5" y2="118" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrN)"/>
+
+    <rect x="380" y="120" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="480" y="148" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">② 渠道路由（按优先级）</text>
+
+    <line x1="480" y1="164" x2="480" y2="182" stroke="#2563eb" stroke-width="1.6"/>
+    <line x1="108" y1="182" x2="852" y2="182" stroke="#2563eb" stroke-width="1.4"/>
+
+    <line x1="108" y1="182" x2="108" y2="207" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrNg)"/>
+    <line x1="294" y1="182" x2="294" y2="207" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrNg)"/>
+    <line x1="480" y1="182" x2="480" y2="207" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrNg)"/>
+    <line x1="666" y1="182" x2="666" y2="207" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrNg)"/>
+    <line x1="852" y1="182" x2="852" y2="207" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrNg)"/>
+
+    <rect x="24" y="210" width="168" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="108" y="245" font-size="12" fill="#14532d" text-anchor="middle">站内信</text>
+    <rect x="210" y="210" width="168" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="294" y="245" font-size="12" fill="#14532d" text-anchor="middle">App 推送</text>
+    <rect x="396" y="210" width="168" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="480" y="245" font-size="12" fill="#14532d" text-anchor="middle">短信</text>
+    <rect x="582" y="210" width="168" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="666" y="245" font-size="12" fill="#14532d" text-anchor="middle">邮件</text>
+    <rect x="768" y="210" width="168" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="852" y="245" font-size="12" fill="#14532d" text-anchor="middle">Webhook</text>
+
+    <text x="18" y="290" font-size="11" fill="#475569">路由是「配置」：按事件类型 + 用户偏好 + 时段决定渠道集合；渠道是「插件」，新增渠道不改业务代码。</text>
+  </g>
+
+  <g transform="translate(20,404)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="28" font-size="15" font-weight="bold" fill="#0f172a">③ 回执：把「发出去了」与「用户看到了」分开</text>
+
+    <rect x="20" y="50" width="290" height="76" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="34" y="76" font-size="12" font-weight="bold" fill="#7c2d12">送达回执</text>
+    <text x="34" y="98" font-size="10.5" fill="#7c2d12">渠道异步回调</text>
+    <text x="34" y="116" font-size="10.5" fill="#7c2d12">更新 delivered</text>
+
+    <rect x="335" y="50" width="290" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="349" y="76" font-size="12" font-weight="bold" fill="#1e3a8a">点击回执</text>
+    <text x="349" y="98" font-size="10.5" fill="#1e3a8a">深度链接回跳</text>
+    <text x="349" y="116" font-size="10.5" fill="#1e3a8a">更新 clicked</text>
+
+    <rect x="650" y="50" width="290" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="664" y="76" font-size="12" font-weight="bold" fill="#14532d">状态回写</text>
+    <text x="664" y="98" font-size="10.5" fill="#14532d">通知表 + 未读位</text>
+    <text x="664" y="116" font-size="10.5" fill="#14532d">只用最终态覆盖</text>
+
+    <line x1="310" y1="88" x2="333" y2="88" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrN)"/>
+    <line x1="625" y1="88" x2="648" y2="88" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrNg)"/>
+
+    <text x="18" y="160" font-size="11" fill="#475569">回执异步且可能乱序 → 用「最终态覆盖 + 状态不回退」，不要用「计数 +1」；回执可能丢，要定期对账补齐。</text>
+  </g>
+</svg>

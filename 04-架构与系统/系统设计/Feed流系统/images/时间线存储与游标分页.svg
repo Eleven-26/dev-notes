@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">时间线存储与游标分页：分数唯一才能当游标</text>
+  <text x="30" y="68" font-size="13" fill="#64748b">时间线 = 有序集合；翻页不用「跳过多少条」，改用「从哪个排序键之后继续」</text>
+
+  <!-- 左：时间线有序集合 -->
+  <rect x="30" y="90" width="430" height="500" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="50" y="118" font-size="14" fill="#0f172a">inbox:{uid} — 有序集合（分数 = 排序键）</text>
+
+  <rect x="50" y="134" width="390" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="70" y="159" font-size="13" fill="#1e3a8a">内容 A</text>
+  <text x="420" y="159" font-size="13" fill="#1e3a8a" text-anchor="end">score 105</text>
+
+  <rect x="50" y="180" width="390" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="70" y="205" font-size="13" fill="#1e3a8a">内容 B</text>
+  <text x="420" y="205" font-size="13" fill="#1e3a8a" text-anchor="end">score 104</text>
+
+  <rect x="50" y="226" width="390" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="70" y="251" font-size="13" fill="#1e3a8a">内容 C（第 1 页末条）</text>
+  <text x="420" y="251" font-size="13" fill="#1e3a8a" text-anchor="end">score 103</text>
+
+  <line x1="50" y1="276" x2="440" y2="276" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="50" y="294" font-size="12" fill="#c2410c">游标 cursor = 103：下一页从「分数 &lt; 103」继续</text>
+
+  <rect x="50" y="308" width="390" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="70" y="333" font-size="13" fill="#14532d">内容 D（第 2 页首条）</text>
+  <text x="420" y="333" font-size="13" fill="#14532d" text-anchor="end">score 102</text>
+
+  <rect x="50" y="354" width="390" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="70" y="379" font-size="13" fill="#14532d">内容 E</text>
+  <text x="420" y="379" font-size="13" fill="#14532d" text-anchor="end">score 101</text>
+
+  <rect x="50" y="400" width="390" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="70" y="425" font-size="13" fill="#14532d">内容 F</text>
+  <text x="420" y="425" font-size="13" fill="#14532d" text-anchor="end">score 100</text>
+
+  <text x="50" y="470" font-size="12" fill="#475569">分数须唯一：纯时间戳同秒会碰撞，</text>
+  <text x="50" y="492" font-size="12" fill="#475569">用发号器 ID 或「(分数, 内容 ID)」复合键破平。</text>
+  <text x="50" y="520" font-size="12" fill="#475569">写扩散会不断追加 → 时间线须设上限，</text>
+  <text x="50" y="542" font-size="12" fill="#475569">只保留最近 N 条（有界时间线）。</text>
+  <text x="50" y="570" font-size="12" fill="#64748b">有序集合只存「内容 ID + 排序键」这一对指针。</text>
+
+  <!-- 右：游标 vs offset -->
+  <rect x="490" y="90" width="480" height="500" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="510" y="118" font-size="14" fill="#0f172a">游标 vs offset：为什么不用 offset</text>
+
+  <rect x="510" y="136" width="440" height="176" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="530" y="163" font-size="13" fill="#7c2d12">① offset 分页的两个毛病</text>
+  <text x="530" y="192" font-size="12" fill="#9a3412">插入新内容：第 2 页起点后移，漏条（漂移）</text>
+  <text x="530" y="218" font-size="12" fill="#9a3412">删除内容：后面整体前移，同一条两页都出现</text>
+  <text x="530" y="250" font-size="12" fill="#9a3412">根因：offset 假设「集合是静止的」，</text>
+  <text x="530" y="272" font-size="12" fill="#9a3412">但时间线是活的，「跳过 K 条」没有稳定含义。</text>
+
+  <rect x="510" y="330" width="440" height="230" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="530" y="357" font-size="13" fill="#14532d">② 游标分页：锚定排序键位置</text>
+  <text x="530" y="386" font-size="12" fill="#14532d">用「上一页最后一个分数」当游标。</text>
+  <text x="530" y="412" font-size="12" fill="#14532d">下一页取「分数小于游标」的（左开区间）。</text>
+  <text x="530" y="438" font-size="12" fill="#14532d">中间增删都不影响：位置不随条数漂移。</text>
+  <text x="530" y="470" font-size="12" fill="#14532d">前提：排序键唯一，否则游标指不到唯一位置。</text>
+  <text x="530" y="496" font-size="12" fill="#14532d">代价：不能直接跳到第 N 页，只能顺序往后。</text>
+  <text x="530" y="528" font-size="12" fill="#166534">Feed 是一路往下刷，不跳页，这笔取舍划算。</text>
+</svg>
