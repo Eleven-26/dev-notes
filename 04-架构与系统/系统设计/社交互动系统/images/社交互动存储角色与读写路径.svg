@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arrS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">社交互动的存储全景：用户、内容与关系边是权威源，计数与榜单都是副本</text>
+  <text x="30" y="62" font-size="13" fill="#64748b">写路径先原子判重与计数、再异步落库；读路径按计数与时间线逐级查</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="460" height="460" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">① 数据角色与载体</text>
+
+    <rect x="18" y="44" width="424" height="120" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="34" y="66" font-size="11.5" font-weight="bold" fill="#7f1d1d">权威源 · MySQL</text>
+    <text x="34" y="90" font-size="10" fill="#334155">用户 / 内容本体：互动的主体与受体，要事务与关系约束</text>
+    <text x="34" y="110" font-size="10" fill="#334155">关系边（关注 / 粉丝 / 好友）：唯一真相，边丢了算不回来</text>
+    <text x="34" y="130" font-size="10" fill="#334155">点赞明细（一人一赞）：判重的原始记录，计数可由它重算</text>
+    <text x="34" y="154" font-size="10.5" font-weight="bold" fill="#991b1b">不能丢：丢了不可重建</text>
+
+    <rect x="18" y="176" width="424" height="114" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="198" font-size="11.5" font-weight="bold" fill="#14532d">副本 · Redis（可重建）</text>
+    <text x="34" y="222" font-size="10" fill="#334155">计数（点赞数 / 评论数 / 粉丝数）：高频原子自增，可重算</text>
+    <text x="34" y="242" font-size="10" fill="#334155">榜单（热度榜 / 贡献榜）：由计数排序而来，可整体重算</text>
+    <text x="34" y="262" font-size="10" fill="#334155">时间线（关注流）：热读、按分数翻页，可从内容 + 关系重建</text>
+    <text x="34" y="282" font-size="10.5" font-weight="bold" fill="#14532d">能丢：丢了重算即可</text>
+
+    <rect x="18" y="302" width="424" height="96" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="34" y="324" font-size="11.5" font-weight="bold" fill="#1e3a8a">分析副本与归档 · 图数据库 + 对象存储</text>
+    <text x="34" y="348" font-size="10" fill="#334155">多跳关系（共同好友）：三跳以上遍历关系库吃力，从边派生</text>
+    <text x="34" y="368" font-size="10" fill="#334155">图片 / 视频：体积大、走 CDN，库里只存 URL</text>
+    <text x="34" y="388" font-size="10.5" font-weight="bold" fill="#1e3a8a">最低频的读交给最便宜的介质</text>
+
+    <text x="18" y="420" font-size="11" fill="#475569">先分角色，再选存储：判据只有一句 ——</text>
+    <text x="18" y="436" font-size="11" fill="#475569">丢了能不能从别处重建。</text>
+  </g>
+
+  <g transform="translate(500,80)">
+    <rect x="0" y="0" width="480" height="460" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">② 写路径与读路径的落点</text>
+
+    <text x="18" y="50" font-size="12" font-weight="bold" fill="#0f172a">写：点一个赞</text>
+
+    <rect x="18" y="60" width="444" height="44" rx="8" fill="#e0e7ff" stroke="#4f46e5"/>
+    <text x="34" y="87" font-size="10.5" fill="#312e81">① 原子判重：SADD / 唯一索引兜底（一人一赞）</text>
+
+    <line x1="240" y1="104" x2="240" y2="114" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="118" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="145" font-size="10.5" fill="#14532d">② 计数自增：Redis INCR（副本，可丢可重算）</text>
+
+    <line x1="240" y1="162" x2="240" y2="172" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="176" width="444" height="44" rx="8" fill="#e0e7ff" stroke="#4f46e5"/>
+    <text x="34" y="203" font-size="10.5" fill="#312e81">③ 攒批异步落库：点赞明细 + 计数定稿写 MySQL</text>
+
+    <text x="18" y="248" font-size="12" font-weight="bold" fill="#0f172a">读：打开一屏动态</text>
+
+    <rect x="18" y="258" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="285" font-size="10.5" fill="#14532d">① 先读 Redis 计数与时间线（ZSET）</text>
+
+    <line x1="240" y1="302" x2="240" y2="312" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="316" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="343" font-size="10.5" fill="#14532d">② 榜单 / 热榜按分数翻页（ZSET，游标）</text>
+
+    <line x1="240" y1="360" x2="240" y2="370" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="374" width="444" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="34" y="401" font-size="10.5" fill="#1e3a8a">③ 缺计数 → 从明细重算；多跳关系 → 图数据库</text>
+
+    <text x="18" y="440" font-size="11" fill="#475569">判重与计数先在 Redis 完成，明细再异步落库；不可重建的是明细与关系边。</text>
+  </g>
+</svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arrS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">弹幕的存储全景：弹幕本体是权威源，在途与缓存都能丢</text>
+  <text x="30" y="62" font-size="13" fill="#64748b">写路径先在内存扇出、再异步落库；读路径按热到温再到冷逐级查</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="460" height="460" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">① 数据角色与载体</text>
+
+    <rect x="18" y="44" width="424" height="120" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="34" y="66" font-size="11.5" font-weight="bold" fill="#7f1d1d">权威源 · MySQL（量再大转列存 / 日志）</text>
+    <text x="34" y="90" font-size="10" fill="#334155">弹幕本体：回放与分析的原始数据，批量落库</text>
+    <text x="34" y="110" font-size="10" fill="#334155">单条可丢、整体要留存，是回放与分析的源</text>
+    <text x="34" y="134" font-size="10" fill="#334155">正文只留文本与时间戳，图片等另存对象存储</text>
+    <text x="34" y="154" font-size="10.5" font-weight="bold" fill="#991b1b">不能丢：丢了不可重建</text>
+
+    <rect x="18" y="176" width="424" height="114" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="198" font-size="11.5" font-weight="bold" fill="#14532d">副本 · Redis（可重建）</text>
+    <text x="34" y="222" font-size="10" fill="#334155">在途弹幕 / 房间订阅：Pub/Sub 实时扇出与订阅状态</text>
+    <text x="34" y="242" font-size="10" fill="#334155">热点房间缓存：读高度集中，在库前挡量</text>
+    <text x="34" y="262" font-size="10" fill="#334155">直播结束即失效，可从落库弹幕重建</text>
+    <text x="34" y="282" font-size="10.5" font-weight="bold" fill="#14532d">能丢：丢了最多影响一时体验</text>
+
+    <rect x="18" y="302" width="424" height="96" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="34" y="324" font-size="11.5" font-weight="bold" fill="#1e3a8a">分析副本与归档 · 列存 + 对象存储</text>
+    <text x="34" y="348" font-size="10" fill="#334155">弹幕分析：按房间 / 时段聚合，不拖垮在线库</text>
+    <text x="34" y="368" font-size="10" fill="#334155">历史弹幕：只在回放时读，量最大，压到最便宜介质</text>
+    <text x="34" y="388" font-size="10.5" font-weight="bold" fill="#1e3a8a">最低频的读交给最便宜的介质</text>
+
+    <text x="18" y="420" font-size="11" fill="#475569">先分角色，再选存储：判据只有一句 ——</text>
+    <text x="18" y="436" font-size="11" fill="#475569">丢了能不能从别处重建。</text>
+  </g>
+
+  <g transform="translate(500,80)">
+    <rect x="0" y="0" width="480" height="460" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">② 写路径与读路径的落点</text>
+
+    <text x="18" y="50" font-size="12" font-weight="bold" fill="#0f172a">写：发一条弹幕</text>
+
+    <rect x="18" y="60" width="444" height="44" rx="8" fill="#e0e7ff" stroke="#4f46e5"/>
+    <text x="34" y="87" font-size="10.5" fill="#312e81">① 接入限流：按用户 / 设备 / 客户端限频，超限直接丢弃</text>
+
+    <line x1="240" y1="104" x2="240" y2="114" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="118" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="145" font-size="10.5" fill="#14532d">② 通过 → 先写 Redis：内存 Pub/Sub 实时扇出给各节点</text>
+
+    <line x1="240" y1="162" x2="240" y2="172" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="176" width="444" height="44" rx="8" fill="#e0e7ff" stroke="#4f46e5"/>
+    <text x="34" y="203" font-size="10.5" fill="#312e81">③ 异步批量落库：定时任务 / MQ 批量写 MySQL</text>
+
+    <text x="18" y="248" font-size="12" font-weight="bold" fill="#0f172a">读：回放一段直播</text>
+
+    <rect x="18" y="258" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="285" font-size="10.5" fill="#14532d">① 先读 Redis 热点（近期弹幕窗口）</text>
+
+    <line x1="240" y1="302" x2="240" y2="312" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="316" width="444" height="44" rx="8" fill="#e0e7ff" stroke="#4f46e5"/>
+    <text x="34" y="343" font-size="10.5" fill="#312e81">② 翻出热窗口 → 回源 MySQL（温层）</text>
+
+    <line x1="240" y1="360" x2="240" y2="370" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrS)"/>
+
+    <rect x="18" y="374" width="444" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="34" y="401" font-size="10.5" fill="#1e3a8a">③ 再往前 → 冷层按需回捞，查到后限频回填</text>
+
+    <text x="18" y="440" font-size="11" fill="#475569">实时可丢、历史要存，两条链必须分开；混在一起，存储抖动会在直播期间形成尖刺。</text>
+  </g>
+</svg>

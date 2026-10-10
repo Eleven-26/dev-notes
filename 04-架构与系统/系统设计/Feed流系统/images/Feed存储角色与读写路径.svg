@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <defs>
+    <marker id="arrF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">Feed 流的存储全景：内容本体是真相，时间线只是指针副本</text>
+  <text x="30" y="62" font-size="13" fill="#64748b">写侧先落内容本体再按拉取模型扇出；读侧合并多路指针、按内容 ID 回填本体</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="460" height="460" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">① 数据角色与载体</text>
+
+    <rect x="18" y="44" width="424" height="120" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="34" y="66" font-size="11.5" font-weight="bold" fill="#7f1d1d">权威源 · MySQL</text>
+    <text x="34" y="90" font-size="10" fill="#334155">内容本体：正文 / 作者 / 标签 / 可见性</text>
+    <text x="34" y="110" font-size="10" fill="#334155">互动明细：点赞与评论的原始记录</text>
+    <text x="34" y="130" font-size="10" fill="#334155">两者都按 ID 点查，要持久</text>
+    <text x="34" y="152" font-size="10.5" font-weight="bold" fill="#991b1b">不能丢：丢了无法重建</text>
+
+    <rect x="18" y="176" width="424" height="114" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="198" font-size="11.5" font-weight="bold" fill="#14532d">副本 · Redis / Elasticsearch</text>
+    <text x="34" y="222" font-size="10" fill="#334155">时间线 inbox / outbox：只存内容 ID + 排序键</text>
+    <text x="34" y="242" font-size="10" fill="#334155">互动计数：高频自增，可从互动明细重算</text>
+    <text x="34" y="262" font-size="10" fill="#334155">检索副本：倒排索引，供按标签 / 关键词找</text>
+    <text x="34" y="282" font-size="10.5" font-weight="bold" fill="#14532d">能丢：全部可从权威源派生</text>
+
+    <rect x="18" y="302" width="424" height="96" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="34" y="324" font-size="11.5" font-weight="bold" fill="#1e3a8a">归档 / 静态资源 · 对象存储 + CDN</text>
+    <text x="34" y="348" font-size="10" fill="#334155">图片 / 视频：走 CDN，内容库里只存 URL</text>
+    <text x="34" y="368" font-size="10" fill="#334155">一年以上的内容与日志：下沉到最便宜的介质</text>
+    <text x="34" y="388" font-size="10.5" font-weight="bold" fill="#1e3a8a">最便宜介质承载最低频的读</text>
+
+    <text x="18" y="420" font-size="11" fill="#475569">先分角色，再选存储：判据只有一句 ——</text>
+    <text x="18" y="436" font-size="11" fill="#475569">丢了能不能从别处重建。</text>
+  </g>
+
+  <g transform="translate(500,80)">
+    <rect x="0" y="0" width="480" height="460" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="18" y="26" font-size="15" font-weight="bold" fill="#0f172a">② 写路径与读路径的落点</text>
+
+    <text x="18" y="50" font-size="12" font-weight="bold" fill="#0f172a">写：发布一条内容</text>
+
+    <rect x="18" y="60" width="444" height="44" rx="8" fill="#e0e7ff" stroke="#4f46e5"/>
+    <text x="34" y="87" font-size="10.5" fill="#312e81">① 内容本体先落 MySQL（权威源，先持久化）</text>
+
+    <line x1="240" y1="104" x2="240" y2="114" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrF)"/>
+
+    <rect x="18" y="118" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="145" font-size="10.5" fill="#14532d">② 按拉取模型扇出：普通用户写粉丝 inbox，大 V 只写自己 outbox</text>
+
+    <line x1="240" y1="162" x2="240" y2="172" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrF)"/>
+
+    <rect x="18" y="176" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="203" font-size="10.5" fill="#14532d">③ 为每个条目算好排序键写入 ZSet，检索与计数异步派生</text>
+
+    <text x="18" y="248" font-size="12" font-weight="bold" fill="#0f172a">读：刷一屏</text>
+
+    <rect x="18" y="258" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="285" font-size="10.5" fill="#14532d">① 取游标：客户端带上「上一页最后一个排序键」</text>
+
+    <line x1="240" y1="302" x2="240" y2="312" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrF)"/>
+
+    <rect x="18" y="316" width="444" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="34" y="343" font-size="10.5" fill="#14532d">② 读自己的 inbox；含大 V 时并发拉它的 outbox</text>
+
+    <line x1="240" y1="360" x2="240" y2="370" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrF)"/>
+
+    <rect x="18" y="374" width="444" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="34" y="401" font-size="10.5" fill="#1e3a8a">③ 按排序键归并、按内容 ID 去重，截断一页并回带游标</text>
+
+    <text x="18" y="440" font-size="11" fill="#475569">时间线里只有指针，内容本体才是真相：读出来还得按 ID 批量回填正文。</text>
+  </g>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">文件存储两条路线：要不要跨节点共享，决定走哪条</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">判据：要在多节点 / 多操作系统之间共享 → 分布式文件系统；只需持久化 + 偶尔查看 → 对象存储</text>
+
+  <rect x="30" y="88" width="455" height="260" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3" rx="10"/>
+  <text x="46" y="114" font-size="14" font-weight="bold" fill="#7c2d12">① 分布式文件系统（Ceph 等）—— 需要共享</text>
+  <text x="46" y="142" font-size="11.5" fill="#7c2d12">形态：把设备以「网盘 / 共享文件夹」形式挂载到 OS 目录</text>
+  <text x="46" y="166" font-size="11.5" fill="#7c2d12">操作它 = 复制文件到目录、从目录取文件，与本地夹几乎无别</text>
+  <text x="46" y="190" font-size="11.5" fill="#7c2d12">唯一区别：挂载动作要权限校验，之后读写不需要</text>
+  <text x="46" y="214" font-size="11.5" fill="#7c2d12">好处：隐藏上传 / 下载细节，开发时像操作本地目录</text>
+  <text x="46" y="246" font-size="11.5" font-weight="bold" fill="#7c2d12">典型场景：</text>
+  <text x="46" y="270" font-size="11.5" fill="#7c2d12">· K8s 多节点共享同一文件系统（Docker 私有镜像仓库）</text>
+  <text x="46" y="294" font-size="11.5" fill="#7c2d12">· 有状态应用（etcd / Redis / MySQL）要独立块设备 RBD</text>
+
+  <rect x="515" y="88" width="455" height="260" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3" rx="10"/>
+  <text x="531" y="114" font-size="14" font-weight="bold" fill="#14532d">② 对象存储（COS / OSS 等）—— 不需要共享</text>
+  <text x="531" y="142" font-size="11.5" fill="#14532d">形态：通过 HTTP API（PUT / GET）存取对象，不挂载到 OS</text>
+  <text x="531" y="166" font-size="11.5" fill="#14532d">特征：不需要在多节点 / 多操作系统之间共享</text>
+  <text x="531" y="190" font-size="11.5" fill="#14532d">只需持久化保存，以及偶尔被用户查看</text>
+  <text x="531" y="214" font-size="11.5" fill="#14532d">满足这两点，用对象存储就够了</text>
+  <text x="531" y="246" font-size="11.5" font-weight="bold" fill="#14532d">典型场景：</text>
+  <text x="531" y="270" font-size="11.5" fill="#14532d">· 普通网站里的图片、用户头像等静态文件</text>
+  <text x="531" y="294" font-size="11.5" fill="#14532d">· 大对象一次写多次读，本体不进关系库</text>
+
+  <rect x="30" y="368" width="940" height="200" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="394" font-size="13.5" font-weight="bold" fill="#0f172a">选型第一原则：先答需求，再比参数</text>
+  <text x="46" y="424" font-size="12.5" font-weight="bold" fill="#1e3a8a">「从需求出发，从熟悉程度出发，而不是从性能出发」</text>
+  <text x="46" y="456" font-size="11.5" fill="#334155">· 成型的文件系统不会有太拉垮的性能，差异通常在百分之几</text>
+  <text x="46" y="480" font-size="11.5" fill="#334155">· 很多业务根本到不了需要考虑那百分之几性能的量级</text>
+  <text x="46" y="504" font-size="11.5" fill="#334155">· 更该关注：哪个方案能更好解决实际问题、团队更熟悉哪个</text>
+  <text x="46" y="536" font-size="11.5" font-weight="bold" fill="#0f172a">⚠️ 本篇为选型判据整理，未做本机实测，不引用第三方跑分当结论</text>
+</svg>
