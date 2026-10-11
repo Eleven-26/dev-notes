@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwA" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">DTM 的 AP / TM / RM 三角色与多副本架构</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">沿用 XA DTP 的角色划分，但把 TM 从单点变成「无状态多副本 + 共享高可用存储」</text>
+
+  <rect x="40" y="120" width="200" height="84" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4" rx="8"/>
+  <text x="140" y="150" font-size="14" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 应用程序</text>
+  <text x="140" y="172" font-size="11.5" fill="#1e40af" text-anchor="middle">编排全局事务：</text>
+  <text x="140" y="190" font-size="11.5" fill="#1e40af" text-anchor="middle">注册子事务、发起提交</text>
+
+  <line x1="242" y1="162" x2="372" y2="162" stroke="#475569" stroke-width="1.6" marker-end="url(#arwA)"/>
+  <text x="307" y="150" font-size="11" fill="#334155" text-anchor="middle">① 注册 + 提交</text>
+  <text x="307" y="182" font-size="10.5" fill="#64748b" text-anchor="middle">HTTP / gRPC</text>
+
+  <rect x="378" y="104" width="244" height="128" fill="#fef3c7" stroke="#b45309" stroke-width="1.4" rx="8"/>
+  <text x="500" y="126" font-size="13.5" font-weight="bold" fill="#92400e" text-anchor="middle">TM：DTM 服务集群（无状态多副本）</text>
+  <rect x="398" y="138" width="204" height="26" fill="#ffffff" stroke="#b45309" stroke-width="1" rx="5"/>
+  <text x="500" y="156" font-size="11" fill="#92400e" text-anchor="middle">dtmsvr 实例 1</text>
+  <rect x="398" y="170" width="204" height="26" fill="#ffffff" stroke="#b45309" stroke-width="1" rx="5"/>
+  <text x="500" y="188" font-size="11" fill="#92400e" text-anchor="middle">dtmsvr 实例 2</text>
+  <rect x="398" y="202" width="204" height="24" fill="#ffffff" stroke="#b45309" stroke-width="1" rx="5"/>
+  <text x="500" y="218" font-size="11" fill="#92400e" text-anchor="middle">…（按需水平扩展）</text>
+
+  <line x1="624" y1="162" x2="754" y2="162" stroke="#475569" stroke-width="1.6" marker-end="url(#arwA)"/>
+  <text x="689" y="150" font-size="11" fill="#334155" text-anchor="middle">② 回调分支</text>
+  <text x="689" y="182" font-size="10.5" fill="#64748b" text-anchor="middle">按分支结果重试</text>
+
+  <rect x="760" y="120" width="200" height="84" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4" rx="8"/>
+  <text x="860" y="150" font-size="14" font-weight="bold" fill="#14532d" text-anchor="middle">RM 资源管理器</text>
+  <text x="860" y="172" font-size="11.5" fill="#14532d" text-anchor="middle">管理本地事务：</text>
+  <text x="860" y="190" font-size="11.5" fill="#14532d" text-anchor="middle">提交 / 回滚 / 补偿</text>
+
+  <line x1="500" y1="232" x2="500" y2="272" stroke="#b45309" stroke-width="1.6"/>
+  <path d="M500,272 L496,264 L504,264 Z" fill="#b45309"/>
+  <path d="M500,232 L496,240 L504,240 Z" fill="#b45309"/>
+  <rect x="378" y="274" width="244" height="56" fill="#fff7ed" stroke="#b45309" stroke-width="1.2" rx="8"/>
+  <text x="500" y="298" font-size="12.5" font-weight="bold" fill="#92400e" text-anchor="middle">共享高可用存储（非单点）</text>
+  <text x="500" y="318" font-size="11" fill="#92400e" text-anchor="middle">MySQL / Redis / Postgres，保存全局事务进度</text>
+
+  <line x1="860" y1="204" x2="860" y2="272" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <path d="M860,272 L856,264 L864,264 Z" fill="#16a34a"/>
+  <rect x="760" y="274" width="200" height="56" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="860" y="298" font-size="12.5" font-weight="bold" fill="#14532d" text-anchor="middle">本地数据库</text>
+  <text x="860" y="318" font-size="11" fill="#14532d" text-anchor="middle">含子事务屏障表（业务写与屏障同事务）</text>
+
+  <rect x="40" y="360" width="920" height="140" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="60" y="386" font-size="14" font-weight="bold" fill="#0f172a">三个角色各自负责什么</text>
+  <text x="60" y="414" font-size="12" fill="#334155">AP：编排者。注册全局事务与子事务，通过 SDK 提交给 TM；不直接操作数据库。</text>
+  <text x="60" y="438" font-size="12" fill="#334155">TM：协调者（DTM 服务本身）。持久化全局事务，把同一事务的所有分支要么全提交、要么全回滚。</text>
+  <text x="60" y="462" font-size="12" fill="#334155">RM：执行者。每个服务管理自己的本地事务（含补偿），并把屏障记录与业务更新放进同一个本地事务。</text>
+  <text x="60" y="488" font-size="11.5" fill="#b45309">要点：TM 不直连业务库，RM 是「服务」而不是数据库；一个服务可同时是 AP 和 RM（如嵌套 TCC）。</text>
+</svg>

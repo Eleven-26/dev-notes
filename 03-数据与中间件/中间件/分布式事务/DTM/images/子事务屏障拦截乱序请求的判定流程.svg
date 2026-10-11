@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#475569"/>
+    </marker>
+    <marker id="arwG" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arwR" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">子事务屏障如何拦截乱序请求</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">在业务库建 (gid, branch-id, op) 唯一键，先插键再执行业务；插入冲突即判定为重复或乱序</text>
+
+  <rect x="30" y="80" width="450" height="404" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="255" y="104" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">屏障内的一次分支调用</text>
+
+  <rect x="55" y="120" width="400" height="40" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="70" y="145" font-size="12" fill="#1e293b">① 开启本地事务</text>
+
+  <line x1="255" y1="162" x2="255" y2="176" stroke="#475569" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+  <rect x="55" y="178" width="400" height="52" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="70" y="199" font-size="12" fill="#1e293b">② insert ignore（gid, branch-id, op）</text>
+  <text x="70" y="219" font-size="11" fill="#475569">插入失败 → 已执行过，提交并返回成功（幂等）</text>
+
+  <line x1="255" y1="232" x2="255" y2="246" stroke="#475569" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+  <rect x="55" y="248" width="400" height="52" fill="#ffffff" stroke="#b45309" stroke-width="1" rx="6"/>
+  <text x="70" y="269" font-size="12" fill="#1e293b">③ 若 op = cancel：再 insert ignore（…, try）</text>
+  <text x="70" y="289" font-size="11" fill="#92400e">插入成功 → try 从未执行，提交返回成功（空补偿）</text>
+
+  <line x1="255" y1="302" x2="255" y2="316" stroke="#475569" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+  <rect x="55" y="318" width="400" height="46" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="70" y="340" font-size="12" fill="#1e293b">④ 执行屏障内的业务逻辑</text>
+  <text x="70" y="358" font-size="11" fill="#475569">业务成功 → 提交；业务失败 → 回滚并返回失败</text>
+
+  <rect x="55" y="380" width="400" height="86" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.2" rx="6"/>
+  <text x="70" y="402" font-size="11.5" font-weight="bold" fill="#3730a3">关键前提：</text>
+  <text x="70" y="422" font-size="11" fill="#3730a3">屏障记录与业务更新必须在同一个本地事务里提交；</text>
+  <text x="70" y="440" font-size="11" fill="#3730a3">只能靠数据库唯一键与行锁，不能只靠内存标记。</text>
+  <text x="70" y="458" font-size="11" fill="#3730a3">这套机制对 TCC、SAGA、二阶段消息统一生效。</text>
+
+  <rect x="520" y="80" width="450" height="404" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="745" y="104" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">三类问题各自被哪一步拦下</text>
+
+  <rect x="545" y="122" width="400" height="106" fill="#ffffff" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="562" y="144" font-size="12.5" font-weight="bold" fill="#14532d">幂等：响应丢失、重复调用</text>
+  <text x="562" y="166" font-size="11" fill="#334155">同一分支再次进来，② 插自己的唯一键冲突。</text>
+  <text x="562" y="186" font-size="11" fill="#334155">处理：直接提交返回成功，不再执行业务。</text>
+  <text x="562" y="210" font-size="11" fill="#16a34a">→ 由步骤 ② 拦截</text>
+
+  <rect x="545" y="240" width="400" height="106" fill="#ffffff" stroke="#b45309" stroke-width="1.2" rx="8"/>
+  <text x="562" y="262" font-size="12.5" font-weight="bold" fill="#92400e">空补偿：cancel 先到、try 从未执行</text>
+  <text x="562" y="284" font-size="11" fill="#334155">③ 为 cancel 补插 try 键时，因为确实没有 try，插入成功。</text>
+  <text x="562" y="304" font-size="11" fill="#334155">处理：提交返回成功，不执行补偿逻辑。</text>
+  <text x="562" y="328" font-size="11" fill="#b45309">→ 由步骤 ③ 拦截</text>
+
+  <rect x="545" y="358" width="400" height="106" fill="#ffffff" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+  <text x="562" y="380" font-size="12.5" font-weight="bold" fill="#991b1b">悬挂：cancel 完成后，try 迟到</text>
+  <text x="562" y="402" font-size="11" fill="#334155">cancel 已代 try 插入过 try 键，迟到的 try 在 ② 插入失败。</text>
+  <text x="562" y="422" font-size="11" fill="#334155">处理：不执行屏障内逻辑，丢弃迟到的 try。</text>
+  <text x="562" y="446" font-size="11" fill="#dc2626">→ 由步骤 ② 拦截</text>
+</svg>
