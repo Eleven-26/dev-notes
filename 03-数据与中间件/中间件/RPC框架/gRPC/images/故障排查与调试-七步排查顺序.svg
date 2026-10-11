@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arr6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">排障顺序：七步照这个顺序走，别跳</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">来自「使用：排查工具箱」第 5 小节——从错误分层一路收窄到三类静默失效</text>
+
+  <rect x="40" y="100" width="600" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="340" y="129" text-anchor="middle" font-size="13" fill="#1e3a8a">① 报错码是哪一层的？应用 / HTTP/2 / 连接 / DNS / 代理</text>
+  <line x1="340" y1="148" x2="340" y2="162" stroke="#475569" stroke-width="1.6" marker-end="url(#arr6)"/>
+
+  <rect x="40" y="164" width="600" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="340" y="193" text-anchor="middle" font-size="13" fill="#0f172a">② Unavailable？读 desc：connection refused / goaway / transport is closing</text>
+  <line x1="340" y1="212" x2="340" y2="226" stroke="#475569" stroke-width="1.6" marker-end="url(#arr6)"/>
+
+  <rect x="40" y="228" width="600" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="340" y="257" text-anchor="middle" font-size="13" fill="#0f172a">③ 连不上？先证明「名字能解析 + 端口在监听」，再谈 gRPC</text>
+  <line x1="340" y1="276" x2="340" y2="290" stroke="#475569" stroke-width="1.6" marker-end="url(#arr6)"/>
+
+  <rect x="40" y="292" width="600" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="340" y="321" text-anchor="middle" font-size="13" fill="#0f172a">④ 连上了但业务报错？用 grpcurl 直连后端，排除网关</text>
+  <line x1="340" y1="340" x2="340" y2="354" stroke="#475569" stroke-width="1.6" marker-end="url(#arr6)"/>
+
+  <rect x="40" y="356" width="600" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="340" y="385" text-anchor="middle" font-size="13" fill="#0f172a">⑤ 直连也报错？看服务端是不是漏了 status.Error（Unknown 的来源）</text>
+  <line x1="340" y1="404" x2="340" y2="418" stroke="#475569" stroke-width="1.6" marker-end="url(#arr6)"/>
+
+  <rect x="40" y="420" width="600" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="340" y="449" text-anchor="middle" font-size="13" fill="#0f172a">⑥ 偶发？打开 grpc-go 日志看有没有 GOAWAY / 握手失败</text>
+  <line x1="340" y1="468" x2="340" y2="482" stroke="#475569" stroke-width="1.6" marker-end="url(#arr6)"/>
+
+  <rect x="40" y="484" width="600" height="48" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.6"/>
+  <text x="340" y="513" text-anchor="middle" font-size="13" fill="#713f12">⑦ 都正常？怀疑静默失效三连：拦截器不生效 / 探针写死 / 长连接 LB</text>
+
+  <rect x="670" y="212" width="310" height="64" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="6 4"/>
+  <text x="825" y="238" text-anchor="middle" font-size="11.5" fill="#334155">首连多等 8 秒 = TXT _grpc_config 查询：</text>
+  <text x="825" y="258" text-anchor="middle" font-size="11.5" fill="#334155">改 passthrough:/// 或关掉 GRPC_ENABLE_TXT…=false</text>
+
+  <rect x="670" y="296" width="310" height="52" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="6 4"/>
+  <text x="825" y="316" text-anchor="middle" font-size="11.5" fill="#334155">grpcurl 连 list 都失败 = 连接层没通，</text>
+  <text x="825" y="334" text-anchor="middle" font-size="11.5" fill="#334155">别再往下调方法</text>
+
+  <rect x="670" y="404" width="310" height="64" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="6 4"/>
+  <text x="825" y="430" text-anchor="middle" font-size="11.5" fill="#334155">GOAWAY 与握手失败是 ERROR 级、默认就会打；</text>
+  <text x="825" y="450" text-anchor="middle" font-size="11.5" fill="#334155">更啰嗦：SEVERITY=info 配 VERBOSITY=2</text>
+
+  <line x1="640" y1="244" x2="668" y2="244" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="640" y1="322" x2="668" y2="322" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="640" y1="436" x2="668" y2="436" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+
+  <text x="40" y="570" font-size="12.5" fill="#0f172a">分层依据（第一节）：Unavailable 是个「筐」——连不上、被 GOAWAY 掐断、代理换机器都归它，必须读 desc 才能分层。</text>
+  <text x="40" y="596" font-size="12.5" fill="#0f172a">⭐ CI 冒烟：反射 list + 一条一元 + 一条流 + 一条健康 Check——比加日志便宜。</text>
+</svg>

@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 812" width="1000" height="812" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ab5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="ar5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="812" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">事务：六项硬边界、替代手段的优先级、重试边界</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">能开事务不等于该开事务——先按 1 到 5 的顺序试替代手段</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">六项硬边界：任何一项不满足，事务都开不起来或开得很危险</text>
+
+    <rect x="20" y="38" width="920" height="28" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="57" font-size="12" font-weight="bold" fill="#0f172a">项</text>
+    <text x="220" y="57" font-size="12" font-weight="bold" fill="#0f172a">结论</text>
+
+    <rect x="20" y="66" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="85" font-size="11.5" fill="#334155">拓扑</text>
+    <text x="220" y="85" font-size="11.5" fill="#334155">需要副本集或分片集群；standalone 不支持多文档事务</text>
+
+    <rect x="20" y="94" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="113" font-size="11.5" fill="#334155">会话</text>
+    <text x="220" y="113" font-size="11.5" fill="#334155">必须在客户端会话内执行；会话同时是因果一致性的载体</text>
+
+    <rect x="20" y="122" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="141" font-size="11.5" fill="#334155">隔离级别</text>
+    <text x="220" y="141" font-size="11.5" fill="#334155">事务内是 snapshot 读（跨文档同一快照）；事务外仍是普通读关注</text>
+
+    <rect x="20" y="150" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="169" font-size="11.5" fill="#334155">时长</text>
+    <text x="220" y="169" font-size="11.5" fill="#c2410c">有默认超时（秒级量级）；服务端还会主动清理跑太久的事务</text>
+
+    <rect x="20" y="178" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="197" font-size="11.5" fill="#334155">体量</text>
+    <text x="220" y="197" font-size="11.5" fill="#c2410c">单事务 oplog 受与单文档同量级上限约束 → 大批量塞一个事务直接失败</text>
+
+    <rect x="20" y="206" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="225" font-size="11.5" fill="#334155">冲突</text>
+    <text x="220" y="225" font-size="11.5" fill="#dc2626">持锁到提交；两事务改同一文档 → 后者报冲突，必须由业务层重试整个事务</text>
+  </g>
+
+  <g transform="translate(20,342)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">替代手段的优先级：从左到右试，最后才是多文档事务</text>
+
+    <rect x="22" y="44" width="176" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="110" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">1　单文档原子</text>
+    <text x="110" y="88" text-anchor="middle" font-size="11" fill="#334155">把不变量收进同一个</text>
+    <text x="110" y="108" text-anchor="middle" font-size="11" fill="#334155">文档，一次 $set 生效</text>
+    <text x="110" y="126" text-anchor="middle" font-size="11" fill="#64748b">绝大多数场景</text>
+    <line x1="200" y1="89" x2="210" y2="89" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ab5)"/>
+
+    <rect x="212" y="44" width="176" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="300" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">2　条件更新 CAS</text>
+    <text x="300" y="88" text-anchor="middle" font-size="11" fill="#334155">updateOne 带状态条件</text>
+    <text x="300" y="108" text-anchor="middle" font-size="11" fill="#334155">MatchedCount==1 判抢到</text>
+    <text x="300" y="126" text-anchor="middle" font-size="11" fill="#64748b">状态机 / 幂等消费</text>
+    <line x1="390" y1="89" x2="400" y2="89" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ab5)"/>
+
+    <rect x="402" y="44" width="176" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="490" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">3　聚合根内子任务</text>
+    <text x="490" y="88" text-anchor="middle" font-size="11" fill="#334155">一文档里维护步骤数组</text>
+    <text x="490" y="108" text-anchor="middle" font-size="11" fill="#334155">逐条 $set / $pull 推进</text>
+    <text x="490" y="126" text-anchor="middle" font-size="11" fill="#64748b">多步但同一业务对象</text>
+    <line x1="580" y1="89" x2="590" y2="89" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ab5)"/>
+
+    <rect x="592" y="44" width="176" height="90" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="680" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">4　最终一致</text>
+    <text x="680" y="88" text-anchor="middle" font-size="11" fill="#334155">本地消息表 / 事务消息</text>
+    <text x="680" y="108" text-anchor="middle" font-size="11" fill="#334155">+ 消费幂等 + 定时对账</text>
+    <text x="680" y="126" text-anchor="middle" font-size="11" fill="#64748b">跨服务、跨库、跨 MQ</text>
+    <line x1="770" y1="89" x2="780" y2="89" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ab5)"/>
+
+    <rect x="782" y="44" width="176" height="90" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="870" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2410c">5　多文档事务</text>
+    <text x="870" y="88" text-anchor="middle" font-size="11" fill="#334155">同库跨文档且必须</text>
+    <text x="870" y="108" text-anchor="middle" font-size="11" fill="#334155">同时可见（A 扣 + B 加）</text>
+    <text x="870" y="126" text-anchor="middle" font-size="11" fill="#64748b">最后手段</text>
+
+    <text x="20" y="166" font-size="12" fill="#334155">要点：事务要把全部写攒到最后一次性提交、并持锁到提交；从节点必须整笔原子应用 → 长事务直接抬高 lag。</text>
+    <text x="20" y="188" font-size="12" fill="#c2410c">注意：一次卡在事务里的外呼就能把锁持有时长变得不可控，进而把接口 P99 拖平，而这在常规监控里极难归因。</text>
+  </g>
+
+  <g transform="translate(20,562)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">重试边界：WithTransaction 会重跑整个闭包</text>
+
+    <rect x="30" y="44" width="290" height="80" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="175" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">触发</text>
+    <text x="175" y="90" text-anchor="middle" font-size="11" fill="#334155">遇到「可重试的瞬时事务错误」</text>
+    <text x="175" y="110" text-anchor="middle" font-size="11" fill="#334155">（或写冲突：两个事务改同一文档）</text>
+    <line x1="324" y1="84" x2="338" y2="84" stroke="#dc2626" stroke-width="1.6" marker-end="url(#ar5)"/>
+
+    <rect x="342" y="44" width="290" height="80" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="487" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2410c">行为</text>
+    <text x="487" y="90" text-anchor="middle" font-size="11" fill="#334155">重跑整个闭包，从头再执行一遍</text>
+    <text x="487" y="110" text-anchor="middle" font-size="11" fill="#334155">不只是重试提交那一步</text>
+    <line x1="636" y1="84" x2="650" y2="84" stroke="#dc2626" stroke-width="1.6" marker-end="url(#ar5)"/>
+
+    <rect x="654" y="44" width="296" height="80" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="802" y="66" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">后果</text>
+    <text x="802" y="90" text-anchor="middle" font-size="11" fill="#334155">闭包里的副作用被重复执行</text>
+    <text x="802" y="110" text-anchor="middle" font-size="11" fill="#334155">这是线上最常见的误用</text>
+
+    <rect x="30" y="136" width="220" height="36" rx="5" fill="#ffffff" stroke="#dc2626" stroke-width="1.1"/>
+    <text x="140" y="159" text-anchor="middle" font-size="11.5" fill="#334155">发 HTTP</text>
+    <rect x="270" y="136" width="220" height="36" rx="5" fill="#ffffff" stroke="#dc2626" stroke-width="1.1"/>
+    <text x="380" y="159" text-anchor="middle" font-size="11.5" fill="#334155">发 MQ</text>
+    <rect x="510" y="136" width="220" height="36" rx="5" fill="#ffffff" stroke="#dc2626" stroke-width="1.1"/>
+    <text x="620" y="159" text-anchor="middle" font-size="11.5" fill="#334155">计数器自增</text>
+    <rect x="750" y="136" width="200" height="36" rx="5" fill="#ffffff" stroke="#dc2626" stroke-width="1.1"/>
+    <text x="850" y="159" text-anchor="middle" font-size="11.5" fill="#334155">写审计日志</text>
+    <text x="20" y="186" font-size="11.5" fill="#64748b">上面四类只要出现在闭包里，重跑一次就执行一次。</text>
+
+    <text x="20" y="204" font-size="12" fill="#334155">处置：把副作用移出闭包（只留纯数据库操作），或给它们做幂等键；事务内的操作必须用回调给的 context。</text>
+    <text x="20" y="222" font-size="12" fill="#c2410c">注意：提交返回「结果未知」类错误不能当失败处理（可能已经提交），只有幂等设计 + 对账能兜。</text>
+  </g>
+</svg>

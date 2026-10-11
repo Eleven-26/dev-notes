@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">浏览器侧三条接法：谁做转码、前端拿到什么</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">共同前提：浏览器的 fetch 读不到 trailer、发不了流式请求体、设不了受限头，所以说不了原生 gRPC（第一节）</text>
+
+  <defs>
+    <marker id="arr2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <text x="20" y="130" font-size="14" font-weight="bold" fill="#0f172a">① Envoy 转码（最成熟）</text>
+  <rect x="230" y="96" width="200" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="330" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">浏览器</text>
+  <text x="330" y="138" text-anchor="middle" font-size="11.5" fill="#334155">gRPC-Web 生成的 JS 客户端</text>
+  <line x1="430" y1="123" x2="500" y2="123" stroke="#475569" stroke-width="1.4" marker-end="url(#arr2)"/>
+  <text x="465" y="115" text-anchor="middle" font-size="11" fill="#64748b">gRPC-Web 编码</text>
+  <rect x="500" y="96" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="605" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">Envoy</text>
+  <text x="605" y="138" text-anchor="middle" font-size="11.5" fill="#9a3412">grpc_web 过滤器 · 按需配 cors</text>
+  <line x1="710" y1="123" x2="780" y2="123" stroke="#475569" stroke-width="1.4" marker-end="url(#arr2)"/>
+  <text x="745" y="115" text-anchor="middle" font-size="11" fill="#64748b">原生 gRPC</text>
+  <rect x="780" y="96" width="190" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="875" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">后端</text>
+  <text x="875" y="138" text-anchor="middle" font-size="11.5" fill="#166534">原生 gRPC 服务</text>
+
+  <text x="20" y="222" font-size="14" font-weight="bold" fill="#0f172a">② grpc-gateway（给 REST）</text>
+  <rect x="230" y="188" width="200" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="330" y="210" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">浏览器 / 第三方</text>
+  <text x="330" y="230" text-anchor="middle" font-size="11.5" fill="#334155">fetch 就能调的 REST/JSON</text>
+  <line x1="430" y1="215" x2="500" y2="215" stroke="#475569" stroke-width="1.4" marker-end="url(#arr2)"/>
+  <text x="465" y="207" text-anchor="middle" font-size="11" fill="#64748b">REST/JSON</text>
+  <rect x="500" y="188" width="210" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="605" y="210" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">gateway 反向代理</text>
+  <text x="605" y="230" text-anchor="middle" font-size="11.5" fill="#9a3412">读 google.api.http 注解生成</text>
+  <line x1="710" y1="215" x2="780" y2="215" stroke="#475569" stroke-width="1.4" marker-end="url(#arr2)"/>
+  <text x="745" y="207" text-anchor="middle" font-size="11" fill="#64748b">gRPC 调用</text>
+  <rect x="780" y="188" width="190" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="875" y="210" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">后端</text>
+  <text x="875" y="230" text-anchor="middle" font-size="11.5" fill="#166534">顺带生成 OpenAPI 文档</text>
+
+  <text x="20" y="330" font-size="14" font-weight="bold" fill="#0f172a">③ Connect（不需要代理）</text>
+  <rect x="230" y="276" width="200" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="330" y="298" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">浏览器</text>
+  <text x="330" y="318" text-anchor="middle" font-size="11.5" fill="#334155">gRPC-Web 二进制模式</text>
+  <line x1="430" y1="303" x2="500" y2="303" stroke="#475569" stroke-width="1.4" marker-end="url(#arr2)"/>
+  <text x="465" y="295" text-anchor="middle" font-size="11" fill="#64748b">中间零跳</text>
+  <rect x="500" y="270" width="210" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="605" y="296" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">Connect 服务端</text>
+  <text x="605" y="316" text-anchor="middle" font-size="11.5" fill="#166534">同一 handler 原生支持</text>
+  <text x="605" y="334" text-anchor="middle" font-size="11.5" fill="#166534">Connect / gRPC / gRPC-Web</text>
+  <rect x="230" y="352" width="200" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="330" y="374" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">既有 gRPC 客户端</text>
+  <text x="330" y="392" text-anchor="middle" font-size="11.5" fill="#334155">原生 gRPC · 不用改</text>
+  <line x1="430" y1="372" x2="500" y2="340" stroke="#475569" stroke-width="1.4" marker-end="url(#arr2)"/>
+
+  <line x1="20" y1="424" x2="980" y2="424" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="20" y="448" font-size="12.5" fill="#0f172a">⚠️ nginx 的 grpc_pass 是原生 gRPC 反代，不是 gRPC-Web 转码器；要不要额外模块、当前版本有没有内建支持，本仓未实测（3.2）。</text>
+  <text x="20" y="472" font-size="12.5" fill="#0f172a">⚠️ 路①最常见的坑是 CORS：content-type 与自定义 metadata 头必须显式放进 Access-Control-Allow-Headers，否则前端看到的是「预检失败」。</text>
+  <text x="20" y="496" font-size="12.5" fill="#0f172a">⚠️ 客户端流 / 双向流三条路都过不去（fetch 的限制）；Connect 服务端不支持 gRPC-Web 的文本（base64）模式。</text>
+  <text x="20" y="522" font-size="12" fill="#64748b">判据：自家浏览器应用 → gRPC-Web / Connect；给第三方标准 REST → grpc-gateway。两者可并存，但那是两套契约同时演进。</text>
+</svg>

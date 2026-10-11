@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 810" width="1000" height="810" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ab" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="ao" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ea580c"/></marker>
+    <marker id="as" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="810" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">可查询加密：驱动侧加解密、服务端密文索引、KMS 管密钥</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">明文不出驱动；服务端只存密文并维护加密索引；密钥（主密钥 + 数据密钥）由 KMS 托管</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">三角色：谁加密、谁存索引、谁管密钥</text>
+
+    <rect x="30" y="44" width="430" height="80" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="46" y="68" font-size="12.5" font-weight="bold" fill="#1d4ed8">客户端驱动（Automatic Encryption Shared Library）</text>
+    <text x="46" y="90" font-size="11.5" fill="#334155">明文在驱动内加密后才下发；查询条件同样先加密</text>
+    <text x="46" y="110" font-size="11.5" fill="#334155">9.0 起 mongocryptd 已弃用，改用它（不必另起进程）</text>
+    <line x1="468" y1="84" x2="524" y2="84" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ab)"/>
+
+    <rect x="530" y="44" width="430" height="80" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="546" y="68" font-size="12.5" font-weight="bold" fill="#15803d">服务端 mongod：只见密文</text>
+    <text x="546" y="90" font-size="11.5" fill="#334155">每个加密集合另建 2 个元数据集合存放加密索引</text>
+    <text x="546" y="110" font-size="11.5" fill="#334155">每个加密字段对应 1 个索引，写时同步更新</text>
+
+    <rect x="280" y="152" width="430" height="58" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="296" y="176" font-size="12.5" font-weight="bold" fill="#c2410c">KMS：主密钥 + 数据密钥</text>
+    <text x="296" y="196" font-size="11.5" fill="#334155">加密模式里的 keyId 指向数据密钥；密钥丢失 = 数据不可恢复</text>
+    <line x1="380" y1="148" x2="380" y2="128" stroke="#ea580c" stroke-width="1.6" marker-end="url(#ao)"/>
+    <text x="396" y="141" font-size="11" fill="#c2410c">数据密钥下发到驱动（服务端不持密钥）</text>
+
+    <text x="20" y="232" font-size="12" fill="#334155">要点：安全边界在密钥——服务端与备份里只有密文；备份必须同时覆盖「密文 + 加密模式 + 密钥 + 元数据集合」。</text>
+  </g>
+
+  <g transform="translate(20,340)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">一条写与一次查各自走了几步</text>
+
+    <text x="20" y="56" font-size="12" font-weight="bold" fill="#2563eb">写入</text>
+    <rect x="70" y="42" width="170" height="30" rx="5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="155" y="62" text-anchor="middle" font-size="11.5" fill="#334155">应用写一条文档</text>
+    <line x1="244" y1="57" x2="266" y2="57" stroke="#64748b" stroke-width="1.5" marker-end="url(#as)"/>
+    <rect x="270" y="42" width="180" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="360" y="62" text-anchor="middle" font-size="11.5" fill="#334155">驱动加密被索引字段</text>
+    <line x1="454" y1="57" x2="476" y2="57" stroke="#64748b" stroke-width="1.5" marker-end="url(#as)"/>
+    <rect x="480" y="42" width="270" height="30" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="615" y="62" text-anchor="middle" font-size="11.5" fill="#334155">写密文 + 同步更新该字段索引</text>
+    <line x1="754" y1="57" x2="776" y2="57" stroke="#64748b" stroke-width="1.5" marker-end="url(#as)"/>
+    <rect x="780" y="42" width="160" height="30" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="860" y="62" text-anchor="middle" font-size="11.5" fill="#c2410c">写更慢、空间更大</text>
+
+    <text x="20" y="124" font-size="12" font-weight="bold" fill="#2563eb">查询</text>
+    <rect x="70" y="110" width="170" height="30" rx="5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="155" y="130" text-anchor="middle" font-size="11.5" fill="#334155">应用发查询条件</text>
+    <line x1="244" y1="125" x2="266" y2="125" stroke="#64748b" stroke-width="1.5" marker-end="url(#as)"/>
+    <rect x="270" y="110" width="180" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="360" y="130" text-anchor="middle" font-size="11.5" fill="#334155">驱动把条件加密</text>
+    <line x1="454" y1="125" x2="476" y2="125" stroke="#64748b" stroke-width="1.5" marker-end="url(#as)"/>
+    <rect x="480" y="110" width="270" height="30" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="615" y="130" text-anchor="middle" font-size="11.5" fill="#334155">服务端在加密索引上比对</text>
+    <line x1="754" y1="125" x2="776" y2="125" stroke="#64748b" stroke-width="1.5" marker-end="url(#as)"/>
+    <rect x="780" y="110" width="160" height="30" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="860" y="130" text-anchor="middle" font-size="11.5" fill="#15803d">返回密文、驱动解密</text>
+
+    <text x="20" y="172" font-size="12" fill="#334155">要点：可查询不是免费的——加密字段越多、开启的查询类型越多，每次写要维护的索引越多。</text>
+    <text x="20" y="192" font-size="12" fill="#c2410c">注意：基准测试要在开启加密的前提下做，普通集合的吞吐数字不可平移到加密集合。</text>
+  </g>
+
+  <g transform="translate(20,560)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">三个调参项与「一个字段只能选一种查询类型」</text>
+
+    <rect x="20" y="40" width="920" height="28" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="59" font-size="12" font-weight="bold" fill="#0f172a">参数</text>
+    <text x="300" y="59" font-size="12" font-weight="bold" fill="#0f172a">默认</text>
+    <text x="400" y="59" font-size="12" font-weight="bold" fill="#0f172a">作用与取舍</text>
+
+    <rect x="20" y="68" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="87" font-size="11.5" fill="#334155">contention</text>
+    <text x="300" y="87" font-size="11.5" fill="#1d4ed8">8</text>
+    <text x="400" y="87" font-size="11.5" fill="#334155">同值计数器分区，缓解同值并发写争用；调大 → 写更快、读更慢</text>
+
+    <rect x="20" y="96" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="115" font-size="11.5" fill="#334155">sparsity（范围）</text>
+    <text x="300" y="115" font-size="11.5" fill="#1d4ed8">2</text>
+    <text x="400" y="115" font-size="11.5" fill="#334155">索引密度：越低越密 → 查询越快、空间越大；8.2 起上限从 4 提到 8</text>
+
+    <rect x="20" y="124" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="143" font-size="11.5" fill="#334155">trimFactor（范围）</text>
+    <text x="300" y="143" font-size="11.5" fill="#1d4ed8">6</text>
+    <text x="400" y="143" font-size="11.5" fill="#334155">并发写吞吐旋钮：调高 → 并发插入更新更快、部分范围读更慢</text>
+
+    <text x="20" y="176" font-size="12" fill="#334155">查询类型的版本线：等值 7.0 GA → 范围 8.0（$lt / $lte / $gt / $gte）→ 前缀 / 后缀 / 子串 9.0 GA。</text>
+    <text x="20" y="200" font-size="12" fill="#c2410c">注意：一个加密字段只能配 equality 或 range 之一；子串还要配 min / maxQueryLength 与大小写 / 变音敏感。</text>
+    <text x="20" y="220" font-size="12" fill="#64748b">事后改「哪些字段加密、哪些可查」等于重建集合与加密模式，所以加密模式要按真实查询提前设计。</text>
+  </g>
+</svg>

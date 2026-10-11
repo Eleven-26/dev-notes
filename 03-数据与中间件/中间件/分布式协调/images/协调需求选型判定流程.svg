@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="cd1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">分布式协调选型判定流程：三类需求 → 四种底座</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">协调管「谁先谁后、谁说了算」；判据退回一致性要求与运维面，语言在这里几乎不构成约束</text>
+
+  <rect x="40" y="84" width="290" height="64" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="60" y="112" font-size="14" font-weight="bold" fill="#0f172a">分布式锁</text>
+  <text x="60" y="134" font-size="11.5" fill="#64748b">互斥 + 自动释放（租约 / 会话）</text>
+  <rect x="355" y="84" width="290" height="64" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="375" y="112" font-size="14" font-weight="bold" fill="#0f172a">Leader 选举</text>
+  <text x="375" y="134" font-size="11.5" fill="#64748b">强一致（避免双主）+ 变更通知</text>
+  <rect x="670" y="84" width="290" height="64" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="690" y="112" font-size="14" font-weight="bold" fill="#0f172a">变更监听</text>
+  <text x="690" y="134" font-size="11.5" fill="#64748b">Watch / 订阅 + 可靠的推送语义</text>
+
+  <line x1="185" y1="148" x2="185" y2="166" stroke="#334155" stroke-width="1.6"/>
+  <line x1="500" y1="148" x2="500" y2="166" stroke="#334155" stroke-width="1.6"/>
+  <line x1="815" y1="148" x2="815" y2="166" stroke="#334155" stroke-width="1.6"/>
+  <line x1="185" y1="166" x2="815" y2="166" stroke="#334155" stroke-width="1.6"/>
+  <line x1="500" y1="166" x2="500" y2="186" stroke="#334155" stroke-width="1.6" marker-end="url(#cd1)"/>
+
+  <rect x="40" y="190" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="216" font-size="14" font-weight="bold" fill="#1e3a8a">要强一致 + 自动续期？</text>
+  <text x="60" y="238" font-size="11.5" fill="#1d4ed8">Leader 选举、强一致要求的锁走这一档</text>
+  <line x1="480" y1="221" x2="534" y2="221" stroke="#334155" stroke-width="1.6" marker-end="url(#cd1)"/>
+  <rect x="538" y="190" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="216" font-size="14" font-weight="bold" fill="#14532d">etcd</text>
+  <text x="558" y="238" font-size="11.5" fill="#166534">Raft 强一致 · Lease 到期自动释放 · Watch 通知</text>
+
+  <rect x="40" y="268" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="294" font-size="14" font-weight="bold" fill="#1e3a8a">高并发锁，性能优先，能容忍极小概率双持？</text>
+  <text x="60" y="316" font-size="11.5" fill="#1d4ed8">防重复提交、幂等保护这类高频互斥</text>
+  <line x1="480" y1="299" x2="534" y2="299" stroke="#334155" stroke-width="1.6" marker-end="url(#cd1)"/>
+  <rect x="538" y="268" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="294" font-size="14" font-weight="bold" fill="#14532d">Redis（SET NX PX / Redlock）</text>
+  <text x="558" y="316" font-size="11.5" fill="#166534">十万级 QPS · 主从异步复制，续期与 Lua 释放要自己做</text>
+
+  <rect x="40" y="346" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="372" font-size="14" font-weight="bold" fill="#1e3a8a">需要「顺序 + 监听」语义，或已有 ZK 生态？</text>
+  <text x="60" y="394" font-size="11.5" fill="#1d4ed8">如分布式队列、选主</text>
+  <line x1="480" y1="377" x2="534" y2="377" stroke="#334155" stroke-width="1.6" marker-end="url(#cd1)"/>
+  <rect x="538" y="346" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="372" font-size="14" font-weight="bold" fill="#14532d">ZooKeeper</text>
+  <text x="558" y="394" font-size="11.5" fill="#166534">临时顺序节点 + Watch 成熟 · 运维重、有 JVM 调优负担</text>
+
+  <rect x="40" y="424" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="450" font-size="14" font-weight="bold" fill="#1e3a8a">极低频兜底互斥，不想引入任何新组件？</text>
+  <text x="60" y="472" font-size="11.5" fill="#1d4ed8">如一次性初始化只跑一次</text>
+  <line x1="480" y1="455" x2="534" y2="455" stroke="#334155" stroke-width="1.6" marker-end="url(#cd1)"/>
+  <rect x="538" y="424" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="450" font-size="14" font-weight="bold" fill="#14532d">数据库唯一键</text>
+  <text x="558" y="472" font-size="11.5" fill="#166534">零新增组件、事务保证 · 性能差易成瓶颈，无续期无通知</text>
+
+  <line x1="20" y1="506" x2="980" y2="506" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="534" font-size="13" fill="#0f172a">⭐ 一句话选型：要强一致 + 自动续期 → etcd；要性能 + 能接受极小概率双持 → Redis；已有 ZK 生态 + 需要顺序语义 → ZK。</text>
+  <text x="40" y="560" font-size="13" fill="#0f172a">⭐ 协调 ≠ 注册配置：注册中心管「谁在哪儿」的路由信息，协调管进程间互斥与选举；协调组件短时挂会阻塞新锁与新选举。</text>
+  <text x="40" y="586" font-size="12" fill="#64748b">⚠️ 拿不准 Redis 锁的安全性时：正解不是换一把更保险的锁，而是让临界区本身幂等（唯一键去重 / 版本号 CAS）。</text>
+</svg>

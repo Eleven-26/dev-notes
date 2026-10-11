@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 768" width="1000" height="768" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+    <marker id="arwO" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#ea580c"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="768" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">锁等待的排查顺序：先定等待关系，再定处置</text>
+  <text x="500" y="50" text-anchor="middle" font-size="12.5" fill="#64748b">MySQL 8.0 口径：information_schema.INNODB_LOCKS / INNODB_WAITS 已被移除，改用 sys.innodb_lock_waits 与 performance_schema.data_lock_waits</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">A. 等待关系的两种形状：一条链（1205 锁等待）与一个环（1213 死锁）</text>
+    <text x="16" y="44" font-size="10.5" fill="#64748b">两张表都只看当前：data_lock_waits 给等待边，data_locks 给每条边的锁型与状态</text>
+    <line x1="470" y1="58" x2="470" y2="212" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
+
+    <text x="16" y="70" font-size="12" font-weight="bold" fill="#ea580c">① 单向等待链：等人放锁（1205）</text>
+    <rect x="16" y="82" width="196" height="84" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="30" y="102" font-size="11" font-weight="bold" fill="#9a3412">事务 B：持锁未提交</text>
+    <text x="30" y="121" font-size="10" fill="#334155">data_locks 里</text>
+    <text x="30" y="139" font-size="10" fill="#334155">LOCK_STATUS = GRANTED</text>
+    <text x="30" y="157" font-size="10" fill="#334155">成因：事务里跑 RPC / 慢操作</text>
+
+    <line x1="216" y1="124" x2="244" y2="124" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <text x="230" y="116" text-anchor="middle" font-size="9" fill="#dc2626">等待</text>
+
+    <rect x="248" y="82" width="206" height="84" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="262" y="102" font-size="11" font-weight="bold" fill="#991b1b">事务 A：被挡住</text>
+    <text x="262" y="121" font-size="10" fill="#334155">sys.innodb_lock_waits 给出</text>
+    <text x="262" y="139" font-size="10" fill="#334155">被谁挡住 + 挡住哪条 SQL</text>
+    <text x="262" y="157" font-size="10" fill="#334155">data_lock_waits 给原始等待边</text>
+
+    <text x="16" y="186" font-size="10.5" fill="#334155">要点：LOCK_TYPE 出现 INSERT_INTENTION，就是插入被间隙锁挡住</text>
+    <text x="16" y="204" font-size="10.5" fill="#9a3412">注意：查不到锁信息，多半是 wait/lock/table% 的 instrument 没开</text>
+
+    <text x="484" y="70" font-size="12" font-weight="bold" fill="#dc2626">② 等待成环：InnoDB 主动检测（1213）</text>
+    <rect x="484" y="82" width="210" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="498" y="102" font-size="11" font-weight="bold" fill="#9a3412">事务 B：持 L1，等 L2</text>
+    <text x="498" y="120" font-size="10" fill="#334155">已改行数 trx_rows_modified</text>
+    <text x="498" y="137" font-size="10" fill="#334155">决定谁的回滚代价更小</text>
+
+    <rect x="734" y="82" width="210" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="748" y="102" font-size="11" font-weight="bold" fill="#991b1b">事务 A：持 L2，等 L1</text>
+    <text x="748" y="120" font-size="10" fill="#334155">1213 死锁：一方被回滚</text>
+    <text x="748" y="137" font-size="10" fill="#334155">应用必须能重试</text>
+
+    <line x1="732" y1="110" x2="696" y2="110" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+    <line x1="696" y1="132" x2="732" y2="132" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+    <text x="484" y="168" font-size="10.5" fill="#334155">要点：环上回滚代价小的一方被杀，所以 1213 必须能重试</text>
+    <text x="484" y="186" font-size="10.5" fill="#9a3412">注意：关掉 innodb_deadlock_detect 后只剩超时兜底，热点行通常更糟</text>
+  </g>
+
+  <g transform="translate(20,310)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">B. 三类现场：判据不同，处置完全不同</text>
+    <text x="16" y="44" font-size="10.5" fill="#64748b">先认准错误号：1213 是死锁回滚、1205 是锁等待超时；DDL 把业务全卡住则是 MDL，不是行锁</text>
+
+    <rect x="16" y="56" width="928" height="54" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="32" y="81" font-size="12" font-weight="bold" fill="#991b1b">1213 死锁回滚</text>
+    <text x="250" y="77" font-size="10.5" fill="#334155">判据：偶发、量小 → 加锁顺序不一致</text>
+    <text x="250" y="96" font-size="10.5" fill="#334155">处置：统一加锁顺序（Go 侧 Transfer 按 id 排序）；应用必须能处理 1213 并重试</text>
+
+    <rect x="16" y="118" width="928" height="54" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="32" y="143" font-size="12" font-weight="bold" fill="#9a3412">1205 锁等待超时</text>
+    <text x="250" y="139" font-size="10.5" fill="#334155">判据：大量 1205 但没有死锁日志 → 事务里有慢操作 / RPC，或热点行</text>
+    <text x="250" y="158" font-size="10.5" fill="#334155">处置：拆事务、改条件更新；热点行把该行的写串行化（队列）</text>
+
+    <rect x="16" y="180" width="928" height="54" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="32" y="205" font-size="12" font-weight="bold" fill="#1e40af">MDL：DDL 全卡住</text>
+    <text x="250" y="201" font-size="10.5" fill="#334155">判据：State: Waiting for table metadata lock → 是 MDL 不是行锁</text>
+    <text x="250" y="220" font-size="10.5" fill="#334155">处置：先杀未提交的老事务，再重试 DDL；给 DDL 单独设 lock_wait_timeout</text>
+  </g>
+
+  <g transform="translate(20,570)">
+    <rect x="0" y="0" width="960" height="178" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">C. 找到「持锁的老事务」：事务表与连接表要一起看</text>
+    <text x="16" y="44" font-size="10.5" fill="#64748b">INNODB_TRX 给事务本身，PROCESSLIST 给来源服务；KILL 后面跟的是 PROCESSLIST 的 id</text>
+
+    <rect x="16" y="56" width="452" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="30" y="76" font-size="11.5" font-weight="bold" fill="#1e40af">information_schema.INNODB_TRX</text>
+    <text x="30" y="95" font-size="10" fill="#334155">trx_id / trx_state / trx_started / trx_mysql_thread_id</text>
+    <text x="30" y="113" font-size="10" fill="#334155">run_s = TIMESTAMPDIFF(SECOND, trx_started, NOW())</text>
+
+    <rect x="484" y="56" width="460" height="68" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="498" y="76" font-size="11.5" font-weight="bold" fill="#14532d">information_schema.PROCESSLIST</text>
+    <text x="498" y="95" font-size="10" fill="#334155">id / user / host / db / command / time / state</text>
+    <text x="498" y="113" font-size="10" fill="#334155">LEFT(info, 120) AS sql_head —— 靠它认出是哪个服务</text>
+
+    <text x="16" y="140" font-size="11.5" fill="#334155">要点：长事务不结束，锁就不释放 —— 两张表靠 trx_mysql_thread_id = PROCESSLIST.id 串起来。</text>
+    <text x="16" y="157" font-size="11.5" fill="#991b1b">注意：KILL 只是发起回滚，trx_rows_modified 很大的事务回滚可能比让它跑完更久，期间锁依然不释放。</text>
+    <text x="16" y="174" font-size="11.5" fill="#9a3412">注意：innodb_lock_wait_timeout 该调小 —— 调大只是把故障从「失败」变成「更慢地失败」。</text>
+  </g>
+</svg>

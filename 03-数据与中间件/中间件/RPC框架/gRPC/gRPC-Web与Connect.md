@@ -50,6 +50,8 @@
 
 **本节要点**：**Envoy 转码**最成熟、**grpc-gateway**给的是 REST/JSON（不是 gRPC-Web）、**Connect** 不需要代理；选哪条取决于「前端是自家浏览器应用还是第三方」。
 
+![浏览器侧三条接法链路对比](images/浏览器侧三条接法链路对比.svg)
+
 ### 3.1 Envoy 的 `grpc_web` 过滤器（原路，最成熟）
 
 链路：`浏览器 →(gRPC-Web) Envoy →(原生 gRPC) 后端`。
@@ -127,6 +129,8 @@ Envoy 侧要做两件事：装 `envoy.filters.http.grpc_web` 过滤器（做协�
 | 要给第三方 / 要 OpenAPI 文档 | **grpc-gateway** | 输出标准 REST/JSON，正是第三方要的形状 |
 | 需要浏览器上的**双向流** | **都不是**（gRPC-Web 做不到） | 用 WebSocket / SSE 另开一条通道，或把交互改成「服务端流 + 上行普通请求」 |
 | 只服务端之间通信 | **不需要本篇任何方案** | 直接 gRPC（本目录其余篇目） |
+
+![浏览器侧选型判据三问决策流](images/浏览器侧选型判据三问决策流.svg)
 
 三条反向判据（别为了省事选错）：
 

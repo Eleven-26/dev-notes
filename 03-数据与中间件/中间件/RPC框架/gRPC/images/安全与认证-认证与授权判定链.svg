@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arr3r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">认证回答「你是谁」，授权回答「能不能调」：两个身份输入、一条判定链</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">第 4~6 节：TLS 保证「链路是谁」、token 保证「调用者是谁」，两者叠加才是完整的认证</text>
+
+  <rect x="30" y="88" width="450" height="130" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="255" y="112" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 传输层身份 · mTLS 链路（第四节的 peer）</text>
+  <text x="50" y="140" font-size="12" fill="#334155">peer.FromContext(ctx)</text>
+  <text x="50" y="162" font-size="12" fill="#334155">→ AuthInfo 断言成 credentials.TLSInfo</text>
+  <text x="50" y="184" font-size="12" fill="#334155">→ PeerCertificates[0].Subject.CommonName</text>
+  <text x="50" y="206" font-size="12" fill="#b91c1c">⚠️ 单向 TLS 时列表为空，取下标前先判 len</text>
+
+  <rect x="520" y="88" width="450" height="130" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="745" y="112" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">② 应用层身份 · 凭据接口（第五节）</text>
+  <text x="540" y="140" font-size="12" fill="#334155">PerRPCCredentials 每次调用自动注入 metadata：</text>
+  <text x="540" y="162" font-size="12" fill="#334155">authorization: Bearer …（比手写 header 多约束）</text>
+  <text x="540" y="184" font-size="12" fill="#334155">RequireTransportSecurity() = true</text>
+  <text x="540" y="206" font-size="12" fill="#b91c1c">明文连接上发调用会直接失败——硬约束不是建议</text>
+
+  <line x1="255" y1="218" x2="430" y2="260" stroke="#475569" stroke-width="1.6" marker-end="url(#arr3)"/>
+  <line x1="745" y1="218" x2="570" y2="260" stroke="#475569" stroke-width="1.6" marker-end="url(#arr3)"/>
+
+  <rect x="270" y="262" width="460" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="289" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">认证：你是谁？（CN / token 有效性）</text>
+
+  <line x1="730" y1="284" x2="776" y2="284" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arr3r)"/>
+  <text x="753" y="276" text-anchor="middle" font-size="11" fill="#dc2626">不过</text>
+  <rect x="778" y="256" width="200" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="878" y="279" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">Unauthenticated</text>
+  <text x="878" y="299" text-anchor="middle" font-size="11" fill="#b91c1c">调用方该「重新登录」</text>
+
+  <line x1="500" y1="306" x2="500" y2="348" stroke="#475569" stroke-width="1.6" marker-end="url(#arr3)"/>
+  <text x="514" y="332" font-size="11" fill="#16a34a">过了</text>
+
+  <rect x="270" y="350" width="460" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="500" y="377" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">授权：能不能调这个方法？（CN 白名单 / 权限表）</text>
+
+  <line x1="730" y1="372" x2="776" y2="372" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arr3r)"/>
+  <text x="753" y="364" text-anchor="middle" font-size="11" fill="#dc2626">不过</text>
+  <rect x="778" y="344" width="200" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="878" y="367" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">PermissionDenied</text>
+  <text x="878" y="387" text-anchor="middle" font-size="11" fill="#b91c1c">调用方该「申请权限」</text>
+
+  <line x1="500" y1="394" x2="500" y2="436" stroke="#475569" stroke-width="1.6" marker-end="url(#arr3)"/>
+  <text x="514" y="420" font-size="11" fill="#16a34a">过了</text>
+
+  <rect x="320" y="438" width="360" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="465" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">业务 handler 执行</text>
+
+  <text x="30" y="522" font-size="12.5" fill="#0f172a">⚠️ mTLS 与 token 同时存在时，授权判据要选一个为准——一处看 CN、一处看 token，排查时会互相矛盾。</text>
+  <text x="30" y="546" font-size="12.5" fill="#0f172a">别把授权判据只放在拦截器里：服务端的方法注册 / 网关上通常还要再确认一遍，拦截器只是最方便的那层。</text>
+  <text x="30" y="570" font-size="12.5" fill="#0f172a">证书轮换时 CN 会变：生产用「身份（CN / SPIFFE ID）→ 角色」映射表，白名单落在表上而不是代码里。</text>
+</svg>

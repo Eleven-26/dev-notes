@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">五类场景：各自的文档形态、实测读数与代价</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">全部读数来自本机 golang:1.26-alpine 连 mongo:7.0 的真实运行</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="490" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">场景 → 建模手法 → 实测读数 → 代价</text>
+
+    <rect x="20" y="38" width="920" height="28" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="57" font-size="12" font-weight="bold" fill="#0f172a">场景</text>
+    <text x="174" y="57" font-size="12" font-weight="bold" fill="#0f172a">建模手法</text>
+    <text x="424" y="57" font-size="12" font-weight="bold" fill="#0f172a">实测读数</text>
+    <text x="674" y="57" font-size="12" font-weight="bold" fill="#0f172a">代价</text>
+
+    <rect x="20" y="66" width="920" height="78" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="88" font-size="12" font-weight="bold" fill="#1d4ed8">文章 + 评论</text>
+    <text x="34" y="110" font-size="11" fill="#64748b">subset 模式</text>
+    <text x="174" y="88" font-size="11" fill="#334155">文章内嵌 recentComments（$slice 截断）</text>
+    <text x="174" y="112" font-size="11" fill="#334155">+ commentCount；全量进 comments 集合</text>
+    <text x="424" y="88" font-size="11" fill="#15803d">全量评论 10 条；commentCount=4</text>
+    <text x="424" y="112" font-size="11" fill="#15803d">recentComments 保留 3 条（$slice 截断）</text>
+    <text x="674" y="88" font-size="11" fill="#c2410c">两处写入非原子，可能短暂不一致</text>
+    <text x="674" y="112" font-size="11" fill="#c2410c">首屏 1 次查询，翻全量才再查一次</text>
+
+    <rect x="20" y="144" width="920" height="78" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="166" font-size="12" font-weight="bold" fill="#1d4ed8">动态属性</text>
+    <text x="34" y="188" font-size="11" fill="#64748b">attribute 模式</text>
+    <text x="174" y="166" font-size="11" fill="#334155">把动态键收进 attrs 子文档</text>
+    <text x="174" y="190" font-size="11" fill="#334155">加渠道属性不需要任何 DDL</text>
+    <text x="424" y="166" font-size="11" fill="#15803d">文档数 3（三份字段各不相同）</text>
+    <text x="424" y="190" font-size="11" fill="#15803d">attrs.level&gt;=3 命中 2，attrs.city=HZ 命中 1</text>
+    <text x="674" y="166" font-size="11" fill="#c2410c">点号路径必须显式建索引，否则 COLLSCAN</text>
+    <text x="674" y="190" font-size="11" fill="#c2410c">字段名在每份文档里重复存，高基数会膨胀</text>
+
+    <rect x="20" y="222" width="920" height="78" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="244" font-size="12" font-weight="bold" fill="#1d4ed8">海量小文档</text>
+    <text x="34" y="266" font-size="11" fill="#64748b">buckets 模式</text>
+    <text x="174" y="244" font-size="11" fill="#334155">按（设备 + 小时）做桶</text>
+    <text x="174" y="268" font-size="11" fill="#334155">采样点 $push 进桶内数组，upsert 建桶</text>
+    <text x="424" y="244" font-size="11" fill="#15803d">600 个采样点压成 5 个桶（120:1）</text>
+    <text x="424" y="268" font-size="11" fill="#15803d">首个桶内嵌 120 条 samples</text>
+    <text x="674" y="244" font-size="11" fill="#c2410c">最新桶是写热点，单桶写吞吐有上限</text>
+    <text x="674" y="268" font-size="11" fill="#c2410c">桶边界要可预先算；单文档上限 16MB</text>
+
+    <rect x="20" y="300" width="920" height="78" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="322" font-size="12" font-weight="bold" fill="#1d4ed8">附近门店</text>
+    <text x="34" y="344" font-size="11" fill="#64748b">2dsphere + $near</text>
+    <text x="174" y="322" font-size="11" fill="#334155">loc 建 2dsphere 索引</text>
+    <text x="174" y="346" font-size="11" fill="#334155">$near 自带按距离排序，不用应用层算</text>
+    <text x="424" y="322" font-size="11" fill="#15803d">$maxDistance 3000 米</text>
+    <text x="424" y="346" font-size="11" fill="#15803d">3km 内命中 2 家（上海那家被过滤掉）</text>
+    <text x="674" y="322" font-size="11" fill="#c2410c">坐标必须 GeoJSON，经度在前（写反不报错）</text>
+    <text x="674" y="346" font-size="11" fill="#c2410c">分片集合上要能路由到单个分片，否则广播</text>
+
+    <rect x="20" y="378" width="920" height="78" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="400" font-size="12" font-weight="bold" fill="#1d4ed8">计数与排行榜</text>
+    <text x="34" y="422" font-size="11" fill="#64748b">$inc + upsert</text>
+    <text x="174" y="400" font-size="11" fill="#334155">$inc 在服务端完成，客户端不读-改-写</text>
+    <text x="174" y="424" font-size="11" fill="#334155">upsert 省掉「先查再建」一次往返</text>
+    <text x="424" y="400" font-size="11" fill="#15803d">20 goroutine × 50 次 = 期望 1000</text>
+    <text x="424" y="424" font-size="11" fill="#15803d">实际 views=1000；top3 = 1000 / 88 / 5</text>
+    <text x="674" y="400" font-size="11" fill="#c2410c">热键串行，吞吐上限来自单文档不来自机器</text>
+    <text x="674" y="424" font-size="11" fill="#c2410c">排行榜要建 { views: -1 }，超 32MB 排序报错</text>
+
+    <text x="20" y="474" font-size="12" fill="#334155">要点：五类的共同套路是「把读路径压进一次查询」——内嵌、分桶、$inc、$near 都是让数据库替应用层做完那一步。</text>
+  </g>
+
+  <g transform="translate(20,580)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">两类代价：单文档变大，与索引必须显式建</text>
+
+    <rect x="20" y="40" width="450" height="120" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="34" y="62" font-size="12" font-weight="bold" fill="#c2410c">省的是文档数与索引条目，付的是单文档</text>
+    <text x="34" y="86" font-size="11.5" fill="#334155">省：600 个点只占 5 个文档，文档头、索引条目、</text>
+    <text x="34" y="106" font-size="11.5" fill="#334155">网络往返一起降下来（压缩比 120:1）。</text>
+    <text x="34" y="130" font-size="11.5" fill="#334155">付：单文档变大 → 读一个时间点也得读整个桶；</text>
+    <text x="34" y="150" font-size="11.5" fill="#334155">内嵌数组必须设上界，否则撞 16MB。</text>
+
+    <rect x="490" y="40" width="450" height="120" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="504" y="62" font-size="12" font-weight="bold" fill="#1d4ed8">每个新查询维度 = 一条要显式建的索引</text>
+    <text x="504" y="86" font-size="11.5" fill="#334155">attribute：attrs.level 这类点号路径要单独建；</text>
+    <text x="504" y="106" font-size="11.5" fill="#334155">排行榜：按 views 排序取 top 要 { views: -1 }；</text>
+    <text x="504" y="130" font-size="11.5" fill="#334155">位置：loc 要 2dsphere。不建就退化成全表扫或</text>
+    <text x="504" y="150" font-size="11.5" fill="#334155">内存排序，排序超 32MB 直接报错。</text>
+
+    <text x="20" y="180" font-size="12" fill="#334155">要点：桶粒度要按查询粒度定，而不是按写入粒度定——写侧省下来的，读侧要以展开数组的形式还回去。</text>
+  </g>
+</svg>

@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Performance Schema 的结构：插桩 → 收集 → 消费者表</text>
+  <text x="500" y="50" text-anchor="middle" font-size="12.5" fill="#64748b">MySQL 8.0.46（Docker Desktop 的 mysql:8.0 容器）实测口径；PS 全是内存驻留表，实例重启即清零</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">A. 三段式数据流：插桩点产生事件 → 内存表累加 → 消费者表决定写进哪种细度</text>
+    <text x="16" y="44" font-size="10.5" fill="#64748b">PS 解决的是「慢日志只告诉你结果」的问题 —— 它告诉你这条语句的时间花在哪一层</text>
+
+    <rect x="16" y="56" width="214" height="140" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="30" y="78" font-size="12" font-weight="bold" fill="#1e40af">① 插桩 instrument</text>
+    <text x="30" y="99" font-size="10" fill="#1e40af">wait/io/file/...  文件读写</text>
+    <text x="30" y="116" font-size="10" fill="#1e40af">wait/lock/...     锁与互斥量</text>
+    <text x="30" y="133" font-size="10" fill="#1e40af">statement/...     SQL 语句</text>
+    <text x="30" y="150" font-size="10" fill="#1e40af">stage/...         语句内部阶段</text>
+    <text x="30" y="167" font-size="10" fill="#1e40af">idle/... transaction/...</text>
+    <text x="30" y="184" font-size="9.5" fill="#334155">前缀决定粒度，共 1254 行</text>
+
+    <line x1="234" y1="126" x2="258" y2="126" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="246" y="119" text-anchor="middle" font-size="9" fill="#2563eb">事件</text>
+
+    <rect x="262" y="56" width="180" height="140" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="276" y="78" font-size="12" font-weight="bold" fill="#9a3412">② 收集：内存表</text>
+    <text x="276" y="100" font-size="10" fill="#334155">按「线程 × 事件名」</text>
+    <text x="276" y="117" font-size="10" fill="#334155">把事件累加进来</text>
+    <text x="276" y="134" font-size="10" fill="#334155">COUNT_STAR 记次数</text>
+    <text x="276" y="151" font-size="10" fill="#334155">SUM_TIMER_WAIT</text>
+    <text x="276" y="168" font-size="10" fill="#334155">只在 TIMED=YES 时有值</text>
+    <text x="276" y="185" font-size="9.5" fill="#9a3412">不存全文，只存 digest</text>
+
+    <line x1="446" y1="126" x2="474" y2="126" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="460" y="119" text-anchor="middle" font-size="9" fill="#2563eb">细度</text>
+
+    <rect x="478" y="56" width="466" height="42" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="492" y="74" font-size="11.5" font-weight="bold" fill="#14532d">current —— 此刻正在发生</text>
+    <text x="492" y="90" font-size="10" fill="#334155">events_statements_current / events_waits_current</text>
+
+    <rect x="478" y="102" width="466" height="42" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="492" y="120" font-size="11.5" font-weight="bold" fill="#1e40af">history —— 最近的若干条</text>
+    <text x="492" y="136" font-size="10" fill="#334155">每线程 10 条（history_size = 10），history_long_size = 10000</text>
+
+    <rect x="478" y="148" width="466" height="42" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="492" y="166" font-size="11.5" font-weight="bold" fill="#92400e">summary —— 按维度聚合</text>
+    <text x="492" y="182" font-size="10" fill="#334155">events_statements_summary_by_digest 是 Top 指纹主战场（容量 10000）</text>
+
+    <text x="16" y="212" font-size="11.5" fill="#334155">要点：同一个事件会按 setup_consumers 的开关，分别落到 current / history / summary 三种细度的表里。</text>
+    <text x="16" y="230" font-size="11.5" fill="#9a3412">要点：按维度聚合的 summary 表才有分布口径（events_waits_summary_global_by_event_name），current/history 只能看现场。</text>
+  </g>
+
+  <g transform="translate(20,330)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">B. 两级开关：先开插桩，再开消费者 —— 只开一边照样是空表</text>
+    <text x="16" y="44" font-size="10.5" fill="#64748b">实测 setup_instruments 共 1254 行，ENABLED=YES 777、TIMED=YES 273；setup_consumers 只有 NAME + ENABLED 两列</text>
+
+    <rect x="16" y="56" width="452" height="110" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="30" y="78" font-size="11.5" font-weight="bold" fill="#1e40af">① setup_instruments：决定「采不采 + 计不计耗时」</text>
+    <text x="30" y="99" font-size="10.5" fill="#334155">ENABLED = 是否记录该事件（实测 1254 行里 777 行为 YES）</text>
+    <text x="30" y="117" font-size="10.5" fill="#334155">TIMED = 是否记录耗时（实测只有 273 行为 YES）</text>
+    <text x="30" y="135" font-size="10.5" font-weight="bold" fill="#1e40af">差出的 504 个插桩只记次数不记耗时</text>
+    <text x="30" y="152" font-size="10.5" fill="#1e40af">→ 它们的 SUM_TIMER_WAIT 永远是 0，别拿去做延迟统计</text>
+
+    <rect x="484" y="56" width="460" height="110" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="498" y="78" font-size="11.5" font-weight="bold" fill="#9a3412">② setup_consumers：决定「往哪儿写」的总闸</text>
+    <text x="498" y="99" font-size="10.5" fill="#334155">父级关掉，子级无论怎么开都没数据 ——</text>
+    <text x="498" y="117" font-size="10.5" fill="#334155">真正的总闸是 global_instrumentation / thread_instrumentation</text>
+    <text x="498" y="135" font-size="10.5" fill="#334155">实测只有 2 列（NAME + ENABLED），父子依赖不在表结构里</text>
+    <text x="498" y="152" font-size="10.5" font-weight="bold" fill="#9a3412">16 项默认只开 7 项：events_waits_current 默认 NO</text>
+
+    <text x="16" y="186" font-size="11.5" fill="#334155">要点：顺序很重要 —— 先把对应插桩打开，再把消费者打开；只开一边照样是空表（「查不到锁信息」最常见的成因）。</text>
+    <text x="16" y="204" font-size="11.5" fill="#9a3412">要点：events_waits_current 默认 NO、stage 一族三个消费者全关 —— 表空是默认配置的结果，不是没发生等待。</text>
+    <text x="16" y="222" font-size="11.5" fill="#334155">注意：容量由 performance_schema_*_size 决定：digests_size 10000、error_size 5330、history_size 10、history_long_size 10000。</text>
+  </g>
+
+  <g transform="translate(20,580)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">C. 三条边界：它能回答什么、不能回答什么</text>
+    <text x="16" y="44" font-size="10.5" fill="#64748b">sys schema 只是把 PS 与 information_schema 的常用查询封装成视图，不引入额外采集开销</text>
+
+    <rect x="16" y="56" width="928" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="32" y="78" font-size="11.5" font-weight="bold" fill="#14532d">① 能回答「时间花在哪一层」</text>
+    <text x="300" y="78" font-size="11" fill="#334155">解析 / 排序 / 等锁 / 读盘 —— 慢日志只给结果，PS 给分层耗时</text>
+
+    <rect x="16" y="96" width="928" height="34" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+    <text x="32" y="118" font-size="11.5" font-weight="bold" fill="#92400e">② 不能替代慢查询日志</text>
+    <text x="300" y="118" font-size="11" fill="#334155">默认不保存 SQL 全文，只保存按长度截断的指纹（digest）；要原文得回慢日志</text>
+
+    <rect x="16" y="136" width="928" height="34" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="32" y="158" font-size="11.5" font-weight="bold" fill="#991b1b">③ 内存表，重启即清零</text>
+    <text x="300" y="158" font-size="11" fill="#334155">实测重启后 digest 表只剩 6 行；要长期趋势就得周期性导出（注意指标基数）</text>
+  </g>
+</svg>

@@ -224,6 +224,19 @@ msg.setDeliverTimeMs(System.currentTimeMillis() + 10_000L);  // 定时到某个�
 ⭐ 三个本地事务状态：`COMMIT_MESSAGE`（提交，消息可见）、`ROLLBACK_MESSAGE`（回滚，半消息删除）、`UNKNOW`（等 Broker 回查）。
 ⚠️ 事务消息是**最终一致**而非强一致：回查耗尽仍可能丢消息，关键业务要对账补偿；也不支持延迟与批量。
 
+![RocketMQ 事务消息半消息状态机：未决半消息经 Commit / Rollback / 无响应三分出口，回查循环最多 15 次，耗尽即丢弃需对账](images/RocketMQ事务消息半消息状态机.svg)
+
+上面的时序图讲「谁和谁说话」，下面的状态机讲「这条半消息此刻处于什么处境」——两个视角合起来才是事务消息的全貌：
+
+| 当前态 | 存储形态 | 迁移条件 | 迁移结果 |
+|---|---|---|---|
+| **未决（Half）** | HALF topic 有索引、真实 topic 无索引 → 消费者不可达 | Producer 回 `COMMIT_MESSAGE` | **已提交**：副本追加进真实 topic（OP 记 REP），转为可见 |
+| **未决（Half）** | 同上 | Producer 回 `ROLLBACK_MESSAGE` | **已回滚**：OP 记 `ROLLED_BACK`，等后台线程回收 |
+| **未决（Half）** | 同上 | 回 `UNKNOW`、宕机或断网 | **回查中**：Broker 每 60s 回调 `checkLocalTransaction` |
+| **回查中** | HALF 索引仍在 | 回查报 Commit / Rollback | 进入上面的**已提交 / 已回滚** |
+| **回查中** | 同上 | 回查仍 `UNKNOW` | 原地等下一轮（累计 ≤15 次） |
+| **回查中** | 同上 | 15 次耗尽仍未决 | **丢弃**：消息丢失 + 日志，业务必须对账补偿 |
+
 #### 半消息为什么"不可见"，回查为什么"必须写" ⭐
 
 - **不可见靠的是"位点模型"而非"隐藏标记"**：消费者拉消息的路径是 真实 Topic → ConsumeQueue → CommitLog（见第二节存储设计）。半消息虽然躺在 CommitLog 里，但**真实 Topic 的 ConsumeQueue 里没有它的索引条目**，消费者按位点根本走不到这条物理记录——不需要任何"不可见标志位"，索引缺席即不可见。

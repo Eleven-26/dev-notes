@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" width="1000" height="820" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arwO" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="arwG" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="820" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">不停服切到 GTID：九个步骤走在 gtid_mode 的四态之间</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机 mysql:8.0（8.0.46）实测；两个 PERMISSIVE 过渡态就是为了给历史匿名事务留收尾窗口</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">gtid_mode 的四个取值：只能一格一格走</text>
+    <text x="16" y="48" font-size="10.5" font-family="Consolas, monospace" fill="#dc2626">ERROR 1788: The value of @@GLOBAL.GTID_MODE can only be changed one step at a time</text>
+
+    <rect x="16" y="64" width="200" height="80" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1"/>
+    <text x="30" y="86" font-size="12" font-weight="bold" fill="#0f172a">OFF</text>
+    <text x="30" y="106" font-size="10" fill="#334155">完全关闭，禁用 GTID</text>
+    <text x="30" y="124" font-size="10" fill="#334155">所有事务都是匿名的</text>
+
+    <line x1="220" y1="104" x2="242" y2="104" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+    <rect x="246" y="64" width="200" height="80" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="260" y="86" font-size="12" font-weight="bold" fill="#9a3412">OFF_PERMISSIVE</text>
+    <text x="260" y="106" font-size="10" fill="#9a3412">宽松关闭：自身不强制生成</text>
+    <text x="260" y="124" font-size="10" fill="#9a3412">但收到的 GTID 事务能处理</text>
+
+    <line x1="450" y1="104" x2="472" y2="104" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+    <rect x="476" y="64" width="200" height="80" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="490" y="86" font-size="12" font-weight="bold" fill="#9a3412">ON_PERMISSIVE</text>
+    <text x="490" y="106" font-size="10" fill="#9a3412">宽松开启：自身已用 GTID</text>
+    <text x="490" y="124" font-size="10" fill="#9a3412">仍接收匿名事务（老事务）</text>
+
+    <line x1="680" y1="104" x2="702" y2="104" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="706" y="64" width="200" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="720" y="86" font-size="12" font-weight="bold" fill="#14532d">ON</text>
+    <text x="720" y="106" font-size="10" fill="#14532d">完全开启</text>
+    <text x="720" y="124" font-size="10" fill="#14532d">所有事务都必须带 GTID</text>
+
+    <text x="16" y="168" font-size="10.5" fill="#ea580c">注意：每改一次 gtid_mode，服务器自动切一个新 binlog 文件 —— 实测 binlog.000048 → 000049 → 000050 → 000052，</text>
+    <text x="16" y="186" font-size="10.5" fill="#ea580c">　　　新文件起始位点都是 197。所以「切换前先把位点记下来」这件事本身就不牢，最后必须落到自动定位。</text>
+    <text x="16" y="204" font-size="10.5" fill="#334155">每次切换错误日志都留一行 MY-010035（Changed GTID_MODE from … to …），可以直接当切换审计用。</text>
+  </g>
+
+  <g transform="translate(20,304)">
+    <rect x="0" y="0" width="960" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">生产不停服切换的九步：顺序是硬约束</text>
+
+    <rect x="16" y="44" width="296" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="30" y="64" font-size="11" font-weight="bold" fill="#9a3412">① enforce_gtid_consistency = WARN</text>
+    <text x="30" y="83" font-size="10" fill="#9a3412">只告警不阻断，盯告警告到清零为止</text>
+    <text x="30" y="99" font-size="10" fill="#9a3412">8.0 纯 InnoDB 实例上多数老写法已不违规</text>
+
+    <line x1="316" y1="75" x2="328" y2="75" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="332" y="44" width="296" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="346" y="64" font-size="11" font-weight="bold" fill="#9a3412">② enforce_gtid_consistency = ON</text>
+    <text x="346" y="83" font-size="10" fill="#9a3412">不兼容的语句从此执行失败</text>
+    <text x="346" y="99" font-size="10" fill="#9a3412">必须排在 gtid_mode 之前：反了报 ERROR 3111</text>
+
+    <line x1="632" y1="75" x2="644" y2="75" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="648" y="44" width="296" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="662" y="64" font-size="11" font-weight="bold" fill="#1e40af">③ gtid_mode = OFF_PERMISSIVE</text>
+    <text x="662" y="83" font-size="10" fill="#1e40af">进入宽松关闭：先做到能「收」</text>
+    <text x="662" y="99" font-size="10" fill="#1e40af">自身还不强制生成 GTID</text>
+
+    <path d="M796,110 V116 H164 V122" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="16" y="124" width="296" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="30" y="144" font-size="11" font-weight="bold" fill="#1e40af">④ gtid_mode = ON_PERMISSIVE</text>
+    <text x="30" y="163" font-size="10" fill="#1e40af">进入宽松开启：再做到能「发」</text>
+    <text x="30" y="179" font-size="10" fill="#1e40af">老匿名事务仍能进来，给历史遗留收尾</text>
+
+    <line x1="316" y1="155" x2="328" y2="155" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="332" y="124" width="296" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="346" y="144" font-size="11" font-weight="bold" fill="#1e40af">⑤ 等匿名事务清零</text>
+    <text x="346" y="163" font-size="10" fill="#1e40af">Ongoing_anonymous_transaction_count = 0</text>
+    <text x="346" y="179" font-size="10" fill="#1e40af">这个计数器不到 0 就不算干净</text>
+
+    <line x1="632" y1="155" x2="644" y2="155" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="648" y="124" width="296" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="662" y="144" font-size="11" font-weight="bold" fill="#1e40af">⑥ 检查每个副本是否追平</text>
+    <text x="662" y="163" font-size="10" fill="#1e40af">SHOW REPLICA STATUS（5.7 用 SHOW SLAVE）</text>
+    <text x="662" y="179" font-size="10" fill="#1e40af">多层复制要逐层查，直到全部追平</text>
+
+    <path d="M796,190 V196 H164 V202" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="16" y="204" width="296" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="30" y="224" font-size="11" font-weight="bold" fill="#9a3412">⑦ 等含匿名事务的备份过期</text>
+    <text x="30" y="243" font-size="10" fill="#9a3412">否则那些备份在完全开启之后无法还原</text>
+    <text x="30" y="259" font-size="10" fill="#9a3412">binlog 兼做备份恢复用途时才需要这步</text>
+
+    <line x1="316" y1="235" x2="328" y2="235" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="332" y="204" width="296" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="346" y="224" font-size="11" font-weight="bold" fill="#14532d">⑧ gtid_mode = ON</text>
+    <text x="346" y="243" font-size="10" fill="#14532d">完全开启：所有事务都必须带 GTID</text>
+    <text x="346" y="259" font-size="10" fill="#14532d">错误日志留一行 MY-010035，可当审计</text>
+
+    <line x1="632" y1="235" x2="644" y2="235" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+    <rect x="648" y="204" width="296" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="662" y="224" font-size="11" font-weight="bold" fill="#14532d">⑨ 落盘 + 改成自动定位</text>
+    <text x="662" y="243" font-size="10" fill="#14532d">STOP REPLICA → SOURCE_AUTO_POSITION = 1</text>
+    <text x="662" y="259" font-size="10" fill="#14532d">两个开关写进 my.cnf 后再 START REPLICA</text>
+
+    <text x="16" y="284" font-size="10.5" fill="#dc2626">注意：中间的 SET GLOBAL 全是运行时变量 —— 第 ⑨ 步不写配置文件，重启就会退回位点复制。</text>
+  </g>
+
+  <g transform="translate(20,624)">
+    <rect x="0" y="0" width="960" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">切换之后的三个看得见的后果</text>
+
+    <rect x="16" y="44" width="296" height="66" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+    <text x="30" y="64" font-size="11.5" font-weight="bold" fill="#991b1b">重启就回落</text>
+    <text x="30" y="83" font-size="10" fill="#991b1b">实测重启后 mode_after_restart = OFF</text>
+    <text x="30" y="99" font-size="10" fill="#991b1b">但 GTID 集合在 mysql.gtid_executed 表里没丢</text>
+
+    <rect x="332" y="44" width="296" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+    <text x="346" y="64" font-size="11.5" font-weight="bold" fill="#9a3412">位点与 GTID 互斥</text>
+    <text x="346" y="83" font-size="10" fill="#9a3412">自动定位开启后再指定位点报 ERROR 1776</text>
+    <text x="346" y="99" font-size="10" fill="#9a3412">所以要落盘的是开关，不是位点</text>
+
+    <rect x="648" y="44" width="296" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="662" y="64" font-size="11.5" font-weight="bold" fill="#1e40af">怎么判断追平</text>
+    <text x="662" y="83" font-size="10" fill="#1e40af">WAIT_FOR_EXECUTED_GTID_SET 返回 0 = 已追平</text>
+    <text x="662" y="99" font-size="10" fill="#1e40af">返回 1 是超时，应当当作继续等或报警</text>
+
+    <text x="16" y="130" font-size="10.5" fill="#ea580c">要点：漏写 my.cnf 的后果是重启后退回位点复制，而从库已经带着 GTID 集合，两边对不上。</text>
+    <text x="16" y="148" font-size="10.5" fill="#334155">另一个实测细节：8.0 的 binlog 文件名前缀是 binlog（实测编号到 binlog.000068），不再是 5.7 的 mysql-bin。</text>
+  </g>
+
+</svg>

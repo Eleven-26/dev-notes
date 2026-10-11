@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ORM 对接路径：先转换出 *sql.Tx / *sql.DB，再交给屏障或 XA</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">屏障与 XA 的入参都以标准库对象为准；各 ORM 的差异只在「怎么拿到」这一步</text>
+
+  <text x="40" y="94" font-size="13" font-weight="bold" fill="#64748b">① 各 ORM / 框架的取连接方式</text>
+  <text x="520" y="94" font-size="13" font-weight="bold" fill="#64748b">② 标准库对象</text>
+  <text x="760" y="94" font-size="13" font-weight="bold" fill="#64748b">③ DTM 接口</text>
+
+  <rect x="40" y="108" width="420" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="56" y="132" font-size="13" font-weight="bold" fill="#0f172a">database/sql</text>
+  <text x="56" y="154" font-size="11" fill="#334155">本身即标准库：直接传 *sql.Tx，XA 回调直接给 *sql.DB</text>
+
+  <rect x="40" y="184" width="420" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="56" y="208" font-size="13" font-weight="bold" fill="#0f172a">GORM</text>
+  <text x="56" y="230" font-size="11" fill="#334155">屏障：会话取底层连接断言 Tx · XA：mysql.New{Conn: db} 构造</text>
+
+  <rect x="40" y="260" width="420" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="56" y="284" font-size="13" font-weight="bold" fill="#0f172a">goqu</text>
+  <text x="56" y="306" font-size="11" fill="#334155">屏障：gdb.Begin() 得到事务传入 · XA：dialect.DB(db) 包装</text>
+
+  <rect x="40" y="336" width="420" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="56" y="360" font-size="13" font-weight="bold" fill="#0f172a">XORM</text>
+  <text x="56" y="382" font-size="11" fill="#334155">屏障：session.Tx().Tx · XA：NewEngineWithDB(core.FromDB(db))</text>
+
+  <rect x="40" y="412" width="420" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="56" y="436" font-size="13" font-weight="bold" fill="#0f172a">go-zero</text>
+  <text x="56" y="458" font-size="11" fill="#334155">屏障：conn.RawDB() 后交给 CallWithDB · 反向由 *sql.DB 造 SqlConn</text>
+
+  <rect x="520" y="164" width="160" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="600" y="192" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">*sql.Tx</text>
+  <text x="600" y="212" text-anchor="middle" font-size="10.5" fill="#1e40af">屏障的事务入参</text>
+
+  <rect x="520" y="310" width="160" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="600" y="338" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">*sql.DB</text>
+  <text x="600" y="358" text-anchor="middle" font-size="10.5" fill="#1e40af">屏障与 XA 共用</text>
+
+  <line x1="460" y1="140" x2="515" y2="188" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="140" x2="515" y2="330" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="216" x2="515" y2="196" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="216" x2="515" y2="336" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="292" x2="515" y2="202" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="292" x2="515" y2="342" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="368" x2="515" y2="208" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="368" x2="515" y2="348" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="444" x2="515" y2="214" stroke="#94a3b8" stroke-width="1.1"/>
+  <line x1="460" y1="444" x2="515" y2="354" stroke="#94a3b8" stroke-width="1.1"/>
+
+  <rect x="760" y="130" width="210" height="120" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="776" y="156" font-size="13" font-weight="bold" fill="#14532d">子事务屏障 BranchBarrier</text>
+  <text x="776" y="182" font-size="10.5" fill="#166534">Call(tx *sql.Tx, busiCall)</text>
+  <text x="776" y="202" font-size="10.5" fill="#166534">CallWithDB(db *sql.DB, busiCall)</text>
+  <text x="776" y="230" font-size="10.5" fill="#166534">自动处理幂等 / 空补偿 / 悬挂</text>
+
+  <rect x="760" y="300" width="210" height="110" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="776" y="326" font-size="13" font-weight="bold" fill="#5b21b6">XA 本地分支</text>
+  <text x="776" y="350" font-size="10.5" fill="#6d28d9">XaLocalTransaction(...,</text>
+  <text x="776" y="368" font-size="10.5" fill="#6d28d9">func(db *sql.DB, xa *Xa))</text>
+  <text x="776" y="394" font-size="10.5" fill="#6d28d9">回滚交给数据库完成</text>
+
+  <line x1="680" y1="190" x2="755" y2="172" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="680" y1="330" x2="755" y2="200" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="680" y1="352" x2="755" y2="352" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <text x="40" y="512" font-size="12" fill="#0f172a">⭐ 收敛点在中间：无论哪种 ORM，只要能转换出 *sql.Tx 或 *sql.DB，屏障与 XA 就能接入。</text>
+  <text x="40" y="538" font-size="12" fill="#b45309">⚠️ 数据库侧：支持 MySQL 系列（MariaDB / TiDB / TDSQL）、Postgres、Redis、Mongo；用 Postgres 需先调用 SetCurrentDBType("postgres")。</text>
+  <text x="40" y="562" font-size="12" fill="#64748b">go-zero 的屏障接入要求 v1.2.0 以上：暴露底层连接（RawDB）的能力自该版本起才具备。</text>
+</svg>

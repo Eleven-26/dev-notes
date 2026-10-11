@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">非分表键定位的五条路线：查询路径与代价</text>
+  <text x="500" y="50" text-anchor="middle" font-size="12.5" fill="#64748b">user 表按 user_id 哈希分成 256 张（user_0000 ~ user_0255），要求用 phone / email 也能定位</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="272" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">A. 五条路线：非分表键分别怎么走到那张表</text>
+
+    <rect x="16" y="36" width="928" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="54" font-size="11.5" font-weight="bold" fill="#0f172a">方案</text>
+    <text x="236" y="54" font-size="11.5" font-weight="bold" fill="#0f172a">查询路径（用 phone 查一条数据）</text>
+    <text x="580" y="54" font-size="11.5" font-weight="bold" fill="#0f172a">空间代价</text>
+    <text x="744" y="54" font-size="11.5" font-weight="bold" fill="#0f172a">结论</text>
+
+    <rect x="16" y="62" width="928" height="30" rx="4" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+    <text x="32" y="82" font-size="11.5" font-weight="bold" fill="#991b1b">① 独立哈希 A / B</text>
+    <text x="236" y="82" font-size="11.5" fill="#334155">Hash(A)=17、Hash(B)=93：同一条数据算出两个表号</text>
+    <text x="580" y="82" font-size="11.5" fill="#334155">无额外空间</text>
+    <text x="744" y="82" font-size="11.5" font-weight="bold" fill="#dc2626">不可行：定位不确定</text>
+
+    <rect x="16" y="94" width="928" height="30" rx="4" fill="#ffedd5" stroke="#fdba74" stroke-width="1"/>
+    <text x="32" y="114" font-size="11.5" font-weight="bold" fill="#9a3412">② 双哈希冗余存储</text>
+    <text x="236" y="114" font-size="11.5" fill="#334155">按 A 存进 17 表，再按 B 存一份到 93 表</text>
+    <text x="580" y="114" font-size="11.5" fill="#334155">2 倍数据空间</text>
+    <text x="744" y="114" font-size="11.5" font-weight="bold" fill="#ea580c">可行但贵：写入要双写</text>
+
+    <rect x="16" y="126" width="928" height="30" rx="4" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+    <text x="32" y="146" font-size="11.5" font-weight="bold" fill="#14532d">③ 路由表（二次索引）</text>
+    <text x="236" y="146" font-size="11.5" fill="#334155">phone 查 user_route 得 table_suffix，再拼 user_00xx</text>
+    <text x="580" y="146" font-size="11.5" fill="#334155">1 份索引空间</text>
+    <text x="744" y="146" font-size="11.5" font-weight="bold" fill="#16a34a">推荐：多一次查表</text>
+
+    <rect x="16" y="158" width="928" height="30" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+    <text x="32" y="178" font-size="11.5" font-weight="bold" fill="#1e40af">④ 基因法（低 8 位）</text>
+    <text x="236" y="178" font-size="11.5" fill="#334155">user_id 路由结果拼进订单号低 8 位，订单号直接反推表号</text>
+    <text x="580" y="178" font-size="11.5" fill="#334155">无额外空间</text>
+    <text x="744" y="178" font-size="11.5" font-weight="bold" fill="#2563eb">省一次查表；位宽写死</text>
+
+    <rect x="16" y="190" width="928" height="30" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="32" y="210" font-size="11.5" font-weight="bold" fill="#334155">⑤ 异构索引（再建一份）</text>
+    <text x="236" y="210" font-size="11.5" fill="#334155">以 B 为分表键再建一份数据，binlog / MQ 异步同步</text>
+    <text x="580" y="210" font-size="11.5" fill="#334155">又一份数据</text>
+    <text x="744" y="210" font-size="11.5" font-weight="bold" fill="#475569">与②同代价：两个入口各走各的</text>
+
+    <text x="16" y="244" font-size="11.5" fill="#334155">要点：分表键只负责「定位到表」，非分表键的定位只能用「多一次查询」或「多存一份」换来。</text>
+    <text x="16" y="264" font-size="11.5" fill="#9a3412">注意：路由表要加缓存，但瓶颈有两种 —— 数据库读放大（本地缓存 + Redis）与冷 key 并发回源（singleflight 合并）。</text>
+  </g>
+
+  <g transform="translate(20,362)">
+    <rect x="0" y="0" width="960" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">B. 基因法：把表号编码进 ID 的低 8 位，连映射表都省了</text>
+
+    <rect x="16" y="42" width="560" height="40" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+    <text x="296" y="67" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">38 位：毫秒（相对 epoch）</text>
+    <rect x="576" y="42" width="103" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <text x="627" y="67" text-anchor="middle" font-size="10.5" fill="#334155">7 位机器</text>
+    <rect x="679" y="42" width="147" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+    <text x="752" y="67" text-anchor="middle" font-size="10.5" fill="#334155">10 位序列</text>
+    <rect x="826" y="42" width="118" height="40" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="885" y="67" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">8 位基因</text>
+
+    <text x="16" y="98" font-size="11.5" fill="#334155">反查：取订单号最低 8 位就是表号 → 拼出 order_00xx，省掉一次 user_route 查询（基因必须来自同一个 Route）</text>
+    <text x="16" y="120" font-size="11.5" fill="#9a3412">注意：位宽被写死 —— 256 张表占 8 位，扩到 512 张就要 9 位，已经生成的旧订单号改不了。</text>
+    <text x="16" y="142" font-size="11.5" fill="#334155">折中：提前把基因位宽留够（常见做法是固定留 16 位），代价是时间戳能用的位数变少。</text>
+  </g>
+
+  <g transform="translate(20,542)">
+    <rect x="0" y="0" width="960" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="14" font-weight="bold" fill="#0f172a">C. 成倍扩容 256 → 512：为什么搬迁量最小</text>
+
+    <rect x="16" y="38" width="456" height="104" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="32" y="60" font-size="12" font-weight="bold" fill="#1e40af">判据：新表号只有两种可能</text>
+    <text x="32" y="82" font-size="11" fill="#1e40af">h % (2N) ∈ {h % N, h % N + N}</text>
+    <text x="32" y="102" font-size="11" fill="#334155">旧表 oldSuffix 的数据只会分流到两张新表：</text>
+    <text x="32" y="122" font-size="11" fill="#334155">user_oldSuffix 与 user_(oldSuffix+256)</text>
+
+    <rect x="488" y="38" width="456" height="104" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="504" y="60" font-size="12" font-weight="bold" fill="#14532d">实测：抽样 20000 个 key</text>
+    <text x="504" y="82" font-size="11" fill="#14532d">新表号 ∈ {旧表号, 旧表号+256}：20000 / 20000 = 100.0%</text>
+    <text x="504" y="102" font-size="11" fill="#334155">留在原表号 10046（50.2%）｜ 迁到 +256 9954（49.8%）</text>
+    <text x="504" y="122" font-size="11" fill="#334155">例外 0 —— 搬迁可以按旧表整批做</text>
+
+    <text x="16" y="162" font-size="11.5" fill="#9a3412">注意：扩容要保留原始 32 位哈希、只换取模的除数；拿旧表号再哈希一次会失去「只搬两张表」的保证。</text>
+  </g>
+</svg>

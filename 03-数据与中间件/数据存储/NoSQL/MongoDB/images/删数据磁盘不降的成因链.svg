@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="1000" height="790" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="as6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker>
+    <marker id="ag6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="790" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">删了一半数据磁盘不降：成因链与回收路径</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">「不降」本身是设计——空间进空闲列表等着被复用，不归还操作系统</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">成因链：动作 → 现象 → 真正的原因</text>
+
+    <rect x="30" y="44" width="270" height="76" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="165" y="68" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">动作</text>
+    <text x="165" y="92" text-anchor="middle" font-size="11.5" fill="#334155">deleteMany 删掉一半数据</text>
+    <text x="165" y="110" text-anchor="middle" font-size="11.5" fill="#334155">逻辑上确实少了一半</text>
+    <line x1="304" y1="82" x2="344" y2="82" stroke="#64748b" stroke-width="1.6" marker-end="url(#as6)"/>
+
+    <rect x="350" y="44" width="270" height="76" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="485" y="68" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2410c">现象</text>
+    <text x="485" y="92" text-anchor="middle" font-size="11.5" fill="#334155">磁盘占用几乎不动</text>
+    <text x="485" y="110" text-anchor="middle" font-size="11.5" fill="#334155">df 上看不出删了任何东西</text>
+    <line x1="624" y1="82" x2="664" y2="82" stroke="#64748b" stroke-width="1.6" marker-end="url(#as6)"/>
+
+    <rect x="670" y="44" width="270" height="76" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="805" y="68" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">原因</text>
+    <text x="805" y="92" text-anchor="middle" font-size="11.5" fill="#334155">空间进 WiredTiger 空闲列表复用</text>
+    <text x="805" y="110" text-anchor="middle" font-size="11.5" fill="#334155">归还 OS 意味着重写文件，代价更高</text>
+
+    <rect x="30" y="134" width="910" height="48" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="46" y="156" font-size="12" font-weight="bold" fill="#15803d">怎么确认碎片量</text>
+    <text x="46" y="176" font-size="11.5" fill="#334155">db.coll.stats(1024 * 1024) 的 freeStorageSize；以及 dataSize() / storageSize() 明显小于 1 = 空洞多</text>
+
+    <text x="20" y="202" font-size="12" fill="#334155">要点：先确认碎片量再决定动不动手——碎片率不高时做回收没有差别。</text>
+  </g>
+
+  <g transform="translate(20,300)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">三条回收路径与各自代价</text>
+
+    <rect x="20" y="44" width="300" height="150" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="34" y="68" font-size="12" font-weight="bold" fill="#c2410c">路径 1　compact（就地重写）</text>
+    <text x="34" y="92" font-size="11" fill="#334155">db.runCommand({ compact: "coll" })</text>
+    <text x="34" y="112" font-size="11" fill="#334155">重写集合及其索引，把空闲页挤出去</text>
+    <text x="34" y="132" font-size="11" fill="#dc2626">代价：独占该命名空间，读写被阻塞</text>
+    <text x="34" y="152" font-size="11" fill="#dc2626">耗时随数据量线性走</text>
+    <text x="34" y="176" font-size="11" fill="#64748b">会复制到副本集其他成员，不能只在 hidden 上试</text>
+
+    <rect x="340" y="44" width="300" height="150" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+    <text x="354" y="68" font-size="12" font-weight="bold" fill="#15803d">路径 2　按时间 / 租户分集合</text>
+    <text x="354" y="92" font-size="11" fill="#334155">应用层路由，一个时间段一个集合</text>
+    <text x="354" y="112" font-size="11" fill="#334155">过期直接 drop 整块</text>
+    <text x="354" y="132" font-size="11" fill="#15803d">收益：立即释放，不需要重写</text>
+    <text x="354" y="152" font-size="11" fill="#15803d">也顺带省掉删除的复制代价</text>
+    <text x="354" y="176" font-size="11" fill="#64748b">代价：应用层要认识路由规则</text>
+
+    <rect x="660" y="44" width="300" height="150" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+    <text x="674" y="68" font-size="12" font-weight="bold" fill="#15803d">路径 3　$out + 换名</text>
+    <text x="674" y="92" font-size="11" fill="#334155">$out 到新集合，再 renameCollection 换名</text>
+    <text x="674" y="112" font-size="11" fill="#334155">新集合是紧凑写出来的</text>
+    <text x="674" y="132" font-size="11" fill="#15803d">收益：顺带完成压缩与索引整理</text>
+    <text x="674" y="152" font-size="11" fill="#15803d">老集合可确认后再 drop</text>
+    <text x="674" y="176" font-size="11" fill="#64748b">代价：期间要写一份新数据</text>
+
+    <text x="20" y="218" font-size="12" fill="#334155">要点：能靠「整块 drop」解决的问题，不要靠「就地重写」——前者是架构级替代，后者是维护窗口里的动作。</text>
+  </g>
+
+  <g transform="translate(20,550)">
+    <rect x="0" y="0" width="960" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="15" font-weight="bold" fill="#0f172a">动手前的顺序与两条红线</text>
+
+    <rect x="20" y="44" width="215" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="127" y="66" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1d4ed8">第一步　确认碎片</text>
+    <text x="127" y="88" text-anchor="middle" font-size="11" fill="#334155">freeStorageSize 有多大</text>
+    <text x="127" y="102" text-anchor="middle" font-size="11" fill="#334155">dataSize / storageSize</text>
+    <line x1="239" y1="76" x2="251" y2="76" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag6)"/>
+
+    <rect x="255" y="44" width="215" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="362" y="66" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">第二步　不大就别做</text>
+    <text x="362" y="88" text-anchor="middle" font-size="11" fill="#334155">碎片率不高时重写一遍</text>
+    <text x="362" y="102" text-anchor="middle" font-size="11" fill="#334155">结果几乎没有差别</text>
+    <line x1="474" y1="76" x2="486" y2="76" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag6)"/>
+
+    <rect x="490" y="44" width="215" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="597" y="66" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">第三步　先选架构级替代</text>
+    <text x="597" y="88" text-anchor="middle" font-size="11" fill="#334155">分集合后整块 drop</text>
+    <text x="597" y="102" text-anchor="middle" font-size="11" fill="#334155">或 $out 新集合再换名</text>
+    <line x1="709" y1="76" x2="721" y2="76" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ag6)"/>
+
+    <rect x="725" y="44" width="215" height="64" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="832" y="66" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#c2410c">第四步　才排 compact</text>
+    <text x="832" y="88" text-anchor="middle" font-size="11" fill="#334155">按维护窗口规划，因为</text>
+    <text x="832" y="102" text-anchor="middle" font-size="11" fill="#334155">它会复制到其他成员</text>
+
+    <rect x="20" y="118" width="920" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="34" y="140" font-size="11.5" font-weight="bold" fill="#dc2626">红线 1：新版本 compact 会复制到副本集其他成员</text>
+    <text x="34" y="157" font-size="11.5" fill="#334155">所以「先在 hidden 上试一把」降不了风险，必须按维护窗口规划（行为随版本变化，以官方文档为准）。</text>
+
+    <rect x="20" y="170" width="920" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="34" y="192" font-size="11.5" font-weight="bold" fill="#dc2626">红线 2：不要对 oplog 随手 compact</text>
+    <text x="34" y="209" font-size="11.5" fill="#334155">它拉长应用时间、抬高 lag，极端情况把从节点推出 oplog 窗口而触发全量重同步。</text>
+  </g>
+</svg>

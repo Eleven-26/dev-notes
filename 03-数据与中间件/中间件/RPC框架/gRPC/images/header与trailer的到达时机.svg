@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">header 在响应开始前送达，trailer 在流结束后送达</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">实测行（base.txt）：respHeader.x-handler=[unary] respHeader.x-md-count=[1] respTrailer.x-trailer-note=[set-in-unary-handler]</text>
+
+  <defs>
+    <marker id="arrC" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#475569"/>
+    </marker>
+    <marker id="arrH" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrTr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect x="170" y="76" width="160" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="250" y="101" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">客户端</text>
+  <rect x="670" y="76" width="160" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="750" y="101" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">服务端 handler</text>
+  <line x1="250" y1="116" x2="250" y2="400" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="750" y1="116" x2="750" y2="400" stroke="#cbd5e1" stroke-width="1.2"/>
+
+  <line x1="250" y1="150" x2="750" y2="150" stroke="#475569" stroke-width="1.5" marker-end="url(#arrC)"/>
+  <text x="500" y="142" text-anchor="middle" font-size="12" fill="#0f172a">请求：metadata 带 x-trace-id=t-1（键到对端会小写成 x-trace-id）</text>
+
+  <line x1="750" y1="210" x2="250" y2="210" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrH)"/>
+  <text x="500" y="202" text-anchor="middle" font-size="12" fill="#1e3a8a">header：x-handler=unary、x-md-count=1（grpc.SetHeader）</text>
+  <text x="830" y="214" font-size="12" fill="#2563eb">第一个字节就能看到</text>
+
+  <line x1="750" y1="266" x2="250" y2="266" stroke="#475569" stroke-width="1.5" marker-end="url(#arrC)"/>
+  <text x="500" y="258" text-anchor="middle" font-size="12" fill="#0f172a">响应体：Length-Prefixed 消息（一元只有一个）</text>
+
+  <line x1="750" y1="340" x2="250" y2="340" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arrTr)"/>
+  <text x="500" y="332" text-anchor="middle" font-size="12" fill="#5b21b6">trailer：x-trailer-note（grpc.SetTrailer）+ grpc-status + 富错误详情</text>
+  <text x="830" y="344" font-size="12" fill="#7c3aed">必须等流结束才读到</text>
+
+  <line x1="20" y1="420" x2="980" y2="420" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="20" y="444" font-size="12.5" fill="#0f172a">⭐ header 与 trailer 是两条路、可见时机不同：放什么按「读端什么时候需要」来定，而不是随手挑一个。</text>
+  <text x="20" y="468" font-size="12.5" fill="#0f172a">⭐ 状态码与富错误详情（grpc-status-details-bin）都走 trailer，不占消息体——大响应照样能传到（第七节 7.2）。</text>
+  <text x="20" y="492" font-size="12.5" fill="#0f172a">⚠️ Java 侧 trailer 不能直接写：要包一层 ServerCall 覆写 close(Status, Metadata)；getAll 键不存在时返回 null 而非空集合。</text>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" width="1000" height="530" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="tp1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="530" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">可观测性三支柱：数据形态、成本重心与 TraceID 串联</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">三者不是「谁替代谁」，而是排查链条上的三段：指标告警发现异常 → 链路定位到服务与操作 → 日志查明根因</text>
+
+  <rect x="40" y="88" width="288" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="116" font-size="15" font-weight="bold" fill="#1e3a8a">Metrics 指标</text>
+  <text x="58" y="140" font-size="11.5" fill="#1d4ed8">QPS / P99 / 错误率 / CPU 内存</text>
+  <text x="58" y="162" font-size="11.5" fill="#1d4ed8">基数低（受标签组合数控制）</text>
+  <text x="58" y="184" font-size="11.5" fill="#1d4ed8">成本重心：写入速率 × 保留期</text>
+  <text x="58" y="206" font-size="11.5" fill="#1d4ed8">保留数月 ~ 数年 · 负责发现异常</text>
+
+  <line x1="328" y1="163" x2="352" y2="163" stroke="#334155" stroke-width="1.6" marker-end="url(#tp1)"/>
+
+  <rect x="356" y="88" width="288" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="374" y="116" font-size="15" font-weight="bold" fill="#14532d">Traces 链路</text>
+  <text x="374" y="140" font-size="11.5" fill="#166534">Trace + Span 树</text>
+  <text x="374" y="162" font-size="11.5" fill="#166534">基数高（每次请求一条）</text>
+  <text x="374" y="184" font-size="11.5" fill="#166534">成本重心：采样率</text>
+  <text x="374" y="206" font-size="11.5" fill="#166534">保留 7 ~ 30 天 · 定位慢在哪一跳</text>
+
+  <line x1="644" y1="163" x2="668" y2="163" stroke="#334155" stroke-width="1.6" marker-end="url(#tp1)"/>
+
+  <rect x="672" y="88" width="288" height="150" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="690" y="116" font-size="15" font-weight="bold" fill="#0f172a">Logs 日志</text>
+  <text x="690" y="140" font-size="11.5" fill="#64748b">结构化 / 半结构化文本</text>
+  <text x="690" y="162" font-size="11.5" fill="#64748b">基数最高（每行一句）</text>
+  <text x="690" y="184" font-size="11.5" fill="#64748b">成本重心：存储 + 采集带宽</text>
+  <text x="690" y="206" font-size="11.5" fill="#64748b">保留 3 ~ 30 天 · 印证根因</text>
+
+  <line x1="500" y1="238" x2="500" y2="258" stroke="#334155" stroke-width="1.6" marker-end="url(#tp1)"/>
+  <text x="516" y="253" font-size="12" fill="#334155">把它们串起来的唯一纽带是 TraceID</text>
+
+  <rect x="40" y="262" width="288" height="92" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="58" y="288" font-size="13.5" font-weight="bold" fill="#0f172a">Metrics ↔ Trace</text>
+  <text x="58" y="312" font-size="11.5" fill="#64748b">Prometheus exemplar：指标样本</text>
+  <text x="58" y="334" font-size="11.5" fill="#64748b">上挂 trace_id，Grafana 点进链路</text>
+
+  <rect x="356" y="262" width="288" height="92" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="374" y="288" font-size="13.5" font-weight="bold" fill="#0f172a">Trace ↔ Log</text>
+  <text x="374" y="312" font-size="11.5" fill="#64748b">日志框架把当前 span 的 trace_id</text>
+  <text x="374" y="334" font-size="11.5" fill="#64748b">写进每条日志，按 trace_id 聚合</text>
+
+  <rect x="672" y="262" width="288" height="92" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="690" y="288" font-size="13.5" font-weight="bold" fill="#0f172a">Trace ↔ Trace</text>
+  <text x="690" y="312" font-size="11.5" fill="#64748b">W3C traceparent（HTTP）/</text>
+  <text x="690" y="334" font-size="11.5" fill="#64748b">消息 Header（MQ）逐跳传递</text>
+
+  <line x1="20" y1="378" x2="980" y2="378" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="406" font-size="13" fill="#0f172a">⭐ 基数量级决定成本重心：指标低基数所以按「写入速率 × 保留期」算，链路高基数所以按「采样率」算，日志最高所以按「存储 + 采集带宽」算。</text>
+  <text x="40" y="432" font-size="13" fill="#0f172a">⚠️ 混用 sw8 / uber-trace-id / traceparent 私有头会断链；全链路传播头格式必须统一。</text>
+  <text x="40" y="458" font-size="12" fill="#64748b">最常见的误用：用日志做监控（把 ERROR 行数当指标）——日志高基数、需解析、聚合慢，做告警既贵又不准。监控用指标，排障用日志。</text>
+</svg>

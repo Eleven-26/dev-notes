@@ -5,3 +5,5 @@
 - [ ] 分库分表.md（ShardingSphere / MyCat）
 - [ ] 读写分离.md
 - [ ] 连接池代理.md（ProxySQL / 数据库网关）
+
+![数据库中间件待补主题地图](images/数据库中间件待补主题地图.svg)

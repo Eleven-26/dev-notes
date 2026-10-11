@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="1000" height="790" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="am3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="790" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">时序集合：1440 条测量压成 24 个桶，再按时间剪枝</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机 mongo:7.0 实测：granularity 取 seconds 时，1 分钟 1 个点、覆盖 24 小时</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">物理形态：普通集合 vs 桶文档</text>
+
+    <rect x="30" y="44" width="420" height="150" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="46" y="68" font-size="12.5" font-weight="bold" fill="#dc2626">普通集合：1440 个文档</text>
+    <text x="46" y="90" font-size="11.5" fill="#334155">每个文档都要存 _id、字段名与类型信息</text>
+    <text x="46" y="110" font-size="11.5" fill="#334155">索引条目数 = 文档数，测点越多索引越大</text>
+    <text x="46" y="130" font-size="11.5" fill="#334155">小文档高频插入，每次都要维护数据页与全部索引</text>
+    <rect x="46" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <rect x="96" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <rect x="146" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <rect x="196" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <rect x="246" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <rect x="296" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <rect x="346" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <rect x="396" y="146" width="46" height="18" rx="2" fill="#fca5a5" stroke="#dc2626" stroke-width="0.8"/>
+    <text x="46" y="182" font-size="11.5" fill="#b91c1c">1440 个文档 = 1440 条索引条目（逐个重复）</text>
+
+    <line x1="454" y1="110" x2="494" y2="110" stroke="#2563eb" stroke-width="1.8" marker-end="url(#am3)"/>
+    <text x="474" y="222" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">60 : 1</text>
+
+    <rect x="500" y="44" width="430" height="150" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="516" y="68" font-size="12.5" font-weight="bold" fill="#15803d">system.buckets.m：24 个桶文档</text>
+    <text x="516" y="90" font-size="11.5" fill="#334155">control.min / max 缓存桶内极值与 _id 边界</text>
+    <text x="516" y="110" font-size="11.5" fill="#334155">control.count = 60，即桶内测量条数</text>
+    <text x="516" y="130" font-size="11.5" fill="#334155">data 列式：ts / v / _id 各是一块压缩二进制</text>
+    <rect x="516" y="146" width="128" height="18" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="0.8"/>
+    <rect x="652" y="146" width="128" height="18" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="0.8"/>
+    <rect x="788" y="146" width="128" height="18" rx="2" fill="#86efac" stroke="#16a34a" stroke-width="0.8"/>
+    <text x="516" y="182" font-size="11.5" fill="#15803d">24 个桶，每桶装 60 条测量；字段名只写一次</text>
+
+    <text x="20" y="240" font-size="12" fill="#334155">要点：桶把文档头与字段名摊薄到 60 条测量上，并把二级索引条目数从「测量数」降到「桶数」。</text>
+  </g>
+
+  <g transform="translate(20,340)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">查询窗口 ↔ 实际扫描量（同一次运行，explain executionStats）</text>
+
+    <rect x="20" y="44" width="920" height="28" rx="4" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="63" font-size="12" font-weight="bold" fill="#0f172a">查询窗口</text>
+    <text x="300" y="63" font-size="12" font-weight="bold" fill="#0f172a">nReturned</text>
+    <text x="480" y="63" font-size="12" font-weight="bold" fill="#0f172a">docsExamined（= 扫的桶数）</text>
+
+    <rect x="20" y="72" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="91" font-size="11.5" fill="#334155">1 小时</text>
+    <text x="300" y="91" font-size="11.5" fill="#334155">1</text>
+    <text x="480" y="91" font-size="11.5" fill="#334155">4</text>
+
+    <rect x="20" y="100" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="119" font-size="11.5" fill="#334155">6 小时</text>
+    <text x="300" y="119" font-size="11.5" fill="#334155">6</text>
+    <text x="480" y="119" font-size="11.5" fill="#334155">9</text>
+
+    <rect x="20" y="128" width="920" height="28" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="147" font-size="11.5" fill="#334155">24 小时</text>
+    <text x="300" y="147" font-size="11.5" fill="#334155">24</text>
+    <text x="480" y="147" font-size="11.5" fill="#334155">24</text>
+
+    <text x="20" y="180" font-size="12" fill="#334155">要点：扫的桶数随窗口单调增长，而测量与桶是 60:1 —— 这就是剪枝的实际收益。</text>
+  </g>
+
+  <g transform="translate(20,560)">
+    <rect x="0" y="0" width="960" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">带不带时间范围，计划完全不同</text>
+
+    <rect x="20" y="44" width="920" height="34" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="34" y="66" font-size="11.5" fill="#334155">meta 等值 + 时间范围</text>
+    <text x="420" y="66" font-size="11.5" fill="#15803d">CLUSTERED_IXSCAN　元数据剪枝 + 时间剪枝都生效</text>
+
+    <rect x="20" y="82" width="920" height="34" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="34" y="104" font-size="11.5" fill="#334155">只给时间范围</text>
+    <text x="420" y="104" font-size="11.5" fill="#15803d">CLUSTERED_IXSCAN　时间剪枝生效</text>
+
+    <rect x="20" y="120" width="920" height="34" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="34" y="142" font-size="11.5" fill="#334155">只给 metaField 等值</text>
+    <text x="420" y="142" font-size="11.5" fill="#dc2626">COLLSCAN　没有时间条件，桶元数据剪枝用不上</text>
+
+    <text x="20" y="180" font-size="12" fill="#334155">要点：control.min.ts / control.max.ts 只对时间做区间相交判断，所以查询必须带时间范围。</text>
+    <text x="20" y="200" font-size="12" fill="#c2410c">注意：扫的桶数会略多于命中的桶数（1 小时窗口扫了 4 个桶）—— 剪枝是区间相交，不是精确命中。</text>
+  </g>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">deadline 随请求传到对端：客户端 60 ms 放弃，handler 睡 300 ms</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">实测：deadline: client 60ms vs handler 300ms -> code=DeadlineExceeded cost=60ms（不是等 handler 睡醒才报错）</text>
+
+  <defs>
+    <marker id="arrT" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <text x="20" y="122" font-size="13" font-weight="bold" fill="#1e3a8a">客户端</text>
+  <rect x="150" y="92" width="132" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="216" y="110" text-anchor="middle" font-size="11.5" fill="#1e3a8a">发出请求</text>
+  <text x="216" y="128" text-anchor="middle" font-size="11.5" fill="#1e3a8a">ctx 带 60ms 期限</text>
+  <line x1="282" y1="114" x2="360" y2="114" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrT)"/>
+  <text x="368" y="110" font-size="12" fill="#b91c1c">60 ms 处放弃：拿到 DeadlineExceeded</text>
+  <text x="368" y="128" font-size="12" fill="#b91c1c">cost=60ms</text>
+
+  <text x="20" y="232" font-size="13" font-weight="bold" fill="#14532d">服务端</text>
+  <rect x="150" y="196" width="660" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="490" y="222" text-anchor="middle" font-size="12" fill="#64748b">handler 计划睡 300 ms</text>
+  <rect x="150" y="196" width="132" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="216" y="214" text-anchor="middle" font-size="11.5" fill="#14532d">select ctx.Done()</text>
+  <text x="216" y="232" text-anchor="middle" font-size="11.5" fill="#14532d">提前醒来</text>
+  <line x1="282" y1="218" x2="360" y2="218" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrT)"/>
+  <text x="368" y="214" font-size="12" fill="#166534">立刻 return ctx.Err()：不把预算烧在无用的活上</text>
+  <text x="368" y="232" font-size="12" fill="#b91c1c">只 time.Sleep 不看 ctx 的 handler：即使客户端已放弃也会把活干完</text>
+
+  <text x="20" y="312" font-size="13" font-weight="bold" fill="#334155">对照组</text>
+  <rect x="150" y="284" width="82" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="191" y="309" text-anchor="middle" font-size="11.5" fill="#14532d">睡完 300ms</text>
+  <line x1="232" y1="304" x2="300" y2="304" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrT)"/>
+  <text x="308" y="300" font-size="12" fill="#166534">同一请求放宽到 2s deadline → code=OK body=echo:slow</text>
+  <text x="308" y="318" font-size="12" fill="#64748b">期限没到，一切正常返回</text>
+
+  <line x1="150" y1="360" x2="900" y2="360" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="150" y1="70" x2="150" y2="368" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="282" y1="70" x2="282" y2="368" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="810" y1="196" x2="810" y2="368" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="150" y="384" text-anchor="middle" font-size="11.5" fill="#64748b">0 ms</text>
+  <text x="282" y="384" text-anchor="middle" font-size="11.5" fill="#b91c1c">60 ms（客户端期限）</text>
+  <text x="810" y="384" text-anchor="middle" font-size="11.5" fill="#64748b">300 ms（handler 睡满的话）</text>
+
+  <line x1="20" y1="408" x2="980" y2="408" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="20" y="432" font-size="12.5" fill="#0f172a">⭐ 超时不是「客户端单方面不等了」，而是 deadline 随请求传到对端——服务端能从 ctx.Done() 提前醒来。</text>
+  <text x="20" y="456" font-size="12.5" fill="#0f172a">⭐ 工程约定：每一跳都要传 ctx（Go）/ 用同一个 Context（Java），否则内层预算与最外层脱节——「80 ms 的接口实际打了 3 秒」就是这么来的。</text>
+  <text x="20" y="484" font-size="12.5" fill="#b91c1c">关键代码：select { case &lt;-time.After(...): 正常路径; case &lt;-ctx.Done(): return nil, ctx.Err() }——对端已放弃就立刻退出。</text>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">DTM 两类差异化落地场景：最终一致 与 跨存储组合</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">差异化集中在「不需要回滚的最终一致」和「跨存储组合」；模式内部机制见 事务模式.md，本图只画场景层的组合关系</text>
+
+  <rect x="30" y="84" width="460" height="336" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="50" y="112" font-size="14" font-weight="bold" fill="#1e40af">① 缓存一致性 —— 用二阶段消息</text>
+
+  <rect x="60" y="130" width="400" height="46" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="260" y="158" text-anchor="middle" font-size="12" fill="#0f172a">业务本地事务：更新数据库</text>
+  <line x1="260" y1="176" x2="260" y2="210" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <rect x="60" y="214" width="400" height="46" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="260" y="235" text-anchor="middle" font-size="12" fill="#0f172a">二阶段消息：本地事务与事件发布原子化</text>
+  <text x="260" y="252" text-anchor="middle" font-size="10.5" fill="#64748b">由 DTM 保证「提交」与「外发」要么都成要么都废</text>
+  <line x1="260" y1="260" x2="260" y2="294" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <rect x="60" y="298" width="400" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="260" y="319" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">事件驱动更新缓存 → DB 与缓存最终一致</text>
+  <text x="260" y="336" text-anchor="middle" font-size="10.5" fill="#166534">不需要业务写回滚补偿</text>
+  <text x="50" y="376" font-size="11" fill="#b45309">⚠️ 对比方案：订阅 binlog 或纯队列——二阶段消息定位更简洁，</text>
+  <text x="50" y="396" font-size="11" fill="#b45309">且是 Outbox 的「更优雅」替代（见 事务模式.md 第四、六节）。</text>
+
+  <rect x="510" y="84" width="460" height="336" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="530" y="112" font-size="14" font-weight="bold" fill="#5b21b6">② 秒杀扣库存 —— 跨存储组合</text>
+
+  <rect x="540" y="130" width="400" height="46" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="740" y="151" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">DTM 组合 Redis 与 MySQL 两类分支</text>
+  <text x="740" y="168" text-anchor="middle" font-size="10.5" fill="#64748b">一个事务里跨存储协调</text>
+  <line x1="640" y1="176" x2="620" y2="210" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="840" y1="176" x2="860" y2="210" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <rect x="540" y="214" width="185" height="66" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="632" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">Redis 分支</text>
+  <text x="632" y="262" text-anchor="middle" font-size="11" fill="#334155">扣库存（精确计数）</text>
+  <rect x="755" y="214" width="185" height="66" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="847" y="240" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">MySQL 分支</text>
+  <text x="847" y="262" text-anchor="middle" font-size="11" fill="#334155">创建订单</text>
+  <line x1="632" y1="280" x2="660" y2="314" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="847" y1="280" x2="820" y2="314" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arr)"/>
+  <rect x="540" y="318" width="400" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="740" y="339" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">对齐：Redis 精确库存 ↔ 最终创建的订单数</text>
+  <text x="740" y="356" text-anchor="middle" font-size="10.5" fill="#166534">减少人工调账</text>
+  <text x="530" y="390" font-size="11" fill="#64748b">同一手法可推广到非单体订单系统：跨服务的</text>
+  <text x="530" y="408" font-size="11" fill="#64748b">订单 / 库存 / 账户操作交给 DTM，而非一个大本地事务。</text>
+
+  <text x="30" y="456" font-size="12" fill="#0f172a">⭐ 场景 ① 的关键是「本地提交与事件发布原子」——只要求最终一致，就不需要为每个分支写回滚。</text>
+  <text x="30" y="482" font-size="12" fill="#0f172a">⭐ 场景 ② 的关键是「跨存储组合」——Redis 与 MySQL 无法共用一个本地事务，只能由事务管理器协调。</text>
+  <text x="30" y="506" font-size="12" fill="#64748b">事件发布 / 订阅场景同样是二阶段消息：作为事件外发方案，替代 Outbox（见 事务模式.md）。</text>
+</svg>

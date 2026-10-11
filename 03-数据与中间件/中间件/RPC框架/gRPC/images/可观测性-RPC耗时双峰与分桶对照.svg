@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">metrics：RPC 耗时常呈双峰甚至三峰，分桶边界要覆盖到超时值</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">示意形状（第 3.3 节，非实测读数）：默认线性分桶把前两峰挤进头几个桶，P99 直接失真</text>
+
+  <line x1="110" y1="400" x2="920" y2="400" stroke="#0f172a" stroke-width="1.5"/>
+  <text x="930" y="405" font-size="12" fill="#475569">耗时</text>
+
+  <g stroke="#cbd5e1" stroke-width="1">
+    <line x1="160" y1="395" x2="160" y2="405"/>
+    <line x1="320" y1="395" x2="320" y2="405"/>
+    <line x1="480" y1="395" x2="480" y2="405"/>
+    <line x1="640" y1="395" x2="640" y2="405"/>
+    <line x1="860" y1="395" x2="860" y2="405"/>
+  </g>
+  <text x="160" y="424" text-anchor="middle" font-size="12" fill="#64748b">1 ms</text>
+  <text x="320" y="424" text-anchor="middle" font-size="12" fill="#64748b">10 ms</text>
+  <text x="480" y="424" text-anchor="middle" font-size="12" fill="#64748b">100 ms</text>
+  <text x="640" y="424" text-anchor="middle" font-size="12" fill="#64748b">1 s</text>
+  <text x="860" y="424" text-anchor="middle" font-size="12" fill="#64748b">10 s</text>
+
+  <path d="M 150,400 C 220,402 260,196 350,196 C 430,196 430,372 480,368 C 520,364 530,236 580,236 C 630,236 640,356 686,346 C 716,340 730,300 760,304 C 800,310 850,392 900,398 L 900,400 L 150,400 Z" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+
+  <text x="350" y="176" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0c4a6e">① 接口本身 · ms 级</text>
+  <text x="580" y="216" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0c4a6e">② 下游超时 / 重试 · 百 ms~s 级</text>
+  <text x="788" y="288" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0c4a6e">③ 连接问题 · 秒级以上</text>
+
+  <line x1="762" y1="400" x2="762" y2="132" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="7 5"/>
+  <text x="762" y="122" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b91c1c">超时值 3 s（示例）</text>
+
+  <g stroke="#94a3b8" stroke-width="1.1">
+    <line x1="150" y1="400" x2="150" y2="316"/>
+    <line x1="278" y1="400" x2="278" y2="204"/>
+    <line x1="406" y1="400" x2="406" y2="152"/>
+    <line x1="534" y1="400" x2="534" y2="152"/>
+    <line x1="662" y1="400" x2="662" y2="152"/>
+    <line x1="790" y1="400" x2="790" y2="152"/>
+  </g>
+  <text x="452" y="140" text-anchor="middle" font-size="12" fill="#64748b">默认线性分桶：等宽边界把 ①② 两峰挤进同一区间的头几个桶，超时的那批全塞进最后一个桶</text>
+
+  <rect x="742" y="446" width="200" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="842" y="466" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">分桶要覆盖到超时值</text>
+  <text x="842" y="484" text-anchor="middle" font-size="11.5" fill="#166534">3 s 附近要有边界（对数间距）</text>
+  <text x="30" y="466" font-size="12.5" fill="#0f172a">判据：「P99 = 200 ms」可能只是桶不够——超时的那些都被塞进了最后一个桶。</text>
+  <text x="30" y="488" font-size="12.5" fill="#0f172a">所以分桶边界要一直覆盖到「你的超时值」，而不是只密在低段。</text>
+</svg>

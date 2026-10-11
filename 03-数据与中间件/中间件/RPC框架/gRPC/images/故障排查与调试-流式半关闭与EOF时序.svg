@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="arr5g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arr5r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">流式的唯一结束条件是 io.EOF：客户端不 CloseSend，服务端就没有结束条件</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">bidiHandler 是 for i := 1; ; i++ 的无条件循环——「卡住」不是玄学，是代码结构决定的（第五节）</text>
+
+  <rect x="90" y="88" width="220" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="200" y="115" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">客户端流</text>
+  <rect x="490" y="88" width="220" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="600" y="115" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">服务端 handler 循环</text>
+
+  <line x1="200" y1="132" x2="200" y2="420" stroke="#94a3b8" stroke-dasharray="4 4"/>
+  <line x1="600" y1="132" x2="600" y2="420" stroke="#94a3b8" stroke-dasharray="4 4"/>
+
+  <line x1="200" y1="160" x2="594" y2="160" stroke="#475569" stroke-width="1.6" marker-end="url(#arr5)"/>
+  <text x="397" y="152" text-anchor="middle" font-size="12" fill="#0f172a">SendMsg × N（正常收发）</text>
+  <line x1="200" y1="200" x2="594" y2="200" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arr5g)"/>
+  <text x="397" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">CloseSend() —— 发完立刻半关闭</text>
+  <rect x="460" y="216" width="280" height="42" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="600" y="234" text-anchor="middle" font-size="11.5" fill="#166534">RecvMsg 返回 io.EOF</text>
+  <text x="600" y="251" text-anchor="middle" font-size="11.5" fill="#166534">→ 循环退出（唯一的退出条件）</text>
+  <line x1="600" y1="286" x2="206" y2="286" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arr5g)"/>
+  <text x="403" y="278" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">回汇总结果 → 客户端 Recv 到 trailer OK</text>
+
+  <line x1="200" y1="330" x2="594" y2="330" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arr5r)"/>
+  <text x="397" y="322" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">✗ 忘了 CloseSend（Java 是忘 onCompleted）</text>
+  <rect x="460" y="344" width="280" height="40" rx="6" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="600" y="362" text-anchor="middle" font-size="11.5" fill="#991b1b">RecvMsg 一直阻塞在第 N+1 次收</text>
+  <text x="600" y="378" text-anchor="middle" font-size="11.5" fill="#991b1b">服务端永远不回汇总 → 「卡住」</text>
+  <line x1="200" y1="404" x2="594" y2="404" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arr5r)"/>
+  <text x="397" y="396" text-anchor="middle" font-size="12" fill="#b91c1c">✗ 客户端已走：取消信号也要服务端「接得住」</text>
+
+  <line x1="20" y1="446" x2="980" y2="446" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="40" y="464" width="440" height="96" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="260" y="488" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">卡住形态① 服务端一直等、不回汇总</text>
+  <text x="60" y="512" font-size="12" fill="#334155">根因：客户端没 CloseSend()（Java 没 onCompleted()）</text>
+  <text x="60" y="534" font-size="12" fill="#334155">处置：发完立刻半关闭</text>
+
+  <rect x="520" y="464" width="440" height="96" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="740" y="488" text-anchor="middle" font-size="13" font-weight="bold" fill="#991b1b">卡住形态② 服务端一直发、客户端早走了</text>
+  <text x="540" y="512" font-size="12" fill="#334155">根因：handler 不看 ctx.Done()、不看 SendMsg 的 error</text>
+  <text x="540" y="534" font-size="12" fill="#334155">处置：return err 向上抛；select 里带 ctx.Done()</text>
+
+  <text x="40" y="596" font-size="12.5" fill="#0f172a">⭐ 第三种「假卡住」：正常结束却走进错误分支——把 io.EOF 当失败；先判 err == io.EOF，再判 err != nil。</text>
+</svg>

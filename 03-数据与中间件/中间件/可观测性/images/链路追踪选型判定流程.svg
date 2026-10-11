@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="lt1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">链路追踪选型判定流程：先按主语言定方向</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">再看是否需要「开箱即用的 APM 大盘 + 拓扑 + 告警」；探针成熟度往往是隐性成本最高的一项</text>
+
+  <rect x="40" y="80" width="440" height="56" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="60" y="104" font-size="14" font-weight="bold" fill="#0f172a">埋点：新项目一律用 OpenTelemetry</text>
+  <text x="60" y="125" font-size="11.5" fill="#64748b">埋点最难迁移（代码侵入、跨团队协调），协议先标准化</text>
+  <rect x="538" y="80" width="422" height="56" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="558" y="104" font-size="14" font-weight="bold" fill="#0f172a">后端：只是「可替换的实现」</text>
+  <text x="558" y="125" font-size="11.5" fill="#64748b">下面四问按团队现状逐条判定，命中即走对应方案</text>
+
+  <rect x="40" y="160" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="186" font-size="14" font-weight="bold" fill="#1e3a8a">Java 为主 + 要开箱即用的 APM、拓扑、告警？</text>
+  <text x="60" y="208" font-size="11.5" fill="#1d4ed8">团队没有专人做可观测性建设</text>
+  <line x1="480" y1="191" x2="534" y2="191" stroke="#334155" stroke-width="1.6" marker-end="url(#lt1)"/>
+  <rect x="538" y="160" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="186" font-size="14" font-weight="bold" fill="#14532d">SkyWalking 主线</text>
+  <text x="558" y="208" font-size="11.5" fill="#166534">无侵入 Agent，-javaagent 一天可上线 · 强绑 sw8 协议</text>
+
+  <rect x="40" y="238" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="264" font-size="14" font-weight="bold" fill="#1e3a8a">Go 为主 / 多语言 / 已用 OTel？</text>
+  <text x="60" y="286" font-size="11.5" fill="#1d4ed8">⚠️ SkyWalking 在 Go 侧只能编译期注入，插件与灵活性弱</text>
+  <line x1="480" y1="269" x2="534" y2="269" stroke="#334155" stroke-width="1.6" marker-end="url(#lt1)"/>
+  <rect x="538" y="238" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="264" font-size="14" font-weight="bold" fill="#14532d">Jaeger / Tempo + OTel</text>
+  <text x="558" y="286" font-size="11.5" fill="#166534">指标交 Prometheus · Tempo 便宜但只能按 TraceID 精查</text>
+
+  <rect x="40" y="316" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="342" font-size="14" font-weight="bold" fill="#1e3a8a">小规模系统、内部工具、临时排查？</text>
+  <text x="60" y="364" font-size="11.5" fill="#1d4ed8">只要能跑通链路，不要拓扑与告警</text>
+  <line x1="480" y1="347" x2="534" y2="347" stroke="#334155" stroke-width="1.6" marker-end="url(#lt1)"/>
+  <rect x="538" y="316" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="342" font-size="14" font-weight="bold" fill="#14532d">Zipkin</text>
+  <text x="558" y="364" font-size="11.5" fill="#166534">轻量、上手最快、依赖少 · 社区演进放缓</text>
+
+  <rect x="40" y="394" width="440" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="60" y="420" font-size="14" font-weight="bold" fill="#1e3a8a">小团队、无专职 SRE，愿意用预算换人力？</text>
+  <text x="60" y="442" font-size="11.5" fill="#1d4ed8">接受按量计费与数据出网合规约束</text>
+  <line x1="480" y1="425" x2="534" y2="425" stroke="#334155" stroke-width="1.6" marker-end="url(#lt1)"/>
+  <rect x="538" y="394" width="422" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="558" y="420" font-size="14" font-weight="bold" fill="#14532d">云厂商托管（ARMS / X-Ray 等）</text>
+  <text x="558" y="442" font-size="11.5" fill="#166534">免运维、与云资源打通 · 深度绑定、流量大时贵</text>
+
+  <line x1="20" y1="480" x2="980" y2="480" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="508" font-size="13" fill="#0f172a">⭐ 探针不成熟不是「少几个 span」，而是排障能力缺失：拿不到方法级耗时、跨线程/跨协程断链、日志关联不上 traceId。</text>
+  <text x="40" y="534" font-size="13" fill="#0f172a">⚠️ SkyWalking 与 OTel/Jaeger 不要并行双报：双份探针 = 双份开销 + 两套 UI，只在按 ID 精查时临时开另一个。</text>
+  <text x="40" y="560" font-size="12" fill="#64748b">PHP / 多语言混合团队优先 OTel 路线：各语言同一套 OTLP，跨语言唯一约束是「传播头统一」；必须用 SkyWalking 时先验证最弱那门语言的探针。</text>
+</svg>

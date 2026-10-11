@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rl1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Redis 锁为什么会被双持：异步复制 + 主故障切换</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">争议的根源不是实现细节，而是「在异步复制的系统上追求强一致是否可能」</text>
+
+  <rect x="40" y="86" width="200" height="60" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="140" y="112" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">客户端 A</text>
+  <text x="140" y="133" text-anchor="middle" font-size="11.5" fill="#64748b">旧锁持有者</text>
+  <line x1="240" y1="116" x2="354" y2="116" stroke="#334155" stroke-width="1.6" marker-end="url(#rl1)"/>
+  <text x="297" y="106" text-anchor="middle" font-size="11.5" fill="#334155">① SET NX PX 成功</text>
+  <rect x="358" y="86" width="250" height="60" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="483" y="112" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">Redis 主</text>
+  <text x="483" y="133" text-anchor="middle" font-size="11.5" fill="#1d4ed8">锁已写入：key = A，PX 计时</text>
+  <line x1="608" y1="116" x2="714" y2="116" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#rl1)"/>
+  <rect x="718" y="86" width="250" height="60" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="843" y="112" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">Redis 从（副本）</text>
+  <text x="843" y="133" text-anchor="middle" font-size="11.5" fill="#64748b">② 异步复制滞后：锁还没到</text>
+
+  <rect x="290" y="192" width="420" height="58" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="500" y="217" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">③ 主宕机：锁还没来得及同步出去</text>
+  <text x="500" y="238" text-anchor="middle" font-size="11.5" fill="#b91c1c">这把锁只存在于旧主的内存里</text>
+  <line x1="500" y1="250" x2="500" y2="272" stroke="#334155" stroke-width="1.6" marker-end="url(#rl1)"/>
+
+  <rect x="290" y="276" width="420" height="58" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="500" y="301" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">④ 从被提升为新主</text>
+  <text x="500" y="322" text-anchor="middle" font-size="11.5" fill="#b91c1c">新主内存里没有这把锁 —— 锁丢了</text>
+  <line x1="500" y1="334" x2="500" y2="356" stroke="#334155" stroke-width="1.6" marker-end="url(#rl1)"/>
+
+  <rect x="40" y="360" width="200" height="58" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="140" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">客户端 B</text>
+  <text x="140" y="406" text-anchor="middle" font-size="11.5" fill="#64748b">后来者</text>
+  <line x1="240" y1="389" x2="286" y2="389" stroke="#334155" stroke-width="1.6" marker-end="url(#rl1)"/>
+  <text x="263" y="379" text-anchor="middle" font-size="11.5" fill="#334155">⑤ 取锁</text>
+  <rect x="290" y="360" width="420" height="58" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="385" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">⑤ B 向新主 SET NX PX 也拿到了锁</text>
+  <text x="500" y="406" text-anchor="middle" font-size="11.5" fill="#1d4ed8">A 不知道自己已失锁，仍按持有者继续</text>
+  <line x1="500" y1="418" x2="500" y2="440" stroke="#334155" stroke-width="1.6" marker-end="url(#rl1)"/>
+
+  <rect x="290" y="444" width="420" height="58" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="500" y="469" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">⑥ A 与 B 同时持锁 · 双双进入临界区</text>
+  <text x="500" y="490" text-anchor="middle" font-size="11.5" fill="#b91c1c">这就是「异步复制系统上追求强一致不可能」的具体形态</text>
+  <line x1="500" y1="502" x2="500" y2="524" stroke="#334155" stroke-width="1.6" marker-end="url(#rl1)"/>
+
+  <rect x="290" y="528" width="420" height="58" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="553" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">工程正解：让临界区本身幂等</text>
+  <text x="500" y="574" text-anchor="middle" font-size="11.5" fill="#166534">唯一键去重 / 版本号 CAS —— 即使都进了临界区，结果仍正确</text>
+
+  <text x="40" y="616" font-size="13" fill="#0f172a">⭐ Redlock 想用「多数派 + 时钟漂移上界」补这个洞，但它仍依赖时钟假设与各节点互相独立的失效模型，因此一直存在争论。</text>
+  <text x="40" y="642" font-size="13" fill="#0f172a">⚠️ 需要强一致时才改用 etcd / ZooKeeper；此时付出的是写性能与运维成本。</text>
+</svg>
