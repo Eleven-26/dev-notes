@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 490" width="1000" height="490" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#475569"/>
+    </marker>
+    <marker id="d2" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="d3" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="490" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">死锁的循环等待与等待图</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">两个事务各持一把锁、又各等对方那把；等待图连成环，就是死锁</text>
+
+  <rect x="30" y="80" width="470" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="50" y="106" font-size="14" font-weight="bold" fill="#0f172a">资源视图：谁持有什么、谁在等什么</text>
+
+  <rect x="70" y="118" width="130" height="58" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.3" rx="8"/>
+  <text x="135" y="152" font-size="13" font-weight="bold" fill="#3730a3" text-anchor="middle">事务 T1</text>
+
+  <rect x="330" y="118" width="130" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3" rx="8"/>
+  <text x="395" y="152" font-size="13" font-weight="bold" fill="#991b1b" text-anchor="middle">行 A</text>
+
+  <rect x="70" y="272" width="130" height="58" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3" rx="8"/>
+  <text x="135" y="306" font-size="13" font-weight="bold" fill="#991b1b" text-anchor="middle">行 B</text>
+
+  <rect x="330" y="272" width="130" height="58" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.3" rx="8"/>
+  <text x="395" y="306" font-size="13" font-weight="bold" fill="#3730a3" text-anchor="middle">事务 T2</text>
+
+  <line x1="200" y1="147" x2="326" y2="147" stroke="#16a34a" stroke-width="1.8" marker-end="url(#d1)"/>
+  <text x="263" y="139" font-size="11" fill="#15803d" text-anchor="middle">持有</text>
+
+  <line x1="330" y1="301" x2="204" y2="301" stroke="#16a34a" stroke-width="1.8" marker-end="url(#d1)"/>
+  <text x="263" y="293" font-size="11" fill="#15803d" text-anchor="middle">持有</text>
+
+  <line x1="135" y1="176" x2="135" y2="268" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#d3)"/>
+  <text x="150" y="224" font-size="11" fill="#1d4ed8">T1 等待行 B</text>
+
+  <line x1="395" y1="272" x2="395" y2="180" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#d3)"/>
+  <text x="410" y="228" font-size="11" fill="#1d4ed8">T2 等待行 A</text>
+
+  <rect x="520" y="80" width="450" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="540" y="106" font-size="14" font-weight="bold" fill="#0f172a">等待图（wait-for graph）</text>
+
+  <rect x="570" y="158" width="120" height="58" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.3" rx="28"/>
+  <text x="630" y="192" font-size="13" font-weight="bold" fill="#3730a3" text-anchor="middle">T1</text>
+
+  <rect x="810" y="158" width="120" height="58" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.3" rx="28"/>
+  <text x="870" y="192" font-size="13" font-weight="bold" fill="#3730a3" text-anchor="middle">T2</text>
+
+  <path d="M690,172 C745,148 755,148 808,172" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#d2)"/>
+  <text x="749" y="142" font-size="11" fill="#991b1b" text-anchor="middle">T1 等 T2</text>
+
+  <path d="M808,204 C755,228 745,228 690,204" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#d2)"/>
+  <text x="749" y="250" font-size="11" fill="#991b1b" text-anchor="middle">T2 等 T1</text>
+
+  <text x="749" y="316" font-size="13" font-weight="bold" fill="#dc2626" text-anchor="middle">出现环 ⇒ 死锁</text>
+  <text x="749" y="342" font-size="11" fill="#64748b" text-anchor="middle">无环 = 有向无环图，只是普通排队</text>
+
+  <rect x="30" y="396" width="940" height="76" fill="#fff7ed" stroke="#b45309" stroke-width="1.1" rx="10"/>
+  <text x="50" y="420" font-size="12.5" fill="#334155">破坏四个条件中的任意一个即可阻断死锁： ① 互斥   ② 请求与保持   ③ 不可剥夺</text>
+  <text x="50" y="442" font-size="12.5" fill="#334155">④ 循环等待 ← 现实中唯一容易破的一条：全局统一加锁顺序（如按主键升序）即可击破</text>
+  <text x="50" y="464" font-size="12.5" fill="#b45309">①②③ 几乎无法消除（锁天生互斥、事务天生边持有边申请、锁天生不可抢占），所以防治聚焦在 ④。</text>
+</svg>
