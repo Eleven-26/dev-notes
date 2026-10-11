@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">搜索与分析数据存储：两种物理组织</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">倒排与列式都是「为某类查询重建的物化视图」；本图为形态示意，不构成产品排名</text>
+
+  <rect x="30" y="78" width="450" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="79" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="101" font-size="14" font-weight="bold" fill="#0f172a">A 检索副本：倒排索引</text>
+  <text x="46" y="136" font-size="12" fill="#334155">词 → 文档 ID 列表，查询 = 列表求交 / 并</text>
+  <text x="46" y="160" font-size="12" fill="#334155">写入放大：一个文档的每个词都要更新列表</text>
+  <text x="46" y="184" font-size="12" fill="#334155">→ 用不可变的段 + 后台合并（LSM 思路）</text>
+  <text x="46" y="208" font-size="12" fill="#334155">索引常比原文还大（还要存位置信息）</text>
+  <text x="46" y="240" font-size="12" fill="#b91c1c">注意：分词一改，就要整体重索引</text>
+  <text x="46" y="264" font-size="11.5" fill="#64748b">要点：为「按词找」优化，所以为「找」付写代价</text>
+
+  <rect x="520" y="78" width="450" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="521" y="79" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="536" y="101" font-size="14" font-weight="bold" fill="#0f172a">B 分析副本：列式存储</text>
+  <text x="536" y="136" font-size="12" fill="#334155">同一列数据连续存放，类型相同</text>
+  <text x="536" y="160" font-size="12" fill="#334155">压缩比高（字典编码 / 行程编码）</text>
+  <text x="536" y="184" font-size="12" fill="#334155">扫描只读涉及的列，少读一大截</text>
+  <text x="536" y="208" font-size="12" fill="#334155">随机点查慢、更新难，偏好批量追加</text>
+  <text x="536" y="240" font-size="12" fill="#b91c1c">注意：所以它天然是「只追加的分析副本」</text>
+  <text x="536" y="264" font-size="11.5" fill="#64748b">要点：为「按列算」优化，所以为「算」付写入代价</text>
+
+  <rect x="30" y="296" width="940" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="297" width="938" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="319" font-size="14" font-weight="bold" fill="#0f172a">C 为什么它们必然「不一致」</text>
+  <text x="46" y="352" font-size="12" fill="#334155">两者都是权威源的派生副本（存储角色里的「检索副本 / 分析副本」）</text>
+  <text x="46" y="378" font-size="12" fill="#334155">副本同步有延迟 → 「刚写的搜不到 / 统计不到」是设计使然，不是 bug</text>
+  <text x="46" y="404" font-size="12" fill="#334155">要求写后立即可搜 → 只能同步写副本（贵、脆、双写易错）</text>
+  <text x="46" y="430" font-size="12" fill="#1d4ed8">判据：先问「能不能接受延迟」，不能就只能在代价上让步</text>
+
+  <rect x="30" y="462" width="940" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="463" width="938" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="485" font-size="14" font-weight="bold" fill="#0f172a">D 聚合的三种口径</text>
+  <text x="46" y="516" font-size="12" fill="#334155">精确：列存全量扫（列存的强项）—— 高基数分组会吃满内存</text>
+  <text x="46" y="540" font-size="12" fill="#334155">近似：基数用基数估计、分位用可合并的近似结构 —— 有误差但可控</text>
+  <text x="46" y="564" font-size="12" fill="#334155">预计算：按常用维度提前聚合好 —— 维度组合爆炸，上游一改要重算</text>
+
+  <rect x="30" y="608" width="940" height="44" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="634" font-size="12" fill="#1e3a8a">三条判据：① 都是为某类查询重建的物化视图；② 派生副本必然有延迟；③ 聚合先问能不能容忍误差</text>
+</svg>

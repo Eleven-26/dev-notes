@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">向量数据的存储形态与检索路径</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">内存数字是「条数 × 维度 × 字节」的算术换算，不是实测读数；本图不构成引擎排名</text>
+
+  <rect x="30" y="78" width="450" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="79" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="101" font-size="14" font-weight="bold" fill="#0f172a">A 为什么比较大小的索引失效</text>
+  <text x="46" y="136" font-size="12" fill="#334155">索引建立在「全序」上：给定 key 能靠比大小二分下去</text>
+  <text x="46" y="160" font-size="12" fill="#334155">向量只有「距离」，而距离不构成全序</text>
+  <text x="46" y="184" font-size="12" fill="#334155">维度灾难：高维下近邻与远邻的距离被抹平</text>
+  <text x="46" y="208" font-size="12" fill="#334155">逐维切分的树（KD 树）在高维退化成接近全扫</text>
+  <text x="46" y="238" font-size="12" fill="#1d4ed8">要点：没有全序，就只能做近似索引（ANN）</text>
+  <text x="46" y="262" font-size="11.5" fill="#64748b">近似 = 用可调的召回率，换几个数量级的延迟</text>
+
+  <rect x="520" y="78" width="450" height="206" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="521" y="79" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="536" y="101" font-size="14" font-weight="bold" fill="#0f172a">B 四种近似索引，各自省在哪</text>
+  <text x="536" y="134" font-size="12" fill="#334155">聚簇倒排（IVF）：只扫距离最近的几桶</text>
+  <text x="548" y="152" font-size="11" fill="#64748b">旋钮 = 扫几个桶 → 召回 ↔ 延迟</text>
+  <text x="536" y="176" font-size="12" fill="#334155">分层图（HNSW）：召回高、延迟低</text>
+  <text x="548" y="194" font-size="11" fill="#64748b">代价 = 内存最贵、构建慢、删除难</text>
+  <text x="536" y="218" font-size="12" fill="#334155">量化（PQ）：用压缩表示算近似距离</text>
+  <text x="548" y="236" font-size="11" fill="#64748b">代价 = 精度损失，常叠加在图 / 倒排上</text>
+  <text x="536" y="260" font-size="12" fill="#334155">磁盘常驻：索引落盘、内存只放热的</text>
+  <text x="548" y="278" font-size="11" fill="#64748b">代价 = 延迟高一个量级，靠 SSD 兜</text>
+
+  <rect x="30" y="296" width="940" height="164" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="297" width="938" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="319" font-size="14" font-weight="bold" fill="#0f172a">C 向量 + 标量过滤：两种做法都别扭</text>
+  <text x="46" y="352" font-size="12" fill="#334155">后过滤：先 ANN 取 top-N，再按标量筛 → 筛太狠时剩下的不足 k，只能加大 N 重试</text>
+  <text x="46" y="378" font-size="12" fill="#334155">预过滤：先按标量筛出子集，再做 ANN → 子集太小 / 太散时索引退化，接近暴力扫</text>
+  <text x="46" y="404" font-size="12" fill="#334155">混合遍历：把标量条件编进图的遍历 → 效果最好，也是各家引擎的分水岭</text>
+  <text x="46" y="434" font-size="12" fill="#1d4ed8">判据：过滤条件的选择性越强，「后过滤」越不可行</text>
+
+  <rect x="30" y="472" width="940" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="473" width="938" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="495" font-size="14" font-weight="bold" fill="#0f172a">D 内存就是乘法：条数 × 维度 × 每维字节</text>
+  <text x="46" y="524" font-size="12" fill="#334155">float32：768 维 × 4 B ≈ 3 KB/条 → 1 亿条 ≈ 300 GB</text>
+  <text x="46" y="545" font-size="12" fill="#334155">int8 量化：768 维 × 1 B ≈ 0.75 KB/条 → 1 亿条 ≈ 75 GB</text>
+  <text x="46" y="566" font-size="12" fill="#334155">PQ：≈ 8 B/条 → 1 亿条 ≈ 0.8 GB（精度明显下降）</text>
+  <text x="46" y="587" font-size="12" fill="#b91c1c">注意：图类索引的邻居表要另算，常与向量本体同量级</text>
+
+  <rect x="30" y="604" width="940" height="44" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="630" font-size="12" fill="#1e3a8a">三条判据：① 没有全序 → 只能近似索引；② 过滤选择性越强，后过滤越不可行；③ 它是派生副本，必须有重建路径</text>
+</svg>

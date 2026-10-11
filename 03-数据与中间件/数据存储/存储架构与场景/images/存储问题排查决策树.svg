@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">遇到存储问题怎么走：一张排查决策树</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">先按症状分两支，再就近落到形态篇；本图为路径示意，不构成任何性能排名</text>
+
+  <rect x="340" y="72" width="320" height="40" rx="9" fill="#eef2ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="500" y="97" text-anchor="middle" font-size="13" font-weight="bold" fill="#3730a3">遇到存储问题：慢 / 贵 / 查不了</text>
+
+  <line x1="500" y1="112" x2="500" y2="132" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#ar)"/>
+  <rect x="250" y="134" width="500" height="44" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="500" y="162" text-anchor="middle" font-size="12.5" fill="#0f172a">① 先分：是「读慢 / 查不了」，还是「写不动 / 存太贵」？</text>
+
+  <line x1="500" y1="178" x2="500" y2="196" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="250" y1="196" x2="750" y2="196" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="250" y1="196" x2="250" y2="206" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#ar)"/>
+  <line x1="750" y1="196" x2="750" y2="206" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#ar)"/>
+
+  <rect x="30" y="208" width="450" height="192" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="209" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="231" font-size="14" font-weight="bold" fill="#0f172a">A 写不动 / 存太贵</text>
+  <text x="46" y="266" font-size="12" fill="#1d4ed8">访问集中到同一个对象？→ 热点数据存储.md</text>
+  <text x="46" y="292" font-size="12" fill="#1d4ed8">贵的介质存了几乎不读的数据？→ 冷热数据分层.md</text>
+  <text x="46" y="318" font-size="12" fill="#1d4ed8">大文件 / 归档塞不进库？→ 对象与文件数据存储.md</text>
+  <text x="46" y="344" font-size="12" fill="#1d4ed8">都不像？→ 存储选型与组合.md（拆角色 / 多存储组合）</text>
+  <text x="46" y="378" font-size="11.5" fill="#64748b">提示：先按「症状」分，不按「组件名」分</text>
+
+  <rect x="520" y="208" width="450" height="192" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="521" y="209" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="536" y="231" font-size="14" font-weight="bold" fill="#0f172a">B 读慢 / 查不了</text>
+  <text x="536" y="266" font-size="12" fill="#1d4ed8">实体之间的关系（关注 / 好友）？→ 关系数据存储.md</text>
+  <text x="536" y="292" font-size="12" fill="#1d4ed8">一棵树 / 层级（类目、组织架构）？→ 层级与树形数据存储.md</text>
+  <text x="536" y="318" font-size="12" fill="#1d4ed8">最近一段 / 按时间（消息、日志）？→ 时序数据存储.md</text>
+  <text x="536" y="344" font-size="12" fill="#1d4ed8">相似 / 语义（embedding）？→ 向量数据存储.md</text>
+  <text x="536" y="370" font-size="12" fill="#1d4ed8">按词找 / 按列算？→ 搜索与分析数据存储.md</text>
+
+  <rect x="30" y="416" width="940" height="118" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="442" font-size="13" font-weight="bold" fill="#1e40af">收口判据（不分症状，都先过这三关）</text>
+  <text x="46" y="472" font-size="12" fill="#1e3a8a">① 先定位瓶颈在哪个物理资源——CPU / 网络 / 锁 / 磁盘，别一上来就拆</text>
+  <text x="46" y="496" font-size="12" fill="#1e3a8a">② 单节点没被打满 → 拆分没有收益；收益只来自「拆到不同节点」</text>
+  <text x="46" y="520" font-size="12" fill="#1e3a8a">③ 「这份数据丢了能不能重建」决定它是权威源还是副本——只有副本才谈得上换存储</text>
+</svg>
