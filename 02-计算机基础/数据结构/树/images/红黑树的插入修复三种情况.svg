@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 775" width="1000" height="775" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="775" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">红黑树插入修复的三种情况（对称共六种，这里只画「父是左孩子」的一侧）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">g = 祖父、p = 父、u = 叔叔、z = 新插入的红色节点；深色实心 = 黑节点，浅红 = 红节点</text>
+
+  <g transform="translate(20,76)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="20" y="32" font-size="16" font-weight="bold" fill="#0f172a">情况 1：叔叔是红 → 只变色，不旋转</text>
+    <text x="20" y="56" font-size="12.5" fill="#64748b">条件：z 的叔叔 u 是红节点（这是插入后唯一会「变色后继续」的分支）</text>
+    <line x1="160" y1="92" x2="105" y2="134" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="160" y1="92" x2="215" y2="134" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="105" y1="134" x2="72" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="160" cy="92" r="16" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="160" y="92" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#f8fafc">g</text>
+    <circle cx="105" cy="134" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="105" y="134" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">p</text>
+    <circle cx="215" cy="134" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="215" y="134" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">u</text>
+    <circle cx="72" cy="176" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="72" y="176" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">z</text>
+    <text x="330" y="88" font-size="13" fill="#334155">要点：p 与 u 染黑、g 染红 —— 只改颜色，不动指针</text>
+    <text x="330" y="114" font-size="13" fill="#334155">代价：本棵子树黑高不变，但 g 变红后可能顶到它的父节点</text>
+    <text x="330" y="140" font-size="13" fill="#334155">于是把 g 当作「新插入的红节点」，问题上移两层继续判</text>
+    <text x="330" y="166" font-size="13" fill="#b45309">注意：可能一路上移到根（变色 O(log n) 次），全程 0 次旋转</text>
+  </g>
+
+  <g transform="translate(20,288)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="20" y="32" font-size="16" font-weight="bold" fill="#0f172a">情况 2：叔叔是黑，且 z 是「内侧」孩子 → 先旋转摆正</text>
+    <text x="20" y="56" font-size="12.5" fill="#64748b">条件：u 是黑，且 p 是左孩子、z 是 p 的右孩子（内侧）；镜像情形左右对调</text>
+    <line x1="160" y1="92" x2="105" y2="134" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="160" y1="92" x2="215" y2="134" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="105" y1="134" x2="138" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="160" cy="92" r="16" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="160" y="92" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#f8fafc">g</text>
+    <circle cx="105" cy="134" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="105" y="134" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">p</text>
+    <circle cx="215" cy="134" r="16" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="215" y="134" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#f8fafc">u</text>
+    <circle cx="138" cy="176" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="138" y="176" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">z</text>
+    <text x="330" y="88" font-size="13" fill="#334155">要点：内侧插入一次旋转修不好，会从「左重」变成「另一种左重」</text>
+    <text x="330" y="114" font-size="13" fill="#334155">处理：以 p 为轴左旋，把 z 转到外侧 → 形态立刻变成情况 3</text>
+    <text x="330" y="140" font-size="13" fill="#334155">旋转只改 p 与 z 两个指针，且中序不变（仍是合法 BST）</text>
+    <text x="330" y="166" font-size="13" fill="#b45309">注意：这次旋转只是「摆正形态」，真正结束修复的是接下来的情况 3</text>
+  </g>
+
+  <g transform="translate(20,500)">
+    <rect x="0" y="0" width="960" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="20" y="32" font-size="16" font-weight="bold" fill="#0f172a">情况 3：叔叔是黑，且 z 是「外侧」孩子 → 变色 + 旋转，结束</text>
+    <text x="20" y="56" font-size="12.5" fill="#64748b">条件：u 是黑，且 p 是左孩子、z 也是 p 的左孩子（外侧）；镜像情形左右对调</text>
+    <line x1="160" y1="92" x2="105" y2="134" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="160" y1="92" x2="215" y2="134" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="105" y1="134" x2="72" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="160" cy="92" r="16" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="160" y="92" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#f8fafc">g</text>
+    <circle cx="105" cy="134" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="105" y="134" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">p</text>
+    <circle cx="215" cy="134" r="16" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="215" y="134" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#f8fafc">u</text>
+    <circle cx="72" cy="176" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+    <text x="72" y="176" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#7f1d1d">z</text>
+    <text x="330" y="88" font-size="13" fill="#334155">处理：p 染黑、g 染红，再以 g 为轴右旋 → 该子树黑高复原，修复结束</text>
+    <text x="330" y="114" font-size="13" fill="#334155">旋转后 p 上位成这棵子树的新根，g 变成它的右孩子</text>
+    <text x="330" y="140" font-size="13" fill="#16a34a">结果：不再有「父子双红」，且各路径黑高与插入前一致</text>
+    <text x="330" y="166" font-size="13" fill="#b45309">注意：情况 2 + 3 合计最多 2 次旋转 —— 这就是「插入最多 2 次旋转」</text>
+  </g>
+
+  <text x="30" y="730" font-size="13" fill="#334155">着色与旋转的分工：情况 1 只变色（代价极小、可向上传播）；只有情况 2、3 才发生旋转。</text>
+  <text x="30" y="754" font-size="13" fill="#334155">所以「红黑树插入最多 2 次旋转」的准确说法是：变色可能 O(log n) 次，旋转最多 2 次；镜像情形把 left / right 对调即可。</text>
+</svg>
