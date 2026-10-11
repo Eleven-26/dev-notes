@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">冷热分层与统一查询层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">三层按访问频率与介质价位匹配；本图为形态示意，不给阈值数字</text>
+
+  <text x="26" y="150" font-size="12" fill="#64748b" transform="rotate(-90 26 150)">下沉</text>
+  <line x1="52" y1="104" x2="52" y2="340" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="52,348 47,336 57,336" fill="#94a3b8"/>
+
+  <rect x="80" y="88" width="640" height="76" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="98" y="114" font-size="14" font-weight="bold" fill="#991b1b">热层</text>
+  <text x="160" y="114" font-size="12.5" fill="#7f1d1d">Redis / 本地缓存</text>
+  <text x="98" y="140" font-size="12" fill="#7f1d1d">高频读、数据量小：最近会话、当前库存、热门内容</text>
+  <text x="640" y="114" font-size="12" fill="#991b1b">成本最高</text>
+  <text x="626" y="140" font-size="12" fill="#991b1b">读最多</text>
+
+  <rect x="80" y="176" width="640" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="98" y="202" font-size="14" font-weight="bold" fill="#9a3412">温层</text>
+  <text x="160" y="202" font-size="12.5" fill="#7c2d12">MySQL 分区表 / 归档表</text>
+  <text x="98" y="228" font-size="12" fill="#7c2d12">中频、中等体量：近几个月订单、仍可能被查的历史</text>
+  <text x="640" y="202" font-size="12" fill="#9a3412">成本居中</text>
+  <text x="626" y="228" font-size="12" fill="#9a3412">按索引查</text>
+
+  <rect x="80" y="264" width="640" height="76" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="98" y="290" font-size="14" font-weight="bold" fill="#075985">冷层</text>
+  <text x="160" y="290" font-size="12.5" fill="#0c4a6e">对象存储 + 列式文件</text>
+  <text x="98" y="316" font-size="12" fill="#0c4a6e">极低频、体量巨大：一年前的日志、历史归档、备份</text>
+  <text x="640" y="290" font-size="12" fill="#075985">成本最低</text>
+  <text x="626" y="316" font-size="12" fill="#075985">可再生成</text>
+
+  <rect x="740" y="88" width="230" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="855" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">三种下沉策略</text>
+  <line x1="756" y1="122" x2="954" y2="122" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="756" y="148" font-size="12" fill="#334155">按时间：超过 N 天即下沉</text>
+  <text x="756" y="167" font-size="11" fill="#64748b">适合访问随时间明显衰减</text>
+  <text x="756" y="196" font-size="12" fill="#334155">按热度：用 LFU 类统计淘汰</text>
+  <text x="756" y="215" font-size="11" fill="#64748b">适合长尾、不只随时间衰减</text>
+  <text x="756" y="244" font-size="12" fill="#334155">按容量水位：到线就下沉最冷</text>
+  <text x="756" y="263" font-size="11" fill="#64748b">适合内存预算固定、要硬边界</text>
+  <line x1="756" y1="280" x2="954" y2="280" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="756" y="302" font-size="11.5" fill="#b91c1c">注意：分层不等于删除</text>
+  <text x="756" y="322" font-size="11.5" fill="#b91c1c">冷层仍要可查，只是慢</text>
+
+  <rect x="30" y="368" width="940" height="120" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="392" font-size="14" font-weight="bold" fill="#1e40af">统一查询层：把「数据在哪一层」对上层藏起来</text>
+  <text x="46" y="418" font-size="12" fill="#1e3a8a">读请求 → 先查热层 → 未命中查温层 → 仍未命中查冷层 → 命中后按限频回填热层</text>
+  <rect x="46" y="430" width="180" height="34" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="136" y="452" text-anchor="middle" font-size="12" fill="#166534">① 热层：命中即返回</text>
+  <rect x="244" y="430" width="180" height="34" rx="7" fill="#fef9c3" stroke="#ca8a04" stroke-width="1"/>
+  <text x="334" y="452" text-anchor="middle" font-size="12" fill="#854d0e">② 温层：按索引查</text>
+  <rect x="442" y="430" width="180" height="34" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="532" y="452" text-anchor="middle" font-size="12" fill="#075985">③ 冷层：延迟高</text>
+  <rect x="640" y="430" width="300" height="34" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="790" y="452" text-anchor="middle" font-size="12" fill="#991b1b">④ 回填热层：必须限频，否则冷数据灌满热层</text>
+
+  <rect x="30" y="500" width="940" height="64" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="46" y="523" font-size="12.5" font-weight="bold" fill="#0f172a">判据</text>
+  <text x="46" y="545" font-size="12" fill="#334155">冷热边界按访问分布定，不按「几天以前」拍；哪一段承接了绝大多数请求，哪一段就是热层</text>
+</svg>

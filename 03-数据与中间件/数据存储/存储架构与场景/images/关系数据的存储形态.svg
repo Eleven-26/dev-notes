@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">关系数据的存储形态：方向性与分片键</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">读数取自本篇引用的本机实测；本图为形态示意，不构成性能排名</text>
+
+  <rect x="30" y="80" width="450" height="208" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="81" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="103" font-size="14" font-weight="bold" fill="#0f172a">A 有向边：单向关注</text>
+  <text x="46" y="134" font-size="12" fill="#334155">A → B 一条边，两个方向语义完全不同</text>
+  <text x="46" y="157" font-size="12" fill="#334155">「我关注了谁」与「谁关注了我」各是一种查询</text>
+  <text x="46" y="184" font-size="12" fill="#1d4ed8">要点：两个方向各要一份索引或一份数据</text>
+  <text x="46" y="210" font-size="12" fill="#334155">双索引 1.79ms ／ 缺反向索引 39.21ms</text>
+  <text x="46" y="233" font-size="12" fill="#b91c1c">注意：EXPLAIN rows=152000 只为挑出 2003 行</text>
+  <text x="46" y="259" font-size="12" fill="#64748b">约 22 倍差距，全部来自「少了一行索引」</text>
+  <text x="46" y="279" font-size="11.5" fill="#64748b">判据：看 type 与 rows，不看耗时</text>
+
+  <rect x="520" y="80" width="450" height="208" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="521" y="81" width="448" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="536" y="103" font-size="14" font-weight="bold" fill="#0f172a">B 无向边：双向好友</text>
+  <text x="536" y="134" font-size="12" fill="#334155">A—B 一条边，两侧对称、有中间状态</text>
+  <text x="536" y="157" font-size="12" fill="#334155">落库常见两种：一行双向 / 双行双索引</text>
+  <text x="536" y="184" font-size="12" fill="#1d4ed8">要点：主流选双行，用写放大换读简单</text>
+  <text x="536" y="210" font-size="12" fill="#334155">一行双向：查列表要 UNION，索引利用不充分</text>
+  <text x="536" y="233" font-size="12" fill="#334155">双行双索引：两行必须同事务写、同事务删</text>
+  <text x="536" y="259" font-size="12" fill="#b91c1c">注意：漏写一行就是「单向好友」脏数据</text>
+  <text x="536" y="279" font-size="11.5" fill="#64748b">好友按 user_id 分片，两个方向都不广播</text>
+
+  <rect x="30" y="308" width="940" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="309" width="938" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="331" font-size="14" font-weight="bold" fill="#0f172a">C 分片：一个分片键只能优化一个方向</text>
+  <text x="46" y="362" font-size="12" fill="#334155">按 follower_id 分成 4 片后，同一份关系数据的两类查询走向完全相反：</text>
+
+  <rect x="46" y="378" width="150" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="121" y="399" text-anchor="middle" font-size="12" fill="#166534">follow_0</text>
+  <text x="121" y="419" text-anchor="middle" font-size="11" fill="#166534">0 % 4 = 0</text>
+  <rect x="212" y="378" width="150" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="287" y="399" text-anchor="middle" font-size="12" fill="#475569">follow_1</text>
+  <text x="287" y="419" text-anchor="middle" font-size="11" fill="#64748b">未命中</text>
+  <rect x="378" y="378" width="150" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="453" y="399" text-anchor="middle" font-size="12" fill="#475569">follow_2</text>
+  <text x="453" y="419" text-anchor="middle" font-size="11" fill="#64748b">未命中</text>
+  <rect x="544" y="378" width="150" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="619" y="399" text-anchor="middle" font-size="12" fill="#475569">follow_3</text>
+  <text x="619" y="419" text-anchor="middle" font-size="11" fill="#64748b">未命中</text>
+
+  <text x="716" y="397" font-size="12" fill="#166534">查「我关注了谁」：命中 1 片 0.53ms</text>
+  <text x="716" y="420" font-size="12" fill="#b91c1c">查「谁关注了我」：广播 4 片 6.16ms</text>
+  <text x="46" y="452" font-size="12" fill="#1d4ed8">两条出路：正排 + 倒排双写两份（写放大 2 倍换两个方向都不广播）；或接受广播 + 应用层归并</text>
+  <text x="46" y="473" font-size="12" fill="#64748b">广播代价随分片数增长，约 12 倍即 4 次往返叠加；分片数不能无限加</text>
+
+  <rect x="30" y="504" width="940" height="72" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="528" font-size="12.5" font-weight="bold" fill="#1e40af">三条判据</text>
+  <text x="46" y="550" font-size="12" fill="#1e3a8a">① 两个方向都要快吗？要就双索引或双写；只有一个方向被查，单索引够，别白付写代价</text>
+  <text x="46" y="569" font-size="12" fill="#1e3a8a">② 分片键选谁？让高频方向单分片，低频方向接受广播；③ 三跳以上的遍历是不是主查询？是才上图库</text>
+</svg>
