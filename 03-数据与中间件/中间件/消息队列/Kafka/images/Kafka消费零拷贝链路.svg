@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 670" width="1000" height="670" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="670" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Kafka 消费链路上的零拷贝：用户态其实什么都没做</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">传统 read()+write() 要过两趟用户态；sendfile 让数据从 PageCache 直送网卡，用户态只留一次系统调用</text>
+
+  <!-- 上：传统 -->
+  <rect x="20" y="80" width="960" height="192" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+  <text x="40" y="106" font-size="14" font-weight="bold" fill="#9a3412">对照：传统 read() + write() —— 数据被搬了四趟</text>
+
+  <rect x="40" y="150" width="110" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="95" y="182" text-anchor="middle" font-size="12" fill="#334155">磁盘</text>
+  <rect x="200" y="150" width="150" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="275" y="182" text-anchor="middle" font-size="12" fill="#334155">内核 PageCache</text>
+  <rect x="410" y="150" width="150" height="52" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="485" y="182" text-anchor="middle" font-size="12" fill="#7f1d1d">用户缓冲区</text>
+  <rect x="620" y="150" width="150" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="695" y="182" text-anchor="middle" font-size="12" fill="#334155">socket 缓冲区</text>
+  <rect x="830" y="150" width="120" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="890" y="182" text-anchor="middle" font-size="12" fill="#334155">网卡</text>
+
+  <line x1="150" y1="176" x2="196" y2="176" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a1)"/>
+  <line x1="350" y1="176" x2="406" y2="176" stroke="#dc2626" stroke-width="1.6" marker-end="url(#a2)"/>
+  <line x1="560" y1="176" x2="616" y2="176" stroke="#dc2626" stroke-width="1.6" marker-end="url(#a2)"/>
+  <line x1="770" y1="176" x2="826" y2="176" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a1)"/>
+
+  <text x="173" y="142" text-anchor="middle" font-size="10.5" fill="#64748b">DMA</text>
+  <text x="378" y="142" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#dc2626">CPU 拷贝</text>
+  <text x="588" y="142" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#dc2626">CPU 拷贝</text>
+  <text x="798" y="142" text-anchor="middle" font-size="10.5" fill="#64748b">DMA</text>
+
+  <text x="40" y="228" font-size="12.5" fill="#0f172a">4 次拷贝（2 次 CPU + 2 次 DMA）· 2 次系统调用 · 4 次上下文切换。</text>
+  <text x="40" y="252" font-size="12.5" fill="#9a3412">注意：应用既不改也不看这份数据（只是转发），却硬要把它读进自己的地址空间再写出去 —— 这两次 CPU 拷贝是纯浪费。</text>
+
+  <!-- 下：sendfile -->
+  <rect x="20" y="286" width="960" height="196" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="40" y="312" font-size="14" font-weight="bold" fill="#1e3a8a">Kafka 消费：FileChannel.transferTo → sendfile(2)</text>
+
+  <rect x="40" y="352" width="110" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="95" y="384" text-anchor="middle" font-size="12" fill="#334155">磁盘</text>
+  <rect x="200" y="352" width="160" height="52" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="280" y="384" text-anchor="middle" font-size="12" fill="#1e3a8a">内核 PageCache</text>
+  <rect x="440" y="352" width="220" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="550" y="384" text-anchor="middle" font-size="12" fill="#334155">socket 发送缓冲区</text>
+  <rect x="740" y="352" width="200" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="840" y="384" text-anchor="middle" font-size="12" fill="#334155">网卡</text>
+
+  <line x1="150" y1="378" x2="196" y2="378" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a1)"/>
+  <line x1="360" y1="378" x2="436" y2="378" stroke="#2563eb" stroke-width="1.6" marker-end="url(#a3)"/>
+  <line x1="660" y1="378" x2="736" y2="378" stroke="#16a34a" stroke-width="1.8" marker-end="url(#a4)"/>
+
+  <text x="173" y="344" text-anchor="middle" font-size="10.5" fill="#64748b">DMA</text>
+  <text x="398" y="344" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#2563eb">只写描述符</text>
+  <text x="698" y="344" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#16a34a">DMA gather</text>
+
+  <text x="40" y="432" font-size="12.5" fill="#166534">0 次 CPU 拷贝 · 1 次系统调用 · 2 次上下文切换。socket 缓冲区里放的不是数据，而是「页地址 + 长度」。</text>
+  <text x="40" y="456" font-size="12.5" fill="#1e3a8a">用户态在这里只发了一次 sendfile(2) 调用 —— 数据一个字节都没进用户态，应用既没读也没改，所以它才能被跳过。</text>
+
+  <line x1="20" y1="502" x2="980" y2="502" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="526" font-size="12.5" fill="#0f172a">适用范围：Kafka 只在「Broker → Consumer 拉取」这一跳用零拷贝（FileRecords.writeTo → transferTo）；生产写入路径用不到它。</text>
+  <text x="20" y="550" font-size="12.5" fill="#b45309">失效条件一：走 TLS —— 数据必须回用户态加密，sendfile 立刻退化成普通读写。</text>
+  <text x="20" y="574" font-size="12.5" fill="#b45309">失效条件二：Broker 端做消息格式 down-conversion（message.downconversion.enable 默认 true，旧客户端才会触发），数据要被改写。</text>
+  <text x="20" y="598" font-size="12.5" fill="#0f172a">通用判据：任何「要看见或改写字节」的中间层（加解密、压缩、网关改写）都会让零拷贝静默失效。</text>
+  <text x="20" y="624" font-size="12" fill="#64748b">实测对照（apache/kafka:3.9.0，同一份 300 MiB）：Broker 进程 CPU 生产约 30.6 s、消费约 1.8 s —— 消费路径的 CPU 开销与数据量几乎脱钩。</text>
+  <text x="20" y="648" font-size="11.5" fill="#94a3b8">注：本机容器的内核未暴露 /proc/&lt;pid&gt;/io、镜像内也没有 strace，因此上面给的是「CPU 时间对照」，不是对系统调用次数的直接计数。</text>
+
+  <defs>
+    <marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#94a3b8"/></marker>
+    <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#dc2626"/></marker>
+    <marker id="a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#2563eb"/></marker>
+    <marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#16a34a"/></marker>
+  </defs>
+</svg>

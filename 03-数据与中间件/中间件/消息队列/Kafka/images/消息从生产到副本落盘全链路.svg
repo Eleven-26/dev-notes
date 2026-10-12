@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="1000" height="790" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="790" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条消息从生产到副本落盘的完整链路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">Producer 攒批 → Leader 追加到 PageCache 就返回 → Follower 主动来拉并追加 → Leader 推进 HW → 才回「成功」</text>
+
+  <text x="28" y="92" font-size="12.5" font-weight="bold" fill="#334155">谁在做</text>
+  <text x="186" y="92" font-size="12.5" font-weight="bold" fill="#334155">这一步做什么</text>
+
+  <!-- 1 -->
+  <rect x="28" y="102" width="128" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="92" y="122" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Producer</text>
+  <rect x="170" y="102" width="800" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="186" y="126" font-size="13" font-weight="bold" fill="#0f172a">1 · 攒批：send() 按 key 选好分区，进 RecordAccumulator 的批</text>
+  <text x="186" y="148" font-size="11.5" fill="#475569">batch.size 16 KiB、linger.ms 0 —— 同 key 的消息被攒进同一批，这也是「批量压缩」的起点</text>
+
+  <!-- 2 -->
+  <rect x="28" y="172" width="128" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="92" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Producer</text>
+  <rect x="170" y="172" width="800" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="186" y="196" font-size="13" font-weight="bold" fill="#0f172a">2 · 发送：Sender 线程按目标 Broker 取批 → 压缩 → 发一个 PRODUCE 请求</text>
+  <text x="186" y="218" font-size="11.5" fill="#475569">请求只发给该分区的 Leader（客户端从元数据里查到谁是 Leader），Follower 收到也会转交给 Leader</text>
+
+  <!-- 3 -->
+  <rect x="28" y="242" width="128" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="92" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Leader</text>
+  <rect x="170" y="242" width="800" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="186" y="266" font-size="13" font-weight="bold" fill="#0f172a">3 · 接收：网络线程读请求 → 放进共享请求队列，立刻去接下一个连接</text>
+  <text x="186" y="288" font-size="11.5" fill="#475569">num.network.threads 只做「收字节 + 解析」，不做业务逻辑，避免慢请求堵住连接</text>
+
+  <!-- 4 -->
+  <rect x="28" y="312" width="128" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="92" y="332" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Leader</text>
+  <rect x="170" y="312" width="800" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="186" y="336" font-size="13" font-weight="bold" fill="#0f172a">4 · 校验：处理线程取出请求，校验 CRC / 消息格式 / 权限</text>
+  <text x="186" y="358" font-size="11.5" fill="#475569">num.io.threads 负责这一层；校验通过才允许进日志</text>
+
+  <!-- 5 -->
+  <rect x="28" y="382" width="128" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="92" y="402" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Leader</text>
+  <rect x="170" y="382" width="800" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="186" y="406" font-size="13" font-weight="bold" fill="#78350f">5 · 追加：顺序 append 到当前 segment 文件 → 数据进 OS PageCache，返回 LEO</text>
+  <text x="186" y="428" font-size="11.5" fill="#92400e">注意：默认不 fsync（log.flush.interval.messages 默认 Long.MAX_VALUE），刷盘由内核异步决定</text>
+
+  <!-- 6 -->
+  <rect x="28" y="452" width="128" height="30" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="92" y="472" text-anchor="middle" font-size="12" font-weight="bold" fill="#3730a3">Follower</text>
+  <rect x="170" y="452" width="800" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="186" y="476" font-size="13" font-weight="bold" fill="#0f172a">6 · 拉取：ReplicaFetcher 线程主动轮询 Leader —— Leader 从不主动 push</text>
+  <text x="186" y="498" font-size="11.5" fill="#475569">落后超过 replica.lag.time.max.ms（默认 30 s）会被踢出 ISR，不再计入 acks=all 的「all」</text>
+
+  <!-- 7 -->
+  <rect x="28" y="522" width="128" height="30" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="92" y="542" text-anchor="middle" font-size="12" font-weight="bold" fill="#3730a3">Follower</text>
+  <rect x="170" y="522" width="800" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="186" y="546" font-size="13" font-weight="bold" fill="#0f172a">7 · 落自己：追加到自己的日志 → 自己的 PageCache，并回传 fetchOffset</text>
+  <text x="186" y="568" font-size="11.5" fill="#475569">Leader 与 Follower 的日志文件结构完全相同（.log / .index / .timeindex + checkpoint）</text>
+
+  <!-- 8 -->
+  <rect x="28" y="592" width="128" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="92" y="612" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Leader</text>
+  <rect x="170" y="592" width="800" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="186" y="616" font-size="13" font-weight="bold" fill="#1e3a8a">8 · 推进 HW：HW = min(ISR 各副本的 LEO)；acks=all 要求 ISR 全部追平，才回 PRODUCE 成功</text>
+  <text x="186" y="638" font-size="11.5" fill="#1e40af">HW 之前的消息才对消费者可见 —— 所以 HW 不推进时，数据「写进去了但读不到」</text>
+
+  <line x1="20" y1="670" x2="980" y2="670" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="694" font-size="12.5" fill="#0f172a">要点：Leader 与 Follower 之间是「Follower 主动拉」，Leader 只负责维护「各副本拉到了哪」，再据此算出 HW。</text>
+  <text x="20" y="718" font-size="12.5" fill="#0f172a">注意：acks=all 只保证 ISR 都收到并写进各自的 PageCache，不保证落盘 —— 刷盘交给内核（实测默认值 9223372036854775807，等于从不主动 fsync）。</text>
+  <text x="20" y="742" font-size="12.5" fill="#0f172a">实测：同一分区三个副本的 .log 逐字节相同（sha256 一致），三节点上该分区的 size 完全相等、offsetLag = 0。</text>
+  <text x="20" y="766" font-size="12" fill="#64748b">三节点 KRaft 集群（apache/kafka:3.9.0）：order-events 6 分区 3 副本，生产 6000 条后逐节点核对。</text>
+</svg>

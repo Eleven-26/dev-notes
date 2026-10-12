@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">多分区与多副本：两个正交的旋钮</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">分区切的是「数据」（买并行度），副本复制的是「同一份数据」（买冗余）——一个管吞吐，一个管能坏几台</text>
+
+  <!-- 左：分区 -->
+  <rect x="24" y="86" width="464" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="44" y="114" font-size="14" font-weight="bold" fill="#1e3a8a">分区 Partition —— 切「数据」，买并行度</text>
+
+  <text x="44" y="140" font-size="11.5" fill="#64748b">Topic: order-events（6 个分区）</text>
+  <rect x="42" y="148" width="62" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="73" y="168" text-anchor="middle" font-size="11" fill="#1e3a8a">P0</text>
+  <rect x="112" y="148" width="62" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="143" y="168" text-anchor="middle" font-size="11" fill="#1e3a8a">P1</text>
+  <rect x="182" y="148" width="62" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="213" y="168" text-anchor="middle" font-size="11" fill="#1e3a8a">P2</text>
+  <rect x="252" y="148" width="62" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="283" y="168" text-anchor="middle" font-size="11" fill="#1e3a8a">P3</text>
+  <rect x="322" y="148" width="62" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="353" y="168" text-anchor="middle" font-size="11" fill="#1e3a8a">P4</text>
+  <rect x="392" y="148" width="62" height="30" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="423" y="168" text-anchor="middle" font-size="11" fill="#1e3a8a">P5</text>
+
+  <rect x="42" y="196" width="130" height="48" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="107" y="216" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">Broker 1</text>
+  <text x="107" y="234" text-anchor="middle" font-size="10.5" fill="#166534">Leader: P0 P5</text>
+  <rect x="181" y="196" width="130" height="48" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="246" y="216" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">Broker 2</text>
+  <text x="246" y="234" text-anchor="middle" font-size="10.5" fill="#166534">Leader: P1 P3</text>
+  <rect x="320" y="196" width="130" height="48" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="385" y="216" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">Broker 3</text>
+  <text x="385" y="234" text-anchor="middle" font-size="10.5" fill="#166534">Leader: P2 P4</text>
+
+  <text x="44" y="278" font-size="11.5" fill="#0f172a">吞吐 ↑：加分区 = 加并行度（分区是多机并行的基本单位）</text>
+  <text x="44" y="306" font-size="11.5" fill="#0f172a">可靠性 不变：每份数据仍只有 1 个 Leader 对外服务</text>
+  <text x="44" y="334" font-size="11.5" fill="#0f172a">成本 ↑：文件句柄 / 索引内存 / 元数据 / 重平衡耗时</text>
+  <text x="44" y="362" font-size="11.5" fill="#b45309">注意：只能增不能减，hash(key) % n 的映射会变</text>
+  <text x="44" y="390" font-size="11.5" fill="#b45309">→ 同 key 的历史与新消息可能换到不同分区</text>
+  <text x="44" y="414" font-size="11" fill="#64748b">分区数还决定消费并行的天花板（见「部署与配置」的分区数怎么定）</text>
+
+  <!-- 右：副本 -->
+  <rect x="512" y="86" width="464" height="340" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="532" y="114" font-size="14" font-weight="bold" fill="#1e3a8a">副本 Replica —— 复制「同一份」，买冗余</text>
+
+  <text x="532" y="140" font-size="11.5" fill="#64748b">Partition 0（3 个副本，分散到 3 个 Broker）</text>
+  <rect x="530" y="148" width="428" height="42" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="546" y="174" font-size="11.5" fill="#14532d">Broker 1 · Leader —— 读写对外服务</text>
+  <rect x="530" y="198" width="428" height="42" rx="7" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="546" y="224" font-size="11.5" fill="#3730a3">Broker 2 · Follower —— 只拉取同步，不对外服务</text>
+  <rect x="530" y="248" width="428" height="42" rx="7" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+  <text x="546" y="274" font-size="11.5" fill="#3730a3">Broker 3 · Follower —— 只拉取同步，不对外服务</text>
+
+  <text x="532" y="316" font-size="11.5" fill="#0f172a">可靠性 ↑：容忍 rf−1 台同时宕机，从 ISR 里选新 Leader</text>
+  <text x="532" y="344" font-size="11.5" fill="#0f172a">吞吐 不变：Kafka 的读只在 Leader，Follower 不服务读</text>
+  <text x="532" y="372" font-size="11.5" fill="#0f172a">成本 ↑：磁盘 × rf、跨机网络 × rf、副本追赶开销</text>
+  <text x="532" y="400" font-size="11.5" fill="#166534">可随时调整：副本数变化不影响 key → 分区的映射</text>
+
+  <line x1="20" y1="444" x2="980" y2="444" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="468" font-size="12.5" fill="#0f172a">两个旋钮正交：分区管「吞吐天花板」，副本管「能坏几台」。想提吞吐就加分区，想抗宕机就加副本 —— 两者不能互相替代。</text>
+  <text x="20" y="492" font-size="12.5" fill="#0f172a">实测（6 分区 3 副本、三节点 KRaft）：P0..P5 的 Leader 分落 3 个节点；每个分区在 3 个节点上的 size 完全相等、offsetLag 全为 0。</text>
+  <text x="20" y="516" font-size="12.5" fill="#0f172a">实测（停掉 1 台）：ISR 由 1,2,3 收缩为 1,2，P2 的 Leader 自动从 broker 3 改选到 broker 1 —— 副本数不变，可用性少一份。</text>
+  <text x="20" y="540" font-size="12.5" fill="#0f172a">注意：加副本不会提升读吞吐 —— Kafka 的读写都只走 Leader，它没有主从读写分离。</text>
+  <text x="20" y="564" font-size="12" fill="#64748b">来源：apache/kafka:3.9.0，order-events = 6 分区 3 副本；--describe 输出的 Leader / Replicas / Isr 三列即上表口径。</text>
+</svg>
