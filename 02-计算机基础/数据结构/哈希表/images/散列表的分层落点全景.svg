@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="540" fill="#ffffff"/>
+  <text x="40" y="34" font-size="19" font-weight="bold" fill="#0f172a">散列表落点全景：同一把哈希，三层归属</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">归属层决定「四道闸门」怎么配 —— 主索引、加速层、衍生用法不能混着谈；⚠️ 各系统阈值与细节以官方文档 / 源码为准</text>
+
+  <!-- 第一行：主存储层 -->
+  <rect x="40" y="112" width="120" height="56" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="100" y="136" font-size="13.5" font-weight="bold" fill="#1d4ed8" text-anchor="middle">主存储层</text>
+  <text x="100" y="156" font-size="10.5" fill="#1d4ed8" text-anchor="middle">没了它就没有数据</text>
+  <rect x="180" y="84" width="780" height="112" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="196" y="98" width="244" height="84" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="208" y="122" font-size="12.5" font-weight="bold" fill="#1d4ed8">语言运行时：Go map / Java HashMap</text>
+  <text x="208" y="144" font-size="11.5" fill="#334155">通用字典与集合容器的底层</text>
+  <text x="208" y="163" font-size="11.5" fill="#334155">阈值扩容；Java 链长超限树化</text>
+  <rect x="452" y="98" width="244" height="84" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="464" y="122" font-size="12.5" font-weight="bold" fill="#1d4ed8">中间件：Redis dict</text>
+  <text x="464" y="144" font-size="11.5" fill="#334155">键空间的主索引，链地址</text>
+  <text x="464" y="163" font-size="11.5" fill="#334155">渐进式 rehash 不卡主线程</text>
+  <rect x="708" y="98" width="244" height="84" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="720" y="122" font-size="12.5" font-weight="bold" fill="#64748b">这一层的共性</text>
+  <text x="720" y="144" font-size="11.5" fill="#334155">等值为主、键可常驻内存</text>
+  <text x="720" y="163" font-size="11.5" fill="#334155">不关心顺序与范围</text>
+
+  <!-- 第二行：加速层 -->
+  <rect x="40" y="240" width="120" height="56" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="100" y="264" font-size="13.5" font-weight="bold" fill="#ea580c" text-anchor="middle">加速层</text>
+  <text x="100" y="284" font-size="10.5" fill="#ea580c" text-anchor="middle">关掉它只是变慢</text>
+  <rect x="180" y="212" width="780" height="112" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="196" y="226" width="380" height="84" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="208" y="250" font-size="12.5" font-weight="bold" fill="#ea580c">InnoDB 自适应哈希索引 —— 可关掉的加速层</text>
+  <text x="208" y="272" font-size="11.5" fill="#334155">按 B+ 树热点查找的记录建哈希，等值一步到位</text>
+  <text x="208" y="291" font-size="11.5" fill="#334155">范围查询仍归 B+ 树；机制与开关以官方文档为准</text>
+  <rect x="600" y="226" width="350" height="84" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="612" y="250" font-size="12.5" font-weight="bold" fill="#64748b">归属判据</text>
+  <text x="612" y="272" font-size="11.5" fill="#334155">加速层出错 → 只变慢，不丢数据</text>
+  <text x="612" y="291" font-size="11.5" fill="#334155">主索引出错 → 整个键空间无从谈起</text>
+
+  <!-- 第三行：衍生用法 -->
+  <rect x="40" y="368" width="120" height="56" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="100" y="392" font-size="13.5" font-weight="bold" fill="#16a34a" text-anchor="middle">衍生用法</text>
+  <text x="100" y="412" font-size="10.5" fill="#16a34a" text-anchor="middle">借思想，不是桶表</text>
+  <rect x="180" y="340" width="780" height="112" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="196" y="354" width="244" height="84" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="208" y="378" font-size="12.5" font-weight="bold" fill="#16a34a">存在性判定</text>
+  <text x="208" y="400" font-size="11.5" fill="#334155">爬虫 URL 去重、垃圾邮件判断</text>
+  <text x="208" y="419" font-size="11.5" fill="#334155">只要「在不在」，不要顺序</text>
+  <rect x="452" y="354" width="244" height="84" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="464" y="378" font-size="12.5" font-weight="bold" fill="#16a34a">过滤器一族</text>
+  <text x="464" y="400" font-size="11.5" fill="#334155">布隆 / 布谷鸟过滤器</text>
+  <text x="464" y="419" font-size="11.5" fill="#334155">连键都存不下时的退路</text>
+  <rect x="708" y="354" width="244" height="84" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="720" y="378" font-size="12.5" font-weight="bold" fill="#16a34a">分片路由</text>
+  <text x="720" y="400" font-size="11.5" fill="#334155">一致性哈希环：环上二分</text>
+  <text x="720" y="419" font-size="11.5" fill="#334155">治扩容搬迁，不是桶表</text>
+
+  <!-- 底部判据 -->
+  <rect x="40" y="466" width="560" height="54" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="56" y="488" font-size="12" fill="#334155">共同前提：查询是等值、顺序与范围无关；</text>
+  <text x="56" y="508" font-size="12" fill="#334155">哈希把「比较」换成「算地址」，也就永久放弃了范围能力。</text>
+  <rect x="620" y="466" width="340" height="54" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="636" y="488" font-size="11.5" fill="#dc2626">失效边界：排序 / 范围 → 树、跳表；</text>
+  <text x="636" y="508" font-size="11.5" fill="#dc2626">热 key → 分片治理；键装不下 → 过滤器</text>
+</svg>

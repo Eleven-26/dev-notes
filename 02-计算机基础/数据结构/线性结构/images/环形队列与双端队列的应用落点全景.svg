@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">环形数组与双端队列的应用落点：让下标回绕，而不是搬数据</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一块定长数组 + 两个取模回绕的下标，藏在运行时调度器、通道、阻塞队列和时间轮里</text>
+
+  <g>
+    <rect x="20" y="84" width="270" height="440" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="36" y="112" font-size="16" font-weight="bold" fill="#1e3a8a">环形数组（定长 + 取模）</text>
+    <circle cx="150" cy="220" r="62" fill="none" stroke="#2563eb" stroke-width="2"/>
+    <circle cx="150" cy="158" r="7" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <circle cx="205" cy="196" r="7" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="184" cy="266" r="7" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="116" cy="266" r="7" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="95" cy="196" r="7" fill="#fee2e2" stroke="#dc2626"/>
+    <line x1="150" y1="220" x2="150" y2="165" stroke="#ea580c" stroke-width="2" marker-end="url(#arw)"/>
+    <text x="150" y="300" text-anchor="middle" font-size="11" fill="#1e3a8a">head/tail 各自 +1 取模回绕</text>
+    <text x="36" y="336" font-size="12" font-weight="bold" fill="#1e3a8a">换来什么</text>
+    <text x="36" y="356" font-size="12" fill="#334155">· 出队/两端插删都 O(1)，零搬移</text>
+    <text x="36" y="374" font-size="12" fill="#334155">· 内存连续，无每节点指针税</text>
+    <text x="36" y="392" font-size="12" fill="#334155">· 天然有界 = 背压</text>
+    <text x="36" y="422" font-size="12" font-weight="bold" fill="#1e3a8a">付出什么</text>
+    <text x="36" y="442" font-size="12" fill="#334155">· 容量预先固定，扩容要新开一块</text>
+    <text x="36" y="460" font-size="12" fill="#334155">　并把两段按逻辑序拷贝拼接</text>
+    <text x="36" y="494" font-size="12" fill="#1e3a8a">判空判满：留空位 / 计数 / 标志位</text>
+    <text x="36" y="512" font-size="12" fill="#1e3a8a">容量取 2 的幂可用位与代替取模</text>
+  </g>
+
+  <line x1="292" y1="240" x2="434" y2="126" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="270" x2="434" y2="220" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="300" x2="434" y2="314" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="330" x2="434" y2="408" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="360" x2="434" y2="502" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <g>
+    <rect x="440" y="84" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="110" font-size="14" font-weight="bold" fill="#14532d">Go channel 缓冲：数组用起来像环</text>
+    <text x="456" y="132" font-size="12" fill="#334155">hchan 的 buf 是普通数组，靠 sendx/recvx 两个下标取模回绕构成环；</text>
+    <text x="456" y="150" font-size="12" fill="#334155">⚠️ 「环形」是使用方式不是结构形态 —— 别把教科书环形当实现照搬</text>
+  </g>
+  <g>
+    <rect x="440" y="178" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="204" font-size="14" font-weight="bold" fill="#14532d">Go 调度器：runq[256] 本地环形队列</text>
+    <text x="456" y="226" font-size="12" fill="#334155">P 的本地队列是 256 格无锁环形缓冲；owner 从一端存取，</text>
+    <text x="456" y="244" font-size="12" fill="#334155">其他 P work stealing 从另一端偷一半 —— 双端各归一个角色</text>
+  </g>
+  <g>
+    <rect x="440" y="272" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="298" font-size="14" font-weight="bold" fill="#14532d">Java 并发容器：ArrayBlockingQueue / ArrayDeque</text>
+    <text x="456" y="320" font-size="12" fill="#334155">定长数组 + 头尾下标回绕，前者加锁做有界阻塞队列（有界即背压），</text>
+    <text x="456" y="338" font-size="12" fill="#334155">后者是无锁开销的双端数组 —— 替代 Stack/LinkedList 的默认选择</text>
+  </g>
+  <g>
+    <rect x="440" y="366" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="392" font-size="14" font-weight="bold" fill="#14532d">观测与缓冲：GC 停顿记录 / 日志环形缓冲</text>
+    <text x="456" y="414" font-size="12" fill="#334155">Go runtime 的 PauseNs[256] 按 (NumGC+255)%256 循环覆盖，只留最近；</text>
+    <text x="456" y="432" font-size="12" fill="#334155">内核日志环形缓冲类场景同理：保留最新 N 条，覆盖是有意设计</text>
+  </g>
+  <g>
+    <rect x="440" y="460" width="540" height="84" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="456" y="486" font-size="14" font-weight="bold" fill="#9a3412">换槽内内容：时间轮与滑动窗口</text>
+    <text x="456" y="508" font-size="12" fill="#334155">时间轮 = 同一个环形数组，每格从「一个元素」换成「一条任务链表」，</text>
+    <text x="456" y="526" font-size="12" fill="#334155">游标由时间推动；限流滑动窗口的「淘汰过期桶」是同一件事</text>
+  </g>
+
+  <g>
+    <rect x="20" y="566" width="960" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="36" y="590" font-size="12" font-weight="bold" fill="#7f1d1d">共同前提：容量有界、元素同质、价值随时间衰减 —— 先来的可以先被覆盖或先出队。</text>
+    <text x="36" y="612" font-size="12" fill="#7f1d1d">失效边界：需要无界摊还增长 → 环形数组不合适（扩容要拼接两段）；「删最老」在事件队列里是丢数据事故而不是特性 —— 判据是价值是否随时间衰减。</text>
+  </g>
+</svg>

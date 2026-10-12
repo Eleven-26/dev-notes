@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">二叉树四条性质的工程落点：数组化、预算、断言、退化警钟</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">落点往往不叫「二叉树」—— 它们是堆、线段树、压缩器建树缓冲与序列化格式背后的设计依据</text>
+
+  <g>
+    <rect x="30" y="80" width="940" height="108" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="46" y="106" font-size="15" font-weight="bold" fill="#1e40af">性质：完全二叉树 → 父子关系是下标算术（2i+1 / 2i+2）</text>
+    <text x="46" y="130" font-size="12.5" fill="#334155">落点：Go container/heap · Java PriorityQueue · 线段树 / 树状数组的固定 4n 数组</text>
+    <text x="46" y="154" font-size="12.5" fill="#334155">收益：零指针、连续内存可预取、求高 O(1)；代价：形态一旦不规则立刻失效（斜树实测 20 节点要开 100 万格）</text>
+    <rect x="812" y="96" width="34" height="26" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+    <rect x="848" y="96" width="34" height="26" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+    <rect x="884" y="96" width="34" height="26" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+    <rect x="920" y="96" width="34" height="26" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="829" y="114" text-anchor="middle" font-size="10" fill="#0f172a">a[0]</text>
+    <text x="865" y="114" text-anchor="middle" font-size="10" fill="#0f172a">a[1]</text>
+    <text x="901" y="114" text-anchor="middle" font-size="10" fill="#0f172a">a[2]</text>
+    <text x="937" y="114" text-anchor="middle" font-size="10" fill="#0f172a">a[3]</text>
+    <text x="879" y="146" text-anchor="middle" font-size="11" fill="#1e40af">关系不用存，算出来</text>
+  </g>
+
+  <g>
+    <rect x="30" y="200" width="940" height="108" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="46" y="226" font-size="15" font-weight="bold" fill="#9a3412">性质：计数公式（第 i 层 2^(i−1)、总数 2^k − 1、高度 ⌊log₂n⌋ + 1）</text>
+    <text x="46" y="250" font-size="12.5" fill="#334155">落点：按高度预留数组容量、反推最大递归深度防爆栈、霍夫曼建树的缓冲估算（满树总节点 = 2n − 1）</text>
+    <text x="46" y="274" font-size="12.5" fill="#334155">收益：把「开多大空间、递归走多深」变成可预算问题 —— 10 万节点的完全形态高度只有 17</text>
+    <text x="879" y="240" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">n 定 → 算 h</text>
+    <text x="879" y="266" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">h 定 → 算 n</text>
+  </g>
+
+  <g>
+    <rect x="30" y="320" width="940" height="108" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="46" y="346" font-size="15" font-weight="bold" fill="#14532d">性质：n0 = n2 + 1（与形态无关的计数不变量）</text>
+    <text x="46" y="370" font-size="12.5" fill="#334155">落点：建树 / 插删之后的结构自检断言；反序列化后的自洽校验（只能证度分布，证不了形状）</text>
+    <text x="46" y="394" font-size="12.5" fill="#334155">收益：一次遍历、两个计数，独立于形态抓出结构性错误 —— 与红黑树校验器同一思路</text>
+    <text x="879" y="360" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">n0 − n2 == 1 ?</text>
+    <text x="879" y="386" text-anchor="middle" font-size="11" fill="#64748b">斜树也成立</text>
+  </g>
+
+  <g>
+    <rect x="30" y="440" width="940" height="108" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="46" y="466" font-size="15" font-weight="bold" fill="#991b1b">性质：斜树也是合法 BST —— 合法性判不出性能</text>
+    <text x="46" y="490" font-size="12.5" fill="#334155">落点：退化风险的警钟 → 让「维持高度」成为结构的责任（平衡树 / 跳表），或显式控制插入顺序</text>
+    <text x="46" y="514" font-size="12.5" fill="#334155">警示：真实数据常常接近有序（自增主键、时间戳、批量导入），不能赌「输入是随机的」</text>
+    <text x="879" y="480" text-anchor="middle" font-size="11" fill="#64748b">升序插入 → 链</text>
+    <circle cx="851" cy="502" r="9" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+    <circle cx="873" cy="514" r="9" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+    <circle cx="895" cy="526" r="9" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+    <line x1="857" y1="505" x2="867" y2="511" stroke="#dc2626" stroke-width="1.2"/>
+    <line x1="879" y1="517" x2="889" y2="523" stroke="#dc2626" stroke-width="1.2"/>
+  </g>
+
+  <text x="30" y="580" font-size="12.5" fill="#334155">判据：形态规整才谈得上数组化与紧凑编码；先立不变量再抓 bug；深度可预测才敢把递归交给系统栈。</text>
+</svg>

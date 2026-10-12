@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">并查集的应用落点：凡在回答「它们是不是同一组」的系统都有它</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">关系只进不出（只合并不拆分）+ 查询只问同组与否，这两条同时成立才轮到并查集</text>
+
+  <g>
+    <rect x="20" y="84" width="270" height="440" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="36" y="112" font-size="16" font-weight="bold" fill="#1e3a8a">森林 + 两个操作</text>
+    <circle cx="90" cy="150" r="9" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+    <circle cx="70" cy="185" r="9" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="112" cy="185" r="9" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="124" cy="216" r="9" fill="#dbeafe" stroke="#2563eb"/>
+    <line x1="90" y1="159" x2="74" y2="178" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="90" y1="159" x2="108" y2="178" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="112" y1="192" x2="121" y2="209" stroke="#2563eb" stroke-width="1.5"/>
+    <circle cx="200" cy="160" r="9" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+    <circle cx="182" cy="195" r="9" fill="#dcfce7" stroke="#16a34a"/>
+    <circle cx="218" cy="195" r="9" fill="#dcfce7" stroke="#16a34a"/>
+    <line x1="200" y1="169" x2="186" y2="189" stroke="#16a34a" stroke-width="1.5"/>
+    <line x1="200" y1="169" x2="214" y2="189" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="90" y="245" font-size="11" fill="#1e3a8a">每棵树的根 = 组的代表元</text>
+    <text x="36" y="278" font-size="12" font-weight="bold" fill="#1e3a8a">操作语义</text>
+    <text x="36" y="298" font-size="12" fill="#334155">· find(x)：一路上行到根</text>
+    <text x="36" y="316" font-size="12" fill="#334155">· union(a,b)：两根相接</text>
+    <text x="36" y="334" font-size="12" fill="#334155">· 判同组 = 比根，不比父</text>
+    <text x="36" y="364" font-size="12" font-weight="bold" fill="#1e3a8a">两个优化</text>
+    <text x="36" y="384" font-size="12" fill="#334155">· 按秩合并：管树能长多高</text>
+    <text x="36" y="402" font-size="12" fill="#334155">· 路径压缩：同一条路不重付</text>
+    <text x="36" y="428" font-size="12" fill="#334155">合起来均摊 O(α(n))，实践中</text>
+    <text x="36" y="446" font-size="12" fill="#334155">视作常数</text>
+    <text x="36" y="486" font-size="12" font-weight="bold" fill="#7f1d1d">硬约束：不能回滚、不支持删除</text>
+    <text x="36" y="506" font-size="12" fill="#7f1d1d">（压缩改写了历史结构）</text>
+  </g>
+
+  <line x1="292" y1="240" x2="434" y2="126" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="270" x2="434" y2="220" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="300" x2="434" y2="314" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="330" x2="434" y2="408" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="360" x2="440" y2="464" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="380" x2="440" y2="512" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <g>
+    <rect x="440" y="84" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="110" font-size="14" font-weight="bold" fill="#14532d">Kruskal 最小生成树：边级判环</text>
+    <text x="456" y="132" font-size="12" fill="#334155">按边权升序扫，find 两端：已连通就跳过（会成环），否则选边 union。</text>
+    <text x="456" y="150" font-size="12" fill="#334155">只要「连通与否」不要具体路径 —— 瓶颈随之从判环移到排序</text>
+  </g>
+  <g>
+    <rect x="440" y="178" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="204" font-size="14" font-weight="bold" fill="#14532d">增量式动态连通性 / 连通分量</text>
+    <text x="456" y="226" font-size="12" fill="#334155">边持续到达（网络连通审计、设备组网），每来一边 union、每次查询 find，</text>
+    <text x="456" y="244" font-size="12" fill="#334155">均摊近常数 —— 比每来一边重跑一遍 DFS 便宜得多</text>
+  </g>
+  <g>
+    <rect x="440" y="272" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="298" font-size="14" font-weight="bold" fill="#14532d">等价类归并：风控与数据治理</text>
+    <text x="456" y="320" font-size="12" fill="#334155">「这两个手机号是不是同一个人」「这两条客户记录要不要合并」：</text>
+    <text x="456" y="338" font-size="12" fill="#334155">归并关系只增不减，查询只问「是不是同一组」—— 动态等价类</text>
+  </g>
+  <g>
+    <rect x="440" y="366" width="540" height="84" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="456" y="392" font-size="14" font-weight="bold" fill="#9a3412">二分图 / 关系一致性判定（种类并查集）</text>
+    <text x="456" y="414" font-size="12" fill="#334155">「敌人的敌人是朋友」编码成元素与其副本分属两组再合并，</text>
+    <text x="456" y="432" font-size="12" fill="#334155">判冲突就是判 find 相等 —— 边持续加入时优于 BFS 重染色</text>
+  </g>
+  <g>
+    <rect x="440" y="460" width="540" height="46" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="456" y="478" font-size="13" font-weight="bold" fill="#334155">静态图对照：只判一次连通 → 不写并查集</text>
+    <text x="456" y="497" font-size="11" fill="#64748b">BFS / DFS 扫一遍就够，别为一次性判定预分配 parent/rank 两份数组</text>
+  </g>
+  <g>
+    <rect x="440" y="516" width="540" height="46" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="456" y="534" font-size="13" font-weight="bold" fill="#7f1d1d">变体：可回滚 / 可持久化并查集</text>
+    <text x="456" y="553" font-size="11" fill="#7f1d1d">用可持久化数组存 parent、只按秩合并不做压缩 —— 买回「撤销」卖掉了速度</text>
+  </g>
+
+  <g>
+    <rect x="20" y="580" width="960" height="50" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+    <text x="36" y="600" font-size="12" font-weight="bold" fill="#334155">共同前提：关系是「只合并不拆分」的增量加入，查询只有「同不同组」一种。</text>
+    <text x="36" y="620" font-size="12" fill="#64748b">失效边界：要删边/回滚、要枚举组内元素、要组大小统计 → 都得另加结构或换路线（见收尾判据）。</text>
+  </g>
+</svg>

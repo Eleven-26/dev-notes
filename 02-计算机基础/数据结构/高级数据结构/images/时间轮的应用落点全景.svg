@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">时间轮的应用落点：把「还有多久」直接当数组下标用</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">落点集中在「超时任务海量、延迟可离散化」的系统：网络框架、延迟消息、调度中心、窗口滚动</text>
+
+  <g>
+    <rect x="20" y="84" width="270" height="440" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="36" y="112" font-size="16" font-weight="bold" fill="#1e3a8a">环形数组 + 槽内链表</text>
+    <circle cx="150" cy="215" r="66" fill="none" stroke="#2563eb" stroke-width="2"/>
+    <line x1="150" y1="215" x2="150" y2="152" stroke="#ea580c" stroke-width="2" marker-end="url(#arw)"/>
+    <circle cx="150" cy="149" r="6" fill="#ffedd5" stroke="#ea580c"/>
+    <circle cx="207" cy="187" r="6" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="192" cy="264" r="6" fill="#ffedd5" stroke="#ea580c"/>
+    <circle cx="108" cy="264" r="6" fill="#dbeafe" stroke="#2563eb"/>
+    <circle cx="93" cy="187" r="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="150" y="305" text-anchor="middle" font-size="11" fill="#1e3a8a">游标 = 当前时刻，一格一个 tick</text>
+    <text x="36" y="338" font-size="12" font-weight="bold" fill="#1e3a8a">两个 O(1) 的来处</text>
+    <text x="36" y="358" font-size="12" fill="#334155">· 插入：算下标挂链表，零比较</text>
+    <text x="36" y="376" font-size="12" fill="#334155">· 推进：只清当前格走一步，</text>
+    <text x="36" y="394" font-size="12" fill="#334155">　与总任务数无关</text>
+    <text x="36" y="424" font-size="12" font-weight="bold" fill="#1e3a8a">硬边界</text>
+    <text x="36" y="444" font-size="12" fill="#7f1d1d">· 取模吞掉整圈 → 延迟超一圈</text>
+    <text x="36" y="462" font-size="12" fill="#7f1d1d">　会安静地提前触发</text>
+    <text x="36" y="480" font-size="12" fill="#334155">· 解法：分层轮 / 每槽记圈数</text>
+    <text x="36" y="506" font-size="12" fill="#1e3a8a">槽数 ≥ 最大延迟就够用了</text>
+  </g>
+
+  <line x1="292" y1="240" x2="434" y2="126" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="270" x2="434" y2="220" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="300" x2="434" y2="314" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="330" x2="434" y2="408" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="360" x2="434" y2="502" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <g>
+    <rect x="440" y="84" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="110" font-size="14" font-weight="bold" fill="#14532d">网络框架：连接超时与空闲检测</text>
+    <text x="456" y="132" font-size="12" fill="#334155">Netty HashedWheelTimer：几十万条连接各挂一个超时任务，</text>
+    <text x="456" y="150" font-size="12" fill="#334155">一个实例共享一张轮 —— 每 tick 只看当前格，不可能扫全表</text>
+  </g>
+  <g>
+    <rect x="440" y="178" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="204" font-size="14" font-weight="bold" fill="#14532d">消息队列：延迟 / 定时消息</text>
+    <text x="456" y="226" font-size="12" fill="#334155">RocketMQ 5.x：任意定时消息先顺序写 TimerLog，再由多级时间轮分格</text>
+    <text x="456" y="244" font-size="12" fill="#334155">驱动投递；Kafka 延迟生产同样借时间轮（粗粒度，以官方文档为准）</text>
+  </g>
+  <g>
+    <rect x="440" y="272" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="298" font-size="14" font-weight="bold" fill="#14532d">调度中心：秒级批量触发</text>
+    <text x="456" y="320" font-size="12" fill="#334155">xxl-job 中心侧用 60 格时间轮、精度秒级：秒针指到哪格，</text>
+    <text x="456" y="338" font-size="12" fill="#334155">就触发该秒到期的全部任务 —— 任务多、粒度规则时最省</text>
+  </g>
+  <g>
+    <rect x="440" y="366" width="540" height="84" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="456" y="392" font-size="14" font-weight="bold" fill="#9a3412">窗口滚动：限流滑动窗口 / TTL 清理</text>
+    <text x="456" y="414" font-size="12" fill="#334155">滑动窗口「淘汰过期桶」= 轮推进一格（限流算法篇）；缓存过期项</text>
+    <text x="456" y="432" font-size="12" fill="#334155">按到期时间入格，也是「到期批次」而非逐个比较的思路</text>
+  </g>
+  <g>
+    <rect x="440" y="460" width="540" height="84" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="456" y="486" font-size="14" font-weight="bold" fill="#9a3412">内核与通用形态</text>
+    <text x="456" y="508" font-size="12" fill="#334155">Linux 内核定时器历史上就是时间轮家族（粗粒度，以官方文档为准）；</text>
+    <text x="456" y="526" font-size="12" fill="#334155">退避重试、延迟队列——只要延迟有界可离散化，都能把排序换成取模</text>
+  </g>
+
+  <g>
+    <rect x="20" y="566" width="960" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="36" y="590" font-size="12" font-weight="bold" fill="#7f1d1d">共同前提：延迟有上界、可离散成 tick、任务量大 —— 「只看一格」的优势才被放大到值得。</text>
+    <text x="36" y="612" font-size="12" fill="#7f1d1d">失效边界：延迟跨度大且散乱、或任务很少 → 最小堆更省事且无离散化误差（堆与优先队列篇）；单格最长链是延迟毛刺的来源。</text>
+  </g>
+</svg>

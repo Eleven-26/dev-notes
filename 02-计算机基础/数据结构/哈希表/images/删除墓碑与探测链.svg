@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwT" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 7,3.5 0,7 z" fill="#334155"/></marker>
+    <marker id="arwR" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 7,3.5 0,7 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect width="1000" height="470" fill="#ffffff"/>
+  <text x="40" y="34" font-size="19" font-weight="bold" fill="#0f172a">删除为什么只能留墓碑：同一组槽位，两种删法的查找路径</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">线性探测，三个 key 哈希相同、依次落位：A→3、B→4、C→5（本篇第四节）。开放寻址的查找规则是「遇到真空槽就停」。</text>
+
+  <!-- 场景 A：直接清空 -->
+  <text x="40" y="96" font-size="14" font-weight="bold" fill="#dc2626">A. 把 A 直接删成「空」—— 探测链被切断（错误）</text>
+  <text x="96" y="140" font-size="12" fill="#334155">查 C 从 3 起步</text>
+  <line x1="190" y1="136" x2="292" y2="136" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arwR)"/>
+  <rect x="300" y="114" width="64" height="48" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-dasharray="4 3"/>
+  <text x="332" y="143" font-size="14" fill="#dc2626" text-anchor="middle">空</text>
+  <rect x="400" y="114" width="64" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="432" y="143" font-size="14" fill="#1d4ed8" text-anchor="middle">B</text>
+  <rect x="500" y="114" width="64" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="532" y="143" font-size="14" fill="#1d4ed8" text-anchor="middle">C</text>
+  <rect x="600" y="114" width="64" height="48" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="632" y="143" font-size="14" fill="#64748b" text-anchor="middle">空</text>
+  <text x="332" y="180" font-size="11" fill="#64748b" text-anchor="middle">槽 3</text>
+  <text x="432" y="180" font-size="11" fill="#64748b" text-anchor="middle">槽 4</text>
+  <text x="532" y="180" font-size="11" fill="#64748b" text-anchor="middle">槽 5</text>
+  <text x="632" y="180" font-size="11" fill="#64748b" text-anchor="middle">槽 6</text>
+  <text x="690" y="143" font-size="12.5" fill="#dc2626">遇空即停 → 判「不存在」✗</text>
+  <text x="690" y="163" font-size="11.5" fill="#dc2626">（C 其实在 5 号槽）</text>
+
+  <!-- 场景 B：留墓碑 -->
+  <text x="40" y="238" font-size="14" font-weight="bold" fill="#16a34a">B. 3 号槽留「墓碑」标记 —— 链条保住（正确）</text>
+  <text x="96" y="282" font-size="12" fill="#334155">查 C 从 3 起步</text>
+  <line x1="190" y1="278" x2="292" y2="278" stroke="#334155" stroke-width="1.8" marker-end="url(#arwT)"/>
+  <rect x="300" y="256" width="64" height="48" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="332" y="281" font-size="13.5" fill="#64748b" text-anchor="middle">A†</text>
+  <text x="332" y="296" font-size="9.5" fill="#64748b" text-anchor="middle">墓碑</text>
+  <line x1="366" y1="280" x2="394" y2="280" stroke="#334155" stroke-width="1.6" marker-end="url(#arwT)"/>
+  <rect x="400" y="256" width="64" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="432" y="285" font-size="14" fill="#1d4ed8" text-anchor="middle">B</text>
+  <line x1="466" y1="280" x2="494" y2="280" stroke="#334155" stroke-width="1.6" marker-end="url(#arwT)"/>
+  <rect x="500" y="256" width="64" height="48" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="532" y="285" font-size="14" fill="#16a34a" text-anchor="middle">C</text>
+  <rect x="600" y="256" width="64" height="48" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="632" y="285" font-size="14" fill="#64748b" text-anchor="middle">空</text>
+  <text x="332" y="322" font-size="11" fill="#64748b" text-anchor="middle">槽 3</text>
+  <text x="432" y="322" font-size="11" fill="#64748b" text-anchor="middle">槽 4</text>
+  <text x="532" y="322" font-size="11" fill="#16a34a" text-anchor="middle">槽 5：命中 ✓</text>
+  <text x="632" y="322" font-size="11" fill="#64748b" text-anchor="middle">槽 6</text>
+  <text x="700" y="285" font-size="12.5" fill="#334155">遇墓碑继续探：3 → 4 → 5</text>
+
+  <!-- 底部代价说明 -->
+  <rect x="40" y="356" width="920" height="88" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="384" font-size="12.5" fill="#334155">墓碑的代价：它不释放槽位 —— 实测插入 2048 个（α=0.5）再删一半，失败探测仍是 2.56，一点没降；同规模的新表只要 1.36（贵 1.88 倍）。</text>
+  <text x="60" y="408" font-size="12.5" fill="#334155">工程对策只有两条：① 记录墓碑比例，超阈值就重建（rehash）；② 向后移位删除（聚集段整体前移，可「真删除」）。</text>
+  <text x="60" y="430" font-size="12" fill="#dc2626">⚠️ 「直接清空了事」一定错：它切断后面元素的探测链，让查找静默判成「不存在」。</text>
+</svg>

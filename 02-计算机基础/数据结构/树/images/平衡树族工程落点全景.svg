@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">平衡树族落点：先问介质，再问读写比，最后才问是哪棵树</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个「有序 + 快查」需求，在内存 / 并发写 / 磁盘三种压力下落成不同路线（细节在零件篇，此图只做路由）</text>
+
+  <g>
+    <rect x="30" y="88" width="300" height="342" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="180" y="118" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e40af">内存 · 频繁读写</text>
+    <text x="180" y="142" text-anchor="middle" font-size="13" fill="#334155">红黑树（工程默认答案）</text>
+    <text x="46" y="176" font-size="12.5" fill="#0f172a">· Java TreeMap / TreeSet</text>
+    <text x="46" y="204" font-size="12.5" fill="#0f172a">· C++ std::map（常见实现）</text>
+    <text x="46" y="232" font-size="12.5" fill="#0f172a">· HashMap 桶内树化兜底</text>
+    <text x="46" y="260" font-size="12.5" fill="#0f172a">· Linux CFS / epoll / VMA</text>
+    <text x="46" y="288" font-size="12.5" fill="#0f172a">· Nginx 定时器 ngx_rbtree</text>
+    <line x1="46" y1="310" x2="314" y2="310" stroke="#2563eb" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="46" y="336" font-size="12.5" font-weight="bold" fill="#1e40af">读远多于写 / 要硬最坏界 → AVL</text>
+    <text x="46" y="364" font-size="12" fill="#334155">AVL 公开落点少，按场景特征推导</text>
+    <text x="46" y="392" font-size="12" fill="#334155">（见 AVL树.md 第三节，不硬点名）</text>
+  </g>
+
+  <g>
+    <rect x="350" y="88" width="300" height="342" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="500" y="118" text-anchor="middle" font-size="16" font-weight="bold" fill="#9a3412">内存 · 并发写</text>
+    <text x="500" y="142" text-anchor="middle" font-size="13" fill="#334155">跳表（概率平衡，不修复）</text>
+    <text x="366" y="176" font-size="12.5" fill="#0f172a">· Redis 有序集 ZSet</text>
+    <text x="366" y="204" font-size="12.5" fill="#0f172a">· LevelDB MemTable</text>
+    <text x="366" y="232" font-size="12.5" fill="#0f172a">· RocksDB MemTable</text>
+    <text x="366" y="260" font-size="12.5" fill="#0f172a">· 增删只动局部指针</text>
+    <text x="366" y="288" font-size="12.5" fill="#0f172a">· 无锁实现比旋转容易</text>
+    <line x1="366" y1="310" x2="634" y2="310" stroke="#ea580c" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="366" y="336" font-size="12.5" font-weight="bold" fill="#9a3412">买的是并发与简单，卖的是最坏保证</text>
+    <text x="366" y="364" font-size="12" fill="#334155">极端随机结果下它就是普通链表</text>
+    <text x="366" y="392" font-size="12" fill="#334155">（概率极低但存在，见 4.2）</text>
+  </g>
+
+  <g>
+    <rect x="670" y="88" width="300" height="342" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="820" y="118" text-anchor="middle" font-size="16" font-weight="bold" fill="#14532d">磁盘 / 页式存储</text>
+    <text x="820" y="142" text-anchor="middle" font-size="13" fill="#334155">B+ 树（一页一节点）</text>
+    <text x="686" y="176" font-size="12.5" fill="#0f172a">· InnoDB 聚簇 + 二级索引</text>
+    <text x="686" y="204" font-size="12.5" fill="#0f172a">· PostgreSQL btree</text>
+    <text x="686" y="232" font-size="12.5" fill="#0f172a">· SQLite / WiredTiger</text>
+    <text x="686" y="260" font-size="12.5" fill="#0f172a">· 文件系统目录索引</text>
+    <text x="686" y="288" font-size="12.5" fill="#0f172a">· SSTable 块索引也借它</text>
+    <line x1="686" y1="310" x2="954" y2="310" stroke="#16a34a" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="686" y="336" font-size="12.5" font-weight="bold" fill="#14532d">层数 = I/O 次数：高扇出压到 3~4 层</text>
+    <text x="686" y="364" font-size="12" fill="#334155">跳表不能按页打包 → 当不了磁盘索引</text>
+    <text x="686" y="392" font-size="12" fill="#334155">（推导见 B树与B+树.md 第二节）</text>
+  </g>
+
+  <g>
+    <rect x="30" y="452" width="940" height="118" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+    <text x="50" y="480" font-size="15" font-weight="bold" fill="#0f172a">三问定路线（平衡树这一层自己的判据）</text>
+    <text x="50" y="506" font-size="12.5" fill="#334155">① 介质？ 磁盘 → B+ 树；内存 → 红黑树 / AVL / 跳表</text>
+    <text x="50" y="530" font-size="12.5" fill="#334155">② 读写比？ 读远多于写 → AVL；读写混杂 → 红黑树；并发写 → 跳表</text>
+    <text x="50" y="554" font-size="12.5" fill="#dc2626">③ 要不要「序」？ 只要等值 → 哈希表；几乎不变 → 排序数组 + 二分（平衡树整体出局）</text>
+  </g>
+</svg>

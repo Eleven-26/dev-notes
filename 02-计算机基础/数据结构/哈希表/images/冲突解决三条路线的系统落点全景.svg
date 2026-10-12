@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" width="1000" height="530" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 7,3.5 0,7 z" fill="#334155"/></marker>
+  </defs>
+  <rect width="1000" height="530" fill="#ffffff"/>
+  <text x="40" y="34" font-size="19" font-weight="bold" fill="#0f172a">冲突解决三条路线：系统落点全景</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">左 = 路线与其硬约束（见本篇第一~六节）；右 = 真实落点。⚠️ 各系统的实现细节以官方文档 / 源码为准，图中只保留粗粒度归属</text>
+
+  <!-- 第一条路线：链地址 -->
+  <rect x="40" y="80" width="230" height="112" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="56" y="108" font-size="14.5" font-weight="bold" fill="#1d4ed8">链地址</text>
+  <text x="56" y="132" font-size="11.5" fill="#334155">冲突 → 挂到桶上的链</text>
+  <text x="56" y="152" font-size="11.5" fill="#334155">删除随时释放空间</text>
+  <text x="56" y="172" font-size="11.5" fill="#334155">链长了要能升级（树化）</text>
+  <line x1="272" y1="136" x2="296" y2="136" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <rect x="300" y="86" width="660" height="100" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="315" y="94" width="200" height="84" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="327" y="118" font-size="12.5" font-weight="bold" fill="#1d4ed8">Redis dict</text>
+  <text x="327" y="138" font-size="11" fill="#334155">键空间的主索引</text>
+  <text x="327" y="156" font-size="11" fill="#334155">渐进式 rehash 摊搬迁</text>
+  <rect x="525" y="94" width="200" height="84" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="537" y="118" font-size="12.5" font-weight="bold" fill="#1d4ed8">Java HashMap</text>
+  <text x="537" y="138" font-size="11" fill="#334155">拉链 + 超阈值树化</text>
+  <text x="537" y="156" font-size="11" fill="#334155">最坏 O(m) 拉回 O(log m)</text>
+  <rect x="735" y="94" width="200" height="84" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="747" y="118" font-size="12.5" font-weight="bold" fill="#1d4ed8">InnoDB 自适应哈希</text>
+  <text x="747" y="138" font-size="11" fill="#334155">给 B+ 树等值查找提速</text>
+  <text x="747" y="156" font-size="11" fill="#334155">可关掉的加速层</text>
+
+  <!-- 第二条路线：开放寻址 -->
+  <rect x="40" y="206" width="230" height="112" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="56" y="234" font-size="14.5" font-weight="bold" fill="#ea580c">开放寻址</text>
+  <text x="56" y="258" font-size="11.5" fill="#334155">冲突 → 按探测序列找空槽</text>
+  <text x="56" y="278" font-size="11.5" fill="#334155">删除只留墓碑、不真清</text>
+  <text x="56" y="298" font-size="11.5" fill="#334155">装填因子不能高（0.5~0.75）</text>
+  <line x1="272" y1="262" x2="296" y2="262" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <rect x="300" y="212" width="660" height="100" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="315" y="220" width="200" height="84" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="327" y="244" font-size="12.5" font-weight="bold" fill="#ea580c">Go map</text>
+  <text x="327" y="264" font-size="11" fill="#334155">开放寻址 + 溢出桶链</text>
+  <text x="327" y="282" font-size="11" fill="#334155">两条路线的混合体（见 map.md）</text>
+  <rect x="525" y="220" width="200" height="84" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="537" y="244" font-size="12.5" font-weight="bold" fill="#ea580c">读多写少的紧凑表</text>
+  <text x="537" y="264" font-size="11" fill="#334155">线性 / 双重散列探测</text>
+  <text x="537" y="282" font-size="11" fill="#334155">单数组、无指针、缓存友好</text>
+  <rect x="735" y="220" width="200" height="84" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="737" y="244" font-size="12.5" font-weight="bold" fill="#dc2626">⚠️ 延迟敏感场景</text>
+  <text x="737" y="264" font-size="11" fill="#334155">线性探测最坏 308 次</text>
+  <text x="737" y="282" font-size="11" fill="#334155">要最坏可控 → 罗宾汉 28</text>
+
+  <!-- 第三条路线：Cuckoo -->
+  <rect x="40" y="332" width="230" height="112" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="56" y="360" font-size="14.5" font-weight="bold" fill="#16a34a">Cuckoo Hashing</text>
+  <text x="56" y="384" font-size="11.5" fill="#334155">两个候选桶、满了就踢</text>
+  <text x="56" y="404" font-size="11.5" fill="#334155">查找固定看两次</text>
+  <text x="56" y="424" font-size="11.5" fill="#334155">负载上限约 0.5，须提前扩容</text>
+  <line x1="272" y1="388" x2="296" y2="388" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <rect x="300" y="338" width="660" height="100" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="315" y="346" width="200" height="84" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="327" y="370" font-size="12.5" font-weight="bold" fill="#16a34a">布谷鸟过滤器</text>
+  <text x="327" y="390" font-size="11" fill="#334155">指纹形态、可删除</text>
+  <text x="327" y="408" font-size="11" fill="#334155">不存 key，只判存在性</text>
+  <rect x="525" y="346" width="200" height="84" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="537" y="370" font-size="12.5" font-weight="bold" fill="#16a34a">延迟必须恒定的判定</text>
+  <text x="537" y="390" font-size="11" fill="#334155">不成功查找也是两次</text>
+  <text x="537" y="408" font-size="11" fill="#334155">代价换成「插入可能失败」</text>
+  <rect x="735" y="346" width="200" height="84" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="747" y="370" font-size="12.5" font-weight="bold" fill="#16a34a">每桶多槽变体</text>
+  <text x="747" y="390" font-size="11" fill="#334155">上限从 ~0.5 提到 ~0.95</text>
+  <text x="747" y="408" font-size="11" fill="#334155">具体形态以各实现为准</text>
+
+  <!-- 底部判据 -->
+  <rect x="40" y="458" width="610" height="54" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="56" y="480" font-size="12" fill="#334155">共同前提：查询是等值（「在不在 / 映射到哪」），桶与链能常驻内存；</text>
+  <text x="56" y="500" font-size="12" fill="#334155">装填因子上限、最坏探测长度、墓碑比例三项必须纳入监控（第七节）。</text>
+  <rect x="670" y="458" width="290" height="54" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="686" y="480" font-size="11.5" fill="#dc2626">失效边界：范围 / 排序 → B+ 树、跳表；</text>
+  <text x="686" y="500" font-size="11.5" fill="#dc2626">键分布热点 → 分片与热点治理</text>
+</svg>

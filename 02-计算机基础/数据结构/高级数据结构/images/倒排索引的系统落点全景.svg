@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwI" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 7,3.5 0,7 z" fill="#334155"/></marker>
+  </defs>
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <text x="40" y="34" font-size="19" font-weight="bold" fill="#0f172a">倒排索引落点全景：一套结构，四类系统</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">倒排的本质是「值 → 有序 ID 集合 + 求交」；term 从哪来（分词 / 标签 / 列值）因系统而异。⚠️ 各引擎细节以官方文档为准</text>
+
+  <!-- 核心结构 -->
+  <rect x="40" y="84" width="210" height="356" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="56" y="112" font-size="14.5" font-weight="bold" fill="#1d4ed8">倒排索引（本篇零件）</text>
+  <text x="56" y="140" font-size="11.5" fill="#334155">词典（FST / Radix）</text>
+  <text x="56" y="162" font-size="11.5" fill="#334155">有序倒排表（docID）</text>
+  <text x="56" y="184" font-size="11.5" fill="#334155">频次 / 位置（可选）</text>
+  <text x="56" y="206" font-size="11.5" fill="#334155">跳点（磁盘舞台）</text>
+  <text x="56" y="228" font-size="11.5" fill="#334155">差分 + 变长字节压缩</text>
+  <text x="56" y="258" font-size="11.5" fill="#1d4ed8">硬前提：docID 有序</text>
+  <text x="56" y="280" font-size="11.5" fill="#1d4ed8">压缩、求交、跳转全靠它</text>
+
+  <!-- 行1：搜索引擎 / 日志 -->
+  <line x1="250" y1="149" x2="286" y2="149" stroke="#334155" stroke-width="1.6" marker-end="url(#arwI)"/>
+  <rect x="290" y="90" width="330" height="118" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="304" y="114" font-size="12.5" font-weight="bold" fill="#1d4ed8">Elasticsearch / Lucene</text>
+  <text x="304" y="136" font-size="11.5" fill="#334155">每个段自带词典 + 倒排表</text>
+  <text x="304" y="155" font-size="11.5" fill="#334155">跨段求交再合并打分</text>
+  <text x="304" y="174" font-size="11.5" fill="#334155">段不可变 → 允许静态布局</text>
+  <rect x="640" y="90" width="320" height="118" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="654" y="114" font-size="12.5" font-weight="bold" fill="#1d4ed8">日志检索（Loki 一类）</text>
+  <text x="654" y="136" font-size="11.5" fill="#334155">标签 / 词 → 流、行号列表</text>
+  <text x="654" y="155" font-size="11.5" fill="#334155">多条件过滤几乎全是 AND</text>
+  <text x="654" y="174" font-size="11.5" fill="#334155">第四节求交判据直接适用</text>
+
+  <!-- 行2：分析引擎 / 自建筛选 -->
+  <line x1="250" y1="281" x2="286" y2="281" stroke="#334155" stroke-width="1.6" marker-end="url(#arwI)"/>
+  <rect x="290" y="222" width="330" height="118" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="304" y="246" font-size="12.5" font-weight="bold" fill="#ea580c">ClickHouse 等分析引擎</text>
+  <text x="304" y="268" font-size="11.5" fill="#334155">过滤加速：值 → 颗粒 / 分区列表</text>
+  <text x="304" y="287" font-size="11.5" fill="#334155">跳过无关数据块 = 集合运算</text>
+  <text x="304" y="306" font-size="11.5" fill="#334155">⚠️ 具体索引类型以官方文档为准</text>
+  <rect x="640" y="222" width="320" height="118" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="654" y="246" font-size="12.5" font-weight="bold" fill="#ea580c">MySQL 全文索引（InnoDB FTS）</text>
+  <text x="654" y="268" font-size="11.5" fill="#334155">分词后建倒排表、按词匹配</text>
+  <text x="654" y="287" font-size="11.5" fill="#334155">辅助表形态以官方文档为准</text>
+  <text x="654" y="306" font-size="11.5" fill="#334155">范围/排序仍归 B+ 树</text>
+
+  <!-- 行3：自建 + 归属提醒 -->
+  <line x1="250" y1="413" x2="286" y2="413" stroke="#334155" stroke-width="1.6" marker-end="url(#arwI)"/>
+  <rect x="290" y="354" width="330" height="118" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="304" y="378" font-size="12.5" font-weight="bold" fill="#16a34a">自建多条件筛选</text>
+  <text x="304" y="400" font-size="11.5" fill="#334155">类目 / 品牌 / 价格区间 各一张表</text>
+  <text x="304" y="419" font-size="11.5" fill="#334155">按列表长度（df）升序求交</text>
+  <text x="304" y="438" font-size="11.5" fill="#334155">不需要「文本」也能用倒排思路</text>
+  <rect x="640" y="354" width="320" height="118" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="654" y="378" font-size="12.5" font-weight="bold" fill="#64748b">归属提醒（不混着谈）</text>
+  <text x="654" y="400" font-size="11.5" fill="#334155">引擎侧 mapping / DSL / 分词</text>
+  <text x="654" y="419" font-size="11.5" fill="#334155">见 Elasticsearch/索引原理.md</text>
+  <text x="654" y="438" font-size="11.5" fill="#334155">本篇只讲结构与求交判据</text>
+
+  <!-- 底部判据 -->
+  <rect x="40" y="486" width="540" height="54" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="56" y="508" font-size="12" fill="#334155">共同前提：查询形态是「值 → 含该值的记录集合」，</text>
+  <text x="56" y="528" font-size="12" fill="#334155">且需要集合求交；写少读多，才付得起「写入时预建」的代价。</text>
+  <rect x="600" y="486" width="360" height="54" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="616" y="508" font-size="11.5" fill="#dc2626">失效边界：排序 / 范围主导 → B+ 树、跳表；</text>
+  <text x="616" y="528" font-size="11.5" fill="#dc2626">词项极热（df 巨大）→ 倒排比扫表还贵，放弃该词</text>
+</svg>

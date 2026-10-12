@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">位图 · 布隆 · RoaringBitmap 的落点全景</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">共同前提：用位表示状态、问存在不问内容 —— 同一族结构落在缓存、搜索、分析三类系统里</text>
+
+  <defs>
+    <marker id="bmArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <!-- 左：三种结构 -->
+  <rect x="30" y="100" width="230" height="96" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="145" y="126" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">位图 BitMap</text>
+  <text x="145" y="150" text-anchor="middle" font-size="12" fill="#334155">一位一元素 · 精确无假阳性</text>
+  <text x="145" y="172" text-anchor="middle" font-size="12" fill="#334155">位运算交并 · 1 亿用户约 12 MB</text>
+
+  <rect x="30" y="230" width="230" height="96" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="145" y="256" text-anchor="middle" font-size="15" font-weight="bold" fill="#9a3412">布隆过滤器</text>
+  <text x="145" y="280" text-anchor="middle" font-size="12" fill="#334155">k 个哈希投位 · 有假阳性</text>
+  <text x="145" y="302" text-anchor="middle" font-size="12" fill="#334155">任意 key · 不支持删除</text>
+
+  <rect x="30" y="360" width="230" height="96" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="145" y="386" text-anchor="middle" font-size="15" font-weight="bold" fill="#166534">RoaringBitmap</text>
+  <text x="145" y="410" text-anchor="middle" font-size="12" fill="#334155">高 16 位分块 · 按密度换容器</text>
+  <text x="145" y="432" text-anchor="middle" font-size="12" fill="#334155">稀疏 doc ID / 大整数集合</text>
+
+  <!-- 右：系统落点 -->
+  <rect x="530" y="100" width="440" height="78" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="546" y="124" font-size="14" font-weight="bold" fill="#1e3a8a">Redis 位图命令 —— 签到 / 活跃求交</text>
+  <text x="546" y="147" font-size="11.5" fill="#334155">SETBIT / GETBIT / BITCOUNT / BITOP / BITPOS</text>
+  <text x="546" y="166" font-size="11.5" fill="#334155">偏移 = 第几天 · 基线内稠密整数，按位算内存</text>
+
+  <rect x="530" y="190" width="440" height="78" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="546" y="214" font-size="14" font-weight="bold" fill="#9a3412">缓存穿透防线 —— 布隆前置打库</text>
+  <text x="546" y="237" font-size="11.5" fill="#334155">判「不存在」直接返回 · 假阳性只多一次回源</text>
+  <text x="546" y="256" font-size="11.5" fill="#334155">详情页实测：前置后打库 1000 → 0</text>
+
+  <rect x="530" y="280" width="440" height="78" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="546" y="304" font-size="14" font-weight="bold" fill="#166534">Lucene / Elasticsearch —— filter 缓存与倒排表</text>
+  <text x="546" y="327" font-size="11.5" fill="#334155">filter 按段缓存 bitset · live-docs 位图标删除</text>
+  <text x="546" y="346" font-size="11.5" fill="#334155">倒排表分块压缩 = Roaring 同源思路</text>
+
+  <rect x="530" y="370" width="440" height="78" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="546" y="394" font-size="14" font-weight="bold" fill="#166534">ClickHouse Bitmap —— 用户画像标签</text>
+  <text x="546" y="417" font-size="11.5" fill="#334155">一标签一张位图 · 标签交并 = 位图交并</text>
+  <text x="546" y="436" font-size="11.5" fill="#334155">实测 20 张位图约 2.51 MB 替掉 25.8 MB 明细</text>
+
+  <rect x="530" y="460" width="440" height="78" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="546" y="484" font-size="14" font-weight="bold" fill="#9a3412">海量查重 —— 爬虫 URL / 黑名单</text>
+  <text x="546" y="507" font-size="11.5" fill="#334155">布隆判存在，「可能在」才走昂贵路径</text>
+  <text x="546" y="526" font-size="11.5" fill="#334155">比存原值省几个数量级内存</text>
+
+  <!-- 连线 -->
+  <g stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#bmArrow)">
+    <line x1="260" y1="140" x2="526" y2="135"/>
+    <line x1="260" y1="165" x2="526" y2="305"/>
+    <line x1="260" y1="260" x2="526" y2="215"/>
+    <line x1="260" y1="300" x2="526" y2="490"/>
+    <line x1="260" y1="400" x2="526" y2="330"/>
+    <line x1="260" y1="420" x2="526" y2="400"/>
+  </g>
+
+  <!-- 底部失效边界 -->
+  <rect x="30" y="560" width="940" height="80" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="46" y="584" font-size="13.5" font-weight="bold" fill="#991b1b">失效边界（出现这些信号就换落点）</text>
+  <text x="46" y="607" font-size="12" fill="#334155">ID 巨大且稀疏 → RoaringBitmap 或哈希集合；需要删除 → 布谷鸟过滤器（指纹 + 踢出）</text>
+  <text x="46" y="628" font-size="12" fill="#334155">要枚举 / 精确计数 → 散列表或 HLL·CMS；计费、配额、对账 → 概率结构一律不能用</text>
+</svg>

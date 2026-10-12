@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数组与链表的应用落点：很少裸用，多以「数组做骨架、链表做补充」出现</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">连续地址换来下标与预取，指针链接换来自由插删；工程上两者常与哈希表杂交</text>
+
+  <g>
+    <rect x="20" y="84" width="270" height="440" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="36" y="112" font-size="16" font-weight="bold" fill="#1e3a8a">两种内存布局</text>
+    <rect x="40" y="132" width="36" height="26" rx="3" fill="#ffffff" stroke="#2563eb"/>
+    <rect x="76" y="132" width="36" height="26" rx="3" fill="#ffffff" stroke="#2563eb"/>
+    <rect x="112" y="132" width="36" height="26" rx="3" fill="#ffffff" stroke="#2563eb"/>
+    <rect x="148" y="132" width="36" height="26" rx="3" fill="#ffffff" stroke="#2563eb"/>
+    <rect x="184" y="132" width="36" height="26" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+    <text x="40" y="178" font-size="11" fill="#1e3a8a">数组：地址连续，基址 + 下标即地址</text>
+    <rect x="40" y="196" width="44" height="24" rx="4" fill="#ffffff" stroke="#2563eb"/>
+    <line x1="84" y1="208" x2="108" y2="208" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="110" y="196" width="44" height="24" rx="4" fill="#ffffff" stroke="#2563eb"/>
+    <line x1="154" y1="208" x2="178" y2="208" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arw)"/>
+    <rect x="180" y="196" width="44" height="24" rx="4" fill="#ffffff" stroke="#2563eb"/>
+    <text x="40" y="240" font-size="11" fill="#1e3a8a">链表：地址离散，靠 next 指针串起</text>
+    <text x="36" y="276" font-size="12" font-weight="bold" fill="#1e3a8a">各自的红利</text>
+    <text x="36" y="296" font-size="12" fill="#334155">· 数组：O(1) 下标 + 缓存行预取</text>
+    <text x="36" y="314" font-size="12" fill="#334155">· 链表：已握节点时插删只改指针</text>
+    <text x="36" y="332" font-size="12" fill="#334155">· 同为 O(n)，耗时可差数量级</text>
+    <text x="36" y="362" font-size="12" font-weight="bold" fill="#1e3a8a">各自的账单</text>
+    <text x="36" y="382" font-size="12" fill="#334155">· 数组：要一大块连续内存，</text>
+    <text x="36" y="400" font-size="12" fill="#334155">　增删要搬移后续元素</text>
+    <text x="36" y="418" font-size="12" fill="#334155">· 链表：每节点指针税 + 独立分配</text>
+    <text x="36" y="440" font-size="12" fill="#1e3a8a">工程折中：块内连续 + 块间离散</text>
+  </g>
+
+  <line x1="292" y1="240" x2="434" y2="126" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="270" x2="434" y2="220" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="300" x2="434" y2="314" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="330" x2="434" y2="408" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="292" y1="360" x2="434" y2="502" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <g>
+    <rect x="440" y="84" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="110" font-size="14" font-weight="bold" fill="#14532d">语言标准容器：切片与 List</text>
+    <text x="456" y="132" font-size="12" fill="#334155">Go slice、Java ArrayList 都是连续数组 + 摊还扩容；LinkedList 是</text>
+    <text x="456" y="150" font-size="12" fill="#334155">双向链表 —— 头部插入与随机访问两头惨败，按操作选（集合容器篇实测）</text>
+  </g>
+  <g>
+    <rect x="440" y="178" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="204" font-size="14" font-weight="bold" fill="#14532d">散列表骨架：桶数组 + 冲突链</text>
+    <text x="456" y="226" font-size="12" fill="#334155">数组负责「哈希值 → 桶」的 O(1) 定位，链表负责把冲突元素</text>
+    <text x="456" y="244" font-size="12" fill="#334155">追加到桶后 —— 定位靠连续、动态挂新靠离散的经典杂交</text>
+  </g>
+  <g>
+    <rect x="440" y="272" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="298" font-size="14" font-weight="bold" fill="#14532d">缓存淘汰 LRU：哈希表 + 双向链表</text>
+    <text x="456" y="320" font-size="12" fill="#334155">哈希表 O(1) 定位节点，双向链表维护访问序；淘汰尾部、移到头部</text>
+    <text x="456" y="338" font-size="12" fill="#334155">都要 O(1) 拿前驱 —— 这正是「单链表做不到、必须双向」的落点</text>
+  </g>
+  <g>
+    <rect x="440" y="366" width="540" height="84" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="456" y="392" font-size="14" font-weight="bold" fill="#14532d">紧凑存储：quicklist、页与 arena</text>
+    <text x="456" y="414" font-size="12" fill="#334155">Redis List 的 quicklist = 双向链表，每节点装一块连续内存 listpack；</text>
+    <text x="456" y="432" font-size="12" fill="#334155">数据库页、池化分配同理：指针税按「块」付一次，而不是按元素付</text>
+  </g>
+  <g>
+    <rect x="440" y="460" width="540" height="84" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="456" y="486" font-size="14" font-weight="bold" fill="#9a3412">延伸：在链表上叠索引层</text>
+    <text x="456" y="508" font-size="12" fill="#334155">跳跃表 = 有序链表 + 多级随机索引，查找降到期望 O(log n)（Redis ZSet）；</text>
+    <text x="456" y="526" font-size="12" fill="#334155">「动态 + 有序」才值得叠索引，只读静态就用排序 + 二分</text>
+  </g>
+
+  <g>
+    <rect x="20" y="566" width="960" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="36" y="590" font-size="12" font-weight="bold" fill="#7f1d1d">共同前提：数据规模或操作模式允许「连续」与「离散」各管一段 —— 高频定位走数组，高频挂删走链表。</text>
+    <text x="36" y="612" font-size="12" fill="#7f1d1d">失效边界：大对象要求整块连续内存时数组失败（改分段/页式）；裸链表每节点一次分配的碎片代价在热点路径不可接受（改池化/下标模拟指针）。</text>
+  </g>
+</svg>
