@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">树还是图：五问依次筛，第一个「非树」答案就定了边界</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">树 = 连通 + 无环 + 单父；任一条件不成立，就落到 DAG 或一般图（判据与正文一致）</text>
+
+  <g transform="translate(0,100)">
+    <rect x="30" y="0" width="940" height="64" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <circle cx="62" cy="32" r="17" fill="#e0f2fe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="62" y="32" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="bold" fill="#1e40af">①</text>
+    <text x="94" y="27" font-size="15" font-weight="bold" fill="#0f172a">有没有环？</text>
+    <text x="94" y="49" font-size="12.5" fill="#dc2626">有环 → 一般图（环是「图」的门票，树第一步就出局）；无环 → 继续第 2 问</text>
+  </g>
+
+  <g transform="translate(0,176)">
+    <rect x="30" y="0" width="940" height="64" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <circle cx="62" cy="32" r="17" fill="#e0f2fe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="62" y="32" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="bold" fill="#1e40af">②</text>
+    <text x="94" y="27" font-size="15" font-weight="bold" fill="#0f172a">每个节点是不是只有一个父？</text>
+    <text x="94" y="49" font-size="12.5" fill="#ea580c">多父 → DAG（有向无环图，已经不是树）；单父 → 继续第 3 问</text>
+  </g>
+
+  <g transform="translate(0,252)">
+    <rect x="30" y="0" width="940" height="64" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <circle cx="62" cy="32" r="17" fill="#e0f2fe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="62" y="32" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="bold" fill="#1e40af">③</text>
+    <text x="94" y="27" font-size="15" font-weight="bold" fill="#0f172a">需不需要任意两点间多跳？</text>
+    <text x="94" y="49" font-size="12.5" fill="#2563eb">要任意两点可达 → 图（靠跳数索引）；只要父子单跳 → 继续第 4 问</text>
+  </g>
+
+  <g transform="translate(0,328)">
+    <rect x="30" y="0" width="940" height="64" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <circle cx="62" cy="32" r="17" fill="#e0f2fe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="62" y="32" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="bold" fill="#1e40af">④</text>
+    <text x="94" y="27" font-size="15" font-weight="bold" fill="#0f172a">关系是不是有向 / 对称？</text>
+    <text x="94" y="49" font-size="12.5" fill="#2563eb">对称或双向 → 图；有向且单父无环 → 树 / DAG</text>
+  </g>
+
+  <g transform="translate(0,404)">
+    <rect x="30" y="0" width="940" height="64" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <circle cx="62" cy="32" r="17" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="62" y="32" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="bold" fill="#14532d">⑤</text>
+    <text x="94" y="27" font-size="15" font-weight="bold" fill="#0f172a">要不要「层级 + 分治剪枝」？</text>
+    <text x="94" y="49" font-size="12.5" fill="#16a34a">要 → 树（层级索引 / B+ 树）；不要 → 图或哈希</text>
+  </g>
+
+  <line x1="500" y1="478" x2="500" y2="506" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="512" y="499" font-size="12" fill="#64748b">五问全部落在「树」一侧，才轮到树模型</text>
+
+  <g transform="translate(30,516)">
+    <rect x="0" y="0" width="300" height="150" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="14" y="28" font-size="16" font-weight="bold" fill="#14532d">树：三个约束都满足</text>
+    <text x="14" y="56" font-size="12.5" fill="#334155">连通 + 无环 + 每个点只有一个父</text>
+    <text x="14" y="80" font-size="12.5" fill="#334155">n 个节点恰好 n − 1 条边</text>
+    <text x="14" y="104" font-size="12.5" fill="#334155">任意两点间路径唯一</text>
+    <text x="14" y="128" font-size="12.5" fill="#16a34a">有层级 / 可剪枝 / 可有序</text>
+  </g>
+
+  <g transform="translate(350,516)">
+    <rect x="0" y="0" width="300" height="150" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="14" y="28" font-size="16" font-weight="bold" fill="#9a3412">DAG：无环，但有多个入边</text>
+    <text x="14" y="56" font-size="12.5" fill="#334155">有向 + 无环 + 允许一个点多父</text>
+    <text x="14" y="80" font-size="12.5" fill="#334155">例：构建依赖 / 多父继承</text>
+    <text x="14" y="104" font-size="12.5" fill="#334155">能拓扑排序，但路径不唯一</text>
+    <text x="14" y="128" font-size="12.5" fill="#ea580c">不是树：一个点可被多路到达</text>
+  </g>
+
+  <g transform="translate(670,516)">
+    <rect x="0" y="0" width="300" height="150" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="14" y="28" font-size="16" font-weight="bold" fill="#1e40af">一般图：约束被打破</text>
+    <text x="14" y="56" font-size="12.5" fill="#334155">允许环 / 双向 / 任意拓扑</text>
+    <text x="14" y="80" font-size="12.5" fill="#334155">例：好友、关注、推荐关系</text>
+    <text x="14" y="104" font-size="12.5" fill="#334155">有环的工作流也是图</text>
+    <text x="14" y="128" font-size="12.5" fill="#2563eb">靠多跳与遍历，不靠层级</text>
+  </g>
+
+  <text x="30" y="694" font-size="12.5" fill="#334155">要点：五问里只要有一问答在「非树」一侧，就别再套树模型 —— 层级、唯一路径、剪枝这些「免费午餐」都要重新付费。</text>
+</svg>
