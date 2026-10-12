@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="ar5G" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Go 驱动建连与游标归还时序（本篇 2.1 / 2.3 节代码的时序视图）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">Connect 是惰性的、Ping 才是真连通、游标 Close 后连接才归还池中；Java 侧 try-with-resources 是同一生命周期</text>
+
+  <rect x="90" y="78" width="220" height="40" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="200" y="103" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">应用代码</text>
+  <rect x="400" y="78" width="220" height="40" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="510" y="96" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">MongoClient 连接池</text>
+  <text x="510" y="112" text-anchor="middle" font-size="10.5" fill="#9a3412">默认 MaxPoolSize 100，全应用单例</text>
+  <rect x="710" y="78" width="220" height="40" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="820" y="103" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">MongoDB 服务端</text>
+
+  <line x1="200" y1="118" x2="200" y2="614" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="510" y1="118" x2="510" y2="614" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="820" y1="118" x2="820" y2="614" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <line x1="200" y1="150" x2="502" y2="150" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="352" y="144" text-anchor="middle" font-size="11.5" fill="#0f172a">ApplyURI + SetMaxPoolSize(50) + SetServerSelectionTimeout(5s)</text>
+
+  <line x1="200" y1="192" x2="502" y2="192" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="352" y="186" text-anchor="middle" font-size="11.5" fill="#0f172a">Connect(ctx, opts)　// v2 去掉 ctx</text>
+  <text x="352" y="208" text-anchor="middle" font-size="10.5" fill="#b91c1c">⚠️ 惰性：立即返回，错误往往到首次操作才暴露</text>
+
+  <line x1="200" y1="248" x2="502" y2="248" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="352" y="242" text-anchor="middle" font-size="11.5" fill="#0f172a">Ping(ctx, nil)</text>
+
+  <line x1="510" y1="280" x2="812" y2="280" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="662" y="274" text-anchor="middle" font-size="11.5" fill="#0f172a">服务器选择与连通探测</text>
+
+  <line x1="820" y1="312" x2="518" y2="312" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ar5G)"/>
+  <text x="662" y="306" text-anchor="middle" font-size="11.5" fill="#15803d">✅ 可达（⭐ Ping 才是真正的连通性检查）</text>
+
+  <line x1="200" y1="352" x2="502" y2="352" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="352" y="346" text-anchor="middle" font-size="11.5" fill="#0f172a">Find(ctx, filter, opts)</text>
+
+  <line x1="510" y1="384" x2="812" y2="384" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="662" y="378" text-anchor="middle" font-size="11.5" fill="#0f172a">借出池中连接，发出查询</text>
+
+  <line x1="200" y1="424" x2="502" y2="424" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="352" y="418" text-anchor="middle" font-size="11.5" fill="#0f172a">cur.Next / Decode 循环</text>
+
+  <line x1="510" y1="456" x2="812" y2="456" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="662" y="450" text-anchor="middle" font-size="11.5" fill="#0f172a">游标续取结果</text>
+
+  <line x1="200" y1="496" x2="502" y2="496" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="352" y="490" text-anchor="middle" font-size="11.5" fill="#0f172a">defer cur.Close(ctx)</text>
+
+  <line x1="510" y1="528" x2="812" y2="528" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="662" y="522" text-anchor="middle" font-size="11.5" fill="#0f172a">释放服务端游标</text>
+
+  <line x1="510" y1="556" x2="208" y2="556" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ar5G)"/>
+  <text x="352" y="550" text-anchor="middle" font-size="11.5" fill="#15803d">连接归还池中（⚠️ 漏 Close = 池泄漏）</text>
+
+  <line x1="200" y1="596" x2="502" y2="596" stroke="#334155" stroke-width="1.6" marker-end="url(#ar5)"/>
+  <text x="352" y="590" text-anchor="middle" font-size="11.5" fill="#0f172a">Disconnect(ctx)　// 进程退出前必须释放</text>
+
+  <rect x="30" y="624" width="940" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="50" y="646" font-size="11.5" fill="#334155">两个易漏检查：cur.Err()——漏了会把「中途出错」当「正常结束」静默丢数据；Aggregate 用 cur.All(ctx, &amp;stats) 会自动关闭游标。</text>
+  <text x="50" y="668" font-size="11.5" fill="#334155">多实例部署要下调 SetMaxPoolSize（默认 100），并配合 serverSelectionTimeout 让不可达时快速失败。</text>
+</svg>

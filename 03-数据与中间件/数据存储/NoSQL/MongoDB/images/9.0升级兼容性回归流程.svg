@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">9.0 升级兼容性回归流程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">四类高风险变更先逐项回归，再按官方路径逐跳升级；FCV 不能提前抬高（依据本篇第四节与 2.3 节）</text>
+
+  <rect x="20" y="76" width="960" height="322" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="100" font-size="14" font-weight="bold" fill="#0f172a">阶段一 · 升级前：四类高风险变更逐项回归</text>
+
+  <rect x="40" y="116" width="450" height="126" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="60" y="140" font-size="12.5" font-weight="bold" fill="#9a3412">点号路径与 null 的比较语义</text>
+  <text x="60" y="162" font-size="11" fill="#334155">影响面：所有「拿点号路径与 null 比较」的查询</text>
+  <text x="60" y="180" font-size="11" fill="#334155">与 $lookup 等值匹配</text>
+  <text x="60" y="202" font-size="11" fill="#9a3412">动作：扫一遍相关查询形状，旧 / 新语义</text>
+  <text x="60" y="220" font-size="11" fill="#9a3412">各跑一遍对比结果集</text>
+  <text x="60" y="236" font-size="10.5" fill="#b91c1c">⚠️ 改的是结果集不是报错，静默改变最危险</text>
+
+  <rect x="510" y="116" width="450" height="126" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="530" y="140" font-size="12.5" font-weight="bold" fill="#9a3412">单次操作内存上限（1 GB 或 20%）</text>
+  <text x="530" y="162" font-size="11" fill="#334155">影响面：大排序、大聚合、无 limit 的全量扫描</text>
+  <text x="530" y="180" font-size="11" fill="#334155">历史上「靠大内存硬跑」的操作</text>
+  <text x="530" y="202" font-size="11" fill="#9a3412">动作：找出内存峰值高的操作，评估是否需要</text>
+  <text x="530" y="220" font-size="11" fill="#9a3412">allowDiskUse 或先收窄输入</text>
+
+  <rect x="40" y="256" width="450" height="126" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="60" y="280" font-size="12.5" font-weight="bold" fill="#9a3412">并发多文档事务上限（默认 10000）</text>
+  <text x="60" y="302" font-size="11" fill="#334155">影响面：高并发写事务的业务</text>
+  <text x="60" y="324" font-size="11" fill="#9a3412">动作：压测观察并发事务峰值，</text>
+  <text x="60" y="342" font-size="11" fill="#9a3412">是否触发 TooManyOpenTransactions</text>
+
+  <rect x="510" y="256" width="450" height="126" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="530" y="280" font-size="12.5" font-weight="bold" fill="#9a3412">指标改名 / 时序存储模型变化</text>
+  <text x="530" y="302" font-size="11" fill="#334155">影响面：监控采集脚本、依赖 system.buckets</text>
+  <text x="530" y="320" font-size="11" fill="#334155">内部结构或对时序集合做 rename 的工具</text>
+  <text x="530" y="342" font-size="11" fill="#9a3412">动作：同步监控名称；去掉对内部结构的依赖</text>
+  <text x="530" y="360" font-size="10.5" fill="#b91c1c">⚠️ 不改名会「采集成功但值为空」</text>
+
+  <line x1="500" y1="398" x2="500" y2="424" stroke="#334155" stroke-width="1.6" marker-end="url(#ar4)"/>
+
+  <rect x="240" y="426" width="520" height="60" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="450" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">阶段二 · 大版本升级：按官方版本路径逐跳</text>
+  <text x="500" y="472" text-anchor="middle" font-size="11.5" fill="#334155">⚠️ feature compatibility version 不能提前抬高——与副本集与选举第五节「滚动维护」同一套纪律</text>
+
+  <line x1="500" y1="486" x2="500" y2="512" stroke="#334155" stroke-width="1.6" marker-end="url(#ar4)"/>
+
+  <rect x="240" y="514" width="520" height="72" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="538" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">阶段三 · FCV 9.0+ 后才解锁的能力</text>
+  <text x="500" y="560" text-anchor="middle" font-size="11.5" fill="#334155">queryKnobs、每形状 maxTimeMS（setQuerySettings）</text>
+  <text x="500" y="578" text-anchor="middle" font-size="11.5" fill="#334155">改完用 $queryStats 或 explain 复核实际计划</text>
+
+  <text x="40" y="618" font-size="11.5" fill="#64748b">阶段一四项对应第四节表格的四行「升级前动作」；本流程为升级评估清单，本机无 9.0 实例、未实测。</text>
+</svg>

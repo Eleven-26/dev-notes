@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">单机 4 实例：每个进程绑一个核、各看各的内存与磁盘</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">部署形态 / 数据流转图（示意）—— 配置照抄本篇 2.1 示例：taskset -c $i、port 637$i、dir /data/redis-$i、maxmemory 4gb</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="250" height="286" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">客户端侧</text>
+
+    <rect x="30" y="46" width="190" height="56" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="125" y="70" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">业务客户端</text>
+    <text x="125" y="90" text-anchor="middle" font-size="11.5" fill="#64748b">看到的仍是普通单机 Redis</text>
+
+    <line x1="125" y1="102" x2="125" y2="128" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="20" y="132" width="210" height="88" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="125" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">分片路由层</text>
+    <text x="125" y="178" text-anchor="middle" font-size="11.5" fill="#334155">twemproxy / codis / 自研路由</text>
+    <text x="125" y="198" text-anchor="middle" font-size="11.5" fill="#334155">或一致性哈希 SDK</text>
+
+    <text x="125" y="244" text-anchor="middle" font-size="11.5" fill="#64748b">N 份独立数据，靠这一层分开</text>
+    <text x="125" y="266" text-anchor="middle" font-size="11.5" fill="#64748b">不需要处理 MOVED / ASK</text>
+
+    <line x1="230" y1="176" x2="272" y2="60" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="230" y1="176" x2="272" y2="128" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="230" y1="176" x2="272" y2="196" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="230" y1="176" x2="272" y2="258" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arwB)"/>
+  </g>
+
+  <g transform="translate(290,84)">
+    <rect x="0" y="0" width="690" height="286" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">一台宿主（示例 4 核）—— N 个 redis-server 进程</text>
+
+    <rect x="20" y="42" width="310" height="52" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="32" y="62" font-size="12" font-weight="bold" fill="#1d4ed8">redis-0 · taskset -c 0 绑核 0</text>
+    <text x="32" y="82" font-size="11.5" fill="#334155">port 6370 · dir /data/redis-0 · maxmemory 4gb</text>
+
+    <rect x="360" y="42" width="310" height="52" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="372" y="62" font-size="12" font-weight="bold" fill="#1d4ed8">redis-1 · taskset -c 1 绑核 1</text>
+    <text x="372" y="82" font-size="11.5" fill="#334155">port 6371 · dir /data/redis-1 · maxmemory 4gb</text>
+
+    <rect x="20" y="106" width="310" height="52" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="32" y="126" font-size="12" font-weight="bold" fill="#1d4ed8">redis-2 · taskset -c 2 绑核 2</text>
+    <text x="32" y="146" font-size="11.5" fill="#334155">port 6372 · dir /data/redis-2 · maxmemory 4gb</text>
+
+    <rect x="360" y="106" width="310" height="52" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="372" y="126" font-size="12" font-weight="bold" fill="#1d4ed8">redis-3 · taskset -c 3 绑核 3</text>
+    <text x="372" y="146" font-size="11.5" fill="#334155">port 6373 · dir /data/redis-3 · maxmemory 4gb</text>
+
+    <rect x="20" y="172" width="650" height="46" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="34" y="192" font-size="12" font-weight="bold" fill="#dc2626">⚠️ 4 份 maxmemory 共享同一份物理内存：之和必须留余量</text>
+    <text x="34" y="210" font-size="11.5" fill="#334155">还要算上每个实例 fork 时的 COW 开销 —— 写满时会被 OS OOM Killer 直接杀掉（2.1 最容易漏的一条）</text>
+
+    <rect x="20" y="228" width="650" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="34" y="248" font-size="12" font-weight="bold" fill="#ea580c">⚠️ 故障域还是同一台机器：这台挂了 4 个实例一起挂</text>
+    <text x="34" y="266" font-size="11.5" fill="#334155">多实例解决的是 CPU，不是可用性 —— 可用性归 高可用.md（主从 + 哨兵另配）</text>
+  </g>
+
+  <g transform="translate(20,390)">
+    <rect x="0" y="0" width="960" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">「三样必须分开」对照（缺一样就互相覆盖）</text>
+    <text x="16" y="54" font-size="12.5" fill="#334155">端口：6370~6373（或独立 unix socket）　｜　配置文件：redis-0.conf ~ redis-3.conf　｜　数据目录：dir、dbfilename、appendonlydir 逐实例独立</text>
+    <text x="16" y="80" font-size="12.5" fill="#334155">绑核：Linux 用 taskset -c，容器用 --cpuset-cpus —— 目的都是避免多个实例在核之间漂移、互相抢。</text>
+    <text x="16" y="106" font-size="12" fill="#64748b">合计 CPU 随实例数上升（2.2 实测 0.96 → 1.57 → 1.72 核），但受宿主核数、客户端抢核与容器网络天花板限制，看不到线性叠加。</text>
+  </g>
+
+  <text x="500" y="560" text-anchor="middle" font-size="12.5" fill="#1d4ed8">规划口径：不是「起几个实例」，而是「这台机器能给 Redis 留几个核」。</text>
+  <text x="500" y="590" text-anchor="middle" font-size="11.5" fill="#64748b">适用：单机内存够、瓶颈在 QPS；多业务共机互相隔离；不想引入集群复杂度（2.4 节）。</text>
+</svg>

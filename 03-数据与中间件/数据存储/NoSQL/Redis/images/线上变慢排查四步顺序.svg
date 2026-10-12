@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwR" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">线上突然变慢：固定四步，先拿证据再定根因</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">流程图 —— 顺序与命令来自本篇「延伸追问」与第二节命令清单；阈值（10000μs、碎片率 1.5）取自第一节表与第二节（示意）</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">四步顺序（不要跳步，也不要加第五步）</text>
+
+    <rect x="20" y="44" width="210" height="110" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="125" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">① SLOWLOG GET 10</text>
+    <text x="125" y="88" text-anchor="middle" font-size="11.5" fill="#334155">哪些命令超过</text>
+    <text x="125" y="106" text-anchor="middle" font-size="11.5" fill="#334155">slowlog-log-slower-than</text>
+    <text x="125" y="124" text-anchor="middle" font-size="11.5" fill="#64748b">默认 10000μs</text>
+    <text x="125" y="144" text-anchor="middle" font-size="11.5" fill="#64748b">线上常见设 10000μs</text>
+
+    <line x1="230" y1="99" x2="254" y2="99" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="256" y="44" width="210" height="110" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+    <text x="361" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">② INFO memory</text>
+    <text x="361" y="90" text-anchor="middle" font-size="11.5" fill="#334155">used_memory 是否顶到</text>
+    <text x="361" y="108" text-anchor="middle" font-size="11.5" fill="#334155">maxmemory</text>
+    <text x="361" y="130" text-anchor="middle" font-size="11.5" fill="#334155">mem_fragmentation_ratio</text>
+    <text x="361" y="148" text-anchor="middle" font-size="11.5" fill="#dc2626">长期 &gt; 1.5 = 碎片化</text>
+
+    <line x1="466" y1="99" x2="490" y2="99" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="492" y="44" width="210" height="110" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+    <text x="597" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">③ redis-cli --bigkeys</text>
+    <text x="597" y="90" text-anchor="middle" font-size="11.5" fill="#334155">找大 key：value 几 MB、</text>
+    <text x="597" y="108" text-anchor="middle" font-size="11.5" fill="#334155">hash 上百万字段</text>
+    <text x="597" y="132" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#dc2626">⚠️ 线上低峰执行</text>
+
+    <line x1="702" y1="99" x2="726" y2="99" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="728" y="44" width="212" height="110" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+    <text x="834" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">④ INFO clients</text>
+    <text x="834" y="90" text-anchor="middle" font-size="11.5" fill="#334155">连接数是否暴涨</text>
+    <text x="834" y="110" text-anchor="middle" font-size="11.5" fill="#64748b">连接未复用 / 未设</text>
+    <text x="834" y="128" text-anchor="middle" font-size="11.5" fill="#64748b">timeout → 池被打爆</text>
+
+    <text x="16" y="176" font-size="12" fill="#dc2626">⚠️ 别把 MONITOR 当第五步：它自带性能损耗，只能短时用 —— 排查到这一步还无线索，再考虑低峰短暂开启。</text>
+  </g>
+
+  <g transform="translate(20,294)">
+    <rect x="0" y="0" width="960" height="230" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">证据 → 根因 → 处理（对照第二节坑表）</text>
+
+    <rect x="20" y="42" width="920" height="26" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="34" y="60" font-size="12" font-weight="bold" fill="#475569">第几步看到的证据</text>
+    <text x="330" y="60" font-size="12" font-weight="bold" fill="#475569">根因</text>
+    <text x="590" y="60" font-size="12" font-weight="bold" fill="#475569">处理</text>
+
+    <text x="34" y="90" font-size="12" fill="#334155">① 慢日志出现 keys * / hgetall 大 hash / 长 Lua</text>
+    <text x="330" y="90" font-size="12" fill="#dc2626">O(N) 命令阻塞单线程</text>
+    <text x="590" y="90" font-size="12" fill="#334155">SCAN 替代；rename-command KEYS "" 禁掉</text>
+
+    <text x="34" y="120" font-size="12" fill="#334155">③ 发现大 key（单次操作卡、网络打满）</text>
+    <text x="330" y="120" font-size="12" fill="#dc2626">一个 value 太重，删除也阻塞</text>
+    <text x="590" y="120" font-size="12" fill="#334155">拆小 key；HSCAN/SSCAN 分批；UNLINK 替代 DEL</text>
+
+    <text x="34" y="150" font-size="12" fill="#334155">② 碎片率长期 &gt; 1.5</text>
+    <text x="330" y="150" font-size="12" fill="#dc2626">内存碎片：实际占用远大于数据量</text>
+    <text x="590" y="150" font-size="12" fill="#334155">activedefrag yes 或低峰期重建</text>
+
+    <text x="34" y="180" font-size="12" fill="#334155">④ 连接数暴涨</text>
+    <text x="330" y="180" font-size="12" fill="#dc2626">未复用客户端 / 没设超时</text>
+    <text x="590" y="180" font-size="12" fill="#334155">客户端单例 + PoolSize / PoolTimeout / timeout</text>
+
+    <text x="34" y="212" font-size="12" fill="#ea580c">热 key（单节点被打满、集群倾斜）</text>
+    <text x="330" y="212" font-size="12" fill="#ea580c">访问集中在少数 key</text>
+    <text x="590" y="212" font-size="12" fill="#334155">多副本打散 + 本地缓存兜底（见 缓存问题与方案.md 第二节）</text>
+  </g>
+
+  <g transform="translate(20,544)">
+    <rect x="0" y="0" width="960" height="56" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="16" y="24" font-size="12.5" font-weight="bold" fill="#0f172a">为什么顺序固定：慢日志成本最低、直接指到命令；内存和大 key 是「结构性」原因；连接数放最后是因为它常常是前三者的次生现象。</text>
+    <text x="16" y="46" font-size="12" fill="#64748b">查之前先确认配置本身：maxmemory 是否为容器上限的 60%~70%（fork / COW / 缓冲区要留余量）。</text>
+  </g>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwR" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">都是一次往返，原子性却分三个层级</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">调用时序对照图 —— 结论来自本篇 Pipeline / Lua 两节与延伸追问：Pipeline 只减 RTT 不保原子；TxPipeline 底层 MULTI/EXEC；Lua 单线程原子执行（示意）</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="960" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="13" font-weight="bold" fill="#64748b">基线：逐条发（3 条命令 = 3 个 RTT）</text>
+    <text x="40" y="58" font-size="12" fill="#334155">客户端</text>
+    <text x="860" y="58" font-size="12" fill="#334155">Redis</text>
+    <line x1="110" y1="54" x2="830" y2="54" stroke="#334155" stroke-width="1.4" marker-end="url(#arw)"/>
+    <text x="470" y="46" text-anchor="middle" font-size="11.5" fill="#334155">INCR counter</text>
+    <line x1="830" y1="78" x2="110" y2="78" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arw)"/>
+    <text x="470" y="72" text-anchor="middle" font-size="11.5" fill="#64748b">结果</text>
+    <text x="470" y="106" text-anchor="middle" font-size="11.5" fill="#dc2626">…再来两条 → 每条约一个来回，RTT 直接乘命令数</text>
+  </g>
+
+  <g transform="translate(20,220)">
+    <rect x="0" y="0" width="960" height="110" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="16" y="26" font-size="13" font-weight="bold" fill="#1d4ed8">① Pipeline：攒一批，一次 RTT（不原子）</text>
+    <line x1="110" y1="52" x2="830" y2="52" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="470" y="44" text-anchor="middle" font-size="11.5" fill="#334155">pipe.Incr + pipe.Expire → Exec 一次发出</text>
+    <line x1="830" y1="78" x2="110" y2="78" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arw)"/>
+    <text x="470" y="72" text-anchor="middle" font-size="11.5" fill="#64748b">全部响应一起收回</text>
+    <text x="16" y="100" font-size="11.5" fill="#dc2626">⚠️ 服务端仍逐条执行，中间可能穿插其他客户端的命令 —— 只省网络，不保证原子。</text>
+  </g>
+
+  <g transform="translate(20,346)">
+    <rect x="0" y="0" width="960" height="110" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="16" y="26" font-size="13" font-weight="bold" fill="#166534">② TxPipeline（MULTI/EXEC）：一次 RTT 且连续执行</text>
+    <line x1="110" y1="52" x2="830" y2="52" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="470" y="44" text-anchor="middle" font-size="11.5" fill="#334155">MULTI · 入队一批命令 · EXEC</text>
+    <line x1="830" y1="78" x2="110" y2="78" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arw)"/>
+    <text x="470" y="72" text-anchor="middle" font-size="11.5" fill="#64748b">EXEC 后打包结果返回</text>
+    <text x="16" y="100" font-size="11.5" fill="#334155">打包顺序执行、不被穿插；但没有条件判断，且 <tspan font-weight="bold" fill="#dc2626">不支持回滚</tspan>（延伸追问）。</text>
+  </g>
+
+  <g transform="translate(20,472)">
+    <rect x="0" y="0" width="960" height="110" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="16" y="26" font-size="13" font-weight="bold" fill="#ea580c">③ Lua（Eval / NewScript）：读-判断-写整体原子</text>
+    <line x1="110" y1="52" x2="830" y2="52" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="470" y="44" text-anchor="middle" font-size="11.5" fill="#334155">脚本 + KEYS + ARGV 一次传入</text>
+    <line x1="830" y1="78" x2="110" y2="78" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arw)"/>
+    <text x="470" y="72" text-anchor="middle" font-size="11.5" fill="#64748b">返回值（如限流的 1/0）</text>
+    <text x="16" y="100" font-size="11.5" fill="#334155">Redis 端单线程原子执行整段逻辑（固定窗口限流、校验 token 再删锁都靠它）；Cluster 下只能用 KEYS[i]，不要动态拼 key 名。</text>
+  </g>
+
+  <g transform="translate(20,600)">
+    <text x="16" y="20" font-size="12.5" font-weight="bold" fill="#0f172a">判据：只要少往返 → Pipeline；打包批处理、无需条件 → TxPipeline；先读再决定怎么写 → Lua。⚠️ 脚本太长会阻塞所有命令（见 部署与运维.md）。</text>
+  </g>
+</svg>

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arwO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">事务生命周期状态机：锁等待与死锁检测怎么改变状态</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">状态名 Running / Blocked by: [...] / rolled back and terminated 均出自本篇 3.1、4.1 与「使用」一节的实测输出；锁持有到事务结束</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="560" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+    <rect x="50" y="60" width="180" height="62" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="140" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#475569">开启事务</text>
+    <text x="140" y="106" text-anchor="middle" font-size="10.5" fill="#334155">显式开启 / 首条语句隐式开启</text>
+
+    <rect x="390" y="60" width="200" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="490" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">Running 运行中</text>
+    <text x="490" y="106" text-anchor="middle" font-size="10.5" fill="#334155">SHOW TRANSACTIONS 的 status</text>
+
+    <line x1="230" y1="91" x2="384" y2="91" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+    <text x="246" y="80" font-size="11" fill="#334155">执行语句</text>
+
+    <rect x="710" y="60" width="210" height="62" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="815" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">Blocked 等锁</text>
+    <text x="815" y="106" text-anchor="middle" font-size="10.5" fill="#334155">status = "Blocked by: [事务id]"</text>
+
+    <line x1="594" y1="76" x2="704" y2="76" stroke="#ea580c" stroke-width="1.6" marker-end="url(#arwO)"/>
+    <text x="600" y="66" font-size="11" fill="#b45309">申请他人持有的节点/关系锁</text>
+    <line x1="704" y1="106" x2="598" y2="106" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arwB)"/>
+    <text x="612" y="122" font-size="11" fill="#1d4ed8">持有者提交/回滚释放 → 继续跑（3.1 实测等约 3.7 s）</text>
+
+    <rect x="330" y="240" width="200" height="62" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="430" y="266" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">Committed 已提交</text>
+    <text x="430" y="286" text-anchor="middle" font-size="10.5" fill="#334155">先落事务日志，锁全部释放</text>
+
+    <path d="M 460 126 C 440 180, 430 200, 428 234" fill="none" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arwG)"/>
+    <text x="300" y="180" font-size="11" fill="#15803d">全部语句执行完</text>
+    <text x="300" y="196" font-size="10.5" fill="#64748b">提交先写 neostore.transaction.db.*</text>
+    <text x="300" y="212" font-size="10.5" fill="#64748b">checkpoint 才刷进 store 文件（15m/10万事务）</text>
+
+    <rect x="670" y="240" width="240" height="62" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="790" y="266" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">Rolled back / Terminated</text>
+    <text x="790" y="286" text-anchor="middle" font-size="10.5" fill="#334155">rolled back and terminated（4.1 实测报错）</text>
+
+    <path d="M 850 126 C 850 180, 830 200, 812 234" fill="none" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arwR)"/>
+    <text x="840" y="160" font-size="11" fill="#dc2626">Forseti 死锁检测成环，</text>
+    <text x="840" y="176" font-size="11" fill="#dc2626">被选为牺牲者回滚并抛错</text>
+
+    <path d="M 540 126 C 620 180, 700 200, 726 234" fill="none" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arwR)"/>
+    <text x="560" y="215" font-size="11" fill="#dc2626">运行中被 TERMINATE TRANSACTIONS / 唯一约束冲突（3.3）</text>
+
+    <text x="40" y="340" font-size="13" font-weight="bold" fill="#0f172a">这张状态机为什么值得记</text>
+    <text x="40" y="366" font-size="12" fill="#334155">① 锁不是语句级的：读写拿的共享/排他锁一路握到 Committed 或 Rolled back —— 所以「事务开得越久，锁握得越久」（第三节要点）；</text>
+    <text x="40" y="388" font-size="12" fill="#334155">② Blocked 不会永远挂着：要么等释放回到 Running，要么被死锁检测判成牺牲者进 Rolled back（4.1 实测：一个提交、一个回滚）；</text>
+    <text x="40" y="410" font-size="12" fill="#334155">③ 默认没有 Running 的自动出口：db.transaction.timeout = 0s、db.lock.acquisition.timeout = 0s（5.2 实测），不显式设上限就靠人 TERMINATE。</text>
+
+    <rect x="40" y="430" width="880" height="106" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="56" y="456" font-size="12" font-weight="bold" fill="#0f172a">现场对照：4.1 死锁实验里 SHOW TRANSACTIONS 抓到的两个状态</text>
+    <text x="56" y="482" font-size="11.5" fill="#1d4ed8">neo4j-transaction-136  Running  PT2.527S  持锁 2（apoc.util.sleep 3000 撑住事务）</text>
+    <text x="56" y="506" font-size="11.5" fill="#b45309">neo4j-transaction-133  Blocked by: [neo4j-transaction-136]  PT4.903S  持锁 2（SET u.dl 等锁）</text>
+    <text x="56" y="526" font-size="11" fill="#64748b">最终结果：一个正常提交、另一个被回滚（正文 4.1：A 提交、B 被回滚）—— 牺牲者由引擎决定，应用不能假设（结论②）。</text>
+  </g>
+</svg>

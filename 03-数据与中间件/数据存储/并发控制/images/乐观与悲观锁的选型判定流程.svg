@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">乐观与悲观锁的选型判定流程</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">自上而下依次过滤；前两问命中就根本不必走到「乐观 / 悲观」的对决（节点判据抄自本篇正文）</text>
+
+  <rect x="330" y="74" width="340" height="38" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1"/>
+  <text x="500" y="98" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">同一份数据存在写冲突</text>
+  <line x1="500" y1="112" x2="500" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <rect x="330" y="134" width="340" height="46" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="500" y="162" font-size="13" fill="#1e40af" text-anchor="middle">一问：需要跨进程 / 跨服务互斥吗？</text>
+  <line x1="670" y1="157" x2="733" y2="157" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="700" y="150" font-size="11" fill="#334155" text-anchor="middle">是</text>
+  <rect x="738" y="128" width="232" height="70" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="854" y="150" font-size="12" font-weight="bold" fill="#9a3412" text-anchor="middle">分布式锁 / 分布式事务</text>
+  <text x="854" y="169" font-size="10.5" fill="#9a3412" text-anchor="middle">单机锁与版本号都不再适用</text>
+  <text x="854" y="186" font-size="10.5" fill="#9a3412" text-anchor="middle">Redis / etcd / ZooKeeper 那一套</text>
+
+  <line x1="500" y1="180" x2="500" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="514" y="196" font-size="11" fill="#334155">否</text>
+
+  <rect x="330" y="208" width="340" height="46" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="500" y="236" font-size="13" fill="#1e40af" text-anchor="middle">二问：不变式能写进 WHERE 子句吗？</text>
+  <line x1="670" y1="231" x2="733" y2="231" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="700" y="224" font-size="11" fill="#334155" text-anchor="middle">是</text>
+  <rect x="738" y="202" width="232" height="70" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="854" y="224" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">条件更新</text>
+  <text x="854" y="243" font-size="10.5" fill="#14532d" text-anchor="middle">如 WHERE stock &gt;= n，一条 UPDATE</text>
+  <text x="854" y="260" font-size="10.5" fill="#14532d" text-anchor="middle">最省事的乐观锁，免版本号列</text>
+
+  <line x1="500" y1="254" x2="500" y2="278" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="514" y="270" font-size="11" fill="#334155">否</text>
+
+  <rect x="330" y="282" width="340" height="46" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="500" y="310" font-size="13" fill="#1e40af" text-anchor="middle">三问：写频繁、冲突是常态、要求强一致？</text>
+
+  <line x1="500" y1="328" x2="500" y2="348" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="348" x2="750" y2="348" stroke="#334155" stroke-width="1.5"/>
+  <line x1="250" y1="348" x2="250" y2="374" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="750" y1="348" x2="750" y2="374" stroke="#334155" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="250" y="366" font-size="11" fill="#991b1b" text-anchor="middle">是：冲突是常态</text>
+  <text x="750" y="366" font-size="11" fill="#14532d" text-anchor="middle">否：读多写少、冲突少</text>
+
+  <rect x="70" y="378" width="360" height="118" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="250" y="402" font-size="13" font-weight="bold" fill="#991b1b" text-anchor="middle">悲观锁：先锁后改</text>
+  <text x="250" y="424" font-size="11" fill="#7f1d1d" text-anchor="middle">SELECT ... FOR UPDATE 锁定行，事务结束才释放</text>
+  <text x="250" y="442" font-size="11" fill="#7f1d1d" text-anchor="middle">两条硬约束：必须在事务里、条件必须走索引</text>
+  <text x="250" y="460" font-size="11" fill="#7f1d1d" text-anchor="middle">冲突代价：其他事务阻塞等待</text>
+  <text x="250" y="478" font-size="11" fill="#7f1d1d" text-anchor="middle">风险：死锁、锁等待超时、吞吐下降</text>
+
+  <rect x="570" y="378" width="360" height="118" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="750" y="402" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">乐观锁：读取不加锁、提交时校验</text>
+  <text x="750" y="424" font-size="11" fill="#166534" text-anchor="middle">版本比对写进 WHERE：影响行数为 0 即版本已变</text>
+  <text x="750" y="442" font-size="11" fill="#166534" text-anchor="middle">失败收场：回滚或重新执行</text>
+  <text x="750" y="460" font-size="11" fill="#166534" text-anchor="middle">重试必须有上限 + 退避 + 随机抖动</text>
+  <text x="750" y="478" font-size="11" fill="#166534" text-anchor="middle">风险：检测滞后、ABA（能用 version 就别用时间戳）</text>
+
+  <rect x="30" y="514" width="940" height="86" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="538" font-size="11.5" fill="#1e3a8a">判据是「冲突概率 × 单次重试成本」，不是绝对好坏——低冲突时悲观锁「先锁再判」反而省掉一次回滚。</text>
+  <text x="46" y="560" font-size="11.5" fill="#1e3a8a">能不上锁就不上锁：唯一索引 / INSERT IGNORE / 幂等设计能解决的，就不要引入版本号或显式锁这套复杂度。</text>
+  <text x="46" y="582" font-size="11.5" fill="#1e3a8a">CAS 是乐观思想在 CPU 指令层的形态、不是数据库的锁；语言侧的 ABA 解法见 atomic操作.md。</text>
+</svg>

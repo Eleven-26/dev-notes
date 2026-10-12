@@ -77,6 +77,16 @@ Prometheus 会把 `rate` / `increase` 的结果**外推到整个窗口**，于�
 
 ⭐ 一句话记忆：**MetricsQL 的 `rate` / `increase` 更接近「真实增量」，Prometheus 的更接近「线性估计」**。
 
+![rate窗口取样与外推差异](images/rate窗口取样与外推差异.svg)
+
+这两处分歧落到看板上，就是下面几种可辨认的症状——先对症，再决定要不要换口径对账：
+
+| 观察到的症状 | 原因（正文出处） | 处理 |
+|---|---|---|
+| Prometheus 上 `increase()` 对整数计数器吐出小数 | Prometheus 把结果外推到整个窗口（2.2） | MetricsQL 不做外推，慢变整数计数器返回整数；属口径差而非 bug |
+| 个别点上 Prometheus 返回空、VM 却有值 | 窗口内只有一个样本时 Prometheus 无从计算 rate；MetricsQL 参考窗口前的样本，`step` 小于采集间隔时仍返回非空（2.1） | Grafana「曲线断断续续」的常见来源，确认是取样差 |
+| 迁移后个别曲线数值对不上 | 窗口首尾取样不同，外加 NaN、负 offset、末位精度等有意差异（1.2 失败构成表） | 对账改用 `*_prometheus` 同族函数排除算法差异（2.3） |
+
 ### 2.3 想要 Prometheus 的老口径：`*_prometheus` 系列
 
 凡是首尾样本参与计算的 rollup 函数，两边都会有差异。VM 为此提供了**按 Prometheus 逻辑计算**的

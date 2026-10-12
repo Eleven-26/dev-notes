@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="vmFitA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="760" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">VictoriaMetrics：排除 → 估算 → 形态判定</text>
+  <text x="500" y="55" text-anchor="middle" font-size="13" fill="#64748b">第 0 步排除项取自第七节；第 1 步估算三步取自「使用」一节；第 2 步五条信号取自第五节表；阈值口径见 1.1 ⭐</text>
+
+  <rect x="340" y="76" width="320" height="44" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="500" y="104" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">需求进来：指标存储 / 长期远程存储</text>
+  <line x1="500" y1="120" x2="500" y2="140" stroke="#334155" stroke-width="1.8" marker-end="url(#vmFitA)"/>
+
+  <rect x="330" y="144" width="340" height="88" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="500" y="168" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7f1d1d">第 0 步 · 先排除不适选 VM 的情形</text>
+  <text x="500" y="191" text-anchor="middle" font-size="11.5" fill="#991b1b">要 SQL / 跨信号关联 / 窗口与流计算 → 换技术路线</text>
+  <text x="500" y="211" text-anchor="middle" font-size="11.5" fill="#991b1b">规模极小、单集群、无需长期保留 → 用 Prometheus 自带 TSDB</text>
+
+  <line x1="500" y1="232" x2="500" y2="252" stroke="#334155" stroke-width="1.8" marker-end="url(#vmFitA)"/>
+  <text x="522" y="246" font-size="11" fill="#16a34a">确是指标存储</text>
+
+  <rect x="330" y="256" width="340" height="112" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="280" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">第 1 步 · 单机容量估算三步</text>
+  <text x="500" y="303" text-anchor="middle" font-size="11.5" fill="#1d4ed8">估序列数 ≈ Σ 每类采集对象的暴露序列数</text>
+  <text x="500" y="323" text-anchor="middle" font-size="11.5" fill="#1d4ed8">估写入速率 ≈ 活跃序列数 ÷ 抓取间隔(秒)</text>
+  <text x="500" y="343" text-anchor="middle" font-size="11.5" fill="#1d4ed8">磁盘 = 试跑一天占用 × 保留天数，再留 20% 空闲</text>
+
+  <line x1="500" y1="368" x2="500" y2="388" stroke="#334155" stroke-width="1.8" marker-end="url(#vmFitA)"/>
+
+  <rect x="290" y="392" width="420" height="132" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="416" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">第 2 步 · 五条集群信号，命中任意一条？</text>
+  <text x="500" y="440" text-anchor="middle" font-size="11.5" fill="#9a3412">写入长期高于建议阈值（约 100 万点/秒）</text>
+  <text x="500" y="460" text-anchor="middle" font-size="11.5" fill="#9a3412">需要多租户 · 需要多副本冗余</text>
+  <text x="500" y="480" text-anchor="middle" font-size="11.5" fill="#9a3412">垂直扩展到单机硬件上限，CPU / 内存 / 磁盘加不上去</text>
+  <text x="500" y="500" text-anchor="middle" font-size="11.5" fill="#9a3412">需要按租户做不同的保留 / 限流（vmauth + 多实例或集群）</text>
+
+  <line x1="400" y1="524" x2="290" y2="576" stroke="#334155" stroke-width="1.8" marker-end="url(#vmFitA)"/>
+  <text x="298" y="556" font-size="12" font-weight="bold" fill="#16a34a">一条都不命中</text>
+  <line x1="600" y1="524" x2="710" y2="576" stroke="#334155" stroke-width="1.8" marker-end="url(#vmFitA)"/>
+  <text x="634" y="556" font-size="12" font-weight="bold" fill="#ea580c">命中任意一条</text>
+
+  <rect x="60" y="580" width="420" height="120" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="270" y="606" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">单机版（官方默认起点）</text>
+  <text x="270" y="630" text-anchor="middle" font-size="11.5" fill="#166534">一个进程承担接收 + 存储 + 查询 · 垂直扩展</text>
+  <text x="270" y="650" text-anchor="middle" font-size="11.5" fill="#166534">配置与运维更简单；「先试单机版」</text>
+  <text x="270" y="670" text-anchor="middle" font-size="11.5" fill="#166534">内存盯活跃序列数；磁盘留 20%；重查询用 -search.* 约束</text>
+  <text x="270" y="690" text-anchor="middle" font-size="11" fill="#64748b">HA 靠双写 + 去重（-dedup.minScrapeInterval）或前置 Promxy</text>
+
+  <rect x="520" y="580" width="420" height="120" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="730" y="606" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">集群版（更复杂，而非更高级）</text>
+  <text x="730" y="630" text-anchor="middle" font-size="11.5" fill="#1d4ed8">vminsert / vmselect / vmstorage 三类服务 · 水平扩展</text>
+  <text x="730" y="650" text-anchor="middle" font-size="11.5" fill="#1d4ed8">shared-nothing 按数据分片；多租户按 account ID 隔离</text>
+  <text x="730" y="670" text-anchor="middle" font-size="11.5" fill="#1d4ed8">多副本靠 -replicationFactor</text>
+  <text x="730" y="690" text-anchor="middle" font-size="11" fill="#991b1b">一开始就用多个小分片；扩缩容不是简单加减节点</text>
+
+  <rect x="60" y="144" width="240" height="88" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="180" y="168" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">不适用 VM 时去哪</text>
+  <text x="180" y="190" text-anchor="middle" font-size="10.5" fill="#475569">SQL / 跨信号 / 流计算 → GreptimeDB 路线</text>
+  <text x="180" y="208" text-anchor="middle" font-size="10.5" fill="#475569">逐项横比 → 选型与落地案例 / 选型对比目录</text>
+  <line x1="326" y1="188" x2="286" y2="188" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4,3"/>
+
+  <text x="500" y="732" text-anchor="middle" font-size="12" fill="#475569">口径提醒：「能跑到 150 万+ 点/秒」是能力画像的天花板，「低于约 100 万用单机」是建议值——判断以建议为准、以画像为天花板（1.1）</text>
+</svg>

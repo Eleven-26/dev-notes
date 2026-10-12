@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">GraphRAG 检索管线：比传统 RAG 多了「实体入口 + 沿关系扩展」两段</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">流程取自本篇第四节与官方 neo4j-graphrag-python 文档整理 —— ⚠️ 检索底座（向量召回+图扩展）本仓实测，生成与效果对比未实测（无 LLM 环境）</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">传统 RAG（向量库）：上下文是彼此独立的文本块</text>
+
+    <rect x="30" y="52" width="150" height="66" rx="10" fill="#ffffff" stroke="#334155" stroke-width="1.3"/>
+    <text x="105" y="80" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">问题</text>
+    <text x="105" y="102" text-anchor="middle" font-size="10.5" fill="#334155">用户提问</text>
+    <line x1="180" y1="85" x2="214" y2="85" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="218" y="52" width="170" height="66" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="303" y="80" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">向量检索 top-K</text>
+    <text x="303" y="102" text-anchor="middle" font-size="10.5" fill="#334155">按相似度取最像的块</text>
+    <line x1="388" y1="85" x2="422" y2="85" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="426" y="52" width="170" height="66" rx="10" fill="#ffffff" stroke="#334155" stroke-width="1.3"/>
+    <text x="511" y="80" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">若干文本块</text>
+    <text x="511" y="102" text-anchor="middle" font-size="10.5" fill="#334155">chunk 之间没有关系</text>
+    <line x1="596" y1="85" x2="630" y2="85" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="634" y="52" width="130" height="66" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="699" y="80" text-anchor="middle" font-size="12" font-weight="bold" fill="#475569">LLM</text>
+    <text x="699" y="102" text-anchor="middle" font-size="10.5" fill="#334155">生成答案</text>
+    <line x1="764" y1="85" x2="798" y2="85" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+    <rect x="802" y="52" width="130" height="66" rx="10" fill="#ffffff" stroke="#334155" stroke-width="1.3"/>
+    <text x="867" y="80" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">答案</text>
+    <text x="867" y="102" text-anchor="middle" font-size="10.5" fill="#dc2626">多跳靠「多捞几块」碰运气</text>
+
+    <text x="30" y="150" font-size="11.5" fill="#64748b">短板：块内信息像就召回，但「A 的上级的部门在哪」这类多跳问题没有结构可走，可解释性也弱（「就是这段文字像」）。</text>
+  </g>
+
+  <g transform="translate(20,270)">
+    <rect x="0" y="0" width="960" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">GraphRAG（图 + 向量）：实体做入口、关系做通路、上下文可回溯</text>
+
+    <rect x="30" y="52" width="150" height="76" rx="10" fill="#ffffff" stroke="#334155" stroke-width="1.3"/>
+    <text x="105" y="76" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">① 问题</text>
+    <text x="105" y="96" text-anchor="middle" font-size="10.5" fill="#334155">→ 实体抽取</text>
+    <text x="105" y="114" text-anchor="middle" font-size="10.5" fill="#334155">LLM 或 NER</text>
+    <line x1="180" y1="90" x2="214" y2="90" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arwG)"/>
+
+    <rect x="218" y="52" width="170" height="76" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="303" y="76" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">② 实体定位</text>
+    <text x="303" y="96" text-anchor="middle" font-size="10.5" fill="#334155">向量索引找最匹配的</text>
+    <text x="303" y="114" text-anchor="middle" font-size="10.5" fill="#334155">实体节点（语义入口）</text>
+    <line x1="388" y1="90" x2="422" y2="90" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arwG)"/>
+
+    <rect x="426" y="52" width="180" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+    <text x="516" y="76" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">③ 图检索</text>
+    <text x="516" y="96" text-anchor="middle" font-size="10.5" fill="#334155">从实体沿关系扩 1~2 跳</text>
+    <text x="516" y="114" text-anchor="middle" font-size="10.5" fill="#334155">带出关联实体与关系</text>
+    <line x1="606" y1="90" x2="640" y2="90" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arwG)"/>
+
+    <rect x="644" y="52" width="170" height="76" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="729" y="76" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">④ 上下文增强</text>
+    <text x="729" y="96" text-anchor="middle" font-size="10.5" fill="#334155">实体 + 关系 + 原文块</text>
+    <text x="729" y="114" text-anchor="middle" font-size="10.5" fill="#334155">拼成带结构的上下文</text>
+    <line x1="814" y1="90" x2="848" y2="90" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arwG)"/>
+
+    <rect x="852" y="52" width="88" height="76" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="896" y="80" text-anchor="middle" font-size="12" font-weight="bold" fill="#475569">⑤ LLM</text>
+    <text x="896" y="102" text-anchor="middle" font-size="10.5" fill="#334155">生成</text>
+
+    <path d="M 896 128 C 896 170, 830 180, 780 180 L 250 180 C 200 180, 130 172, 108 134" fill="none" stroke="#16a34a" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#arwG)"/>
+    <text x="380" y="204" text-anchor="middle" font-size="11.5" fill="#15803d">答案可回溯到具体关系路径（如 A-[:REPORTS_TO]->B-[:IN_DEPT]->C）—— 可解释性的来源</text>
+
+    <rect x="30" y="226" width="900" height="86" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="46" y="250" font-size="12" font-weight="bold" fill="#0f172a">实测边界与代价（本节结论，别记错）</text>
+    <text x="46" y="274" font-size="11" fill="#334155">✅ 本仓实测：②③ 两步的底座 —— db.index.vector.queryNodes 召回 + MATCH 沿关系扩展（见第三节 3.3，种子各带 3 邻居）。</text>
+    <text x="46" y="296" font-size="11" fill="#dc2626">⚠️ 未实测：①④⑤（无 LLM 环境）。且「GraphRAG 一定更强」是错的 —— 换来多跳与可解释，代价是建图与维护实体关系。</text>
+  </g>
+</svg>

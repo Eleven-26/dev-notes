@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arwO" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">单核封顶之后按顺序问三个问题</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判定流程图 —— 三问与结论逐条来自本篇第四节「选型判据（按顺序问自己）」；起点数字来自 1.1 节实测</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="960" height="386" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+    <rect x="330" y="20" width="300" height="56" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="480" y="42" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">起点：单实例 CPU 封顶约 1 核</text>
+    <text x="480" y="62" text-anchor="middle" font-size="11.5" fill="#64748b">实测 0.66~0.96 核；客户端 2→6 个 rps 不涨反降</text>
+
+    <line x1="480" y1="76" x2="480" y2="98" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="330" y="100" width="300" height="52" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="480" y="122" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ea580c">问 1：单机放得下吗？</text>
+    <text x="480" y="142" text-anchor="middle" font-size="11.5" fill="#334155">单主写 QPS 是否也到顶？</text>
+
+    <line x1="330" y1="126" x2="180" y2="126" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+    <text x="252" y="116" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#166534">放得下</text>
+    <line x1="630" y1="126" x2="786" y2="126" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+    <text x="710" y="116" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#dc2626">放不下 / 写 QPS 到顶</text>
+
+    <rect x="30" y="160" width="300" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="180" y="184" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">方案一：单机多实例</text>
+    <text x="180" y="206" text-anchor="middle" font-size="11.5" fill="#334155">只是 CPU/QPS 压不上去时的答案</text>
+    <text x="180" y="228" text-anchor="middle" font-size="11.5" fill="#334155">再配主从 + 哨兵保可用性</text>
+    <text x="180" y="254" text-anchor="middle" font-size="11.5" fill="#ea580c">问 2 补充：业务做不了客户端分片？</text>
+    <text x="180" y="276" text-anchor="middle" font-size="11.5" fill="#334155">→ 多实例 + 代理，或干脆 Cluster</text>
+    <text x="180" y="296" text-anchor="middle" font-size="11.5" fill="#334155">（用成熟的集群 SDK）</text>
+
+    <line x1="180" y1="152" x2="180" y2="158" stroke="#2563eb" stroke-width="1.5"/>
+
+    <rect x="790" y="160" width="140" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6" transform="translate(0,0)"/>
+    <g>
+      <text x="860" y="190" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">方案二：</text>
+      <text x="860" y="210" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Redis Cluster</text>
+      <text x="860" y="236" text-anchor="middle" font-size="11.5" fill="#334155">16384 槽分片</text>
+      <text x="860" y="256" text-anchor="middle" font-size="11.5" fill="#334155">容量 + 吞吐 + 容灾</text>
+      <text x="860" y="276" text-anchor="middle" font-size="11.5" fill="#334155">都要一起扩时</text>
+      <text x="860" y="298" text-anchor="middle" font-size="11.5" fill="#64748b">运维最重</text>
+    </g>
+
+    <rect x="420" y="180" width="300" height="110" rx="10" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="570" y="204" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">问 3：要不要跨机容灾？</text>
+    <text x="570" y="228" text-anchor="middle" font-size="11.5" fill="#166534">要 → Cluster（多实例 + 主从 + 哨兵</text>
+    <text x="570" y="248" text-anchor="middle" font-size="11.5" fill="#166534">的组合也行，但复杂度未必更低）</text>
+    <text x="570" y="272" text-anchor="middle" font-size="11.5" fill="#64748b">不要 → 停在方案一 / 方案二即可</text>
+
+    <line x1="480" y1="152" x2="540" y2="178" stroke="#334155" stroke-width="1.3" marker-end="url(#arw)"/>
+
+    <text x="16" y="344" font-size="12" fill="#dc2626">⚠️ 排除项：io-threads 调大不算一条路 —— 实测多烧 0.9~1.7 核、吞吐反而掉 40%~44%（1.2 节），它不是「多核版 Redis」。</text>
+    <text x="16" y="368" font-size="12" fill="#334155">共同前提：每个实例仍是单线程 —— Cluster 的 3 主 ≈ 3 份「单机 1 核」，多实例同理；扩容单位始终是「进程数」。</text>
+  </g>
+
+  <g transform="translate(20,486)">
+    <rect x="0" y="0" width="960" height="54" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="16" y="24" font-size="12.5" font-weight="bold" fill="#0f172a">别忘了留核：规划的是「能给 Redis 留几个核」，不是「机器有几个核」。</text>
+    <text x="16" y="44" font-size="12" fill="#64748b">Redis 之外还有客户端、监控、持久化 fork 的 COW、其他服务在抢同一批核 —— 2.2 实测 4 实例合计只到 1.72 核就是这个原因。</text>
+  </g>
+</svg>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mqA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">rate() 与 increase()：窗口取样与外推的两处分歧</text>
+  <text x="500" y="55" text-anchor="middle" font-size="13" fill="#64748b">样本序列 V1~V5 与两个窗口取自 2.1 示意（win1 覆盖 {V2,V3}，win2 覆盖 {V4,V5}）；外推与返回空的行为取自 2.1~2.2</text>
+
+  <line x1="100" y1="130" x2="880" y2="130" stroke="#cbd5e1" stroke-width="2"/>
+  <circle cx="150" cy="130" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="150" y="135" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">V1</text>
+  <circle cx="310" cy="130" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="310" y="135" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">V2</text>
+  <circle cx="470" cy="130" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="470" y="135" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">V3</text>
+  <circle cx="630" cy="130" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="630" y="135" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">V4</text>
+  <circle cx="790" cy="130" r="20" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="790" y="135" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">V5</text>
+
+  <path d="M290 100 L290 88 L490 88 L490 100" fill="none" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="390" y="76" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">窗口 win1：{V2, V3}</text>
+  <path d="M610 100 L610 88 L810 88 L810 100" fill="none" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="710" y="76" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">窗口 win2：{V4, V5}</text>
+
+  <line x1="470" y1="154" x2="330" y2="196" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mqA)"/>
+  <line x1="310" y1="154" x2="300" y2="196" stroke="#dc2626" stroke-width="1.6" marker-end="url(#mqA)"/>
+
+  <rect x="120" y="200" width="500" height="76" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="370" y="226" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">Prometheus：只用窗口内首尾样本，并把结果外推到整个窗口</text>
+  <rect x="200" y="238" width="150" height="30" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="275" y="258" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">win1 → V3−V2</text>
+  <rect x="400" y="238" width="150" height="30" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="475" y="258" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">win2 → V5−V4</text>
+  <text x="370" y="192" text-anchor="middle" font-size="11.5" fill="#991b1b">本窗口最后一个 − 本窗口第一个</text>
+
+  <rect x="120" y="340" width="500" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="370" y="366" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">MetricsQL：用窗口开始前的那个样本，不做外推</text>
+  <rect x="200" y="378" width="150" height="30" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="275" y="398" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">win1 → V3−V1</text>
+  <rect x="400" y="378" width="150" height="30" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="475" y="398" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">win2 → V5−V3</text>
+  <text x="370" y="332" text-anchor="middle" font-size="11.5" fill="#166534">V1 是 win1 开始前那个样本，V3 是 win2 开始前那个样本</text>
+
+  <rect x="650" y="200" width="320" height="216" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="810" y="228" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">两处分歧的直接后果</text>
+  <text x="666" y="256" font-size="11.5" fill="#991b1b">Prometheus 丢掉了跨窗口的那段增长</text>
+  <text x="666" y="278" font-size="11.5" fill="#991b1b">外推使 increase() 对整数计数器也吐小数</text>
+  <text x="666" y="300" font-size="11.5" fill="#991b1b">窗口内只剩一个样本时可能返回空</text>
+  <text x="810" y="318" text-anchor="middle" font-size="12" fill="#64748b">—— vs ——</text>
+  <text x="666" y="342" font-size="11.5" fill="#166534">MetricsQL 把窗口之间的增量补上了</text>
+  <text x="666" y="364" font-size="11.5" fill="#166534">慢变整数计数器的 increase() 返回整数</text>
+  <text x="666" y="386" font-size="11.5" fill="#166534">step 小于采集间隔时仍返回非空结果</text>
+
+  <rect x="120" y="440" width="850" height="56" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="545" y="463" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">一句话记忆：MetricsQL 更接近「真实增量」，Prometheus 更接近「线性估计」（2.2）</text>
+  <text x="545" y="485" text-anchor="middle" font-size="11.5" fill="#475569">Grafana 上「曲线断断续续」的常见来源：step 小于真实采集间隔时，Prometheus 窗口内可能只有一个样本</text>
+
+  <text x="500" y="530" text-anchor="middle" font-size="12" fill="#1d4ed8">需要 Prometheus 老口径（跨后端对账 / 迁移比对）时，换用同族函数：</text>
+  <text x="500" y="556" text-anchor="middle" font-size="12.5" font-family="Consolas, monospace" fill="#1d4ed8">rate_prometheus(m[5m])　delta_prometheus(m[5m])　increase_prometheus(m[5m])</text>
+  <text x="500" y="586" text-anchor="middle" font-size="11.5" fill="#64748b">日常看板用默认版本即可；_prometheus 系列按 Prometheus 逻辑计算（2.3）</text>
+</svg>

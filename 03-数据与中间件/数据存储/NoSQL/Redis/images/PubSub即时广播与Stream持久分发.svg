@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwO" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Pub/Sub 是直播传递，Stream 是先存后读</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">数据流转图 —— 消息内容为示意；「无存储 / 会丢 / 广播 / 可持久化 / 消费者组 / ACK」语义全部来自本篇总览表与 1.1~1.2 节</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#ea580c">① Pub/Sub（传统）：像群聊 —— 人在才有消息</text>
+
+    <rect x="20" y="48" width="170" height="70" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="105" y="76" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">发布者</text>
+    <text x="105" y="98" text-anchor="middle" font-size="11.5" fill="#64748b">PUBLISH 频道 消息</text>
+
+    <line x1="190" y1="83" x2="218" y2="83" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+    <rect x="220" y="42" width="250" height="82" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="345" y="66" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#dc2626">服务端不留任何消息</text>
+    <text x="345" y="88" text-anchor="middle" font-size="11.5" fill="#334155">没有消息存储的中间件</text>
+    <text x="345" y="108" text-anchor="middle" font-size="11.5" fill="#334155">只在发布者与订阅者之间传递</text>
+
+    <line x1="470" y1="66" x2="560" y2="52" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arwO)"/>
+    <line x1="470" y1="83" x2="560" y2="83" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arwO)"/>
+    <line x1="470" y1="100" x2="560" y2="114" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arwO)"/>
+
+    <rect x="562" y="38" width="180" height="32" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="652" y="58" text-anchor="middle" font-size="11.5" fill="#334155">在线订阅者 A</text>
+    <rect x="562" y="74" width="180" height="32" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="652" y="94" text-anchor="middle" font-size="11.5" fill="#334155">在线订阅者 B</text>
+    <rect x="562" y="110" width="180" height="32" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="652" y="130" text-anchor="middle" font-size="11.5" fill="#334155">在线订阅者 C</text>
+
+    <rect x="770" y="60" width="170" height="60" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="855" y="84" text-anchor="middle" font-size="11.5" fill="#64748b">此刻不在线的订阅者</text>
+    <text x="855" y="104" text-anchor="middle" font-size="11.5" fill="#dc2626">这条永远收不到</text>
+
+    <text x="16" y="156" font-size="12.5" fill="#334155">广播语义：<tspan font-weight="bold">所有订阅了同一频道的在线订阅者都能收到该频道的所有消息</tspan>；订阅之后的消息都能收到。</text>
+    <text x="16" y="182" font-size="12.5" fill="#dc2626">⚠️ 会丢的两种形态：发布者先发、订阅者后订阅（拿不到历史）；订阅者掉线期间的消息（永久丢失）。</text>
+    <text x="16" y="208" font-size="12.5" fill="#ea580c">无消息确认机制 —— 表达不了「这条我处理过了、不要再发给我」。</text>
+    <text x="16" y="234" font-size="11.5" fill="#64748b">时间轴示意：t1 发布 msg1 → t2 订阅 SUBSCRIBE → msg1 不再送达；t3 起的每条都收到。</text>
+  </g>
+
+  <g transform="translate(20,350)">
+    <rect x="0" y="0" width="960" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#1d4ed8">② Stream（Redis 5.0+）：像 Kafka / RabbitMQ —— 先落日志，再按需读</text>
+
+    <rect x="20" y="46" width="160" height="64" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="100" y="70" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">生产者</text>
+    <text x="100" y="92" text-anchor="middle" font-size="11.5" fill="#64748b">XADD mystream * f v</text>
+
+    <line x1="180" y1="78" x2="206" y2="78" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="208" y="42" width="220" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="318" y="64" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">消息日志（Stream）</text>
+    <text x="318" y="84" text-anchor="middle" font-size="11.5" fill="#334155">可持久化，每条有唯一 ID</text>
+    <text x="318" y="102" text-anchor="middle" font-size="11.5" fill="#334155">* 表示 ID 自动生成</text>
+
+    <line x1="428" y1="78" x2="454" y2="78" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="456" y="42" width="270" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="591" y="64" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#166534">消费者组 mygroup（推荐）</text>
+    <text x="591" y="84" text-anchor="middle" font-size="11.5" fill="#334155">互斥分发：组内任一个消费者消费过</text>
+    <text x="591" y="102" text-anchor="middle" font-size="11.5" fill="#334155">就认为已消费，不重复投递</text>
+
+    <line x1="726" y1="78" x2="752" y2="78" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="754" y="46" width="186" height="64" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="847" y="70" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#166534">XACK 确认</text>
+    <text x="847" y="92" text-anchor="middle" font-size="11.5" fill="#334155">处理完业务才算消费完成</text>
+
+    <line x1="318" y1="114" x2="318" y2="142" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+
+    <rect x="20" y="146" width="920" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="36" y="166" font-size="12" fill="#334155">普通读取（不推荐）：XREAD BLOCK 0 STREAMS mystream $ —— 阻塞等 XADD 唤醒，多个在读客户端<tspan font-weight="bold">都</tspan>能收到；</text>
+    <text x="36" y="184" font-size="12" fill="#334155">但没有确认机制，「消费过不要再发」只能人为处理 → 这种方式一般不用。</text>
+
+    <text x="16" y="216" font-size="12.5" fill="#334155">读历史：建组位置决定起点 —— <tspan font-family="Consolas, monospace" fill="#1d4ed8">XGROUP CREATE mystream mygroup 0</tspan> 从最开始（能读到历史）；换成 <tspan font-family="Consolas, monospace" fill="#1d4ed8">$</tspan> 只从最新开始。</text>
+    <text x="16" y="240" font-size="12" fill="#64748b">定位差别一句话：Pub/Sub 是通知通道，Stream 是可重放的事件存储 —— 差异不在 API，在定位（1.3 节结论）。</text>
+  </g>
+</svg>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arwG" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arwO" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Stream 一条消息的状态机：新消息、未确认、已确认</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">状态机图 —— 迁移动作全部来自本篇 1.2 节命令语义：XADD、XREADGROUP GROUP mygroup consumer1 … &gt; / 0、XACK</text>
+
+  <g transform="translate(20,90)">
+    <rect x="0" y="0" width="960" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+    <rect x="30" y="60" width="220" height="90" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="140" y="88" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1d4ed8">状态 A：未投递的新消息</text>
+    <text x="140" y="110" text-anchor="middle" font-size="11.5" fill="#334155">XADD 写入日志即诞生</text>
+    <text x="140" y="130" text-anchor="middle" font-size="11.5" fill="#334155">从未被任何消费者读过</text>
+
+    <line x1="250" y1="105" x2="366" y2="105" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arwB)"/>
+    <text x="308" y="88" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1d4ed8">组内任一消费者</text>
+    <text x="308" y="126" text-anchor="middle" font-size="11.5" fill="#334155">XREADGROUP … &gt;</text>
+
+    <rect x="370" y="60" width="240" height="90" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+    <text x="490" y="88" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#ea580c">状态 B：已读取、未确认</text>
+    <text x="490" y="110" text-anchor="middle" font-size="11.5" fill="#334155">读过但还没 XACK</text>
+    <text x="490" y="130" text-anchor="middle" font-size="11.5" fill="#334155">仍留在组里可再读</text>
+
+    <path d="M 430 150 Q 400 195 430 195 L 520 195 Q 555 195 530 156" fill="none" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+    <text x="480" y="188" text-anchor="middle" font-size="11.5" fill="#ea580c">XREADGROUP … 0 再读，仍是 B</text>
+
+    <line x1="610" y1="105" x2="716" y2="105" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arwG)"/>
+    <text x="663" y="88" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#166534">处理完业务</text>
+    <text x="663" y="126" text-anchor="middle" font-size="11.5" fill="#334155">XACK 消息ID</text>
+
+    <rect x="720" y="60" width="220" height="90" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="830" y="88" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#166534">状态 C：已确认</text>
+    <text x="830" y="110" text-anchor="middle" font-size="11.5" fill="#334155">这条才算真正消费完成</text>
+    <text x="830" y="130" text-anchor="middle" font-size="11.5" fill="#334155">不再投递给组内他人</text>
+
+    <text x="30" y="32" font-size="14" font-weight="bold" fill="#0f172a">三条边、三个状态</text>
+    <text x="30" y="182" font-size="11.5" fill="#64748b">停在 B 不动 =「读过但没确认」：用 0 从指定位置找第一条未确认记录，就是把它捞回来的手段。</text>
+  </g>
+
+  <g transform="translate(20,320)">
+    <rect x="0" y="0" width="960" height="110" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">两条不变式</text>
+    <text x="16" y="54" font-size="12.5" fill="#334155">① 消息 ID 由 XADD 用 <tspan font-family="Consolas, monospace" fill="#1d4ed8">*</tspan> 自动生成、全局唯一；读取时拿到什么 ID，XACK 就传什么 ID。</text>
+    <text x="16" y="80" font-size="12.5" fill="#334155">② 组内互斥：10 个消费者时一条新数据只有<tspan font-weight="bold">一个</tspan>能读到（&gt; 的语义）—— 所以 A→B 每次只发生一次，不会重复投递。</text>
+    <text x="16" y="102" font-size="11.5" fill="#64748b">对照 Pub/Sub：它没有 B 和 C —— 消息发出去就消失，状态机只有「已送达在线订阅者」或「没人收、丢弃」。</text>
+  </g>
+</svg>

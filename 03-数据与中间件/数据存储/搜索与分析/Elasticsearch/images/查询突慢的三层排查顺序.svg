@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">查询突慢的三层排查顺序：集群层 → 查询层 → 索引形态层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">slowlog 负责长期观测，profile 负责单条复现 —— 两者不能互换</text>
+
+  <rect x="380" y="76" width="240" height="40" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+  <text x="500" y="101" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">线上查询突然变慢</text>
+
+  <line x1="500" y1="116" x2="500" y2="136" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="40" y="138" width="920" height="130" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="60" y="166" font-size="14" font-weight="bold" fill="#1e3a8a">第一步 · 先看集群层面</text>
+  <text x="60" y="192" font-size="12" fill="#1e3a8a">线程池排队与 rejected · pending tasks · GC · 磁盘水位 —— 任一命中，问题是容量或集群状态，不是这条查询的写法</text>
+  <rect x="60" y="208" width="880" height="40" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="72" y="233" font-size="11.5" fill="#334155">GET _cat/thread_pool/search,write?v&amp;h=node_name,name,queue,rejected　——　队列持续非空、rejected 在涨，先解决容量</text>
+
+  <line x1="500" y1="268" x2="500" y2="288" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="514" y="284" font-size="11" fill="#64748b">排除集群层后</text>
+
+  <rect x="40" y="290" width="920" height="130" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="60" y="318" font-size="14" font-weight="bold" fill="#7c2d12">第二步 · 再看查询本身</text>
+  <text x="60" y="344" font-size="12" fill="#7c2d12">profile: true —— 时间落在 query 阶段还是 fetch 阶段？哪个子句最慢？哪个分片最慢？</text>
+  <rect x="60" y="360" width="880" height="40" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="72" y="385" font-size="11.5" fill="#334155">POST my_index/_search { "size": 1, "profile": true, ... }　——　单条复现；长期观测靠 slowlog，两者不能互换</text>
+
+  <line x1="500" y1="420" x2="500" y2="440" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="514" y="436" font-size="11" fill="#64748b">查询写法没问题</text>
+
+  <rect x="40" y="442" width="920" height="178" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="60" y="470" font-size="14" font-weight="bold" fill="#14532d">第三步 · 最后看索引形态</text>
+  <text x="60" y="496" font-size="12" fill="#14532d">段数是否爆炸（refresh / merge 出问题）· 删除比例是否高 · 字段是否用错 text / keyword ·</text>
+  <text x="60" y="518" font-size="12" fill="#14532d">聚合的 doc_count_error 与 cardinality 组合是否暴露「长尾被砍」</text>
+  <rect x="60" y="534" width="880" height="36" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="72" y="557" font-size="11.5" fill="#334155">GET _cat/fielddata?v　——　看哪个字段吃了多少堆（text 上开 fielddata 是把倒排反转进 JVM 堆，见 1.1）</text>
+  <text x="60" y="598" font-size="11.5" fill="#991b1b">止血：POST /idx/_cache/clear?fielddata=true（清掉之后首查会很难看）；正解：加 keyword 子字段 + reindex</text>
+</svg>

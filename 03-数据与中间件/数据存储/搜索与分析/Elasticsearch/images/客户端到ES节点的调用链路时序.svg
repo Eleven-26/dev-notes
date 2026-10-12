@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">调用链路时序：客户端单例 → REST（HTTPS + 认证）→ ES 节点</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">Go（go-elasticsearch/v8）与 Java（elasticsearch-java）拼装形态不同，底层是同一套 REST API，DSL 与 mapping 完全通用</text>
+
+  <rect x="40" y="78" width="240" height="52" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+  <text x="160" y="100" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">业务代码 / 线程池</text>
+  <text x="160" y="120" text-anchor="middle" font-size="11" fill="#64748b">不要每请求 new 一个客户端</text>
+
+  <rect x="380" y="78" width="240" height="52" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="500" y="100" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">客户端单例（连接池）</text>
+  <text x="500" y="120" text-anchor="middle" font-size="11" fill="#1e3a8a">进程内单例 · 生命周期交给容器</text>
+
+  <rect x="720" y="78" width="240" height="52" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="840" y="100" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">Elasticsearch 8.x 节点</text>
+  <text x="840" y="120" text-anchor="middle" font-size="11" fill="#14532d">默认开启 HTTPS + 认证</text>
+
+  <line x1="160" y1="130" x2="160" y2="430" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="500" y1="130" x2="500" y2="430" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="840" y1="130" x2="840" y2="430" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <line x1="160" y1="158" x2="498" y2="158" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="176" y="150" font-size="11.5" fill="#334155">① 复用单例发请求 —— 每请求重建 = 重做 TCP 握手与 TLS、连接数暴涨、节点列表重复拉取</text>
+
+  <rect x="382" y="178" width="236" height="46" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="500" y="198" text-anchor="middle" font-size="11.5" fill="#1e3a8a">② 拼请求体：Go map + json.Marshal</text>
+  <text x="500" y="216" text-anchor="middle" font-size="11.5" fill="#1e3a8a">Java 强类型 builder → 同一份 DSL</text>
+
+  <line x1="502" y1="248" x2="838" y2="248" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="518" y="240" font-size="11.5" fill="#334155">③ POST _search / _bulk（HTTPS + 认证）</text>
+  <text x="518" y="264" font-size="11" fill="#64748b">连接超时与请求超时分开设，请求超时 > 服务端 slowlog 阈值</text>
+
+  <line x1="838" y1="296" x2="502" y2="296" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="518" y="288" font-size="11.5" fill="#334155">④ HTTP 200 + JSON 响应 —— 200 只代表请求被受理</text>
+
+  <line x1="498" y1="330" x2="162" y2="330" stroke="#334155" stroke-width="1.6" marker-end="url(#arw)"/>
+  <text x="176" y="322" font-size="11.5" fill="#334155">⑤ 解析：Go Decode 进 map（字段名写错只能运行时/400 发现）/ Java 反序列化成强类型对象</text>
+
+  <line x1="838" y1="368" x2="502" y2="368" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwR)"/>
+  <text x="518" y="360" font-size="11.5" fill="#dc2626">⑥ 失败分支：段合并或长 GC 时 ES 会长时间无响应</text>
+  <text x="518" y="382" font-size="11" fill="#dc2626">客户端不给超时，业务线程池会被一起拖垮——不要无限等待</text>
+
+  <line x1="160" y1="412" x2="498" y2="412" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwR)"/>
+  <text x="176" y="404" font-size="11.5" fill="#dc2626">⑦ 重试：读请求相对安全；写请求不能盲目重试——可能是「已写入但响应丢了」</text>
+
+  <rect x="40" y="446" width="440" height="96" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="60" y="472" font-size="13" font-weight="bold" fill="#991b1b">重试的保护手段</text>
+  <text x="60" y="496" font-size="11.5" fill="#991b1b">幂等键（_id），或 version / if_seq_no 乐观并发</text>
+  <text x="60" y="520" font-size="11.5" fill="#991b1b">bulk 即使 200 也要逐条查 items[*].status / error</text>
+
+  <rect x="520" y="446" width="440" height="96" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="540" y="472" font-size="13" font-weight="bold" fill="#334155">连接池够不够的判据</text>
+  <text x="540" y="496" font-size="11.5" fill="#334155">看建连耗时占比与 _cat/thread_pool 排队长度</text>
+  <text x="540" y="520" font-size="11.5" fill="#334155">队列非空而 CPU 不高 → 卡在连接数或 queue 容量；池子调大 ≠ 吞吐变高</text>
+
+  <rect x="40" y="562" width="920" height="80" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="60" y="588" font-size="13" font-weight="bold" fill="#0f172a">版本契约</text>
+  <text x="60" y="612" font-size="11.5" fill="#334155">客户端主版本 = ES 服务端主版本；跨主版本一般能通，但有 API 不兼容与弃用告警，升级前先查官方兼容矩阵</text>
+  <text x="60" y="632" font-size="11.5" fill="#64748b">TransportClient（5.x~6.x 已淘汰）→ RestHighLevelClient（7.15 起弃用）→ elasticsearch-java（7.16+ 官方推荐）</text>
+</svg>

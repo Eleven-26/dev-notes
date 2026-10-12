@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwO" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Jedis 每次「借出-归还」，Lettuce 一条连接多人共用</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">调用交互对比图 —— 结论逐条来自「Jedis vs Lettuce」表与两段代码；线程与命令数量为示意</text>
+
+  <g transform="translate(20,84)">
+    <rect x="0" y="0" width="460" height="360" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#ea580c">Jedis：同步阻塞，直连 Redis</text>
+
+    <rect x="20" y="44" width="70" height="34" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="55" y="66" text-anchor="middle" font-size="11.5" fill="#334155">线程 T1</text>
+    <rect x="20" y="88" width="70" height="34" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="55" y="110" text-anchor="middle" font-size="11.5" fill="#334155">线程 T2</text>
+    <rect x="20" y="132" width="70" height="34" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="55" y="154" text-anchor="middle" font-size="11.5" fill="#334155">线程 T3</text>
+
+    <line x1="90" y1="61" x2="140" y2="99" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arwO)"/>
+    <line x1="90" y1="105" x2="140" y2="105" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arwO)"/>
+    <line x1="90" y1="149" x2="140" y2="111" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arwO)"/>
+
+    <rect x="142" y="76" width="150" height="62" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="217" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">JedisPool</text>
+    <text x="217" y="122" text-anchor="middle" font-size="11" fill="#64748b">getResource 借出</text>
+
+    <line x1="292" y1="107" x2="330" y2="107" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+
+    <rect x="332" y="76" width="110" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+    <text x="387" y="100" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#ea580c">独占连接</text>
+    <text x="387" y="122" text-anchor="middle" font-size="11" fill="#334155">一命令一往返</text>
+
+    <text x="20" y="196" font-size="11.5" fill="#334155">时序：借出 → 发命令 → <tspan font-weight="bold" fill="#ea580c">调用线程阻塞等响应</tspan> → try-with-resources 归还。</text>
+    <text x="20" y="220" font-size="11.5" fill="#dc2626">Jedis 实例不线程安全 —— 多线程共用一个实例就是错的，必须走池。</text>
+
+    <rect x="20" y="240" width="420" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="34" y="262" font-size="11.5" font-weight="bold" fill="#334155">池配置对应（本篇代码）：</text>
+    <text x="34" y="284" font-size="11.5" fill="#64748b">maxTotal 100 上限 · maxIdle 20 / minIdle 10</text>
+    <text x="34" y="304" font-size="11.5" fill="#64748b">maxWait 2s：池耗尽时的最大等待</text>
+    <text x="34" y="324" font-size="11.5" fill="#64748b">testOnBorrow：借出前 ping，剔除死连接</text>
+  </g>
+
+  <g transform="translate(520,84)">
+    <rect x="0" y="0" width="460" height="360" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#1d4ed8">Lettuce：Netty 异步 / 响应式，基于 NIO</text>
+
+    <rect x="20" y="44" width="70" height="34" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="55" y="66" text-anchor="middle" font-size="11.5" fill="#334155">线程 T1</text>
+    <rect x="20" y="88" width="70" height="34" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="55" y="110" text-anchor="middle" font-size="11.5" fill="#334155">线程 T2</text>
+    <rect x="20" y="132" width="70" height="34" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="55" y="154" text-anchor="middle" font-size="11.5" fill="#334155">线程 Tn</text>
+
+    <line x1="90" y1="61" x2="150" y2="99" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="90" y1="105" x2="150" y2="105" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arwB)"/>
+    <line x1="90" y1="149" x2="150" y2="111" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+    <rect x="152" y="70" width="160" height="74" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="232" y="96" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1d4ed8">StatefulRedisConnection</text>
+    <text x="232" y="118" text-anchor="middle" font-size="11" fill="#334155">线程安全，多线程共用</text>
+
+    <line x1="312" y1="107" x2="346" y2="107" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+    <rect x="348" y="70" width="94" height="74" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="395" y="96" text-anchor="middle" font-size="11" fill="#334155">一条 TCP</text>
+    <text x="395" y="118" text-anchor="middle" font-size="11" fill="#334155">命令交错</text>
+
+    <text x="20" y="196" font-size="11.5" fill="#334155">时序：conn.async() 发出即返回 → Netty 事件循环收响应 → 结果落进 <tspan font-weight="bold" fill="#1d4ed8">CompletableFuture</tspan>。</text>
+    <text x="20" y="220" font-size="11.5" fill="#166534">一个连接即可支撑高并发（多路复用）；需要顺序语义可用 conn.sync()。</text>
+
+    <rect x="20" y="240" width="420" height="100" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <text x="34" y="262" font-size="11.5" font-weight="bold" fill="#334155">对应本篇代码与配置：</text>
+    <text x="34" y="284" font-size="11.5" fill="#64748b">RedisClient.create("redis://:pwd@127.0.0.1:6379/0")</text>
+    <text x="34" y="304" font-size="11.5" fill="#64748b">client.connect() 一次，sync()/async() 共用</text>
+    <text x="34" y="324" font-size="11.5" fill="#64748b">Spring Boot 2.x 起默认；池参数在 lettuce.pool 下配</text>
+  </g>
+
+  <g transform="translate(20,464)">
+    <rect x="0" y="0" width="960" height="56" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="16" y="24" font-size="12.5" font-weight="bold" fill="#0f172a">一句话选择：简单场景、老项目、命令式写法 → Jedis；高并发、要异步 / 响应式、Spring Boot 项目 → Lettuce。</text>
+    <text x="16" y="46" font-size="12" fill="#64748b">集群 / 哨兵两侧都有对应实现：JedisCluster / JedisSentinelPool 对 RedisClusterClient / RedisSentinelClient。</text>
+  </g>
+</svg>

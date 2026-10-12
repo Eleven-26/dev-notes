@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwO" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="arwG" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">主库先回复、后同步：丢的是「宕机时还没同步过去的那一段」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">调用时序图 —— 对应本篇第二节「主从切换丢数据」一行与 min-replicas 取舍注；复制时序为示意</text>
+
+  <g transform="translate(0,0)">
+    <rect x="100" y="84" width="160" height="40" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+    <text x="180" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">客户端</text>
+    <rect x="420" y="84" width="160" height="40" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="500" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">主节点</text>
+    <rect x="740" y="84" width="160" height="40" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="820" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">从节点</text>
+
+    <line x1="180" y1="124" x2="180" y2="356" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <line x1="500" y1="124" x2="500" y2="356" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <line x1="820" y1="124" x2="820" y2="356" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+    <line x1="180" y1="156" x2="490" y2="156" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="335" y="148" text-anchor="middle" font-size="11.5" fill="#334155">① SET key value</text>
+
+    <rect x="424" y="172" width="152" height="34" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+    <text x="500" y="194" text-anchor="middle" font-size="11.5" fill="#334155">② 写进内存</text>
+
+    <line x1="500" y1="226" x2="190" y2="226" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+    <text x="340" y="218" text-anchor="middle" font-size="11.5" fill="#166534">③ 回 OK —— 写完就应答，不等同步</text>
+
+    <line x1="500" y1="266" x2="810" y2="266" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arwO)"/>
+    <text x="655" y="258" text-anchor="middle" font-size="11.5" fill="#ea580c">④ 异步复制（存在延迟窗口）</text>
+
+    <rect x="60" y="296" width="420" height="60" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+    <text x="270" y="320" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">正常结局：④ 落地，从节点数据追平</text>
+    <text x="270" y="342" text-anchor="middle" font-size="11.5" fill="#334155">之后主节点挂，从节点顶上，不丢</text>
+
+    <rect x="520" y="296" width="420" height="60" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+    <text x="730" y="320" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">故障结局：④ 送达之前主节点宕机</text>
+    <text x="730" y="342" text-anchor="middle" font-size="11.5" fill="#334155">这条写客户端已收到 OK，却永久丢失</text>
+  </g>
+
+  <g transform="translate(20,380)">
+    <rect x="0" y="0" width="960" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">兜底：把「复制没跟上」变成「拒绝写入」</text>
+    <text x="16" y="54" font-size="12.5" fill="#334155">配置 <tspan font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">min-replicas-to-write 1</tspan> + <tspan font-family="Consolas, monospace" font-weight="bold" fill="#1d4ed8">min-replicas-max-lag 10</tspan>：健康从节点不足（或落后超 10 秒）时，主节点直接拒绝写入。</text>
+    <text x="16" y="80" font-size="12.5" fill="#ea580c">效果：从「写进去但可能丢」换成「写不进去但写进去就不丢」—— 用可用性换一致性。</text>
+    <text x="16" y="106" font-size="12.5" fill="#334155">代价：从节点掉线期间业务写失败要能被感知、被重试。</text>
+  </g>
+
+  <g transform="translate(20,520)">
+    <rect x="0" y="0" width="960" height="44" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="16" y="27" font-size="12.5" font-weight="bold" fill="#0f172a">取舍判据：账务等强一致场景值得配；纯缓存场景不必 —— 宁可写不进去，还是允许丢了回源，由数据的可再生性决定。</text>
+  </g>
+</svg>

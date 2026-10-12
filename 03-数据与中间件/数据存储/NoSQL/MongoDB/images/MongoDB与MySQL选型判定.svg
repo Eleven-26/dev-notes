@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">MongoDB 与 MySQL 选型判定流程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">三条判据全部成立才倾向 MongoDB；「强事务 + 多表组合统计」是主线就留在 MySQL（判据出自本篇第二节与延伸追问）</text>
+
+  <rect x="350" y="88" width="300" height="40" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="500" y="113" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">新项目 / 新模块的存储选型</text>
+
+  <line x1="430" y1="128" x2="170" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+  <line x1="500" y1="128" x2="500" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+  <line x1="570" y1="128" x2="830" y2="182" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+  <rect x="30" y="184" width="280" height="88" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="170" y="208" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">判据一：数据天然嵌套？</text>
+  <text x="170" y="230" text-anchor="middle" font-size="11.5" fill="#334155">订单 + 明细、内容 + 评论</text>
+  <text x="170" y="250" text-anchor="middle" font-size="11.5" fill="#334155">高度规范化、多表拆分则不成立</text>
+
+  <rect x="360" y="184" width="280" height="88" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="208" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">判据二：读写以单文档为中心？</text>
+  <text x="500" y="230" text-anchor="middle" font-size="11.5" fill="#334155">一次取出整棵子树</text>
+  <text x="500" y="250" text-anchor="middle" font-size="11.5" fill="#334155">大量跨表 JOIN、多维组合则不成立</text>
+
+  <rect x="690" y="184" width="280" height="88" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="830" y="208" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">判据三：可接受最终一致？</text>
+  <text x="830" y="230" text-anchor="middle" font-size="11.5" fill="#334155">读从节点、秒级切换对应用透明</text>
+  <text x="830" y="250" text-anchor="middle" font-size="11.5" fill="#334155">以强一致为主则不成立</text>
+
+  <line x1="170" y1="272" x2="170" y2="296" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+  <line x1="500" y1="272" x2="500" y2="296" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+  <line x1="830" y1="272" x2="830" y2="296" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+  <rect x="30" y="298" width="940" height="34" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+  <text x="500" y="320" text-anchor="middle" font-size="12.5" fill="#334155">三条同时成立 → 倾向 MongoDB；任一不成立 → 回到 MySQL 一侧</text>
+
+  <line x1="250" y1="332" x2="250" y2="366" stroke="#16a34a" stroke-width="1.6" marker-end="url(#ar1)"/>
+  <line x1="750" y1="332" x2="750" y2="366" stroke="#dc2626" stroke-width="1.6" marker-end="url(#ar1)"/>
+
+  <rect x="60" y="368" width="380" height="104" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="250" y="392" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">✅ 选 MongoDB</text>
+  <text x="250" y="414" text-anchor="middle" font-size="11.5" fill="#334155">字段多变、快速迭代（schema 演进成本低）</text>
+  <text x="250" y="434" text-anchor="middle" font-size="11.5" fill="#334155">日志 / 埋点 / IoT：写吞吐高 + TTL 自动清理</text>
+  <text x="250" y="454" text-anchor="middle" font-size="11.5" fill="#334155">海量写入需水平扩展（分片）；简单分组聚合够用</text>
+
+  <rect x="560" y="368" width="380" height="104" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="750" y="392" text-anchor="middle" font-size="14" font-weight="bold" fill="#b91c1c">⚠️ 留在 MySQL</text>
+  <text x="750" y="414" text-anchor="middle" font-size="11.5" fill="#334155">强 ACID：跨表转账、库存扣减等多表联动</text>
+  <text x="750" y="434" text-anchor="middle" font-size="11.5" fill="#334155">复杂多表统计、报表、数仓</text>
+  <text x="750" y="454" text-anchor="middle" font-size="11.5" fill="#334155">⭐ 命中「强事务 + 多表组合统计」直接留在这里</text>
+
+  <text x="30" y="500" font-size="12" fill="#64748b">⚠️ MongoDB 事务边界：4.0 副本集事务、4.2 分片事务——能用，但代价高；约束能力弱于 MySQL，外键 / CHECK 要靠 JSON Schema + 唯一索引 + 应用层补。</text>
+  <text x="30" y="524" font-size="12" fill="#64748b">⚠️ 复杂多表关联统计是「不适合」清单第二条：$lookup 的能力与性能远不如 MySQL 的 JOIN 优化器。</text>
+</svg>

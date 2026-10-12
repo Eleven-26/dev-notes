@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arwR" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arwG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arwO" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">死锁时序：AB-BA 怎么成环、Forseti 怎么解环</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">场景与结果取自本篇 4.1 实测（A 先锁 id:0 再要 id:1；B 先锁 id:1 再要 id:0；最终 A 提交、B 被回滚）</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="500" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+    <rect x="60" y="20" width="150" height="40" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+    <text x="135" y="45" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">事务 A</text>
+    <rect x="330" y="20" width="150" height="40" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+    <text x="405" y="45" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">事务 B</text>
+    <rect x="590" y="20" width="130" height="40" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="655" y="45" text-anchor="middle" font-size="12" fill="#334155">NODE(id:0)</text>
+    <rect x="740" y="20" width="130" height="40" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="805" y="45" text-anchor="middle" font-size="12" fill="#334155">NODE(id:1)</text>
+
+    <line x1="135" y1="60" x2="135" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+    <line x1="405" y1="60" x2="405" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+    <line x1="655" y1="60" x2="655" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+    <line x1="805" y1="60" x2="805" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,4"/>
+
+    <line x1="135" y1="96" x2="649" y2="96" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="150" y="88" font-size="11.5" fill="#334155">① SET u0 —— 拿到 NODE(0) 排他锁</text>
+
+    <line x1="405" y1="150" x2="799" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+    <text x="418" y="142" font-size="11.5" fill="#334155">② SET u1 —— 拿到 NODE(1) 排他锁（与 ① 交错，双方各持一把）</text>
+
+    <line x1="135" y1="210" x2="799" y2="210" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arwO)"/>
+    <text x="150" y="202" font-size="11.5" fill="#b45309">③ SET u1 —— 申请 NODE(1)：被 B 持有 → Blocked by: [B]（4.1 截图里正是这一形态）</text>
+
+    <line x1="405" y1="264" x2="649" y2="264" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arwO)"/>
+    <text x="418" y="256" font-size="11.5" fill="#b45309">④ SET u0 —— 申请 NODE(0)：被 A 持有 → 等待链成环（A→1、B→0）</text>
+
+    <rect x="240" y="300" width="480" height="44" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+    <text x="480" y="320" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">⑤ 主动死锁检测（ForsetiClient）发现环</text>
+    <text x="480" y="338" text-anchor="middle" font-size="10.5" fill="#334155">报错原文带完整 Wait list：Client[133] waits for [ForsetiClient 136]</text>
+
+    <line x1="405" y1="392" x2="135" y2="392" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arwR)"/>
+    <text x="180" y="384" font-size="11.5" fill="#dc2626">⑥ B 被选为牺牲者：事务回滚并抛错（应用必须能安全重试）</text>
+
+    <line x1="655" y1="440" x2="141" y2="440" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arwG)"/>
+    <text x="180" y="432" font-size="11.5" fill="#15803d">⑦ 环被拆掉：A 拿到 NODE(1) 继续跑，正常提交</text>
+
+    <text x="40" y="484" font-size="11.5" fill="#64748b">死锁不挂起、被检测并解决（代价是回滚一个事务）；牺牲者是谁由引擎决定 —— 预防靠统一访问顺序（如永远按 id 升序改）。</text>
+  </g>
+
+  <g transform="translate(20,590)">
+    <rect x="0" y="0" width="960" height="90" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="26" font-size="13" font-weight="bold" fill="#0f172a">被回滚一方的报错（4.1 实测原文节选）</text>
+    <text x="16" y="50" font-size="11" fill="#334155">ForsetiClient[transactionId=136, clientId=1] can't acquire ExclusiveLock{owner=ForsetiClient[transactionId=133, clientId=2]} on NODE(1)</text>
+    <text x="16" y="72" font-size="11" fill="#334155">because holders of that lock are waiting for ForsetiClient[transactionId=136, clientId=1]. —— Wait list 就是「谁锁了谁」的第一手材料</text>
+  </g>
+</svg>

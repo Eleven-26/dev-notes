@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">从连接回包：一条命令始终走在同一条线程上</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">数据流转图 —— 环节与本篇第一节「快的原因」表逐项对应；6.0 的 IO 线程只并行「两头」，命令执行仍单线程（示意）</text>
+
+  <g transform="translate(20,80)">
+    <rect x="0" y="0" width="960" height="190" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">主链路：命令处理只有一个线程</text>
+
+    <rect x="20" y="50" width="150" height="96" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="95" y="74" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">客户端连接</text>
+    <text x="95" y="96" text-anchor="middle" font-size="11.5" fill="#64748b">海量长连接</text>
+    <text x="95" y="116" text-anchor="middle" font-size="11.5" fill="#64748b">无锁、无上下文切换</text>
+
+    <line x1="170" y1="98" x2="198" y2="98" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="200" y="50" width="150" height="96" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="275" y="74" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">IO 多路复用</text>
+    <text x="275" y="96" text-anchor="middle" font-size="11.5" fill="#64748b">epoll 单线程监听</text>
+    <text x="275" y="116" text-anchor="middle" font-size="11.5" fill="#64748b">事件就绪才处理</text>
+
+    <line x1="350" y1="98" x2="378" y2="98" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="380" y="50" width="150" height="96" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="455" y="74" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">RESP 解析</text>
+    <text x="455" y="96" text-anchor="middle" font-size="11.5" fill="#64748b">文本协议极简</text>
+    <text x="455" y="116" text-anchor="middle" font-size="11.5" fill="#64748b">解析成本低</text>
+
+    <line x1="530" y1="98" x2="558" y2="98" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="560" y="44" width="180" height="108" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="650" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">命令执行（单线程）</text>
+    <text x="650" y="90" text-anchor="middle" font-size="11.5" fill="#334155">纯内存：dict / SDS / 跳表</text>
+    <text x="650" y="110" text-anchor="middle" font-size="11.5" fill="#334155">纳秒级操作，CPU 不是瓶颈</text>
+    <text x="650" y="130" text-anchor="middle" font-size="11.5" fill="#1d4ed8">串行，一条一条来</text>
+
+    <line x1="740" y1="98" x2="768" y2="98" stroke="#334155" stroke-width="1.5" marker-end="url(#arw)"/>
+
+    <rect x="770" y="50" width="170" height="96" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.3"/>
+    <text x="855" y="74" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">回写响应</text>
+    <text x="855" y="96" text-anchor="middle" font-size="11.5" fill="#64748b">RESP 写回 socket</text>
+    <text x="855" y="116" text-anchor="middle" font-size="11.5" fill="#64748b">Pipeline 减少 RTT</text>
+
+    <text x="16" y="172" font-size="11.5" fill="#64748b">「单线程」只指命令处理这一段 —— 瓶颈在内存带宽与网络 IO，不在 CPU；所以把执行改成多线程要引入锁，未必更快。</text>
+  </g>
+
+  <g transform="translate(20,290)">
+    <rect x="0" y="0" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="15" font-weight="bold" fill="#0f172a">6.0 改了什么，代价是什么</text>
+
+    <rect x="20" y="44" width="450" height="92" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+    <text x="245" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ea580c">io-threads 4：只把「两头」交给线程池</text>
+    <text x="245" y="90" text-anchor="middle" font-size="11.5" fill="#334155">读 socket、解析协议、写回结果可并行</text>
+    <text x="245" y="112" text-anchor="middle" font-size="11.5" fill="#334155">命令执行与 Lua 仍是单线程 → 该阻塞还是阻塞</text>
+
+    <rect x="490" y="44" width="450" height="92" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="715" y="68" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#dc2626">⚠️ 单线程的代价：慢命令阻塞所有请求</text>
+    <text x="715" y="90" text-anchor="middle" font-size="11.5" fill="#334155">keys *、hgetall 大 hash、flushall 都是 O(N)</text>
+    <text x="715" y="112" text-anchor="middle" font-size="11.5" fill="#334155">线上事故重灾区（见 部署与运维.md 第二节）</text>
+  </g>
+
+  <g transform="translate(20,460)">
+    <rect x="0" y="0" width="960" height="126" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+    <text x="16" y="28" font-size="14" font-weight="bold" fill="#0f172a">这条链路叠出来的量级</text>
+    <text x="16" y="54" font-size="12.5" fill="#334155">纯内存 + 无锁单线程 + epoll + 高效数据结构 + 廉价协议 —— 读写压到 <tspan font-weight="bold" fill="#1d4ed8">10 万级 QPS</tspan>（对比 MySQL 单连接约 500~2000 QPS）。</text>
+    <text x="16" y="80" font-size="12.5" fill="#334155">主线程之外仍有后台节奏：定期删除每秒 10 次抽样扫描（见第五节与下一篇配图）、AOF 每秒 fsync —— 它们不执行命令，不破坏「命令单线程」。</text>
+    <text x="16" y="106" font-size="12" fill="#64748b">⭐ 记住两件事：快是「整条链路都在内存里」换来的；慢是「所有命令排队走同一条线程」欠下的。</text>
+  </g>
+</svg>

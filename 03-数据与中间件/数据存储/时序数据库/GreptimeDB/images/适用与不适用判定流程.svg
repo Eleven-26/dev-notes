@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 730" width="1000" height="730" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="gpFitA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="730" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">要不要上 GreptimeDB：三步判定流程</text>
+  <text x="500" y="55" text-anchor="middle" font-size="13" fill="#64748b">判定顺序取自「使用」一节的使用建议（先看 1~3 行，再看 5~6 行，最后第 7 行）；各分支文案取自第二、三、四节</text>
+
+  <rect x="330" y="76" width="340" height="46" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="500" y="104" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">需求进来：这份数据该不该用 GreptimeDB？</text>
+  <line x1="500" y1="122" x2="500" y2="142" stroke="#334155" stroke-width="1.8" marker-end="url(#gpFitA)"/>
+
+  <rect x="330" y="146" width="340" height="104" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="170" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">第一步 · 数据形状（对照表 1~3 行）</text>
+  <text x="500" y="193" text-anchor="middle" font-size="11.5" fill="#1d4ed8">写入模式：以带时间戳的追加为主？</text>
+  <text x="500" y="213" text-anchor="middle" font-size="11.5" fill="#1d4ed8">查询模式：按时间范围 + 时间线 + 少数列？</text>
+  <text x="500" y="233" text-anchor="middle" font-size="11.5" fill="#1d4ed8">一致性：分析型读取，不需要多行事务？</text>
+
+  <line x1="326" y1="198" x2="306" y2="198" stroke="#334155" stroke-width="1.8" marker-end="url(#gpFitA)"/>
+  <text x="316" y="188" text-anchor="middle" font-size="11" fill="#dc2626">任一不成立</text>
+  <rect x="40" y="146" width="260" height="104" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="170" y="170" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">别扭区：用它会别扭（第三节）</text>
+  <text x="170" y="192" text-anchor="middle" font-size="11" fill="#991b1b">强事务 OLTP · 频繁行级更新删除</text>
+  <text x="170" y="212" text-anchor="middle" font-size="11" fill="#991b1b">超低延迟点查 / 高并发 KV 式访问</text>
+  <text x="170" y="232" text-anchor="middle" font-size="11" fill="#991b1b">深链多表 JOIN · 复杂关系建模</text>
+
+  <line x1="500" y1="250" x2="500" y2="270" stroke="#334155" stroke-width="1.8" marker-end="url(#gpFitA)"/>
+  <text x="522" y="264" font-size="11" fill="#16a34a">三条都成立</text>
+
+  <rect x="330" y="274" width="340" height="104" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="298" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">第二步 · 会不会过度设计（对照表 5~6 行）</text>
+  <text x="500" y="321" text-anchor="middle" font-size="11.5" fill="#9a3412">指标 / 日志 / 链路想收进一套系统？</text>
+  <text x="500" y="341" text-anchor="middle" font-size="11.5" fill="#9a3412">可用 SQL，指标可接受 PromQL？</text>
+  <text x="500" y="361" text-anchor="middle" font-size="11" fill="#475569">「统一」指引擎 / 存储 / 查询层，不要求同一张表</text>
+
+  <line x1="326" y1="326" x2="306" y2="326" stroke="#334155" stroke-width="1.8" marker-end="url(#gpFitA)"/>
+  <text x="316" y="316" text-anchor="middle" font-size="11" fill="#64748b">命中右侧</text>
+  <rect x="40" y="274" width="260" height="104" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="170" y="296" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">先别急着上统一后端</text>
+  <text x="170" y="316" text-anchor="middle" font-size="11" fill="#475569">只有单一信号且已有稳态后端</text>
+  <text x="170" y="334" text-anchor="middle" font-size="11" fill="#475569">→ 上统一后端可能是过度设计</text>
+  <text x="170" y="352" text-anchor="middle" font-size="11" fill="#991b1b">要求原查询语言逐条完整兼容</text>
+  <text x="170" y="369" text-anchor="middle" font-size="10.5" fill="#991b1b">（如 LogQL）→ 先核对协议边界（3.4）</text>
+
+  <line x1="500" y1="378" x2="500" y2="398" stroke="#334155" stroke-width="1.8" marker-end="url(#gpFitA)"/>
+  <text x="522" y="392" font-size="11" fill="#16a34a">是</text>
+
+  <rect x="330" y="402" width="340" height="100" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="426" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">第三步 · 形态选择（对照表第 7 行 + 第四节）</text>
+  <text x="500" y="449" text-anchor="middle" font-size="11.5" fill="#166534">对象存储优先、想分离计算与存储？</text>
+  <text x="500" y="469" text-anchor="middle" font-size="11.5" fill="#166534">需要 Region 级容灾 / 多租户隔离？</text>
+  <text x="500" y="490" text-anchor="middle" font-size="11" fill="#475569">「单机能用」不等于「单机什么都能给」（4.2）</text>
+
+  <line x1="420" y1="502" x2="300" y2="556" stroke="#334155" stroke-width="1.8" marker-end="url(#gpFitA)"/>
+  <text x="318" y="534" font-size="11.5" font-weight="bold" fill="#2563eb">是</text>
+  <line x1="580" y1="502" x2="700" y2="556" stroke="#334155" stroke-width="1.8" marker-end="url(#gpFitA)"/>
+  <text x="632" y="534" font-size="11.5" font-weight="bold" fill="#16a34a">否 · 暂不需要的</text>
+
+  <rect x="80" y="560" width="380" height="104" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="270" y="584" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">分布式集群（或企业版）</text>
+  <text x="270" y="606" text-anchor="middle" font-size="11.5" fill="#1d4ed8">Metasrv + Frontend + Datanode，可选 Flownode</text>
+  <text x="270" y="626" text-anchor="middle" font-size="11.5" fill="#1d4ed8">持久化文件放共享对象存储，本地盘只做 cache</text>
+  <text x="270" y="646" text-anchor="middle" font-size="11" fill="#64748b">读副本 / Datanode group 隔离 / 自动均衡属企业版能力</text>
+
+  <rect x="540" y="560" width="380" height="104" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="730" y="584" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">standalone 单进程起步</text>
+  <text x="730" y="606" text-anchor="middle" font-size="11.5" fill="#166534">验证、开发与中小规模单节点部署</text>
+  <text x="730" y="626" text-anchor="middle" font-size="11.5" fill="#166534">一个进程提供三层能力；本地或对象存储均可</text>
+  <text x="730" y="646" text-anchor="middle" font-size="11" fill="#64748b">SQL + PromQL、TTL、compaction、Flow 单机都具备（4.1）</text>
+
+  <text x="500" y="700" text-anchor="middle" font-size="11.5" fill="#64748b">横向对比与决策框架不在本篇展开，见 选型对比与落地案例 篇；本图全部条目均取自本篇正文。</text>
+</svg>

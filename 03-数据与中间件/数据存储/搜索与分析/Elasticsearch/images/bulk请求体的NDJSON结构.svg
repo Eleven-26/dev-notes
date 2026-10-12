@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 570" width="1000" height="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Bulk 请求体的 NDJSON 结构：动作行 + 文档行成对</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">每行一个 JSON、行尾必须换行、最后一行也要有换行 —— 这三条是 NDJSON 的硬约束</text>
+
+  <rect x="20" y="78" width="470" height="360" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="106" font-size="14" font-weight="bold" fill="#0f172a">请求体（Go 侧 buf 里的四行）</text>
+
+  <rect x="40" y="122" width="430" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="52" y="147" font-size="11.5" fill="#1e3a8a">{ "index": { "_index": "my_index", "_id": "1" } }　↵</text>
+
+  <rect x="40" y="172" width="430" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="52" y="197" font-size="11.5" fill="#334155">{ "title": "文档一", "userid": "u001" }　↵</text>
+
+  <rect x="40" y="222" width="430" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="52" y="247" font-size="11.5" fill="#1e3a8a">{ "index": { "_index": "my_index", "_id": "2" } }　↵</text>
+
+  <rect x="40" y="272" width="430" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="52" y="297" font-size="11.5" fill="#334155">{ "title": "文档二", "userid": "u002" }　↵</text>
+
+  <text x="40" y="336" font-size="12" fill="#1e3a8a">蓝 = 动作行（决定操作、索引、_id）　白 = 文档行（内容）</text>
+  <text x="40" y="362" font-size="12" fill="#334155">json.Encoder.Encode 自动补行尾换行符，符合 NDJSON 要求</text>
+  <text x="40" y="386" font-size="12" fill="#334155">SetEscapeHTML(false) 避免 URL / HTML 字符被转义</text>
+  <text x="40" y="414" font-size="12" fill="#dc2626">⚠️ 单条写入的 WithRefresh("true") 只便于测试，生产批量写不要加</text>
+
+  <line x1="490" y1="258" x2="530" y2="258" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <text x="496" y="246" font-size="11.5" fill="#334155">POST _bulk</text>
+
+  <rect x="532" y="78" width="448" height="360" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="552" y="106" font-size="14" font-weight="bold" fill="#0f172a">响应</text>
+
+  <rect x="552" y="122" width="408" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="564" y="149" font-size="12" fill="#14532d">HTTP 200 —— 只代表请求被受理，不代表每条都成功</text>
+
+  <rect x="552" y="180" width="408" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="564" y="205" font-size="11.5" fill="#334155">items[0].index.status / error</text>
+
+  <rect x="552" y="230" width="408" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="564" y="255" font-size="11.5" fill="#334155">items[1].index.status / error　…… 与动作行一一对应</text>
+
+  <rect x="552" y="288" width="408" height="66" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="564" y="312" font-size="12" font-weight="bold" fill="#991b1b">⚠️ 单条失败藏在 items 里，必须逐条检查</text>
+  <text x="564" y="336" font-size="11.5" fill="#991b1b">Java：bulk.errors() 为 true 时打印 it.error().reason()</text>
+
+  <text x="552" y="386" font-size="12" fill="#64748b">生产环境必须使用 Bulk；攒批与逐条检查错误是两件事，</text>
+  <text x="552" y="408" font-size="12" fill="#64748b">只发 Bulk 不看 items 等于没检查</text>
+
+  <rect x="20" y="460" width="960" height="86" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="40" y="488" font-size="13" font-weight="bold" fill="#334155">为什么 200 还不够</text>
+  <text x="40" y="512" font-size="12" fill="#334155">HTTP 200 只代表请求被受理，单条失败在 items 里 —— 逐条检查 items[*].status / error 才算确认写入结果</text>
+  <text x="40" y="536" font-size="12" fill="#64748b">所以写请求也不能盲目重试 —— 可能是「已写入但响应丢了」，靠幂等键 _id 或 version / if_seq_no 保护</text>
+</svg>
