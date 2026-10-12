@@ -388,7 +388,154 @@ SETTINGS index_granularity = 8192;   -- 建表级：MergeTree 设置
 
 ---
 
-## 使用：把子句组合成一条可复跑的三步诊断
+## 十一、窗口函数与 CTE 的边界
+
+**本节要点**：这两样书 2020 **完全没有覆盖**（书里没有 `OVER`，也没有能当子查询复用的 `WITH`）。26.3 实测它们都能用，但都有硬边界：**窗口函数进不了 `WHERE` / `HAVING`，CTE 也不是「临时表」**。
+
+### 11.1 窗口函数能写在哪、不能写在哪（实测错误码 184）
+
+同一个 `row_number() OVER (PARTITION BY city ORDER BY ts)`，换个位置结果完全相反：
+
+```text
+--- 直接写进 WHERE ---
+Code: 184. DB::Exception: Window function row_number() OVER (PARTITION BY city ORDER BY ts ASC)
+is found in WHERE in query. (ILLEGAL_AGGREGATION)
+
+--- 用别名写进 WHERE ---
+Code: 184. ... Window function row_number() OVER (...) AS rn is found in WHERE in query.
+
+--- 用别名写进 HAVING ---
+Code: 184. ... Window function row_number() OVER (...) AS rn is found in HAVING in query.
+
+--- 写进 ORDER BY ---
+bj	99	3302          ← 通过
+```
+
+⭐ 为什么是这个边界：窗口函数在计划里排在 **`WHERE` 之后、`ORDER BY` 之前**（看 11.2 的计划树），所以它**看不到 `WHERE` 的结果、也来不及影响 `WHERE`**。这与标准 SQL 一致（`WHERE` 里不允许窗口函数），差别在于 **ClickHouse 连别名形式也一并拒绝**，而有些数据库允许。想「先算序号、再按序号筛」，用 `QUALIFY`（实测可用）：
+
+```sql
+SELECT city, uid, ts, row_number() OVER (PARTITION BY city ORDER BY ts) AS rn
+FROM w_lab
+QUALIFY rn = 1;                       -- 每城取第一条，实测返回 3 行（正好每个 city 一行）
+```
+
+### 11.2 窗口函数在计划里长什么样
+
+```text
+Expression ((Project names + Projection))
+  Window (Window step for window 'PARTITION BY __table1.city ORDER BY __table1.ts ASC')
+    Sorting (Sorting for window 'PARTITION BY __table1.city ORDER BY __table1.ts ASC')
+      Expression ((Before WINDOW + Change column names to column identifiers))
+        ReadFromMergeTree (default.w_lab)
+```
+
+⭐ 两点值得记住：
+
+- **`Window` 下面挂着一个 `Sorting`** —— 窗口函数**要求数据按 `PARTITION BY` + `ORDER BY` 排好**，所以默认会多一次排序。相关的开关是 `optimize_read_in_window_order`（实测默认 **0**）；如果窗口的排序键与表的 `ORDER BY` 一致，把它打开可以让读取阶段直接按序出数据、省掉这次排序。
+- `query_plan_enable_multithreading_after_window_functions` 实测默认 **1** —— 窗口阶段本身是单线程性质的操作，但**它之后的阶段可以并行**，所以不要把窗口函数放在查询的最外层链路上当瓶颈。
+
+### 11.3 支持面（26.3 实测）
+
+| 能力 | 实测 | 备注 |
+|---|---|---|
+| `ROW_NUMBER` / `RANK` / `DENSE_RANK` | 可用 | 实测返回 `1 / 3268 / 50` 这类序号 |
+| `LAG` / `LEAD` | 可用 | 同时支持 `lagInFrame(x, n, 默认值)` 与别名形式 `lag(x)` |
+| `SUM() OVER (PARTITION BY ... ORDER BY ... ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)` | 可用 | 滑动窗口按帧计算 |
+| 命名窗口 `WINDOW w AS (PARTITION BY ...)` | 可用 | 一个查询里多个窗口函数可复用同一份定义 |
+| `QUALIFY` | 可用 | 窗口函数结果的行过滤（`WHERE` 的替代品） |
+| `allow_experimental_window_functions` | 默认 **1** | ⚠️ 名字里还带着 experimental，但已默认开启 |
+| 窗口视图 `WINDOW VIEW` | `allow_experimental_window_view` 默认 **0** | 仍属实验特性，本篇不展开 |
+
+### 11.4 CTE：`WITH` 的三副面孔
+
+26.3 的 `WITH` 至少能当三种东西用，写法相近但语义差别很大：
+
+```sql
+-- ① 标量变量：给常量起名
+WITH 10 AS n, 'x' AS tag SELECT n * 2 AS v, tag;         -- 20  x
+
+-- ② 子查询复用：当「临时结果集」
+WITH t AS (SELECT city, count() AS c, sum(amt) AS s FROM w_lab GROUP BY city)
+SELECT * FROM t ORDER BY c DESC;
+
+-- ③ 链式：后一个 CTE 引用前一个
+WITH a AS (SELECT city, sum(amt) AS s FROM w_lab GROUP BY city),
+     b AS (SELECT city, s * 2 AS s2 FROM a)
+SELECT * FROM b ORDER BY s2 DESC;
+```
+
+另外三件实测过的事：
+
+- **CTE 能直接参与 JOIN**（`FROM w_lab AS w JOIN t ON w.city = t.city` 通过），也能和窗口函数组合（`WITH ranked AS (SELECT ..., row_number() OVER (...) AS rn FROM ...) SELECT ... WHERE rn = 1`）。
+- **`WITH RECURSIVE` 可用** —— 这是书里完全没有的能力：
+
+```text
+WITH RECURSIVE cte AS (SELECT 1 AS n UNION ALL SELECT n + 1 FROM cte WHERE n < 5)
+SELECT * FROM cte;
+→ 1 2 3 4 5
+```
+
+- **CTE 可以写在 `INSERT ... SELECT` 上**，两种形态都通过：`INSERT INTO t WITH x AS (...) SELECT ...` 与 `INSERT INTO t SELECT ... FROM (WITH ...)`。
+
+### 11.5 ⚠️ CTE 不是临时表：引用几次就求值几次
+
+这是本节最容易踩的一条。默认设置下 `enable_global_with_statement = 1`，名字里的 global 指的是**作用域**（子查询里也能看见这个 CTE），**不表示它被物化成一份结果**。实测对照：
+
+```text
+--- 同一个 CTE（内含非确定性函数）被引用两次 ---
+WITH t AS (SELECT rand64() AS r) SELECT count() FROM t AS x, t AS y WHERE x.r = y.r;
+→ 0
+
+--- 对照：不用 CTE，写两个独立的子查询 ---
+SELECT count() FROM (SELECT rand64() AS r) AS x, (SELECT rand64() AS r) AS y WHERE x.r = y.r;
+→ 0
+```
+
+两次都拿到 `0`，意思是**两次引用各自求值了一次**（`rand64()` 两次取值不同，等值条件不成立）。如果 CTE 被物化成一份结果，这里应该得到 **1**。结论：
+
+- **把 CTE 当「临时表」用会重复扫描底层表** —— 一个重查询被两个 CTE 引用点各跑一遍，代价翻倍；
+- `EXPLAIN QUERY TREE` 里能看见它的身份：CTE 表现为一个 `is_cte: 1` 的子查询节点，而不是一张物化的表：
+
+```text
+  JOIN TREE
+    QUERY id: 3, alias: __table1, is_subquery: 1, is_cte: 1, cte_name: t
+      ...
+      TABLE id: 6, alias: __table2, table_name: default.w_lab
+```
+
+⚠️ 需要在多处复用的重结果，正确做法是**先写进一张临时表 / 物化视图**，而不是依赖 CTE。本条为 26.3 默认配置下的实测结果；不同版本 / 配置的行为可能变化，改版本后应重跑这组对照。
+
+### 11.6 与标准 SQL 的差异小结
+
+| 项 | 标准 SQL / 常见数据库 | ClickHouse 26.3 实测 |
+|---|---|---|
+| 窗口函数写进 `WHERE` | 不允许 | **不允许**（别名形式也报 184） |
+| 过滤窗口函数结果 | `QUALIFY`（部分库支持） | `QUALIFY` **可用** |
+| `PARTITION BY` / `ORDER BY` 之外的帧 | `ROWS` / `RANGE` / `GROUPS` 等 | `ROWS BETWEEN ... PRECEDING AND CURRENT ROW` 实测通过；其余帧类型本篇未逐项验证 |
+| CTE 复用是否物化 | 多数库物化或至少保证单次求值 | **不物化，按引用次数重复求值** |
+| 递归 CTE | `WITH RECURSIVE` | **支持** |
+| 窗口视图 | 无此概念 | 有 `WINDOW VIEW`，但仍属实验（默认关） |
+
+## 十二、应用场景
+
+**本节要点**：这十个子句在真实写 SQL 时的分工 —— 每个都对应一类「业务上常见的取数需求」。
+
+| 子句 / 能力 | 真实取数需求 | 注意 |
+|---|---|---|
+| `FINAL` | 读 `ReplacingMergeTree` 去重表，要「已合并后的最终状态」 | 有代价，见 [物化视图与实时聚合.md](物化视图与实时聚合.md) 第五节 |
+| `SAMPLE` | 大表上做估算、A/B 分析取样本 | 采样依赖 `SAMPLE BY` 或主键 |
+| `ARRAY JOIN` | 标签 / 数组列展开成多行 | 展开会放大行数，注意后续聚合口径 |
+| `LIMIT BY` | 每个用户取最近 N 条（会话、Top-N） | 与 `ORDER BY` 配合才有「最近」语义 |
+| `GROUP BY` + `ROLLUP` / `CUBE` / `TOTALS` | 报表的小计与合计行 | 小计行会混进结果，下游要能区分 |
+| `HAVING` | 聚合之后的二次过滤（如「UV > 100 的城市」） | 与 `WHERE` 的执行阶段不同（第六节） |
+| `WITH` / CTE | 复用一段中间结果 | ⚠️ 它**不是临时表**，引用几次算几次（第十一节 11.5） |
+| 窗口函数 + `QUALIFY` | 会话切分、组内排名、同比环比 | 进不了 `WHERE` / `HAVING`（第十一节 11.1） |
+| `EXPLAIN` | 上线前评估扫描量 | 书 2020 没有它，26.3 是一等公民（第八节） |
+| 查询级 `SETTINGS` | 给单条重查询单独加限额 | 见 [性能调优与基准测试.md](性能调优与基准测试.md) 第九节 |
+
+⭐ 一句话：**写 ClickHouse SQL 的难点不在语法，而在「这条 SQL 会读多少」** —— 所以第八节的 `EXPLAIN` 与本节结尾的三步诊断，比多背几个函数更有用。
+
+## 十三、具体使用
 
 **本节要点**：一条「跑聚合 → 查计划 → 读日志」的流程，表结构与读数都来自本目录 26.3 容器的实测。表结构：1000 万行，分区键 `toDate(event_time)`、主键 `(city, user_id)`、`index_granularity=8192`。
 
