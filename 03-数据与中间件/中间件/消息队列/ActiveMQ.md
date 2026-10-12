@@ -2,7 +2,7 @@
 
 > 覆盖 ActiveMQ Classic 的定位与现状、JMS 术语表、KahaDB 存储与高可用模型、端到端可靠性语义，以及 Go（STOMP）与 Java（官方客户端 + Spring JMS）双端示例、部署配置与运维排障要点。
 >
-> 内容整理自个人学习笔记。六款消息队列的横向对比与选型见 [消息队列选型对比.md](消息队列选型对比.md)；同类技术路线的对照篇见 [Kafka.md](Kafka.md)、[RocketMQ.md](RocketMQ.md)、[RabbitMQ.md](RabbitMQ.md)、[Pulsar.md](Pulsar.md)、[Nats.md](Nats.md)。
+> 内容整理自个人学习笔记。六款消息队列的横向对比与选型见 [消息队列选型对比.md](消息队列选型对比.md)；同类技术路线的对照篇见 [README.md](Kafka/README.md)、[RocketMQ.md](RocketMQ.md)、[RabbitMQ.md](RabbitMQ.md)、[Pulsar.md](Pulsar.md)、[Nats.md](Nats.md)。
 
 ---
 
@@ -596,7 +596,7 @@ curl -s -u admin:admin "http://127.0.0.1:8161/api/jolokia/read/org.apache.active
 ## 关联
 
 - [消息队列选型对比.md](消息队列选型对比.md) — 六款 MQ 的横向对比与选型决策（含「契合语言」维度）
-- [Kafka.md](Kafka.md) — 分区日志路线的对照：为什么数据管道不选 ActiveMQ
+- [README.md](Kafka/README.md) — 分区日志路线的对照：为什么数据管道不选 ActiveMQ
 - [RabbitMQ.md](RabbitMQ.md) — 同为「业务消息 broker」，路由模型与 confirm 语义的对照
 - [RocketMQ.md](RocketMQ.md) — 事务/延迟消息的另一种实现（半消息 vs AMQ_SCHEDULED_*）
 - [Pulsar.md](Pulsar.md) — 存算分离路线：把 KahaDB 单 store 换成 BookKeeper

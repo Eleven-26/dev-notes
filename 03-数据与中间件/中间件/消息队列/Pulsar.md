@@ -2,7 +2,7 @@
 
 > 覆盖 Pulsar 的定位与核心概念、存算分离（Broker + BookKeeper）的架构原理、四种订阅类型、端到端可靠性与回溯语义，以及 Go / Java 双端完整示例、部署配置与运维排障要点。
 >
-> 内容整理自个人学习笔记。五款消息队列的横向对比与选型见 [消息队列选型对比.md](消息队列选型对比.md)；同类技术路线的对照篇见 [Kafka.md](Kafka.md)、[RocketMQ.md](RocketMQ.md)、[Nats.md](Nats.md)。
+> 内容整理自个人学习笔记。五款消息队列的横向对比与选型见 [消息队列选型对比.md](消息队列选型对比.md)；同类技术路线的对照篇见 [README.md](Kafka/README.md)、[RocketMQ.md](RocketMQ.md)、[Nats.md](Nats.md)。
 
 ---
 
@@ -897,10 +897,10 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 ## 关联
 
 - [消息队列选型对比.md](消息队列选型对比.md) — 五款 MQ 的横向对比与选型决策（含「契合语言」维度）
-- [Kafka.md](Kafka.md) — 存算一体的对照路线：分区/ISR、acks、零拷贝为什么快
+- [README.md](Kafka/README.md) — 存算一体的对照路线：分区/ISR、acks、零拷贝为什么快
 - [RocketMQ.md](RocketMQ.md) — 业务消息功能最全的另一条路线（半消息事务、18 级延迟）
 - [Nats.md](Nats.md) — 轻量派：Core NATS + JetStream，Go 生态里 Pulsar 之外的另一选择
 - [一致性与CAP.md](../../../04-架构与系统/分布式/理论/一致性与CAP.md) — BookKeeper quorum 写与多数派的对应关系
 - [可观测性选型对比.md](../可观测性/可观测性选型对比.md) — 订阅积压指标的采集与告警口径
 
-> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[RabbitMQ.md](RabbitMQ.md)
+> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[核心概念与架构.md](Kafka/核心概念与架构.md)、[RabbitMQ.md](RabbitMQ.md)

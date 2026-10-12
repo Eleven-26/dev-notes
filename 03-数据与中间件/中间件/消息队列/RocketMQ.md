@@ -111,7 +111,7 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 | 队列/分区扩展成本 | 加队列 ≈ 加索引文件，极轻（万级队列可行） | 加分区 = 加一套日志段与句柄，重（数百为警戒线） |
 | 数据与配置耦合 | 保留/清理是**全局**粒度（文件混写，无法按 Topic 分别过期，见第七节） | 每个 Topic 可独立设 retention |
 
-对照阅读：[Kafka.md](Kafka.md)。
+对照阅读：[README.md](Kafka/README.md)。
 
 三层结构的写读全景（写一条路、读两跳）：
 
@@ -702,7 +702,7 @@ diskMaxUsedSpaceRatio=75        # 磁盘使用率超 75% 拒绝写入
 #### 磁盘与过期删除：与 Kafka retention 的本质差异
 
 - 删除粒度是**整个 1 GiB CommitLog 文件**：文件全部消息超过保留期（`fileReservedTime`）才可删，配合定时清理窗口（`deleteWhen` 默认凌晨执行）错峰；磁盘超 `diskMaxUsedSpaceRatio` 水位则提前强制清理、再恶化直接拒写（第七节故障表）。ConsumeQueue/IndexFile 按 CommitLog 已删除的最小物理偏移联动回收。
-- ⚠️ 因为是混写文件，**保留策略是集群全局的**：做不到 Kafka 那样"Topic A 留 3 天、Topic B 留 30 天"——不同保留 SLA 的业务要分集群部署（对照 [Kafka.md](Kafka.md) 的 segment 级 retention）。
+- ⚠️ 因为是混写文件，**保留策略是集群全局的**：做不到 Kafka 那样"Topic A 留 3 天、Topic B 留 30 天"——不同保留 SLA 的业务要分集群部署（对照 [README.md](Kafka/README.md) 的 segment 级 retention）。
 - "未消费也照删"是设计立场：RocketMQ 的堆积容忍上限 = 保留期 × 磁盘，不是无限日志；重要数据在业务库落库，MQ 只做通道。
 
 ## 八、延伸追问
@@ -725,7 +725,7 @@ diskMaxUsedSpaceRatio=75        # 磁盘使用率超 75% 拒绝写入
 ## 关联
 
 - [消息队列选型对比.md](消息队列选型对比.md) — 什么时候用它而不是 Kafka
-- [Kafka.md](Kafka.md) — 分区模型与存储结构的对照
+- [README.md](Kafka/README.md) — 分区模型与存储结构的对照
 - [Pulsar.md](Pulsar.md) — 延迟与事务的另一种做法：原生 deliverAfter + 订阅游标，替代 18 级延迟与半消息
 - [Raft协议.md](../../../04-架构与系统/分布式/理论/Raft协议.md) — DLedger 模式的主选举
 - [分布式事务.md](../../../04-架构与系统/分布式/理论/分布式事务.md) — 事务消息的完整语义
