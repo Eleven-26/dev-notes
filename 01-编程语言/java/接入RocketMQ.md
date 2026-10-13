@@ -49,7 +49,25 @@ producer.shutdown();
 异常处理：`MQClientException`（未 start / 路由为空 / 消息体超限 / Topic 未创建）、`RemotingException`（网络断连）、`MQBrokerException`（Broker 错误码，如 `SERVICE_NOT_AVAILABLE`）、`InterruptedException`（线程中断）。
 ⚠️ 重试只发生在**发送阶段**且是「换队列 / 换 Broker 重发」；Broker 已成功但客户端超时同样会重发，因此**消费端幂等必须有**（见 [消息可靠性.md](../../03-数据与中间件/中间件/消息队列/RocketMQ/消息可靠性.md) 第三节）。
 
-### 2.1 本机实测
+### 2.1 生产者必须单例
+
+`DefaultMQProducer` 内部维护连接池与心跳线程，**整个应用只 `start` 一次并复用**；绝不能在请求路径里每次 `new + start`（每新建一次都等于起一批 TCP 与心跳线程，连接数爆掉只是时间问题）。原生写法用静态持有：
+
+```java
+public final class OrderProducerHolder {
+    private static final DefaultMQProducer PRODUCER = new DefaultMQProducer("producer_group_demo");
+    static {
+        PRODUCER.setNamesrvAddr("127.0.0.1:9876");
+        PRODUCER.setRetryTimesWhenSendFailed(2);
+        PRODUCER.start();          // 全程只 start 一次
+    }
+    public static DefaultMQProducer get() { return PRODUCER; }
+}
+```
+
+⚠️ Spring 部分不用手写：`rocketmq-spring-boot-starter` 会把 `RocketMQTemplate` 自动装配为**单例 Bean**，业务类里 `@Resource` 注入即可复用。**消费者则相反，见 3.1。**
+
+### 2.2 本机实测
 
 ```text
 SYNC   seq=1 status=SEND_OK queueId=1 offset=0 msgId=C0A83004000167424E823E90DA0A0000
@@ -93,7 +111,18 @@ consumer.start();
 | `consumeMessageBatchMaxSize` | 1 | 一次回调最多几条 |
 | `maxReconsumeTimes` | **`-1`**（= 用框架默认） | ⭐ 字段默认是 `-1` 不是 16：顺序消费把它映射成 `Integer.MAX_VALUE`（字节码核实），并发消费超限默认 16 次后进 `%DLQ%{group}` |
 
-### 3.1 本机实测
+### 3.1 消费者不要做成单例
+
+与生产者相反，`DefaultMQPushConsumer` **不应包成进程级全局单例**：它绑定「消费组 + 订阅关系」，内部有长轮询与消费线程池，`shutdown` 只作用于该实例。
+
+- 按「**一个消费组 / 订阅一个 Consumer**」创建，与消费循环同生命周期；多组消费就各建一个；
+- ⚠️ 同一消费组要提高并发，靠**多进程 / 多副本各自独立 Consumer** 分摊队列，而不是共享一个单例；
+- ⚠️ 顺序消费依赖实例内的队列锁（`MessageListenerOrderly`），共享单例会破坏「按队列加锁」；
+- Spring 部分：`@RocketMQMessageListener` 由 starter 按容器管理各自创建 / 启动，本身就不是单例，不要手工再包一层。
+
+> 一句话：**生产者单例（省连接），消费者非单例（一个订阅一份独立状态）。**
+
+### 3.2 本机实测
 
 ```text
 CONSUME msgId=C0A83004000167424E823E90DA0A0000 queue=1 offset=0 key=ORDER_1001 tag=TagA body=sync-1

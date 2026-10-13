@@ -69,6 +69,20 @@ public class OrderProducerDemo {
 | **`send()` 是异步的** | 不注册回调、也不 `flush()`，进程退出时未发出的批会直接丢 |
 | **`flush()` 的位置** | 它只保证「已进入累加器的数据都发出去」，**不是事务提交**；真正的事务要走 `initTransactions` / `beginTransaction` |
 
+### 2.1 生产者必须单例
+
+`KafkaProducer` **线程安全**，内部维护连接池与后台 I/O 线程，整个应用只创建一个并复用；绝不要在每次请求里 `new`（每 `new` 一次都等于新建一套连接池 + 线程）。原生写法用静态持有：
+
+```java
+// 整个应用只建一个 Producer 并复用；不要在请求处理函数里每次 new。
+public final class OrderProducers {
+    private static final KafkaProducer<String, String> PRODUCER = new KafkaProducer<>(loadProps());
+    public static KafkaProducer<String, String> get() { return PRODUCER; }
+}
+```
+
+⚠️ Spring 部分不用手写：`KafkaTemplate` 由容器注入为**单例 Bean**，业务类里直接 `@Resource` 注入即可，不要每次 `new DefaultProducerFactory`。**消费者则相反，见 3.1。**
+
 ## 三、原生 Consumer
 
 ```java
@@ -109,6 +123,16 @@ public class OrderConsumerDemo {
 > ⚠️ `commitSync()` 提交的是**下次要读的位点**（本批最大 offset + 1），不是「本批最后一个 offset」。想按分区精确提交可传入 `Map<TopicPartition, OffsetAndMetadata>`。
 >
 > ⭐ `commitSync` 阻塞且失败自动重试，`commitAsync` 不阻塞但不重试——常见做法是循环内 `commitAsync`、关闭前 `commitSync` 兜底。
+
+### 3.1 消费者不要做成单例
+
+与生产者相反，`KafkaConsumer` **不是线程安全的**，也不能包成进程级全局单例：
+
+- 每个消费线程各持一个实例（同一实例不能跨线程使用），由自己的 `poll` 循环驱动；
+- 要提高并发，靠「多分区 + 按分区数配实例」，或交给 Spring 容器按 `listener.concurrency` 创建多个消费者线程；
+- ⚠️ `commitSync` / `wakeup` / `close` 都作用于**单个实例**，共享实例会让并发模型直接失效。
+
+> 一句话：**生产者单例（线程安全、省连接），消费者非单例（一个订阅 / 线程一份独立状态）。**
 
 ## 四、实测：对三节点集群跑一遍
 

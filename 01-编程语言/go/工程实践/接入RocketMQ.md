@@ -74,6 +74,40 @@ func main() {
 
 > ⚠️ **格式化动词**：`res.Status` 是命名类型 `primitive.SendStatus`，用 `%s` 会被 `go vet` 报 `format %s has arg res.Status of wrong type`——必须用 `%v`（本机实测被 vet 抓到）。
 
+### 2.1 生产者必须单例
+
+`rocketmq.Producer` 内部维护连接池与心跳协程，**整个进程只应创建一次并 `Start` 一次**，绝不能在请求处理函数里每次 `NewProducer`。`NewProducer` 返回 `(Producer, error)`，用 `sync.Once` 兜底最稳妥：
+
+```go
+import "sync"
+
+var (
+    orderProducer rocketmq.Producer
+    producerOnce  sync.Once
+)
+
+// 整个进程只建一个 Producer 并 Start 一次；不要在请求里每次 NewProducer。
+func OrderProducer() rocketmq.Producer {
+    producerOnce.Do(func() {
+        p, err := rocketmq.NewProducer(
+            producer.WithNameServer([]string{"192.168.48.2:9876"}), // ⚠️ IP，不是主机名
+            producer.WithGroupName("lab_go_producer"),
+            producer.WithRetry(2),
+        )
+        if err != nil {
+            panic(err)
+        }
+        if err = p.Start(); err != nil {
+            panic(err)
+        }
+        orderProducer = p
+    })
+    return orderProducer
+}
+```
+
+⚠️ 每新建一次 Producer 都意味着一套新 TCP 与心跳协程，重复创建会让连接数线性膨胀——这是「**生产者单例**」在 RocketMQ 上的落地。**消费者则相反，见 3.1。**
+
 ## 三、消费者
 
 ```go
@@ -108,6 +142,16 @@ c.Shutdown()
 ```
 
 ⭐ 回调签名是 `func(context.Context, ...*primitive.MessageExt)`；`consumer.ConsumeRetryLater` 等价 Java 的 `RECONSUME_LATER`，同样受 16 次重试上限约束，最终进 `%DLQ%{group}`。
+
+### 3.1 消费者不要做成单例
+
+与生产者相反，`rocketmq.Consumer`（PushConsumer）**不应包成进程级全局单例**：它绑定「消费组 + 订阅关系」，内部有自己的长轮询与消费线程池，`Shutdown` 只作用于该实例。
+
+- 按「**一个消费组 / 订阅一个 Consumer**」创建，与消费循环同生命周期；多组消费就各建一个；
+- ⚠️ 同一消费组要提高并发，要的是**多进程 / 多副本各自独立 Consumer**（分摊队列），而不是在一个进程里共享一个单例；
+- ⚠️ 顺序消费依赖实例内的队列锁，共享单例会让「按队列加锁」的边界失效。
+
+> 一句话：**生产者单例（省连接），消费者非单例（一个订阅一份独立状态）。**
 
 ## 四、顺序消息
 

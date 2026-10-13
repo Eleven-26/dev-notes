@@ -71,6 +71,29 @@ func main() {
 | **攒批是吞吐的前提** | `BatchTimeout` + 批量 `WriteMessages` 会让 broker 侧收到大批次（实测一个批次 542 条 / 约 16 KiB），代价是单条延迟上升 |
 | **`Async: true` 要慎用** | 它把错误交给后台重试，`WriteMessages` 立刻返回 nil，容易误判成功 |
 
+### 2.1 生产者必须单例
+
+`kafka.Writer` 内部维护连接池与后台 flush 协程，**整个进程只应创建一个并复用**，绝不能在请求处理函数里每次 `new`。用 `sync.OnceValue` 包一层最省事（Go 1.21+）：
+
+```go
+import "sync"
+
+// 整个进程只建一个 Writer，复用其内部的连接池；不要在请求处理函数里每次 new。
+var orderWriter = sync.OnceValue(func() *kafka.Writer {
+    return &kafka.Writer{
+        Addr:         kafka.TCP("kafka-lab-1:9092"),
+        Topic:        "go-lab",
+        Balancer:     &kafka.Hash{},
+        RequiredAcks: kafka.RequireAll,
+    }
+})
+
+// 退出时统一关闭（会提交一次位点、释放连接）
+func shutdown() { orderWriter().Close() }
+```
+
+⚠️ 生产者是「有状态的长生命周期资源」，重复创建只会把连接与协程数线性放大——这是「**生产者单例**」在 Kafka 上的落地。**消费者则相反，见 3.1。**
+
 ## 三、消费者（消费者组 + 手动提交）
 
 ```go
@@ -117,6 +140,16 @@ func main() {
 > ⭐ **`ReadMessage` 会按 `CommitInterval` 自动提交，`FetchMessage` 不提交**——要「处理成功再提交」就用 `CommitInterval: 0` + `FetchMessage` + `CommitMessages`。
 >
 > ⚠️ `GroupID` 留空会退化成**独立消费者**：不参与消费组、不自动分配分区，需要自己指定 `Partition`。**「加了实例但没人分到分区」通常就是这一条漏了。**
+
+### 3.1 消费者不要做成单例
+
+与生产者相反，`kafka.Reader` **不应**包成进程级全局单例：它绑定「消费组 + 订阅 Topic」，内部跑独立的 fetch / 心跳循环，位点提交也按实例记录。
+
+- 按「**一个订阅一个 Reader**」创建，与消费循环同生命周期（`go consume(r)` 后由该循环负责 `r.Close()`）；
+- 需要多个消费组 / 多个 Topic 时各自建 Reader——共享一个单例会让它们互相抢位点、无法独立启停；
+- ⚠️ 提高消费并发靠「分区数 + 多实例分摊」，而不是在一个实例里多开 goroutine（`Reader` 不是并发安全的，别跨 goroutine 共享）。
+
+> 一句话：**生产者单例（省连接），消费者非单例（一个订阅一份独立状态与生命周期）。**
 
 ## 四、优雅退出
 
