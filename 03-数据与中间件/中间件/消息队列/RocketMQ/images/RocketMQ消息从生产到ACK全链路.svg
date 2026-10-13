@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 838" width="1000" height="838" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rqa" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="rqb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="838" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RocketMQ 一条消息从生产到 ACK：写一条路，ACK 看两个开关</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">④ 刷盘（ASYNC_FLUSH / SYNC_FLUSH）× ⑤ 复制（ASYNC_MASTER / SYNC_MASTER）共同决定 ⑥ 何时回 ACK</text>
+
+  <rect x="20" y="80" width="960" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="103" font-size="13.5" font-weight="bold" fill="#0f172a">① 取路由后发到对应队列的 Master</text>
+
+  <rect x="40" y="116" width="164" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="122" y="139" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">Producer</text>
+  <text x="122" y="157" text-anchor="middle" font-size="10.5" fill="#1d4ed8">与业务同进程</text>
+  <line x1="208" y1="142" x2="246" y2="142" stroke="#334155" stroke-width="1.5" marker-end="url(#rqa)"/>
+  <text x="227" y="134" text-anchor="middle" font-size="10.5" fill="#334155">取路由</text>
+
+  <rect x="250" y="116" width="180" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="340" y="139" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">NameServer</text>
+  <text x="340" y="157" text-anchor="middle" font-size="10.5" fill="#475569">无状态·纯内存路由表</text>
+  <line x1="434" y1="142" x2="472" y2="142" stroke="#334155" stroke-width="1.5" marker-end="url(#rqa)"/>
+
+  <rect x="476" y="116" width="196" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="574" y="139" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">Broker Master</text>
+  <text x="574" y="157" text-anchor="middle" font-size="10.5" fill="#166534">落到 queueId 对应的队列</text>
+  <text x="690" y="132" font-size="10.5" fill="#64748b">默认轮询选队列；</text>
+  <text x="690" y="150" font-size="10.5" fill="#64748b">失败按 lastBrokerName 换 Broker 重试</text>
+
+  <rect x="20" y="192" width="960" height="122" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="215" font-size="13.5" font-weight="bold" fill="#0f172a">② 写入 CommitLog 后立即返回（只写 PageCache，不 fsync）</text>
+
+  <rect x="40" y="228" width="292" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="186" y="252" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">CommitLog 唯一追加点</text>
+  <text x="186" y="272" text-anchor="middle" font-size="10.5" fill="#166534">所有 Topic / 队列混成一条流，真顺序写</text>
+  <text x="186" y="290" text-anchor="middle" font-size="10.5" fill="#166534">mmap 落 PageCache；单文件固定 1 GiB</text>
+  <line x1="336" y1="264" x2="374" y2="264" stroke="#334155" stroke-width="1.5" marker-end="url(#rqa)"/>
+
+  <rect x="378" y="228" width="292" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="524" y="252" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">③ 后台分发线程异步建索引</text>
+  <text x="524" y="272" text-anchor="middle" font-size="10.5" fill="#9a3412">ConsumeQueue：定长 20 字节 / 条</text>
+  <text x="524" y="290" text-anchor="middle" font-size="10.5" fill="#9a3412">8B 物理偏移 + 4B 长度 + 8B Tag 哈希</text>
+  <line x1="674" y1="264" x2="712" y2="264" stroke="#334155" stroke-width="1.5" marker-end="url(#rqa)"/>
+
+  <rect x="716" y="228" width="244" height="72" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="838" y="252" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">IndexFile（按 Key 查消息）</text>
+  <text x="838" y="272" text-anchor="middle" font-size="10.5" fill="#475569">定长约 420 MB，供 mqadmin 排障</text>
+  <text x="838" y="290" text-anchor="middle" font-size="10.5" fill="#475569">不进消费路径</text>
+
+  <rect x="20" y="326" width="960" height="126" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="349" font-size="13.5" font-weight="bold" fill="#0f172a">④ 刷盘与 ⑤ 复制是两个独立开关，各自决定「写到哪一层才算成功」</text>
+
+  <rect x="40" y="362" width="440" height="76" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="260" y="385" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#713f12">④ 刷盘 flushDiskType</text>
+  <text x="260" y="405" text-anchor="middle" font-size="10.5" fill="#854d0e">ASYNC_FLUSH：写 PageCache 即算完成，后台批刷（默认）</text>
+  <text x="260" y="423" text-anchor="middle" font-size="10.5" fill="#854d0e">SYNC_FLUSH：本机 fsync 成功才算完成，RT 上升</text>
+
+  <rect x="510" y="362" width="450" height="76" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="735" y="385" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#312e81">⑤ 复制 brokerRole</text>
+  <text x="735" y="405" text-anchor="middle" font-size="10.5" fill="#3730a3">ASYNC_MASTER：Master 写完即算完成，Slave 后台追（默认）</text>
+  <text x="735" y="423" text-anchor="middle" font-size="10.5" fill="#3730a3">SYNC_MASTER：等 Slave 落组成功才算完成</text>
+
+  <line x1="500" y1="180" x2="500" y2="192" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#rqa)"/>
+  <line x1="500" y1="314" x2="500" y2="326" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#rqa)"/>
+  <line x1="500" y1="452" x2="500" y2="462" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#rqa)"/>
+  <rect x="20" y="464" width="960" height="352" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="487" font-size="13.5" font-weight="bold" fill="#0f172a">⑥ 按刷盘 × 复制组合决定 ACK 时机（Broker 回 SEND_OK 的时点）</text>
+
+  <rect x="40" y="500" width="920" height="34" rx="6" fill="#e2e8f0"/>
+  <text x="60" y="523" font-size="12" font-weight="bold" fill="#0f172a">组合</text>
+  <text x="416" y="523" font-size="12" font-weight="bold" fill="#0f172a">ACK 时机（何时回 SEND_OK）</text>
+  <text x="748" y="523" font-size="12" font-weight="bold" fill="#0f172a">可靠性 / 性能</text>
+
+  <rect x="40" y="538" width="920" height="46" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="60" y="566" font-size="11.5" fill="#0f172a">ASYNC_FLUSH + ASYNC_MASTER（默认）</text>
+  <text x="416" y="566" font-size="11.5" fill="#0f172a">写进 PageCache 即 ACK</text>
+  <text x="748" y="566" font-size="11.5" fill="#166534">最快；OS 宕机 / Master 挂会丢尾部</text>
+
+  <rect x="40" y="588" width="920" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="60" y="616" font-size="11.5" fill="#0f172a">SYNC_FLUSH + ASYNC_MASTER</text>
+  <text x="416" y="616" font-size="11.5" fill="#0f172a">本机 fsync 落盘后 ACK</text>
+  <text x="748" y="616" font-size="11.5" fill="#7c2d12">单机不丢；Master 挂仍可能丢未同步副本</text>
+
+  <rect x="40" y="638" width="920" height="46" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="60" y="666" font-size="11.5" fill="#0f172a">ASYNC_FLUSH + SYNC_MASTER</text>
+  <text x="416" y="666" font-size="11.5" fill="#0f172a">Slave 同步成功后 ACK</text>
+  <text x="748" y="666" font-size="11.5" fill="#7c2d12">主挂可切；OS 宕机仍可能丢</text>
+
+  <rect x="40" y="688" width="920" height="46" rx="6" fill="#fee2e2" stroke="#fecaca" stroke-width="1"/>
+  <text x="60" y="716" font-size="11.5" fill="#0f172a">SYNC_FLUSH + SYNC_MASTER</text>
+  <text x="416" y="716" font-size="11.5" fill="#0f172a">两者都完成才 ACK</text>
+  <text x="748" y="716" font-size="11.5" fill="#991b1b">最高（落盘 + 从节点确认）；RT 最慢</text>
+
+  <rect x="40" y="744" width="920" height="62" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="56" y="768" font-size="11" fill="#0f172a">小结：② 的「返回」只是写入 PageCache；真正的持久化边界由 ④⑤ 决定 —— 所以「send 成功」不等于「已落盘」。</text>
+  <text x="56" y="792" font-size="11" fill="#64748b">⚠️ 4.x 原生主从的 Slave 只读、不自动升主（写能力中断），要自动切主须上 DLedger；本图口径对应 Broker 端 path，不承诺端到端不丢。</text>
+</svg>

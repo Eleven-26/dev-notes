@@ -114,6 +114,7 @@
 | [代码生成与资源嵌入.md](工程实践/代码生成与资源嵌入.md) | `go:generate` 的约定与四类常见生成器、用 `go/ast` + `go/parser` + `go/format` 手写生成器、⭐ `//go:embed` 的三种形态与路径约束、生成代码的提交策略与 CI 校验 |
 | [接入DTM.md](工程实践/接入DTM.md) | 分布式事务接入 DTM：服务端与两类表（屏障表 / 全局事务表）的准备、Saga / TCC / 二阶段消息的 Go 骨架、子事务屏障的 `CallWithDB` 写法（含 gorm / go-zero 取 `*sql.Tx`）、⭐ **容器实测**跑通的 Saga 成功与 409 回滚两条路径 |
 | [接入Kafka.md](工程实践/接入Kafka.md) | 接入 Kafka：`kafka-go` / `sarama` / `confluent-kafka-go` 三选一、`Writer` 的 `Balancer`（默认不哈希）与 `RequiredAcks`（默认不等确认）陷阱、消费者组 + 手动提交、优雅退出顺序、sarama 开幂等要设 `Net.MaxOpenRequests=1`；⭐ gofmt / vet / build 全通过，并对三节点 KRaft 集群实测（同 key 同分区、分区内有序、位点归零）。组件本体在 [消息队列/Kafka/](../../03-数据与中间件/中间件/消息队列/Kafka/README.md) |
+| [接入RocketMQ.md](工程实践/接入RocketMQ.md) | 接入 RocketMQ：`rocketmq-client-go/v2` / `rocketmq-clients/golang/v5` 二选一（协议与能力边界）、`WithDelayTimeLevel` 在 5.x Broker 上仍是 18 档、顺序消息 `HashQueueSelector` + `ShardingKey`、⚠️ 客户端要求 NameServer 地址是 **IP 而非主机名**（写主机名报 `new Namesrv failed.: IP addr error`）；⭐ gofmt / vet / build 全过。组件本体在 [消息队列/RocketMQ/](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) |
 | [写冲突控制的Go落地.md](工程实践/写冲突控制的Go落地.md) | 同一份数据被并发写的四种写法：版本号乐观锁（`RowsAffected` 判冲突 + 退避抖动）、⭐ **条件更新**（`UPDATE ... WHERE stock >= ?`，含 `LAST_INSERT_ID(expr)` 的连接级坑）、悲观锁的 `FOR UPDATE` 三条硬规矩与 `SKIP LOCKED`、⭐ **唯一索引兜底**（`INSERT IGNORE` / `ON DUPLICATE KEY UPDATE` 的两个坑）；⚠️ 未做运行时验证（概念侧在 `03-数据与中间件/数据存储/并发控制/`）|
 | [Kratos框架.md](工程实践/框架/微服务/Kratos框架.md) | 集成 ent / validate、注册发现与容器化、服务间鉴权与元数据传递 |
 | [Eino框架.md](工程实践/框架/LLM应用/Eino框架.md) | 字节 Eino 大模型应用框架 |
