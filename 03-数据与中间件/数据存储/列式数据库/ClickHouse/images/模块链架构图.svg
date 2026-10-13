@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 610" width="1000" height="610" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="mkC" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="mkG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="610" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">一条 SQL 从输入到结果，要经过哪些模块</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12" fill="#64748b">Parser → Interpreter → 查询执行管道 → IStorage → Block 流（原架构模块图素材缺失，此图按文字重绘）</text>
+
+  <rect x="30" y="80" width="180" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="120" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">SQL 文本</text>
+  <text x="120" y="132" text-anchor="middle" font-size="11" fill="#475569">客户端发来的一条语句</text>
+
+  <rect x="250" y="80" width="180" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="340" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">① Parser</text>
+  <text x="340" y="132" text-anchor="middle" font-size="11" fill="#475569">递归下降，按语句分实现类</text>
+
+  <rect x="470" y="80" width="180" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="560" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">② Interpreter</text>
+  <text x="560" y="132" text-anchor="middle" font-size="11" fill="#475569">像 Service 层：解析 AST、设参数、调接口</text>
+
+  <rect x="710" y="80" width="180" height="70" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="800" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">③ 查询执行管道</text>
+  <text x="800" y="132" text-anchor="middle" font-size="11" fill="#475569">Pipeline，以线程形式建立</text>
+
+  <line x1="210" y1="115" x2="246" y2="115" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <line x1="430" y1="115" x2="466" y2="115" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <line x1="650" y1="115" x2="706" y2="115" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+
+  <text x="560" y="168" text-anchor="middle" font-size="11" fill="#b45309">↓ 中间产物是 AST（语法树）</text>
+
+  <line x1="800" y1="150" x2="800" y2="206" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+
+  <rect x="710" y="210" width="180" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="800" y="240" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">④ IStorage（表引擎）</text>
+  <text x="800" y="262" text-anchor="middle" font-size="11" fill="#475569">底层无 Table 对象，返回指定列的原始数据</text>
+
+  <rect x="470" y="210" width="180" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="560" y="240" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">⑤ Block 流</text>
+  <text x="560" y="262" text-anchor="middle" font-size="11" fill="#475569">IBlockInputStream / OutputStream</text>
+
+  <rect x="250" y="210" width="180" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="340" y="240" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">⑥ 加工 / 计算 / 过滤</text>
+  <text x="340" y="262" text-anchor="middle" font-size="11" fill="#475569">统一交给 Interpreter 与函数</text>
+
+  <rect x="30" y="210" width="180" height="70" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="120" y="240" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">ResultSet</text>
+  <text x="120" y="262" text-anchor="middle" font-size="11" fill="#475569">结果集</text>
+
+  <line x1="706" y1="245" x2="654" y2="245" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <line x1="466" y1="245" x2="434" y2="245" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+  <line x1="246" y1="245" x2="214" y2="245" stroke="#2563eb" stroke-width="1.8" marker-end="url(#mkC)"/>
+
+  <line x1="120" y1="280" x2="120" y2="312" stroke="#64748b" stroke-width="1.8" marker-end="url(#mkG)"/>
+  <rect x="30" y="316" width="180" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="120" y="347" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">返回客户端</text>
+
+  <rect x="30" y="392" width="940" height="196" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="50" y="416" font-size="12.5" font-weight="bold" fill="#0f172a">每个模块只管一件事（读代码时按这条分工定位）</text>
+
+  <text x="50" y="444" font-size="11.5" fill="#334155">· <tspan font-weight="bold" fill="#1e3a8a">Column / Field</tspan>：Column 是整列内存对象（IColumn），Field 是单值（一行一列），用聚合设计模式统包 13 种类型</text>
+  <text x="50" y="468" font-size="11.5" fill="#334155">· <tspan font-weight="bold" fill="#1e3a8a">DataType</tspan>：只负责序列化 / 反序列化，方法成对出现，<tspan fill="#b45309">不直接读数据</tspan>（读由 Column / Field 完成）</text>
+  <text x="50" y="492" font-size="11.5" fill="#334155">· <tspan font-weight="bold" fill="#1e3a8a">Block</tspan>：数据表的子集，本质是「Column + DataType + 列名」三元组；<tspan font-weight="bold" fill="#1e3a8a">Block 流</tspan> 把每类操作表达成一种流的实现</text>
+  <text x="50" y="516" font-size="11.5" fill="#334155">· <tspan font-weight="bold" fill="#1e3a8a">IStorage</tspan>：就是「表」，定义 DDL 与 read / write；加工过滤统一交给 Interpreter</text>
+  <text x="50" y="540" font-size="11.5" fill="#334155">· <tspan font-weight="bold" fill="#1e3a8a">Functions</tspan>：普通函数无状态、按整列向量化执行；聚合函数有状态、状态可序列化，故能在分布式节点间做增量计算</text>
+  <text x="50" y="566" font-size="11" fill="#64748b">⭐ 记住这条链即可：Parser(1) → Interpreter(2) → 管道(3) → IStorage(4) → Block 流(5) → 加工(6) → ResultSet。</text>
+</svg>

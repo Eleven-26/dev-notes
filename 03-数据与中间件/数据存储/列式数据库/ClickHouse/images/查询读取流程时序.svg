@@ -9,7 +9,7 @@
   </defs>
   <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
   <text x="500" y="28" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">一次查询的读取流程：索引剪枝 → 读 marks → 读压缩数据块</text>
-  <text x="500" y="49" text-anchor="middle" font-size="12" fill="#64748b">「不断减小数据范围」的四道过滤（书 6.7.2），落到具体文件上的先后顺序</text>
+  <text x="500" y="49" text-anchor="middle" font-size="12" fill="#64748b">「不断减小数据范围」的四道过滤，落到具体文件上的先后顺序</text>
 
   <rect x="24" y="64" width="164" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
   <text x="106" y="83" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">客户端 / SQL</text>
@@ -39,7 +39,7 @@
 
   <line x1="106" y1="146" x2="284" y2="146" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkD)"/>
   <text x="196" y="140" text-anchor="middle" font-size="11.5" fill="#1e3a8a">① 用分区键谓词比对分区 min/max</text>
-  <text x="196" y="164" text-anchor="middle" font-size="11" fill="#64748b">不相交的分区目录整段跳过（书 6.1.2 分区索引）</text>
+  <text x="196" y="164" text-anchor="middle" font-size="11" fill="#64748b">不相交的分区目录整段跳过（ 分区索引）</text>
 
   <line x1="290" y1="196" x2="468" y2="196" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mkD)"/>
   <text x="379" y="190" text-anchor="middle" font-size="11.5" fill="#1e3a8a">② 进入候选 part，取一级稀疏索引</text>
@@ -62,10 +62,10 @@
   <text x="490" y="396" text-anchor="middle" font-size="11.5" fill="#14532d">⑥ 解压后按未压缩偏移取 granule（≤ 8192 行）→ 计算 / 过滤 → 汇总返回</text>
 
   <text x="24" y="428" font-size="11.5" fill="#b45309">⚠️ 兜底：查询没有 WHERE，或 WHERE 条件没匹配到任何索引时，②~④ 都不生效 —— 扫描所有分区目录与索引段最大区间；</text>
-  <text x="24" y="446" font-size="11.5" fill="#b45309">但即便不能缩小范围，仍可借助数据标记以多线程并发读多个压缩数据块来补性能（书 6.7.2）。</text>
+  <text x="24" y="446" font-size="11.5" fill="#b45309">但即便不能缩小范围，仍可借助数据标记以多线程并发读多个压缩数据块来补性能。</text>
 
   <text x="24" y="474" font-size="10" fill="#64748b">实测锚点（实验 02）：100 万行 part 记 marks = 124、primary.cidx ≈ 272 B、单 part ≈ 16 MB；marks 后缀实测 .cmrk2（Wide）/.cmrk4（Compact）。</text>
-  <text x="24" y="492" font-size="10" fill="#64748b">书 2020 口径对照：marks 写作 .mrk（自适应粒度 .mrk2）、一级索引写作 primary.idx、压缩块头固定 9 字节（1 个 UInt8 + 2 个 UInt32）；</text>
+  <text x="24" y="492" font-size="10" fill="#64748b">2020 版口径对照：marks 写作 .mrk（自适应粒度 .mrk2）、一级索引写作 primary.idx、压缩块头固定 9 字节（1 个 UInt8 + 2 个 UInt32）；</text>
   <text x="24" y="510" font-size="10" fill="#64748b">压缩块体积控制在 min_compress_block_size = 65536 与 max_compress_block_size = 1048576 之间，按三档规则切割。</text>
-  <text x="24" y="530" font-size="10" fill="#b45309">⚠️ 该 9 字节头书内自相矛盾（6.5.2 说 9 字节，6.6.2 的 12016 = 8 + 12000 + 8 又按 8 字节算）；本目录未实测 26.3 二进制布局，笔记只照抄书口径。</text>
+  <text x="24" y="530" font-size="10" fill="#b45309">⚠️ 该 9 字节头旧版资料内自相矛盾（6.5.2 说 9 字节，6.6.2 的 12016 = 8 + 12000 + 8 又按 8 字节算）；本目录未实测 26.3 二进制布局，笔记只照抄旧版资料口径。</text>
 </svg>
