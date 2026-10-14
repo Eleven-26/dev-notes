@@ -926,6 +926,15 @@ failure while testing seed corpus entry: FuzzSplitAfterFirst/00e15d22123489fd
 所以正确顺序是：**先修被测函数，再删语料文件，最后重跑 fuzz 确认没有新 crasher**。
 别把"CI 变红"当成 fuzz 的副作用——它正是 fuzz 唯一有价值的产出。
 
+![fuzz 语料从种子到崩溃回归用例的流转](images/fuzz语料从种子到崩溃回归用例的流转.svg)
+
+**图怎么读**：左列是 `-fuzztime=5s` 这一次真跑按时间顺序留下的五个节点，读数全部来自本篇原文——
+种子两条都 PASS、`baseline coverage: 2/2` + `4 workers`、`execs: 11 (231/sec)` / `new interesting: 0 (total: 2)`、
+0.05 秒命中 `index out of range [0] with length 0`（`fuzz_test.go:16` 的 `return head, tail[0]`）、
+最后最小化成 `go test fuzz v1` + 两个 `string("0")` 落进 `testdata`，从此变成一条普通回归用例。
+右列回答「语料分几层、各归谁写要不要提交」以及「两种坏写法为什么在 vet 阶段就 [build failed]」，
+橙框是修复顺序与 `-fuzzminimizetime`（默认 60s，可压到 1s）。
+
 补两条实测原文（两个坏包藏在 `-tags faildemo` 后面，`go test ./fuzzsig/ ./fuzzsig2/ -tags faildemo` 才编译）：
 **目标函数的参数类型不在支持列表里**、以及 **`f.Add` 的实参类型和目标不一致**。
 
@@ -1175,6 +1184,10 @@ go test ./dbdemo/ -tags integration -v
 **接口要断"调用序列"时才上生成器** →
 只有"语言的契约说不清、必须问实现"的那些（SQL 方言、驱动、TTL、时区）**才起真容器**。
 
+![Mock 三条路线的形态对比：手写 interface 假实现、代码生成 gomock、真容器集成测试，三列各给接缝与替换点、实测读数、能抓什么与会怎么骗过你，底部一条链是本项目的落地节奏](images/Mock三条路线的接缝与替换点.svg)
+
+**图怎么读**：三列的纵向结构是同一套（接缝 → 读数 → 代价），所以可以逐行横着比：三列的接缝其实是同一个 `UserRepo`，差别只在**替换它的方式**。中间列的两行英文是 gomock 自动校验的报错原文（「没声明就被调」和「声明了没被调」各一条）；最右列的 `RowsAffected=1 / 2` 是只有真容器才给得出的语义。
+
 ---
 
 ## 九、`net/http/httptest` 的两种用法分别测什么？
@@ -1262,6 +1275,10 @@ t.Logf("rec.Code=%d rec.Header=%v rec.Body=%s", rec.Code, rec.Header(), rec.Body
 `context` 的取消传播口径见 [context.md](context.md)。本篇只补一句：
 **测试里给 handler 造的 `*http.Request` 必须用 `httptest.NewRequest`，不要手写 `&http.Request{}`**——
 后者 `URL`/`Body` 缺省会让 handler 在第一行 panic。
+
+![httptest 的两条测试路径：左列 NewRecorder 直接调 ServeHTTP 断 Code / Header / Body，右列 NewServer 真起监听走 TCP 断 URL、状态码分支与下游调用次数，末端各自的边界与故障各列一条](images/httptest两条测试路径与断言点.svg)
+
+**图怎么读**：两列是**同一个判据的两半**——被测方是谁，就走哪一列。左列全程不出进程，所以第 ④ 框写的是它测不到的东西；右列走真连接，红框那两条（`connection refused`、被自签证书拦下）只有真监听才拿得到。
 
 ---
 

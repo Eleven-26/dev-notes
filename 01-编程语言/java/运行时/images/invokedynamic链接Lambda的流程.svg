@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="360" viewBox="0 0 1000 360" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="360" fill="#ffffff"/>
+<defs>
+<marker id="arLD" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">invokedynamic 链接 Lambda 的三步流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">Lambda 不生成匿名内部类：编译期只留合成方法，运行期由 LambdaMetafactory 生成实现类</text>
+
+<text x="190" y="92" font-size="12" font-weight="bold" text-anchor="middle" fill="#2563eb">编译期</text>
+<text x="500" y="92" font-size="12" font-weight="bold" text-anchor="middle" fill="#b45309">调用点字节码</text>
+<text x="805" y="92" font-size="12" font-weight="bold" text-anchor="middle" fill="#16a34a">运行期</text>
+
+<rect x="50" y="102" width="280" height="120" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+<text x="190" y="132" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a8a">① 生成私有合成方法</text>
+<text x="190" y="158" font-size="12" text-anchor="middle" fill="#1e3a8a">lambda$main$0()</text>
+<text x="190" y="184" font-size="11" text-anchor="middle" fill="#334155">Lambda 体放进这个方法</text>
+<text x="190" y="206" font-size="11" text-anchor="middle" fill="#334155">目录里找不到 Outer$1.class</text>
+
+<line x1="330" y1="162" x2="358" y2="162" stroke="#334155" stroke-width="1.5" marker-end="url(#arLD)"/>
+
+<rect x="362" y="102" width="280" height="120" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="502" y="132" font-size="12" font-weight="bold" text-anchor="middle" fill="#b45309">② 调用点是 invokedynamic</text>
+<text x="502" y="158" font-size="12" text-anchor="middle" fill="#b45309">114: invokedynamic #22, 0</text>
+<text x="502" y="184" font-size="11" text-anchor="middle" fill="#334155">绑定到 LambdaMetafactory</text>
+<text x="502" y="206" font-size="11" text-anchor="middle" fill="#334155">的 metafactory 入口</text>
+
+<line x1="642" y1="162" x2="670" y2="162" stroke="#334155" stroke-width="1.5" marker-end="url(#arLD)"/>
+
+<rect x="674" y="102" width="280" height="120" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="814" y="132" font-size="12" font-weight="bold" text-anchor="middle" fill="#14532d">③ LambdaMetafactory 执行</text>
+<text x="814" y="158" font-size="11" text-anchor="middle" fill="#14532d">只执行一次，生成一个类</text>
+<text x="814" y="184" font-size="11" text-anchor="middle" fill="#334155">实现了函数式接口（Runnable）</text>
+<text x="814" y="206" font-size="11" text-anchor="middle" fill="#334155">通常复用同一个类，优于匿名内部类</text>
+
+<rect x="50" y="252" width="904" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="502" y="276" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">对照：匿名内部类在编译期直接生成 Outer$1.class；</text>
+<text x="502" y="298" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">Lambda 用 invokedynamic + 合成方法，编译期不产生额外的 class 文件</text>
+
+<text x="40" y="336" font-size="11" fill="#64748b">实测证据：javap 输出里 private static void lambda$main$0() 确实存在，方法体就是 Lambda 本体（println 调用）。</text>
+</svg>

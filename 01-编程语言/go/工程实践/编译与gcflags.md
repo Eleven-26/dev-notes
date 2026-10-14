@@ -22,6 +22,8 @@
 
 `go build` 默认已用一套调好的参数，**绝大多数情况不需要 gcflags**；它的定位是"我要看编译器的内部行为，或者要改变编译产物"。`go help build` 对它的说明也只有一行——`-gcflags '[pattern=]arg list'：arguments to pass on each go tool compile invocation.`，**完整参数表在编译器自己的帮助里**（见第三节）。
 
+![构建链与三个透传开关](images/编译构建链与透传开关图.svg)
+
 ### 1.2 什么时候必须用它
 
 | 场景 | 目的 | 典型写法 |
@@ -408,6 +410,8 @@ EXIT=0
 1. **`CGO_ENABLED=0` 编译**（最常用）；
 2. **在和目标运行环境**同族**的基础镜像里编译**（目标 alpine → 用 `golang:1.26-alpine` 编）；
 3. **多阶段构建**：build 阶段用完整镜像，run 阶段用 `scratch` / `alpine`，中间产物必须是静态的。
+
+![CGO 两种链接方式与 debian→alpine 事故路径](images/编译CGO两种链接与alpine事故数据流转图.svg)
 
 ### 7.3 镜像瘦身的三档
 

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="430" fill="#ffffff"/>
+  <defs>
+    <marker id="arGJ1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">go-job 优先级队列：数值越小越优先</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">实测 1.1 节：worker 数设 1（串行），一次性入队 low(10) → high(0) → medium(5)；5 轮执行顺序一致</text>
+
+  <rect x="60" y="80" width="280" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="200" y="104" font-size="13" fill="#0f172a" text-anchor="middle">提交顺序（一次入队）</text>
+  <text x="96" y="134" font-size="13" fill="#334155">1. low（10）</text>
+  <text x="96" y="160" font-size="13" fill="#334155">2. high（0）</text>
+  <text x="96" y="186" font-size="13" fill="#334155">3. medium（5）</text>
+
+  <line x1="340" y1="150" x2="396" y2="150" stroke="#334155" stroke-width="1.6" marker-end="url(#arGJ1)"/>
+  <text x="368" y="142" font-size="11" fill="#64748b" text-anchor="middle">入队</text>
+
+  <rect x="400" y="80" width="280" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="540" y="104" font-size="13" fill="#0f172a" text-anchor="middle">队列（数值越小越靠前）</text>
+  <text x="436" y="134" font-size="13" fill="#334155">队首：high（0）</text>
+  <text x="436" y="160" font-size="13" fill="#334155">队中：medium（5）</text>
+  <text x="436" y="186" font-size="13" fill="#334155">队尾：low（10）</text>
+
+  <line x1="680" y1="150" x2="736" y2="150" stroke="#334155" stroke-width="1.6" marker-end="url(#arGJ1)"/>
+  <text x="708" y="142" font-size="11" fill="#64748b" text-anchor="middle">出队</text>
+
+  <rect x="740" y="124" width="200" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="840" y="146" font-size="13" fill="#0f172a" text-anchor="middle">worker 数 = 1</text>
+  <text x="840" y="166" font-size="11" fill="#64748b" text-anchor="middle">串行执行</text>
+
+  <line x1="840" y1="176" x2="840" y2="208" stroke="#334155" stroke-width="1.6" marker-end="url(#arGJ1)"/>
+
+  <rect x="740" y="210" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="840" y="237" font-size="13" fill="#0f172a" text-anchor="middle">第 1 个：high（0）</text>
+  <line x1="840" y1="254" x2="840" y2="270" stroke="#334155" stroke-width="1.6" marker-end="url(#arGJ1)"/>
+  <rect x="740" y="272" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="840" y="299" font-size="13" fill="#0f172a" text-anchor="middle">第 2 个：medium（5）</text>
+  <line x1="840" y1="316" x2="840" y2="332" stroke="#334155" stroke-width="1.6" marker-end="url(#arGJ1)"/>
+  <rect x="740" y="334" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="840" y="361" font-size="13" fill="#0f172a" text-anchor="middle">第 3 个：low（10）</text>
+
+  <text x="60" y="252" font-size="13" fill="#334155">常量（与 Unix nice 同向）：</text>
+  <text x="60" y="278" font-size="12" fill="#334155">HighPriority = 0</text>
+  <text x="60" y="300" font-size="12" fill="#334155">MediumPriority = 5（默认）</text>
+  <text x="60" y="322" font-size="12" fill="#334155">LowPriority = 10</text>
+
+  <text x="40" y="406" font-size="11" fill="#64748b">小结：数值越小越优先，实际执行顺序 high → medium → low，与提交顺序无关（5 轮一致）</text>
+</svg>

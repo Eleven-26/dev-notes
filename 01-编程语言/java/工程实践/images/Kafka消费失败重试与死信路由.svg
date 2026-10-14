@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Spring Kafka 消费失败的重试与死信路由</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">流程图；参数与结论出自 7.4 —— FixedBackOff(1000L, 3)、DLT 命名 topic + ".DLT"、沿用 rec.partition()</text>
+
+  <defs>
+    <marker id="arK3" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arK3r" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+    <marker id="arK3g" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="60" y="80" width="380" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="74" y="100" font-size="10.5" fill="#0f172a">@KafkaListener 收到记录，先 handle(record)</text>
+  <text x="74" y="118" font-size="10" fill="#64748b">处理成功才 ack.acknowledge()（MANUAL_IMMEDIATE 立即提交）</text>
+
+  <rect x="60" y="180" width="380" height="76" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="74" y="200" font-size="10.5" font-weight="bold" fill="#92400e">出错：必须显式挂 DefaultErrorHandler</text>
+  <text x="74" y="218" font-size="10" fill="#92400e">new FixedBackOff(1000L, 3) —— 重试 3 次</text>
+  <text x="74" y="234" font-size="10" fill="#92400e">addNotRetryableExceptions(IllegalArgumentException)</text>
+  <text x="74" y="250" font-size="10" fill="#92400e">containerFactory.setCommonErrorHandler(errorHandler)</text>
+
+  <rect x="60" y="310" width="380" height="66" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="74" y="330" font-size="10.5" font-weight="bold" fill="#14532d">重试内成功：正常提交位点，继续下一批</text>
+  <text x="74" y="348" font-size="10" fill="#14532d">AckMode=BATCH 时批内失败会整批重复</text>
+  <text x="74" y="366" font-size="10" fill="#64748b">所以业务侧幂等仍然必须</text>
+
+  <rect x="560" y="310" width="400" height="66" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="574" y="330" font-size="10.5" font-weight="bold" fill="#7f1d1d">重试 3 次仍失败 → DeadLetterPublishingRecoverer</text>
+  <text x="574" y="348" font-size="10" fill="#7f1d1d">投递到 order-events.DLT，分区沿用 rec.partition()</text>
+  <text x="574" y="366" font-size="10" fill="#7f1d1d">非法参数（notRetryable）直接进死信，不再重试</text>
+
+  <rect x="60" y="410" width="900" height="60" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="74" y="432" font-size="11" font-weight="bold" fill="#7f1d1d">漏配的后果：@KafkaListener 出错时默认会一直重试（旧版 SeekToCurrentErrorHandler 行为）</text>
+  <text x="74" y="454" font-size="11" fill="#7f1d1d">上线就可能卡死整个分区 —— 必须 DefaultErrorHandler + FixedBackOff + 死信兜底，否则一条脏数据能堵死一个分区。</text>
+
+  <line x1="250" y1="136" x2="250" y2="180" stroke="#334155" stroke-width="1.5" marker-end="url(#arK3)"/>
+  <text x="258" y="162" font-size="10" fill="#64748b">抛异常</text>
+  <line x1="250" y1="256" x2="250" y2="310" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arK3g)"/>
+  <text x="258" y="288" font-size="10" fill="#15803d">重试内成功</text>
+  <line x1="300" y1="256" x2="700" y2="310" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arK3r)"/>
+  <text x="560" y="278" font-size="10" fill="#7f1d1d" text-anchor="middle">3 次仍失败 / 命中 notRetryable</text>
+
+  <text x="40" y="496" font-size="11" fill="#64748b">小结：错误处理挂在监听容器上（setCommonErrorHandler），而不是写在业务回调里；死信 Topic 名 = 原 topic + ".DLT"。</text>
+</svg>

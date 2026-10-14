@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="624" viewBox="0 0 1000 624" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="624" fill="#ffffff"/>
+  <defs>
+    <marker id="arMk" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Mock 三条路线：接缝都在同一个接口上</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">失真度依次降低、搭建成本依次升高 —— 每列给「接缝 / 实测读数 / 抓什么与怎么骗你」三段</text>
+
+  <rect x="40" y="80" width="296" height="350" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="40" y="80" width="296" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="188" y="105" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">路线① 手写 interface 假实现</text>
+  <text x="56" y="144" font-size="11" font-weight="bold" fill="#0f172a">接缝与替换点</text>
+  <text x="56" y="164" font-size="11" fill="#334155">接缝：service 只认 UserRepo</text>
+  <text x="56" y="184" font-size="11" fill="#334155">Get(id) (name, err) · Save(id, name)</text>
+  <text x="56" y="204" font-size="11" fill="#334155">替换点：NewService(repo)</text>
+  <text x="56" y="224" font-size="11" fill="#334155">假实现只要 12 行</text>
+  <text x="56" y="252" font-size="11" font-weight="bold" fill="#0f172a">实测读数</text>
+  <text x="56" y="272" font-size="11" fill="#334155">fakeRepo{names, err, calls}</text>
+  <text x="56" y="292" font-size="11" fill="#334155">err → 故障注入</text>
+  <text x="56" y="312" font-size="11" fill="#334155">调用序列 = [Get(1)]</text>
+  <text x="56" y="332" font-size="11" fill="#334155">-race 通过 ok 1.034s</text>
+  <text x="56" y="360" font-size="11" font-weight="bold" fill="#0f172a">抓什么 / 怎么骗你</text>
+  <text x="56" y="380" font-size="11" fill="#334155">抓：业务逻辑、协作方式</text>
+  <text x="56" y="400" font-size="11" fill="#334155">断「读里没有 Save」</text>
+  <text x="56" y="420" font-size="11" fill="#334155">接口一改编译器就报缺方法</text>
+
+  <rect x="352" y="80" width="296" height="350" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="352" y="80" width="296" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="105" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">路线② 代码生成 gomock</text>
+  <text x="368" y="144" font-size="11" font-weight="bold" fill="#0f172a">两种生成模式</text>
+  <text x="368" y="164" font-size="11" fill="#334155">source 模式：解析 repo.go</text>
+  <text x="368" y="184" font-size="11" fill="#334155">不要求包能编译</text>
+  <text x="368" y="204" font-size="11" fill="#334155">reflect 模式：编译后反射</text>
+  <text x="368" y="224" font-size="11" fill="#334155">go.uber.org/mock v0.6.0</text>
+  <text x="368" y="252" font-size="11" font-weight="bold" fill="#0f172a">两类校验是自动的</text>
+  <text x="368" y="272" font-size="11" fill="#334155">Get(int64(7)).Return("张三", nil)</text>
+  <text x="368" y="292" font-size="11" fill="#334155">.Times(1) · Save(...).Times(0)</text>
+  <text x="368" y="312" font-size="11" fill="#334155">Unexpected call to Get([9])</text>
+  <text x="368" y="332" font-size="11" fill="#334155">missing call(s) to Save(...)</text>
+  <text x="368" y="360" font-size="11" font-weight="bold" fill="#0f172a">三个成本</text>
+  <text x="368" y="380" font-size="11" fill="#334155">生成物入库 + CI 查 diff</text>
+  <text x="368" y="400" font-size="11" fill="#334155">Any() 用多了等于没断言</text>
+  <text x="368" y="420" font-size="11" fill="#334155">测试包须带 _test 后缀</text>
+
+  <rect x="664" y="80" width="296" height="350" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="664" y="80" width="296" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="812" y="105" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">路线③ 真容器集成测试</text>
+  <text x="680" y="144" font-size="11" font-weight="bold" fill="#0f172a">没有接缝</text>
+  <text x="680" y="164" font-size="11" fill="#334155">单元测试永远不起容器</text>
+  <text x="680" y="184" font-size="11" fill="#334155">//go:build integration</text>
+  <text x="680" y="204" font-size="11" fill="#334155">无 MYSQL_DSN 就 t.Skip</text>
+  <text x="680" y="224" font-size="11" fill="#334155">同网络用容器名当主机</text>
+  <text x="680" y="252" font-size="11" font-weight="bold" fill="#0f172a">只有真容器给得出的读数</text>
+  <text x="680" y="272" font-size="11" fill="#334155">真 MySQL 版本 = 8.0.46</text>
+  <text x="680" y="292" font-size="11" fill="#334155">UPSERT → RowsAffected=1 / 2</text>
+  <text x="680" y="312" font-size="11" fill="#334155">更新路径返回 2 不是 1</text>
+  <text x="680" y="332" font-size="11" fill="#334155">redis: nil · ttl=30s</text>
+  <text x="680" y="360" font-size="11" font-weight="bold" fill="#0f172a">抓什么 / 怎么骗你</text>
+  <text x="680" y="380" font-size="11" fill="#334155">抓：SQL 语义、驱动行为</text>
+  <text x="680" y="400" font-size="11" fill="#334155">骗：只在本机绿，CI 没环境</text>
+  <text x="680" y="420" font-size="11" fill="#334155">关池的 Cleanup 要注册在最前</text>
+
+  <line x1="20" y1="452" x2="980" y2="452" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="40" y="470" width="296" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="188" y="494" font-size="12" text-anchor="middle" fill="#0f172a">① 先用手写 fake</text>
+  <text x="188" y="516" font-size="11" text-anchor="middle" fill="#334155">把业务分支测住</text>
+
+  <rect x="352" y="470" width="296" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="494" font-size="12" text-anchor="middle" fill="#0f172a">② 要断「调用序列」</text>
+  <text x="500" y="516" font-size="11" text-anchor="middle" fill="#334155">才上代码生成器</text>
+
+  <rect x="664" y="470" width="296" height="60" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="812" y="494" font-size="12" text-anchor="middle" fill="#7c2d12">③ 必须问实现才起真容器</text>
+  <text x="812" y="516" font-size="11" text-anchor="middle" fill="#7c2d12">SQL 方言 / 驱动 / TTL / 时区</text>
+
+  <line x1="336" y1="500" x2="348" y2="500" stroke="#334155" stroke-width="1.5" marker-end="url(#arMk)"/>
+  <line x1="648" y1="500" x2="660" y2="500" stroke="#334155" stroke-width="1.5" marker-end="url(#arMk)"/>
+
+  <text x="40" y="558" font-size="11" fill="#64748b">落地节奏就是上面这条链（本项目实测过的顺序）；前提是被测方只依赖接口——没有接缝时生成器也无从下手。</text>
+  <text x="40" y="580" font-size="11" fill="#64748b">手写假的两个隐性优势：能顺手断「读操作里绝不能有写」，以及接口一改编译器立刻在所有假实现上报缺方法。</text>
+  <text x="40" y="602" font-size="11" fill="#64748b">依赖下载只设 GOPROXY，别设 GOSUMDB=off（会报 checksum database disabled）。</text>
+</svg>

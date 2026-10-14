@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="480" viewBox="0 0 1000 480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="480" fill="#ffffff"/>
+<defs><marker id="arCFc" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">mtime 轮询撞上「编辑器非原子保存」的时序</text>
+<text x="40" y="58" font-size="13" fill="#64748b">本项目：3s ticker + os.Stat 比对 mtime；不少编辑器（尤其 Windows）保存是「先截断再写入」</text>
+
+<rect x="60" y="94" width="480" height="140" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+<text x="80" y="120" font-size="13" font-weight="bold" fill="#991b1b">危险路径：直接保存</text>
+<text x="80" y="148" font-size="12" fill="#991b1b">编辑器：截断文件 → 再写入</text>
+<text x="80" y="172" font-size="12" fill="#991b1b">轮询正好落在中间那一刻</text>
+<text x="80" y="196" font-size="12" fill="#991b1b">→ 读到空文件或半个文件</text>
+<text x="520" y="148" text-anchor="end" font-size="11" fill="#991b1b">（mtime 已变，触发加载）</text>
+
+<line x1="300" y1="236" x2="300" y2="252" stroke="#334155" stroke-width="1.5" marker-end="url(#arCFc)"/>
+<text x="316" y="248" font-size="11" fill="#334155">规避</text>
+
+<rect x="60" y="260" width="480" height="110" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="80" y="286" font-size="13" font-weight="bold" fill="#14532d">稳妥写法（两条都可做）</text>
+<text x="80" y="312" font-size="12" fill="#14532d">① 临时文件 + rename —— 同文件系统上 rename 是原子的</text>
+<text x="80" y="336" font-size="12" fill="#14532d">② 加载器容忍解析失败时保持旧配置（本项目）+ 校验兜底</text>
+
+<rect x="600" y="94" width="340" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="620" y="120" font-size="13" font-weight="bold" fill="#334155">变更发现机制对比</text>
+<text x="620" y="146" font-size="11" fill="#334155">mtime 轮询（本项目 3s）：延迟 ≤3s · 复杂度极低</text>
+<text x="620" y="168" font-size="11" fill="#334155">fsnotify：毫秒 · 跨平台差异 / 原子写要处理</text>
+<text x="620" y="190" font-size="11" fill="#334155">POST /reload：即时 · 低，但要给接口加鉴权</text>
+<text x="620" y="212" font-size="11" fill="#334155">配置中心 watch：毫秒 · 高（客户端与长连接）</text>
+
+<rect x="600" y="260" width="340" height="110" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="620" y="286" font-size="13" font-weight="bold" fill="#854d0e">轮询本身也会漏</text>
+<text x="620" y="312" font-size="11" fill="#854d0e">两次轮询之间改了又改回、mtime 也回原值就会漏</text>
+<text x="620" y="334" font-size="11" fill="#854d0e">更稳：比较内容哈希而非 mtime</text>
+<text x="620" y="356" font-size="11" fill="#854d0e">代价是每次读文件（几 KB 配置可接受）</text>
+
+<text x="40" y="420" font-size="11" fill="#64748b">小结：轮询是性价比最高的起点 —— 3s 延迟对绝大多数配置变更够用，实现成本几乎为零，且天然支持「配置在别的机器上」</text>
+<text x="40" y="444" font-size="11" fill="#64748b">多实例热重载必然存在时间差且无法避免（除非配置中心推送）—— 正确心态是最终一致，不要设计跨实例不变量依赖</text>
+</svg>

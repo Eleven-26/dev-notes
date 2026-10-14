@@ -326,6 +326,10 @@ BeanDefinitionStoreException: Failed to read candidate component class: ... Data
 
 ⚠️ **排查自动装配问题的手段**：加 `--debug`（或 `debug=true`）会打印 **condition evaluation report**，逐条告诉你每个自动配置类「生效了 / 因为什么没生效」。实测里报错信息也提示了这一点。**这比逐个猜快得多。**
 
+![自动装配的三段结构与条件过滤：三个注解 → 选择器读 152 行 imports 清单 → 条件装配逐个判定 → 最小启动只剩 53 个 Bean](images/自动装配三段结构与条件过滤.svg)
+
+**图怎么读**：中列是自动装配主链路（选择器 → 清单文件 → 条件过滤 → 53 个 Bean），左列是 `@ComponentScan` 那条支链与「启动类不能放默认包」的坑，右列把清单机制的两代变化和结果读数分开陈列。
+
 ---
 
 ## 使用：`@Scheduled` 与 `@LoadBalanced` 在真实项目里的两个坑

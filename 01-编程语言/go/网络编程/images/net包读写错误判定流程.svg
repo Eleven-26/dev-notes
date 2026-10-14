@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="662" viewBox="0 0 1000 662" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="662" fill="#ffffff"/>
+  <defs>
+    <marker id="arC" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">net.Conn 读写返回 err 的判定链</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">先分清「超时 / 对端关闭 / 对端重置 / 本端 Close」，用 errors.Is(err, os.ErrDeadlineExceeded) 区分超时与关闭</text>
+
+  <!-- S -->
+  <rect x="140" y="78" width="360" height="40" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="320" y="102" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Read / Write 返回 err != nil</text>
+  <line x1="320" y1="118" x2="320" y2="140" stroke="#334155" stroke-width="1.6" marker-end="url(#arC)"/>
+
+  <!-- D1 -->
+  <rect x="140" y="140" width="360" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="172" text-anchor="middle" font-size="12" fill="#1e3a8a">errors.Is(err, os.ErrDeadlineExceeded)？</text>
+  <rect x="620" y="140" width="320" height="56" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="780" y="162" text-anchor="middle" font-size="11.5" font-weight="700" fill="#854d0e">超时：连接没作废</text>
+  <text x="780" y="182" text-anchor="middle" font-size="11" fill="#334155">读→续期再读；写→n 可能&gt;0</text>
+  <line x1="500" y1="168" x2="620" y2="168" stroke="#334155" stroke-width="1.5" marker-end="url(#arC)"/>
+  <line x1="320" y1="196" x2="320" y2="218" stroke="#334155" stroke-width="1.6" marker-end="url(#arC)"/>
+
+  <!-- D2 -->
+  <rect x="140" y="218" width="360" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="246" text-anchor="middle" font-size="12" fill="#1e3a8a">err == io.EOF？</text>
+  <rect x="620" y="218" width="320" height="48" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="780" y="240" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7f1d1d">对端正常关闭（FIN）</text>
+  <text x="780" y="258" text-anchor="middle" font-size="11" fill="#334155">退循环，defer Close</text>
+  <line x1="500" y1="242" x2="620" y2="242" stroke="#334155" stroke-width="1.5" marker-end="url(#arC)"/>
+  <line x1="320" y1="266" x2="320" y2="288" stroke="#334155" stroke-width="1.6" marker-end="url(#arC)"/>
+
+  <!-- D3 -->
+  <rect x="140" y="288" width="360" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="310" text-anchor="middle" font-size="11.5" fill="#1e3a8a">read: connection</text>
+  <text x="320" y="328" text-anchor="middle" font-size="11.5" fill="#1e3a8a">reset by peer？</text>
+  <rect x="620" y="288" width="320" height="48" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="780" y="310" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7f1d1d">对端异常重置（RST）</text>
+  <text x="780" y="328" text-anchor="middle" font-size="11" fill="#334155">退循环</text>
+  <line x1="500" y1="312" x2="620" y2="312" stroke="#334155" stroke-width="1.5" marker-end="url(#arC)"/>
+  <line x1="320" y1="336" x2="320" y2="358" stroke="#334155" stroke-width="1.6" marker-end="url(#arC)"/>
+
+  <!-- D4 -->
+  <rect x="140" y="358" width="360" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="380" text-anchor="middle" font-size="11.5" fill="#1e3a8a">use of closed</text>
+  <text x="320" y="400" text-anchor="middle" font-size="11.5" fill="#1e3a8a">network connection？</text>
+  <rect x="620" y="358" width="320" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="780" y="380" text-anchor="middle" font-size="11.5" font-weight="700" fill="#334155">本端已 Close</text>
+  <text x="780" y="400" text-anchor="middle" font-size="11" fill="#334155">退循环（2.3 Accept 同理）</text>
+  <line x1="500" y1="386" x2="620" y2="386" stroke="#334155" stroke-width="1.5" marker-end="url(#arC)"/>
+  <line x1="320" y1="414" x2="320" y2="436" stroke="#334155" stroke-width="1.6" marker-end="url(#arC)"/>
+
+  <!-- END -->
+  <rect x="140" y="436" width="360" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="320" y="462" text-anchor="middle" font-size="12" fill="#7f1d1d">其它错误 → 退循环</text>
+
+  <!-- notes -->
+  <rect x="140" y="500" width="800" height="100" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="156" y="524" font-size="11.5" fill="#334155">续期写法（6.2）：每轮成功后 SetReadDeadline(now+30s)＝空闲 30s 超时；只在连接建立时设一次＝30 秒后必死。</text>
+  <text x="156" y="548" font-size="11.5" fill="#334155">net.Error.Timeout() 也能判超时，但文档明说它会把非 deadline 引起的偶发超时一起算进来（6.1），首选 errors.Is。</text>
+  <text x="156" y="572" font-size="11.5" fill="#334155">Close 之后不能再用，deadline 续期后可以：想「软中断」就 SetDeadline(time.Now()) 触发一次 i/o timeout 后退循环（6.3）。</text>
+
+  <text x="40" y="628" font-size="11" fill="#64748b">实测报错原文：超时 read tcp ...: i/o timeout；对端 FIN EOF；异常重置 read tcp ...: read: connection reset by peer；本端 Close use of closed network connection。</text>
+</svg>

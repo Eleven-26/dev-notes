@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 490" width="1000" height="490" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="d2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+    <marker id="d3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="490" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">双重检查锁（DCL）：new 被拆成三步后的重排次序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">instance = new Singleton() 实际是「分配内存 → 赋引用 → 执行构造器」，无 volatile 时后两步可能被重排</text>
+
+  <text x="40" y="108" font-size="12" font-weight="bold" fill="#b91c1c">❌ 无 volatile：② 赋引用跑到了 ③ 初始化前面</text>
+  <rect x="40" y="120" width="200" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="140" y="144" text-anchor="middle" font-size="11" fill="#0f172a">① 分配内存</text>
+  <text x="140" y="164" text-anchor="middle" font-size="10.5" fill="#64748b">线程 A</text>
+  <line x1="240" y1="148" x2="280" y2="148" stroke="#dc2626" stroke-width="1.5" marker-end="url(#d2)"/>
+  <rect x="280" y="120" width="200" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="380" y="144" text-anchor="middle" font-size="11" fill="#7c2d12">② instance = 引用</text>
+  <text x="380" y="164" text-anchor="middle" font-size="10.5" fill="#9a3412">≠null 提前发布</text>
+  <line x1="480" y1="148" x2="520" y2="148" stroke="#dc2626" stroke-width="1.5" marker-end="url(#d2)"/>
+  <rect x="520" y="120" width="200" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="620" y="144" text-anchor="middle" font-size="11" fill="#7f1d1d">线程 B 读到非 null</text>
+  <text x="620" y="164" text-anchor="middle" font-size="10.5" fill="#b91c1c">直接返回半成品</text>
+  <line x1="720" y1="148" x2="760" y2="148" stroke="#dc2626" stroke-width="1.5" marker-end="url(#d2)"/>
+  <rect x="760" y="120" width="200" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="860" y="144" text-anchor="middle" font-size="11" fill="#7f1d1d">③ 才执行构造器</text>
+  <text x="860" y="164" text-anchor="middle" font-size="10.5" fill="#b91c1c">太晚了</text>
+
+  <text x="40" y="212" font-size="11" fill="#dc2626">⚠️ B 在 ② 之后、③ 之前抢到锁读到的对象，字段全是默认值 —— 不是崩溃，而是偶尔读到错数据，最难查。</text>
+
+  <text x="40" y="252" font-size="12" font-weight="bold" fill="#15803d">✅ 加 volatile：StoreStore 屏障禁止 ②③ 重排</text>
+  <rect x="40" y="264" width="200" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="140" y="288" text-anchor="middle" font-size="11" fill="#0f172a">① 分配内存</text>
+  <text x="140" y="308" text-anchor="middle" font-size="10.5" fill="#64748b">线程 A</text>
+  <line x1="240" y1="292" x2="280" y2="292" stroke="#16a34a" stroke-width="1.5" marker-end="url(#d3)"/>
+  <rect x="280" y="264" width="200" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="380" y="288" text-anchor="middle" font-size="11" fill="#14532d">② 执行构造器 a、b</text>
+  <text x="380" y="308" text-anchor="middle" font-size="10.5" fill="#166534">初始化先完成</text>
+  <line x1="480" y1="292" x2="520" y2="292" stroke="#16a34a" stroke-width="1.5" marker-end="url(#d3)"/>
+  <rect x="520" y="264" width="200" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="620" y="288" text-anchor="middle" font-size="11" fill="#14532d">③ 赋引用给 instance</text>
+  <text x="620" y="308" text-anchor="middle" font-size="10.5" fill="#166534">对象就绪才发布</text>
+  <line x1="720" y1="292" x2="760" y2="292" stroke="#16a34a" stroke-width="1.5" marker-end="url(#d3)"/>
+  <rect x="760" y="264" width="200" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="860" y="288" text-anchor="middle" font-size="11" fill="#14532d">线程 B 读到非 null</text>
+  <text x="860" y="308" text-anchor="middle" font-size="10.5" fill="#166534">构造一定已完成</text>
+
+  <text x="30" y="348" font-size="12" font-weight="bold" fill="#0f172a">其实更推荐根本不用 DCL（JDK 5 起 volatile 语义已修正，但下面的写法更简单）：</text>
+  <rect x="20" y="358" width="960" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="382" font-size="11.5" fill="#334155">static final 字段 + 类初始化锁（JVM 保证只初始化一次）—— 最简、天然线程安全、无同步开销，首选。</text>
+  <text x="36" y="406" font-size="11.5" fill="#334155">静态内部类持有 —— 同样靠类初始化，支持延迟加载，写法比 DCL 简单；枚举单例还能防反射与反序列化破坏。</text>
+  <text x="36" y="430" font-size="11.5" fill="#334155">DCL + volatile —— 只在「确实需要延迟加载且不能改结构」时才用；记住「比记住 DCL 写法」更有用的是优先用不可变对象。</text>
+  <text x="36" y="454" font-size="11.5" fill="#64748b">final 字段本身也建立 HB：构造器内对 final 的写 HB 该对象引用的发布（前提构造期间 this 未逸出）。</text>
+</svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+<defs>
+<marker id="arTG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">取地址到逃逸的判定链</text>
+<text x="40" y="58" font-size="13" fill="#64748b">取地址本身不必然逃逸——决定权在「地址有没有交出去」，不在写没写 &amp; 或 new（4.1 / 4.2 实测）</text>
+
+<rect x="40" y="88" width="280" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="180" y="114" font-size="12" fill="#334155" text-anchor="middle">变量赋值完成（如 y := 7）</text>
+
+<line x1="180" y1="132" x2="180" y2="164" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="40" y="166" width="280" height="56" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="180" y="190" font-size="12" font-weight="bold" fill="#854d0e" text-anchor="middle">① 取地址了吗（&amp;x）</text>
+<text x="180" y="212" font-size="11" fill="#854d0e" text-anchor="middle">p := &amp;y　t := &amp;T{A:1}</text>
+
+<line x1="320" y1="194" x2="378" y2="194" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="330" y="188" font-size="11" fill="#16a34a">没取</text>
+
+<rect x="380" y="166" width="270" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="515" y="190" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">留在栈上</text>
+<text x="515" y="212" font-size="11" fill="#14532d" text-anchor="middle">实测：-m 输出「一行都没有」</text>
+<text x="515" y="232" font-size="11" fill="#14532d" text-anchor="middle">onStack / keep</text>
+
+<line x1="180" y1="222" x2="180" y2="284" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="190" y="258" font-size="11" fill="#334155">取了</text>
+
+<rect x="40" y="286" width="280" height="64" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="180" y="310" font-size="12" font-weight="bold" fill="#854d0e" text-anchor="middle">② 地址交出去了吗</text>
+<text x="180" y="332" font-size="11" fill="#854d0e" text-anchor="middle">返回 / 存进全局 / 塞进 interface·chan·闭包</text>
+
+<line x1="320" y1="318" x2="378" y2="318" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="330" y="312" font-size="11" fill="#16a34a">没交出</text>
+
+<rect x="380" y="286" width="270" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="515" y="312" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">仍在栈上</text>
+<text x="515" y="334" font-size="11" fill="#14532d" text-anchor="middle">localPtrNotReturned：一行都没有</text>
+
+<line x1="180" y1="350" x2="180" y2="404" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="190" y="382" font-size="11" fill="#dc2626">交出了</text>
+
+<rect x="40" y="406" width="280" height="88" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="180" y="430" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">逃逸到堆</text>
+<text x="180" y="452" font-size="11" fill="#7f1d1d" text-anchor="middle">实测：moved to heap: y</text>
+<text x="180" y="472" font-size="11" fill="#7f1d1d" text-anchor="middle">-m -m 证据：flow: p ← &amp;y</text>
+
+<line x1="320" y1="450" x2="378" y2="450" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="330" y="444" font-size="11" fill="#334155">代价</text>
+
+<rect x="380" y="406" width="270" height="88" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="515" y="430" font-size="12" font-weight="bold" fill="#9a3412" text-anchor="middle">正确但不免费</text>
+<text x="515" y="452" font-size="11" fill="#9a3412" text-anchor="middle">随栈帧免费回收 → 等 GC 周期回收</text>
+<text x="515" y="472" font-size="11" fill="#9a3412" text-anchor="middle">allocs/op 上升，成本转给 GC</text>
+
+<rect x="690" y="406" width="270" height="88" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="704" y="430" font-size="11" fill="#64748b">验证手段不是猜：</text>
+<text x="704" y="452" font-size="11" fill="#64748b">改前改后各跑一次 -gcflags=-m，</text>
+<text x="704" y="472" font-size="11" fill="#64748b">再看 benchmark 的 allocs/op</text>
+
+<text x="40" y="530" font-size="11" fill="#64748b">小结：值传参拷完就能忘、留在栈上；把地址交出去（返回、存全局、塞 interface/chan/闭包）→ 对象必须活得比栈帧久 → 逃逸到堆。</text>
+</svg>

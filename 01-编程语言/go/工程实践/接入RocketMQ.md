@@ -206,6 +206,10 @@ p, _ := rocketmq.NewProducer(
 
 ⭐ 顺序要在**两端**成立：生产端同一 `ShardingKey` 落同一队列，消费端还要用 `consumer.WithConsumerOrder(true)` 按队列加锁消费（机制见 [消息类型与语义.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/消息类型与语义.md) 2.1 节）。
 
+![rocketmq-client-go v2 生产端进程内链路：sync.Once 单例 → NewProducer 三个选项 → Start 真建 TCP → 请求级构造消息 → SendSync，末端分普通 / 顺序 / 延迟三种发送形态](images/RocketMQ生产端单例初始化与发送选队.svg)
+
+**图怎么读**：1→5 全在**业务进程内**发生——蓝框是单例的建与起（只做一次），第 4 步才是请求级对象；底部三张卡片是同一单例换选项后的三种出口，queueId 与 `level 3 = 10s` 都是 10.1 的实测读数。队列与 Broker 侧怎么存不归本篇，见 [核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/核心概念与架构.md)。
+
 ### 7.2 消费者：Tag 过滤
 
 ```go
@@ -222,6 +226,10 @@ err = c.Subscribe("lab-go",
 ```
 
 ⭐ 回调签名是 `func(context.Context, ...*primitive.MessageExt)`；返回 `consumer.ConsumeRetryLater` 等价 Java 的 `RECONSUME_LATER`，同样受 16 次重试上限约束，最终进 `%DLQ%{group}`。
+
+![rocketmq-client-go v2 消费端在进程内的生命周期：NewPushConsumer → Subscribe（先于 Start）→ c.Start → 回调 handleOrderMsg，回调返回值分 ConsumeSuccess（绿）与 ConsumeRetryLater（橙）两个出口，最后是按反初始化顺序退出](images/RocketMQ消费端订阅回调与重试出口.svg)
+
+**图怎么读**：主列就是 `NewOrderConsumer()` + `c.Start()` 的一次启动；橙色出口那条链是「重试 → 16 次上限 → `%DLQ%{group}`」的消费端视角，绿色出口对位点归零的读数（`Diff Total: 0`、`Inflight: 0`）。第 2 步右侧的橙框是本节最容易踩的顺序问题：`PushConsumer` 在 `Start()` 时快照订阅关系。
 
 ### 7.3 定时任务
 

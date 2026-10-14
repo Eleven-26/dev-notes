@@ -28,6 +28,8 @@ worker 数设 1（串行），一次性入队 **low(10) → high(0) → medium(5
 
 ⭐ 与 Unix `nice` 同向：`HighPriority = 0`、`MediumPriority = 5`、`LowPriority = 10`，**默认是 Medium**。
 
+![go-job 优先级队列：提交顺序 low(10)→high(0)→medium(5)，入队按数值排序，worker=1 串行取出 high → medium → low](images/go-job优先级队列顺序.svg)
+
 ### 1.2 重试的触发条件（这里有两个坑，都是实测踩出来的）
 
 | 实验 | 配置 | 结果 |

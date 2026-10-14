@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="arGK" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arGB" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arGG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Go 侧两条上报路线的进程外接口</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">对应第七节：同一进程二选一；OAP 内部架构见 03-数据与中间件/中间件/可观测性/，此处只画到接口</text>
+
+  <rect x="40" y="150" width="250" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="54" y="174" font-size="13" font-weight="bold" fill="#0f172a">Go 服务进程</text>
+  <text x="54" y="198" font-size="11" fill="#334155">路线一：-inject -a 编译后的二进制</text>
+  <text x="54" y="218" font-size="11" fill="#334155">路线二：应用内埋 OTel SDK</text>
+  <text x="54" y="238" font-size="11" fill="#dc2626">⚠️ 二选一，不同时开</text>
+  <text x="54" y="258" font-size="11" fill="#334155">否则：双份 span / CPM、Apdex 翻倍</text>
+
+  <text x="415" y="140" font-size="11" fill="#0f172a">sw8 传播头</text>
+  <line x1="292" y1="185" x2="342" y2="185" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arGB)"/>
+  <rect x="350" y="150" width="330" height="70" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="364" y="172" font-size="12" font-weight="bold" fill="#0f172a">路线一：skywalking-go agent</text>
+  <text x="364" y="192" font-size="11" fill="#334155">OAP gRPC :11800 直连</text>
+  <text x="364" y="210" font-size="11" fill="#64748b">编译期注入的 init() 持有上报队列</text>
+  <line x1="682" y1="185" x2="772" y2="185" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arGB)"/>
+
+  <line x1="292" y1="275" x2="342" y2="275" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arGG)"/>
+  <rect x="350" y="240" width="330" height="70" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="364" y="262" font-size="12" font-weight="bold" fill="#0f172a">路线二：OTel SDK + OTLP</text>
+  <text x="364" y="282" font-size="11" fill="#334155">OTLP gRPC :4317 / HTTP :4318 默认端口</text>
+  <text x="364" y="300" font-size="11" fill="#64748b">应用内初始化，不动编译链 -toolexec</text>
+  <rect x="350" y="330" width="330" height="70" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="364" y="352" font-size="12" font-weight="bold" fill="#0f172a">receiver-otel 转换</text>
+  <text x="364" y="372" font-size="11" fill="#334155">enabledHandlers otlp-traces、otlp-metrics</text>
+  <text x="364" y="390" font-size="11" fill="#b45309">⚠️ 要在 OAP 侧显式开启（第六节）</text>
+  <path d="M682,365 L720,365 L720,270 L772,270" fill="none" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arGG)"/>
+
+  <rect x="780" y="160" width="180" height="160" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="870" y="186" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">SkyWalking OAP</text>
+  <text x="870" y="210" font-size="11" text-anchor="middle" fill="#64748b">外部组件，架构见 03 篇</text>
+  <text x="870" y="232" font-size="11" text-anchor="middle" fill="#334155">sw8 / traceparent 同一模型</text>
+  <text x="870" y="254" font-size="11" text-anchor="middle" fill="#334155">拓扑 / 告警 / Apdex 复用</text>
+
+  <rect x="40" y="440" width="290" height="56" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="52" y="462" font-size="11" fill="#0f172a">关路线一：SW_AGENT_REPORTER_DISCARD=true</text>
+  <text x="52" y="482" font-size="11" fill="#334155">运行期唯一办法：让 reporter 空转</text>
+
+  <rect x="355" y="440" width="290" height="56" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="367" y="462" font-size="11" fill="#0f172a">或编译期排插件 plugin.excluded</text>
+  <text x="367" y="482" font-size="11" fill="#334155">gin,grpc,gorm（只在编译阶段生效）</text>
+
+  <rect x="670" y="440" width="290" height="56" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="682" y="462" font-size="11" fill="#0f172a">OTel 全关：sdktrace.NeverSample()</text>
+  <text x="682" y="482" font-size="11" fill="#334155">比删代码安全，回滚只需改配置</text>
+
+  <text x="40" y="530" font-size="11" fill="#64748b">小结：路线一复用 sw8 与 OAP 原生拓扑/告警；路线二后端可替换、只改 endpoint——两条上报通道不能同开</text>
+</svg>

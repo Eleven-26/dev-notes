@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="650" viewBox="0 0 1000 650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="650" fill="#ffffff"/>
+<defs>
+<marker id="arUS" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+<marker id="arUR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+</defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">unsafe 内存视图：指针相同就是视图，不同就是复制</text>
+<text x="40" y="58" font-size="13" fill="#64748b">string 与 []byte 的头部都是「数据指针 + 长度」，换标记不复制数据；string(b) / []byte(s) 会另起一份</text>
+
+<rect x="330" y="104" width="220" height="46" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+<text x="440" y="124" font-size="11" font-weight="bold" text-anchor="middle" fill="#334155">原底层数组</text>
+<text x="440" y="142" font-size="11" text-anchor="middle" fill="#334155">dev-notes 这 9 个字节</text>
+<rect x="700" y="104" width="180" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="790" y="124" font-size="11" font-weight="bold" text-anchor="middle" fill="#7f1d1d">复制出的新副本</text>
+<text x="790" y="142" font-size="11" text-anchor="middle" fill="#7f1d1d">地址记作 Q</text>
+
+<rect x="60" y="212" width="230" height="104" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="175" y="234" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d4ed8">b := []byte("dev-notes")</text>
+<text x="175" y="258" font-size="11" text-anchor="middle" fill="#0f172a">ptr = P（数据地址）</text>
+<text x="175" y="278" font-size="11" text-anchor="middle" fill="#0f172a">len = 9　cap = 9</text>
+<text x="175" y="302" font-size="11" text-anchor="middle" fill="#64748b">三个字的 slice 头部</text>
+
+<rect x="325" y="212" width="230" height="104" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="440" y="230" font-size="11" font-weight="bold" text-anchor="middle" fill="#15803d">s := unsafe.String(</text>
+<text x="440" y="248" font-size="11" text-anchor="middle" fill="#15803d">unsafe.SliceData(b), len(b))</text>
+<text x="440" y="272" font-size="11" text-anchor="middle" fill="#16a34a">ptr = P　同一个地址</text>
+<text x="440" y="292" font-size="11" text-anchor="middle" fill="#0f172a">len = 9</text>
+<text x="440" y="310" font-size="11" text-anchor="middle" fill="#64748b">视图，零拷贝</text>
+
+<rect x="590" y="212" width="230" height="104" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="705" y="234" font-size="12" font-weight="bold" text-anchor="middle" fill="#b91c1c">cp := string(b)</text>
+<text x="705" y="258" font-size="11" text-anchor="middle" fill="#7f1d1d">ptr = Q　新地址</text>
+<text x="705" y="278" font-size="11" text-anchor="middle" fill="#0f172a">len = 9</text>
+<text x="705" y="302" font-size="11" text-anchor="middle" fill="#dc2626">复制，多占一份内存</text>
+
+<line x1="175" y1="212" x2="380" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#arUS)"/>
+<line x1="440" y1="212" x2="440" y2="152" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arUS)"/>
+<line x1="705" y1="212" x2="760" y2="152" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arUR)"/>
+<text x="60" y="186" font-size="11" fill="#334155">SliceData(b) 取出的就是 P</text>
+<text x="470" y="186" font-size="11" fill="#16a34a">同一个 P，没有第二次分配</text>
+
+<rect x="40" y="340" width="920" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="362" font-size="13" font-weight="bold" fill="#0f172a">Go 1.20+ 的正规出口；旧写法是 *(*[]byte)(unsafe.Pointer(&amp;s)) 直接改类型标签，Go 1.17 前是唯一办法</text>
+<text x="60" y="382" font-size="12" fill="#64748b">同类视图还有 s[2:5] 共享底层数组、strings.NewReader(s) 直接持有原字符串；bytes.NewBufferString(s) 则会复制</text>
+
+<rect x="40" y="406" width="920" height="118" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="430" font-size="13" font-weight="bold" fill="#0f172a">容器实测断言（golang:1.26-alpine）</text>
+<text x="60" y="452" font-size="12" fill="#16a34a">unsafe.String 转出的 s="dev-notes"，unsafe.StringData(s) == unsafe.SliceData(b) 为 true</text>
+<text x="60" y="472" font-size="12" fill="#dc2626">普通 string(b) 之后再比这两个数据指针：false（发生了复制）</text>
+<text x="60" y="492" font-size="12" fill="#334155">unsafe.Slice(unsafe.StringData("gopher"), 6) → len=6 cap=6 内容="gopher"</text>
+<text x="60" y="512" font-size="12" fill="#334155">unsafe.Slice(&amp;a[0], 4) 造切片，改 sp[0]=999 → a[0]=999（共享同一数组）</text>
+
+<rect x="40" y="538" width="920" height="70" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="60" y="562" font-size="13" font-weight="bold" fill="#92400e">三条红线</text>
+<text x="60" y="584" font-size="12" fill="#92400e">视图只读，不得 append、不得改字节；只允许布局等价的类型互转；生命周期必须由原对象持有</text>
+<text x="60" y="602" font-size="12" fill="#b45309">原对象被回收后继续读 = 悬垂读，GC 不会报错；unsafe 不受兼容性承诺保护，升级 Go 版本要重新验证</text>
+</svg>

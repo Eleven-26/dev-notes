@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="672" viewBox="0 0 1000 672" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="672" fill="#ffffff"/>
+  <defs>
+    <marker id="arLg" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一次 500 请求：日志从中间件到落地的调用时序</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">中间件派生请求级 logger → 存储 / 业务层只包装 → 最终处理者打一次 → 中间件补 ACCESS → 缓冲 Flush</text>
+
+  <rect x="20" y="86" width="180" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="110" y="104" font-size="12" text-anchor="middle" fill="#0f172a">客户端</text>
+  <text x="110" y="122" font-size="11" text-anchor="middle" fill="#64748b">http.Client Timeout 2s</text>
+
+  <rect x="240" y="86" width="180" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="330" y="104" font-size="12" text-anchor="middle" fill="#0f172a">accessMW 中间件</text>
+  <text x="330" y="122" font-size="11" text-anchor="middle" fill="#64748b">base.With(trace_id)</text>
+
+  <rect x="460" y="86" width="180" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="550" y="104" font-size="12" text-anchor="middle" fill="#0f172a">handler + 业务 / 存储层</text>
+  <text x="550" y="122" font-size="11" text-anchor="middle" fill="#64748b">GetUser / loadUser</text>
+
+  <rect x="680" y="86" width="240" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="800" y="104" font-size="12" text-anchor="middle" fill="#0f172a">slog.Logger → bufio → os.Stdout</text>
+  <text x="800" y="122" font-size="11" text-anchor="middle" fill="#64748b">NewJSONHandler(out, nil)</text>
+
+  <line x1="110" y1="140" x2="110" y2="400" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="330" y1="140" x2="330" y2="472" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="550" y1="140" x2="550" y2="340" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="800" y1="140" x2="800" y2="490" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <text x="220" y="152" font-size="11" text-anchor="middle" fill="#334155">GET /users/3</text>
+  <line x1="110" y1="160" x2="326" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#arLg)"/>
+
+  <text x="440" y="192" font-size="11" text-anchor="middle" fill="#334155">ctx 带请求级 logger</text>
+  <line x1="330" y1="200" x2="546" y2="200" stroke="#334155" stroke-width="1.5" marker-end="url(#arLg)"/>
+
+  <path d="M550,232 L612,232 L612,258 L556,258" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#arLg)"/>
+  <text x="620" y="240" font-size="11" fill="#64748b">loadUser 只包装</text>
+  <text x="620" y="256" font-size="11" fill="#64748b">BizError{500} 仍不打</text>
+
+  <text x="675" y="282" font-size="11" text-anchor="middle" fill="#14532d">l.Error("service failure", err)</text>
+  <line x1="550" y1="290" x2="796" y2="290" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arLg)"/>
+
+  <text x="440" y="322" font-size="11" text-anchor="middle" fill="#334155">返回 500（体内无底层错误文本）</text>
+  <line x1="550" y1="330" x2="334" y2="330" stroke="#334155" stroke-width="1.5" marker-end="url(#arLg)"/>
+
+  <text x="220" y="364" font-size="11" text-anchor="middle" fill="#334155">客户端收到 500</text>
+  <line x1="330" y1="372" x2="114" y2="372" stroke="#334155" stroke-width="1.5" marker-end="url(#arLg)"/>
+
+  <text x="565" y="462" font-size="11" text-anchor="middle" fill="#14532d">l.Error("ACCESS", status=500, latency_ms=0.061)</text>
+  <line x1="330" y1="470" x2="796" y2="470" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arLg)"/>
+
+  <rect x="40" y="500" width="920" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="56" y="524" font-size="12" fill="#0f172a">关闭与落地：srv.Shutdown(ctx) → out.Flush() → base.Info("shutdown: buffer flushed") → 再 out.Flush()</text>
+  <text x="56" y="548" font-size="11" fill="#64748b">实测顺序：三行 GET 回显在最前面，五条 JSON 全堆在它们之后 —— 日志一直待在缓冲区里。</text>
+  <text x="56" y="572" font-size="11" fill="#64748b">⚠️ 被 SIGKILL 时缓冲里的行必丢：崩溃前最关键的几条（5xx 的 ERROR）要么不打缓冲，要么缓冲足够小。</text>
+  <text x="56" y="594" font-size="11" fill="#64748b">出口唯一：全进程只构造一个 *slog.Logger；旧流用 log.SetOutput 收到 NewLogLogger 桥上，防同一故障两行。</text>
+
+  <text x="40" y="630" font-size="11" fill="#64748b">对照 /users/2：404 是业务错，没有 ERROR 行，只有 ACCESS 以 Warn 打了 status=404 —— 一错只打一次。</text>
+  <text x="40" y="652" font-size="11" fill="#64748b">500 那一次恰好两行：service failure 给排障的人看原因，ACCESS 给统计的人算错误率，两行同 trace_id 可对跳。</text>
+</svg>

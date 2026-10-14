@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="550" viewBox="0 0 1000 550" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="550" fill="#ffffff"/>
+<defs>
+<marker id="arUT" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">命名类型、别名与底层类型：谁指向谁</text>
+<text x="40" y="58" font-size="13" fill="#64748b">type T U 里若 U 仍是命名类型就继续往下找，直到遇到未命名类型——那才是 T 的底层类型</text>
+
+<rect x="60" y="90" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="160" y="110" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a5f">MyInt</text>
+<text x="160" y="128" font-size="10" text-anchor="middle" fill="#1e3a5f">type MyInt int</text>
+
+<rect x="60" y="158" width="200" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="160" y="178" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">MyIntAlias</text>
+<text x="160" y="196" font-size="10" text-anchor="middle" fill="#64748b">type MyIntAlias = int</text>
+
+<rect x="60" y="240" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="160" y="260" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a5f">A</text>
+<text x="160" y="278" font-size="10" text-anchor="middle" fill="#1e3a5f">type A []int</text>
+
+<rect x="60" y="308" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="160" y="328" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a5f">B</text>
+<text x="160" y="346" font-size="10" text-anchor="middle" fill="#1e3a5f">type B A</text>
+
+<rect x="560" y="90" width="340" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="730" y="110" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">int（未命名类型）</text>
+<text x="730" y="128" font-size="10" text-anchor="middle" fill="#14532d">字面量相同就相同</text>
+
+<rect x="560" y="240" width="340" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="730" y="260" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">[]int（未命名类型）</text>
+<text x="730" y="278" font-size="10" text-anchor="middle" fill="#14532d">A 与 B 的底层类型都是它</text>
+
+<line x1="260" y1="112" x2="556" y2="112" stroke="#334155" stroke-width="1.5" marker-end="url(#arUT)"/>
+<text x="400" y="104" font-size="11" text-anchor="middle" fill="#334155">定义出一个新类型</text>
+
+<line x1="260" y1="180" x2="410" y2="180" stroke="#334155" stroke-width="1.5"/>
+<line x1="410" y1="180" x2="410" y2="136" stroke="#334155" stroke-width="1.5" marker-end="url(#arUT)"/>
+<text x="415" y="204" font-size="11" fill="#64748b">别名：就是 int 本身，连方法都共享</text>
+
+<line x1="260" y1="262" x2="556" y2="262" stroke="#334155" stroke-width="1.5" marker-end="url(#arUT)"/>
+<text x="400" y="254" font-size="11" text-anchor="middle" fill="#334155">底层类型</text>
+
+<line x1="260" y1="330" x2="470" y2="330" stroke="#ea580c" stroke-width="1.5"/>
+<line x1="470" y1="330" x2="470" y2="288" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arUT)"/>
+<text x="482" y="344" font-size="11" fill="#ea580c">递归穿透 A，落到底层类型</text>
+
+<line x1="160" y1="308" x2="160" y2="288" stroke="#334155" stroke-width="1.5" marker-end="url(#arUT)"/>
+
+<text x="60" y="374" font-size="11" fill="#334155">type B A：等号右边的 A 还是命名类型，所以要继续往下找——B 的底层类型不是 A，而是 []int</text>
+
+<rect x="40" y="392" width="920" height="116" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="416" font-size="12" font-weight="bold" fill="#0f172a">实测读数：Name() 给的是命名类型的名字，未命名类型返回空串；Kind() 只是底层类型的种类</text>
+<text x="60" y="440" font-size="11" fill="#334155">A：Name="A" Kind=slice 元素=int → 底层类型 []int　　B：Name="B" Kind=slice 元素=int → 仍是 []int</text>
+<text x="60" y="462" font-size="11" fill="#334155">A(B{4,5}) = [4 5]　　[]int(A{1,2,3}) = [1 2 3]　　底层类型相同 → 两个命名类型可以互转</text>
+<text x="60" y="484" font-size="11" fill="#334155">MyIntAlias 与 int 是同一类型吗？true　　MyInt 与 int 是同一类型吗？false　　int(MyInt(7)) = 7</text>
+
+<text x="40" y="532" font-size="11" fill="#64748b">小结：命名类型只有自己和自己相同；未命名类型字面量相同就相同。给 []int 加方法必须先 type Ints []int，而转换看的是底层类型</text>
+</svg>

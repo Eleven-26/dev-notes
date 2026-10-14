@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="600" fill="#ffffff"/>
+<defs>
+<marker id="arIT" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一次接口调用的动态派发时序</text>
+<text x="40" y="58" font-size="13" fill="#64748b">iface 的两个字怎么把 x.Add(a, b) 送到 Concrete.Add，以及这条路径上量到的代价</text>
+
+<rect x="70" y="90" width="160" height="36" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="150" y="113" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">调用方 ifaceCall</text>
+<rect x="320" y="90" width="160" height="36" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="400" y="113" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">接口变量 x（2 个字）</text>
+<rect x="570" y="90" width="160" height="36" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="650" y="113" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">itab（fun 方法表）</text>
+<rect x="800" y="90" width="160" height="36" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="880" y="113" font-size="12" font-weight="bold" text-anchor="middle" fill="#14532d">Concrete.Add</text>
+
+<line x1="150" y1="126" x2="150" y2="390" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<line x1="400" y1="126" x2="400" y2="390" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<line x1="650" y1="126" x2="650" y2="390" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<line x1="880" y1="126" x2="880" y2="390" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+<line x1="150" y1="160" x2="400" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#arIT)"/>
+<text x="275" y="152" font-size="11" text-anchor="middle" fill="#0f172a">① x.Add(a, b)</text>
+<text x="275" y="178" font-size="10" text-anchor="middle" fill="#64748b">编译期只认静态类型 Adder</text>
+
+<line x1="400" y1="220" x2="650" y2="220" stroke="#334155" stroke-width="1.5" marker-end="url(#arIT)"/>
+<text x="525" y="212" font-size="11" text-anchor="middle" fill="#0f172a">② 取第 1 个字 *itab</text>
+<text x="525" y="238" font-size="10" text-anchor="middle" fill="#64748b">第 2 个字 data 是接收者</text>
+
+<line x1="650" y1="280" x2="880" y2="280" stroke="#334155" stroke-width="1.5" marker-end="url(#arIT)"/>
+<text x="765" y="272" font-size="11" text-anchor="middle" fill="#0f172a">③ call itab.fun[0]</text>
+<text x="765" y="298" font-size="10" text-anchor="middle" fill="#64748b">按接口方法声明顺序排</text>
+
+<line x1="880" y1="340" x2="150" y2="340" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arIT)"/>
+<text x="515" y="332" font-size="11" text-anchor="middle" fill="#14532d">④ 返回调用结果</text>
+<text x="515" y="358" font-size="10" text-anchor="middle" fill="#b45309">这一跳无法内联：方法体进不了调用方</text>
+
+<rect x="40" y="410" width="920" height="142" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="434" font-size="12" font-weight="bold" fill="#0f172a">本机 Go 1.26.5 实测（两侧都穿过 //go:noinline 边界，避免编译器去虚化）</text>
+<text x="60" y="458" font-size="11" fill="#334155">直接调用 2.267 ns/op（1.0×）→ 接口调用 4.560 ns/op（2.0×）→ 先断言再调用 6.442 ns/op（2.7×）</text>
+<text x="60" y="478" font-size="11" fill="#334155">只做一次断言 2.611 ns/op（1.1×）；把 int 装箱进 any 22.98 ns/op、8 B/op、1 allocs/op</text>
+<text x="60" y="502" font-size="11" fill="#334155">代价来源：itab.fun[i] 取地址再 call 的间接跳转 + 编译期不知道具体类型所以无法内联（后者才是大头）</text>
+<text x="60" y="526" font-size="11" fill="#64748b">itab 首次赋值时才生成、之后放进哈希表缓存；动态类型编译期可证时被替换成静态调用（实测 0.56 ns/op）</text>
+
+<text x="40" y="578" font-size="11" fill="#64748b">小结：四条消息依次走 iface 的类型字与数据字、itab 的方法表，读数全部取自第五节的基准输出与代价分析</text>
+</svg>

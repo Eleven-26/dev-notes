@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="arCS" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arCR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">channel 的三种状态：nil / 正常 / 已关闭</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">状态迁移只有 make 与 close 两条边；四种操作按状态给行为（实测口径见正文第四节）</text>
+
+  <path d="M 850 110 L 850 88 L 902 88 L 902 108" fill="none" stroke="#dc2626" stroke-width="1.4" marker-end="url(#arCR)"/>
+  <text x="876" y="82" text-anchor="middle" font-size="10" fill="#7f1d1d">重复 close</text>
+
+  <rect x="40" y="110" width="250" height="252" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="165" y="136" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">nil channel（未创建）</text>
+  <text x="56" y="164" font-size="12" fill="#0f172a">发送 ch&lt;-v → 永久阻塞</text>
+  <text x="56" y="188" font-size="12" fill="#0f172a">接收 &lt;-ch → 永久阻塞</text>
+  <text x="56" y="212" font-size="12" fill="#0f172a">close(ch) → panic：</text>
+  <text x="70" y="230" font-size="11" fill="#dc2626">close of nil channel</text>
+  <text x="56" y="256" font-size="12" fill="#0f172a">select 该 case → 永不就绪</text>
+  <text x="56" y="300" font-size="11" fill="#64748b">「哑」—— 收发都不响应，</text>
+  <text x="56" y="318" font-size="11" fill="#64748b">可用来摘掉 select 分支</text>
+
+  <rect x="375" y="110" width="250" height="252" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="136" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">正常（未关闭）</text>
+  <text x="391" y="164" font-size="12" fill="#0f172a">发送 → 缓冲满才阻塞</text>
+  <text x="391" y="188" font-size="12" fill="#0f172a">接收 → 无数据才阻塞</text>
+  <text x="391" y="212" font-size="12" fill="#0f172a">close(ch) → 正常关闭</text>
+  <text x="391" y="236" font-size="12" fill="#0f172a">select → 就绪才被选中</text>
+  <text x="391" y="268" font-size="11" fill="#64748b">阻塞方被包成 sudog 挂进</text>
+  <text x="391" y="286" font-size="11" fill="#64748b">sendq / recvq，交出 CPU</text>
+  <text x="391" y="318" font-size="11" fill="#64748b">缓冲满/空时才挂起等待</text>
+
+  <rect x="710" y="110" width="250" height="252" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="835" y="136" text-anchor="middle" font-size="14" font-weight="bold" fill="#7f1d1d">已关闭</text>
+  <text x="726" y="164" font-size="12" fill="#0f172a">发送 → panic：</text>
+  <text x="740" y="182" font-size="11" fill="#dc2626">send on closed channel</text>
+  <text x="726" y="208" font-size="12" fill="#0f172a">接收 → 立即零值 + ok=false</text>
+  <text x="740" y="226" font-size="11" fill="#64748b">缓冲有剩余先按 FIFO 读完</text>
+  <text x="726" y="252" font-size="12" fill="#0f172a">再 close → panic：</text>
+  <text x="740" y="270" font-size="11" fill="#dc2626">close of closed channel</text>
+  <text x="726" y="296" font-size="12" fill="#0f172a">select 接收 → 永远就绪</text>
+  <text x="726" y="322" font-size="11" fill="#64748b">「只出不进」：读永远成功</text>
+
+  <line x1="290" y1="176" x2="373" y2="176" stroke="#334155" stroke-width="1.6" marker-end="url(#arCS)"/>
+  <text x="332" y="168" text-anchor="middle" font-size="11" fill="#0f172a">make(chan T)</text>
+  <line x1="625" y1="176" x2="708" y2="176" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arCR)"/>
+  <text x="666" y="168" text-anchor="middle" font-size="11" fill="#7f1d1d">close(ch)</text>
+
+  <rect x="40" y="386" width="920" height="106" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="410" font-size="12" fill="#0f172a">实测：2a_缓冲里还有数据 v=7 ok=true；2b_缓冲读空后 v=0 ok=false；2c_已关闭再读 不阻塞；</text>
+  <text x="56" y="432" font-size="12" fill="#0f172a">2d_向已关闭 chan 发送 / 2e_重复 close → panic。缓冲满了再 close 照样能关，close 不清空缓冲。</text>
+  <text x="56" y="462" font-size="12" font-weight="bold" fill="#0f172a">职责规则：谁负责发，谁负责关；多人发，就别关 —— close 语义是「不会再有数据」，不释放内存。</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="510" fill="#ffffff"/>
+<defs>
+<marker id="arIF" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">接口在内存里就是两个字：eface、iface 与 itab 的字段</text>
+<text x="40" y="58" font-size="13" fill="#64748b">64 位下两个接口都是 2 个字；字段清单取自第四节，读数来自 4.1 用 unsafe 直读内存的实测</text>
+
+<rect x="40" y="92" width="300" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="114" font-size="12" font-weight="bold" fill="#0f172a">eface — 空接口 interface{}（any）</text>
+<rect x="52" y="124" width="132" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="118" y="146" font-size="11" text-anchor="middle" fill="#1e3a8a">第 1 字 _type</text>
+<rect x="196" y="124" width="132" height="34" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="262" y="146" font-size="11" text-anchor="middle" fill="#7c2d12">第 2 字 data</text>
+<text x="52" y="178" font-size="11" fill="#64748b">_type 指向类型元数据，data 指向数据</text>
+<text x="52" y="196" font-size="11" fill="#334155">实测：第 1、2 个字都非空 = true</text>
+
+<rect x="40" y="220" width="300" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="242" font-size="12" font-weight="bold" fill="#0f172a">iface — 非空接口（有方法的）</text>
+<rect x="52" y="252" width="132" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="118" y="274" font-size="11" text-anchor="middle" fill="#1e3a8a">第 1 字 *itab</text>
+<rect x="196" y="252" width="132" height="34" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="262" y="274" font-size="11" text-anchor="middle" fill="#7c2d12">第 2 字 data</text>
+<text x="52" y="306" font-size="11" fill="#64748b">实测：nil 接口的两个字都为 nil</text>
+<text x="52" y="324" font-size="11" fill="#334155">（全 0 才等于 nil）= true</text>
+
+<line x1="340" y1="269" x2="376" y2="269" stroke="#334155" stroke-width="1.5" marker-end="url(#arIF)"/>
+
+<rect x="380" y="92" width="580" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="392" y="114" font-size="12" font-weight="bold" fill="#0f172a">itab（runtime 源码里的未导出结构，书上叫「接口调用过程分析」）</text>
+<text x="392" y="138" font-size="11" fill="#334155">inter *interfacetype　接口本身的类型信息</text>
+<text x="392" y="158" font-size="11" fill="#334155">_type  *_type　　　　　　具体类型信息</text>
+<text x="392" y="178" font-size="11" fill="#334155">hash   uint32　　　　　　具体类型的哈希，用于类型断言快速否定</text>
+<text x="392" y="198" font-size="11" fill="#334155">_      [4]byte</text>
+<text x="392" y="218" font-size="11" fill="#334155">fun    [1]uintptr　　　　方法表：按接口方法声明顺序排列的函数地址</text>
+<text x="392" y="246" font-size="11" fill="#1e3a8a">实测：itab.inter 非空 = true　itab._type 非空 = true</text>
+<text x="392" y="268" font-size="11" fill="#1e3a8a">实测：itab.hash 非空 = true（接口断言靠它做快速否定）</text>
+<text x="392" y="290" font-size="11" fill="#1e3a8a">实测：itab.fun[0] 非空 = true（方法表首项，指向 File.Read 的代码地址）</text>
+<text x="392" y="312" font-size="11" fill="#1e3a8a">实测：itab._type 就是 any 里的 _type 吗？true</text>
+<text x="392" y="334" font-size="11" fill="#64748b">懒生成 + 缓存：首次赋值时生成，之后放进哈希表缓存（4.3）</text>
+
+<rect x="40" y="360" width="920" height="104" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="384" font-size="11" fill="#0f172a">① nil 接口 = 两个字全 0 —— 第三节那个坑就来自这里：return p 时类型字被填成 *MyErr、数据字是 nil，类型字非 0 整个接口就不等于 nil</text>
+<text x="60" y="406" font-size="11" fill="#0f172a">② 同一份数据被两个接口指着时，data 字是同一个地址 —— 接口赋值不复制数据，只填两个字（实测两个接口的 data 相等 = true）</text>
+<text x="60" y="428" font-size="11" fill="#0f172a">③ itab._type 就是 any 里的 _type —— 两种接口的类型身份共用同一套元数据，itab 只是额外多了一张方法表</text>
+<text x="60" y="450" font-size="11" fill="#0f172a">⚠️ 大量不同「类型 × 接口」组合（插件式架构动态注册几百种类型）会让 itab 表长大，是另一类内存增长来源</text>
+
+<text x="40" y="492" font-size="11" fill="#64748b">判断口诀：i == nil 判的是「类型字是否为 0」，不是「数据字是否为 0」。</text>
+</svg>

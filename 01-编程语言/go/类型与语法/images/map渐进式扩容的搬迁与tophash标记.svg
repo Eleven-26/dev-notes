@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="640" fill="#ffffff"/>
+<defs>
+<marker id="arGE" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">渐进式扩容的调用链与 tophash 搬迁标记</text>
+<text x="40" y="58" font-size="13" fill="#64748b">hashGrow 一个桶都不搬，只做「准备」；搬运由 growWork → evacuate 摊到之后每一次读写上（第六节）</text>
+
+<rect x="40" y="92" width="290" height="124" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="52" y="114" font-size="12" font-weight="bold" fill="#1e3a8a">hashGrow（只做准备）</text>
+<text x="52" y="136" font-size="11" fill="#334155">① 判类型：overLoadFactor →</text>
+<text x="52" y="156" font-size="11" fill="#334155">   双倍，否则等量</text>
+<text x="52" y="176" font-size="11" fill="#334155">② oldbuckets = buckets</text>
+<text x="52" y="196" font-size="11" fill="#334155">③ 分配新数组；双倍时 h.B++</text>
+<text x="52" y="212" font-size="11" fill="#334155">④ nevacuate = 0、noverflow = 0</text>
+
+<line x1="330" y1="154" x2="351" y2="154" stroke="#334155" stroke-width="1.5" marker-end="url(#arGE)"/>
+
+<rect x="355" y="92" width="290" height="124" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="367" y="114" font-size="12" font-weight="bold" fill="#14532d">growWork（每次读写顺带搬）</text>
+<text x="367" y="136" font-size="11" fill="#334155">① evacuate(t, h, bucket &amp;</text>
+<text x="367" y="156" font-size="11" fill="#334155">   h.oldbucketmask()) —— 先搬</text>
+<text x="367" y="176" font-size="11" fill="#334155">   当前要访问的那个旧桶</text>
+<text x="367" y="196" font-size="11" fill="#334155">② 若仍 growing() → 再搬</text>
+<text x="367" y="212" font-size="11" fill="#334155">   nevacuate 指向的那个旧桶</text>
+
+<line x1="645" y1="154" x2="666" y2="154" stroke="#334155" stroke-width="1.5" marker-end="url(#arGE)"/>
+
+<rect x="670" y="92" width="290" height="124" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="682" y="114" font-size="12" font-weight="bold" fill="#7c2d12">evacuate（搬空一个旧桶）</text>
+<text x="682" y="136" font-size="11" fill="#334155">① 首槽已是 evacuated* →</text>
+<text x="682" y="156" font-size="11" fill="#334155">   直接 return</text>
+<text x="682" y="176" font-size="11" fill="#334155">② 按 useY 选目标桶 x / y</text>
+<text x="682" y="196" font-size="11" fill="#334155">③ 目标 i == 8 满了 → 挂新桶</text>
+<text x="682" y="212" font-size="11" fill="#334155">④ 溢出桶用同样逻辑继续搬</text>
+
+<rect x="40" y="236" width="560" height="136" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="258" font-size="12" font-weight="bold" fill="#0f172a">双倍扩容（B+1）：旧桶 i 的元素只会去两个地方</text>
+<rect x="52" y="274" width="140" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="122" y="299" font-size="12" text-anchor="middle" fill="#334155">旧桶 i</text>
+<line x1="192" y1="286" x2="240" y2="270" stroke="#334155" stroke-width="1.5" marker-end="url(#arGE)"/>
+<line x1="192" y1="302" x2="240" y2="326" stroke="#334155" stroke-width="1.5" marker-end="url(#arGE)"/>
+<rect x="244" y="252" width="180" height="36" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="334" y="275" font-size="12" text-anchor="middle" fill="#1e3a8a">x = i（前半段原位）</text>
+<rect x="244" y="308" width="180" height="36" rx="6" fill="#fef3c7" stroke="#b45309"/>
+<text x="334" y="331" font-size="12" text-anchor="middle" fill="#854d0e">y = i + 2^B（旧桶数量）</text>
+<text x="440" y="272" font-size="11" fill="#64748b">由新哈希多出来的</text>
+<text x="440" y="292" font-size="11" fill="#64748b">那一位决定：</text>
+<text x="440" y="314" font-size="11" fill="#334155">hash &amp; newbit != 0</text>
+<text x="440" y="336" font-size="11" fill="#334155">→ useY = 1</text>
+<text x="440" y="356" font-size="11" fill="#64748b">newbit = 1&lt;&lt;旧B</text>
+
+<rect x="630" y="236" width="330" height="136" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="642" y="258" font-size="12" font-weight="bold" fill="#14532d">等量扩容（B 不变）</text>
+<text x="642" y="280" font-size="11" fill="#14532d">只有 x，元素仍落在同一个桶号</text>
+<text x="642" y="300" font-size="11" fill="#14532d">位置 → 本质是「内存整理」</text>
+<text x="642" y="320" font-size="11" fill="#14532d">要的不是更多空间，而是一块紧凑</text>
+<text x="642" y="340" font-size="11" fill="#14532d">的地：把溢出桶的数据挪回基本桶</text>
+<text x="642" y="360" font-size="11" fill="#14532d">里被删除留下的空洞</text>
+
+<rect x="40" y="388" width="290" height="72" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="52" y="410" font-size="12" font-weight="bold" fill="#1e3a8a">evacuatedX</text>
+<text x="52" y="432" font-size="11" fill="#334155">该槽位的元素被搬到了 x 桶</text>
+<text x="52" y="452" font-size="11" fill="#334155">查找时读到它 → 就去 x 桶找</text>
+
+<rect x="355" y="388" width="290" height="72" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="367" y="410" font-size="12" font-weight="bold" fill="#854d0e">evacuatedY</text>
+<text x="367" y="432" font-size="11" fill="#334155">被搬到了 y 桶（后半段）</text>
+<text x="367" y="452" font-size="11" fill="#334155">查找时读到它 → 就去 y 桶找</text>
+
+<rect x="670" y="388" width="290" height="72" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="682" y="410" font-size="12" font-weight="bold" fill="#334155">evacuatedEmpty</text>
+<text x="682" y="432" font-size="11" fill="#334155">该槽位原本就是空的，</text>
+<text x="682" y="452" font-size="11" fill="#334155">没有东西要搬</text>
+
+<rect x="40" y="476" width="920" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="500" font-size="11" fill="#0f172a">怎么知道一个旧桶搬完了：看它第一个槽位的 tophash 是不是 evacuated* 系列即可，不需要额外位图 —— 把搬迁状态复用 tophash 这一个字节</text>
+<text x="60" y="522" font-size="11" fill="#0f172a">收尾：没有迭代器在遍历旧桶（flags &amp; oldIterator == 0）且桶内含指针（Bucket.PtrBytes != 0）→ 除 tophash 段之外整块清零，好让 GC 回收对象</text>
+<text x="60" y="544" font-size="11" fill="#0f172a">nevacuate 只在「本次搬的旧桶索引 == nevacuate」时才前进，所以它只是下界；nevacuate == 旧桶总数 → oldbuckets = nil、清 sameSizeGrow、清 extra.oldoverflow</text>
+<text x="60" y="566" font-size="11" fill="#0f172a">特例 NaN：key 不等于自己，看第 B 位判不了去向 → runtime 改用 useY = top &amp; 1，让它经过多轮扩容比较均匀地散到整个桶数组</text>
+
+<text x="40" y="612" font-size="11" fill="#64748b">小结：一次读写最多搬两个桶——当前桶必须先搬完（这次就要用新位置），再顺带还一个债；只要还有读写，扩容最终一定能收敛完成。</text>
+</svg>

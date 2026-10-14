@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="600" fill="#ffffff"/>
+<defs>
+<marker id="arDL" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">defer 链表：新节点插最前，遍历从前往后</text>
+<text x="40" y="58" font-size="13" fill="#64748b">deferproc 把当前协程已有的链表挂到 d.link 后面，再把 d 放到最前端；deferreturn 从表头逐个调用</text>
+<text x="40" y="76" font-size="13" fill="#64748b">所以它看似栈结构，实际是一条链表 —— 源码见 runtime/panic.go</text>
+
+<rect x="40" y="92" width="430" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="255" y="114" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a5f">① 注册期：deferproc 每来一个新 defer 就插到表头</text>
+
+<rect x="90" y="142" width="200" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="190" y="164" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">defer d3</text>
+<text x="190" y="184" font-size="12" text-anchor="middle" fill="#334155">最后注册，在表头</text>
+
+<rect x="90" y="214" width="200" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="190" y="236" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">defer d2</text>
+<text x="190" y="256" font-size="12" text-anchor="middle" fill="#334155">第二个注册</text>
+
+<rect x="90" y="286" width="200" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="190" y="308" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">defer d1</text>
+<text x="190" y="328" font-size="12" text-anchor="middle" fill="#334155">最早注册，在表尾</text>
+
+<rect x="140" y="358" width="100" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="190" y="380" font-size="12" text-anchor="middle" fill="#64748b">nil</text>
+
+<line x1="190" y1="194" x2="190" y2="211" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+<text x="202" y="207" font-size="12" fill="#64748b">d.link</text>
+<line x1="190" y1="266" x2="190" y2="283" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+<text x="202" y="279" font-size="12" fill="#64748b">d.link</text>
+<line x1="190" y1="338" x2="190" y2="355" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+
+<text x="70" y="412" font-size="12" fill="#64748b">编译期：按 defer 标记挨个创建 defer 结构体</text>
+<text x="70" y="432" font-size="12" fill="#64748b">运行时：得到 d，挂进当前协程的 defer 链表</text>
+
+<rect x="530" y="92" width="430" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="745" y="114" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">② 触发期：deferreturn 从表头往后逐个调用</text>
+
+<rect x="560" y="142" width="390" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="755" y="164" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">第 1 步执行 d3</text>
+<text x="755" y="184" font-size="12" text-anchor="middle" fill="#334155">最后注册的那个 defer 最先跑</text>
+
+<rect x="560" y="214" width="390" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="755" y="236" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">第 2 步执行 d2</text>
+<text x="755" y="256" font-size="12" text-anchor="middle" fill="#334155">顺着链表往后走</text>
+
+<rect x="560" y="286" width="390" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="755" y="308" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">第 3 步执行 d1</text>
+<text x="755" y="328" font-size="12" text-anchor="middle" fill="#334155">遍历到表尾才算跑完</text>
+
+<line x1="294" y1="168" x2="554" y2="168" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+<text x="330" y="160" font-size="12" fill="#64748b">表头就是这个节点</text>
+<line x1="755" y1="194" x2="755" y2="211" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+<line x1="755" y1="266" x2="755" y2="283" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+
+<rect x="40" y="450" width="920" height="104" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="474" font-size="13" font-weight="bold" fill="#0f172a">实测（2.3 节：循环里注册三个 defer，另有一个内层函数）</text>
+<text x="60" y="498" font-size="12" fill="#334155">3a_循环结束时的顺序数组: [] —— 3 个 defer 一个都还没跑，全部堆到函数返回</text>
+<text x="60" y="520" font-size="12" fill="#334155">3d_循环里注册的 defer: i = 1 → 3d_循环里注册的 defer: i = 0（后进先出）</text>
+<text x="60" y="542" font-size="12" fill="#334155">结论：后加入的放到链表最前面，所以执行顺序是 LIFO，最后注册的 defer 最先执行</text>
+
+<text x="40" y="580" font-size="11" fill="#64748b">小结：节点 d、字段 d.link、deferproc / deferreturn 与执行顺序均取自本篇 1.4 原文和 2.3 实测输出</text>
+</svg>

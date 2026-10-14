@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="640" fill="#ffffff"/>
+<defs>
+<marker id="arRV" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">range 循环变量的两种语义：一个 v 用到底，还是每轮新建</text>
+<text x="40" y="58" font-size="13" fill="#64748b">同一份源码 s := []int{1, 2, 3}，只改 go.mod 里的 go 行，闭包、指针、goroutine 捕获到的形态就完全不同</text>
+
+<rect x="40" y="92" width="440" height="368" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="40" y="92" width="440" height="34" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+<text x="260" y="115" font-size="13" font-weight="bold" text-anchor="middle" fill="#7c2d12">老语义：go.mod 声明 go 1.21 及以下</text>
+
+<rect x="150" y="142" width="60" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="180" y="164" font-size="12" text-anchor="middle" fill="#1e3a5f">s[0]=1</text>
+<rect x="230" y="142" width="60" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="260" y="164" font-size="12" text-anchor="middle" fill="#1e3a5f">s[1]=2</text>
+<rect x="310" y="142" width="60" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="340" y="164" font-size="12" text-anchor="middle" fill="#1e3a5f">s[2]=3</text>
+
+<line x1="180" y1="176" x2="200" y2="197" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+<line x1="260" y1="176" x2="260" y2="197" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+<line x1="340" y1="176" x2="320" y2="197" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+<text x="380" y="232" font-size="11" fill="#64748b">每轮覆盖</text>
+
+<rect x="150" y="200" width="220" height="60" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="260" y="224" font-size="13" font-weight="bold" text-anchor="middle" fill="#7f1d1d">v：整个循环只创建一次</text>
+<text x="260" y="246" font-size="12" text-anchor="middle" fill="#7f1d1d">循环结束时停在最后一个值</text>
+
+<line x1="115" y1="300" x2="200" y2="264" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+<line x1="250" y1="300" x2="260" y2="264" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+<line x1="385" y1="300" x2="320" y2="264" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+
+<rect x="60" y="300" width="110" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="115" y="326" font-size="12" text-anchor="middle" fill="#334155">闭包 fns[0]</text>
+<rect x="195" y="300" width="110" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="250" y="326" font-size="12" text-anchor="middle" fill="#334155">闭包 fns[1]</text>
+<rect x="330" y="300" width="110" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="385" y="326" font-size="12" text-anchor="middle" fill="#334155">闭包 fns[2]</text>
+<text x="60" y="364" font-size="11" fill="#64748b">ptrs[0..2] 存的是 &amp;v，同理共用一个地址</text>
+
+<text x="60" y="390" font-size="11" fill="#334155">实测：1_闭包捕获到的值 : 3 3 3</text>
+<text x="60" y="412" font-size="11" fill="#334155">实测：2_&amp;v 是否同一个地址 : true；解引用 3 3 3</text>
+<text x="60" y="434" font-size="11" fill="#334155">实测：3_goroutine 拿到的值 : [3 3 3]</text>
+
+<rect x="520" y="92" width="440" height="368" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="520" y="92" width="440" height="34" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="740" y="115" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">新语义：go.mod 声明 go 1.22 及以上</text>
+<text x="540" y="146" font-size="12" fill="#64748b">每轮迭代新建一个变量</text>
+
+<rect x="540" y="156" width="120" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="600" y="182" font-size="12" text-anchor="middle" fill="#1e3a5f">v(1) = 1</text>
+<rect x="680" y="156" width="120" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="740" y="182" font-size="12" text-anchor="middle" fill="#1e3a5f">v(2) = 2</text>
+<rect x="820" y="156" width="120" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="880" y="182" font-size="12" text-anchor="middle" fill="#1e3a5f">v(3) = 3</text>
+
+<line x1="600" y1="300" x2="600" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+<line x1="740" y1="300" x2="740" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+<line x1="880" y1="300" x2="880" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#arRV)"/>
+
+<rect x="540" y="300" width="120" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="600" y="326" font-size="12" text-anchor="middle" fill="#334155">闭包 fns[0]</text>
+<rect x="680" y="300" width="120" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="740" y="326" font-size="12" text-anchor="middle" fill="#334155">闭包 fns[1]</text>
+<rect x="820" y="300" width="120" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="880" y="326" font-size="12" text-anchor="middle" fill="#334155">闭包 fns[2]</text>
+<text x="540" y="364" font-size="11" fill="#64748b">&amp;v 也变成三个不同地址</text>
+
+<text x="540" y="390" font-size="11" fill="#334155">实测：1_闭包捕获到的值 : 1 2 3</text>
+<text x="540" y="412" font-size="11" fill="#334155">实测：2_&amp;v 是否同一个地址 : false；解引用 1 2 3</text>
+<text x="540" y="434" font-size="11" fill="#334155">实测：3_goroutine 拿到的值 : [1 3 2]</text>
+
+<rect x="40" y="480" width="920" height="124" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="506" font-size="12" fill="#0f172a">跨版本写法：循环体首写 v := v（实测 4_加 v := v 之后 : 1 2 3，两种语义下都成立）</text>
+<text x="60" y="528" font-size="12" fill="#0f172a">自查开关：go build -gcflags=all=-d=loopvar=2 会打印 loop variable v now per-iteration</text>
+<text x="60" y="550" font-size="12" fill="#0f172a">绝大多数是 stack-allocated，只有被 &amp;v 取址或跨协程引用的那一处才是 heap-allocated</text>
+<text x="60" y="572" font-size="12" font-weight="bold" fill="#0f172a">没变的一条：v 始终是元素的副本 —— 语义变更只涉及「变量身份」，不涉及「v 是不是元素本身」</text>
+
+<text x="40" y="624" font-size="11" fill="#64748b">小结：两个面板的形状差异就是 2.1 的根因（一个变量 vs 每轮一个变量），四行读数取自 2.3 的两组实测输出</text>
+</svg>

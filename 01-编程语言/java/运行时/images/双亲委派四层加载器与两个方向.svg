@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+<defs>
+<marker id="arup" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+<marker id="ardown" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+</defs>
+
+<text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">双亲委派：四层加载器与两个方向的流动</text>
+<text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">JDK 1.8 实测父链：AppClassLoader → ExtClassLoader → Bootstrap（Java 侧显示为 null）</text>
+
+<rect x="60" y="100" width="380" height="64" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="250" y="126" font-size="13" font-weight="700" text-anchor="middle" fill="#7f1d1d">启动类加载器 Bootstrap</text>
+<text x="250" y="148" font-size="11" text-anchor="middle" fill="#7f1d1d">Java 核心类库（JRE 的 lib 目录）· C++ 实现</text>
+
+<rect x="60" y="190" width="380" height="64" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="250" y="216" font-size="13" font-weight="700" text-anchor="middle" fill="#7c2d12">扩展类加载器 ExtClassLoader</text>
+<text x="250" y="238" font-size="11" text-anchor="middle" fill="#7c2d12">Java 扩展类库（JRE 的 lib/ext 目录）</text>
+
+<rect x="60" y="280" width="380" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="250" y="306" font-size="13" font-weight="700" text-anchor="middle" fill="#1e3a8a">应用程序类加载器 AppClassLoader</text>
+<text x="250" y="328" font-size="11" text-anchor="middle" fill="#1e3a8a">用户 classpath：自己写的类与第三方库</text>
+
+<rect x="60" y="370" width="380" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="250" y="396" font-size="13" font-weight="700" text-anchor="middle" fill="#14532d">自定义类加载器 Custom Class Loader</text>
+<text x="250" y="418" font-size="11" text-anchor="middle" fill="#14532d">按需自定义，继承 ClassLoader</text>
+
+<line x1="110" y1="190" x2="110" y2="168" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arup)"/>
+<line x1="110" y1="280" x2="110" y2="258" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arup)"/>
+<line x1="110" y1="370" x2="110" y2="348" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arup)"/>
+
+<line x1="390" y1="164" x2="390" y2="186" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ardown)"/>
+<line x1="390" y1="254" x2="390" y2="276" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ardown)"/>
+<line x1="390" y1="344" x2="390" y2="366" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ardown)"/>
+
+<rect x="470" y="100" width="470" height="334" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="490" y="130" font-size="13" font-weight="700" fill="#0f172a">收到类加载请求后的四步</text>
+<text x="490" y="160" font-size="12" fill="#334155">① 先不自己加载，把请求委派给父类加载器</text>
+<text x="490" y="184" font-size="12" fill="#334155">② 每层都如此，依次向上委托，直到启动类加载器</text>
+<text x="490" y="208" font-size="12" fill="#334155">③ 启动类加载器能加载就成功，不能则交回子类</text>
+<text x="490" y="232" font-size="12" fill="#334155">④ 依次向下，全部失败抛 ClassNotFoundException</text>
+<text x="490" y="268" font-size="12" font-weight="700" fill="#0f172a">⭐ 一句话记忆：向上检查、向下委派</text>
+<text x="490" y="300" font-size="12" fill="#334155">父子链是「组合」不是「继承」：</text>
+<text x="490" y="324" font-size="12" fill="#334155">AppClassLoader 只持有 parent 引用</text>
+<text x="490" y="360" font-size="12" fill="#334155">线程上下文类加载器默认 = AppClassLoader</text>
+<text x="490" y="384" font-size="12" fill="#334155">它是 SPI 反向委托的唯一通道（见第六节）</text>
+
+<rect x="60" y="464" width="880" height="136" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="80" y="494" font-size="12" fill="#334155">安全性：即使用户写一个名为 java.lang.String 的类，也不会被加载（核心类库由 Bootstrap 负责）</text>
+<text x="80" y="520" font-size="12" fill="#334155">避免重复加载：父加载器已加载过的类，子加载器不再重复加载；层次清晰，各管一段路径</text>
+<text x="80" y="546" font-size="12" fill="#7f1d1d">⚠️ 唯一性只在同一个加载器及其委派链内成立：不同加载器加载同一个类会得到两个 Class 对象（诡异的 ClassCastException）</text>
+<text x="80" y="572" font-size="12" fill="#334155">JDK 9+：ExtClassLoader 被 PlatformClassLoader 取代，模块化下按模块划分可见性</text>
+</svg>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="534" viewBox="0 0 1000 534" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="534" fill="#ffffff"/>
+<defs>
+<marker id="arRA1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">mspan 清扫三分支流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">清扫一个 mspan、释放其中对象后，span 去哪里？—— 三种条件，三种去向</text>
+
+<rect x="310" y="86" width="380" height="54" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="110" font-size="13" text-anchor="middle" fill="#0f172a">清扫一个 mspan，</text>
+<text x="500" y="130" font-size="13" text-anchor="middle" fill="#0f172a">释放其中的对象</text>
+
+<line x1="500" y1="140" x2="500" y2="168" stroke="#334155" stroke-width="1.5"/>
+<line x1="180" y1="168" x2="820" y2="168" stroke="#334155" stroke-width="1.5"/>
+<line x1="180" y1="168" x2="180" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA1)"/>
+<line x1="500" y1="168" x2="500" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA1)"/>
+<line x1="820" y1="168" x2="820" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA1)"/>
+
+<rect x="30" y="198" width="300" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="180" y="224" font-size="12" text-anchor="middle" fill="#0f172a">为响应分配请求而清扫</text>
+<text x="180" y="244" font-size="11" text-anchor="middle" fill="#64748b">清扫原因：要满足分配</text>
+
+<rect x="350" y="198" width="300" height="60" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="224" font-size="12" text-anchor="middle" fill="#0f172a">清扫后仍有已分配对象</text>
+<text x="500" y="244" font-size="11" text-anchor="middle" fill="#64748b">一部分对象还在用</text>
+
+<rect x="670" y="198" width="300" height="60" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="820" y="224" font-size="12" text-anchor="middle" fill="#0f172a">清扫后所有对象都空闲</text>
+<text x="820" y="244" font-size="11" text-anchor="middle" fill="#64748b">整体已经全空</text>
+
+<line x1="180" y1="258" x2="180" y2="296" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA1)"/>
+<line x1="500" y1="258" x2="500" y2="296" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA1)"/>
+<line x1="820" y1="258" x2="820" y2="296" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA1)"/>
+
+<rect x="30" y="296" width="300" height="78" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="180" y="326" font-size="12" text-anchor="middle" fill="#0f172a">直接返回 mcache（本地缓存）</text>
+<text x="180" y="350" font-size="11" text-anchor="middle" fill="#0f172a">继续用于分配</text>
+
+<rect x="350" y="296" width="300" height="78" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="500" y="326" font-size="12" text-anchor="middle" fill="#0f172a">放入 mcentral 空闲 span 链表</text>
+<text x="500" y="350" font-size="11" text-anchor="middle" fill="#0f172a">对应 size class 档（全局集散中心）</text>
+
+<rect x="670" y="296" width="300" height="78" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="820" y="326" font-size="12" text-anchor="middle" fill="#0f172a">内存页归还给 mheap</text>
+<text x="820" y="350" font-size="11" text-anchor="middle" fill="#0f172a">该 span 随即失效</text>
+
+<rect x="40" y="404" width="920" height="92" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="56" y="432" font-size="13" font-weight="bold" fill="#334155">三条分支 = 三种复用成本</text>
+<text x="250" y="432" font-size="12" fill="#334155">能立刻复用（留本地）｜还能复用但当前没有需求（退回全局）｜整体已空（归还页）</text>
+<text x="56" y="462" font-size="11" fill="#64748b">分配链路是 mcache → mcentral → mheap → 操作系统；清扫的三条分支按复用成本把 span 放回对应层级</text>
+
+<text x="40" y="518" font-size="11" fill="#64748b">小结：只有「有人要分配」时才直接回 mcache；还有活对象就回 mcentral 等下一个使用者；整体空闲才把页归还 mheap。</text>
+</svg>

@@ -41,6 +41,8 @@ returning errors.
 > 手写 `WaitGroup` + `cancel` + 错误聚合也能拼出这套，但极容易漏掉"取消"那一半 —— 这正是 [goroutine实战模式.md](goroutine实战模式.md)
 > 案例 4 反复强调的点，本篇把它讲透。
 
+![errgroup.Group 的三合一内部结构架构图：wg 等齐、err+errOnce 只留首错、sem 限并发（ chan struct{} ）、WithContext 派生的 gctx 首错即 cancel；Go 1.20 起有 WithCancelCause，SetLimit 改上限时若仍有活跃协程会 panic](images/errgroup三合一内部结构.svg)
+
 ### 1.3 一个最常见的落地形态：请求入口的多段独立查询
 
 一个详情接口要拼汇总 / 流水 / 标签三段互不依赖的查询，串行跑就是多次 RTT 相加：

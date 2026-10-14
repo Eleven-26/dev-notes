@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="452" viewBox="0 0 1000 452" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="452" fill="#ffffff"/>
+<defs>
+<marker id="arTG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">iota 的按行求值流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">三条规则：按行 +1、隐式延续重复上一行表达式、显式赋值中断序列但不中断计数（5.1 实测）</text>
+
+<rect x="260" y="80" width="480" height="36" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="500" y="103" font-size="12" fill="#334155" text-anchor="middle">const 组逐行求值，iota = 组内行序（从 0 起）</text>
+
+<line x1="500" y1="116" x2="500" y2="138" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="330" y="140" width="340" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="500" y="166" font-size="13" font-weight="bold" fill="#854d0e" text-anchor="middle">本行写了表达式吗？</text>
+
+<line x1="400" y1="184" x2="200" y2="222" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<line x1="500" y1="184" x2="500" y2="222" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<line x1="600" y1="184" x2="800" y2="222" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="230" y="200" font-size="11" fill="#64748b">没写</text>
+<text x="512" y="205" font-size="11" fill="#64748b">用了 iota</text>
+<text x="608" y="212" font-size="11" fill="#64748b">显式赋值</text>
+
+<rect x="40" y="224" width="280" height="96" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="180" y="248" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">隐式延续</text>
+<text x="180" y="270" font-size="12" fill="#7f1d1d" text-anchor="middle">重复上一行的表达式</text>
+<text x="180" y="292" font-size="11" fill="#7f1d1d" text-anchor="middle">FlagWrite 把 1&lt;&lt;20 抄一遍</text>
+<text x="180" y="310" font-size="11" fill="#7f1d1d" text-anchor="middle">= 1048576（与 FlagRead 同值）</text>
+
+<rect x="360" y="224" width="280" height="96" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="500" y="248" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">按本行表达式求值</text>
+<text x="500" y="274" font-size="11" fill="#14532d" text-anchor="middle">FlagB = 1 &lt;&lt; iota</text>
+<text x="500" y="296" font-size="11" fill="#14532d" text-anchor="middle">iota=1 → 2</text>
+
+<rect x="680" y="224" width="290" height="96" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="825" y="248" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">显式赋值，没提 iota</text>
+<text x="825" y="270" font-size="11" fill="#1e3a8a" text-anchor="middle">中断序列但不中断计数</text>
+<text x="825" y="292" font-size="11" fill="#1e3a8a" text-anchor="middle">FlagRead = 1&lt;&lt;20</text>
+<text x="825" y="310" font-size="11" fill="#1e3a8a" text-anchor="middle">= 1048576</text>
+
+<line x1="180" y1="320" x2="180" y2="350" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<line x1="500" y1="320" x2="500" y2="350" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<line x1="825" y1="320" x2="825" y2="350" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="40" y="352" width="920" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="500" y="372" font-size="12" fill="#334155" text-anchor="middle">下一行 iota 照常 +1 —— _ 占位行也消耗一次计数</text>
+<text x="500" y="392" font-size="11" fill="#64748b" text-anchor="middle">实测 Weekday：Sun=0 Mon=1 Tue=2 Wed=3，Fri=5 而不是 4</text>
+
+<text x="40" y="432" font-size="11" fill="#64748b">小结：有表达式就按本行算、没表达式就原样抄上一行；iota 按行数走，跟用没用它无关。</text>
+</svg>

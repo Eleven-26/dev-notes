@@ -26,6 +26,8 @@ JVM 启动 → premain(agentArgs, Instrumentation)
 JVM 退出 → ShutdownHook 触发：先停消费者线程并 flush 队列，再关 gRPC 通道
 ```
 
+![同一条链路的八个阶段：premain → PluginBootstrap 扫描 plugins/ 与 bootstrap-plugins/ → PluginFinder（含 witness 类）→ addTransformer → 加载期 ByteBuddy 织入 → 创建 span 入队 → 消费线程批量上报 → ShutdownHook flush](images/Skywalking的agent增强生效路径.svg)
+
 三个直接推论：
 
 1. **装/卸插件不用重新编译业务代码**。插件就是 jar，拷进 `plugins/` 即生效、删掉即失效；也可以用 `plugin.exclude_plugins` 排除。
@@ -82,6 +84,8 @@ java -javaagent:/opt/skywalking-agent/skywalking-agent.jar \
 推荐做法：**`agent.config` 保持原样不动，全部用环境变量覆盖**，这样同一个 agent 包 / 同一个镜像可在不同环境复用。
 
 ⚠️ **采样语义与 Go 不同，别照抄**：Java 是「**每 3 秒最多多少条**」（`-1` 全采），Go 是「**0~1 的浮点概率**」。把 Go 的 `0.1` 填进 Java 会变成「每 3 秒 0 条」，等于全不采——不报错，只是 UI 永远为空。
+
+![配置生效的三级优先级：-Dskywalking.xxx 启动参数最高，其次环境变量（SW_AGENT_NAME / SW_AGENT_COLLECTOR_BACKEND_SERVICES…），最后才是 config/agent.config 默认值；右下角是采样语义与 Go 的差异](images/Skywalking配置的三级优先级.svg)
 
 ---
 
@@ -181,6 +185,8 @@ env:
 - ⚠️ 自己 `new DataSource` 绕过 Spring 托管：连接池失控，SQL span 也挂不上（插件增强的是被托管的那个池）。
 - ✅ 线程池复用的场景，务必按「每轮 capture → continue → 结束」配对（见第十一节）。
 
+![进程级与请求级的分界：agent、DataSource / HikariCP、ExecutorService 都要全程唯一；两个 Wrapper 与 capture() 的快照绑定单次调用，TraceContext 只是按线程取值的静态 API](images/Skywalking侧对象的单例与请求级边界.svg)
+
 ---
 
 ## 九、初始化顺序 ⭐
@@ -194,6 +200,8 @@ env:
 3. ⚠️ **不要与其他 `-javaagent` 叠加**：SkyWalking agent 与 OTel Java Agent 同挂，同一入口生成两份 span、CPM/Apdex 翻倍、`trace_id` 还不一致（见 [接入Jaeger.md](接入Jaeger.md) 第一节）。要切就只留一个。
 
 > ⚠️ 判「某个组件会不会被顺序影响」，就看它是**在初始化时取一次**全局单例，还是**每次调用现取**：前者必须排在被捕获者之后，后者不受影响。Logback 的 `%tid` layout 是**每条日志时**解析，日志侧不受挂载顺序影响；而线程池插件增强的是**类加载期**的那个池，挂晚了就增强不到。
+
+![三条实序与判据：-javaagent 最先且写在 -jar 之前；配置读的是启动那一刻的值；不与其他 agent 叠加。下方对照「每次现取的日志侧不受影响」与「类加载期的线程池增强会被顺序影响」](images/Skywalking的初始化顺序与一次成型项.svg)
 
 ---
 
@@ -241,6 +249,8 @@ String traceId = TraceContext.traceId();  // 未接入 agent 时返回 ""
 
 标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**（日志面板用法见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md) 2.5 节）。
 
+![traceId 的两条去路：方式一由 toolkit 的 layout 把 %tid 写进日志 pattern（没挂 agent 时输出 TID: N/A），方式二拷日志上报插件把日志送进 OAP，在 UI 日志面板按 Trace ID 反查](images/Skywalking的traceId写进日志与上报两种方式.svg)
+
 ⚠️ 日志上报走的是**与链路同一条 gRPC 通道**，所以「链路有、日志没有」通常是日志侧开关或消息体大小超限，而不是网络问题。大对象日志要在打印前裁剪，超限会被静默丢弃。
 
 ---
@@ -272,6 +282,8 @@ public class ExportTask implements Runnable {
 
 ⚠️ **响应式 / 虚拟线程要额外验证**：Reactor、WebFlux、Loom 虚拟线程的调度模型与平台线程不同，上下文传播依赖对应版本的插件支持，升级前先查 Support-Version-Matrix。
 
+![断链的位置与四种修法：主线程有 traceId → 任务交给线程池 → 子线程拿不到（日志 %tid 为 N/A）；右侧对应线程池插件、apm-spring-async-plugin、ContextManager.capture / continued、@TraceCrossThread](images/Skywalking跨线程断链与四种修法.svg)
+
 ---
 
 ## 十二、优雅停机：别丢最后一批数据
@@ -289,6 +301,8 @@ agent 启动时注册了 **ShutdownHook**，JVM 正常退出时会：先停消�
 K8s 侧要保证 `terminationGracePeriodSeconds` 大于「业务请求排空 + 队列 flush」的总时间。这与 PHP 侧靠 `exec` 转发 SIGTERM、Go 侧靠 `tp.Shutdown(ctx)` 是**同一个道理**（对照见 [接入Skywalking.md](../../php/接入Skywalking.md) 第五节、[接入Jaeger.md](../../go/可观测性/接入Jaeger.md) 第十一节）。
 
 ⚠️ 顺带一个设计取向：队列满时 SkyWalking 默认走 `IF_POSSIBLE` 策略——**宁可丢数据，也不阻塞业务线程**。所以高 QPS 下「链路偶发缺失」是设计取舍，不是 bug；要提高完整度得调大队列并评估 OAP 的写入能力。
+
+![上报数据流与三种退出结果：拦截器产生的 span 进无锁环形队列 DataCarrier，消费线程按批 gRPC 发给 OAP；SIGTERM 触发 ShutdownHook 会先 flush 再关通道，kill -9 与 OOMKilled 则丢掉最后一批](images/Skywalking上报队列与优雅停机的三种退出.svg)
 
 ---
 

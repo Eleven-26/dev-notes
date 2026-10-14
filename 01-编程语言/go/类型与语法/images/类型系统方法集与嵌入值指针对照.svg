@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="560" fill="#ffffff"/>
+<defs>
+<marker id="arMS" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">方法集：T 与 *T 各含哪些方法，嵌入值与嵌入指针差在哪</text>
+<text x="40" y="58" font-size="13" fill="#64748b">T 只含值接收者方法；*T 含值接收者 + 指针接收者方法 —— 数字都是 reflect 的 NumMethod 实测</text>
+
+<rect x="40" y="86" width="440" height="28" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="260" y="105" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">Counter：Get / String 值接收者，Inc 指针接收者</text>
+
+<rect x="40" y="124" width="210" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="145" y="150" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">Counter（值）</text>
+<text x="145" y="176" font-size="12" text-anchor="middle" fill="#334155">方法集 2</text>
+<text x="145" y="202" font-size="12" font-weight="bold" text-anchor="middle" fill="#2563eb">[Get String]</text>
+
+<rect x="270" y="124" width="210" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="375" y="150" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">*Counter（指针）</text>
+<text x="375" y="176" font-size="12" text-anchor="middle" fill="#334155">方法集 3</text>
+<text x="375" y="202" font-size="12" font-weight="bold" text-anchor="middle" fill="#16a34a">[Get Inc String]</text>
+
+<line x1="250" y1="172" x2="266" y2="172" stroke="#334155" stroke-width="1.5" marker-end="url(#arMS)"/>
+<text x="40" y="230" font-size="10" fill="#64748b">*Counter 比 Counter 多的就是指针接收者的 Inc</text>
+
+<rect x="40" y="236" width="440" height="26" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="52" y="254" font-size="11" fill="#14532d">满足 Getter：值=true 指针=true</text>
+<rect x="40" y="264" width="440" height="26" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="52" y="282" font-size="11" fill="#7f1d1d">满足 Incr：值=false 指针=true</text>
+<rect x="40" y="292" width="440" height="26" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="52" y="310" font-size="11" fill="#14532d">满足 Stringer：值=true 指针=true</text>
+
+<text x="40" y="340" font-size="11" fill="#7f1d1d">cannot use Counter{} as Incr value: Counter does not implement Incr (method Inc has pointer receiver)</text>
+
+<rect x="520" y="86" width="440" height="28" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="740" y="105" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">Inner：V() 值接收者，P() 指针接收者</text>
+
+<rect x="520" y="124" width="210" height="96" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="625" y="150" font-size="13" font-weight="bold" text-anchor="middle" fill="#854d0e">OuterValue{ Inner }</text>
+<text x="625" y="176" font-size="12" text-anchor="middle" fill="#854d0e">嵌入值</text>
+<text x="625" y="202" font-size="12" font-weight="bold" text-anchor="middle" fill="#854d0e">值 1 / 指针 2</text>
+
+<rect x="750" y="124" width="210" height="96" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="855" y="150" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">OuterPointer{ *Inner }</text>
+<text x="855" y="176" font-size="12" text-anchor="middle" fill="#14532d">嵌入指针</text>
+<text x="855" y="202" font-size="12" font-weight="bold" text-anchor="middle" fill="#14532d">值 2 / 指针 2</text>
+
+<text x="520" y="248" font-size="11" fill="#334155">嵌入值：指针接收者的方法只进 *S 的方法集</text>
+<text x="520" y="272" font-size="11" fill="#334155">嵌入指针：S 与 *S 都能拿到 T + *T 的全部方法</text>
+<text x="520" y="300" font-size="11" font-weight="bold" fill="#7c2d12">一句话记：嵌入指针两种方法集一样大，嵌入值的方法集缺一块</text>
+<text x="520" y="330" font-size="11" fill="#7f1d1d">OuterValue does not implement P (method P has pointer receiver)</text>
+
+<rect x="40" y="356" width="920" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="380" font-size="12" font-weight="bold" fill="#0f172a">为什么这么规定，以及该选哪种接收者</text>
+<text x="60" y="404" font-size="11" fill="#334155">指针接收者方法可能要修改 T，而接口里存的 T 是不可寻址的副本——不允许在临时副本上调一个「会改自己」的方法</text>
+<text x="60" y="428" font-size="11" fill="#334155">选指针：要改自身 / 结构体大（拷贝成本高）；选值：要值也能满足接口 / 本身很小且不可变（如 time.Time）</text>
+<text x="60" y="452" font-size="11" fill="#b45309">⭐ 只要有一个方法用了指针接收者，其余方法都该用指针，否则方法集割裂、很难解释</text>
+<text x="60" y="476" font-size="11" fill="#7f1d1d">⚠️ 嵌 sync.Mutex 却用值接收者：只有 *Outer 满足 sync.Locker，而且整体复制这个结构体 = 复制了锁（go vet 报 copylocks）</text>
+
+<text x="40" y="536" font-size="11" fill="#64748b">小结：2 / 3 与 1 / 2 两组数字都来自 NumMethod 实测；左半边看接收者风格，右半边看嵌入的是值还是指针</text>
+</svg>

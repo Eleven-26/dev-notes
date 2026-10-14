@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="650" viewBox="0 0 1000 650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="650" fill="#ffffff"/>
+<defs>
+<marker id="arMG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一次 Minor GC 的完整流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">新生代 = 1 个 Eden + 2 个 Survivor，同一时刻只有一个 Survivor 在用（from，另一个是 to）</text>
+
+<rect x="60" y="84" width="620" height="58" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="80" y="119" font-size="13" fill="#0f172a">① 新对象在 Eden 分配（走 TLAB 私有缓冲）</text>
+
+<line x1="370" y1="142" x2="370" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arMG)"/>
+
+<rect x="60" y="170" width="620" height="58" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="80" y="195" font-size="13" font-weight="bold" fill="#7f1d1d">② Eden 满 → 触发 Minor GC（Allocation Failure）→ STW</text>
+<text x="80" y="216" font-size="11" fill="#64748b">全场线程到达安全点，停顿由此开始</text>
+
+<line x1="370" y1="228" x2="370" y2="250" stroke="#334155" stroke-width="1.5" marker-end="url(#arMG)"/>
+
+<rect x="60" y="256" width="620" height="58" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="80" y="281" font-size="13" fill="#0f172a">③ 从 GC Roots 出发标记存活对象</text>
+<text x="80" y="302" font-size="11" fill="#64748b">根还包含「老年代 → 新生代」的引用，靠卡表找到</text>
+
+<line x1="370" y1="314" x2="370" y2="336" stroke="#334155" stroke-width="1.5" marker-end="url(#arMG)"/>
+
+<rect x="60" y="342" width="620" height="58" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="80" y="367" font-size="13" fill="#14532d">④ 存活对象复制到 to 空间，年龄 +1</text>
+<text x="80" y="388" font-size="11" fill="#64748b">达到阈值（或触发动态年龄判定）的直接晋升老年代</text>
+
+<line x1="720" y1="371" x2="776" y2="371" stroke="#334155" stroke-width="1.5" marker-end="url(#arMG)"/>
+<text x="726" y="362" font-size="11" fill="#64748b">晋升</text>
+<rect x="780" y="342" width="170" height="58" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="865" y="367" font-size="13" font-weight="bold" text-anchor="middle" fill="#b45309">老年代</text>
+<text x="865" y="388" font-size="11" text-anchor="middle" fill="#7c2d12">装不下 → 分配担保</text>
+
+<line x1="370" y1="400" x2="370" y2="422" stroke="#334155" stroke-width="1.5" marker-end="url(#arMG)"/>
+
+<rect x="60" y="428" width="620" height="58" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="80" y="453" font-size="13" fill="#334155">⑤ 清空 Eden 与 from，from / to 角色互换</text>
+<text x="80" y="474" font-size="11" fill="#64748b">复制式回收，不留外部碎片</text>
+
+<line x1="370" y1="486" x2="370" y2="508" stroke="#334155" stroke-width="1.5" marker-end="url(#arMG)"/>
+
+<rect x="60" y="514" width="620" height="58" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="80" y="539" font-size="13" fill="#14532d">⑥ 解除 STW，用户线程继续</text>
+<text x="80" y="560" font-size="11" fill="#64748b">一次 Minor GC 完成，日志见 (Allocation Failure) 条目</text>
+
+<text x="40" y="606" font-size="11" fill="#64748b">小结：②与⑥之间（标记 + 复制 + 清空）就是本次 STW 区间；停顿实测亚毫秒到几毫秒（如 0.0072831 secs）。</text>
+<text x="40" y="628" font-size="11" fill="#64748b">复制前先确认老年代装得下晋升对象，否则走空间分配担保（见 2.6）。</text>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="600" fill="#ffffff"/>
+<defs><marker id="arCGO" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">CGO_ENABLED 两种链接方式与 alpine 事故路径</text>
+<text x="40" y="58" font-size="13" fill="#64748b">debian 系镜像 golang:1.26-bookworm（CGO_ENABLED 默认为 1）编译 → 放进 alpine（musl libc）容器执行，实测读数</text>
+
+<rect x="60" y="140" width="180" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="150" y="168" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">同一份 main.go</text>
+<text x="150" y="192" text-anchor="middle" font-size="12" fill="#334155">用 os/user 查用户</text>
+<text x="150" y="216" text-anchor="middle" font-size="11" fill="#64748b">它在 CGO=1 时走 glibc</text>
+<text x="150" y="236" text-anchor="middle" font-size="11" fill="#64748b">关掉后走纯 Go 实现</text>
+
+<rect x="310" y="110" width="190" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="405" y="136" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">CGO_ENABLED=1</text>
+<text x="405" y="158" text-anchor="middle" font-size="11" fill="#1e3a8a">产物 2477693 字节</text>
+
+<rect x="560" y="110" width="210" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="665" y="136" text-anchor="middle" font-size="12" fill="#9a3412">动态链接 libc.so.6</text>
+<text x="665" y="158" text-anchor="middle" font-size="11" fill="#9a3412">ldd 可见依赖</text>
+
+<rect x="830" y="110" width="150" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+<text x="905" y="136" text-anchor="middle" font-size="12" fill="#991b1b">alpine 里执行</text>
+<text x="905" y="158" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">not found / 127</text>
+
+<rect x="310" y="260" width="190" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="405" y="286" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">CGO_ENABLED=0</text>
+<text x="405" y="308" text-anchor="middle" font-size="11" fill="#1e3a8a">产物 2504699 字节</text>
+
+<rect x="560" y="260" width="210" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="665" y="286" text-anchor="middle" font-size="12" fill="#334155">静态：not a dynamic exe…</text>
+<text x="665" y="308" text-anchor="middle" font-size="11" fill="#64748b">纯 Go 实现整体编进二进制</text>
+
+<rect x="830" y="260" width="150" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="905" y="286" text-anchor="middle" font-size="12" fill="#14532d">alpine 里执行</text>
+<text x="905" y="308" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">uid=0 · EXIT=0</text>
+
+<path d="M240 170 L280 170 L280 142 L302 142" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#arCGO)"/>
+<path d="M240 260 L280 260 L280 288 L302 288" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#arCGO)"/>
+<line x1="500" y1="142" x2="552" y2="142" stroke="#334155" stroke-width="1.5" marker-end="url(#arCGO)"/>
+<line x1="770" y1="142" x2="822" y2="142" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arCGO)"/>
+<line x1="500" y1="288" x2="552" y2="288" stroke="#334155" stroke-width="1.5" marker-end="url(#arCGO)"/>
+<line x1="770" y1="288" x2="822" y2="288" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arCGO)"/>
+
+<text x="310" y="200" font-size="11" fill="#b45309">静态的反而更大（2504699 &gt; 2477693）——「静态 = 更小」是常见误解</text>
+
+<text x="40" y="380" font-size="12" font-weight="bold" fill="#991b1b">not found 不是「文件不存在」，是找不到动态链接器 / glibc；EXIT=127 是 shell 的 command not found</text>
+
+<rect x="60" y="410" width="880" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="80" y="436" font-size="12" font-weight="bold" fill="#334155">三条规避做法（任选其一）：</text>
+<text x="80" y="460" font-size="12" fill="#334155">① CGO_ENABLED=0 编译（最常用）　② 在和目标运行环境同族的基础镜像里编译（目标 alpine 就用 golang:1.26-alpine）</text>
+<text x="80" y="484" font-size="12" fill="#334155">③ 多阶段构建：build 用完整镜像，run 用 scratch / alpine —— 中间产物必须是静态的</text>
+
+<text x="40" y="540" font-size="11" fill="#64748b">补充：CGO_ENABLED=1 不等于动态链接 —— 纯 Go 程序（不碰 net / os/user / runtime/cgo）即便开着 CGO=1 产物仍是静态的</text>
+<text x="40" y="562" font-size="11" fill="#64748b">scratch 必踩点：HTTPS 要自己拷 /etc/ssl/certs/ca-certificates.crt；镜像里没有 shell，docker exec 进不去，排查只能靠日志与 metrics</text>
+</svg>

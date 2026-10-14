@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="390" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">初始化顺序：agent 必须排在被增强的类加载之前</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Java 进程内的流程图（第九节三条实序）；顺序颠倒的表现是「进程正常、数据却是空的」</text>
+
+  <defs>
+    <marker id="arSwInit" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="88" width="290" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="110" font-size="11.5" font-weight="bold" fill="#0f172a">① -javaagent 必须最先</text>
+  <text x="52" y="131" font-size="10.5" fill="#334155">写在 -jar 之前，且属 JVM 参数</text>
+  <text x="52" y="150" font-size="10.5" fill="#334155">premain 先注册 transformer</text>
+  <text x="52" y="169" font-size="10.5" fill="#b45309">挂晚 → 之前已加载的类漏掉</text>
+
+  <rect x="370" y="88" width="290" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="382" y="110" font-size="11.5" font-weight="bold" fill="#0f172a">② 配置要在启动前就绪</text>
+  <text x="382" y="131" font-size="10.5" fill="#334155">-Dskywalking.* 与 SW_AGENT_* 是运行期读</text>
+  <text x="382" y="150" font-size="10.5" fill="#334155">读的却是启动那一刻的值</text>
+  <text x="382" y="169" font-size="10.5" fill="#b45309">改完要重启，别指望动态改</text>
+
+  <rect x="700" y="88" width="260" height="86" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="712" y="110" font-size="11.5" font-weight="bold" fill="#7f1d1d">③ 不与其他 agent 叠加</text>
+  <text x="712" y="131" font-size="10.5" fill="#7f1d1d">与 OTel Java Agent 同挂：</text>
+  <text x="712" y="150" font-size="10.5" fill="#7f1d1d">同一入口两份 span、CPM/Apdex 翻倍</text>
+  <text x="712" y="169" font-size="10.5" fill="#7f1d1d">trace_id 还不一致 → 只留一个</text>
+
+  <rect x="40" y="210" width="440" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="232" font-size="11.5" font-weight="bold" fill="#0f172a">判据：初始化时取一次，还是每次调用现取？</text>
+  <text x="52" y="253" font-size="10.5" fill="#334155">Logback 的 %tid layout 是每条日志时解析</text>
+  <text x="52" y="272" font-size="10.5" fill="#16a34a">→ 日志侧不受挂载顺序影响（每次现取，不受影响）</text>
+  <text x="52" y="290" font-size="10.5" fill="#334155">取一次的下游组件必须排在被捕获者之后</text>
+
+  <rect x="520" y="210" width="440" height="86" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="532" y="232" font-size="11.5" font-weight="bold" fill="#7c2d12">受顺序影响的那一类：类加载期的增强</text>
+  <text x="532" y="253" font-size="10.5" fill="#7c2d12">线程池插件增强的是类加载期的那个池</text>
+  <text x="532" y="272" font-size="10.5" fill="#7c2d12">挂晚了就增强不到 → 链路断在提交点（第十一节）</text>
+  <text x="532" y="290" font-size="10.5" fill="#7c2d12">写到 --spring.profiles.active 那一侧完全不生效</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="330" y1="131" x2="370" y2="131" marker-end="url(#arSwInit)"/>
+    <line x1="660" y1="131" x2="700" y2="131" marker-end="url(#arSwInit)"/>
+    <line x1="185" y1="174" x2="185" y2="210" stroke-dasharray="5 4" marker-end="url(#arSwInit)"/>
+    <line x1="740" y1="174" x2="740" y2="210" stroke-dasharray="5 4" marker-end="url(#arSwInit)"/>
+  </g>
+
+  <text x="40" y="330" font-size="11" fill="#64748b">小结：三条实序的共同点是「一次成型」——transformer、配置值、agent 数量都在启动那一刻定下来，之后只能靠重启改变。</text>
+  <text x="40" y="356" font-size="11" fill="#64748b">图怎么读：顺序判据与 Kafka / RocketMQ / Jaeger 侧同一条——凡在初始化时捕获全局单例的组件，都要排在被捕获者之后。</text>
+</svg>

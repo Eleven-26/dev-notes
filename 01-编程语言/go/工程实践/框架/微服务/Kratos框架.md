@@ -75,6 +75,8 @@ func wireApp(*conf.Server, *conf.Data, log.Logger) (*kratos.App, func(), error) 
 }
 ```
 
+![Kratos 分层与 wire 装配架构图：api → service → biz → data 单向依赖，ent 生成代码只在 data 层；wire.Build 把各层 ProviderSet 装配成 kratos.App](images/kratos分层与wire装配架构.svg)
+
 ### 1.4 业务侧读写
 
 按实体取到表的操作对象：插入是 `Create().SetXxx().Save()`，查询走 `Query().Where(...)`；跨多表强一致用 `r.data.db.Tx(ctx)`，闭包内改用 `tx.User.Create()`。
@@ -322,6 +324,8 @@ func tokenAuth(expect string) middleware.Middleware {
 }
 ```
 
+![Kratos 元数据 token 鉴权时序图：调用方 AppendToClientContext 写入 → HTTP header / gRPC metadata 带出 → 服务端 metadata.Server() + tokenAuth 比对，白名单放行健康检查与 PayNotify，失败返回 401](images/kratos元数据token鉴权时序.svg)
+
 不走代码调用时（curl / 网关 / 其他语言服务），必须在 header 里按**同样的前缀和格式**手工写，否则 metadata 中间件提不出来：
 
 ```bash
@@ -354,6 +358,8 @@ curl -X POST http://payment.service:8001/api.payment.v1.PaymentService/CreatePay
 2. 健康检查请求**不携带任何业务 metadata**；
 3. Kratos 的 gRPC Server 会把中间件同时套在 unary 和 stream 两条链路上，于是鉴权中间件拿不到 token；
 4. 健康检查返回鉴权失败 → 连接被判为不健康 → **后续正常请求也跟着失败**。
+
+![Kratos 健康检查鉴权失败根因流程图：心跳走 server-streaming 链路且不携带 metadata，被同时套在两条链路上的鉴权中间件拒掉，连接判为不健康后业务请求连带失败；修复是在中间件白名单放行 Watch 请求](images/kratos健康检查鉴权根因流程.svg)
 
 ### 5.3 修复：让健康检查绕过鉴权
 

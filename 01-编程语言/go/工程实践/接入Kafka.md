@@ -168,6 +168,10 @@ if err := w.WriteMessages(ctx, msgs...); err != nil {
 | **攒批是吞吐的前提** | `BatchTimeout` + 批量 `WriteMessages` 会让 broker 侧收到大批次（实测一个批次 542 条 / 约 16 KiB），代价是单条延迟上升 |
 | **`Async: true` 要慎用** | 它把错误交给后台重试，`WriteMessages` 立刻返回 nil，容易误判成功 |
 
+![kafka-go 生产端在进程内的数据流：sync.OnceValue 单例、惰性建连、BatchTimeout 攒批、Hash 按 key 定分区、RequireAll 确认，以及成功与失败两个出口](images/Kafka生产端进程内攒批与发送数据流.svg)
+
+**图怎么读**：主路径自上而下都发生在**业务进程内**——单例只建一次（第六节），构造不连网（第三节），`BatchTimeout` 攒批和 `&kafka.Hash{}` 定分区发生在发送前，`kafka.RequireAll` 决定何时把结果交回调用方。`ORDER_1001 → partition=2`、`ORDER_1002 → partition=0` 是第十节实测读数；分区与副本在服务端怎么存不归本篇，见 [核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/Kafka/核心概念与架构.md)。
+
 ### 7.2 消费者：处理成功再提交
 
 ```go
@@ -190,6 +194,10 @@ for {
 > ⭐ **`ReadMessage` 会按 `CommitInterval` 自动提交，`FetchMessage` 不提交**——要「处理成功再提交」就用 `CommitInterval: 0` + `FetchMessage` + `CommitMessages`。
 >
 > ⚠️ `GroupID` 留空会退化成**独立消费者**：不参与消费组、不自动分配分区，需要自己指定 `Partition`。**「加了实例但没人分到分区」通常就是这一条漏了。**
+
+![kafka-go 消费端流程：Reader 构造、FetchMessage 只取不提交、处理业务、CommitMessages 手动提交并回到循环，最后是收到信号后的关闭顺序](images/Kafka消费端取消息与手动提交位点流程.svg)
+
+**图怎么读**：绿色框右侧回到 `FetchMessage` 的折线就是消费循环；橙色分支是「失败不提交」，重启后从旧位点重复消费、靠幂等兜底。底部灰框把第九节的退出顺序（先停止拉取 → 处理完在途 → `Close()`）接在循环之后，`Close` 会提交一次位点。`CURRENT-OFFSET=3`、`LAG=0` 是 10.1 的实测读数。
 
 ### 7.3 需要幂等 / 事务时换 sarama
 

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="arST" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arSR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">goroutine 栈：增长是拷贝，缩容在 GC 时做</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">runtime/stack.go 机制（Go 1.26.5）—— 上限 64 位平台 MaxStack = 1 GB</text>
+
+  <text x="40" y="96" font-size="14" font-weight="bold" fill="#1e3a8a">增长链路（函数入口检查 → 拷贝 → 修正 → 释放）：</text>
+
+  <rect x="40" y="110" width="150" height="64" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="115" y="130" text-anchor="middle" font-size="11" fill="#1e3a8a">函数入口</text>
+  <text x="115" y="150" text-anchor="middle" font-size="11" fill="#0f172a">栈边界检查</text>
+  <text x="115" y="166" text-anchor="middle" font-size="10.5" fill="#64748b">（morestack）</text>
+
+  <rect x="206" y="110" width="150" height="64" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="281" y="130" text-anchor="middle" font-size="11" fill="#0f172a">不够 → 堆上分配</text>
+  <text x="281" y="150" text-anchor="middle" font-size="11" fill="#0f172a">两倍大小的新栈</text>
+  <text x="281" y="166" text-anchor="middle" font-size="10.5" fill="#64748b">（翻倍，不是按需 +N）</text>
+
+  <rect x="372" y="110" width="150" height="64" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="447" y="136" text-anchor="middle" font-size="11" fill="#0f172a">旧栈内容</text>
+  <text x="447" y="156" text-anchor="middle" font-size="11" fill="#0f172a">整体拷贝过去</text>
+
+  <rect x="538" y="110" width="150" height="64" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="613" y="130" text-anchor="middle" font-size="11" fill="#0f172a">修正所有指向</text>
+  <text x="613" y="150" text-anchor="middle" font-size="11" fill="#0f172a">旧栈的指针</text>
+  <text x="613" y="166" text-anchor="middle" font-size="10.5" fill="#64748b">（用栈帧里的指针信息）</text>
+
+  <rect x="704" y="110" width="150" height="64" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="779" y="136" text-anchor="middle" font-size="11" fill="#14532d">释放旧栈</text>
+  <text x="779" y="156" text-anchor="middle" font-size="11" fill="#14532d">在新栈继续执行</text>
+
+  <line x1="190" y1="142" x2="204" y2="142" stroke="#334155" stroke-width="1.5" marker-end="url(#arST)"/>
+  <line x1="356" y1="142" x2="370" y2="142" stroke="#334155" stroke-width="1.5" marker-end="url(#arST)"/>
+  <line x1="522" y1="142" x2="536" y2="142" stroke="#334155" stroke-width="1.5" marker-end="url(#arST)"/>
+  <line x1="688" y1="142" x2="702" y2="142" stroke="#334155" stroke-width="1.5" marker-end="url(#arST)"/>
+
+  <text x="40" y="212" font-size="11.5" fill="#334155">够用 → 直接调用，不搬运；递归更深、新栈仍不够 → 回到第一步再翻倍再拷贝（一次深递归会让栈连续翻几倍）。</text>
+
+  <rect x="40" y="252" width="920" height="46" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="500" y="280" text-anchor="middle" font-size="12" fill="#7f1d1d">深到超过 MaxStack = 1 GB → fatal error: stack overflow（不能 recover，直接终止进程）</text>
+
+  <text x="40" y="330" font-size="14" font-weight="bold" fill="#14532d">缩容链路：</text>
+  <rect x="40" y="344" width="150" height="56" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="115" y="366" text-anchor="middle" font-size="11" fill="#0f172a">GC 扫描</text>
+  <text x="115" y="384" text-anchor="middle" font-size="10.5" fill="#64748b">（收缩只在 GC 时做）</text>
+  <line x1="190" y1="372" x2="248" y2="372" stroke="#334155" stroke-width="1.5" marker-end="url(#arST)"/>
+  <text x="219" y="364" text-anchor="middle" font-size="10.5" fill="#334155">发现</text>
+  <rect x="250" y="344" width="160" height="56" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="330" y="366" text-anchor="middle" font-size="11" fill="#854d0e">用量 &lt; 1/4？</text>
+  <text x="330" y="384" text-anchor="middle" font-size="10.5" fill="#854d0e">（shrinkstack 判定）</text>
+  <line x1="410" y1="372" x2="548" y2="372" stroke="#334155" stroke-width="1.5" marker-end="url(#arST)"/>
+  <text x="479" y="364" text-anchor="middle" font-size="10.5" fill="#334155">是 →</text>
+  <rect x="550" y="344" width="160" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="630" y="366" text-anchor="middle" font-size="11" fill="#14532d">把栈减半</text>
+  <text x="630" y="384" text-anchor="middle" font-size="10.5" fill="#14532d">（shrinkstack）</text>
+  <text x="730" y="366" font-size="11" fill="#64748b">⚠️ 不会自己缩回去：曾很深的栈</text>
+  <text x="730" y="384" font-size="11" fill="#64748b">一直占着大栈，直到下次 GC</text>
+
+  <text x="40" y="428" font-size="12" fill="#0f172a">分配侧小优化：栈 ≤ 2 KB 用每个 P 的本地缓存分配（不进全局锁）；大栈才走 mheap。</text>
+
+  <rect x="40" y="444" width="430" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="468" font-size="13" font-weight="bold" fill="#0f172a">实测：每协程栈开销（Windows）</text>
+  <text x="56" y="492" font-size="11" fill="#0f172a">n=1000 时 8192 B/个；n=100000 时 8163 B/个</text>
+  <text x="56" y="512" font-size="11" fill="#0f172a">stackMin=2048 + stackSystem=4096 → 8192</text>
+  <text x="56" y="536" font-size="11" fill="#64748b">Linux 初始 2 KB；10 万个 ≈ 800 MB</text>
+
+  <rect x="530" y="444" width="430" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="546" y="468" font-size="13" font-weight="bold" fill="#0f172a">平台对照（fixedStack 算法）</text>
+  <text x="546" y="492" font-size="11" fill="#0f172a">Linux：stackSystem 0 → 初始栈 2 KB</text>
+  <text x="546" y="512" font-size="11" fill="#0f172a">Windows：4096（留保护页）→ 8 KB</text>
+  <text x="546" y="536" font-size="11" fill="#0f172a">Plan 9：512 → 4 KB</text>
+</svg>

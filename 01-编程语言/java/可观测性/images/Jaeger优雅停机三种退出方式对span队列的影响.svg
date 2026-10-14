@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">优雅停机：要不要触发 ShutdownHook，决定最后一批 span 的去向</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Java 进程内的状态机（第八节）；导出是异步批量的，span 先进内存队列</text>
+
+  <defs>
+    <marker id="arStop" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="84" width="290" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="106" font-size="12" font-weight="bold" fill="#0f172a">BatchSpanProcessor 内存队列</text>
+  <text x="52" y="126" font-size="11" fill="#334155">span 先进队列，攒够一批或到超时才发</text>
+  <text x="52" y="146" font-size="11" fill="#334155">Agent 与 SDK 都注册了 ShutdownHook</text>
+
+  <rect x="40" y="196" width="290" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="52" y="218" font-size="12" font-weight="bold" fill="#14532d">✅ SIGTERM（K8s 删 Pod、docker stop）</text>
+  <text x="52" y="238" font-size="11" fill="#166534">触发 ShutdownHook</text>
+  <text x="52" y="258" font-size="11" fill="#166534">结果：队列 flush，数据完整</text>
+
+  <rect x="370" y="84" width="290" height="76" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="382" y="106" font-size="12" font-weight="bold" fill="#7f1d1d">❌ kill -9 / SIGKILL</text>
+  <text x="382" y="126" font-size="11" fill="#7f1d1d">不触发 ShutdownHook</text>
+  <text x="382" y="146" font-size="11" fill="#7f1d1d">结果：最后一批 span 丢失</text>
+
+  <rect x="370" y="196" width="290" height="76" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="382" y="218" font-size="12" font-weight="bold" fill="#7f1d1d">❌ OOMKilled</text>
+  <text x="382" y="238" font-size="11" fill="#7f1d1d">同样不触发</text>
+  <text x="382" y="258" font-size="11" fill="#7f1d1d">还丢掉故障时刻最关键的数据</text>
+
+  <rect x="700" y="84" width="260" height="76" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="712" y="106" font-size="12" font-weight="bold" fill="#7c2d12">必要条件① PID 1 要能收到 SIGTERM</text>
+  <text x="712" y="126" font-size="11" fill="#7c2d12">ENTRYPOINT 走 sh -c 时必须 exec java …</text>
+  <text x="712" y="146" font-size="11" fill="#7c2d12">否则信号只打到 shell（见 2.3）</text>
+
+  <rect x="700" y="196" width="260" height="76" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="712" y="218" font-size="12" font-weight="bold" fill="#7c2d12">必要条件② 宽限期要够</text>
+  <text x="712" y="238" font-size="11" fill="#7c2d12">terminationGracePeriodSeconds 必须</text>
+  <text x="712" y="258" font-size="11" fill="#7c2d12">大于「HTTP 排空 + span flush」总时间</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="185" y1="160" x2="185" y2="196" marker-end="url(#arStop)"/>
+    <line x1="330" y1="122" x2="370" y2="122" stroke-dasharray="5 4" marker-end="url(#arStop)"/>
+    <line x1="515" y1="160" x2="515" y2="196" stroke-dasharray="5 4" marker-end="url(#arStop)"/>
+    <line x1="660" y1="122" x2="700" y2="122" stroke-dasharray="5 4" marker-end="url(#arStop)"/>
+    <line x1="830" y1="160" x2="830" y2="196" marker-end="url(#arStop)"/>
+  </g>
+
+  <rect x="40" y="304" width="920" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="326" font-size="12" font-weight="bold" fill="#0f172a">路线 B 若自己持有 SdkTracerProvider：退出前要显式关闭</text>
+  <text x="52" y="347" font-size="11" fill="#334155">@PreDestroy void shutdownTracing() { tracerProvider.close(); } —— Spring 容器关闭时 flush 导出队列。</text>
+  <text x="52" y="366" font-size="11" fill="#64748b">进程被强杀时，队列里那一批就没了——这正是本节标题说的「别丢最后一批 span」。</text>
+
+  <text x="40" y="404" font-size="11" fill="#64748b">小结：三种退出方式只有一处差别——要不要触发 ShutdownHook；强杀丢的就是「还在队列里、没发出去的那一批」。</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+<defs>
+<marker id="arspi1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+<marker id="arspi2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+</defs>
+
+<text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SPI 用线程上下文类加载器反向委托</text>
+<text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">JDBC 为例；实测上下文类加载器 = sun.misc.Launcher$AppClassLoader@73d16e93</text>
+
+<rect x="60" y="110" width="500" height="76" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="310" y="140" font-size="13" font-weight="700" text-anchor="middle" fill="#7f1d1d">Bootstrap ClassLoader（启动类加载器）</text>
+<text x="310" y="166" font-size="11" text-anchor="middle" fill="#7f1d1d">加载 java.sql.DriverManager，它在 rt.jar 里</text>
+
+<rect x="60" y="380" width="500" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="310" y="410" font-size="13" font-weight="700" text-anchor="middle" fill="#1e3a8a">AppClassLoader（应用程序类加载器）</text>
+<text x="310" y="436" font-size="11" text-anchor="middle" fill="#1e3a8a">加载 com.mysql.cj.jdbc.Driver，它在应用 classpath</text>
+
+<line x1="170" y1="186" x2="170" y2="376" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arspi1)"/>
+<line x1="420" y1="380" x2="420" y2="190" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arspi2)"/>
+
+<text x="150" y="292" font-size="13" text-anchor="middle" fill="#16a34a">①</text>
+<text x="440" y="292" font-size="13" text-anchor="middle" fill="#2563eb">②</text>
+<text x="295" y="278" font-size="12" text-anchor="middle" fill="#0f172a">线程上下文类加载器</text>
+<text x="295" y="302" font-size="11" text-anchor="middle" fill="#64748b">getContextClassLoader()</text>
+
+<rect x="600" y="110" width="340" height="346" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="620" y="140" font-size="13" font-weight="700" fill="#0f172a">矛盾在哪</text>
+<text x="620" y="170" font-size="12" fill="#334155">DriverManager 在 rt.jar</text>
+<text x="620" y="194" font-size="12" fill="#334155">由 Bootstrap 加载</text>
+<text x="620" y="224" font-size="12" fill="#334155">驱动实现在应用 classpath</text>
+<text x="620" y="248" font-size="12" fill="#334155">只有 AppClassLoader 能加载</text>
+<text x="620" y="278" font-size="12" fill="#7f1d1d">Bootstrap 看不到应用 classpath</text>
+<text x="620" y="302" font-size="12" fill="#7f1d1d">→ 按双亲委派根本加载不到驱动</text>
+<text x="620" y="336" font-size="12" font-weight="700" fill="#16a34a">解法：TCCL 反向委托</text>
+<text x="620" y="366" font-size="12" fill="#334155">ServiceLoader.load(Driver.class)</text>
+<text x="620" y="390" font-size="12" fill="#64748b">// 默认取线程上下文类加载器</text>
+<text x="620" y="424" font-size="12" fill="#334155">父委托子：方向反了</text>
+
+<rect x="60" y="486" width="880" height="110" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="80" y="518" font-size="12" fill="#7f1d1d">⚠️ 真实事故：在容器（Tomcat / 线程池）里换掉 TCCL 后忘记还原 → 后续 ServiceLoader 加载不到预期实现，报错位置与根因相隔很远</text>
+<text x="80" y="546" font-size="12" fill="#334155">自定义加载器：继承 ClassLoader，重写 findClass 遵循委派，重写 loadClass 可以打破委派</text>
+<text x="80" y="574" font-size="12" fill="#334155">Web 服务器按应用隔离（WebAppClassLoader 优先自己加载），热部署同样依赖打破委派</text>
+</svg>

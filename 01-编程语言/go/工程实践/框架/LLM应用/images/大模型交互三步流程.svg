@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="430" fill="#ffffff"/>
+  <defs>
+    <marker id="arEI1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">与大模型交互的三个步骤（基本使用模型）</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">1.1~1.2 节为官方文档口径（未实测跑通调用）；Message / Generate / Stream 等名称取自 1.8 节 go doc 取证（v0.9.21）</text>
+
+  <rect x="40" y="84" width="290" height="236" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="185" y="112" font-size="14" fill="#0f172a" text-anchor="middle">① 创建模板 + 创建消息</text>
+  <rect x="60" y="128" width="250" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="185" y="150" font-size="12" fill="#334155" text-anchor="middle">系统消息模板：角色 / 风格</text>
+  <rect x="60" y="170" width="250" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="185" y="192" font-size="12" fill="#334155" text-anchor="middle">历史对话记录：上下文联想</text>
+  <rect x="60" y="212" width="250" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="185" y="234" font-size="12" fill="#334155" text-anchor="middle">用户消息：占位符运行时替换</text>
+  <text x="185" y="272" font-size="11" fill="#334155" text-anchor="middle">发送的不是单个问题，而是三部分</text>
+  <text x="185" y="292" font-size="11" fill="#334155" text-anchor="middle">落成 []*schema.Message（顺序即语义）</text>
+
+  <line x1="330" y1="200" x2="366" y2="200" stroke="#334155" stroke-width="1.6" marker-end="url(#arEI1)"/>
+
+  <rect x="368" y="84" width="252" height="236" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="494" y="112" font-size="14" fill="#0f172a" text-anchor="middle">② 创建大语言模型对象</text>
+  <text x="494" y="140" font-size="12" fill="#334155" text-anchor="middle">找到对应扩展，初始化 model 实例</text>
+  <text x="494" y="164" font-size="12" fill="#334155" text-anchor="middle">OpenAI / Ollama / DeepSeek</text>
+  <rect x="388" y="184" width="212" height="80" rx="6" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="494" y="208" font-size="12" fill="#0f172a" text-anchor="middle">BaseChatModel =</text>
+  <text x="494" y="230" font-size="12" fill="#0f172a" text-anchor="middle">BaseModel[*schema.Message]</text>
+  <text x="494" y="252" font-size="11" fill="#64748b" text-anchor="middle">输入统一是一段对话</text>
+  <text x="494" y="292" font-size="11" fill="#64748b" text-anchor="middle">ChatModel = BaseChatModel + BindTools</text>
+
+  <line x1="620" y1="200" x2="656" y2="200" stroke="#334155" stroke-width="1.6" marker-end="url(#arEI1)"/>
+
+  <rect x="658" y="84" width="302" height="236" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="809" y="112" font-size="14" fill="#0f172a" text-anchor="middle">③ 输出结果（两种方式）</text>
+  <rect x="678" y="130" width="262" height="84" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="809" y="154" font-size="13" fill="#0f172a" text-anchor="middle">一次性输出 · Generate</text>
+  <text x="809" y="178" font-size="11" fill="#334155" text-anchor="middle">阻塞直到模型返回完整响应</text>
+  <text x="809" y="200" font-size="11" fill="#334155" text-anchor="middle">前期耗时长</text>
+  <rect x="678" y="228" width="262" height="84" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="809" y="252" font-size="13" fill="#0f172a" text-anchor="middle">流式输出 · Stream ⭐</text>
+  <text x="809" y="276" font-size="11" fill="#334155" text-anchor="middle">StreamReader 逐块产出消息片段</text>
+  <text x="809" y="298" font-size="11" fill="#334155" text-anchor="middle">输出过程中就能开始阅读</text>
+
+  <text x="40" y="350" font-size="11" fill="#64748b">小结：系统消息模板管「扮演什么角色、用什么风格」，历史对话用于上下文联想，用户消息可用占位符、运行时替换</text>
+  <text x="40" y="372" font-size="11" fill="#64748b">工程启示：面向用户的生成类功能一定要做流式输出（SSE / WebSocket），否则用户会盯着空白屏幕等十几秒</text>
+  <text x="40" y="404" font-size="11" fill="#64748b">编排：大模型与组件提供的都是原子能力，智能体要多次对话、组合多个原子能力——这需要把节点串联/组合起来的编排（Chain / Graph）</text>
+</svg>

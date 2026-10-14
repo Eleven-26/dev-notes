@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="500" fill="#ffffff"/>
+  <defs>
+    <marker id="arKR2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arKR3" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Kratos 元数据链路：固定 token 怎么带过去、服务端怎么比</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">内部调用只确认「是不是自己人」：调用方携带相同 token，服务端取出与本地配置比对，一致则放行</text>
+
+  <rect x="50" y="78" width="200" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="150" y="98" font-size="13" fill="#0f172a" text-anchor="middle">调用方业务</text>
+  <text x="150" y="117" font-size="10" fill="#64748b" text-anchor="middle">聚合服务</text>
+  <rect x="300" y="78" width="200" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="400" y="98" font-size="13" fill="#0f172a" text-anchor="middle">metadata.Client()</text>
+  <text x="400" y="117" font-size="10" fill="#64748b" text-anchor="middle">客户端中间件</text>
+  <rect x="550" y="78" width="200" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="650" y="98" font-size="13" fill="#0f172a" text-anchor="middle">服务端中间件</text>
+  <text x="650" y="117" font-size="10" fill="#64748b" text-anchor="middle">metadata.Server() + tokenAuth</text>
+  <rect x="800" y="78" width="160" height="48" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="880" y="98" font-size="13" fill="#0f172a" text-anchor="middle">业务 Handler</text>
+  <text x="880" y="117" font-size="10" fill="#64748b" text-anchor="middle">被调服务</text>
+
+  <line x1="150" y1="126" x2="150" y2="432" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="400" y1="126" x2="400" y2="432" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="650" y1="126" x2="650" y2="432" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="880" y1="126" x2="880" y2="432" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5"/>
+
+  <line x1="150" y1="162" x2="396" y2="162" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR2)"/>
+  <text x="275" y="154" font-size="12" fill="#0f172a" text-anchor="middle">AppendToClientContext(ctx, k, v)</text>
+
+  <line x1="400" y1="202" x2="646" y2="202" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR2)"/>
+  <text x="523" y="194" font-size="12" fill="#0f172a" text-anchor="middle">HTTP 写进 header · gRPC 写进 metadata</text>
+
+  <text x="536" y="232" font-size="10" fill="#64748b">token key 用规范名前缀 x-md-global-token</text>
+  <text x="536" y="250" font-size="10" fill="#64748b">其余 header 提取不进 metadata</text>
+
+  <text x="536" y="282" font-size="10" fill="#334155">md, ok := metadata.FromServerContext(ctx)</text>
+  <text x="536" y="300" font-size="10" fill="#334155">md.Get(metadataTokenKey) 与 expect 比对</text>
+
+  <rect x="536" y="312" width="228" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="548" y="332" font-size="10" fill="#334155">白名单放行（不比对 token）：</text>
+  <text x="548" y="352" font-size="10" fill="#334155">/grpc.health.v1.Health/Watch</text>
+  <text x="548" y="372" font-size="10" fill="#334155">KindHTTP 且尾缀 /PayNotify</text>
+  <text x="548" y="392" font-size="10" fill="#334155">→ 渠道回调不会带我们的 token</text>
+
+  <line x1="650" y1="420" x2="876" y2="420" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR2)"/>
+  <text x="763" y="412" font-size="12" fill="#14532d" text-anchor="middle">比对一致 → handler(ctx, req) 放行</text>
+
+  <line x1="650" y1="456" x2="404" y2="456" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arKR3)"/>
+  <text x="527" y="448" font-size="12" fill="#7f1d1d" text-anchor="middle">无 metadata → MISSING_TOKEN · 比对不等 → INVALID_TOKEN</text>
+
+  <text x="40" y="488" font-size="11" fill="#64748b">小结：鉴权失败返回 errors.Unauthorized，HTTP 与 gRPC 都是 401 + reason——业务代码不区分 transport，只用 ctx 一套 API</text>
+</svg>

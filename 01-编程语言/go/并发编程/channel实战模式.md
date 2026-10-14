@@ -414,6 +414,8 @@ func (f *future) get() string { return <-f.ch }
 > ⭐ future 与"直接 `go func(){...}()` + WaitGroup"的差别：**WaitGroup 只能等、拿不到结果**；
 > future 把**结果也装在 channel 里**，于是"等"和"取"合并成了一件事 —— 这就是本文用法三（协程池）`results` channel 的单任务版本。
 
+![future 模式的调用时序：主流程依次 newFuture(C/B/A) 把三个任务并发起走（f.ch 缓冲 1），随后按 30ms → 60ms → 120ms 的顺序从各自的 f.ch 取值，总耗时 ≈ 最慢的 120ms 而不是 210ms](images/channel-future先启动后取值时序.svg)
+
 ### 延伸追问
 
 - **生成器返回 `<-chan T` 而不是 `chan T`，为什么？** → **单向类型约束**：对外只暴露"能收"，防止调用方误往里发（编译期就拦住）。

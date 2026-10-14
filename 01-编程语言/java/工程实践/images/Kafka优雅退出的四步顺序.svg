@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Kafka 客户端的优雅退出：四步顺序与漏掉的代价</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">流程图；顺序与理由出自第九节 —— 退出顺序 = 反初始化顺序：先停入口 → 再停消费者 → 最后关生产者</text>
+
+  <defs>
+    <marker id="arK4" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arK4r" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="86" width="200" height="96" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="106" font-size="10.5" font-weight="bold" fill="#0f172a">① consumer.wakeup()</text>
+  <text x="52" y="124" font-size="10" fill="#334155">打断阻塞中的 poll()</text>
+  <text x="52" y="140" font-size="10" fill="#334155">让循环退出</text>
+  <text x="52" y="160" font-size="10" fill="#7c2d12">否则关闭信号要等</text>
+  <text x="52" y="176" font-size="10" fill="#7c2d12">下一次 poll 返回才生效</text>
+
+  <rect x="280" y="86" width="200" height="96" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="292" y="106" font-size="10.5" font-weight="bold" fill="#0f172a">② consumer.close()</text>
+  <text x="292" y="124" font-size="10" fill="#334155">触发一次位点提交</text>
+  <text x="292" y="140" font-size="10" fill="#334155">并离开消费组</text>
+  <text x="292" y="160" font-size="10" fill="#7c2d12">在途未提交的那批</text>
+  <text x="292" y="176" font-size="10" fill="#7c2d12">重启后重复消费</text>
+
+  <rect x="520" y="86" width="200" height="96" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+  <text x="532" y="106" font-size="10.5" font-weight="bold" fill="#0f172a">③ producer.flush()</text>
+  <text x="532" y="124" font-size="10" fill="#334155">把累加器里未发出的</text>
+  <text x="532" y="140" font-size="10" fill="#334155">那一批发完</text>
+  <text x="532" y="160" font-size="10" fill="#7c2d12">它只保证已 send 的</text>
+  <text x="532" y="176" font-size="10" fill="#7c2d12">数据发出去，不是事务</text>
+
+  <rect x="760" y="86" width="200" height="96" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+  <text x="772" y="106" font-size="10.5" font-weight="bold" fill="#0f172a">④ producer.close()</text>
+  <text x="772" y="124" font-size="10" fill="#334155">关连接、停 I/O 线程</text>
+  <text x="772" y="140" font-size="10" fill="#334155">连接池随之释放</text>
+  <text x="772" y="160" font-size="10" fill="#7c2d12">漏掉就是 I/O 线程</text>
+  <text x="772" y="176" font-size="10" fill="#7c2d12">泄漏</text>
+
+  <line x1="240" y1="134" x2="276" y2="134" stroke="#334155" stroke-width="1.5" marker-end="url(#arK4)"/>
+  <line x1="480" y1="134" x2="516" y2="134" stroke="#334155" stroke-width="1.5" marker-end="url(#arK4)"/>
+  <line x1="720" y1="134" x2="756" y2="134" stroke="#334155" stroke-width="1.5" marker-end="url(#arK4)"/>
+
+  <rect x="40" y="220" width="440" height="90" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="54" y="242" font-size="10.5" font-weight="bold" fill="#7f1d1d">消费者不 close 会丢什么</text>
+  <text x="54" y="262" font-size="10" fill="#7f1d1d">位点不提交</text>
+  <text x="54" y="278" font-size="10" fill="#7f1d1d">组内成员不退出</text>
+  <text x="54" y="294" font-size="10" fill="#7f1d1d">重平衡要等到会话超时</text>
+
+  <rect x="520" y="220" width="440" height="90" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="534" y="242" font-size="10.5" font-weight="bold" fill="#7f1d1d">生产者不 flush / close 会丢什么</text>
+  <text x="534" y="262" font-size="10" fill="#7f1d1d">累加器里「已 send 未发出」的批直接丢</text>
+  <text x="534" y="278" font-size="10" fill="#7f1d1d">I/O 线程泄漏</text>
+  <text x="534" y="294" font-size="10" fill="#7f1d1d">下次重启前这段数据永远补不回来</text>
+
+  <line x1="140" y1="182" x2="140" y2="220" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arK4r)"/>
+  <line x1="860" y1="182" x2="860" y2="220" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arK4r)"/>
+
+  <rect x="40" y="340" width="920" height="88" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="364" font-size="11" fill="#0f172a">Spring 侧：容器关闭时会自动停监听器并 close 其生产者，业务代码不用手写这四步。</text>
+  <text x="56" y="388" font-size="11" fill="#7f1d1d">⚠️ 用 sh -c 起 JVM 时要 exec java（或 tini），否则 SIGTERM 打不到 JVM，等价于强杀 —— 这四步一步都不会跑（见接入Jaeger.md 2.3）。</text>
+  <text x="56" y="410" font-size="11" fill="#64748b">同一份道理在 Go 侧是 tp.Shutdown(ctx)，在 PHP 侧靠 exec 转发 SIGTERM；K8s 的宽限期要大于「排空 + flush」总时间。</text>
+
+  <text x="40" y="458" font-size="11" fill="#64748b">小结：顺序不能颠倒 —— 先 close 消费者才能把在途那批处理完并提交位点，最后才轮到生产者的 flush 与 close。</text>
+  <text x="40" y="484" font-size="11" fill="#64748b">wakeup() 是唯一能打断阻塞 poll() 的手段；close() 只作用于被调用的那一个 KafkaConsumer 实例。</text>
+</svg>

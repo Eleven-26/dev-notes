@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">agent 增强生效路径：premain → 插件扫描 → witness 判定 → 加载期织入</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Java 进程内的流程图（第一节的原序 + 第五节的目录规则）；OAP 侧不在本图范围内</text>
+
+  <defs>
+    <marker id="arAgent" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="90" width="176" height="100" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">① premain</text>
+  <text x="52" y="133" font-size="10.5" fill="#334155">在 main 之前调用</text>
+  <text x="52" y="152" font-size="10.5" fill="#334155">带 agentArgs 与</text>
+  <text x="52" y="171" font-size="10.5" fill="#334155">Instrumentation</text>
+  <text x="52" y="187" font-size="10.5" fill="#64748b">来自 -javaagent</text>
+
+  <rect x="230" y="90" width="176" height="100" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="242" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">② PluginBootstrap</text>
+  <text x="242" y="133" font-size="10.5" fill="#334155">扫描 plugins/ 与</text>
+  <text x="242" y="152" font-size="10.5" fill="#334155">bootstrap-plugins/</text>
+  <text x="242" y="171" font-size="10.5" fill="#334155">读各 jar 的</text>
+  <text x="242" y="187" font-size="10.5" fill="#334155">skywalking-plugin.def</text>
+
+  <rect x="420" y="90" width="176" height="100" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="432" y="112" font-size="11.5" font-weight="bold" fill="#7c2d12">③ PluginFinder</text>
+  <text x="432" y="133" font-size="10.5" fill="#7c2d12">插件定义 + 拦截器</text>
+  <text x="432" y="152" font-size="10.5" fill="#7c2d12">+ witness 类</text>
+  <text x="432" y="171" font-size="10.5" fill="#7c2d12">宿主真加载了那个类</text>
+  <text x="432" y="187" font-size="10.5" fill="#7c2d12">才生效</text>
+
+  <rect x="610" y="90" width="176" height="100" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="622" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">④ addTransformer</text>
+  <text x="622" y="133" font-size="10.5" fill="#334155">注册字节码转换器</text>
+  <text x="622" y="152" font-size="10.5" fill="#334155">此前已建到 OAP 的</text>
+  <text x="622" y="171" font-size="10.5" fill="#334155">gRPC 通道（11800）</text>
+  <text x="622" y="187" font-size="10.5" fill="#334155">并注册服务与实例</text>
+
+  <rect x="800" y="90" width="160" height="100" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="812" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">⑤ 加载期织入</text>
+  <text x="812" y="133" font-size="10.5" fill="#334155">transformer 匹配</text>
+  <text x="812" y="152" font-size="10.5" fill="#334155">目标类后由 ByteBuddy</text>
+  <text x="812" y="171" font-size="10.5" fill="#334155">在方法前 / 后 /</text>
+  <text x="812" y="187" font-size="10.5" fill="#334155">异常分支织入拦截器</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="216" y1="140" x2="230" y2="140" marker-end="url(#arAgent)"/>
+    <line x1="406" y1="140" x2="420" y2="140" marker-end="url(#arAgent)"/>
+    <line x1="596" y1="140" x2="610" y2="140" marker-end="url(#arAgent)"/>
+    <line x1="786" y1="140" x2="800" y2="140" marker-end="url(#arAgent)"/>
+  </g>
+
+  <rect x="40" y="230" width="290" height="86" rx="8" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="52" y="252" font-size="11.5" font-weight="bold" fill="#0f172a">⑥ 运行期：拦截器创建 span</text>
+  <text x="52" y="273" font-size="10.5" fill="#334155">Entry / Exit / Local span</text>
+  <text x="52" y="293" font-size="10.5" fill="#334155">写入轻量级队列</text>
+  <text x="52" y="311" font-size="10.5" fill="#334155">（无锁环形队列 DataCarrier）</text>
+
+  <rect x="370" y="230" width="290" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="382" y="252" font-size="11.5" font-weight="bold" fill="#0f172a">⑦ 消费线程批量上报</text>
+  <text x="382" y="273" font-size="10.5" fill="#334155">按批 gRPC 发给 OAP</text>
+  <text x="382" y="293" font-size="10.5" fill="#b45309">队列满走 IF_POSSIBLE：宁可丢</text>
+  <text x="382" y="311" font-size="10.5" fill="#b45309">也不阻塞业务线程（第十二节）</text>
+
+  <rect x="700" y="230" width="260" height="86" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="712" y="252" font-size="11.5" font-weight="bold" fill="#14532d">⑧ JVM 退出：ShutdownHook</text>
+  <text x="712" y="273" font-size="10.5" fill="#166534">先停消费者线程并 flush 队列</text>
+  <text x="712" y="293" font-size="10.5" fill="#166534">再关闭 gRPC 通道</text>
+  <text x="712" y="311" font-size="10.5" fill="#dc2626">kill -9 不触发 → 丢最后一批</text>
+
+  <line x1="880" y1="190" x2="185" y2="230" stroke="#334155" stroke-width="1.6" marker-end="url(#arAgent)"/>
+  <g stroke="#334155" stroke-width="1.6" stroke-dasharray="5 4">
+    <line x1="330" y1="273" x2="370" y2="273" marker-end="url(#arAgent)"/>
+    <line x1="660" y1="273" x2="700" y2="273" marker-end="url(#arAgent)"/>
+  </g>
+
+  <rect x="40" y="350" width="920" height="92" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="372" font-size="11.5" font-weight="bold" fill="#0f172a">三个直接推论 + 目录规则（第一节、第五节原话）</text>
+  <text x="52" y="392" font-size="10.5" fill="#334155">① 装 / 卸插件不用重新编译业务代码：拷进 plugins/ 即生效、删掉即失效，也可用 plugin.exclude_plugins 排除。</text>
+  <text x="52" y="412" font-size="10.5" fill="#334155">② 配置在运行期读，读的是启动那一刻的值（改环境变量要重启）；③ kill -9 会丢最后一批数据，因为 flush 依赖 ShutdownHook。</text>
+  <text x="52" y="432" font-size="10.5" fill="#334155">目录规则：bootstrap-plugins/ 先于 plugins/ 加载；optional-plugins/ 默认不加载，需手动拷到 plugins/（如 apm-spring-annotation-plugin）。</text>
+
+  <text x="40" y="472" font-size="11" fill="#64748b">小结：零改码的全部代价与全部行为都落在 ①②③④⑤ 这段启动期里——织入发生在类加载期，所以挂晚了之前已加载的类就漏了。</text>
+</svg>

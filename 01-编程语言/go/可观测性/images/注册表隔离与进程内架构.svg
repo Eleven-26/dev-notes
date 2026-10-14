@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="585" viewBox="0 0 1000 585" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="585" fill="#ffffff"/>
+  <defs>
+    <marker id="arPJ" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">注册表与 /metrics 端点的进程内架构</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Registry 是「一次渲染的边界」（第二节模型 + 第七节隔离）；字节与序列数为容器实测</text>
+
+  <rect x="40" y="84" width="450" height="380" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="265" y="108" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">默认注册表（库共用）</text>
+
+  <rect x="60" y="124" width="420" height="66" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="74" y="148" font-size="11" fill="#0f172a">GoCollector + ProcessCollector（39 族 / 39 序列）</text>
+  <text x="74" y="168" font-size="11" fill="#334155">一行埋点不写就有 39 个指标族</text>
+
+  <rect x="60" y="200" width="420" height="48" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="74" y="228" font-size="11" fill="#0f172a">promauto.NewXxx 固定进 DefaultRegisterer</text>
+
+  <line x1="270" y1="248" x2="270" y2="286" stroke="#334155" stroke-width="1.6" marker-end="url(#arPJ)"/>
+
+  <rect x="155" y="290" width="230" height="46" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="169" y="310" font-size="11" fill="#0f172a">promhttp.Handler()</text>
+  <text x="169" y="328" font-size="11" fill="#334155">被抓取时遍历注册表渲染文本</text>
+
+  <line x1="270" y1="336" x2="270" y2="354" stroke="#334155" stroke-width="1.6" marker-end="url(#arPJ)"/>
+  <rect x="170" y="360" width="200" height="40" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="270" y="385" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">/metrics</text>
+  <text x="60" y="432" font-size="11" fill="#b45309">全进程共享：库偷偷 promauto 就再也拆不开</text>
+
+  <rect x="510" y="84" width="450" height="380" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="735" y="108" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">独立注册表（推荐）</text>
+
+  <rect x="530" y="124" width="420" height="74" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="544" y="146" font-size="11" fill="#0f172a">业务指标 Counter / Gauge / Collector</text>
+  <text x="544" y="166" font-size="11" fill="#334155">queueDepth → shop_queue_depth 42</text>
+  <text x="544" y="186" font-size="11" fill="#64748b">高危 Collector 单独放这里，不进业务端点</text>
+
+  <rect x="530" y="208" width="420" height="50" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="544" y="226" font-size="11" fill="#0f172a">runtime 注册表：collectors.NewGoCollector()</text>
+  <text x="544" y="244" font-size="11" fill="#334155">MetricsScheduler、关 MemStats 风格 → 20 族 / 9403 字节</text>
+
+  <line x1="740" y1="258" x2="740" y2="286" stroke="#334155" stroke-width="1.6" marker-end="url(#arPJ)"/>
+
+  <rect x="625" y="290" width="230" height="46" rx="6" fill="#ffffff" stroke="#64748b"/>
+  <text x="639" y="310" font-size="11" fill="#0f172a">promhttp.HandlerFor(reg, opts)</text>
+  <text x="639" y="328" font-size="11" fill="#334155">一次渲染的边界 = 一个 Registry</text>
+
+  <line x1="740" y1="336" x2="740" y2="354" stroke="#334155" stroke-width="1.6" marker-end="url(#arPJ)"/>
+  <rect x="625" y="360" width="230" height="40" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="740" y="385" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">/metrics · /metrics/runtime</text>
+  <text x="544" y="424" font-size="11" fill="#0f172a">实测：业务端点 95 字节 / 1 序列 · runtime 端点 6752 字节 / 29 序列</text>
+  <text x="544" y="444" font-size="11" fill="#64748b">分开注册不重复计数；给 sidecar / 网关只暴露业务端点</text>
+
+  <rect x="40" y="480" width="920" height="56" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="54" y="506" font-size="12" fill="#0f172a">限制故障域（隔离的第三个动机）：高危 Collector 放独立 Registry、独立端点、独立 job → 它 500 时业务指标仍在（6.3）</text>
+
+  <text x="40" y="566" font-size="11" fill="#64748b">小结：一个 Registry = 一次渲染的边界；默认注册表一进来就占 39 族，promauto 只进默认表，要隔离就必须自己 NewRegistry</text>
+</svg>

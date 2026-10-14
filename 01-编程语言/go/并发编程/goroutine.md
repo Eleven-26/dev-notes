@@ -105,6 +105,8 @@ fixedStack  = 向上取整到 2 的幂                       // → 8192
 1. **栈扩容 = 拷贝**，所以"深递归 + 大量指针"很贵，这也是 Go 不建议深递归的原因；
 2. **栈不会自己缩回去**，要等 GC —— 一个曾经很深、之后不再深的 goroutine，会一直占着大栈直到下次 GC。
 
+![goroutine 栈的扩容与缩容流程图：函数入口 morestack 检查 → 堆上分配两倍新栈 → 整体拷贝 → 修正指向旧栈的指针 → 释放旧栈继续执行；超过 MaxStack = 1 GB 直接 fatal error: stack overflow（不能 recover）；缩容只在 GC 时做，用量不到 1/4 就 shrinkstack 减半](images/goroutine栈扩容与缩容流程.svg)
+
 ---
 
 ## 三、创建一个 goroutine 有多便宜？
@@ -205,6 +207,8 @@ type gobuf struct {
 **和线程切换比一比**：OS 切线程要保存整套寄存器（含浮点 / SIMD）、还可能换页表；
 goroutine 之间切换只换 `sp / pc / bp / lr / ctxt` 这几个字 —— 因为编译器已经保证"**函数调用的边界上**，
 **其他寄存器要么是死的、要么已经落在栈里**"。这正是 1.1 里"切换代价"那一行差两个数量级的来源。
+
+![g 结构体的数据结构形态：左侧按四类字段分组（① 栈 stack / stackguard0 / stackguard1、② 现场 m 与 sched gobuf、③ 状态 atomicstatus / waitreason / goid / schedlink / waitsince / _panic / _defer、④ 控制位 preempt 系列），右侧展开 gobuf 的 sp / pc / g / ctxt / lr / bp 六个字段](images/goroutine-g结构体四类字段与gobuf.svg)
 
 ### 4.2 状态机
 
@@ -338,6 +342,8 @@ Go 把 socket 设成非阻塞并交给 **`netpoller`**（Linux epoll / Windows I
 | **CGO 调用** | 进入 C 代码期间 M 被占住（运行时会 handoff 一条新 M 顶上，所以**线程数会涨**） |
 | **某些文件系统调用** | 不是所有平台/文件都能被 poller 接管，可能落进阻塞式 syscall |
 | **没有函数调用的死循环** | 1.14 起有异步抢占兜底，但抢占有延迟（实测见 [GMP调度.md](../运行时/GMP调度.md)） |
+
+![netpoller 的数据流转闭环：上半环 ① 读 socket（非阻塞）→ ② 读不 ready 就 gopark、M 不被拖住 → ③ _Gwaiting 躺在内存里等信号；下半环 ④ 数据到了 → ⑤ netpoller（Linux epoll / Windows IOCP）poll 到 fd → ⑥ goready 把 _Gwaiting 改成 _Grunnable、进 runnext 等被 M 取走；右下另列三个真占住 M 的例外](images/netpoll网络轮询器数据流转.svg)
 
 ---
 

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="700" fill="#ffffff"/>
+<defs>
+<marker id="arGD" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">GODEBUG 的生效点：编译期固化 → 启动时解析 → 运行期即时生效</text>
+<text x="40" y="58" font-size="13" fill="#64748b">同一个二进制里，启动时的 GODEBUG 环境变量覆盖 //go:debug 的默认值；os.Setenv 走 godebugNotify</text>
+
+<rect x="70" y="84" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="170" y="104" font-size="13" font-weight="bold" text-anchor="middle" fill="#1d4ed8">main 包源码</text>
+<text x="170" y="120" font-size="10" text-anchor="middle" fill="#334155">写法所在</text>
+<rect x="300" y="84" width="200" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="400" y="104" font-size="13" font-weight="bold" text-anchor="middle" fill="#15803d">go build 编译期</text>
+<text x="400" y="120" font-size="10" text-anchor="middle" fill="#334155">白名单校验</text>
+<rect x="530" y="84" width="200" height="44" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="630" y="104" font-size="13" font-weight="bold" text-anchor="middle" fill="#b45309">进程启动</text>
+<text x="630" y="120" font-size="10" text-anchor="middle" fill="#334155">读环境变量</text>
+<rect x="760" y="84" width="200" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="860" y="104" font-size="13" font-weight="bold" text-anchor="middle" fill="#334155">runtime 生效点</text>
+<text x="860" y="120" font-size="10" text-anchor="middle" fill="#64748b">采样与行为开关</text>
+
+<line x1="170" y1="128" x2="170" y2="560" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="400" y1="128" x2="400" y2="560" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="630" y1="128" x2="630" y2="560" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 5"/>
+<line x1="860" y1="128" x2="860" y2="560" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 5"/>
+
+<line x1="170" y1="152" x2="400" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#arGD)"/>
+<text x="285" y="146" font-size="11" text-anchor="middle" fill="#0f172a">//go:debug http2server=0</text>
+<text x="285" y="168" font-size="10" text-anchor="middle" fill="#64748b">写法必须在 package 子句之前</text>
+
+<rect x="300" y="186" width="200" height="58" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="400" y="204" font-size="10" text-anchor="middle" fill="#7f1d1d">白名单（容器内 55 条）里没有</text>
+<text x="400" y="222" font-size="10" text-anchor="middle" fill="#7f1d1d">schedtrace / gctrace 这类诊断键</text>
+<text x="400" y="240" font-size="10" text-anchor="middle" fill="#dc2626">写进去 go build 直接报错</text>
+
+<line x1="400" y1="272" x2="630" y2="272" stroke="#334155" stroke-width="1.5" marker-end="url(#arGD)"/>
+<text x="515" y="266" font-size="11" text-anchor="middle" fill="#0f172a">烧进 DefaultGODEBUG=http2server=0</text>
+<text x="515" y="292" font-size="10" text-anchor="middle" fill="#64748b">查法：go version -m srv</text>
+
+<line x1="630" y1="322" x2="860" y2="322" stroke="#334155" stroke-width="1.5" marker-end="url(#arGD)"/>
+<text x="745" y="316" font-size="11" text-anchor="middle" fill="#0f172a">启动时解析 GODEBUG 环境变量</text>
+<text x="745" y="342" font-size="10" text-anchor="middle" fill="#64748b">优先级：环境变量 高于 //go:debug 默认值</text>
+
+<rect x="760" y="360" width="200" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="860" y="378" font-size="10" text-anchor="middle" fill="#334155">未知键、错误值、help 都不报错</text>
+<text x="860" y="396" font-size="10" text-anchor="middle" fill="#334155">三次实测都只打一行 rc=0</text>
+<text x="860" y="414" font-size="10" text-anchor="middle" fill="#dc2626">schedtrace=abc 一条 SCHED 不打</text>
+
+<line x1="630" y1="446" x2="860" y2="446" stroke="#334155" stroke-width="1.5" marker-end="url(#arGD)"/>
+<text x="745" y="440" font-size="11" text-anchor="middle" fill="#0f172a">os.Setenv("GODEBUG", ...)</text>
+
+<rect x="760" y="462" width="200" height="58" rx="6" fill="#fef3c7" stroke="#b45309"/>
+<text x="860" y="480" font-size="10" text-anchor="middle" fill="#92400e">syscall_runtimeSetenv 特判 key</text>
+<text x="860" y="498" font-size="10" text-anchor="middle" fill="#92400e">命中 GODEBUG 调 godebugNotify</text>
+<text x="860" y="516" font-size="10" text-anchor="middle" fill="#b45309">标 Immutable 的键（fips140）改不了</text>
+
+<rect x="40" y="568" width="920" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="592" font-size="13" font-weight="bold" fill="#0f172a">三种落地写法与各自的失败模式</text>
+<text x="60" y="614" font-size="12" fill="#334155">启动环境变量：写错键名静默忽略；//go:debug 只认白名单、且必须写在 package 之前，放后面等于没写</text>
+<text x="60" y="636" font-size="12" fill="#334155">运行期 os.Setenv：多数键即时生效，标 Immutable 的键除外；同一个键写两次以后一个为准，键名区分大小写</text>
+<text x="60" y="662" font-size="12" fill="#64748b">生效后的实测读数：schedtrace=200 打出 199 / 400 / 603 / 1217 / 2231 ms，采样由 sysmon 驱动，有 ±20 ms 抖动</text>
+</svg>

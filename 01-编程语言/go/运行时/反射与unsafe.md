@@ -551,6 +551,8 @@ func walk(v reflect.Value, st *stats, prefix string) {
 4. **`walk` 用 `Value` 而不是 `Type` 起步**，是因为下钻之后还要写值（`Field(i)` 继承父级的 `flagAddr`）——
    只要入口是 `ValueOf(&x).Elem()`，整条路径上的导出字段全都 `CanSet`（第五节 uselab 实测 ⑤ 印证）。
 
+![tag 递归遍历的主干与两处分支：未导出走 continue、Kind 为 struct 才 walk 下钻（绿色回边是递归本身）；入口用 ValueOf(&Conf{}).Elem()，实测统计扫过字段=8、匿名嵌入=2、cfg 命中=5、逗号分隔项=9](images/tag递归遍历流程.svg)
+
 `Conf.Tags` 那行还留了一个真坑：tag 值 `tags,split=,` 里的**分隔符本身是逗号**，
 按逗号拆选项的解析器会把它读成 `["tags","split=",""]`——同一个字符既当"选项分隔符"又当"值"，
 是自己设计 tag 语法时最容易踩的自引用坑。uselab 里换成 `split=;` 才正常工作（实测 ①）。
@@ -965,6 +967,8 @@ sp[0] = 999
 
 **指针相同就是视图，指针不同就是复制**——这一条比任何文档措辞都可靠，
 `stringToBytes2` 与 `bytesToString` 都是视图，`[]byte(s)` / `string(b)` 都是复制。
+
+![unsafe 内存视图的形态：b 与 unsafe.String 出来的 s 头部指向同一个 P（视图、零拷贝），string(b) 得到的 cp 指向新地址 Q（复制）；下方是容器里跑出来的四条断言与三条红线](images/unsafe内存视图的指针判定.svg)
 
 ### 6.4 红线与代价
 

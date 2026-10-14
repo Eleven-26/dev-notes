@@ -233,6 +233,8 @@ Breakpoint 1 set at 0x4bcc0e for main.main() ./main.go:13
    at ./main.go:13
 ```
 
+![headless 远程调试时序：VSCode 与容器内 dlv 的交互](images/调试headless远程调试时序图.svg)
+
 ⚠️ 两条说明：
 
 1. **断点地址（这里是 `0x4bcc0e`）在同一份二进制下是固定的**，换一份构建就会变 ——

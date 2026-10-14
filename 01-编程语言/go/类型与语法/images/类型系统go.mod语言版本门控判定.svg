@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="580" fill="#ffffff"/>
+<defs>
+<marker id="arLV" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一个新语法能不能用：改 go.mod 的 go 行就能实测出来</text>
+<text x="40" y="58" font-size="13" fill="#64748b">同一条工具链（容器 golang:1.26-alpine 的 go1.26.8，宿主机 1.26.5 行为一致），只改 go 那一行</text>
+
+<rect x="60" y="88" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="160" y="108" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">go.mod 的 go 行</text>
+<text x="160" y="126" font-size="10" text-anchor="middle" fill="#1e3a5f">1.17 / 1.18 / 1.20 / 1.21 / 1.22</text>
+
+<rect x="300" y="88" width="180" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="390" y="108" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">设置 -lang</text>
+<text x="390" y="126" font-size="10" text-anchor="middle" fill="#64748b">Go 1.21 起工具链按 go 行走</text>
+
+<rect x="540" y="88" width="190" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="635" y="108" font-size="12" font-weight="bold" text-anchor="middle" fill="#854d0e">超出语言版本</text>
+<text x="635" y="126" font-size="10" text-anchor="middle" fill="#854d0e">拦下来，看是哪个工具拦</text>
+
+<line x1="260" y1="110" x2="296" y2="110" stroke="#334155" stroke-width="1.5" marker-end="url(#arLV)"/>
+<line x1="480" y1="110" x2="536" y2="110" stroke="#334155" stroke-width="1.5" marker-end="url(#arLV)"/>
+<line x1="635" y1="132" x2="635" y2="152" stroke="#334155" stroke-width="1.5"/>
+<line x1="635" y1="152" x2="260" y2="152" stroke="#334155" stroke-width="1.5"/>
+<line x1="260" y1="152" x2="260" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#arLV)"/>
+<line x1="635" y1="152" x2="740" y2="152" stroke="#334155" stroke-width="1.5"/>
+<line x1="740" y1="152" x2="740" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#arLV)"/>
+
+<rect x="40" y="170" width="440" height="28" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="260" y="189" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">编译器拦：go build / go run 当场报错</text>
+
+<rect x="520" y="170" width="440" height="28" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="740" y="189" font-size="12" font-weight="bold" text-anchor="middle" fill="#7c2d12">go/types 拦：编译器放行，vet / gopls 才报</text>
+
+<rect x="40" y="198" width="440" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="222" font-size="11" fill="#0f172a">go 1.17 下写一个普通泛型函数，一次给三行：</text>
+<text x="60" y="242" font-size="10" fill="#7f1d1d">type parameter requires go1.18 or later</text>
+<text x="60" y="258" font-size="10" fill="#7f1d1d">(-lang was set to go1.17; check go.mod)</text>
+<text x="60" y="278" font-size="11" fill="#334155">predeclared any、implicit function instantiation 同样报 go1.18</text>
+<text x="60" y="302" font-size="11" fill="#14532d">改成 go 1.18：同一份代码跑通，first([]int{9, 8}) 实测 9</text>
+<text x="60" y="326" font-size="11" fill="#334155">go 1.20：built-in min、built-in max、clear 报 requires go1.21</text>
+<text x="60" y="350" font-size="11" fill="#14532d">go 1.21：min(3,7)= 3、max(3,7)= 7、clear(m) len= 0 nil? false</text>
+<text x="60" y="374" font-size="11" fill="#334155">go 1.22：cannot range over nums(3) 报 requires go1.23</text>
+
+<rect x="520" y="198" width="440" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="540" y="222" font-size="11" fill="#0f172a">for i := range 5（range over int，1.22+）</text>
+<text x="540" y="242" font-size="11" fill="#334155">这一条门槛只设在 go/types 里，不在编译器里</text>
+<text x="540" y="266" font-size="11" fill="#0f172a">同一份累加代码在 go.mod: go 1.21 下两条命令：</text>
+<text x="540" y="290" font-size="10" fill="#14532d">go run main.go → range over int sum = 10（照常跑，不报错）</text>
+<text x="540" y="314" font-size="10" fill="#7f1d1d">go vet ./... → cannot range over 5 (untyped int constant):</text>
+<text x="540" y="330" font-size="10" fill="#7f1d1d">requires go1.22 or later</text>
+<text x="540" y="356" font-size="11" fill="#334155">把 go 行改成 1.22：两条都过，go run 仍是 10，</text>
+<text x="540" y="376" font-size="11" fill="#334155">go vet 无输出</text>
+
+<rect x="40" y="414" width="920" height="116" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="438" font-size="12" font-weight="bold" fill="#0f172a">另一类是行为变更而不是新增语法：for 循环变量的语义</text>
+<text x="60" y="462" font-size="11" fill="#334155">go.mod: go 1.21 → 3 3 3　　go.mod: go 1.22 → 0 1 2（三个闭包读同一个 / 每轮新建一个）</text>
+<text x="60" y="486" font-size="11" fill="#b45309">靠「循环结束后读循环变量拿到末值」的旧代码会静默改变结果；go 行留在 1.21 及以下可整体退回旧语义</text>
+<text x="60" y="510" font-size="11" font-weight="bold" fill="#7c2d12">结论：别只试 go build / go run 就断定旧版本也能用——判版本要用 go vet 复验一遍</text>
+
+<text x="40" y="556" font-size="11" fill="#64748b">小结：左右两条分支的区别就是「谁来拦」，上面每条读数都出自第九节同一工具链、只改 go 行的实测</text>
+</svg>

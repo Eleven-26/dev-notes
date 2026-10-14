@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="500" fill="#ffffff"/>
+  <defs>
+    <marker id="arPK" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arPB" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arPG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一次性 job 经 Pushgateway 的数据流转</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">8.1 容器实跑（pushgateway 1.11.3，宿主 19091）；活不到被抓才推送，其余场景一律暴露端点让抓取端判定死活</text>
+
+  <rect x="40" y="90" width="300" height="180" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="54" y="114" font-size="13" font-weight="bold" fill="#0f172a">一次性 job（CronJob / 批处理）</text>
+  <text x="54" y="140" font-size="11" fill="#334155">跑几十秒就退出</text>
+  <text x="54" y="160" font-size="11" fill="#334155">来不及被 scrape_interval 抓到</text>
+  <text x="54" y="180" font-size="11" fill="#334155">Collector：rows + secs</text>
+
+  <text x="382" y="132" font-size="11" text-anchor="middle" fill="#0f172a">Push() PUT 覆盖</text>
+  <line x1="340" y1="150" x2="425" y2="150" stroke="#2563eb" stroke-width="1.8" marker-end="url(#arPB)"/>
+  <text x="382" y="197" font-size="11" text-anchor="middle" fill="#0f172a">Add() POST 累加</text>
+  <line x1="340" y1="215" x2="425" y2="215" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arPG)"/>
+
+  <rect x="430" y="130" width="210" height="120" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="535" y="152" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">Pushgateway 1.11.3</text>
+  <text x="535" y="174" font-size="11" text-anchor="middle" fill="#334155">映射宿主 19091 端口</text>
+  <text x="535" y="194" font-size="11" text-anchor="middle" fill="#334155">只存内存：persistence.file 为空</text>
+  <text x="535" y="214" font-size="11" text-anchor="middle" fill="#334155">Add 累加：37.5 → 75</text>
+  <text x="535" y="234" font-size="11" text-anchor="middle" fill="#64748b">它自己重启即丢</text>
+
+  <text x="430" y="272" font-size="11" fill="#64748b">实测：Push 22~37ms · Add 3~7ms</text>
+
+  <line x1="642" y1="190" x2="704" y2="190" stroke="#334155" stroke-width="1.6"/>
+  <line x1="704" y1="190" x2="704" y2="270" stroke="#334155" stroke-width="1.6"/>
+  <line x1="704" y1="270" x2="716" y2="270" stroke="#334155" stroke-width="1.6" marker-end="url(#arPK)"/>
+  <text x="648" y="180" font-size="11" fill="#334155">被 Prometheus 抓取</text>
+
+  <rect x="720" y="210" width="200" height="120" rx="8" fill="#ffffff" stroke="#64748b"/>
+  <text x="820" y="232" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">Prometheus</text>
+  <text x="820" y="254" font-size="11" text-anchor="middle" fill="#334155">抓 Pushgateway 端点</text>
+  <text x="820" y="274" font-size="11" text-anchor="middle" fill="#334155">scrape_interval 2s</text>
+  <text x="820" y="294" font-size="11" text-anchor="middle" fill="#334155">配置热加载：不重启就出现</text>
+
+  <line x1="820" y1="330" x2="820" y2="366" stroke="#334155" stroke-width="1.6" marker-end="url(#arPK)"/>
+  <text x="834" y="352" font-size="11" fill="#b45309">scrape 时改写标签</text>
+
+  <rect x="720" y="370" width="200" height="70" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="820" y="394" font-size="11" font-weight="bold" text-anchor="middle" fill="#0f172a">TSDB</text>
+  <text x="820" y="414" font-size="11" text-anchor="middle" fill="#334155">exported_job</text>
+  <text x="820" y="432" font-size="11" text-anchor="middle" fill="#334155">exported_instance</text>
+
+  <rect x="40" y="330" width="620" height="110" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="54" y="354" font-size="12" font-weight="bold" fill="#0f172a">⚠️ 常驻服务别用 Pushgateway——死活判定失效</text>
+  <text x="54" y="378" font-size="11" fill="#334155">推送容器跑完即退出，shop_nightly_report_rows_total 18432 仍留在 /metrics 被继续抓</text>
+  <text x="54" y="398" font-size="11" fill="#334155">up 对 pushgateway 恒为 1：进程死了，数值仍被抓成有效值</text>
+  <text x="54" y="418" font-size="11" fill="#334155">job 是抓取任务名 pushgateway，instance 是 Pushgateway 地址</text>
+
+  <text x="40" y="478" font-size="11" fill="#64748b">小结：先 PUT Push 覆盖、POST Add 累加；查询与告警要按 exported_job / exported_instance 重写</text>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="590" viewBox="0 0 1000 590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="590" fill="#ffffff"/>
+  <defs>
+    <marker id="arXJ1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arXJ2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">xxl-job 全链路时序：注册 → 派单 → 回调</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">实测坐标：xxl-job-admin 3.4.2（Tomcat 8080）· 执行器 xxl-job-executor-go v1.2.0 · MySQL 8.0 库 xxl_job</text>
+
+  <rect x="50" y="84" width="260" height="50" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="180" y="105" font-size="13" fill="#0f172a" text-anchor="middle">Go 执行器实例</text>
+  <text x="180" y="124" font-size="10" fill="#64748b" text-anchor="middle">172.29.0.4:9999</text>
+  <rect x="370" y="84" width="300" height="50" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="520" y="105" font-size="13" fill="#0f172a" text-anchor="middle">调度中心 xxl-job-admin</text>
+  <text x="520" y="124" font-size="10" fill="#64748b" text-anchor="middle">监听 8080</text>
+  <rect x="730" y="84" width="240" height="50" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="850" y="105" font-size="13" fill="#0f172a" text-anchor="middle">MySQL</text>
+  <text x="850" y="124" font-size="10" fill="#64748b" text-anchor="middle">库 xxl_job</text>
+
+  <line x1="180" y1="134" x2="180" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="520" y1="134" x2="520" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="850" y1="134" x2="850" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5"/>
+
+  <line x1="180" y1="172" x2="516" y2="172" stroke="#334155" stroke-width="1.6" marker-end="url(#arXJ1)"/>
+  <text x="348" y="164" font-size="12" fill="#0f172a" text-anchor="middle">① POST /api/registry（带 token）</text>
+
+  <line x1="520" y1="212" x2="846" y2="212" stroke="#334155" stroke-width="1.6" marker-end="url(#arXJ1)"/>
+  <text x="683" y="204" font-size="12" fill="#0f172a" text-anchor="middle">② 写 xxl_job_registry</text>
+  <text x="683" y="228" font-size="10" fill="#64748b" text-anchor="middle">id=1 · http://172.29.0.4:9999</text>
+
+  <line x1="520" y1="262" x2="846" y2="262" stroke="#334155" stroke-width="1.6" marker-end="url(#arXJ1)"/>
+  <text x="683" y="254" font-size="12" fill="#0f172a" text-anchor="middle">③ 刷新 address_list</text>
+  <text x="683" y="278" font-size="10" fill="#64748b" text-anchor="middle">172.29.0.4:9999,172.29.0.5:9999</text>
+
+  <line x1="180" y1="316" x2="516" y2="316" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arXJ2)"/>
+  <text x="348" y="308" font-size="12" fill="#64748b" text-anchor="middle">每 20s 心跳续约（重复 ①）</text>
+
+  <line x1="520" y1="360" x2="184" y2="360" stroke="#334155" stroke-width="1.6" marker-end="url(#arXJ1)"/>
+  <text x="352" y="352" font-size="12" fill="#0f172a" text-anchor="middle">④ 触发调度：反向打 :9999</text>
+  <text x="352" y="374" font-size="10" fill="#64748b" text-anchor="middle">RunReq：job=5 · SERIAL_EXECUTION</text>
+
+  <rect x="60" y="392" width="240" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="180" y="413" font-size="11" fill="#334155" text-anchor="middle">执行任务体 · cost=601 ms</text>
+
+  <line x1="180" y1="448" x2="516" y2="448" stroke="#334155" stroke-width="1.6" marker-end="url(#arXJ1)"/>
+  <text x="348" y="440" font-size="12" fill="#0f172a" text-anchor="middle">⑤ 回调：code=200</text>
+  <text x="348" y="462" font-size="10" fill="#64748b" text-anchor="middle">handleMsg = demo done</text>
+
+  <line x1="520" y1="492" x2="846" y2="492" stroke="#334155" stroke-width="1.6" marker-end="url(#arXJ1)"/>
+  <text x="683" y="484" font-size="12" fill="#0f172a" text-anchor="middle">⑥ 写 xxl_job_log</text>
+  <text x="683" y="508" font-size="10" fill="#64748b" text-anchor="middle">trigger_code=200 · handle_code=200</text>
+
+  <text x="40" y="540" font-size="11" fill="#64748b">小结：触发方向是中心 → 执行器 :9999——只放通出方向会出现「注册成功、但任务永远不执行」，且执行器侧完全无日志</text>
+  <text x="40" y="560" font-size="11" fill="#64748b">小结：trigger_code = 中心有没有把请求打到执行器；handle_code = 任务体跑得成不成功；不摘除注册时地址滞留至多 90s（DEAD_TIMEOUT = BEAT_TIMEOUT × 3）</text>
+</svg>

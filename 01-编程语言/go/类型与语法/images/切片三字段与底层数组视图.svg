@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="470" fill="#ffffff"/>
+<defs>
+<marker id="arSH" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">切片头的三个字段如何框住底层数组的一段</text>
+<text x="40" y="58" font-size="13" fill="#64748b">正文 1.1 的例子：底层数组索引 0~9，切片从索引 2 开始、引用 6 个元素，于是 len=6、cap=8</text>
+
+<rect x="40" y="92" width="250" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="165" y="119" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">Data — 起始地址</text>
+<rect x="300" y="92" width="250" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="425" y="119" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">Len — 能看多长</text>
+<rect x="560" y="92" width="250" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="685" y="119" font-size="13" font-weight="bold" text-anchor="middle" fill="#854d0e">Cap — 最多能长到哪</text>
+
+<text x="40" y="160" font-size="11" fill="#64748b">SliceHeader 的三个字段（2.1）</text>
+
+<line x1="165" y1="136" x2="531" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arSH)"/>
+<text x="185" y="170" font-size="11" fill="#1e3a8a">array → 指向索引 2 的位置</text>
+
+<rect x="400" y="200" width="54" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="427" y="228" font-size="13" text-anchor="middle" fill="#94a3b8">0</text>
+<rect x="454" y="200" width="54" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="481" y="228" font-size="13" text-anchor="middle" fill="#94a3b8">1</text>
+<rect x="508" y="200" width="54" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="535" y="228" font-size="13" text-anchor="middle" fill="#14532d">2</text>
+<rect x="562" y="200" width="54" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="589" y="228" font-size="13" text-anchor="middle" fill="#14532d">3</text>
+<rect x="616" y="200" width="54" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="643" y="228" font-size="13" text-anchor="middle" fill="#14532d">4</text>
+<rect x="670" y="200" width="54" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="697" y="228" font-size="13" text-anchor="middle" fill="#14532d">5</text>
+<rect x="724" y="200" width="54" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="751" y="228" font-size="13" text-anchor="middle" fill="#14532d">6</text>
+<rect x="778" y="200" width="54" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="805" y="228" font-size="13" text-anchor="middle" fill="#14532d">7</text>
+<rect x="832" y="200" width="54" height="44" rx="6" fill="#fef3c7" stroke="#b45309"/>
+<text x="859" y="228" font-size="13" text-anchor="middle" fill="#854d0e">8</text>
+<rect x="886" y="200" width="54" height="44" rx="6" fill="#fef3c7" stroke="#b45309"/>
+<text x="913" y="228" font-size="13" text-anchor="middle" fill="#854d0e">9</text>
+
+<text x="40" y="228" font-size="12" fill="#0f172a">底层数组</text>
+<text x="944" y="176" font-size="11" fill="#64748b" text-anchor="end">格内数字 = 数组下标</text>
+
+<line x1="508" y1="256" x2="832" y2="256" stroke="#16a34a" stroke-width="1.5"/>
+<line x1="508" y1="250" x2="508" y2="262" stroke="#16a34a" stroke-width="1.5"/>
+<line x1="832" y1="250" x2="832" y2="262" stroke="#16a34a" stroke-width="1.5"/>
+<text x="508" y="278" font-size="12" fill="#14532d">len = 6：引用索引 2~7 这 6 个元素</text>
+
+<line x1="508" y1="300" x2="940" y2="300" stroke="#b45309" stroke-width="1.5"/>
+<line x1="508" y1="294" x2="508" y2="306" stroke="#b45309" stroke-width="1.5"/>
+<line x1="940" y1="294" x2="940" y2="306" stroke="#b45309" stroke-width="1.5"/>
+<text x="508" y="322" font-size="12" fill="#854d0e">cap = 8：从索引 2 到 9 共 8 个位置，与截到哪里无关</text>
+
+<rect x="40" y="344" width="920" height="86" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="368" font-size="12" fill="#0f172a">切片本身不存数据，它只是「一段底层数组的视图」——所谓底层数组，就是从 Data 开始的那一段子数组（2.1）</text>
+<text x="60" y="392" font-size="12" fill="#0f172a">记法：s[i:j] 的 len = j - i、cap = cap(s) - i（3.1）；三参数 s[i:j:k] 能把 cap 卡死，强制下一次 append 必然扩容（2.4）</text>
+<text x="60" y="414" font-size="12" fill="#0f172a">传参只拷这个头：改元素能影响外面，改 Len / Cap / Data 只在副本上（2.2）</text>
+
+<text x="40" y="454" font-size="11" fill="#64748b">小结：黄色两格是「物理上能写到、逻辑上读不到」的区间——只能靠 append 或 reslice 才拿得到。</text>
+</svg>

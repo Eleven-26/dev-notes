@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="726" viewBox="0 0 1000 726" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="726" fill="#ffffff"/>
+  <defs>
+    <marker id="arB" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">net/http 自动重试判定链</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">shouldRetryRequest 只在「安全」时替调用方重试；每一路 early return 决定是否重试，自上而下依次判定</text>
+
+  <!-- S -->
+  <rect x="140" y="78" width="360" height="40" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="320" y="102" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">复用连接上出错，是否重试？</text>
+  <line x1="320" y1="118" x2="320" y2="140" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <!-- D1 -->
+  <rect x="140" y="140" width="360" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="162" text-anchor="middle" font-size="12" fill="#1e3a8a">http2isNoCachedConnError(err)？</text>
+  <text x="320" y="182" text-anchor="middle" font-size="11" fill="#64748b">多条并发挤到同一条连接</text>
+  <rect x="620" y="140" width="320" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="780" y="162" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">是 → 重试</text>
+  <text x="780" y="182" text-anchor="middle" font-size="11" fill="#334155">重拨一条新连接</text>
+  <line x1="500" y1="166" x2="620" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#arB)"/>
+  <line x1="320" y1="192" x2="320" y2="214" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <!-- D2 -->
+  <rect x="140" y="214" width="360" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="246" text-anchor="middle" font-size="12" fill="#1e3a8a">err == errMissingHost？</text>
+  <rect x="620" y="214" width="320" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="780" y="246" text-anchor="middle" font-size="12" font-weight="700" fill="#7f1d1d">是 → 不重试（用户错误）</text>
+  <line x1="500" y1="240" x2="620" y2="240" stroke="#334155" stroke-width="1.5" marker-end="url(#arB)"/>
+  <line x1="320" y1="266" x2="320" y2="288" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <!-- D3 -->
+  <rect x="140" y="288" width="360" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="320" text-anchor="middle" font-size="12" fill="#1e3a8a">!pc.isReused()：这是新连接？</text>
+  <rect x="620" y="288" width="320" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="780" y="310" text-anchor="middle" font-size="12" font-weight="700" fill="#7f1d1d">是 → 一律不重试</text>
+  <text x="780" y="330" text-anchor="middle" font-size="11" fill="#334155">实测：新连接被 RST 不重试</text>
+  <line x1="500" y1="314" x2="620" y2="314" stroke="#334155" stroke-width="1.5" marker-end="url(#arB)"/>
+  <line x1="320" y1="340" x2="320" y2="362" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <!-- D4 -->
+  <rect x="140" y="362" width="360" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="394" text-anchor="middle" font-size="12" fill="#1e3a8a">nothingWrittenError？（还没写出去）</text>
+  <rect x="620" y="362" width="320" height="56" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="780" y="384" text-anchor="middle" font-size="11.5" fill="#854d0e">是 → outgoingLength()==0</text>
+  <text x="780" y="404" text-anchor="middle" font-size="11.5" fill="#854d0e">或 GetBody != nil 才重试</text>
+  <line x1="500" y1="390" x2="620" y2="390" stroke="#334155" stroke-width="1.5" marker-end="url(#arB)"/>
+  <line x1="320" y1="418" x2="320" y2="440" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <!-- D5 -->
+  <rect x="140" y="440" width="360" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="472" text-anchor="middle" font-size="12" fill="#1e3a8a">!req.isReplayable()？</text>
+  <rect x="620" y="440" width="320" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="780" y="472" text-anchor="middle" font-size="12" font-weight="700" fill="#7f1d1d">是 → 不重试（不可回放）</text>
+  <line x1="500" y1="466" x2="620" y2="466" stroke="#334155" stroke-width="1.5" marker-end="url(#arB)"/>
+  <line x1="320" y1="492" x2="320" y2="514" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <!-- D6 -->
+  <rect x="140" y="514" width="360" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="536" text-anchor="middle" font-size="11.5" fill="#1e3a8a">transportReadFromServerError</text>
+  <text x="320" y="556" text-anchor="middle" font-size="11.5" fill="#1e3a8a">或 errServerClosedIdle？</text>
+  <rect x="620" y="514" width="320" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="780" y="536" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">是 → 重试</text>
+  <text x="780" y="556" text-anchor="middle" font-size="11" fill="#334155">首个响应字节前 / 竞态关空闲</text>
+  <line x1="500" y1="544" x2="620" y2="544" stroke="#334155" stroke-width="1.5" marker-end="url(#arB)"/>
+  <line x1="320" y1="574" x2="320" y2="596" stroke="#334155" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <!-- End -->
+  <rect x="140" y="596" width="360" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="320" y="622" text-anchor="middle" font-size="12" fill="#334155">否 → return false（conservatively）</text>
+
+  <!-- note -->
+  <rect x="540" y="596" width="400" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="740" y="614" text-anchor="middle" font-size="11" fill="#334155">isReplayable：GET / HEAD / OPTIONS / TRACE，</text>
+  <text x="740" y="632" text-anchor="middle" font-size="11" fill="#334155">或带 Idempotency-Key 头，或 Body 可回放</text>
+
+  <text x="40" y="672" font-size="11" fill="#64748b">实测：GET×4 → 服务端 handler 跑 7 次（静默重试 3 次，客户端 err=nil）；带 Idempotency-Key 的 POST×2 → 3 次；不可回放的 POST → 原样抛 EOF。</text>
+  <text x="40" y="702" font-size="11" fill="#64748b">小结：重试条件全在「连接是不是新的、请求是不是可回放、错误是不是发生在写出去之前」三件事上，5xx 不在标准库重试范围内。</text>
+</svg>

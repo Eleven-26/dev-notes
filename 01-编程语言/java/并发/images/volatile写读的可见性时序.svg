@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="548" viewBox="0 0 1000 548" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="548" fill="#ffffff"/>
+  <defs>
+    <marker id="arVS" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">volatile 建立可见性的时序（happens-before 的 volatile 规则）</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">写线程置标志 → 其他核缓存行失效 → 读线程跳出死循环；HB 规则：对 volatile 的写 HB 后续对它的读</text>
+
+  <rect x="70" y="88" width="160" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="150" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">写线程 A</text>
+  <text x="150" y="128" text-anchor="middle" font-size="10.5" fill="#1d4ed8">stopVolatile</text>
+  <rect x="420" y="88" width="160" height="48" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="500" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">主内存</text>
+  <text x="500" y="128" text-anchor="middle" font-size="10.5" fill="#64748b">（volatile 字段）</text>
+  <rect x="770" y="88" width="160" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="850" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">读线程 B</text>
+  <text x="850" y="128" text-anchor="middle" font-size="10.5" fill="#1d4ed8">while (!stop)</text>
+
+  <line x1="150" y1="136" x2="150" y2="400" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="500" y1="136" x2="500" y2="400" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="850" y1="136" x2="850" y2="400" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <line x1="150" y1="170" x2="500" y2="170" stroke="#334155" stroke-width="1.5" marker-end="url(#arVS)"/>
+  <text x="162" y="164" font-size="11.5" fill="#0f172a">① 写 stop = true（StoreStore + StoreLoad 屏障）</text>
+  <line x1="500" y1="206" x2="850" y2="206" stroke="#334155" stroke-width="1.5" marker-end="url(#arVS)"/>
+  <text x="512" y="200" font-size="11.5" fill="#0f172a">② 让其他核的缓存行失效</text>
+  <line x1="850" y1="242" x2="500" y2="242" stroke="#334155" stroke-width="1.5" marker-end="url(#arVS)"/>
+  <text x="614" y="236" font-size="11.5" fill="#0f172a">③ 读 volatile stop</text>
+  <line x1="500" y1="278" x2="850" y2="278" stroke="#334155" stroke-width="1.5" marker-end="url(#arVS)"/>
+  <text x="512" y="272" font-size="11.5" fill="#0f172a">④ 返回 true（每次从主内存读，不吃寄存器旧值）</text>
+  <rect x="740" y="308" width="220" height="34" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="850" y="330" text-anchor="middle" font-size="11.5" fill="#14532d">⑤ while 条件不成立 → 退出</text>
+  <line x1="850" y1="292" x2="850" y2="308" stroke="#16a34a" stroke-width="1.4" marker-end="url(#arVS)"/>
+
+  <rect x="120" y="380" width="760" height="24" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="500" y="396" text-anchor="middle" font-size="11" fill="#7f1d1d">对照：普通字段 stopPlain —— 写不刷主内存，B 的自旋不吃到 true</text>
+
+  <rect x="40" y="420" width="920" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="446" font-size="11.5" fill="#0f172a">⭐ HB 规则：对 volatile 变量的写 HB 后续对它的读 —— 这就是「写标志位 → 读标志位」这条可见性链的依据。</text>
+  <text x="56" y="470" font-size="11.5" fill="#334155">⚠️ 但 volatile 不保证原子性：i++ 是读-改-写三步，volatile 只保证每步读到最新值，三步之间仍可被插队。</text>
+  <text x="56" y="494" font-size="11.5" fill="#334155">实测（MemoryLab.java）：普通字段 3 秒内空转约 46 亿次没退出、interrupt() 也拉不回；volatile 0 ms 就退出。</text>
+  <text x="56" y="516" font-size="11.5" fill="#334155">安全发布同理：volatile 写之前的构造动作不能被重排到它之后，别的线程看到非 null 引用时对象内部一定写完。</text>
+</svg>

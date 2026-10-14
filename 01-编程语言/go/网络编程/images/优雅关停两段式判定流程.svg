@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="676" viewBox="0 0 1000 676" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="676" fill="#ffffff"/>
+  <defs>
+    <marker id="arD" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">优雅关停：两段式判定</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Shutdown 做两件事——关入口（拒新连接）＋等在途请求跑完；它自己的等待受传入 ctx 约束</text>
+
+  <!-- S -->
+  <rect x="300" y="80" width="400" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="106" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">收到 SIGINT / SIGTERM</text>
+  <line x1="500" y1="124" x2="500" y2="148" stroke="#334155" stroke-width="1.6" marker-end="url(#arD)"/>
+
+  <!-- B1 -->
+  <rect x="300" y="148" width="400" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="172" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">srv.Shutdown(shutCtx)，ctx 带超时 20s</text>
+  <text x="500" y="192" text-anchor="middle" font-size="11" fill="#334155">关 listener 拒新连接 ＋ 等在途跑完</text>
+  <text x="500" y="208" text-anchor="middle" font-size="11" fill="#64748b">不打断正在处理的请求</text>
+  <line x1="500" y1="212" x2="500" y2="236" stroke="#334155" stroke-width="1.6" marker-end="url(#arD)"/>
+
+  <!-- D -->
+  <rect x="300" y="236" width="400" height="48" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="500" y="264" text-anchor="middle" font-size="12.5" font-weight="700" fill="#9a3412">Shutdown 返回 err ？</text>
+  <line x1="470" y1="284" x2="280" y2="316" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arD)"/>
+  <line x1="530" y1="284" x2="740" y2="316" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arD)"/>
+
+  <!-- Left: err == nil -->
+  <rect x="90" y="316" width="360" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="270" y="340" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">否（err == nil）：排空完成</text>
+  <text x="270" y="360" text-anchor="middle" font-size="11" fill="#334155">Serve 返回 http.ErrServerClosed</text>
+  <text x="270" y="378" text-anchor="middle" font-size="11" fill="#334155">进程正常退出</text>
+  <text x="120" y="306" font-size="11" fill="#16a34a" font-weight="700">尽力排空成功</text>
+
+  <!-- Right chain: err != nil -->
+  <rect x="560" y="316" width="360" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="740" y="338" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7f1d1d">是（deadline exceeded）</text>
+  <text x="740" y="358" text-anchor="middle" font-size="11" fill="#334155">在途请求仍在跑，Shutdown 不杀它们</text>
+  <text x="560" y="306" font-size="11" fill="#dc2626" font-weight="700">超时：只是不再等</text>
+  <line x1="740" y1="372" x2="740" y2="396" stroke="#334155" stroke-width="1.6" marker-end="url(#arD)"/>
+
+  <rect x="560" y="396" width="360" height="48" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="740" y="424" text-anchor="middle" font-size="11.5" fill="#9a3412">打日志：还有 N 个请求没跑完</text>
+  <line x1="740" y1="444" x2="740" y2="468" stroke="#334155" stroke-width="1.6" marker-end="url(#arD)"/>
+
+  <rect x="560" y="468" width="360" height="48" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="740" y="496" text-anchor="middle" font-size="11.5" fill="#334155">srv.Close() 强制关闭 → 退出</text>
+
+  <!-- note -->
+  <rect x="90" y="544" width="830" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="106" y="568" font-size="11.5" fill="#334155">Shutdown 与 Close 的区别：两者都关 listener，但只有 Shutdown 等在途请求；Close 立刻切断。</text>
+  <text x="106" y="590" font-size="11.5" fill="#334155">所以关停标准写法是两段式：先 Shutdown(带超时) 尽力排空，失败再 Close() 兜底。</text>
+  <text x="106" y="610" font-size="11.5" fill="#dc2626">⚠️ 高频 bug：ListenAndServe 返回 ErrServerClosed 是正常退出信号，未用 errors.Is 排除会误走 log.Fatal、进程非零码退出。</text>
+
+  <text x="40" y="654" font-size="11" fill="#64748b">小结：Shutdown(ctx) 阻塞到在途请求跑完才返回；它的 ctx 超时只让「不再等」，请求本身仍在跑，需要自己决定继续等还是 Close 强杀。</text>
+</svg>

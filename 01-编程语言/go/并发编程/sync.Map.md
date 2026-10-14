@@ -152,6 +152,8 @@ type entry struct {
 - 右边蓝色 `dirty` 是可写副本，`Store`/`Delete` 未命中 read 时**持 mu 写它**；`Entry` 值为 nil 充当"键已被删"的**墓碑**；
 - 中间黄色 `miss` 累计 read 未命中次数，红框 `提升（promote）` 在 `miss ≥ len(dirty)` 时触发：**dirty 变新 read、miss 归零、dirty 置 nil**；随后第一次写发现 dirty=nil，又**从 read 整表重建 dirty** —— 这一步就是键集翻转时抖动的来源。
 
+![经典版 entry.p 状态机：正常（持实值）经 Delete 原子换 nil 到「p == nil」，重建 dirty 时 nil 换成 expunged 成墓碑；Store 命中墓碑键须持 mu 把 entry 复制进 dirty 并 unexpunge 恢复实值](images/syncMap-entryp状态机.svg)
+
 ### 2.2 现行版（Go 1.26+，含本机 go1.26.8）：无锁哈希前缀树
 
 go1.26.8 的 `sync.Map` 只剩一个字段，把活全交给 `internal/sync.HashTrieMap`。`sync/map.go` 里 `Map` 结构原样：

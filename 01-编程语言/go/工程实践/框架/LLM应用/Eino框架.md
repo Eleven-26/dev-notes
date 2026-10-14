@@ -58,6 +58,8 @@
 > **工程启示**：**面向用户的生成类功能一定要做流式输出**（SSE / WebSocket），
 > 否则用户会盯着空白屏幕等十几秒。
 
+![大模型交互三步流程图：模板三部分拼成消息 → 初始化模型对象 → 一次性输出（Generate）或流式输出（Stream）](images/大模型交互三步流程.svg)
+
 ### 1.3 Eino 提供的组件（知道"有哪些能力"即可）
 
 | 组件 | 作用 |
@@ -162,6 +164,8 @@ go get github.com/cloudwego/eino/components/model@v0.9.21
 
 ⭐ 判据：**引入 Eino 等于引入一套不小的依赖树**，如果项目只是"调一次 HTTP 接口问大模型"，
 直接写 `net/http` 反而更轻 —— Eino 的价值在**多组件编排**，不在单次调用。
+
+![Eino 模块与依赖结构图：主模块与 schema / compose / components/model 是独立 module，须逐个 go get 且版本对齐；实测依赖面为 29 个间接依赖](images/Eino模块与依赖结构.svg)
 
 ### 1.8 核心抽象的真实签名（`go doc` 取证，v0.9.21）
 

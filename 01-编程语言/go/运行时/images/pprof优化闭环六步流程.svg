@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="540" fill="#ffffff"/>
+<defs>
+<marker id="arPB" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+<marker id="arGR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+</defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">pprof 优化闭环：先测 → 定位 → 判断 → 改 → 再测 → 回归</text>
+<text x="40" y="58" font-size="13" fill="#64748b">六个动作是一个循环；占比低于 5% 的项改了也测不出来，一次只改一个变量</text>
+
+<rect x="40" y="96" width="150" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="115" y="120" font-size="13" font-weight="bold" text-anchor="middle" fill="#1d4ed8">① 先测，别猜</text>
+<text x="115" y="142" font-size="11" text-anchor="middle" fill="#0f172a">跑一次基准</text>
+<text x="115" y="160" font-size="11" text-anchor="middle" fill="#0f172a">或抓一份 profile</text>
+<text x="115" y="176" font-size="11" text-anchor="middle" fill="#64748b">记下当前是多少</text>
+
+<rect x="230" y="96" width="200" height="86" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="330" y="120" font-size="13" font-weight="bold" text-anchor="middle" fill="#15803d">② 定位到一个热点</text>
+<text x="330" y="142" font-size="11" text-anchor="middle" fill="#0f172a">-top -cum 找路径</text>
+<text x="330" y="160" font-size="11" text-anchor="middle" fill="#0f172a">-top 看 flat 定位函数</text>
+<text x="330" y="176" font-size="11" text-anchor="middle" fill="#0f172a">-list / -traces 定位到行</text>
+
+<rect x="470" y="96" width="200" height="86" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="570" y="120" font-size="13" font-weight="bold" text-anchor="middle" fill="#92400e">③ 值不值得改？</text>
+<text x="570" y="142" font-size="11" text-anchor="middle" fill="#0f172a">⭐ 占比低于 5% 的项</text>
+<text x="570" y="160" font-size="11" text-anchor="middle" fill="#b45309">改了也测不出来</text>
+<text x="570" y="176" font-size="11" text-anchor="middle" fill="#64748b">先判断再动手</text>
+
+<rect x="40" y="250" width="200" height="86" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="140" y="274" font-size="13" font-weight="bold" text-anchor="middle" fill="#b45309">④ 改一个变量</text>
+<text x="140" y="296" font-size="11" text-anchor="middle" fill="#0f172a">一次只改一处</text>
+<text x="140" y="314" font-size="11" text-anchor="middle" fill="#64748b">否则不知道哪处生效</text>
+
+<rect x="290" y="250" width="250" height="86" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="415" y="274" font-size="13" font-weight="bold" text-anchor="middle" fill="#b45309">⑤ 再测，用 -diff_base 确认</text>
+<text x="415" y="296" font-size="11" text-anchor="middle" fill="#0f172a">前后各存一份 profile</text>
+<text x="415" y="314" font-size="11" text-anchor="middle" fill="#64748b">确认那一项真的降了</text>
+
+<rect x="590" y="250" width="250" height="86" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="715" y="274" font-size="13" font-weight="bold" text-anchor="middle" fill="#b91c1c">⑥ 回归测试兜底</text>
+<text x="715" y="296" font-size="11" text-anchor="middle" fill="#0f172a">性能优化最容易引入正确性问题</text>
+<text x="715" y="314" font-size="11" text-anchor="middle" fill="#dc2626">必须跑全量测试</text>
+
+<line x1="190" y1="139" x2="230" y2="139" stroke="#334155" stroke-width="1.5" marker-end="url(#arPB)"/>
+<line x1="430" y1="139" x2="470" y2="139" stroke="#334155" stroke-width="1.5" marker-end="url(#arPB)"/>
+<path d="M570,182 L570,216 L140,216 L140,246" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arGR)"/>
+<text x="596" y="212" font-size="11" fill="#16a34a">是（值得改）</text>
+<path d="M670,139 L880,139 L880,76 L115,76 L115,92" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arPB)"/>
+<text x="686" y="132" font-size="11" fill="#64748b">否 · 不改，回到 ① 重新找热点</text>
+
+<rect x="40" y="360" width="920" height="126" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="386" font-size="13" font-weight="bold" fill="#0f172a">两条纪律</text>
+<text x="60" y="410" font-size="13" fill="#334155">1. 一次只改一个变量 —— 同时改三处，最后不知道哪个有用、哪个有害</text>
+<text x="60" y="434" font-size="13" fill="#334155">2. 先验证再优化 —— 90% 的「性能问题」最后证实是别的原因（锁、IO、算法选择）</text>
+<text x="60" y="462" font-size="13" fill="#dc2626">pprof 的绝对数值（ns、MB、百分比）每次运行都会变：用它排序找热点，不写进报告当指标</text>
+<text x="40" y="518" font-size="11" fill="#64748b">小结：闭环的价值在于先证明瓶颈在哪，再证明改动真的生效；跳过 ① 与 ⑤ 就等于没测</text>
+</svg>

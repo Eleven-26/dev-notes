@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="646" viewBox="0 0 1000 646" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="646" fill="#ffffff"/>
+<defs>
+<marker id="arRA4" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">auxv 获取与两级兜底流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">进程栈上拿不到 auxv：先读 /proc/self/auxv，再不行用 mmap 对齐探测反推物理页大小，最后兜底 256KB</text>
+
+<rect x="320" y="88" width="360" height="54" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="120" font-size="12" text-anchor="middle" fill="#0f172a">解析后 auxv ≠ 0 ？</text>
+
+<line x1="700" y1="115" x2="740" y2="115" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA4)"/>
+<text x="720" y="107" font-size="11" text-anchor="middle" fill="#334155">≠ 0</text>
+<rect x="740" y="88" width="220" height="54" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="850" y="110" font-size="11" text-anchor="middle" fill="#0f172a">从内核传参拿到 auxv</text>
+<text x="850" y="128" font-size="11" text-anchor="middle" fill="#0f172a">→ 直接返回</text>
+
+<line x1="500" y1="142" x2="500" y2="176" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA4)"/>
+<text x="512" y="164" font-size="11" fill="#334155">auxv == 0（拿不到）</text>
+
+<rect x="340" y="180" width="320" height="56" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="202" font-size="12" text-anchor="middle" fill="#0f172a">兜底①：open("/proc/self/auxv")</text>
+<text x="500" y="224" font-size="11" text-anchor="middle" fill="#64748b">→ 得到 fd</text>
+
+<line x1="500" y1="236" x2="500" y2="254" stroke="#334155" stroke-width="1.5"/>
+<line x1="210" y1="254" x2="790" y2="254" stroke="#334155" stroke-width="1.5"/>
+<line x1="210" y1="254" x2="210" y2="280" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA4)"/>
+<line x1="790" y1="254" x2="790" y2="280" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA4)"/>
+
+<rect x="70" y="280" width="280" height="54" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="210" y="300" font-size="12" text-anchor="middle" fill="#0f172a">fd &lt; 0：文件（路径）不存在</text>
+<text x="210" y="320" font-size="11" text-anchor="middle" fill="#64748b">→ 走兜底② mmap 探测</text>
+
+<rect x="650" y="280" width="280" height="54" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="790" y="300" font-size="12" text-anchor="middle" fill="#0f172a">fd &gt; 0：确实存在</text>
+<text x="790" y="320" font-size="11" text-anchor="middle" fill="#64748b">→ 读取文件内容</text>
+
+<line x1="210" y1="334" x2="210" y2="360" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA4)"/>
+<line x1="790" y1="334" x2="790" y2="360" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA4)"/>
+
+<rect x="40" y="360" width="340" height="244" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="56" y="386" font-size="13" font-weight="bold" fill="#334155">兜底②：mmap 探测物理页大小</text>
+<text x="56" y="408" font-size="11" fill="#0f172a">① size := 256 &lt;&lt; 10（申请 256KB）</text>
+<text x="56" y="430" font-size="11" fill="#0f172a">② p := mmap(nil, size)</text>
+<text x="56" y="452" font-size="11" fill="#64748b">　 p 已按物理页大小对齐（整数倍）</text>
+<text x="56" y="474" font-size="11" fill="#0f172a">③ n := 4096（默认 4KB）</text>
+<text x="56" y="496" font-size="11" fill="#0f172a">④ 循环 n ≤ size：p + n 之后剩余空间仍是页大小的整数倍？</text>
+<text x="56" y="518" font-size="11" fill="#16a34a">　 是 → n 就是物理页大小，break</text>
+<text x="56" y="540" font-size="11" fill="#ea580c">　 否 → n &lt;&lt;= 1 每次翻倍（4096→8192→16384…）</text>
+<text x="56" y="562" font-size="11" fill="#0f172a">⑤ 整个循环没得到有效页大小 → physPageSize = 256KB 兜底</text>
+<text x="56" y="584" font-size="11" fill="#0f172a">⑥ munmap(p, size) 释放探测用的空间</text>
+
+<rect x="640" y="360" width="300" height="70" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="790" y="386" font-size="11" text-anchor="middle" fill="#0f172a">没读到 → 直接返回</text>
+<text x="790" y="412" font-size="11" text-anchor="middle" fill="#0f172a">读到 → 用同一套逻辑解析 auxv → 返回</text>
+
+<text x="40" y="628" font-size="11" fill="#64748b">小结：先试进程栈，再试 /proc/self/auxv，再用 mmap 对齐探测反推页大小——最差兜底 256KB，可能浪费一点内存，但保证应用程序能正常启动。</text>
+</svg>

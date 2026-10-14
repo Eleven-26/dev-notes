@@ -78,6 +78,8 @@ Producer<String, String> producer = new KafkaProducer<>(props);
 
 > 一句话：**生产者单例（线程安全、省连接），消费者非单例（一个订阅 / 线程一份独立状态）。**
 
+![Kafka 客户端对象的线程归属：进程级的 KafkaProducer / KafkaTemplate 与每线程一份的 KafkaConsumer，右侧标出写错的后果](images/Kafka客户端对象与线程归属.svg)
+
 ## 五、初始化顺序 ⭐
 
 **本节要点**：⭐ 判据是「**谁在初始化时捕获了全局单例**」——凡是有这个特征的下游组件（各类 instrumentation、SDK 全局 hook），都必须排在被捕获者**之后**初始化，否则它拿到的是初始化那一刻的旧值（常常是 noop），且**不报错**。
@@ -89,6 +91,8 @@ Java 侧三条实序：
 3. **`@KafkaListener` 容器晚于 `KafkaTemplate` 起步**：监听容器在启动时会 `subscribe` 并触发重平衡，此时生产侧的基础设施应已就绪（否则启动瞬间的业务回调可能调不到 Bean）。
 
 > ⭐ 这个判据的经典例子在链路追踪栈：**instrumentation 在初始化时取一次全局实例**——若它在全局 Tracer 注册**之前**完成初始化，span 就走 noop provider，**永远不上报且不报错**。详见 [接入Jaeger.md](../可观测性/接入Jaeger.md)。
+
+![三条实序：容器先装配 ProducerFactory → KafkaTemplate，监听容器晚于它起步；位点配置只在组内无已提交位点时生效；右下角是同一条「初始化时捕获全局单例」判据](images/Kafka客户端的初始化顺序与位点配置生效条件.svg)
 
 ## 六、单例与依赖注入的封装
 
@@ -248,6 +252,8 @@ containerFactory.setCommonErrorHandler(errorHandler);                   // ⭐ �
 
 > ⚠️ Spring Kafka 的 `@KafkaListener` 出错时默认会**一直重试**（旧版 `SeekToCurrentErrorHandler` 行为），上线就可能卡死整个分区；必须显式配置 `DefaultErrorHandler` + `FixedBackOff` + 死信兜底，否则**一条脏数据能堵死一个分区**。
 
+![消费失败的去向：@KafkaListener 抛异常 → DefaultErrorHandler 按 FixedBackOff(1000L, 3) 重试 → 成功则提交位点，超限或非法参数进 order-events.DLT](images/Kafka消费失败重试与死信路由.svg)
+
 ## 八、跨进程与跨协程传播
 
 **本节要点**：跨进程用 **record headers** 做 Inject / Extract；跨线程用「每线程一个消费者」或容器的并发监听。
@@ -313,6 +319,8 @@ producer.close();      // 关连接、停 I/O 线程
 
 > ⚠️ Spring 侧：容器关闭时会自动停监听器并 `close` 其生产者。用 `sh -c` 起 JVM 时要 `exec java ...`（或 `tini`），否则 SIGTERM 打不到 JVM，等价于强杀（同一问题见 [接入Jaeger.md](../可观测性/接入Jaeger.md) 2.3）。
 
+![优雅退出的四步：wakeup 打断 poll → consumer.close 提交位点并离组 → producer.flush 发完缓冲 → producer.close 停 I/O 线程；右侧标出每步漏掉的后果](images/Kafka优雅退出的四步顺序.svg)
+
 ## 十、验证与排查
 
 **本节要点**：先确认「接入真的生效」（位点与 LAG），再用故障速查表定位。
@@ -350,6 +358,8 @@ java-lab-group   java-lab   0          3               3               0
 | ⭐ **同 key 落同一分区** | `ORDER_2001` 三条全在 `partition=0`，`ORDER_2002` 三条全在 `partition=1` |
 | ⭐ **分区内按写入顺序** | 两个分区的 `offset` 都是 `0,1,2`，与 `seq` 一致 |
 | ⭐ **手动提交生效** | 消费组位点停在各分区末尾（`3`），`LAG=0`，组内已无活跃成员 |
+
+![一条消息在应用进程内的完整去向：业务线程 send → 累加器攒批 → 后台 I/O 线程发出 → 回调打印 partition / offset；消费侧 poll → 业务处理 → commitSync 提交 offset+1，headers 上的 x-biz-id / x-trace-id 随消息往返](images/Kafka消息在应用进程内的收发数据流.svg)
 
 ### 10.2 常见故障速查
 

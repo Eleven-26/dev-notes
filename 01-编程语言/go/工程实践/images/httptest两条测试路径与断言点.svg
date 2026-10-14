@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="arHt" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">httptest 的两条测试路径：NewRecorder 与 NewServer</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">被测方是 handler 走左边（不发网络请求）；被测方是「会发请求的客户端」必须走右边（真起监听）</text>
+
+  <rect x="40" y="90" width="430" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="255" y="114" font-size="13" text-anchor="middle" fill="#0f172a">① NewRequest 造一个请求</text>
+  <text x="255" y="136" font-size="12" text-anchor="middle" fill="#334155">GET /hello?name=Li · Header X-Request-Id: rid-1</text>
+
+  <rect x="40" y="184" width="430" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="255" y="208" font-size="13" text-anchor="middle" fill="#0f172a">② g.ServeHTTP(rec, req)</text>
+  <text x="255" y="230" font-size="12" text-anchor="middle" fill="#334155">rec 只是 http.ResponseWriter 的一个实现</text>
+
+  <rect x="40" y="278" width="430" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="255" y="302" font-size="13" text-anchor="middle" fill="#14532d">③ 断 Recorder 的三个面</text>
+  <text x="255" y="324" font-size="11" text-anchor="middle" fill="#14532d">rec.Code=200 · Content-Type:[application/json]</text>
+  <text x="255" y="344" font-size="11" text-anchor="middle" fill="#14532d">rec.Body={"msg":"hi Li","upstream":"127.0.0.1:9000"}</text>
+
+  <rect x="40" y="384" width="430" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="255" y="408" font-size="13" text-anchor="middle" fill="#334155">④ 这条路的边界</text>
+  <text x="255" y="430" font-size="11" text-anchor="middle" fill="#64748b">不经监听端口 → 测不到 keep-alive / 超时 / TLS</text>
+
+  <line x1="255" y1="154" x2="255" y2="180" stroke="#334155" stroke-width="1.5" marker-end="url(#arHt)"/>
+  <line x1="255" y1="248" x2="255" y2="274" stroke="#334155" stroke-width="1.5" marker-end="url(#arHt)"/>
+  <line x1="255" y1="354" x2="255" y2="380" stroke="#334155" stroke-width="1.5" marker-end="url(#arHt)"/>
+
+  <rect x="520" y="90" width="440" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="740" y="114" font-size="13" text-anchor="middle" fill="#7c2d12">① NewServer(downstream())</text>
+  <text x="740" y="136" font-size="12" text-anchor="middle" fill="#7c2d12">监听地址 = http://127.0.0.1:42303</text>
+
+  <rect x="520" y="184" width="440" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="740" y="208" font-size="13" text-anchor="middle" fill="#0f172a">② 被测客户端拿 srv.URL 当 BaseURL</text>
+  <text x="740" y="230" font-size="12" text-anchor="middle" fill="#334155">Client{BaseURL, HTTP: srv.Client()}</text>
+
+  <rect x="520" y="278" width="440" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="740" y="302" font-size="13" text-anchor="middle" fill="#14532d">③ 只有真 server 测得到的三样</text>
+  <text x="740" y="324" font-size="11" text-anchor="middle" fill="#14532d">真实 URL 与端口 · 状态码分支的响应体</text>
+  <text x="740" y="344" font-size="11" text-anchor="middle" fill="#14532d">404 分支原文 + handler 里 hits 累计 2 次</text>
+
+  <rect x="520" y="384" width="440" height="88" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="740" y="408" font-size="13" text-anchor="middle" fill="#7f1d1d">④ 真连接才有的故障与 TLS</text>
+  <text x="740" y="430" font-size="11" text-anchor="middle" fill="#7f1d1d">srv.Close() 后：dial tcp ...: connect: connection refused</text>
+  <text x="740" y="450" font-size="11" text-anchor="middle" fill="#7f1d1d">NewTLSServer：默认 client 被自签证书拦下 x509</text>
+
+  <line x1="740" y1="154" x2="740" y2="180" stroke="#334155" stroke-width="1.5" marker-end="url(#arHt)"/>
+  <line x1="740" y1="248" x2="740" y2="274" stroke="#334155" stroke-width="1.5" marker-end="url(#arHt)"/>
+  <line x1="740" y1="354" x2="740" y2="380" stroke="#334155" stroke-width="1.5" marker-end="url(#arHt)"/>
+
+  <text x="40" y="510" font-size="11" fill="#64748b">rec.Result() 的 contentlength=-1：Recorder 只存 body 字节，断言要写 len(rec.Body.Bytes())；第二次 WriteHeader 不报错也不生效。</text>
+  <text x="40" y="532" font-size="11" fill="#64748b">中间件链 / 超时取消 / 并发安全：NewServer 包一层真 http.Server、+ srv.CloseClientConnections()、任一形状都再配 -race 跑一遍。</text>
+  <text x="40" y="554" font-size="11" fill="#64748b">造请求只用 httptest.NewRequest，别手写 &amp;http.Request{} —— 后者 URL / Body 缺省会让 handler 在第一行 panic。</text>
+  <text x="40" y="576" font-size="11" fill="#64748b">srv.Client() 的 Transport 带 InsecureSkipVerify，只用于测试；TLS 用例 stderr 里的 bad certificate 是预期日志，不是失败。</text>
+</svg>

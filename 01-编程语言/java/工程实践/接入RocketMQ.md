@@ -74,6 +74,8 @@ producer.start();                              // 建立 TCP、注册路由、�
 
 > 一句话：**生产者单例（省连接），消费者非单例（一个订阅一份独立状态）。**
 
+![RocketMQ 客户端对象的长活资源归属：DefaultMQProducer / TransactionMQProducer（带回查线程池）/ RocketMQTemplate / MessageQueueSelector 是进程级，DefaultMQPushConsumer 与 Message / MessageExt 是每订阅、每请求一份](images/RocketMQ客户端对象与长活资源.svg)
+
 ## 五、初始化顺序 ⭐
 
 **本节要点**：⭐ 判据是「**谁在初始化时捕获了全局单例**」——凡是有这个特征的下游组件，都必须排在被捕获者**之后**初始化，否则拿到的是初始化那一刻的旧值（常常是 noop），且**不报错**。
@@ -85,6 +87,8 @@ RocketMQ 侧三条实序：
 3. **组名（ProducerGroup / ConsumerGroup）全局唯一且语义稳定**：同名组在不同实例上参数不一致会启动报错或行为异常；事务消息的组**不能**与延迟 / 批量混用（见 7.5）。
 
 > ⭐ 这个判据的经典例子在链路追踪栈：**instrumentation 在初始化时取一次全局实例**——若它在全局 Tracer 注册**之前**完成初始化，span 就走 noop provider，**永远不上报且不报错**。详见 [接入Jaeger.md](../可观测性/接入Jaeger.md)。
+
+![三条实序都卡在 start() 那一刻：setNamesrvAddr 与 subscribe 必须先于 start()，组名要全局唯一且参数一致；右侧是 start() 之后被读走的路由、订阅关系与心跳线程](images/RocketMQ客户端的初始化顺序与start快照.svg)
 
 ## 六、单例与依赖注入的封装
 
@@ -235,6 +239,8 @@ ORDER  seq=4 queueId=1 offset=3 sameQueue=true
 
 ⚠️ 顺序消费失败必须返回 `SUSPEND_CURRENT_QUEUE_A_MOMENT`（挂起队列不跳号、默认无限重试），并**在有限次后落库告警**，否则脏数据卡死队列。
 
+![顺序消息的两处关键：发送侧 MessageQueueSelector 用 Math.abs(arg.hashCode()) % mqs.size() 把同一 orderId 钉在 queueId=1，消费侧 MessageListenerOrderly 的队列锁保证同队列串行；右侧对照轮询打散与脏数据卡死队列](images/RocketMQ顺序消息的选队列与队列锁.svg)
+
 ### 7.4 延迟消息：级别（4.x 语义）与任意时间（5.x）
 
 ```java
@@ -302,6 +308,8 @@ lab-tx                        max offset = 1   ← 只有 COMMIT 的那条转入
 ```
 
 ⭐ 三条约束：① `checkLocalTransaction` 必须能**幂等反查**（查本地事务表 / 订单状态，不能依赖内存 Map——回查可能落到同组另一台实例上）；② 回查有次数上限（默认 15 次），最坏情况丢消息，关键链路加对账；③ ProducerGroup 全局唯一，事务消息**不能与延迟 / 批量混用**。
+
+![事务消息的三条返回路径：executeLocalTransaction 返回 COMMIT_MESSAGE / ROLLBACK_MESSAGE / UNKNOW，UNKNOW 由 Broker 60s 后回调同一个组的 checkLocalTransaction 做幂等反查；下方是三条约束与 topicStatus 实测读数](images/RocketMQ事务消息的三态与回查.svg)
 
 ### 7.6 Spring Boot 集成
 
@@ -400,6 +408,8 @@ producer.shutdown();   // 停心跳线程、关 TCP 连接
 **漏了会丢什么**：消费者不 `shutdown` → 组内成员不退出，重平衡要等会话超时；生产者不 `shutdown` → 心跳线程与连接泄漏。
 
 > ⚠️ **客户端 JVM 不退出**：RocketMQ 客户端会留下非守护线程，`shutdown()` 之后 JVM 仍不退出（本机实测脚本会一直挂着）。写一次性工具（命令行跑完就结束）时末尾加 `System.exit(0)`。
+
+![优雅退出的三步：先停入口 → consumer.shutdown()（停长轮询与消费线程池、提交位点）→ producer.shutdown()（flush、关连接、停心跳线程）；右侧标出漏掉某一步的后果与 `System.exit(0)` 的位置](images/RocketMQ优雅退出的关闭顺序与JVM不退出.svg)
 
 ## 十、验证与排查
 

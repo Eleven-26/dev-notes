@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="530" viewBox="0 0 1000 530" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="530" fill="#ffffff"/>
+  <defs>
+    <marker id="arF1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arF2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">future 范式时序：先启动拿凭证，需要时再取值</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">容器实测：取 C 用时 30ms、取 B 60ms、取 A 120ms —— 总耗时约等于最慢那段 120ms，不是相加的 210ms</text>
+
+  <rect x="55" y="84" width="150" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="109" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">主流程（调用方）</text>
+  <rect x="305" y="84" width="150" height="40" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="380" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">任务 C goroutine</text>
+  <text x="380" y="117" text-anchor="middle" font-size="10.5" fill="#64748b">最快完成</text>
+  <rect x="545" y="84" width="150" height="40" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="620" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">任务 B goroutine</text>
+  <text x="620" y="117" text-anchor="middle" font-size="10.5" fill="#64748b">次快</text>
+  <rect x="785" y="84" width="150" height="40" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="860" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">任务 A goroutine</text>
+  <text x="860" y="117" text-anchor="middle" font-size="10.5" fill="#64748b">最慢</text>
+
+  <line x1="130" y1="124" x2="130" y2="460" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="380" y1="124" x2="380" y2="183" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="380" y1="197" x2="380" y2="223" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="380" y1="237" x2="380" y2="353" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="380" y1="367" x2="380" y2="403" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="380" y1="417" x2="380" y2="460" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="620" y1="124" x2="620" y2="223" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="620" y1="237" x2="620" y2="403" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="620" y1="417" x2="620" y2="460" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="860" y1="124" x2="860" y2="460" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+
+  <line x1="134" y1="150" x2="375" y2="150" stroke="#334155" stroke-width="1.5" marker-end="url(#arF1)"/>
+  <text x="255" y="142" text-anchor="middle" font-size="11" fill="#0f172a">newFuture(C)：go 起任务，返回凭证（f.ch 缓冲 1）</text>
+  <line x1="134" y1="190" x2="615" y2="190" stroke="#334155" stroke-width="1.5" marker-end="url(#arF1)"/>
+  <text x="375" y="182" text-anchor="middle" font-size="11" fill="#0f172a">newFuture(B)：同样先启动，不等待</text>
+  <line x1="134" y1="230" x2="855" y2="230" stroke="#334155" stroke-width="1.5" marker-end="url(#arF1)"/>
+  <text x="495" y="222" text-anchor="middle" font-size="11" fill="#0f172a">newFuture(A)：三个任务并发在跑</text>
+  <text x="130" y="270" font-size="11" fill="#64748b">主流程：做别的事…… 取不取、什么时候取由调用方决定</text>
+
+  <line x1="375" y1="310" x2="135" y2="310" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arF2)"/>
+  <text x="255" y="302" text-anchor="middle" font-size="11" fill="#15803d">30ms：f.ch &lt;- 任务C 完成；get() 取到 C</text>
+  <line x1="615" y1="360" x2="135" y2="360" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arF2)"/>
+  <text x="375" y="352" text-anchor="middle" font-size="11" fill="#15803d">60ms：f.ch &lt;- 任务B 完成；get() 取到 B</text>
+  <line x1="855" y1="410" x2="135" y2="410" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arF2)"/>
+  <text x="495" y="402" text-anchor="middle" font-size="11" fill="#15803d">120ms：f.ch &lt;- 任务A 完成；get() 取到 A</text>
+
+  <text x="40" y="492" font-size="11" fill="#64748b">小结：缓冲 1 让先完成的任务把结果放进 f.ch 就撒手；若无缓冲、调用方晚取，goroutine 会一直卡在发送上（泄漏）。</text>
+  <text x="40" y="512" font-size="11" fill="#64748b">get() 本质是从结果通道取一次；channel 是单播，要多次取值得换 sync.Once + 缓存值。</text>
+</svg>

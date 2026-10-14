@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="520" fill="#ffffff"/>
+<defs><marker id="arDIb" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">google/wire 两段式文件与生成流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">wire.go 只写声明（永不参与真实编译），wire_gen.go 是生成物 —— 手写装配被原样搬进生成文件</text>
+
+<rect x="70" y="86" width="380" height="150" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="260" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">wire.go · 只声明依赖图</text>
+<text x="260" y="136" text-anchor="middle" font-size="12" fill="#1e3a8a">//go:build wireinject</text>
+<text x="260" y="156" text-anchor="middle" font-size="12" fill="#1e3a8a">func InitApp() (*controller.API, error)</text>
+<text x="260" y="176" text-anchor="middle" font-size="12" fill="#1e3a8a">panic(wire.Build(data/biz/controller.ProviderSet))</text>
+<text x="260" y="206" text-anchor="middle" font-size="12" fill="#64748b">函数体是模板：panic 防止误调用</text>
+
+<rect x="540" y="86" width="390" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="735" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">真实构建 go build（不带 tag）</text>
+<rect x="565" y="134" width="340" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="735" y="160" text-anchor="middle" font-size="12" fill="#334155">wire.go 被构建约束排除在编译外</text>
+<text x="735" y="208" text-anchor="middle" font-size="12" fill="#64748b">所以 panic 永远不会被执行</text>
+
+<line x1="450" y1="130" x2="532" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#arDIb)"/>
+<text x="491" y="120" text-anchor="middle" font-size="11" fill="#334155">带 tag 才编译</text>
+
+<line x1="260" y1="236" x2="260" y2="292" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arDIb)"/>
+<text x="270" y="266" text-anchor="start" font-size="11" fill="#2563eb">执行 wire ./...（或 //go:generate wire）</text>
+
+<rect x="70" y="298" width="380" height="130" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="260" y="324" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">wire_gen.go · 生成物（不可手改）</text>
+<text x="260" y="348" text-anchor="middle" font-size="12" fill="#1e3a8a">d := data.NewData()</text>
+<text x="260" y="368" text-anchor="middle" font-size="12" fill="#1e3a8a">repo := data.NewUserRepo(d)</text>
+<text x="260" y="388" text-anchor="middle" font-size="12" fill="#1e3a8a">uc := biz.NewUserBiz(repo)</text>
+<text x="260" y="408" text-anchor="middle" font-size="12" fill="#1e3a8a">api := controller.NewUserController(uc)</text>
+
+<rect x="540" y="330" width="340" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="710" y="356" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">main 退化成一行 InitApp()</text>
+<text x="710" y="380" text-anchor="middle" font-size="12" fill="#14532d">api := InitApp(); api.Handle()</text>
+
+<line x1="450" y1="364" x2="532" y2="364" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arDIb)"/>
+
+<text x="60" y="470" font-size="11" fill="#64748b">小结：provider 签名 (T, error) / (T, func(), error) 时，错误层层上抛、cleanup 聚合成一个 func() 返回给调用方（wire.Bind 负责把 *userRepo 绑到 biz.UserRepo）</text>
+<text x="60" y="492" font-size="11" fill="#64748b">重跑 wire 会覆盖生成物；改一个构造函数签名后重新生成即可，装配点不再散落各处 —— 这就是 2.3 里手写方案缺点的解法</text>
+</svg>

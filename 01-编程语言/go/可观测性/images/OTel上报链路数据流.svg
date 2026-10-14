@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="715" viewBox="0 0 1000 715" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="715" fill="#ffffff"/>
+  <defs>
+    <marker id="arJD" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">OTel → Jaeger 上报链路数据流（12.2 实际编排）</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">只画到进程边界与端点；Jaeger v2 与 ClickHouse 的内部架构见 03-数据与中间件/中间件/可观测性/，不在本篇复制</text>
+
+  <rect x="300" y="80" width="400" height="48" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="500" y="109" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a">前端 :8081 / :8082 / :8083</text>
+  <line x1="500" y1="128" x2="500" y2="168" stroke="#334155" stroke-width="1.6" marker-end="url(#arJD)"/>
+  <text x="514" y="152" font-size="11" fill="#64748b">/api 剥前缀</text>
+
+  <rect x="140" y="176" width="720" height="204" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="156" y="198" font-size="14" font-weight="bold" fill="#0f172a">backend（Go + Gin，:8080）</text>
+
+  <rect x="160" y="212" width="330" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="172" y="234" font-size="12" fill="#0f172a">① otelgin：HTTP entry span</text>
+  <text x="172" y="254" font-size="11" fill="#64748b">router.go 挂载 JaegerTrace</text>
+
+  <rect x="510" y="212" width="330" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="522" y="234" font-size="12" fill="#0f172a">② GORM OTel 插件：SQL client span</text>
+  <text x="522" y="254" font-size="11" fill="#64748b">mysql.go 以 JaegerEnabled() 为条件安装</text>
+
+  <rect x="160" y="292" width="330" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="172" y="314" font-size="12" fill="#0f172a">③ NATS：生产 traceMsg 注入</text>
+  <text x="172" y="334" font-size="11" fill="#64748b">消费端 Extract 续接（需 2.2+）</text>
+
+  <rect x="510" y="292" width="330" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="522" y="314" font-size="12" fill="#0f172a">④ xxl-job：任务入口建根 span</text>
+  <text x="522" y="334" font-size="11" fill="#64748b">traced() 包装，无上游独立成链</text>
+
+  <line x1="500" y1="380" x2="500" y2="424" stroke="#334155" stroke-width="1.6" marker-end="url(#arJD)"/>
+  <text x="514" y="406" font-size="12" fill="#0f172a">OTLP gRPC :4317</text>
+
+  <rect x="360" y="432" width="280" height="54" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="454" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">jaeger（v2 单体）</text>
+  <text x="500" y="474" font-size="11" text-anchor="middle" fill="#334155">collector + query 一体，镜像 2.20.0</text>
+  <line x1="500" y1="486" x2="500" y2="528" stroke="#334155" stroke-width="1.6" marker-end="url(#arJD)"/>
+
+  <rect x="360" y="536" width="280" height="54" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="558" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">ClickHouse（9000）</text>
+  <text x="500" y="578" font-size="11" text-anchor="middle" fill="#334155">v2.18 起官方原生存储（ADR-008）</text>
+  <line x1="500" y1="590" x2="500" y2="632" stroke="#334155" stroke-width="1.6" marker-end="url(#arJD)"/>
+
+  <rect x="360" y="640" width="280" height="48" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="500" y="669" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">Jaeger UI :16686</text>
+
+  <rect x="660" y="432" width="300" height="88" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="674" y="454" font-size="11" fill="#0f172a">与 SkyWalking native 通道二选一</text>
+  <text x="674" y="474" font-size="11" fill="#334155">同开 → 同一请求双 span / 双上报</text>
+  <text x="674" y="494" font-size="11" fill="#334155">prod 默认 jaeger.enable=false</text>
+
+  <rect x="660" y="546" width="300" height="60" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="674" y="568" font-size="11" fill="#0f172a">⚠️ jaeger/config.yaml 若缺失，</text>
+  <text x="674" y="588" font-size="11" fill="#334155">Docker 会把它建成目录 → is a directory</text>
+
+  <text x="40" y="710" font-size="11" fill="#64748b">小结：四类埋点（HTTP 入口 / SQL / MQ / 定时任务）产生的 span 经 OTLP gRPC :4317 上报，落 ClickHouse 库 jaeger，从 UI :16686 检索</text>
+</svg>

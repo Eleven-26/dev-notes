@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="540" fill="#ffffff"/>
+<defs><marker id="arDLV" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">headless 远程调试调用时序</text>
+<text x="40" y="58" font-size="13" fill="#64748b">目标机（容器）起 dlv headless 服务，本地 VSCode 连过去；断点地址 0x4bcc0e 以「函数名 + 源码行号」为准</text>
+
+<rect x="60" y="80" width="160" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="140" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">VSCode（本地）</text>
+
+<rect x="345" y="80" width="290" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="490" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">dlv --headless --api-version=2</text>
+
+<rect x="755" y="80" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="855" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">app-dbg 进程</text>
+
+<rect x="139.25" y="124" width="1.5" height="316" fill="#cbd5e1"/>
+<rect x="489.25" y="124" width="1.5" height="316" fill="#cbd5e1"/>
+<rect x="854.25" y="124" width="1.5" height="316" fill="#cbd5e1"/>
+
+<line x1="140" y1="152" x2="482" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="311" y="144" text-anchor="middle" font-size="11" fill="#334155">① dlv exec ./app-dbg --headless --listen=:40000 --accept-multiclient</text>
+
+<line x1="490" y1="184" x2="148" y2="184" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="319" y="176" text-anchor="middle" font-size="11" fill="#334155">② API server listening at: [::]:40000</text>
+
+<line x1="140" y1="216" x2="482" y2="216" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="311" y="208" text-anchor="middle" font-size="11" fill="#334155">③ request attach + mode remote：host 127.0.0.1 port 40000</text>
+
+<line x1="490" y1="248" x2="148" y2="248" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="319" y="240" text-anchor="middle" font-size="11" fill="#dc2626">④ connections are not authenticated nor encrypted</text>
+
+<line x1="490" y1="280" x2="847" y2="280" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="668" y="272" text-anchor="middle" font-size="11" fill="#334155">⑤ 停在运行时最入口 _rt0_amd64_linux</text>
+
+<line x1="140" y1="312" x2="847" y2="312" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="493" y="304" text-anchor="middle" font-size="11" fill="#334155">⑥ break main.main → 0x4bcc0e ./main.go:13</text>
+
+<line x1="140" y1="344" x2="847" y2="344" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="493" y="336" text-anchor="middle" font-size="11" fill="#334155">⑦ continue</text>
+
+<line x1="855" y1="376" x2="148" y2="376" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="501" y="368" text-anchor="middle" font-size="11" fill="#16a34a">⑧ [Breakpoint 1] 命中 hits goroutine(1):1 total:1</text>
+
+<line x1="140" y1="408" x2="482" y2="408" stroke="#334155" stroke-width="1.5" marker-end="url(#arDLV)"/>
+<text x="311" y="400" text-anchor="middle" font-size="11" fill="#334155">⑨ bt → main.main at ./main.go:13（否则一片 ???）</text>
+
+<text x="655" y="464" font-size="11" fill="#64748b">launch.json 配 substitutePath：</text>
+<text x="655" y="482" font-size="11" fill="#64748b">from ${workspaceFolder} to /app</text>
+<text x="655" y="500" font-size="11" fill="#64748b">否则断点落在「源码找不到」的死点</text>
+
+<text x="40" y="468" font-size="11" fill="#64748b">小结：想看到 main 必须先 break main.main 再 continue ——</text>
+<text x="40" y="486" font-size="11" fill="#64748b">这是新手「bt 出来一片问号」的最常见原因</text>
+</svg>

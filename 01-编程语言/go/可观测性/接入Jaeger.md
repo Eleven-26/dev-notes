@@ -135,6 +135,10 @@ InitNATS(cfg)                                             // ③ 其它 instrume
 
 > ⚠️ 判「某个组件会不会被顺序影响」，就看它是**在初始化时取一次** `otel.GetTracerProvider()`，还是**每次请求现取**：前者必须排在 `InitJaeger` 之后，后者不受影响。日志器、配置、指标注册表也有同样的「先发布全局单例、再初始化捕获它的下游」特征。
 
+![Go 进程内 OTel 埋点对象结构与初始化顺序架构图](images/Go进程内OTel埋点架构.svg)
+
+**图怎么读**：中列四个埋点入口都向同一个包级 `TracerProvider` 交 span；右列绿/橙两框是第四节的单例边界（有连接、协程、连接池 → 进程级；`ctx`/`span` → 请求级）；底部链条是第五节初始化顺序，橙框 GORM 插件在 `Install` 时捕获 ① 发布的全局单例，顺序颠倒即触发红行后果。
+
 ---
 
 ## 六、HTTP 入口与出站调用
@@ -231,6 +235,10 @@ go func(ctx context.Context) {
 ```
 
 ⚠️ 注意父 span 的生命周期：如果父 span 在 goroutine 跑完前就 `End()` 了，子 span 仍会挂在同一条 trace 上，但**父的耗时不覆盖子的耗时**，瀑布图上会出现「子 span 超出父 span 右边界」。要覆盖就得让父等待（`sync.WaitGroup` / `errgroup`）。
+
+![traceparent 进入后 span 与 ctx 在请求和 goroutine 间的传播调用时序图](images/链路上下文传播时序.svg)
+
+**图怎么读**：四条生命线自左向右是请求的落地路径；每条横向箭头对应一条铁律——`tracer.Start` 的**返回新 ctx** 继续向下传、`go func(ctx)` 显式带 ctx、错误路径标红。底部左灰框是「同一 ctx 一路向下」的 SQL 侧后果，右红框是反模式（ctx 存字段）与跨进程续接条件。
 
 ---
 
@@ -404,6 +412,10 @@ infrastructure.Shutdown(ctx)   // 2. 再 flush span 队列
    ▼
 jaeger（v2，collector+query 一体）──▶ ClickHouse（库 jaeger）──▶ Jaeger UI :16686
 ```
+
+![OTel SDK 埋点经 OTLP 4317 上报 Jaeger v2 落 ClickHouse 的数据流转图](images/OTel上报链路数据流.svg)
+
+**图怎么读**：纵向主干就是 12.2 的上报链路，backend 面板内 ①~④ 对应四类埋点落点（12.3 表）；Jaeger 与 ClickHouse 只画到端点为止，它们的内部架构与部署见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md)。右侧黄框是 12.1 的「二选一」约束，红框是 12.4 的挂载坑。
 
 ### 12.3 接入落点
 

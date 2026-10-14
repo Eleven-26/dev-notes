@@ -85,6 +85,8 @@ wg.Wait()
 | **按下标写切片**（本节） | 结果数量已知、需要按输入顺序排列 |
 | **channel 汇总** | 结果数量不定 / 要先到先处理 —— 见 [channel实战模式.md](channel实战模式.md) 用法三 |
 
+![按下标写切片为什么免锁的数据结构形态：上半是 results 预分配成固定长度、协程 i 只写自己那一格 results[i] = fetchOne(id)，没有任何两个协程碰同一块内存；下半是改成 append 时的竞争点 —— 多个协程同读 len、同写尾部那一个槽、还要一起更新 header，所以那时才需要加锁](images/goroutine按下标写切片免锁结构.svg)
+
 ### 案例 4：一错全停 —— `errgroup.WithContext`
 
 ```go

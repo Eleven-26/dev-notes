@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">span 上下文跟线程走：断链的位置与四种修法</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Java 进程内的调用时序（第十一节）；表格四行原样对应右侧四个修法框</text>
+
+  <defs>
+    <marker id="arXt" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="90" width="270" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="112" font-size="12" font-weight="bold" fill="#0f172a">主线程：HTTP 请求进来</text>
+  <text x="52" y="131" font-size="11" fill="#334155">插件增强生成 traceId，日志 %tid 有值</text>
+  <text x="52" y="150" font-size="11" fill="#334155">上下文绑在当前线程上</text>
+
+  <rect x="40" y="190" width="270" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="212" font-size="12" font-weight="bold" fill="#0f172a">任务交给线程池</text>
+  <text x="52" y="231" font-size="11" fill="#334155">executor.submit(new ExportTask())</text>
+  <text x="52" y="250" font-size="11" fill="#334155">@Async / CompletableFuture 同理</text>
+
+  <rect x="40" y="290" width="270" height="76" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="52" y="312" font-size="12" font-weight="bold" fill="#7f1d1d">❌ 断链：子线程拿不到 traceId</text>
+  <text x="52" y="331" font-size="11" fill="#7f1d1d">日志里 %tid 输出 N/A</text>
+  <text x="52" y="350" font-size="11" fill="#7f1d1d">「HTTP 有 trace，异步那部分查不到」</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="175" y1="166" x2="175" y2="190" marker-end="url(#arXt)"/>
+    <line x1="175" y1="266" x2="175" y2="290" marker-end="url(#arXt)"/>
+  </g>
+
+  <text x="380" y="104" font-size="13" font-weight="bold" fill="#0f172a">接回链路的四种处理方式（第十一节原表）</text>
+
+  <rect x="380" y="120" width="270" height="96" rx="8" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="392" y="142" font-size="12" font-weight="bold" fill="#0f172a">① 自建线程池</text>
+  <text x="392" y="163" font-size="11" fill="#334155">用 bootstrap-plugins/ 的线程池插件</text>
+  <text x="392" y="183" font-size="11" fill="#334155">（增强 ThreadPoolExecutor）</text>
+  <text x="392" y="203" font-size="11" fill="#334155">或 RunnableWrapper / CallableWrapper 包一层</text>
+
+  <rect x="690" y="120" width="270" height="96" rx="8" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="702" y="142" font-size="12" font-weight="bold" fill="#0f172a">② Spring @Async</text>
+  <text x="702" y="163" font-size="11" fill="#334155">拷 apm-spring-async-plugin</text>
+  <text x="702" y="183" font-size="11" fill="#334155">（它在 optional-plugins/ 里）</text>
+  <text x="702" y="203" font-size="11" fill="#334155">手动拷到 plugins/ 才生效</text>
+
+  <rect x="380" y="240" width="270" height="96" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="392" y="262" font-size="12" font-weight="bold" fill="#14532d">③ 手动传递</text>
+  <text x="392" y="283" font-size="11" fill="#166534">ContextManager.capture() 拿快照</text>
+  <text x="392" y="303" font-size="11" fill="#166534">子线程 continued(snapshot) 接回上下文</text>
+  <text x="392" y="323" font-size="11" fill="#166534">快照要显式传进子线程</text>
+
+  <rect x="690" y="240" width="270" height="96" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="702" y="262" font-size="12" font-weight="bold" fill="#14532d">④ 注解式</text>
+  <text x="702" y="283" font-size="11" fill="#166534">@TraceCrossThread 标注类 / 方法</text>
+  <text x="702" y="303" font-size="11" fill="#166534">需 apm-spring-annotation-plugin</text>
+  <text x="702" y="323" font-size="11" fill="#166534">块内 SQL / HTTP 挂在提交任务那条链路上</text>
+
+  <line x1="310" y1="328" x2="380" y2="288" stroke="#334155" stroke-width="1.6" marker-end="url(#arXt)"/>
+
+  <rect x="40" y="370" width="440" height="86" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="52" y="392" font-size="12" font-weight="bold" fill="#7c2d12">⚠️ 症状与判据（Java 侧接入后最常见）</text>
+  <text x="52" y="413" font-size="11" fill="#7c2d12">「HTTP 请求有 trace，但异步导出的那部分查不到」，</text>
+  <text x="52" y="433" font-size="11" fill="#7c2d12">或日志里 %tid 输出 N/A——十有八九是跨线程没处理</text>
+
+  <rect x="520" y="370" width="440" height="86" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="532" y="392" font-size="12" font-weight="bold" fill="#7c2d12">⚠️ 响应式 / 虚拟线程要额外验证</text>
+  <text x="532" y="413" font-size="11" fill="#7c2d12">Reactor、WebFlux、Loom 虚拟线程调度模型与平台线程不同</text>
+  <text x="532" y="433" font-size="11" fill="#7c2d12">上下文传播依赖对应版本插件支持，升级前先查 Support-Version-Matrix</text>
+
+  <text x="40" y="486" font-size="11" fill="#64748b">小结：断链点永远在「换线程」那一步——①②靠插件在提交任务时自动带上上下文，③④要自己把快照或注解交接过去。</text>
+  <text x="40" y="510" font-size="11" fill="#64748b">图怎么读：这与 Jaeger 侧线程池没做上下文传播（%X{traceId} 为空）是同一类问题，见 接入Jaeger.md 第七节。</text>
+  <text x="40" y="534" font-size="11" fill="#64748b">参照写法：@TraceCrossThread public class ExportTask implements Runnable { … }，run() 里的调用会挂回原链路。</text>
+</svg>

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="630" viewBox="0 0 1000 630" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="630" fill="#ffffff"/>
+  <defs>
+    <marker id="arKfP" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">kafka-go 生产端在进程内的数据流</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">sync.OnceValue 单例 → 惰性建连 → 攒批 → Hash 定分区 → RequireAll 确认</text>
+
+  <rect x="300" y="76" width="400" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="98" font-size="13" text-anchor="middle" fill="#0f172a">1. 进程启动只建一次 Writer 单例</text>
+  <text x="500" y="116" font-size="12" text-anchor="middle" fill="#334155">var orderWriter = sync.OnceValue(...)</text>
+  <text x="500" y="134" font-size="12" text-anchor="middle" fill="#334155">Addr / Topic / Balancer / RequiredAcks</text>
+
+  <line x1="500" y1="140" x2="500" y2="156" stroke="#334155" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <rect x="300" y="160" width="400" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="182" font-size="13" text-anchor="middle" fill="#0f172a">2. 构造不建 TCP：惰性连接</text>
+  <text x="500" y="202" font-size="12" text-anchor="middle" fill="#334155">第一次 WriteMessages 才连 Broker</text>
+
+  <rect x="40" y="160" width="236" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="158" y="182" font-size="12" text-anchor="middle" fill="#334155">构造放 main / DI 初始化</text>
+  <text x="158" y="202" font-size="12" text-anchor="middle" fill="#64748b">别在 handler 里每次 new</text>
+  <line x1="276" y1="188" x2="300" y2="188" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <line x1="500" y1="216" x2="500" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <rect x="300" y="236" width="400" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="258" font-size="13" text-anchor="middle" fill="#0f172a">3. 请求内攒批发送</text>
+  <text x="500" y="276" font-size="12" text-anchor="middle" fill="#334155">BatchTimeout: 10 * time.Millisecond</text>
+  <text x="500" y="294" font-size="12" text-anchor="middle" fill="#334155">实测单批 542 条 / 约 16 KiB</text>
+
+  <line x1="500" y1="300" x2="500" y2="316" stroke="#334155" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <rect x="300" y="320" width="400" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="342" font-size="13" text-anchor="middle" fill="#0f172a">4. Balancer 按 key 定分区</text>
+  <text x="500" y="360" font-size="12" text-anchor="middle" fill="#334155">ORDER_1001 → partition=2</text>
+  <text x="500" y="378" font-size="12" text-anchor="middle" fill="#334155">ORDER_1002 → partition=0</text>
+
+  <rect x="744" y="320" width="216" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="852" y="342" font-size="12" text-anchor="middle" fill="#334155">不设默认轮询</text>
+  <text x="852" y="362" font-size="11" text-anchor="middle" fill="#64748b">同 key 打散到不同分区</text>
+  <text x="852" y="380" font-size="11" text-anchor="middle" fill="#64748b">顺序保证直接失效</text>
+  <line x1="700" y1="352" x2="744" y2="352" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <line x1="500" y1="384" x2="500" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <rect x="300" y="404" width="400" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="426" font-size="13" text-anchor="middle" fill="#0f172a">5. RequiredAcks = kafka.RequireAll</text>
+  <text x="500" y="444" font-size="12" text-anchor="middle" fill="#334155">默认 RequireNone 等价 acks=0</text>
+  <text x="500" y="462" font-size="12" text-anchor="middle" fill="#334155">Async: false 才拿得到错误</text>
+
+  <rect x="40" y="404" width="236" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="158" y="426" font-size="12" text-anchor="middle" fill="#7c2d12">Async: true 要慎用</text>
+  <text x="158" y="446" font-size="11" text-anchor="middle" fill="#7c2d12">错误交给后台重试</text>
+  <text x="158" y="464" font-size="11" text-anchor="middle" fill="#7c2d12">WriteMessages 立刻返回 nil</text>
+  <line x1="276" y1="436" x2="300" y2="436" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <rect x="120" y="492" width="300" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="270" y="516" font-size="13" text-anchor="middle" fill="#14532d">同步返回 nil</text>
+  <text x="270" y="536" font-size="11" text-anchor="middle" fill="#14532d">PRODUCE ok: 6 messages</text>
+  <text x="270" y="552" font-size="11" text-anchor="middle" fill="#14532d">acks=all, balancer=Hash</text>
+
+  <rect x="580" y="492" width="300" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="730" y="516" font-size="13" text-anchor="middle" fill="#7f1d1d">失败即真失败</text>
+  <text x="730" y="536" font-size="11" text-anchor="middle" fill="#7f1d1d">write failed: [3] Unknown Topic</text>
+  <text x="730" y="552" font-size="11" text-anchor="middle" fill="#7f1d1d">Or Partition，先显式建 Topic</text>
+
+  <path d="M460,468 L460,480 L270,480 L270,492" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arKfP)"/>
+  <path d="M540,468 L540,480 L730,480 L730,492" fill="none" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arKfP)"/>
+
+  <text x="40" y="582" font-size="11" fill="#64748b">小结：每条 kafka.Message 是请求级，Key / Value / Headers（x-biz-id、x-trace-id）随消息走，不能挂到单例 Writer 的字段上。</text>
+  <text x="40" y="602" font-size="11" fill="#64748b">退出：orderWriter().Close()；不 Close 会让缓冲中未发出的批丢失、后台 flush 协程泄漏。</text>
+</svg>

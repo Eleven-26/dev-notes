@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="380" viewBox="0 0 1000 380" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="380" fill="#ffffff"/>
+<defs>
+<marker id="arRS" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">range 字符串：索引是字节偏移，取出来的值是 rune</text>
+<text x="40" y="58" font-size="13" fill="#64748b">2.3 的实测这一行一共迭代四轮（中、文、a、b）；两个汉字各占 3 个字节，索引就 0 → 3 → 6 跳着走，a、b 才连着 +1</text>
+
+<rect x="60" y="80" width="320" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="220" y="100" font-size="12" text-anchor="middle" fill="#1e3a5f">一个 rune：中（占 3 字节）</text>
+<rect x="390" y="80" width="320" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="550" y="100" font-size="12" text-anchor="middle" fill="#1e3a5f">一个 rune：文（占 3 字节）</text>
+<rect x="720" y="80" width="100" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="770" y="100" font-size="12" text-anchor="middle" fill="#1e3a5f">a</text>
+<rect x="830" y="80" width="100" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="880" y="100" font-size="12" text-anchor="middle" fill="#1e3a5f">b</text>
+
+<rect x="60" y="116" width="100" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="110" y="144" font-size="13" text-anchor="middle" fill="#0f172a">0</text>
+<rect x="170" y="116" width="100" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="220" y="144" font-size="13" text-anchor="middle" fill="#64748b">1</text>
+<rect x="280" y="116" width="100" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="330" y="144" font-size="13" text-anchor="middle" fill="#64748b">2</text>
+<rect x="390" y="116" width="100" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="440" y="144" font-size="13" text-anchor="middle" fill="#0f172a">3</text>
+<rect x="500" y="116" width="100" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="550" y="144" font-size="13" text-anchor="middle" fill="#64748b">4</text>
+<rect x="610" y="116" width="100" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="660" y="144" font-size="13" text-anchor="middle" fill="#64748b">5</text>
+<rect x="720" y="116" width="100" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="770" y="144" font-size="13" text-anchor="middle" fill="#0f172a">6</text>
+<rect x="830" y="116" width="100" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="880" y="144" font-size="13" text-anchor="middle" fill="#0f172a">7</text>
+
+<text x="60" y="180" font-size="12" fill="#64748b">字节下标（数组视角）</text>
+
+<line x1="110" y1="216" x2="110" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arRS)"/>
+<line x1="440" y1="216" x2="440" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arRS)"/>
+<line x1="770" y1="216" x2="770" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arRS)"/>
+<line x1="880" y1="216" x2="880" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arRS)"/>
+<text x="60" y="234" font-size="12" fill="#1e3a5f">第 1 轮 i=0 r=中</text>
+<text x="390" y="234" font-size="12" fill="#1e3a5f">第 2 轮 i=3 r=文</text>
+<text x="720" y="234" font-size="12" fill="#1e3a5f">第 3 轮 i=6</text>
+<text x="830" y="234" font-size="12" fill="#1e3a5f">第 4 轮 i=7</text>
+
+<text x="60" y="266" font-size="12" fill="#334155">索引 i 按字节走，取到的 r 按码点走 —— 一个汉字吃掉 3 格，下一轮的 i 直接从 3 开始</text>
+
+<rect x="40" y="284" width="920" height="66" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="310" font-size="12" fill="#0f172a">实测：5_range 字符串 : [i=0,r=中] [i=3,r=文] [i=6,r=a] [i=7,r=b]</text>
+<text x="60" y="334" font-size="12" fill="#0f172a">这一行与 go.mod 声明的 1.21 / 1.22 无关，两次跑出来的读数完全相同</text>
+
+<text x="40" y="368" font-size="11" fill="#64748b">小结：格数、下标和四轮读数都取自 2.3 的实测第 5 行，不画正文没给的字节内容</text>
+</svg>

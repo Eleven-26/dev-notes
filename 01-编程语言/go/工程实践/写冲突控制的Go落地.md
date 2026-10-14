@@ -108,6 +108,8 @@ func jitter(attempt int) time.Duration {
 }
 ```
 
+![乐观锁扣减与重试流程](images/写冲突乐观锁扣减重试流程.svg)
+
 **两个必须能说清的边界**：
 
 | 边界问题 | 结论 |
@@ -311,6 +313,8 @@ func Accumulate(ctx context.Context, db *sql.DB, day string, delta int64) error 
 > **`ON DUPLICATE KEY UPDATE` 的两个坑**：① 它依赖**唯一键**才能判重，没有唯一索引就是纯 `INSERT`；
 > ② 主从架构下它写的是 **statement 相关的 binlog**，用 `VALUES(col)` 老语法在 8.0.20+ 已废弃，
 > 推荐别名写法 `INSERT INTO t (...) VALUES (...) AS new ON DUPLICATE KEY UPDATE cnt = cnt + new.cnt`。
+
+![ConsumeOnce 幂等闸门流程](images/写冲突唯一索引幂等闸门流程.svg)
 
 ## 延伸追问
 

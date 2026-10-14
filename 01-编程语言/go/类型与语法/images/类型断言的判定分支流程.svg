@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="730" viewBox="0 0 1000 730" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="730" fill="#ffffff"/>
+<defs>
+<marker id="arAS" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">类型断言 i.(T) 与 type switch 的判定分支</text>
+<text x="40" y="58" font-size="13" fill="#64748b">判据只有两问：接口里有没有类型字、断言目标 T 是具体类型还是接口（第二、四节）</text>
+
+<rect x="380" y="84" width="240" height="36" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="107" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a8a">接口值断言 i.(T)</text>
+<line x1="500" y1="120" x2="500" y2="132" stroke="#334155" stroke-width="1.5" marker-end="url(#arAS)"/>
+
+<rect x="360" y="136" width="280" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="500" y="163" font-size="12" text-anchor="middle" fill="#854d0e">第 1 个字（类型字）是否为 0？</text>
+<line x1="360" y1="158" x2="324" y2="158" stroke="#334155" stroke-width="1.5" marker-end="url(#arAS)"/>
+<text x="336" y="150" font-size="11" fill="#64748b">是</text>
+<line x1="500" y1="180" x2="500" y2="244" stroke="#334155" stroke-width="1.5" marker-end="url(#arAS)"/>
+<text x="512" y="200" font-size="11" fill="#64748b">否</text>
+
+<rect x="40" y="136" width="280" height="100" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="52" y="158" font-size="12" font-weight="bold" fill="#14532d">nil 接口：安全返回</text>
+<text x="52" y="180" font-size="11" fill="#14532d">返回 T 的零值 + ok = false</text>
+<text x="52" y="202" font-size="11" fill="#14532d">不会 panic，「先断言再判 ok」</text>
+<text x="52" y="224" font-size="11" fill="#14532d">是安全的，无需先判 i != nil</text>
+
+<rect x="340" y="250" width="320" height="48" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="500" y="279" font-size="12" text-anchor="middle" fill="#854d0e">断言目标 T 是具体类型还是接口？</text>
+<line x1="400" y1="298" x2="210" y2="322" stroke="#334155" stroke-width="1.5" marker-end="url(#arAS)"/>
+<line x1="600" y1="298" x2="790" y2="322" stroke="#334155" stroke-width="1.5" marker-end="url(#arAS)"/>
+
+<rect x="40" y="326" width="290" height="126" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="52" y="348" font-size="12" font-weight="bold" fill="#1e3a8a">目标 T 是具体类型</text>
+<text x="52" y="370" font-size="11" fill="#334155">比较动态类型是不是 T</text>
+<text x="52" y="392" font-size="11" fill="#334155">断言到具体类型 File 成功，</text>
+<text x="52" y="414" font-size="11" fill="#334155">name = "a.txt"</text>
+<text x="52" y="436" font-size="11" fill="#334155">File=true　Closer=false</text>
+
+<rect x="670" y="326" width="290" height="126" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="682" y="348" font-size="12" font-weight="bold" fill="#7c2d12">目标 T 是接口</text>
+<text x="682" y="370" font-size="11" fill="#334155">看动态类型的方法集是否</text>
+<text x="682" y="392" font-size="11" fill="#334155">包含 T 的全部方法</text>
+<text x="682" y="414" font-size="11" fill="#334155">（子集关系自动成立，1.2）</text>
+<text x="682" y="436" font-size="11" fill="#334155">itab.hash 做快速否定（4.1）</text>
+
+<rect x="340" y="472" width="320" height="120" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="352" y="494" font-size="12" font-weight="bold" fill="#7f1d1d">失败时两种写法分道扬镳</text>
+<text x="352" y="516" font-size="11" fill="#7f1d1d">双值 v, ok := i.(T) → v 是 T 的</text>
+<text x="352" y="538" font-size="11" fill="#7f1d1d">零值、ok = false，不 panic</text>
+<text x="352" y="560" font-size="11" fill="#7f1d1d">单值 v := i.(T) → panic</text>
+<text x="352" y="582" font-size="11" fill="#7f1d1d">interface conversion: ...</text>
+<line x1="185" y1="452" x2="420" y2="468" stroke="#334155" stroke-width="1.5" marker-end="url(#arAS)"/>
+<line x1="815" y1="452" x2="580" y2="468" stroke="#334155" stroke-width="1.5" marker-end="url(#arAS)"/>
+
+<rect x="40" y="610" width="920" height="78" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="634" font-size="11" fill="#0f172a">⭐ 生产代码一律用双值形式；单值形式只在你已经用 type switch 或别的方式确认过类型之后再写（2.1）</text>
+<text x="60" y="656" font-size="11" fill="#0f172a">type switch：各 case 里 val 是对应类型；一个 case 列多个类型或 default 时退回接口类型；没有 fallthrough，命中即结束（2.4）</text>
+<text x="60" y="678" font-size="11" fill="#0f172a">只能对接口做断言：x 是 int 时直接编译不过 —— invalid operation: x (variable of type int) is not an interface（2.5）</text>
+
+<text x="40" y="712" font-size="11" fill="#64748b">口诀：先问类型字是不是 0，再问目标 T 是类型还是接口；失败也不 panic 的是双值形式。</text>
+</svg>

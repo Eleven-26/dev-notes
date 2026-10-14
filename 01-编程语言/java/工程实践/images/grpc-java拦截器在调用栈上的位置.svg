@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="700" viewBox="0 0 1000 700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">拦截器在 Java 调用栈上的位置：客户端包两层、服务端包一层</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">架构图；写法出自第四节 4.1、4.2 与第六节 ①⑤，读数取自 4.5 实测（三轮只有 deadline 的 cost 在动）</text>
+
+  <defs>
+    <marker id="arG4" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="60" y="92" font-size="13" font-weight="bold" fill="#2563eb">客户端：ForwardingClientCall + ForwardingClientCallListener</text>
+  <text x="540" y="92" font-size="13" font-weight="bold" fill="#16a34a">服务端：ForwardingServerCall 覆写 sendHeaders 与 close</text>
+
+  <rect x="60" y="104" width="400" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="72" y="124" font-size="10.5" fill="#0f172a">ClientInterceptors.intercept(channel, cliIc)</text>
+  <text x="72" y="142" font-size="10" fill="#64748b">得到 intercepted，后面所有调用都过这层</text>
+
+  <rect x="60" y="178" width="400" height="56" rx="6" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="72" y="198" font-size="10.5" fill="#0f172a">interceptCall(m, o, next)</text>
+  <text x="72" y="216" font-size="10" fill="#64748b">cliLog.add("in " + m.getFullMethodName())</text>
+
+  <rect x="60" y="252" width="400" height="56" rx="6" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="72" y="272" font-size="10.5" fill="#0f172a">第一层：SimpleForwardingClientCall(next.newCall(m, o))</text>
+  <text x="72" y="290" font-size="10" fill="#64748b">包的是「调用本身」</text>
+
+  <rect x="60" y="326" width="400" height="56" rx="6" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="72" y="346" font-size="10.5" fill="#0f172a">第二层：start() 里包 SimpleForwardingClientCall</text>
+  <text x="72" y="364" font-size="10" fill="#64748b">Listener，才能挂到结束事件上</text>
+
+  <rect x="60" y="400" width="400" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="72" y="420" font-size="10.5" fill="#14532d">onClose(status, trailers)：out code= status.getCode()</text>
+  <text x="72" y="438" font-size="10" fill="#64748b">正好对应 Go 侧 UnaryInvoker 里 err 那个位置</text>
+
+  <text x="60" y="480" font-size="10.5" fill="#334155">实测 interceptor cli: [in demo.Echo/Unary, out code=OK]</text>
+
+  <rect x="540" y="104" width="400" height="56" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+  <text x="552" y="124" font-size="10.5" fill="#0f172a">ServerInterceptor 拿到 call 与 headers</text>
+  <text x="552" y="142" font-size="10" fill="#64748b">mdCount = mdCount(headers, TRACE_ID)（键不存在返回 null）</text>
+
+  <rect x="540" y="178" width="400" height="56" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="552" y="198" font-size="10.5" fill="#7c2d12">包一层 SimpleForwardingServerCall(call)</text>
+  <text x="552" y="216" font-size="10" fill="#7c2d12">不能在拦截器里直接 call.sendHeaders()</text>
+
+  <rect x="540" y="252" width="400" height="56" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+  <text x="552" y="272" font-size="10.5" fill="#0f172a">覆写 sendHeaders(Metadata responseHeaders)</text>
+  <text x="552" y="290" font-size="10" fill="#64748b">put x-handler=unary、x-md-count 后再 super.sendHeaders</text>
+
+  <rect x="540" y="326" width="400" height="56" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+  <text x="552" y="346" font-size="10.5" fill="#0f172a">覆写 close(Status status, Metadata trailers)</text>
+  <text x="552" y="364" font-size="10" fill="#64748b">srvLog 记 out 方法名与 code，再 put x-trailer-note</text>
+
+  <rect x="540" y="400" width="400" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="552" y="420" font-size="10.5" fill="#14532d">return next.startCall(wrapped, headers)</text>
+  <text x="552" y="438" font-size="10" fill="#64748b">这一句不能少，少了包装就等于没做</text>
+
+  <text x="540" y="480" font-size="10.5" fill="#334155">实测 interceptor srv: [in demo.Echo/Unary, out demo.Echo/Unary code=OK]</text>
+
+  <line x1="260" y1="160" x2="260" y2="178" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+  <line x1="260" y1="234" x2="260" y2="252" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+  <line x1="260" y1="308" x2="260" y2="326" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+  <line x1="260" y1="382" x2="260" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+  <line x1="740" y1="160" x2="740" y2="178" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+  <line x1="740" y1="234" x2="740" y2="252" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+  <line x1="740" y1="308" x2="740" y2="326" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+  <line x1="740" y1="382" x2="740" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#arG4)"/>
+
+  <rect x="40" y="500" width="920" height="120" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="56" y="524" font-size="11" fill="#7f1d1d">① 拦截器里抢先 call.sendHeaders(...)：handler 首次 onNext 抛 IllegalStateException: sendHeaders has already been called（实测踩过）。</text>
+  <text x="56" y="548" font-size="11" fill="#7f1d1d">⑤ 只在本地 headers 上 put 默认值、再 startCall(call, new Metadata())：下游看不到，headers 必须原样交给 next.startCall(...)。</text>
+  <text x="56" y="572" font-size="11" fill="#7f1d1d">对照 Go：响应头与 trailer 走 ctx 侧信道（grpc.SetHeader / SetTrailer）；Java 没有这个侧信道，只能把 ServerCall 包一层再交给下游。</text>
+  <text x="56" y="596" font-size="11" fill="#7f1d1d">onHeaders 是响应头、onClose 的第二个参数才是 trailer，写反了会拿到 null；sendMessage 之后必须 halfClose()，再 request(1)。</text>
+
+  <text x="40" y="646" font-size="11" fill="#64748b">小结：客户端要包两层——ForwardingClientCall 改调用本身，ForwardingClientCallListener 才挂得到结束事件；服务端包一层 ServerCall，</text>
+  <text x="40" y="672" font-size="11" fill="#64748b">header 与 trailer 都靠覆写注入。实测 x-md-count=1 说明请求头里的 x-trace-id 服务端确实看得见，trailer 值是 set-in-server-interceptor。</text>
+</svg>

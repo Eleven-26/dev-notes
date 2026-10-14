@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="780" viewBox="0 0 1000 780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="780" fill="#ffffff"/>
+<defs>
+<marker id="arAP" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">append 什么时候扩容，扩容的三步怎么走</text>
+<text x="40" y="58" font-size="13" fill="#64748b">判据只有一条：底层数组被填满（len == cap）之后再 append 才会扩容（1.2）</text>
+
+<rect x="340" y="80" width="320" height="36" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="103" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a8a">s = append(s, x)</text>
+<line x1="500" y1="116" x2="500" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#arAP)"/>
+
+<rect x="340" y="134" width="320" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="500" y="161" font-size="12" text-anchor="middle" fill="#854d0e">len == cap？底层数组是否已填满</text>
+<line x1="340" y1="156" x2="324" y2="156" stroke="#334155" stroke-width="1.5" marker-end="url(#arAP)"/>
+<text x="330" y="148" font-size="11" fill="#64748b">否</text>
+<line x1="500" y1="178" x2="500" y2="200" stroke="#334155" stroke-width="1.5" marker-end="url(#arAP)"/>
+<text x="512" y="196" font-size="11" fill="#64748b">是</text>
+
+<rect x="40" y="134" width="280" height="80" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="52" y="158" font-size="11" font-weight="bold" fill="#14532d">不扩容：直接写在原底层数组上</text>
+<text x="52" y="180" font-size="11" fill="#14532d">多个切片可能共享同一底层数组</text>
+<text x="52" y="202" font-size="11" fill="#64748b">这是常见 bug 的来源（延伸追问）</text>
+
+<rect x="340" y="208" width="320" height="146" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="352" y="232" font-size="12" font-weight="bold" fill="#7c2d12">第 1 步：计算 newcap</text>
+<text x="352" y="256" font-size="11" fill="#334155">newLen = 老 len + append 的元素数</text>
+<text x="352" y="278" font-size="11" fill="#334155">① newLen &gt; 2 × oldCap → 取 newLen</text>
+<text x="352" y="300" font-size="11" fill="#334155">② oldCap &lt; 256 → 2 × oldCap（双倍）</text>
+<text x="352" y="322" font-size="11" fill="#334155">   oldCap ≥ 256 → 平滑过渡到 1.25 ×</text>
+<text x="352" y="344" font-size="11" fill="#334155">③ newcap &lt;= 0 溢出 → newcap = newLen</text>
+<line x1="660" y1="280" x2="696" y2="280" stroke="#334155" stroke-width="1.5" marker-end="url(#arAP)"/>
+
+<rect x="700" y="208" width="260" height="146" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="712" y="232" font-size="12" font-weight="bold" fill="#0f172a">扩容规则（1.3 Go 1.18+）</text>
+<text x="712" y="256" font-size="11" fill="#334155">老 cap &lt; 256 → 双倍 ×2</text>
+<text x="712" y="278" font-size="11" fill="#334155">老 cap ≥ 256 → 过渡到 1.25 ×</text>
+<text x="712" y="300" font-size="11" fill="#334155">申请 &gt; 2 × 老 cap → 用 len+新增</text>
+<text x="712" y="326" font-size="11" fill="#64748b">不每次 +1 的两个原因：</text>
+<text x="712" y="348" font-size="11" fill="#64748b">对齐让 CPU 寻址更快</text>
+
+<line x1="500" y1="354" x2="500" y2="368" stroke="#334155" stroke-width="1.5" marker-end="url(#arAP)"/>
+
+<rect x="340" y="374" width="320" height="110" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="352" y="398" font-size="12" font-weight="bold" fill="#1e3a8a">第 2 步：算实际分配的大小</text>
+<text x="352" y="422" font-size="11" fill="#334155">理论大小 = newcap × elemsize</text>
+<text x="352" y="444" font-size="11" fill="#334155">再过 Go 内存分配器的 size class 对齐</text>
+<text x="352" y="466" font-size="11" fill="#334155">例：算出 1000 可能实际分配 1024、1224</text>
+
+<rect x="700" y="374" width="260" height="110" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="712" y="398" font-size="12" font-weight="bold" fill="#854d0e">两条铁律（2.3）</text>
+<text x="712" y="422" font-size="11" fill="#334155">返回值必须接住，不接就</text>
+<text x="712" y="444" font-size="11" fill="#334155">等于把新数组丢了</text>
+<text x="712" y="466" font-size="11" fill="#334155">想让 len 生效 → 传 *[]T</text>
+
+<line x1="500" y1="484" x2="500" y2="498" stroke="#334155" stroke-width="1.5" marker-end="url(#arAP)"/>
+
+<rect x="340" y="504" width="320" height="130" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="352" y="528" font-size="12" font-weight="bold" fill="#0f172a">第 3 步：分配内存并拷贝</text>
+<text x="352" y="552" font-size="11" fill="#334155">不含指针：分配 cap 大小，只清空后半段</text>
+<text x="352" y="574" font-size="11" fill="#334155">（前半段 copy 老数据时会被覆盖）</text>
+<text x="352" y="596" font-size="11" fill="#334155">含指针：分配并清空；老 len &gt; 0 且启用</text>
+<text x="352" y="618" font-size="11" fill="#334155">写屏障 → 三色标记给老数据做着色</text>
+
+<rect x="700" y="504" width="260" height="130" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="712" y="528" font-size="12" font-weight="bold" fill="#7f1d1d">为什么要换新数组</text>
+<text x="712" y="552" font-size="11" fill="#7f1d1d">数组类型是定长的，想变长</text>
+<text x="712" y="574" font-size="11" fill="#7f1d1d">只能新建一个、把老数据</text>
+<text x="712" y="596" font-size="11" fill="#7f1d1d">拷过去，再让 array 指过去</text>
+<text x="712" y="618" font-size="11" fill="#7f1d1d">最后返回新的 SliceHeader</text>
+
+<rect x="40" y="654" width="920" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="678" font-size="11" fill="#0f172a">能预知大小就提前分配好 cap：make([]Item, 0, 100) 之后 append 一百次，一次都不扩容（1.4）</text>
+<text x="60" y="700" font-size="11" fill="#0f172a">确定就是 100 条 → make([]Item, 100) 按索引直接赋值，cap 刚好是 100，同样不扩容</text>
+<text x="60" y="722" font-size="11" fill="#0f172a">写屏障要解决的问题：让 GC 认得出「指针已经复制到新数组」，避免老对象被提前回收、新对象被漏标</text>
+<text x="60" y="744" font-size="11" font-weight="bold" fill="#0f172a">小结：newcap 不是随便取的——小切片双倍、大切片平滑过渡到 1.25 倍，在扩容次数与内存浪费之间取平衡。</text>
+</svg>

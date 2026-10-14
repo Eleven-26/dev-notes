@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="510" fill="#ffffff"/>
+  <defs>
+    <marker id="arEG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arER" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+    <marker id="arEO" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">errgroup 三合一：等齐、收敛错误、级联取消</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">x/sync v0.23.0 容器实测 —— Go / Wait / WithContext 三条契约与 SetLimit 令牌语义</text>
+
+  <text x="470" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">errgroup.Group（字段取自源码阅读）</text>
+
+  <rect x="60" y="150" width="180" height="110" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="150" y="174" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">调用方</text>
+  <text x="150" y="198" text-anchor="middle" font-size="11" fill="#0f172a">g.Go(...) / g.Wait()</text>
+  <text x="150" y="222" text-anchor="middle" font-size="11" fill="#0f172a">第一个 Go 必须先于 Wait</text>
+  <text x="150" y="244" text-anchor="middle" font-size="11" fill="#0f172a">Wait 返回首错</text>
+
+  <rect x="315" y="118" width="150" height="76" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="390" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">wg WaitGroup</text>
+  <text x="390" y="162" text-anchor="middle" font-size="10.5" fill="#334155">Go 第一步 Add(1)</text>
+  <text x="390" y="180" text-anchor="middle" font-size="10.5" fill="#334155">Wait 等所有 Done</text>
+  <rect x="475" y="118" width="150" height="76" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="550" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">err + errOnce</text>
+  <text x="550" y="162" text-anchor="middle" font-size="10.5" fill="#7c2d12">errOnce.Do 只记</text>
+  <text x="550" y="180" text-anchor="middle" font-size="10.5" fill="#7c2d12">第一条，后续丢弃</text>
+  <rect x="315" y="210" width="150" height="76" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="390" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#854d0e">sem chan struct{}</text>
+  <text x="390" y="254" text-anchor="middle" font-size="10.5" fill="#854d0e">SetLimit 的令牌</text>
+  <text x="390" y="272" text-anchor="middle" font-size="10.5" fill="#854d0e">满时 Go 在提交处阻塞</text>
+  <rect x="475" y="210" width="150" height="76" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="550" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">cancel(cause)</text>
+  <text x="550" y="254" text-anchor="middle" font-size="10.5" fill="#7f1d1d">WithCancelCause</text>
+  <text x="550" y="272" text-anchor="middle" font-size="10.5" fill="#7f1d1d">派生 ctx</text>
+
+  <rect x="700" y="130" width="240" height="120" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="820" y="152" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">子任务 goroutine ×N</text>
+  <text x="820" y="178" text-anchor="middle" font-size="11" fill="#14532d">select ctx.Done() 到点收工</text>
+  <text x="820" y="200" text-anchor="middle" font-size="11" fill="#14532d">不检查 ctx 的照样跑完</text>
+  <text x="820" y="222" text-anchor="middle" font-size="11" fill="#14532d">return err 交给 Group</text>
+
+  <rect x="700" y="320" width="240" height="90" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="820" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">gctx（派生 ctx）</text>
+  <text x="820" y="366" text-anchor="middle" font-size="11" fill="#7c2d12">首个非 nil error → cancel</text>
+  <text x="820" y="388" text-anchor="middle" font-size="11" fill="#7c2d12">Wait 返回后必已取消</text>
+
+  <line x1="240" y1="160" x2="313" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#arEG)"/>
+  <text x="276" y="152" text-anchor="middle" font-size="10.5" fill="#334155">起任务</text>
+  <path d="M 390 118 L 390 86 L 760 86 L 760 128" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#arEG)"/>
+  <text x="600" y="78" text-anchor="middle" font-size="10.5" fill="#334155">go f() 新起协程入组</text>
+  <line x1="315" y1="248" x2="242" y2="248" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arEO)"/>
+  <text x="278" y="240" text-anchor="middle" font-size="10" fill="#854d0e">提交处阻塞</text>
+  <line x1="550" y1="194" x2="550" y2="208" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arER)"/>
+  <line x1="700" y1="180" x2="627" y2="180" stroke="#334155" stroke-width="1.5" marker-end="url(#arEG)"/>
+  <text x="663" y="172" text-anchor="middle" font-size="10" fill="#334155">return err</text>
+  <path d="M 625 248 L 662 248 L 662 360 L 698 360" fill="none" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arER)"/>
+  <line x1="820" y1="318" x2="820" y2="254" stroke="#ea580c" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arEO)"/>
+  <text x="828" y="290" font-size="10.5" fill="#7c2d12">ctx.Done() 广播</text>
+
+  <text x="40" y="446" font-size="11" fill="#64748b">SetLimit 实现判 len(g.sem) != 0：active 期改上限 panic（modify limit while ... goroutines still active）；零值 Group 的 sem 为 nil，检不到 active。</text>
+  <text x="40" y="468" font-size="11" fill="#64748b">10 个任务、SetLimit(3)、每个睡 30ms：实测同时在飞的最大任务数 = 3 —— 阻塞发生在投递侧的 g.Go，不在协程内部。</text>
+  <text x="40" y="490" font-size="11" fill="#64748b">Group 只一次性使用不复用；cancel 只通知不强杀 —— 不检查 ctx 的任务会跑完当前一轮，Wait 也等它。</text>
+</svg>

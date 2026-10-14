@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">span 进无锁环形队列，消费线程按批 gRPC 发走</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">应用进程内的上报数据流与三种退出结果（第十二节）；OAP 侧接收与存储归 03-数据与中间件</text>
+
+  <defs>
+    <marker id="arDc" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="100" width="230" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="122" font-size="12" font-weight="bold" fill="#0f172a">拦截器产生 span</text>
+  <text x="52" y="141" font-size="11" fill="#334155">上报是异步批量的</text>
+  <text x="52" y="160" font-size="11" fill="#334155">增强点每次进出各产一段耗时</text>
+
+  <rect x="310" y="100" width="250" height="76" rx="8" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="322" y="122" font-size="12" font-weight="bold" fill="#0f172a">内存队列 DataCarrier</text>
+  <text x="322" y="141" font-size="11" fill="#334155">无锁环形队列，先攒批</text>
+  <text x="322" y="160" font-size="11" fill="#b45309">队列满 → 走 IF_POSSIBLE</text>
+
+  <rect x="600" y="100" width="170" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="612" y="122" font-size="12" font-weight="bold" fill="#0f172a">消费线程</text>
+  <text x="612" y="141" font-size="11" fill="#334155">按批 gRPC 发送</text>
+  <text x="612" y="160" font-size="11" fill="#334155">发完继续攒下一批</text>
+
+  <rect x="810" y="100" width="150" height="76" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="822" y="122" font-size="12" font-weight="bold" fill="#0f172a">OAP</text>
+  <text x="822" y="141" font-size="11" fill="#334155">gRPC 11800</text>
+  <text x="822" y="160" font-size="11" fill="#64748b">本篇只到进程边界</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="270" y1="138" x2="310" y2="138" marker-end="url(#arDc)"/>
+    <line x1="560" y1="138" x2="600" y2="138" marker-end="url(#arDc)"/>
+    <line x1="770" y1="138" x2="810" y2="138" marker-end="url(#arDc)"/>
+  </g>
+
+  <rect x="40" y="230" width="280" height="86" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="52" y="252" font-size="12" font-weight="bold" fill="#14532d">✅ SIGTERM（K8s 删 Pod、docker stop）</text>
+  <text x="52" y="273" font-size="11" fill="#166534">agent 启动时注册的 ShutdownHook 触发</text>
+  <text x="52" y="293" font-size="11" fill="#166534">先停消费者并 flush，再关 gRPC 通道</text>
+  <text x="52" y="311" font-size="11" fill="#166534">结果：队列 flush，数据完整</text>
+
+  <rect x="360" y="230" width="280" height="86" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="372" y="252" font-size="12" font-weight="bold" fill="#7f1d1d">❌ kill -9 / SIGKILL</text>
+  <text x="372" y="273" font-size="11" fill="#7f1d1d">不触发 ShutdownHook</text>
+  <text x="372" y="293" font-size="11" fill="#7f1d1d">队列里还没发出去的那一批就没了</text>
+  <text x="372" y="311" font-size="11" fill="#7f1d1d">结果：最后一批链路数据丢失</text>
+
+  <rect x="680" y="230" width="280" height="86" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="692" y="252" font-size="12" font-weight="bold" fill="#7f1d1d">❌ OOMKilled</text>
+  <text x="692" y="273" font-size="11" fill="#7f1d1d">同样不触发</text>
+  <text x="692" y="293" font-size="11" fill="#7f1d1d">还连带丢掉故障时刻最关键的数据</text>
+  <text x="692" y="311" font-size="11" fill="#7f1d1d">K8s 侧：terminationGracePeriodSeconds</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="415" y1="176" x2="180" y2="230" marker-end="url(#arDc)"/>
+    <line x1="435" y1="176" x2="500" y2="230" marker-end="url(#arDc)"/>
+    <line x1="455" y1="176" x2="820" y2="230" marker-end="url(#arDc)"/>
+  </g>
+
+  <rect x="40" y="350" width="440" height="86" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="52" y="372" font-size="12" font-weight="bold" fill="#7c2d12">⚠️ 队列满时默认 IF_POSSIBLE</text>
+  <text x="52" y="393" font-size="11" fill="#7c2d12">宁可丢数据，也不阻塞业务线程</text>
+  <text x="52" y="413" font-size="11" fill="#7c2d12">高 QPS 下「链路偶发缺失」是设计取舍，不是 bug</text>
+  <text x="52" y="431" font-size="11" fill="#7c2d12">要提高完整度：调大队列，并评估 OAP 的写入能力</text>
+
+  <rect x="520" y="350" width="440" height="86" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="532" y="372" font-size="12" font-weight="bold" fill="#7c2d12">对照：同一张表的三个判据</text>
+  <text x="532" y="393" font-size="11" fill="#7c2d12">宽限期要大于「业务请求排空 + 队列 flush」的总时间</text>
+  <text x="532" y="413" font-size="11" fill="#7c2d12">与 PHP 侧 exec 转发 SIGTERM、Go 侧 tp.Shutdown(ctx)</text>
+  <text x="532" y="431" font-size="11" fill="#7c2d12">是同一个道理（见本篇第十二节末）</text>
+
+  <text x="40" y="470" font-size="11" fill="#64748b">小结：数据只在「队列 → 消费线程 → gRPC」这一段被真正发走，强杀丢的就是这一段还没走完的那一批。</text>
+  <text x="40" y="494" font-size="11" fill="#64748b">图怎么读：三种退出方式的差别只有一件事——要不要触发 ShutdownHook。</text>
+</svg>

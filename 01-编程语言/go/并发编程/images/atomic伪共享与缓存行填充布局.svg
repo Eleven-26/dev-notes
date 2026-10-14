@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="612" viewBox="0 0 1000 612" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="612" fill="#ffffff"/>
+  <defs>
+    <marker id="arAF" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">伪共享：同一条缓存行上的两个高频写字段</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">两个 goroutine 各自原子自增一个计数器 —— 改的只是内存布局，不是逻辑</text>
+
+  <rect x="40" y="80" width="920" height="206" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="104" font-size="13" font-weight="bold" fill="#0f172a">方案一：Counters —— a、b 紧挨着，落在同一条 64 字节缓存行</text>
+
+  <rect x="90" y="124" width="120" height="32" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="150" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Core 0 写 a</text>
+  <rect x="250" y="124" width="120" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="310" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Core 1 写 b</text>
+  <line x1="134" y1="156" x2="126" y2="198" stroke="#334155" stroke-width="1.5" marker-end="url(#arAF)"/>
+  <line x1="286" y1="156" x2="214" y2="198" stroke="#334155" stroke-width="1.5" marker-end="url(#arAF)"/>
+
+  <rect x="90" y="200" width="560" height="44" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4"/>
+  <rect x="90" y="200" width="80" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="226" text-anchor="middle" font-size="11" fill="#1e3a8a">a（8 B）</text>
+  <rect x="170" y="200" width="80" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="210" y="226" text-anchor="middle" font-size="11" fill="#14532d">b（8 B）</text>
+  <text x="450" y="226" text-anchor="middle" font-size="11" fill="#64748b">同一条缓存行的其余字节</text>
+  <text x="640" y="226" text-anchor="end" font-size="11" fill="#64748b">缓存行 = 64 B</text>
+
+  <text x="662" y="134" font-size="12" fill="#334155">type Counters struct {</text>
+  <text x="672" y="152" font-size="12" fill="#334155">a atomic.Int64</text>
+  <text x="672" y="170" font-size="12" fill="#334155">b atomic.Int64</text>
+  <text x="662" y="188" font-size="12" fill="#334155">}</text>
+  <text x="662" y="216" font-size="12" fill="#dc2626">两核来回抢同一条缓存行：</text>
+  <text x="662" y="234" font-size="12" fill="#dc2626">每次写都让对方缓存失效</text>
+
+  <rect x="40" y="302" width="920" height="242" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="326" font-size="13" font-weight="bold" fill="#0f172a">方案二：Padded —— 56 字节填充把 b 推到下一条缓存行</text>
+
+  <rect x="90" y="344" width="560" height="40" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4"/>
+  <rect x="90" y="344" width="80" height="40" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="368" text-anchor="middle" font-size="11" fill="#1e3a8a">a（8 B）</text>
+  <rect x="170" y="344" width="480" height="40" fill="#fef3c7" stroke="#b45309"/>
+  <text x="410" y="368" text-anchor="middle" font-size="11" fill="#854d0e">_ [56]byte 填充</text>
+  <text x="640" y="368" text-anchor="end" font-size="11" fill="#64748b">缓存行 #1</text>
+
+  <rect x="90" y="396" width="560" height="40" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4"/>
+  <rect x="90" y="396" width="80" height="40" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="130" y="420" text-anchor="middle" font-size="11" fill="#14532d">b（8 B）</text>
+  <rect x="170" y="396" width="480" height="40" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="410" y="420" text-anchor="middle" font-size="11" fill="#64748b">下一条缓存行的其余字节</text>
+  <text x="640" y="420" text-anchor="end" font-size="11" fill="#64748b">缓存行 #2</text>
+
+  <text x="662" y="344" font-size="12" fill="#334155">type Padded struct {</text>
+  <text x="672" y="362" font-size="12" fill="#334155">a atomic.Int64</text>
+  <text x="672" y="380" font-size="12" fill="#334155">_ [56]byte</text>
+  <text x="672" y="398" font-size="12" fill="#334155">b atomic.Int64</text>
+  <text x="662" y="416" font-size="12" fill="#334155">}</text>
+
+  <text x="56" y="466" font-size="12" fill="#16a34a">a、b 各占一条缓存行，两个核的写互不使对方失效 —— 逻辑完全没变，只是布局变了。</text>
+
+  <text x="40" y="572" font-size="11" fill="#64748b">实测（go1.26.8）：紧邻 40.24 ns/op → 填充后 8.632 ns/op，约快 4.7 倍 —— 时序读数只主张趋势，不当 SLA。</text>
+  <text x="40" y="592" font-size="11" fill="#64748b">小结：高频写的字段要拉开距离（每个 worker 一份计数、定期汇总）；sync.Pool 按 P 分片、P 自带 align64 填充是同一味药。</text>
+</svg>

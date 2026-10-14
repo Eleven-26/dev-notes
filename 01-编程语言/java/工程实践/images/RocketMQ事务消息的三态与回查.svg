@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">事务消息：本地事务的三态返回与 Broker 回查</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">客户端侧流程图（7.5）；只画 Producer 这一半，半消息存储与计时机制见 03-数据与中间件</text>
+
+  <defs>
+    <marker id="arTx" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="80" width="230" height="66" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="102" font-size="12" font-weight="bold" fill="#0f172a">TransactionMQProducer</text>
+  <text x="52" y="121" font-size="11" fill="#334155">tx_producer_group（组名全局唯一）</text>
+  <text x="52" y="140" font-size="11" fill="#334155">sendMessageInTransaction(msg, arg)</text>
+
+  <line x1="270" y1="113" x2="310" y2="113" stroke="#334155" stroke-width="1.6" marker-end="url(#arTx)"/>
+
+  <rect x="310" y="80" width="250" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="322" y="102" font-size="12" font-weight="bold" fill="#0f172a">① executeLocalTransaction</text>
+  <text x="322" y="121" font-size="11" fill="#334155">第二阶段：执行本地事务并返回</text>
+  <text x="322" y="140" font-size="11" fill="#334155">payOrder(String.valueOf(arg))</text>
+
+  <rect x="620" y="56" width="300" height="62" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="632" y="80" font-size="11" font-weight="bold" fill="#0f172a">LocalTransactionState.COMMIT_MESSAGE</text>
+  <text x="632" y="101" font-size="11" fill="#166534">支付成功 → 半消息转投真实 Topic lab-tx</text>
+
+  <rect x="620" y="134" width="300" height="62" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="632" y="158" font-size="11" font-weight="bold" fill="#0f172a">LocalTransactionState.ROLLBACK_MESSAGE</text>
+  <text x="632" y="179" font-size="11" fill="#7f1d1d">支付失败 → 半消息丢弃，不投递</text>
+
+  <rect x="620" y="212" width="300" height="62" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="632" y="236" font-size="11" font-weight="bold" fill="#0f172a">LocalTransactionState.UNKNOW</text>
+  <text x="632" y="257" font-size="11" fill="#7c2d12">catch 异常 → 交给 Broker 60s 后回查</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="560" y1="100" x2="620" y2="87" marker-end="url(#arTx)"/>
+    <line x1="560" y1="113" x2="620" y2="165" marker-end="url(#arTx)"/>
+    <line x1="560" y1="126" x2="620" y2="243" marker-end="url(#arTx)"/>
+  </g>
+
+  <rect x="310" y="250" width="250" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="322" y="272" font-size="12" font-weight="bold" fill="#0f172a">③ checkLocalTransaction(msg)</text>
+  <text x="322" y="291" font-size="11" fill="#334155">Producer 宕机重启后 Broker 反复回调</text>
+  <text x="322" y="310" font-size="11" fill="#b45309">回查线程池：setExecutorService(4)</text>
+
+  <rect x="40" y="250" width="230" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="52" y="272" font-size="11" font-weight="bold" fill="#0f172a">幂等反查</text>
+  <text x="52" y="291" font-size="11" fill="#334155">getUserProperty("orderId")</text>
+  <text x="52" y="310" font-size="11" fill="#334155">isPaid → COMMIT / ROLLBACK</text>
+
+  <line x1="620" y1="243" x2="560" y2="283" stroke="#334155" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arTx)"/>
+  <line x1="310" y1="283" x2="270" y2="283" stroke="#334155" stroke-width="1.6" marker-end="url(#arTx)"/>
+
+  <rect x="40" y="346" width="560" height="88" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="52" y="368" font-size="12" font-weight="bold" fill="#7c2d12">⭐ 三条约束（原文）</text>
+  <text x="52" y="388" font-size="11" fill="#7c2d12">① checkLocalTransaction 必须幂等反查：查本地事务表 / 订单状态</text>
+  <text x="52" y="408" font-size="11" fill="#7c2d12">② 回查有次数上限（默认 15 次），最坏情况丢消息 → 关键链路加对账</text>
+  <text x="52" y="428" font-size="11" fill="#7c2d12">③ 不能依赖内存 Map；事务消息不能与延迟 / 批量混用</text>
+
+  <rect x="620" y="346" width="340" height="88" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="632" y="368" font-size="12" font-weight="bold" fill="#7f1d1d">本机实测 topicStatus（max offset）</text>
+  <text x="632" y="389" font-size="11" fill="#7f1d1d">RMQ_SYS_TRANS_HALF_TOPIC = 3（三条都在）</text>
+  <text x="632" y="410" font-size="11" fill="#7f1d1d">RMQ_SYS_TRANS_OP_HALF_TOPIC = 1（操作日志）</text>
+  <text x="632" y="431" font-size="11" fill="#7f1d1d">lab-tx = 1（只有 COMMIT 那条转入）</text>
+
+  <text x="40" y="462" font-size="11" fill="#64748b">小结：UNKNOW 不是失败，而是把判定权交给 Broker 回查；回查可能落到同组另一台实例，只认内存状态必然判错。</text>
+  <text x="40" y="484" font-size="11" fill="#64748b">图怎么读：三态来自 executeLocalTransaction 的返回值，checkLocalTransaction 是 Broker 反向回调同一个 ProducerGroup 的客户端。</text>
+</svg>

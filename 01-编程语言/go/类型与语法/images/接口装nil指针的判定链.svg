@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="600" fill="#ffffff"/>
+<defs>
+<marker id="arNL" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">接口什么时候等于 nil？——判的是类型字，不是数据字</text>
+<text x="40" y="58" font-size="13" fill="#64748b">badErr() 的现场：var p *MyErr（值为 nil）被 return p 装进 error；判定链与三种出口取自第三节，读数来自实测输出</text>
+
+<rect x="300" y="86" width="400" height="56" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="107" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a5f">badErr()：var p *MyErr 后 return p</text>
+<text x="500" y="127" font-size="11" text-anchor="middle" fill="#1e3a5f">p 本身是 nil：(*MyErr)(nil) == nil → true</text>
+
+<line x1="500" y1="142" x2="500" y2="152" stroke="#334155" stroke-width="1.5"/>
+<line x1="300" y1="152" x2="700" y2="152" stroke="#334155" stroke-width="1.5"/>
+<line x1="300" y1="152" x2="300" y2="158" stroke="#334155" stroke-width="1.5" marker-end="url(#arNL)"/>
+<line x1="700" y1="152" x2="700" y2="158" stroke="#334155" stroke-width="1.5" marker-end="url(#arNL)"/>
+
+<rect x="120" y="162" width="360" height="48" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="300" y="182" font-size="12" font-weight="bold" text-anchor="middle" fill="#854d0e">类型字 ← *MyErr（非 0）</text>
+<text x="300" y="202" font-size="11" text-anchor="middle" fill="#854d0e">它的动态类型 = *main.MyErr</text>
+<rect x="520" y="162" width="360" height="48" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="700" y="182" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">数据字 ← nil</text>
+<text x="700" y="202" font-size="11" text-anchor="middle" fill="#334155">它的动态值 = &lt;nil&gt;</text>
+
+<line x1="300" y1="210" x2="300" y2="226" stroke="#334155" stroke-width="1.5"/>
+<line x1="700" y1="210" x2="700" y2="226" stroke="#334155" stroke-width="1.5"/>
+<line x1="300" y1="226" x2="700" y2="226" stroke="#334155" stroke-width="1.5"/>
+<line x1="500" y1="226" x2="500" y2="238" stroke="#334155" stroke-width="1.5" marker-end="url(#arNL)"/>
+
+<rect x="260" y="242" width="480" height="54" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="500" y="264" font-size="12" font-weight="bold" text-anchor="middle" fill="#7f1d1d">e == nil 判的是「类型字是否为 0」</text>
+<text x="500" y="284" font-size="11" text-anchor="middle" fill="#7f1d1d">类型字非 0 → 整个接口就不等于 nil</text>
+
+<line x1="260" y1="269" x2="140" y2="269" stroke="#334155" stroke-width="1.5"/>
+<line x1="140" y1="269" x2="140" y2="312" stroke="#334155" stroke-width="1.5" marker-end="url(#arNL)"/>
+<text x="148" y="288" font-size="11" fill="#64748b">goodErr() 先判空，两字全 0</text>
+
+<rect x="300" y="302" width="400" height="54" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="500" y="324" font-size="12" font-weight="bold" text-anchor="middle" fill="#7f1d1d">e == nil → false —— 不是 nil！</text>
+<text x="500" y="344" font-size="11" text-anchor="middle" fill="#7f1d1d">方法实现里要解引用那个 nil 数据字</text>
+
+<rect x="40" y="316" width="200" height="54" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="140" y="338" font-size="12" font-weight="bold" text-anchor="middle" fill="#14532d">e == nil → true</text>
+<text x="140" y="358" font-size="11" text-anchor="middle" fill="#14532d">未赋值 / 显式 return nil</text>
+
+<line x1="140" y1="370" x2="140" y2="398" stroke="#334155" stroke-width="1.5"/>
+<line x1="140" y1="398" x2="500" y2="398" stroke="#334155" stroke-width="1.5"/>
+<line x1="500" y1="356" x2="500" y2="398" stroke="#334155" stroke-width="1.5"/>
+<line x1="500" y1="398" x2="500" y2="448" stroke="#334155" stroke-width="1.5" marker-end="url(#arNL)"/>
+
+<rect x="180" y="452" width="640" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="500" y="473" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">实测：对 e2 调用方法会 panic</text>
+<text x="500" y="493" font-size="11" text-anchor="middle" fill="#334155">runtime error: invalid memory address or nil pointer dereference</text>
+
+<rect x="40" y="514" width="920" height="46" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="533" font-size="12" font-weight="bold" fill="#0f172a">三种正确写法（3.3）：① 中间变量用具体类型、返回前判空　② 显式 return nil，不返回 nil 的 *T</text>
+<text x="60" y="552" font-size="12" fill="#0f172a">③ 兜底用反射 IsNilInterface：Kind 命中 Ptr / Map / Slice / Chan / Func / Interface 时再判 v.IsNil()</text>
+
+<text x="40" y="586" font-size="11" fill="#64748b">小结：口诀「i == nil 判类型字」取自 3.2；panic 原文、Kind 名单与「e == nil 为 true / false」读数取自第三节实测</text>
+</svg>

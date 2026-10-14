@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="704" viewBox="0 0 1000 704" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="704" fill="#ffffff"/>
+  <defs>
+    <marker id="arA" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">路由匹配：优先级判定链</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">匹配是一次全表扫描取最优，排序 key 为（score，前缀长度），与 Nginx location 逐条同构</text>
+
+  <!-- MB1 -->
+  <rect x="300" y="86" width="400" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="108" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">遍历 Route 表（slice，声明顺序确定）</text>
+  <text x="500" y="128" text-anchor="middle" font-size="11.5" fill="#64748b">绝不能用 map 遍历路由表</text>
+  <line x1="500" y1="142" x2="500" y2="166" stroke="#334155" stroke-width="1.6" marker-end="url(#arA)"/>
+
+  <!-- MB2 -->
+  <rect x="300" y="166" width="400" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="190" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">Host / Methods / Headers 全部匹配？</text>
+  <text x="500" y="210" text-anchor="middle" font-size="11.5" fill="#334155">任一不满足 → 该条整条出局</text>
+  <text x="500" y="228" text-anchor="middle" font-size="11.5" fill="#64748b">不参与打分，也不会降级命中别的规则</text>
+  <line x1="500" y1="238" x2="500" y2="262" stroke="#334155" stroke-width="1.6" marker-end="url(#arA)"/>
+
+  <!-- SB1 头值三路 -->
+  <rect x="760" y="166" width="210" height="96" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="772" y="188" font-size="12" font-weight="700" fill="#334155">头值 headersMatch 三路</text>
+  <text x="772" y="208" font-size="11" fill="#334155">* ：存在即过</text>
+  <text x="772" y="226" font-size="11" fill="#334155">含 * ：锚定正则，敏感</text>
+  <text x="772" y="244" font-size="11" fill="#334155">字面 ：EqualFold，不敏感</text>
+  <line x1="700" y1="204" x2="760" y2="204" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arA)"/>
+
+  <!-- MB3 -->
+  <rect x="300" y="262" width="400" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="284" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">按 PathType 打分</text>
+  <text x="500" y="304" text-anchor="middle" font-size="11.5" fill="#334155">exact 字符串相等 → score 3</text>
+  <text x="500" y="322" text-anchor="middle" font-size="11.5" fill="#334155">regex 整体锚定命中 → score 2</text>
+  <text x="500" y="340" text-anchor="middle" font-size="11.5" fill="#334155">prefix HasPrefix → score 1</text>
+  <line x1="500" y1="354" x2="500" y2="378" stroke="#334155" stroke-width="1.6" marker-end="url(#arA)"/>
+
+  <!-- MB4 -->
+  <rect x="300" y="378" width="400" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="500" y="402" text-anchor="middle" font-size="13" font-weight="700" fill="#9a3412">严格 &gt; 才替换 best（同分先到先得）</text>
+  <text x="500" y="422" text-anchor="middle" font-size="11.5" fill="#334155">仅同为 prefix 时用 len(c.Path) 破平局</text>
+  <text x="500" y="440" text-anchor="middle" font-size="11.5" fill="#64748b">最长前缀优先，等价 Nginx 首个命中即停</text>
+  <!-- SB2 Groups -->
+  <rect x="760" y="378" width="210" height="72" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="772" y="400" font-size="12" font-weight="700" fill="#334155">Groups 只有 regex 填</text>
+  <text x="772" y="420" font-size="11" fill="#334155">= m[1:] 捕获组</text>
+  <text x="772" y="438" font-size="11" fill="#334155">exact/prefix 命中为 nil</text>
+  <line x1="700" y1="414" x2="760" y2="414" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arA)"/>
+
+  <!-- split -->
+  <line x1="430" y1="450" x2="300" y2="476" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arA)"/>
+  <line x1="570" y1="450" x2="700" y2="476" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arA)"/>
+
+  <!-- MB5 命中 -->
+  <rect x="120" y="476" width="340" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="290" y="500" text-anchor="middle" font-size="13" font-weight="700" fill="#14532d">命中 → MatchResult</text>
+  <text x="290" y="520" text-anchor="middle" font-size="11.5" fill="#334155">Route / Reason / Groups</text>
+  <!-- MB6 未命中 -->
+  <rect x="560" y="476" width="340" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="730" y="500" text-anchor="middle" font-size="13" font-weight="700" fill="#7f1d1d">无命中 → 404</text>
+  <text x="730" y="520" text-anchor="middle" font-size="11.5" fill="#334155">配了兜底 / 会被它抢走</text>
+
+  <!-- WARN -->
+  <rect x="120" y="556" width="780" height="120" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="136" y="580" font-size="12.5" font-weight="700" fill="#9a3412">顺序写反（把得分改成 prefix(2) &gt; regex(1)）的后果 · 本机实测：</text>
+  <text x="136" y="602" font-size="11.5" fill="#334155">path=/api/users/42 → route=id-exact  reason=exact（精确不受顺序影响）</text>
+  <text x="136" y="622" font-size="11.5" fill="#334155">path=/api/users/7  → route=fallback  reason=prefix /  ← 本该走 num-regex，被兜底抢走</text>
+  <text x="136" y="642" font-size="11.5" fill="#334155">path=/other        → route=fallback  reason=prefix /</text>
+  <text x="136" y="664" font-size="11.5" fill="#64748b">正则明明写了、go test 也不报错，线上却永远走兜底 —— 唯一变化的就是 /api/users/7 那一行</text>
+
+  <text x="40" y="694" font-size="11" fill="#64748b">小结：exact 锁单点、regex 收带参资源、prefix 兜一族；优先级 key 写反时只有「正则 vs 兜底前缀」同时命中才暴露。</text>
+</svg>

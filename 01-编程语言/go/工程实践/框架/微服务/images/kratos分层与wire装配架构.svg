@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="arKR1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Kratos 分层是单向的：数据交互全部收敛到 data 层</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">api → service → biz → data；ent 是 schema-first 代码生成 ORM，schema 是唯一事实来源</text>
+
+  <rect x="80" y="90" width="300" height="48" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="230" y="110" font-size="13" fill="#0f172a" text-anchor="middle">api/</text>
+  <text x="230" y="128" font-size="10" fill="#64748b" text-anchor="middle">protobuf 契约 · ❌ 不能 import ent</text>
+  <line x1="230" y1="138" x2="230" y2="162" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR1)"/>
+
+  <rect x="80" y="164" width="300" height="48" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="230" y="184" font-size="13" fill="#0f172a" text-anchor="middle">service 层</text>
+  <text x="230" y="202" font-size="10" fill="#64748b" text-anchor="middle">service 直接调 ent = 破坏分层</text>
+  <line x1="230" y1="212" x2="230" y2="236" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR1)"/>
+
+  <rect x="80" y="238" width="300" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="230" y="262" font-size="13" fill="#0f172a" text-anchor="middle">biz/ 业务逻辑</text>
+  <text x="230" y="282" font-size="10" fill="#64748b" text-anchor="middle">只依赖 UserRepo 等接口</text>
+  <text x="230" y="297" font-size="10" fill="#64748b" text-anchor="middle">❌ 不能 import ent</text>
+  <line x1="230" y1="302" x2="230" y2="326" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR1)"/>
+
+  <rect x="80" y="328" width="300" height="72" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="230" y="352" font-size="13" fill="#0f172a" text-anchor="middle">data/ 实现 biz 的 repo 接口</text>
+  <text x="230" y="372" font-size="11" fill="#334155" text-anchor="middle">持有 ent client</text>
+  <text x="230" y="390" font-size="11" fill="#14532d" text-anchor="middle">✅ 仅此一层能 import ent</text>
+  <line x1="230" y1="400" x2="230" y2="424" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR1)"/>
+
+  <rect x="80" y="426" width="300" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="230" y="450" font-size="13" fill="#0f172a" text-anchor="middle">internal/data/ent/（生成代码）</text>
+  <text x="230" y="472" font-size="11" fill="#334155" text-anchor="middle">User · UserClient · UserQuery</text>
+  <text x="230" y="490" font-size="11" fill="#334155" text-anchor="middle">UserMutation · Tx</text>
+
+  <rect x="430" y="90" width="530" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="450" y="114" font-size="13" fill="#0f172a">wire 装配（cmd/payment/wire.go）</text>
+  <text x="450" y="140" font-size="11" fill="#334155">wire.Build(server.ProviderSet, data.ProviderSet,</text>
+  <text x="450" y="158" font-size="11" fill="#334155">biz.ProviderSet, service.ProviderSet, newApp)</text>
+  <text x="450" y="184" font-size="11" fill="#334155">data.ProviderSet = wire.NewSet(NewDB, NewData, NewUserRepo)</text>
+  <text x="450" y="210" font-size="11" fill="#64748b">NewDB: sql.Open → ent.NewClient → Schema.Create</text>
+  <text x="450" y="230" font-size="11" fill="#64748b">→ *ent.Client 作为 provider 交给 wire 注入</text>
+
+  <rect x="430" y="272" width="530" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="450" y="296" font-size="13" fill="#0f172a">ent 生成链（go generate ./internal/data/ent/...）</text>
+  <text x="450" y="322" font-size="12" fill="#334155">schema/ 里只定义三样：字段 Fields · 表关系 Edges · 索引 Indexes</text>
+  <text x="450" y="346" font-size="11" fill="#64748b">field.String("name").NotEmpty().MaxLen(64)</text>
+  <text x="450" y="366" font-size="11" fill="#64748b">index.Fields("name").Unique()</text>
+
+  <line x1="430" y1="316" x2="384" y2="272" stroke="#334155" stroke-width="1.6" marker-end="url(#arKR1)"/>
+
+  <rect x="430" y="406" width="530" height="72" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="450" y="430" font-size="12" fill="#0f172a">表结构可自动建/改，但数据库本身必须先存在</text>
+  <text x="450" y="452" font-size="11" fill="#334155">线上不让 ent 自动迁移：用版本化 SQL 迁移（golang-migrate）</text>
+  <text x="450" y="470" font-size="11" fill="#334155">Schema.Create 只用于本地/测试库，避免误删列</text>
+
+  <text x="40" y="524" font-size="11" fill="#64748b">小结：biz 拿到的 UserRepo 由 wire 注入的 NewUserRepo 实现，而 NewUserRepo 持有 NewDB 产出的 ent client——数据交互全部收敛在 data 层</text>
+</svg>

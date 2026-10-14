@@ -36,6 +36,8 @@ NoClassDefFoundError: com/google/common/util/concurrent/internal/InternalFutureF
 
 `InternalFutureFailureAccess` 住在 `failureaccess-1.0.2.jar` 里（guava 把它拆成了独立包），guava 的 `AbstractFuture` 会引用它。⚠️ 手拼 classpath 而不是走 Maven 时最常漏这一个——**只在运行时炸，编译期一点提示都没有**。
 
+![grpc-java 运行时依赖分层：五个 grpc 包与 guava 的伴生包，failureaccess 漏掉即在启动时抛 NoClassDefFoundError](images/grpc-java客户端的依赖分层.svg)
+
 ### 1.2 换成 Maven 坐标
 
 ```xml
@@ -138,6 +140,8 @@ ServerServiceDefinition base =
 ```
 
 与 Go 的 `grpc.ServiceDesc` 有个**本质差异**：Go 的 `HandlerType` 是接口类型，`RegisterService` 会**用反射校验**实现有没有实现该接口，写错直接 panic；Java 的 `ServerServiceDefinition` 只登记「方法描述符 → 处理器」的映射，**没有接口校验这一步**——方法名写错不会在注册时报错，只会在调用时表现为 `UNIMPLEMENTED`。所以 Java 侧更要靠**服务名与方法名集中在一处常量**（本实验就是上面那四个 `static final` 加一处 `builder("demo.Echo")`）。
+
+![手写 MethodDescriptor 的组装形态：value / stream 与 parse / 四个 MethodType 枚举 → :path → ServerServiceDefinition.builder 的编解码数据流](images/grpc-java手写方法描述符与编解码数据流.svg)
 
 ---
 
@@ -378,6 +382,8 @@ server stats: streams=3 msgsIn=8 msgsOut=9 unaryCalls=1
 
 ⚠️ 一元那个 `827~1433ms` 是**首调**的一次性成本（JIT 预热 + Netty 建连），把它当成 gRPC 的性能结论会得出完全错误的结论——见第五节与第六节 ⑥。
 
+![四种模式在 Java 客户端的调用时序：业务线程 → ClientCalls / Channel → 服务端 handler，箭头上带本篇 3.5 的实测读数](images/grpc-java四种模式的客户端调用时序.svg)
+
 ---
 
 ## 四、拦截器、metadata、deadline、状态码在 Java 侧怎么写？
@@ -568,6 +574,8 @@ status: code=NOT_FOUND desc=no such key: 42 isNotFound=true
 ```
 
 三轮之间**只有 deadline 的 `cost` 在动**（70 / 81 / 67 ms，区间 67~81ms），其余 6 行逐字节相同——这就是「确定性事实精确比对、时序数字标区间」的口径。⚠️ 两边都只记了**这一次**调用：Go 在第一次 `Invoke` 之后立刻打印快照，Java 也在第一次 `blockingUnaryCall` 之后立刻打印——后面的 deadline / metadata / 状态码几次调用同样穿过这层拦截器，只是打印时机在前，没被记进这一行。
+
+![拦截器在调用栈上的位置：客户端 ClientInterceptors 两层包装到 onClose，服务端覆写 sendHeaders / close，旁注 4.5 的实测读数](images/grpc-java拦截器在调用栈上的位置.svg)
 
 ---
 

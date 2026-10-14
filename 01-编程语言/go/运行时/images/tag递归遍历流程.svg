@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="680" viewBox="0 0 1000 680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="680" fill="#ffffff"/>
+<defs>
+<marker id="arTG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+<marker id="arTB2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+</defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">tag 递归遍历：walk 的主干、两处分支与一条递归回边</text>
+<text x="40" y="58" font-size="13" fill="#64748b">外层 NumField() 只数直接字段（实测 8 个），匿名嵌入是「一个字段」而不是若干字段，tag 也不随嵌入继承</text>
+
+<rect x="60" y="96" width="260" height="58" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="190" y="116" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d4ed8">入口</text>
+<text x="190" y="134" font-size="11" text-anchor="middle" fill="#0f172a">reflect.ValueOf(&amp;Conf{}).Elem()</text>
+<text x="190" y="150" font-size="11" text-anchor="middle" fill="#64748b">可寻址入口，下钻后仍能写值</text>
+
+<rect x="60" y="176" width="260" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="190" y="198" font-size="11" text-anchor="middle" fill="#0f172a">for i := 0; i &lt; t.NumField(); i++</text>
+<text x="190" y="216" font-size="11" text-anchor="middle" fill="#0f172a">st.fields++　f := t.Field(i)</text>
+
+<rect x="60" y="252" width="260" height="48" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="190" y="272" font-size="12" font-weight="bold" text-anchor="middle" fill="#92400e">分支一：f.PkgPath != "" ?</text>
+<text x="190" y="290" font-size="11" text-anchor="middle" fill="#92400e">是不是未导出字段</text>
+
+<rect x="60" y="322" width="260" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="190" y="342" font-size="11" text-anchor="middle" fill="#0f172a">f.Anonymous → st.anonymous++</text>
+<text x="190" y="360" font-size="11" text-anchor="middle" fill="#0f172a">f.Tag.Lookup("cfg") → st.looked++</text>
+<text x="190" y="376" font-size="11" text-anchor="middle" fill="#64748b">fv := v.Field(i)　继承父级 flagAddr</text>
+
+<rect x="60" y="404" width="260" height="48" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="190" y="424" font-size="12" font-weight="bold" text-anchor="middle" fill="#92400e">分支二：Kind() == Struct ?</text>
+<text x="190" y="442" font-size="11" text-anchor="middle" fill="#92400e">要不要继续下钻</text>
+
+<rect x="60" y="476" width="260" height="58" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="190" y="496" font-size="12" font-weight="bold" text-anchor="middle" fill="#334155">本轮字段扫完</text>
+<text x="190" y="514" font-size="11" text-anchor="middle" fill="#334155">打统计：扫过字段=8 匿名嵌入=2</text>
+<text x="190" y="530" font-size="11" text-anchor="middle" fill="#334155">cfg 命中=5 逗号分隔项=9</text>
+
+<rect x="400" y="246" width="230" height="60" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="515" y="266" font-size="11" text-anchor="middle" fill="#7f1d1d">st.unexported++ 然后 continue</text>
+<text x="515" y="284" font-size="11" text-anchor="middle" fill="#7f1d1d">看得见但改不了，直接跳过</text>
+<text x="515" y="300" font-size="11" text-anchor="middle" fill="#dc2626">实测：未导出跳过=0</text>
+
+<rect x="400" y="398" width="230" height="60" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="515" y="418" font-size="11" text-anchor="middle" fill="#15803d">walk(fv, st, name + ".")</text>
+<text x="515" y="436" font-size="11" text-anchor="middle" fill="#15803d">前缀拼出 Base.ID、Nested.Port</text>
+<text x="515" y="452" font-size="11" text-anchor="middle" fill="#64748b">ORM 的字段路径就是这么来的</text>
+
+<line x1="190" y1="154" x2="190" y2="172" stroke="#334155" stroke-width="1.5" marker-end="url(#arTG)"/>
+<line x1="190" y1="230" x2="190" y2="248" stroke="#334155" stroke-width="1.5" marker-end="url(#arTG)"/>
+<line x1="190" y1="300" x2="190" y2="318" stroke="#334155" stroke-width="1.5" marker-end="url(#arTG)"/>
+<text x="200" y="315" font-size="10" fill="#16a34a">否 · 导出字段</text>
+<line x1="190" y1="382" x2="190" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#arTG)"/>
+<line x1="320" y1="276" x2="396" y2="276" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arTG)"/>
+<text x="326" y="270" font-size="10" fill="#dc2626">是</text>
+<line x1="320" y1="428" x2="396" y2="428" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arTB2)"/>
+<text x="326" y="422" font-size="10" fill="#16a34a">是</text>
+<line x1="190" y1="452" x2="190" y2="472" stroke="#334155" stroke-width="1.5" marker-end="url(#arTG)"/>
+<text x="200" y="468" font-size="10" fill="#64748b">否 · 本字段结束</text>
+<path d="M630,428 L690,428 L690,203 L324,203" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arTB2)"/>
+<text x="698" y="320" font-size="10" fill="#15803d">递归回</text>
+
+<rect x="400" y="490" width="230" height="44" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="515" y="508" font-size="10" text-anchor="middle" fill="#334155">FieldByName("Secret") 能命中提升字段</text>
+<text x="515" y="526" font-size="10" text-anchor="middle" fill="#64748b">并带出它自己的 tag</text>
+
+<rect x="60" y="560" width="900" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="80" y="586" font-size="13" font-weight="bold" fill="#0f172a">指针字段必须先 Elem()，nil 指针还要判 IsNil()</text>
+<text x="80" y="610" font-size="13" fill="#dc2626">Ptr 字段忘记 Elem() 直接 NumField（Kind=ptr）→ reflect: NumField of non-struct type *main.Nested</text>
+<text x="40" y="662" font-size="11" fill="#64748b">小结：用 Value 而不是 Type 起步，是因为下钻之后还要写值；入口 ValueOf(&amp;x).Elem() 之后整条路径上的导出字段全都 CanSet</text>
+</svg>

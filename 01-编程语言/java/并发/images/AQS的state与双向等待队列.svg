@@ -1,78 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="620" fill="#ffffff"/>
   <defs>
-    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
-    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+    <marker id="arAqN" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arAqP" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
   </defs>
-  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
-  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">AQS：一个 int state 撑起所有同步器 + CLH 变体双向队列</text>
-  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">拿不到资源的线程被包成 Node 挂到队尾；同一个 state 字段在子类里语义完全不同（JDK 1.8.0_321 反射实测）</text>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">AQS：一个 int state 撑起所有同步器</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">一个 state + 一条 CLH 变体双向队列 + 四个模板方法；同一字段在不同子类里语义完全不同（JDK 1.8.0_321 反射实证）</text>
 
-  <rect x="40" y="82" width="300" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
-  <text x="56" y="105" font-size="11.5" font-weight="bold" fill="#1e3a8a">volatile int state</text>
-  <text x="56" y="124" font-size="10.5" fill="#1d4ed8">子类各自赋予语义（就是「资源」）</text>
-  <rect x="360" y="82" width="380" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="376" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">Node head / tail</text>
-  <text x="376" y="124" font-size="10.5" fill="#475569">CLH 变体的双向队列，存等不到资源的线程</text>
+  <rect x="40" y="80" width="440" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="56" y="104" font-size="12.5" font-weight="bold" fill="#0f172a">骨架：AbstractQueuedSynchronizer</text>
+  <text x="56" y="130" font-size="12" fill="#1d4ed8">volatile int state — 子类各自赋予语义（就是资源）</text>
+  <text x="56" y="156" font-size="12" fill="#334155">Node head / tail — CLH 变体双向队列</text>
+  <text x="56" y="180" font-size="11.5" fill="#64748b">获取不到资源 → 包成 Node 挂到队尾，acquireQueued 自旋后 park</text>
 
-  <text x="40" y="162" font-size="11.5" font-weight="bold" fill="#334155">双向等待队列（prev 向前、next 向后；原始 CLH 是单向自旋，AQS 改双向以便唤醒后继）</text>
+  <rect x="500" y="80" width="460" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="516" y="104" font-size="12.5" font-weight="bold" fill="#0f172a">双向等待队列（next 向前 · prev 向后）</text>
+  <rect x="516" y="126" width="80" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="556" y="153" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">head</text>
+  <rect x="632" y="126" width="80" height="44" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="672" y="153" text-anchor="middle" font-size="12" fill="#7c2d12">Node</text>
+  <rect x="748" y="126" width="80" height="44" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="788" y="153" text-anchor="middle" font-size="12" fill="#7c2d12">Node</text>
+  <rect x="864" y="126" width="80" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="904" y="153" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">tail</text>
+  <line x1="596" y1="140" x2="632" y2="140" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arAqN)"/>
+  <line x1="712" y1="140" x2="748" y2="140" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arAqN)"/>
+  <line x1="828" y1="140" x2="864" y2="140" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arAqN)"/>
+  <line x1="632" y1="158" x2="596" y2="158" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arAqP)"/>
+  <line x1="748" y1="158" x2="712" y2="158" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arAqP)"/>
+  <line x1="864" y1="158" x2="828" y2="158" stroke="#ea580c" stroke-width="1.4" marker-end="url(#arAqP)"/>
+  <text x="516" y="186" font-size="10.5" fill="#64748b">Node { waitStatus, prev, next, thread }；原始 CLH 自旋前驱单向，AQS 改双向以便唤醒后继</text>
 
-  <rect x="60" y="176" width="130" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="125" y="202" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">head</text>
-  <text x="125" y="224" text-anchor="middle" font-size="10" fill="#166534">已获得 / 正在获得</text>
-  <rect x="250" y="172" width="175" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
-  <text x="337" y="196" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">Node</text>
-  <text x="337" y="215" text-anchor="middle" font-size="10.5" fill="#9a3412">waitStatus · thread</text>
-  <text x="337" y="234" text-anchor="middle" font-size="10.5" fill="#9a3412">prev · next · thread</text>
-  <rect x="485" y="172" width="175" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
-  <text x="572" y="196" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">Node</text>
-  <text x="572" y="215" text-anchor="middle" font-size="10.5" fill="#9a3412">waitStatus · thread</text>
-  <text x="572" y="234" text-anchor="middle" font-size="10.5" fill="#9a3412">prev · next · thread</text>
-  <rect x="720" y="176" width="130" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="785" y="202" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">tail</text>
-  <text x="785" y="224" text-anchor="middle" font-size="10" fill="#166534">新节点入此处</text>
+  <rect x="40" y="206" width="920" height="118" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="56" y="228" font-size="12.5" font-weight="bold" fill="#7c2d12">读写锁：一个 int 拆两半（源码 SHARED_SHIFT=16，SHARED_UNIT=1&lt;&lt;16，MAX_COUNT=65535）</text>
+  <rect x="60" y="240" width="400" height="50" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="260" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">高 16 位：读锁计数</text>
+  <text x="260" y="282" text-anchor="middle" font-size="11" fill="#9a3412">sharedCount(c) = c &gt;&gt;&gt; 16</text>
+  <rect x="540" y="240" width="400" height="50" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="740" y="262" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">低 16 位：写重入计数</text>
+  <text x="740" y="282" text-anchor="middle" font-size="11" fill="#1d4ed8">exclusiveCount(c) = c &amp; 0xFFFF</text>
+  <text x="56" y="312" font-size="11.5" fill="#334155">拿读锁要求低 16 位=0；拿写锁要求整个 state=0。1 个读锁 state=65536(0x10000)，写重入 2 次 state=2；读/写各自上限 65535（16 位字段）</text>
 
-  <line x1="190" y1="202" x2="250" y2="202" stroke="#2563eb" stroke-width="1.5" marker-end="url(#a1)"/>
-  <text x="220" y="196" text-anchor="middle" font-size="9.5" fill="#2563eb">next</text>
-  <line x1="250" y1="220" x2="190" y2="220" stroke="#ea580c" stroke-width="1.5" marker-end="url(#a2)"/>
-  <text x="220" y="236" text-anchor="middle" font-size="9.5" fill="#ea580c">prev</text>
-  <line x1="425" y1="202" x2="485" y2="202" stroke="#2563eb" stroke-width="1.5" marker-end="url(#a1)"/>
-  <text x="455" y="196" text-anchor="middle" font-size="9.5" fill="#2563eb">next</text>
-  <line x1="485" y1="220" x2="425" y2="220" stroke="#ea580c" stroke-width="1.5" marker-end="url(#a2)"/>
-  <text x="455" y="236" text-anchor="middle" font-size="9.5" fill="#ea580c">prev</text>
-  <line x1="660" y1="202" x2="720" y2="202" stroke="#2563eb" stroke-width="1.5" marker-end="url(#a1)"/>
-  <text x="690" y="196" text-anchor="middle" font-size="9.5" fill="#2563eb">next</text>
-  <line x1="720" y1="220" x2="660" y2="220" stroke="#ea580c" stroke-width="1.5" marker-end="url(#a2)"/>
-  <text x="690" y="236" text-anchor="middle" font-size="9.5" fill="#ea580c">prev</text>
+  <text x="40" y="354" font-size="12.5" font-weight="bold" fill="#0f172a">同一 state 的四种语义（反射读出）</text>
+  <rect x="40" y="366" width="215" height="86" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="147" y="390" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">CountDownLatch</text>
+  <text x="147" y="414" text-anchor="middle" font-size="10.5" fill="#1d4ed8">state = 还剩几次 countDown</text>
+  <text x="147" y="436" text-anchor="middle" font-size="10.5" fill="#1d4ed8">只减，到 0 放行全部</text>
+  <rect x="275" y="366" width="215" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="382" y="390" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Semaphore</text>
+  <text x="382" y="414" text-anchor="middle" font-size="10.5" fill="#166534">state = 还剩几个许可</text>
+  <text x="382" y="436" text-anchor="middle" font-size="10.5" fill="#166534">可减可增（5→acquire2→3）</text>
+  <rect x="510" y="366" width="215" height="86" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="617" y="390" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">ReentrantLock</text>
+  <text x="617" y="414" text-anchor="middle" font-size="10.5" fill="#9a3412">state = 当前线程重入次数</text>
+  <text x="617" y="436" text-anchor="middle" font-size="10.5" fill="#9a3412">0 才真正释放</text>
+  <rect x="745" y="366" width="215" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="852" y="390" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">ReadWriteLock</text>
+  <text x="852" y="414" text-anchor="middle" font-size="10.5" fill="#334155">高 16 读 + 低 16 写</text>
+  <text x="852" y="436" text-anchor="middle" font-size="10.5" fill="#334155">一个字段编码两件事</text>
 
-  <text x="40" y="284" font-size="11.5" font-weight="bold" fill="#334155">读写锁把两个计数塞进同一个 int（源码：SHARED_SHIFT=16，MAX_COUNT=65535）</text>
-  <rect x="60" y="298" width="520" height="48" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
-  <line x1="320" y1="298" x2="320" y2="346" stroke="#b45309" stroke-width="1.2"/>
-  <text x="190" y="320" text-anchor="middle" font-size="11.5" fill="#7c2d12">高 16 位：读锁计数</text>
-  <text x="190" y="338" text-anchor="middle" font-size="10" fill="#9a3412">sharedCount = c &gt;&gt;&gt; 16</text>
-  <text x="450" y="320" text-anchor="middle" font-size="11.5" fill="#7c2d12">低 16 位：写重入计数</text>
-  <text x="450" y="338" text-anchor="middle" font-size="10" fill="#9a3412">exclusiveCount = c &amp; 0xFFFF</text>
-  <rect x="600" y="294" width="340" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="616" y="316" font-size="10.5" fill="#334155">1 个读锁 state=65536(0x10000)　写重入 2 次 state=2</text>
-  <text x="616" y="338" font-size="10.5" fill="#64748b">拿读锁要低 16 位=0；拿写锁要整个 state=0</text>
-
-  <rect x="40" y="366" width="215" height="86" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
-  <text x="147" y="388" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">CountDownLatch</text>
-  <text x="147" y="410" text-anchor="middle" font-size="10.5" fill="#1d4ed8">state = 还剩几次 countDown</text>
-  <text x="147" y="432" text-anchor="middle" font-size="10.5" fill="#1d4ed8">只减，到 0 放行全部</text>
-  <rect x="275" y="366" width="215" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
-  <text x="382" y="388" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">Semaphore</text>
-  <text x="382" y="410" text-anchor="middle" font-size="10.5" fill="#166534">state = 还剩几个许可</text>
-  <text x="382" y="432" text-anchor="middle" font-size="10.5" fill="#166534">可减可增（5→acquire2→3）</text>
-  <rect x="510" y="366" width="215" height="86" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
-  <text x="617" y="388" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">ReentrantLock</text>
-  <text x="617" y="410" text-anchor="middle" font-size="10.5" fill="#9a3412">state = 当前线程重入次数</text>
-  <text x="617" y="432" text-anchor="middle" font-size="10.5" fill="#9a3412">0 才真正释放</text>
-  <rect x="745" y="366" width="215" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="852" y="388" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">ReadWriteLock</text>
-  <text x="852" y="410" text-anchor="middle" font-size="10.5" fill="#334155">高 16 读 + 低 16 写</text>
-  <text x="852" y="432" text-anchor="middle" font-size="10.5" fill="#334155">上限 65535（16 位字段）</text>
-
-  <rect x="20" y="466" width="960" height="60" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
-  <text x="36" y="490" font-size="11.5" fill="#0f172a">⭐ 独占模式：acquire→tryAcquire→失败入队（同一时刻只有一个线程拿到）；共享模式：tryAcquireShared 返回 ≥0 时唤醒后继，</text>
-  <text x="36" y="512" font-size="11.5" fill="#0f172a">所以 CountDownLatch 到 0 那一刻队列上所有等待者接连醒来（setHeadAndPropagate），不需要 notifyAll。</text>
+  <rect x="40" y="474" width="920" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="500" font-size="12" fill="#0f172a">⭐ 独占模式：acquire → tryAcquire → 失败则入队，同一时刻只有一个线程拿到（ReentrantLock）。</text>
+  <text x="56" y="526" font-size="12" fill="#0f172a">共享模式：tryAcquireShared 返回值 ≥0 时唤醒后继（setHeadAndPropagate），CountDownLatch 到 0 那一刻所有等待者接连醒来。</text>
+  <text x="56" y="552" font-size="12" fill="#334155">手写子类只需回答四件事：tryAcquire/tryRelease（独占）、tryAcquireShared/tryReleaseShared（共享，≥0 即成功）、isHeldExclusively、newCondition。</text>
+  <text x="56" y="578" font-size="11.5" fill="#64748b">tryAcquire 里只用 compareAndSetState（state 是 volatile、CAS 原子）、「谁持有」记在 exclusiveOwnerThread —— 这就是 AQS 能不加锁实现锁的原因。</text>
 </svg>

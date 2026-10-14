@@ -28,6 +28,10 @@ Java 能靠 `java.lang.instrument` 在**类加载时**改字节码，所以 `-ja
 
 ⚠️ 反过来，**服务名、上报地址、采样率这些是运行期读的**：agent 默认配置写成 `${SW_AGENT_NAME:Your_ApplicationName}` 这种形式，先读环境变量、读不到才用默认值。所以同一个二进制可以跨环境复用，只有「插件集」被钉死在编译产物里。
 
+![skywalking-go 编译期注入的流水线流程与漏 -a 缓存陷阱](images/编译期注入流程.svg)
+
+**图怎么读**：上排蓝→绿四框是 `-toolexec` 劫持编译的正常路径；红色支线是第一节推论 1 的陷阱（漏 `-a` 命中未注入的缓存包，且不报错）；下方两个面板分开标出「编译期钉死」与「运行期读环境变量」的配置归属，对应推论 2、3 与 2.5 节。
+
 ---
 
 ## 二、路线一：skywalking-go（编译期注入）
@@ -205,6 +209,10 @@ go func() {
 | 适用 | 异步结果影响本次响应（如异步落库后才返回） | fire-and-forget（发消息、写审计、预热缓存） |
 | 风险 | 忘记 `AsyncFinish` → 父 span **永远不结束**，链路悬挂 | 忘记 `ContinueContext` → 子 goroutine 独立成链 |
 
+![跨 goroutine 两种写法的调用时序对照图](images/跨协程上下文快照传递.svg)
+
+**图怎么读**：左右两个面板是同一条链路的两种意图——左栏父 span 挂起等子协程回传完成；右栏父不等，只把快照交给子协程恢复。各自的红色框就是上表「风险」行的后果形态。
+
 ⚠️ **协程池要额外当心**：worker 是常驻的，一个 worker 会先后处理多个请求的快照。每轮处理必须 `ContinueContext(本轮快照)` + `defer trace.StopSpan()` 成对出现，否则上一个请求的上下文会串到下一个请求上，UI 里表现为「一条 trace 里混进了不相干的业务」。
 
 同理，**用了 `context.Context` 传参的代码路径不要另起一套**：如果项目已经在用 OTel SDK（第六节），跨 goroutine 直接传 `ctx` 就够了，不要再叠 skywalking-go 的快照机制。
@@ -338,6 +346,10 @@ SW_AGENT_REPORTER_DISCARD=true
 // OTel 侧则用采样器全关（比删代码安全，回滚只需改配置）
 tp := sdktrace.NewTracerProvider(sdktrace.WithSampler(sdktrace.NeverSample()))
 ```
+
+![skywalking-go 直连与 OTel OTLP 两条上报路线的架构图](images/两条路线上报架构对照.svg)
+
+**图怎么读**：蓝线是路线一（`sw8` 头直连 OAP 的 gRPC 11800），绿线是路线二（W3C `traceparent` 走 OTLP 4317，经 `receiver-otel` 转换）；OAP 只画到接口，内部架构见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md)。底部三个红框是 7.2 列出的两种关闭方式与运行期兜底开关。
 
 ---
 

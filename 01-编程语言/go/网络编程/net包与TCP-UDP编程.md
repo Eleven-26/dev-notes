@@ -451,6 +451,10 @@ errors.Is(err, os.ErrDeadlineExceeded): true
 `SetDeadline` 两边同时设；`SetWriteDeadline` 的注释提醒超时的 `Write` 可能已经写出去一部分
 （`n > 0`），**不能假定「写超时 = 什么都没写」**。
 
+![net.Conn 读写返回 err 的判定链：errors.Is(os.ErrDeadlineExceeded)→超时续期，EOF→对端 FIN 关闭，connection reset by peer→对端 RST，use of closed network connection→本端 Close，其它→退循环](images/net包读写错误判定流程.svg)
+
+**图怎么读**：主干是拿到 `err != nil` 后的依次判定——`errors.Is(err, os.ErrDeadlineExceeded)` 命中是**超时**（连接没作废，读可续期、写要防 `n>0`），`EOF` 是对端正常关闭（FIN），`connection reset by peer` 是对端异常重置（RST），`use of closed network connection` 是本端已 `Close`（2.3 里 `Accept` 也是这个错）。底部三条补上续期写法、`net.Error.Timeout()` 的口径差异，以及四段实测报错原文。
+
 ### 6.2 续期的正确写法
 
 deadline 是**一个绝对时刻**，不是「空闲多久」——超时之后连接并没有作废，把时刻推回未来即可

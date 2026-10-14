@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="arNPA" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arNPB" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arNPC" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arNPD" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">netpoller：一次网络读的数据流转（阻塞环与唤醒环）</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">socket 被设成非阻塞后交给 netpoller：读不 ready 时 gopark 自己，数据到了由 poller 触发 goready。</text>
+
+  <text x="40" y="84" font-size="12" fill="#64748b">上半环：谁在等（阻塞路径）</text>
+
+  <rect x="40" y="96" width="200" height="66" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="140" y="122" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">① 读 socket</text>
+  <text x="140" y="144" font-size="13" text-anchor="middle" fill="#334155">socket 已设成非阻塞</text>
+
+  <rect x="350" y="96" width="200" height="66" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="450" y="122" font-size="13" font-weight="bold" text-anchor="middle" fill="#9a3412">② 读不 ready</text>
+  <text x="450" y="144" font-size="13" text-anchor="middle" fill="#334155">gopark：M 不被拖住</text>
+
+  <rect x="660" y="96" width="200" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="760" y="122" font-size="13" font-weight="bold" text-anchor="middle" fill="#475569">③ _Gwaiting</text>
+  <text x="760" y="144" font-size="13" text-anchor="middle" fill="#334155">躺在内存里等信号</text>
+
+  <line x1="240" y1="129" x2="346" y2="129" stroke="#64748b" stroke-width="2" marker-end="url(#arNPA)"/>
+  <line x1="550" y1="129" x2="656" y2="129" stroke="#64748b" stroke-width="2" marker-end="url(#arNPA)"/>
+
+  <rect x="300" y="180" width="400" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="208" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">⭐ 闭环：读不 ready 就 park，数据到了再被 poller 唤醒</text>
+  <text x="500" y="232" font-size="13" text-anchor="middle" fill="#334155">被 park 的 G 既不占 P 也不占 M，只是躺在内存里等</text>
+
+  <line x1="760" y1="162" x2="760" y2="272" stroke="#64748b" stroke-width="2" marker-end="url(#arNPC)"/>
+  <text x="772" y="208" font-size="12" fill="#64748b">M 已经去跑别的 G</text>
+  <text x="772" y="228" font-size="12" fill="#64748b">线程没被拖住</text>
+
+  <text x="660" y="368" font-size="12" fill="#16a34a">下半环：谁来喊（唤醒路径，从右往左读）</text>
+
+  <rect x="660" y="280" width="200" height="66" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="760" y="306" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">④ 数据到了</text>
+  <text x="760" y="328" font-size="13" text-anchor="middle" fill="#334155">这一次读 ready 了</text>
+
+  <rect x="350" y="280" width="220" height="66" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="460" y="306" font-size="13" font-weight="bold" text-anchor="middle" fill="#92400e">⑤ netpoller 去 poll</text>
+  <text x="460" y="328" font-size="13" text-anchor="middle" fill="#334155">Linux epoll / Windows IOCP</text>
+
+  <rect x="40" y="280" width="200" height="66" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="140" y="306" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">⑥ goready 唤醒</text>
+  <text x="140" y="328" font-size="13" text-anchor="middle" fill="#334155">_Gwaiting → _Grunnable</text>
+
+  <line x1="660" y1="313" x2="574" y2="313" stroke="#16a34a" stroke-width="2" marker-end="url(#arNPB)"/>
+  <line x1="350" y1="313" x2="244" y2="313" stroke="#16a34a" stroke-width="2" marker-end="url(#arNPB)"/>
+
+  <line x1="140" y1="280" x2="140" y2="168" stroke="#16a34a" stroke-width="2" marker-end="url(#arNPD)"/>
+  <text x="152" y="208" font-size="12" fill="#16a34a">进 runnext，优先跑</text>
+  <text x="152" y="228" font-size="12" fill="#16a34a">等着被 M 取走</text>
+
+  <rect x="40" y="380" width="920" height="116" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="60" y="402" font-size="13" font-weight="bold" fill="#b91c1c">⚠️ 三个例外：这三种「等」会真的占住 M，别当成「起协程就能无限并发」</text>
+
+  <rect x="60" y="414" width="280" height="72" rx="8" fill="#ffffff" stroke="#dc2626"/>
+  <text x="200" y="436" font-size="13" font-weight="bold" text-anchor="middle" fill="#b91c1c">CGO 调用</text>
+  <text x="200" y="458" font-size="12" text-anchor="middle" fill="#475569">进 C 代码期间 M 被占住</text>
+  <text x="200" y="476" font-size="12" text-anchor="middle" fill="#475569">运行时 handoff 一条新 M</text>
+
+  <rect x="350" y="414" width="280" height="72" rx="8" fill="#ffffff" stroke="#dc2626"/>
+  <text x="490" y="436" font-size="13" font-weight="bold" text-anchor="middle" fill="#b91c1c">某些文件系统调用</text>
+  <text x="490" y="458" font-size="12" text-anchor="middle" fill="#475569">不一定能被 poller 接管</text>
+  <text x="490" y="476" font-size="12" text-anchor="middle" fill="#475569">可能落进阻塞式 syscall</text>
+
+  <rect x="640" y="414" width="280" height="72" rx="8" fill="#ffffff" stroke="#dc2626"/>
+  <text x="780" y="436" font-size="13" font-weight="bold" text-anchor="middle" fill="#b91c1c">没有函数调用的死循环</text>
+  <text x="780" y="458" font-size="12" text-anchor="middle" fill="#475569">1.14 起有异步抢占兜底</text>
+  <text x="780" y="476" font-size="12" text-anchor="middle" fill="#475569">但抢占是有延迟的</text>
+
+  <text x="40" y="516" font-size="11" fill="#64748b">实测：10001 个协程全阻塞在同一个 channel 上 —— threads=10、idleprocs=8、runqueue=0（8 个 P 全空闲）。</text>
+  <text x="40" y="536" font-size="11" fill="#64748b">小结：读不 ready 就 gopark 自己、把 M 交还调度器；数据到了由 poller 触发 goready —— 「几条线程服务上万连接」才成立。</text>
+</svg>

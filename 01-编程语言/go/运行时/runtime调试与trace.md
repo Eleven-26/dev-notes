@@ -108,6 +108,8 @@ GODEBUG env="http2server=1" (build-time default from //go:debug http2server=0)
 
 图怎么读：中间一列是"键名归属"，左边一列是三种落地写法（启动环境变量 / `//go:debug` 行指令 / 运行期 `os.Setenv`），右边标了各自的失败模式。图上「白名单 55 条」「metrics 导出 47 个计数器」「`schedtrace` 不在白名单」三个数字来自容器实测；其余为结构示意。
 
+![GODEBUG 的生效点时序：//go:debug 在 go build 阶段过白名单并把 DefaultGODEBUG 烧进产物，启动时解析环境变量（优先级高于编译期默认值），运行期 os.Setenv 由 syscall_runtimeSetenv 特判后调 godebugNotify 即时生效；写错键名静默忽略、写非白名单键编译报错](images/GODEBUG生效点时序.svg)
+
 ---
 
 ## 二、`schedtrace` 与 `scheddetail` 的每一列是什么意思？

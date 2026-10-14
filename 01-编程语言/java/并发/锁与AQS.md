@@ -47,6 +47,8 @@ ObjectMonitor
 
 ⭐ 这解释了 `wait/notify` 与 `synchronized` 的关系：**`wait()` 把线程从 `_EntryList` 挪到 `_WaitSet` 并释放锁；`notify()` 把它挪回 `_EntryList` 重新竞争**。所以 `wait/notify` 必须在 `synchronized` 块里调用（否则抛 `IllegalMonitorStateException`）——它们操作的是同一个 monitor。
 
+![重量级锁背后的 ObjectMonitor 数据流转：Mark Word 指向 monitor，线程在 _EntryList 竞争、拿到后进 _owner，wait() 挪入 _WaitSet、notify() 挪回 _EntryList 重新竞争](images/ObjectMonitor的三个队列与wait-notify.svg)
+
 ### 1.2 锁升级：从偏向到重量级
 
 无竞争时用一个 CAS 就能解决，没必要一上来就做内核态阻塞。JDK 6 之后的路径是：
@@ -55,6 +57,8 @@ ObjectMonitor
 无锁 ──首次加锁──▶ 偏向锁 ──另一线程竞争──▶ 轻量级锁 ──自旋失败/竞争加剧──▶ 重量级锁
        (CAS 记线程ID)        (CAS 抢栈上锁记录)         (park 阻塞，进 _EntryList)
 ```
+
+![synchronized 锁升级状态机：无锁→偏向锁→轻量级锁→重量级锁，标注各级的 Mark Word 末两位](images/synchronized锁升级状态机.svg)
 
 | 阶段 | 适用 | 代价 | 失效条件 |
 |---|---|---|---|
@@ -177,6 +181,8 @@ AbstractQueuedSynchronizer
 
 线程获取不到资源时**不会盲目重试**，而是被包成 `Node` 挂到队尾，然后在 `acquireQueued` 里「先自旋试几次，不行就 `LockSupport.park()`」——这就是 2.2 里说的「AQS 的获取是两段式」。
 
+![AQS 的 state 字段与 CLH 变体双向等待队列形态图，并附读写锁高低 16 位与四种 state 语义](images/AQS的state与双向等待队列.svg)
+
 ### 3.2 一个字段、四种语义（反射实证）
 
 `state` 是 `private`，但 JDK 8 没有模块系统，反射可以直接读。`StateLab.java` 把它们全打出来了：
@@ -277,6 +283,10 @@ static class Mutex extends AbstractQueuedSynchronizer {
 
 - **独占**：`acquire → tryAcquire → 失败则入队`，同一时刻只有一个线程拿到。`ReentrantLock` 属于这类。
 - **共享**：`acquireShared` 返回值 ≥ 0 时，除了自己继续跑，还会**唤醒后继节点**（`setHeadAndPropagate`）。所以 `CountDownLatch` 到 0 的那一刻，队列上所有等待者会**接连醒来**（一个传一个，不需要 `notifyAll`）。`Semaphore`、`CountDownLatch`、`ReadLock` 都是共享模式。
+
+![AQS 获取锁的两段式流程图：tryAcquire、入队、自旋、park 与被唤醒重试，标注公平锁多出的检查](images/AQS的tryAcquire排队流程.svg)
+
+**图怎么读**：主干自上而下是一次 `acquire(1)` 走过的判定 —— CAS 抢到直接返回，可重入则 `state+1`，抢不到就包成 Node 入队尾、自旋失败再 park；左侧紫色虚线是前驱释放后 unpark 唤醒、回到 CAS 重试的回路。
 
 ---
 

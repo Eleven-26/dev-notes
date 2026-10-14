@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">不用 protoc 时，Java 侧换掉的是 Marshaller 这一层</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">数据流转图；代码与结论出自第二节的 2.1、2.2、2.3（服务名 demo.Echo，全名 demo.Echo/Unary）</text>
+
+  <defs>
+    <marker id="arG2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="90" font-size="13" font-weight="bold" fill="#2563eb">① 编解码：Java 把方向拆成出与进两个方法（Go 的 codec 一个接口管三件事）</text>
+
+  <rect x="40" y="104" width="210" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="56" y="126" font-size="11" fill="#0f172a">String value</text>
+  <text x="56" y="144" font-size="10" fill="#334155">类型由 Marshaller</text>
+  <text x="56" y="160" font-size="10" fill="#334155">&lt;String&gt; 固定，不再像</text>
+  <text x="56" y="176" font-size="10" fill="#334155">Invoke 的 any 那样自由</text>
+
+  <rect x="320" y="104" width="340" height="86" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="336" y="126" font-size="11" font-weight="bold" fill="#14532d">JsonMarshaller implements</text>
+  <text x="336" y="144" font-size="10.5" fill="#14532d">MethodDescriptor.Marshaller&lt;String&gt;</text>
+  <text x="336" y="164" font-size="10.5" fill="#14532d">出：stream(value) ｜ 进：parse(stream)</text>
+  <text x="336" y="182" font-size="10" fill="#64748b">换别的格式只改这两个方法的字节处理</text>
+
+  <rect x="730" y="104" width="210" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="746" y="126" font-size="11" fill="#0f172a">InputStream（字节）</text>
+  <text x="746" y="146" font-size="10" fill="#334155">ByteArrayInputStream</text>
+  <text x="746" y="162" font-size="10" fill="#334155">getBytes(StandardCharsets</text>
+  <text x="746" y="178" font-size="10" fill="#334155">.UTF_8) / readAllBytes()</text>
+
+  <line x1="250" y1="128" x2="316" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#arG2)"/>
+  <text x="283" y="120" font-size="10" fill="#64748b" text-anchor="middle">stream</text>
+  <line x1="660" y1="128" x2="726" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#arG2)"/>
+  <text x="693" y="120" font-size="10" fill="#64748b" text-anchor="middle">字节</text>
+  <line x1="730" y1="168" x2="664" y2="168" stroke="#334155" stroke-width="1.6" marker-end="url(#arG2)"/>
+  <text x="697" y="160" font-size="10" fill="#64748b" text-anchor="middle">parse</text>
+  <line x1="320" y1="168" x2="254" y2="168" stroke="#334155" stroke-width="1.6" marker-end="url(#arG2)"/>
+  <text x="287" y="160" font-size="10" fill="#64748b" text-anchor="middle">String</text>
+
+  <text x="40" y="232" font-size="13" font-weight="bold" fill="#2563eb">② 装配：method(name, type) 把「全名 + 类型 + 两个 marshaller」拼成描述符</text>
+
+  <rect x="40" y="246" width="200" height="92" rx="8" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="52" y="266" font-size="10.5" font-weight="bold" fill="#0f172a">method(name, type)</text>
+  <text x="52" y="284" font-size="10" fill="#334155">newBuilder() 依次</text>
+  <text x="52" y="300" font-size="10" fill="#334155">setType / setFull-</text>
+  <text x="52" y="316" font-size="10" fill="#334155">MethodName / 两个</text>
+  <text x="52" y="332" font-size="10" fill="#334155">Marshaller / build</text>
+
+  <rect x="270" y="246" width="200" height="92" rx="8" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="282" y="266" font-size="10.5" font-weight="bold" fill="#0f172a">四个 static final</text>
+  <text x="282" y="284" font-size="10" fill="#334155">UNARY / SERVER_</text>
+  <text x="282" y="300" font-size="10" fill="#334155">STREAM / CLIENT_</text>
+  <text x="282" y="316" font-size="10" fill="#334155">STREAM / BIDI</text>
+  <text x="282" y="332" font-size="10" fill="#64748b">服务名固定 demo.Echo</text>
+
+  <rect x="500" y="246" width="200" height="92" rx="8" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="512" y="266" font-size="10.5" font-weight="bold" fill="#0f172a">对外的那条 :path</text>
+  <text x="512" y="284" font-size="10" fill="#334155">generateFullMethod</text>
+  <text x="512" y="300" font-size="10" fill="#334155">Name(demo.Echo,</text>
+  <text x="512" y="316" font-size="10" fill="#334155">Unary) = demo.Echo/</text>
+  <text x="512" y="332" font-size="10" fill="#334155">Unary → /demo.Echo/Unary</text>
+
+  <rect x="730" y="246" width="210" height="92" rx="8" fill="#f8fafc" stroke="#16a34a"/>
+  <text x="742" y="266" font-size="10.5" font-weight="bold" fill="#0f172a">服务端装配</text>
+  <text x="742" y="284" font-size="10" fill="#334155">ServerServiceDefinition</text>
+  <text x="742" y="300" font-size="10" fill="#334155">.builder("demo.Echo")</text>
+  <text x="742" y="316" font-size="10" fill="#334155">.addMethod(UNARY,</text>
+  <text x="742" y="332" font-size="10" fill="#334155">ServerCalls.asyncUnaryCall)</text>
+
+  <line x1="240" y1="292" x2="266" y2="292" stroke="#334155" stroke-width="1.6" marker-end="url(#arG2)"/>
+  <line x1="470" y1="292" x2="496" y2="292" stroke="#334155" stroke-width="1.6" marker-end="url(#arG2)"/>
+  <line x1="700" y1="292" x2="726" y2="292" stroke="#334155" stroke-width="1.6" marker-end="url(#arG2)"/>
+
+  <rect x="40" y="366" width="900" height="112" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="56" y="390" font-size="11" fill="#7f1d1d">两个「写错不报」的口子：Java 侧没有 Go 那道反射校验，错了要靠对不上时才暴露。</text>
+  <text x="56" y="414" font-size="11" fill="#7f1d1d">· MethodType 直接枚举四个值（UNARY / SERVER_STREAMING / CLIENT_STREAMING / BIDI_STREAMING），</text>
+  <text x="56" y="434" font-size="11" fill="#7f1d1d">Go 那边用 ServerStreams / ClientStreams 两个布尔位；写错枚举值表现为客户端与服务端对不上。</text>
+  <text x="56" y="458" font-size="11" fill="#7f1d1d">· ServerServiceDefinition 只登记「方法描述符 → 处理器」，方法名写错注册时不报错，调用时才是 UNIMPLEMENTED。</text>
+
+  <text x="40" y="504" font-size="11" fill="#64748b">小结：protoc 与生成代码的作用只是自动生成这段组装 —— 方法名是字符串 demo.Echo/Unary、载荷是字节，与 Go 侧 svc.Path("Unary") 拼出来的是同一个字符串。</text>
+  <text x="40" y="530" font-size="11" fill="#64748b">所以 Java 侧更要靠服务名与方法名集中在一处常量：四个 static final 描述符 + 一处 builder("demo.Echo")。</text>
+</svg>

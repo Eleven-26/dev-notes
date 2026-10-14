@@ -642,6 +642,10 @@ func (r *Request) isReplayable() bool {
 - 不带该头、body 不可回放的 POST → 直接把 `EOF` 抛回调用方，一次都没重试；
 - **新连接上失败**（`isReused()==false`）一律不重试，因为「刚建好就被关」多半是请求本身被服务端拒绝，重试只会死循环。
 
+![net/http shouldRetryRequest 的自动重试判定链：noCachedConn→重试，errMissingHost→不重试，新连接→不重试，nothingWritten→看 body 可回放，不可回放→不重试，读首字节前错误/竞态关空闲→重试，否则 false](images/net-http自动重试判定流程.svg)
+
+**图怎么读**：主干就是 8.1 `shouldRetryRequest` 的守卫顺序，每一路 early return 决定「重试 / 不重试」——绿色是重试、红色是不重试、黄色看 body。右侧独立框是 8.2 `isReplayable`（GET/HEAD/OPTIONS/TRACE 或带 `Idempotency-Key` 或 `GetBody != nil`）。底部读数取自 8.3：`GET×4 → handler 跑 7 次`、带幂等键的 POST 重试 1 次、不可回放 POST 原样抛 `EOF`；5xx 不在标准库重试范围内。
+
 ### 8.4 竞态窗口：客户端刚写出、对端刚好关
 
 服务端回完 200 后保持连接 100ms 再关，客户端在 D 之后发第二个请求（同一轮运行）：

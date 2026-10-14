@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="448" viewBox="0 0 1000 448" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="448" fill="#ffffff"/>
+<defs>
+<marker id="arTG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">各类型「头」的内存形态（unsafe.Sizeof 实测，go1.26.8 linux/amd64）</text>
+<text x="40" y="58" font-size="13" fill="#64748b">一格 = 8 字节；头的大小与元素个数无关——拷贝/传参只动头</text>
+
+<text x="40" y="140" font-size="13" font-weight="bold" fill="#0f172a">slice 头 = 24 字节</text>
+<rect x="250" y="114" width="80" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="290" y="140" font-size="12" fill="#1e3a8a" text-anchor="middle">ptr(8)</text>
+<rect x="330" y="114" width="80" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="370" y="140" font-size="12" fill="#14532d" text-anchor="middle">len(8)</text>
+<rect x="410" y="114" width="80" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="450" y="140" font-size="12" fill="#14532d" text-anchor="middle">cap(8)</text>
+<text x="510" y="132" font-size="11" fill="#64748b">拷贝/传参一个切片只动 24 字节，与元素个数无关</text>
+<text x="510" y="150" font-size="11" fill="#64748b">nil slice 头 = {nil,0,0}</text>
+
+<text x="40" y="194" font-size="13" font-weight="bold" fill="#0f172a">string 头 = 16 字节</text>
+<rect x="250" y="168" width="80" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="290" y="194" font-size="12" fill="#1e3a8a" text-anchor="middle">ptr(8)</text>
+<rect x="330" y="168" width="80" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="370" y="194" font-size="12" fill="#14532d" text-anchor="middle">len(8)</text>
+<text x="430" y="194" font-size="11" fill="#64748b">比 slice 少一个 cap（不可变所以不需要）；赋值即拷头</text>
+
+<text x="40" y="248" font-size="13" font-weight="bold" fill="#0f172a">map 头 = 8 字节</text>
+<rect x="250" y="222" width="80" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="290" y="248" font-size="12" fill="#334155" text-anchor="middle">指针(8)</text>
+<text x="350" y="248" font-size="11" fill="#64748b">就是一个指针 —— map 传参「看起来像引用」的根源</text>
+
+<text x="40" y="302" font-size="13" font-weight="bold" fill="#0f172a">func 头 = 8 字节</text>
+<rect x="250" y="276" width="80" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="290" y="302" font-size="12" fill="#334155" text-anchor="middle">指针(8)</text>
+<text x="350" y="302" font-size="11" fill="#64748b">就是一个指针 —— 函数值指向 funcval</text>
+
+<text x="40" y="356" font-size="13" font-weight="bold" fill="#0f172a">interface 头 = 16 字节</text>
+<rect x="250" y="330" width="80" height="44" rx="6" fill="#fef3c7" stroke="#b45309"/>
+<text x="290" y="356" font-size="12" fill="#854d0e" text-anchor="middle">类型字</text>
+<rect x="330" y="330" width="80" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="370" y="356" font-size="12" fill="#9a3412" text-anchor="middle">数据字</text>
+<text x="430" y="348" font-size="11" fill="#64748b">第四节 (type, value) 二元组判定的物理基础</text>
+<text x="430" y="366" font-size="11" fill="#64748b">接口装箱把小对象也带进堆分配</text>
+
+<text x="40" y="420" font-size="11" fill="#64748b">小结：int 是 8 还是 4 由平台决定（2.1）；struct 的大小不是字段大小之和——对齐与重排见 struct与tag.md。</text>
+</svg>

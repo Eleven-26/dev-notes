@@ -68,6 +68,10 @@ func transOutHandler(w http.ResponseWriter, r *http.Request) {
 - **业务逻辑必须写在回调里**，屏障键与业务更新才会落在同一个本地事务；把它写在回调外就失去幂等保护。
 - 返回错误代表「确定的失败」（HTTP 409 / gRPC `Aborted`）；超时、500 这类应让 DTM 重试。
 
+![子事务屏障在业务进程内的执行链路：请求参数 → BarrierFromQuery → CallWithDB 开事务 → 屏障键与业务 UPDATE 同事务 → 成功写回 / 409](images/DTM子事务屏障进程内执行链路.svg)
+
+**图怎么读**：从上到下就是 `transOutHandler` 的一次执行。第 4 步的灰框是本地事务边界——屏障键插入和业务 UPDATE 必须在同一个事务里，业务写在回调外就失去幂等保护；构造参数出错走 400，事务内返回错误走 409。屏障判定的完整流程在别的篇目，见 [原理与架构.md](../../../03-数据与中间件/中间件/分布式事务/DTM/原理与架构.md)。
+
 ### 2.1 ORM 场景怎么拿 `*sql.Tx`
 
 | 场景 | 写法 |
@@ -176,6 +180,10 @@ func queryPrepared(w http.ResponseWriter, r *http.Request) {
 1. **TransOut 被补偿回滚**，`user1` 回到 9970（`-30` 后 `+30` 抵消）；TransIn 从未生效，`user2` 保持 10030。
 2. **TransInCompensate 被「空补偿」拦下**：TransIn 的正向操作失败时，屏障键与业务更新在同一个本地事务里**一起回滚**，补偿到达时发现正向键不存在，直接判定为空补偿并跳过。
 3. `dtm.trans_global` 中该事务 `status = failed`，`rollback_reason = url:http://app:8081/api/TransIn return failed:  FAILURE`。
+
+![Saga 失败回滚在应用侧的调用时序：Submit 同步等待，TransOut 成功后 TransIn 返回 409，DTM 反向推进两个 compensate，空补偿被屏障拦下，全局事务落库为 failed](images/DTM-Saga失败回滚调用时序.svg)
+
+**图怎么读**：四条泳道都在应用与 DTM 的调用边界上——橙色是 compensate 阶段，DTM 按 **反向顺序**先调 `TransInCompensate`（屏障查不到正向键，判为空补偿跳过），再调 `TransOutCompensate` 把 `-30` 抵掉；最后 `dtm.trans_global` 落 `status = failed`。服务端自身的状态推进不在本篇，见 [原理与架构.md](../../../03-数据与中间件/中间件/分布式事务/DTM/原理与架构.md)。
 
 ### 6.3 幂等验证
 

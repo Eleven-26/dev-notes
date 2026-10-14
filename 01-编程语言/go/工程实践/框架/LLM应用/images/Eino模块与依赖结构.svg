@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="500" fill="#ffffff"/>
+  <defs>
+    <marker id="arEI2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Eino 架构：子包各自独立成 module，须逐个 go get 且版本对齐</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">容器 golang:1.26-alpine 实测（1.7 节）：拉取与报错信息均为 go get / go mod tidy 原始输出</text>
+
+  <rect x="40" y="196" width="180" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="130" y="229" font-size="14" fill="#0f172a" text-anchor="middle">你的应用</text>
+
+  <rect x="320" y="84" width="330" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="485" y="111" font-size="13" fill="#0f172a" text-anchor="middle">github.com/cloudwego/eino（主模块）</text>
+  <rect x="320" y="148" width="330" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="485" y="175" font-size="13" fill="#0f172a" text-anchor="middle">eino/schema</text>
+  <rect x="320" y="212" width="330" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="485" y="239" font-size="13" fill="#0f172a" text-anchor="middle">eino/compose</text>
+  <rect x="320" y="276" width="330" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="485" y="303" font-size="13" fill="#0f172a" text-anchor="middle">eino/components/model</text>
+
+  <text x="662" y="111" font-size="11" fill="#64748b">@v0.9.21</text>
+  <text x="662" y="175" font-size="11" fill="#64748b">@v0.9.21</text>
+  <text x="662" y="239" font-size="11" fill="#64748b">@v0.9.21</text>
+  <text x="662" y="303" font-size="11" fill="#64748b">@v0.9.21</text>
+
+  <line x1="220" y1="216" x2="316" y2="108" stroke="#334155" stroke-width="1.5" marker-end="url(#arEI2)"/>
+  <line x1="220" y1="222" x2="316" y2="170" stroke="#334155" stroke-width="1.5" marker-end="url(#arEI2)"/>
+  <line x1="220" y1="230" x2="316" y2="234" stroke="#334155" stroke-width="1.5" marker-end="url(#arEI2)"/>
+  <line x1="220" y1="238" x2="316" y2="296" stroke="#334155" stroke-width="1.5" marker-end="url(#arEI2)"/>
+
+  <rect x="720" y="84" width="240" height="240" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-dasharray="6 4"/>
+  <text x="840" y="110" font-size="13" fill="#0f172a" text-anchor="middle">依赖面（实测 tidy 后）</text>
+  <text x="840" y="132" font-size="11" fill="#64748b" text-anchor="middle">主模块 + 29 个间接依赖</text>
+  <text x="738" y="164" font-size="11" fill="#334155">nikolalohinski/gonja</text>
+  <text x="738" y="182" font-size="10" fill="#64748b">Jinja 模板引擎 · schema 引入</text>
+  <text x="738" y="210" font-size="11" fill="#334155">wk8/go-ordered-map/v2</text>
+  <text x="738" y="228" font-size="10" fill="#64748b">有序 map · schema 引入</text>
+  <text x="738" y="256" font-size="11" fill="#334155">eino-contrib/jsonschema</text>
+  <text x="738" y="274" font-size="10" fill="#64748b">Tool 参数 schema</text>
+  <text x="738" y="302" font-size="11" fill="#334155">bytedance/sonic（JSON 库）</text>
+
+  <line x1="650" y1="170" x2="716" y2="170" stroke="#334155" stroke-width="1.5" marker-end="url(#arEI2)"/>
+
+  <rect x="40" y="344" width="880" height="84" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="62" y="370" font-size="12" fill="#0f172a">⚠️ 只 go get 主模块不能直接用 schema / compose / components/*：报 missing go.sum entry</text>
+  <text x="62" y="394" font-size="12" fill="#0f172a">（报错点名 imported by github.com/cloudwego/eino/schema）</text>
+  <text x="62" y="418" font-size="12" fill="#0f172a">⚠️ 子包各自独立发版：go get 必须显式写一致版本号，只写 @latest 会拉到不同的版本号组合</text>
+
+  <text x="40" y="464" font-size="11" fill="#64748b">小结：Template 组件渲染占位符的底座是 Jinja 风格模板引擎 gonja</text>
+  <text x="40" y="484" font-size="11" fill="#64748b">判据：引入 Eino 等于引入一套不小的依赖树；只是「调一次 HTTP 接口问大模型」时，直接写 net/http 反而更轻</text>
+</svg>

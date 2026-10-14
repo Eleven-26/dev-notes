@@ -555,6 +555,10 @@ mux.Handle("/metrics/runtime", promhttp.HandlerFor(runtimeReg, promhttp.HandlerO
 - **控制单个端点体积**：给 sidecar / 网关只暴露业务端点，runtime 端点单独抓，避免大端点每次抓取都全量渲染。
 - **限制故障域**：6.3 的高危 Collector 放独立 Registry，它 500 时业务指标仍在。
 
+![默认注册表与独立注册表相互隔离的进程内架构图](images/注册表隔离与进程内架构.svg)
+
+图怎么读：左右两个面板是同进程内并存的两个 Registry——左边的默认注册表装着 GoCollector + ProcessCollector（实测 39 个指标族 / 39 条序列），由 `promhttp.Handler()` 渲染成 `/metrics`；右边的独立注册表只装业务指标（`queueDepth` → `shop_queue_depth`，值 42）和自己 `NewGoCollector` 出来的那份 runtime 指标，由 `promhttp.HandlerFor` 渲染成 `/metrics/runtime`。中间那条红带是拆分的第三个动机：高危 Collector 放独立 Registry，它 500 时业务指标仍在。框里的 95 字节 / 1 序列、6752 字节 / 29 序列都是 7.1 的实测读数（合并 6848）。
+
 ### 7.2 重复注册：三种错误原文
 
 ```text
@@ -671,6 +675,10 @@ shop_nightly_report_seconds_total{instance="batch-1",job="nightly_report"} 75
 ⭐ 这是 Pushgateway 最反直觉的实测点：**推上去的 `job` / `instance` 被抓取时改写成 `exported_job` / `exported_instance`**，真正的 `job` 是抓取任务名（`pushgateway`）、`instance` 是 Pushgateway 地址。所有按 job 过滤的查询与告警都要用 `exported_job` 重写。
 
 不该用 Pushgateway 的情况：常驻服务。它会让「死活」判定失效——实测那个 `--rm` 的推送容器**跑完就已退出**，但 `shop_nightly_report_rows_total 18432` 仍留在 Pushgateway 的 `/metrics` 里、并继续被抓进 Prometheus（`up{job="pushgateway"}` 一直为 1）：进程死了数值仍被抓成有效值。Pushgateway 只把指标存在内存里（实测 `/api/v1/status` 里 `"persistence.file":""`、`"persistence.interval":"5m0s"`），它自己重启即丢。
+
+![一次性 job 推送 Pushgateway 再被 Prometheus 抓取入库的数据流转图](images/定时任务推送数据流.svg)
+
+图怎么读：从左到右是三段进程内/进程间的数据流——一次性 job 里 `push.New(...).Collector(rows).Collector(secs)` 走两条不同的动词（上方蓝线 `Push()` 是 PUT 覆盖，下方绿线 `Add()` 是 POST 累加，差别体现在 `37.5 → 75` 那一行）；中间蓝框是 Pushgateway 本体（8.1 实跑的 1.11.3、映射宿主 19091，只存内存）；右边是 Prometheus 抓它之后再入库，标签在这一步被改写成 `exported_job` / `exported_instance`。底部红框是这条链路唯一的坑：推送容器已经退出，`18432` 还在被继续抓，`up` 恒为 1。
 
 ---
 

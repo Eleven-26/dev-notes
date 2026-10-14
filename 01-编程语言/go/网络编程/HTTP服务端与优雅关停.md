@@ -246,6 +246,10 @@ handler 要 2s，Shutdown 的 ctx 只给 300ms：
 ② 如果它超时了      → 打日志说明"还有 N 个请求没跑完"，然后才 Close
 ```
 
+![优雅关停两段式判定：收到信号→Shutdown(ctx 带超时) 关入口＋等在途→返回无错则排空完成正常退出，返回超时则请求仍在跑→打日志→Close 强关](images/优雅关停两段式判定流程.svg)
+
+**图怎么读**：主干是关停决策链——`srv.Shutdown(shutCtx)`（ctx 带 20s 超时）先关 listener 拒新连接、再等在途请求跑完（不打断）。返回 `err==nil` 走左路：排空完成，`Serve` 返回 `http.ErrServerClosed` 正常退出；返回 `context deadline exceeded` 走右路：Shutdown 超时只是「不再等」，在途请求仍在跑，于是打日志再 `Close()` 兜底。底部红字是 4.1 的高频 bug：`ErrServerClosed` 要用 `errors.Is` 排除，否则优雅关停会误走 `log.Fatal`。
+
 ### 4.3 `Shutdown` 和 `Close` 的区别
 
 | | `Shutdown(ctx)` | `Close()` |

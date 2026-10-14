@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="590" viewBox="0 0 1000 590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">grpc-java 手拼 classpath 时的 jar 分工</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">架构图；清单与作用出自 1.1 节表格，实测 java=17.0.20.1、grpc-java=1.60.0（eclipse-temurin:17-jdk 容器）</text>
+
+  <defs>
+    <marker id="arG1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="76" width="520" height="376" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="100" font-size="13" font-weight="bold" fill="#0f172a">五个 grpc 包（本机 javalib/ 下共 11 个 jar）</text>
+
+  <rect x="56" y="112" width="488" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="68" y="132" font-size="11.5" font-weight="bold" fill="#0f172a">grpc-api-1.60.0.jar —— 纯 API</text>
+  <text x="68" y="152" font-size="10.5" fill="#64748b">Channel / MethodDescriptor / Metadata / Status，不带传输实现</text>
+
+  <rect x="56" y="182" width="488" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="68" y="202" font-size="11.5" font-weight="bold" fill="#0f172a">grpc-core-1.60.0.jar —— 核心实现</text>
+  <text x="68" y="222" font-size="10.5" fill="#64748b">拦截器框架、ManagedChannel 的装配</text>
+
+  <rect x="56" y="252" width="488" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="68" y="272" font-size="11.5" font-weight="bold" fill="#0f172a">grpc-stub-1.60.0.jar —— 存根层</text>
+  <text x="68" y="292" font-size="10.5" fill="#64748b">StreamObserver 与 ClientCalls / ServerCalls 的静态方法</text>
+
+  <rect x="56" y="322" width="488" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="68" y="342" font-size="11.5" font-weight="bold" fill="#0f172a">grpc-netty-shaded-1.60.0.jar —— 传输层</text>
+  <text x="68" y="362" font-size="10.5" fill="#64748b">Netty 带 shade（包名重定位），免得与业务自己引的 Netty 互相覆盖</text>
+
+  <rect x="56" y="392" width="488" height="52" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="68" y="412" font-size="11.5" font-weight="bold" fill="#0f172a">grpc-util-1.60.0.jar —— 工具类</text>
+  <text x="68" y="432" font-size="10.5" fill="#64748b">含 Forwarding* 系列包装类（4.1、4.2 的包装都靠它）</text>
+
+  <rect x="580" y="76" width="380" height="292" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="596" y="100" font-size="13" font-weight="bold" fill="#0f172a">guava 与它的伴生包</text>
+
+  <rect x="596" y="112" width="348" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="608" y="132" font-size="11" fill="#0f172a">guava-33.0.0-jre.jar</text>
+  <text x="608" y="149" font-size="10" fill="#64748b">grpc-core 的强制依赖</text>
+
+  <rect x="596" y="166" width="348" height="56" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="608" y="186" font-size="11" font-weight="bold" fill="#7c2d12">failureaccess-1.0.2.jar</text>
+  <text x="608" y="203" font-size="10" fill="#7c2d12">⭐ guava 的伴生包，必须一起拉</text>
+  <text x="608" y="218" font-size="10" fill="#7c2d12">InternalFutureFailureAccess 住在这里</text>
+
+  <rect x="596" y="232" width="348" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="608" y="252" font-size="11" fill="#0f172a">perfmark-api-0.27.0.jar</text>
+  <text x="608" y="269" font-size="10" fill="#64748b">grpc-core 的传递依赖（内部埋点）</text>
+
+  <rect x="596" y="286" width="348" height="66" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="608" y="306" font-size="11" fill="#0f172a">error_prone_annotations-2.23.0.jar</text>
+  <text x="608" y="323" font-size="10" fill="#64748b">jspecify-0.3.0.jar、jsr305-3.0.2.jar</text>
+  <text x="608" y="340" font-size="10" fill="#64748b">编译期与空值注解，都是 guava 的传递依赖</text>
+
+  <rect x="580" y="384" width="380" height="106" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="596" y="404" font-size="11" fill="#7f1d1d">本实验第一次只放 guava，一启动就是：</text>
+  <text x="596" y="422" font-size="10.5" fill="#7f1d1d">NoClassDefFoundError:</text>
+  <text x="596" y="438" font-size="10.5" fill="#7f1d1d">com/google/common/util/concurrent/</text>
+  <text x="596" y="454" font-size="10.5" fill="#7f1d1d">internal/InternalFutureFailureAccess</text>
+  <text x="596" y="478" font-size="10.5" font-weight="bold" fill="#7f1d1d">只在运行时炸，编译期一点提示都没有</text>
+
+  <line x1="770" y1="352" x2="770" y2="384" stroke="#334155" stroke-width="1.5" marker-end="url(#arG1)"/>
+
+  <text x="40" y="516" font-size="11" fill="#64748b">手拼 classpath：CP=$(ls javalib/*.jar | tr '\n' ':')；走 Maven 时 grpc-api、grpc-core、guava、failureaccess 都是传递依赖，会自动拉全。</text>
+  <text x="40" y="544" font-size="11" fill="#64748b">protoc 侧：Java 自带 java 输出，出 stub 只要 protoc-gen-grpc-java 一个插件；Go 要另装 protoc-gen-go 与 protoc-gen-go-grpc 两个并加进 PATH。</text>
+  <text x="40" y="572" font-size="11" fill="#64748b">Maven 坐标用 grpc-netty-shaded 而不是 grpc-netty；grpc-api / grpc-core / guava / failureaccess 不必手写。</text>
+</svg>

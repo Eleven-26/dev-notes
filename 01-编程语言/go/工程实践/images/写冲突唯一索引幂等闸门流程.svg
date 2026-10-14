@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="600" fill="#ffffff"/>
+<defs><marker id="arLKb" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">唯一索引兜底：ConsumeOnce 幂等闸门流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">「先查后插」在并发下必然重复；防重的判断交给存储引擎的行锁与索引结构</text>
+
+<rect x="350" y="84" width="300" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="500" y="112" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">tx := db.BeginTx(ctx, nil)</text>
+
+<rect x="250" y="166" width="500" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="500" y="188" text-anchor="middle" font-size="12" fill="#1e3a8a">INSERT IGNORE INTO msg_done (msg_key, done_at) VALUES (?, NOW())</text>
+<text x="500" y="210" text-anchor="middle" font-size="11" fill="#64748b">IGNORE 把「主键冲突」降级成 0 影响行数</text>
+
+<rect x="350" y="258" width="300" height="48" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="500" y="286" text-anchor="middle" font-size="12" fill="#9a3412">n := RowsAffected() · n == 0 ?</text>
+
+<rect x="60" y="350" width="280" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="200" y="374" text-anchor="middle" font-size="12" fill="#334155">返回 false：这条已处理过</text>
+<text x="200" y="398" text-anchor="middle" font-size="12" fill="#334155">调用方直接 ack，不重复执行业务</text>
+
+<rect x="620" y="350" width="300" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="770" y="372" text-anchor="middle" font-size="12" fill="#1e3a8a">handle(tx)：业务在同一事务内</text>
+<text x="770" y="394" text-anchor="middle" font-size="11" fill="#1e3a8a">err → 随 defer Rollback 一起作废</text>
+
+<rect x="620" y="440" width="300" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="770" y="464" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">return true, tx.Commit()</text>
+<text x="770" y="486" text-anchor="middle" font-size="11" fill="#14532d">标记与业务同事务 → 要么都生效要么都没有</text>
+
+<line x1="500" y1="132" x2="500" y2="158" stroke="#334155" stroke-width="1.5" marker-end="url(#arLKb)"/>
+<line x1="500" y1="222" x2="500" y2="250" stroke="#334155" stroke-width="1.5" marker-end="url(#arLKb)"/>
+<path d="M400 306 L400 328 L200 328 L200 342" stroke="#64748b" stroke-width="1.5" fill="none" marker-end="url(#arLKb)"/>
+<text x="290" y="320" text-anchor="middle" font-size="11" fill="#64748b">n == 0</text>
+<path d="M600 306 L600 328 L770 328 L770 342" stroke="#2563eb" stroke-width="1.5" fill="none" marker-end="url(#arLKb)"/>
+<text x="690" y="320" text-anchor="middle" font-size="11" fill="#2563eb">n == 1</text>
+<line x1="770" y1="406" x2="770" y2="432" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arLKb)"/>
+
+<text x="60" y="450" font-size="11" fill="#64748b">累加类写入用 Accumulate：ON DUPLICATE KEY UPDATE cnt = cnt + VALUES(cnt)</text>
+<text x="60" y="472" font-size="11" fill="#64748b">避免「读-改-写」竞态 —— 累加而不是覆盖</text>
+<text x="40" y="530" font-size="11" fill="#64748b">两个坑：① 它依赖唯一键才能判重，没有唯一索引就是纯 INSERT；② 8.0.20+ 废弃 VALUES(col) 老语法，推荐别名写法 AS new ... cnt = cnt + new.cnt</text>
+<text x="40" y="552" font-size="11" fill="#64748b">INSERT IGNORE 同样会忽略除零/截断之类的警告 —— 除了幂等标记表，别用它掩盖脏数据</text>
+</svg>

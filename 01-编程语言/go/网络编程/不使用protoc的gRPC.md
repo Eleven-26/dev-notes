@@ -92,6 +92,10 @@ conn, err := grpc.NewClient(addr, opts...)
 
 回包里的 `content-type=[application/grpc+json]` 是**服务端自己看到的 HTTP/2 头**——它就是下一节要讲的那件事的直接证据。
 
+![手写 gRPC 一元调用的端到端时序：客户端 Invoke → jsonCodec.Marshal → HTTP/2 帧 → 服务端 dec/Handler → 回包逐层返回](images/手写gRPC一元调用时序.svg)
+
+**图怎么读**：四条生命线对应「客户端 `conn.Invoke` / `jsonCodec` / HTTP/2 帧（协议层）/ 服务端 `handler`」。① `Invoke(ctx, "/order.OrderService/CreateOrder", &req, &out)` 把方法名字符串和两个任意类型指针交给它；② `codec.Marshal(&req)` 产出 `{"qty":2,"sku":"A-1"}`；③ 请求帧沿 HTTP/2 下行，`content-type` 仍是 `application/grpc+json`。服务端 ④ 用 `dec(&in)` 解到 `map`、按小写取 `x-trace-id`，回包经 `codec.Marshal` 后 ⑤⑥ 逐层上行写回 `&out`。图底部读数（回包 JSON、metadata 小写、多路复用 11 次调用来自 1 个地址）都来自本篇 2.4、3.3、7.2 的实测。
+
 ---
 
 ## 三、换掉 codec 为什么不等于换掉协议？⭐
@@ -231,6 +235,10 @@ func (p *Pool) Conn(up *config.Upstream) (*grpc.ClientConn, error) {
 1. **建连不进请求路径**：`grpc.NewClient` 不等握手完成，真正的建连由后续 RPC 放进**该请求自己的 ctx 超时**里；
 2. **不锁全局**：per-addr 锁必须在全局锁**之外**获取，否则按地址分锁等于没做；
 3. **双重检查不能省**：拿到 per-addr 锁后要**再查一次** `p.conns`，否则并发首访同一地址会建出多条连接，多出来的既无人用也无人关（连接泄漏）。
+
+![Pool.Conn 非阻塞建连流程：快路径 lookup 命中直接返回，未命中才取地址专属锁、双重检查、grpc.NewClient 非阻塞建连、写回连接表](images/PoolConn非阻塞建连流程.svg)
+
+**图怎么读**：自上而下是 `Pool.Conn` 的一条判定链——`lookup(addr)` 命中走快路径；未命中才取 `dialLock(addr)`（在 `p.mu` 之外）、双重检查、`grpc.NewClient(...)` 非阻塞（只解析 target 并拉起后台连接 goroutine，不等握手），最后写回 `conns[addr]` 返回。底部三条判据和「非阻塞 516.8µs 秒回 / `WithBlock` 撞黑洞 300.6801ms 失败」的读数都取自上面代码与 5.2 实测。
 
 ### 5.2 实测：`go test -v` 全量
 

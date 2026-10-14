@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="540" fill="#ffffff"/>
+<defs>
+<marker id="arTA" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">range 的值变量能不能改到原始数据？按类型分三条路</text>
+<text x="40" y="58" font-size="13" fill="#64748b">判据只有一条：元素能不能取地址。切片可以，map 语法上就取不到，channel 根本不存在「原始数据」</text>
+
+<rect x="40" y="86" width="280" height="62" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="180" y="110" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a5f">for _, v := range s</text>
+<text x="180" y="132" font-size="12" text-anchor="middle" fill="#334155">v 是每轮复制出来的临时变量</text>
+
+<rect x="360" y="86" width="280" height="62" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="500" y="110" font-size="13" font-weight="bold" text-anchor="middle" fill="#854d0e">想改原始数据？</text>
+<text x="500" y="132" font-size="12" text-anchor="middle" fill="#854d0e">必须拿到元素自己的地址</text>
+
+<rect x="680" y="86" width="280" height="62" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="820" y="106" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">对切片：改用索引</text>
+<text x="820" y="126" font-size="12" text-anchor="middle" fill="#334155">for i := range s {</text>
+<text x="820" y="144" font-size="12" text-anchor="middle" fill="#334155">modify(&amp;s[i]) }</text>
+
+<line x1="324" y1="117" x2="356" y2="117" stroke="#334155" stroke-width="1.5" marker-end="url(#arTA)"/>
+<line x1="644" y1="117" x2="676" y2="117" stroke="#334155" stroke-width="1.5" marker-end="url(#arTA)"/>
+
+<line x1="500" y1="148" x2="500" y2="180" stroke="#334155" stroke-width="1.5"/>
+<line x1="185" y1="180" x2="815" y2="180" stroke="#334155" stroke-width="1.5"/>
+<line x1="185" y1="180" x2="185" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arTA)"/>
+<line x1="500" y1="180" x2="500" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arTA)"/>
+<line x1="815" y1="180" x2="815" y2="196" stroke="#334155" stroke-width="1.5" marker-end="url(#arTA)"/>
+
+<rect x="40" y="200" width="290" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="40" y="200" width="290" height="36" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="185" y="223" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">切片 ✅ 可以</text>
+<text x="56" y="262" font-size="12" fill="#334155">切片元素可以取地址</text>
+<text x="56" y="286" font-size="12" fill="#334155">用索引 &amp;s[i] 拿到原始元素地址</text>
+<text x="56" y="310" font-size="12" fill="#334155">✗ modify(&amp;v) 改的是临时变量</text>
+<text x="56" y="334" font-size="12" fill="#334155">✓ modify(&amp;s[i]) 才改到原数据</text>
+<text x="56" y="366" font-size="11" fill="#64748b">大元素每轮都拷一份，也用这个写法省掉拷贝</text>
+
+<rect x="355" y="200" width="290" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="355" y="200" width="290" height="36" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+<text x="500" y="223" font-size="13" font-weight="bold" text-anchor="middle" fill="#7f1d1d">map ❌ 不行</text>
+<text x="371" y="262" font-size="12" fill="#334155">map 的元素不可寻址</text>
+<text x="371" y="286" font-size="12" fill="#334155">底层是哈希表 buckets + 溢出桶</text>
+<text x="371" y="310" font-size="12" fill="#334155">元素位置会随扩容、搬迁而改变</text>
+<text x="371" y="334" font-size="12" fill="#7f1d1d">允许取址 → 扩容后地址失效</text>
+<text x="371" y="358" font-size="12" fill="#7f1d1d">就成了悬空指针</text>
+<text x="371" y="386" font-size="11" fill="#64748b">所以 Go 从语言层面禁止取 map 元素地址</text>
+
+<rect x="670" y="200" width="290" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="670" y="200" width="290" height="36" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+<text x="815" y="223" font-size="13" font-weight="bold" text-anchor="middle" fill="#7c2d12">channel ❌ 不行</text>
+<text x="686" y="262" font-size="12" fill="#334155">channel 是跨协程的数据传递</text>
+<text x="686" y="286" font-size="12" fill="#334155">根本不存在「原始数据」</text>
+<text x="686" y="310" font-size="12" fill="#334155">原始数据可能在另一个协程</text>
+<text x="686" y="334" font-size="12" fill="#334155">的某个变量里</text>
+<text x="686" y="366" font-size="11" fill="#64748b">取不到地址，也就无从「改回去」</text>
+
+<rect x="40" y="430" width="920" height="72" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="456" font-size="12" font-weight="bold" fill="#0f172a">判据：元素可不可取址。三条路共同的前提是 —— 无论哪种类型，range 给的值变量都只是副本，改 v 本身不影响原数据</text>
+<text x="60" y="480" font-size="12" fill="#334155">这一条 1.22 前后没有变（对照 range循环变量的两种语义形态图）；数组与切片同理，靠下标才写得到原件</text>
+
+<text x="40" y="524" font-size="11" fill="#64748b">小结：三个分支的结论与理由逐字取自 1.2 的对照表和 1.3 的解释，写法取自 1.2 的正误代码</text>
+</svg>

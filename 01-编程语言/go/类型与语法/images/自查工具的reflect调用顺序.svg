@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="610" viewBox="0 0 1000 610" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="610" fill="#ffffff"/>
+<defs>
+<marker id="arRF" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">自查工具的调用顺序：ShowMethodSet 与 Implements 各走了哪几条 reflect 路径</text>
+<text x="40" y="58" font-size="13" fill="#64748b">取自「使用」一节的工具代码；右侧读数就是这段代码打出来的原样输出</text>
+
+<rect x="40" y="86" width="180" height="36" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="130" y="109" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a8a">main()</text>
+<rect x="330" y="86" width="300" height="36" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="480" y="109" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">ShowMethodSet(v any) / Implements[T]</text>
+<rect x="730" y="86" width="230" height="36" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="845" y="109" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">reflect 的入口</text>
+
+<rect x="40" y="146" width="180" height="46" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="130" y="166" font-size="11" text-anchor="middle" fill="#0f172a">① ShowMethodSet(</text>
+<text x="130" y="184" font-size="11" text-anchor="middle" fill="#0f172a">　Counter{})</text>
+
+<line x1="220" y1="169" x2="326" y2="169" stroke="#334155" stroke-width="1.5" marker-end="url(#arRF)"/>
+<rect x="330" y="146" width="300" height="46" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="480" y="166" font-size="11" text-anchor="middle" fill="#334155">t := reflect.TypeOf(v)</text>
+<text x="480" y="184" font-size="11" text-anchor="middle" fill="#334155">pt := reflect.PtrTo(t)</text>
+
+<line x1="630" y1="169" x2="726" y2="169" stroke="#334155" stroke-width="1.5" marker-end="url(#arRF)"/>
+<rect x="730" y="146" width="230" height="46" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="845" y="166" font-size="11" text-anchor="middle" fill="#14532d">t.NumMethod() = 2</text>
+<text x="845" y="184" font-size="11" text-anchor="middle" fill="#14532d">pt.NumMethod() = 3</text>
+
+<rect x="40" y="212" width="180" height="46" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="130" y="232" font-size="11" text-anchor="middle" fill="#0f172a">② names(t) 里</text>
+<text x="130" y="250" font-size="11" text-anchor="middle" fill="#0f172a">　逐个取名字</text>
+
+<line x1="220" y1="235" x2="326" y2="235" stroke="#334155" stroke-width="1.5" marker-end="url(#arRF)"/>
+<rect x="330" y="212" width="300" height="46" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="480" y="232" font-size="11" text-anchor="middle" fill="#334155">for i &lt; t.NumMethod()</text>
+<text x="480" y="250" font-size="11" text-anchor="middle" fill="#334155">b = append(b, t.Method(i).Name)</text>
+
+<line x1="630" y1="235" x2="726" y2="235" stroke="#334155" stroke-width="1.5" marker-end="url(#arRF)"/>
+<rect x="730" y="212" width="230" height="46" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="845" y="232" font-size="11" text-anchor="middle" fill="#14532d">strings.Join(b, " ")</text>
+<text x="845" y="250" font-size="11" text-anchor="middle" fill="#14532d">→ "[Get String]"</text>
+
+<rect x="40" y="278" width="180" height="46" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="130" y="298" font-size="11" text-anchor="middle" fill="#0f172a">③ Implements[</text>
+<text x="130" y="316" font-size="11" text-anchor="middle" fill="#0f172a">　Counter]((*Incr)(nil))</text>
+
+<line x1="220" y1="301" x2="326" y2="301" stroke="#334155" stroke-width="1.5" marker-end="url(#arRF)"/>
+<rect x="330" y="278" width="300" height="46" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="480" y="298" font-size="11" text-anchor="middle" fill="#334155">t := reflect.TypeOf((*T)(nil)).Elem()</text>
+<text x="480" y="316" font-size="11" text-anchor="middle" fill="#334155">it := reflect.TypeOf(iface).Elem()</text>
+
+<line x1="630" y1="301" x2="726" y2="301" stroke="#334155" stroke-width="1.5" marker-end="url(#arRF)"/>
+<rect x="730" y="278" width="230" height="46" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="845" y="298" font-size="11" text-anchor="middle" fill="#7f1d1d">t.Implements(it) = false</text>
+<text x="845" y="316" font-size="11" text-anchor="middle" fill="#7f1d1d">PtrTo(t).Implements(it) = true</text>
+
+<rect x="40" y="344" width="920" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="368" font-size="11" font-weight="bold" fill="#0f172a">工具输出（原样）</text>
+<text x="60" y="392" font-size="11" fill="#334155">main.Counter  值方法集 2：[Get String]</text>
+<text x="60" y="414" font-size="11" fill="#334155">*main.Counter 指针方法集 3：[Get Inc String]</text>
+<text x="60" y="436" font-size="11" fill="#334155">main.Counter 满足 main.Getter：值=true 指针=true　　main.Counter 满足 main.Incr：值=false 指针=true</text>
+<text x="60" y="458" font-size="11" fill="#334155">main.Counter 满足 main.Stringer：值=true 指针=true</text>
+<text x="60" y="482" font-size="11" fill="#64748b">指针方法集多出来的那一个就是 Inc —— 它只出现在 PtrTo(t) 的结果里。</text>
+
+<rect x="40" y="512" width="920" height="62" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="60" y="536" font-size="11" fill="#854d0e">排查用法：遇到 X does not implement Y (method Z has pointer receiver) → 跑 ShowMethodSet 看 Z 是不是只在指针方法集里，再把赋值改成 &amp;x。</text>
+<text x="60" y="558" font-size="11" fill="#854d0e">设计新类型前先跑 Implements[T]（把目标接口的零值指针传进去）；嵌入组合的类型（第七节）同样跑一遍，看方法集被砍掉还是翻倍。</text>
+
+<text x="40" y="596" font-size="11" fill="#64748b">注意：工具全程只用 reflect 的公开入口（TypeOf / PtrTo / NumMethod / Method(i) / Implements），不碰任何运行时私有结构。</text>
+</svg>

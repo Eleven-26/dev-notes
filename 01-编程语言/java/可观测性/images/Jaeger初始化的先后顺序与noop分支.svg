@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">初始化顺序：谁在初始化时捕获了全局单例</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Java 进程内的三条实序（第五节）；排错的一侧「永远不上报且不报错」</text>
+
+  <defs>
+    <marker id="arInit" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="80" width="270" height="68" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="102" font-size="12" font-weight="bold" fill="#0f172a">① -javaagent 必须最先</text>
+  <text x="52" y="121" font-size="11" fill="#334155">写在 -jar 之前，JVM 先跑 premain</text>
+  <text x="52" y="140" font-size="11" fill="#334155">premain 装字节码增强器</text>
+
+  <rect x="40" y="170" width="270" height="68" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="192" font-size="12" font-weight="bold" fill="#0f172a">② 加载期织入</text>
+  <text x="52" y="211" font-size="11" fill="#334155">之后每个类在加载期才被织入</text>
+  <text x="52" y="230" font-size="11" fill="#b45309">agent 挂晚了 → 已加载的类就漏了</text>
+
+  <rect x="40" y="260" width="270" height="68" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="282" font-size="12" font-weight="bold" fill="#0f172a">③ 注册 GlobalOpenTelemetry</text>
+  <text x="52" y="301" font-size="11" fill="#334155">要排在捕获它的组件之前</text>
+  <text x="52" y="320" font-size="11" fill="#334155">Micrometer OTel 桥初始化时取一次</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="175" y1="148" x2="175" y2="170" marker-end="url(#arInit)"/>
+    <line x1="175" y1="238" x2="175" y2="260" marker-end="url(#arInit)"/>
+  </g>
+
+  <rect x="370" y="260" width="250" height="68" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="382" y="282" font-size="12" font-weight="bold" fill="#7c2d12">判据（本节原话）</text>
+  <text x="382" y="301" font-size="11" fill="#7c2d12">初始化时取一次？还是每次调用现取？</text>
+  <text x="382" y="320" font-size="11" fill="#7c2d12">前者必须排在被捕获者之后</text>
+
+  <line x1="310" y1="294" x2="370" y2="294" stroke="#334155" stroke-width="1.6" marker-end="url(#arInit)"/>
+
+  <rect x="680" y="182" width="280" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="692" y="204" font-size="12" font-weight="bold" fill="#14532d">注册在前：拿到真 provider</text>
+  <text x="692" y="225" font-size="11" fill="#166534">span 攒批后经 OTLP 正常上报</text>
+
+  <rect x="680" y="270" width="280" height="64" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="692" y="292" font-size="12" font-weight="bold" fill="#7f1d1d">注册在后：拿到 noop provider</text>
+  <text x="692" y="313" font-size="11" fill="#7f1d1d">span 永远不上报，且不报错</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="620" y1="280" x2="680" y2="214" marker-end="url(#arInit)"/>
+    <line x1="620" y1="308" x2="680" y2="302" marker-end="url(#arInit)"/>
+  </g>
+
+  <rect x="370" y="360" width="250" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="382" y="382" font-size="12" font-weight="bold" fill="#0f172a">每次调用现取：不受影响</text>
+  <text x="382" y="401" font-size="11" fill="#334155">Logback 的 %X{traceId} 是每条日志时</text>
+  <text x="382" y="420" font-size="11" fill="#334155">解析，所以日志侧不受影响</text>
+
+  <line x1="495" y1="328" x2="495" y2="360" stroke="#334155" stroke-width="1.6" marker-end="url(#arInit)"/>
+
+  <rect x="680" y="360" width="280" height="68" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="692" y="382" font-size="12" font-weight="bold" fill="#7f1d1d">多个 -javaagent 不能叠加</text>
+  <text x="692" y="401" font-size="11" fill="#7f1d1d">OTel 与 SkyWalking 同挂 = 两份 span</text>
+  <text x="692" y="420" font-size="11" fill="#7f1d1d">指标翻倍，trace_id 还不一致</text>
+
+  <rect x="40" y="452" width="920" height="64" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="52" y="474" font-size="12" font-weight="bold" fill="#7c2d12">⚠️ 参数位置错 = 完全不生效</text>
+  <text x="52" y="496" font-size="11" fill="#7c2d12">-javaagent 是 JVM 参数，写到 --spring.profiles.active 那一侧（应用参数）不生效；Spring Boot 的自动装配已替你排好顺序，只有自己写 SDK 初始化时才要手动保证。</text>
+
+  <text x="40" y="544" font-size="11" fill="#64748b">小结：判据只有一条——组件是在初始化时取一次 GlobalOpenTelemetry，还是每次调用现取；前者必须排在被捕获者之后。</text>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="575" viewBox="0 0 1000 575" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="575" fill="#ffffff"/>
+  <defs>
+    <marker id="arJC" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">链路上下文传播时序（第八节三条铁律）</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">tracer.Start 不修改传入的 ctx，父子关系全靠返回的新 ctx 承载；跨 goroutine 要显式把 ctx 传进去</text>
+
+  <rect x="60" y="80" width="170" height="36" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="145" y="103" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">客户端</text>
+  <rect x="235" y="80" width="170" height="36" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="320" y="103" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">otelgin 中间件</text>
+  <rect x="460" y="80" width="170" height="36" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="545" y="103" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">业务函数 CreateOrder</text>
+  <rect x="710" y="80" width="170" height="36" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="795" y="103" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">异步 goroutine</text>
+
+  <line x1="145" y1="116" x2="145" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="320" y1="116" x2="320" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="545" y1="116" x2="545" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="795" y1="116" x2="795" y2="470" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <text x="232" y="146" font-size="11" text-anchor="middle" fill="#0f172a">HTTP 请求（traceparent 头）</text>
+  <line x1="153" y1="162" x2="312" y2="162" stroke="#334155" stroke-width="1.6" marker-end="url(#arJC)"/>
+
+  <text x="432" y="214" font-size="11" text-anchor="middle" fill="#0f172a">ctx, span := tracer.Start(ctx, name)</text>
+  <text x="432" y="232" font-size="11" text-anchor="middle" fill="#64748b">父子关系全靠返回的新 ctx</text>
+  <line x1="328" y1="250" x2="537" y2="250" stroke="#334155" stroke-width="1.6" marker-end="url(#arJC)"/>
+
+  <text x="670" y="298" font-size="11" text-anchor="middle" fill="#0f172a">go func(ctx)：显式把 ctx 传进 goroutine</text>
+  <line x1="553" y1="314" x2="787" y2="314" stroke="#334155" stroke-width="1.6" marker-end="url(#arJC)"/>
+  <text x="670" y="336" font-size="11" text-anchor="middle" fill="#64748b">async.Notify 子 span 挂同一条 trace</text>
+
+  <text x="558" y="372" font-size="11" fill="#dc2626">错误路径：RecordError</text>
+  <text x="558" y="390" font-size="11" fill="#dc2626">SetStatus(codes.Error) → span 标红</text>
+
+  <text x="670" y="436" font-size="11" text-anchor="middle" fill="#b45309">父 span 若提前 End()：子 span 仍同链，但耗时超出父右边界</text>
+
+  <rect x="40" y="482" width="450" height="58" rx="6" fill="#f8fafc" stroke="#64748b"/>
+  <text x="54" y="504" font-size="11" fill="#0f172a">同一 ctx 一路向下：repo.Save(ctx) + db.WithContext(ctx)</text>
+  <text x="54" y="524" font-size="11" fill="#334155">→ SQL client span 挂同一条链路</text>
+
+  <rect x="510" y="482" width="450" height="58" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="524" y="504" font-size="11" fill="#0f172a">别把 ctx 存进结构体字段或全局变量：取消失效、挂错父</text>
+  <text x="524" y="524" font-size="11" fill="#334155">跨进程下游：Extract(ctx, carrier) 提取上游头才续得起来</text>
+
+  <text x="40" y="562" font-size="11" fill="#64748b">小结：三条铁律——用返回的新 ctx、跨 goroutine/进程显式传 ctx、下游 Extract 续接；让父等待子完成要用 WaitGroup / errgroup</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="arSF" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">跨 goroutine 续链路的两种写法</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">span 上下文绑定在 goroutine 本地，go func() 默认脱离链路；两种写法对应两种意图（第四节）</text>
+
+  <rect x="40" y="80" width="450" height="420" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="510" y="80" width="450" height="420" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+
+  <text x="265" y="106" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">写法一：PrepareAsync / AsyncFinish</text>
+  <text x="735" y="106" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">写法二：CaptureContext / ContinueContext</text>
+
+  <rect x="135" y="120" width="130" height="32" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="200" y="140" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">父 goroutine</text>
+  <rect x="325" y="120" width="130" height="32" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="390" y="140" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">子 goroutine</text>
+  <rect x="635" y="120" width="130" height="32" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="700" y="140" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">父 goroutine</text>
+  <rect x="815" y="120" width="130" height="32" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="880" y="140" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">子 goroutine</text>
+
+  <line x1="200" y1="152" x2="200" y2="320" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="390" y1="152" x2="390" y2="320" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="700" y1="152" x2="700" y2="330" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="880" y1="152" x2="880" y2="330" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <text x="58" y="170" font-size="11" fill="#0f172a">① span.PrepareAsync()</text>
+  <text x="58" y="190" font-size="11" fill="#64748b">父 span 等子、不结束</text>
+  <text x="295" y="208" font-size="11" text-anchor="middle" fill="#0f172a">go func 启动子协程</text>
+  <line x1="208" y1="220" x2="382" y2="220" stroke="#334155" stroke-width="1.6" marker-end="url(#arSF)"/>
+  <text x="382" y="250" font-size="11" text-anchor="end" fill="#0f172a">② defer span.AsyncFinish()</text>
+  <text x="58" y="276" font-size="11" fill="#0f172a">③ 子跑完父才 End()</text>
+  <line x1="382" y1="300" x2="208" y2="300" stroke="#334155" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arSF)"/>
+  <text x="295" y="288" font-size="11" text-anchor="middle" fill="#64748b">子任务完成</text>
+  <text x="265" y="344" font-size="11" text-anchor="middle" fill="#0f172a">语义：异步结果影响本次响应 → 等</text>
+  <rect x="58" y="368" width="414" height="64" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="70" y="390" font-size="11" fill="#0f172a">忘记 AsyncFinish → 父 span 永远不结束</text>
+  <text x="70" y="410" font-size="11" fill="#334155">链路悬挂 —— 对照表「写法一」的风险行</text>
+
+  <text x="518" y="170" font-size="11" fill="#0f172a">① CaptureContext()</text>
+  <text x="518" y="190" font-size="11" fill="#64748b">当前 goroutine 拍快照</text>
+  <text x="790" y="200" font-size="11" text-anchor="middle" fill="#0f172a">把快照传给子协程</text>
+  <line x1="708" y1="212" x2="872" y2="212" stroke="#334155" stroke-width="1.6" marker-end="url(#arSF)"/>
+  <text x="876" y="246" font-size="11" text-anchor="end" fill="#0f172a">② 恢复快照 ContinueContext()</text>
+  <text x="518" y="270" font-size="11" fill="#0f172a">③ defer StopSpan() 每轮配对</text>
+  <text x="518" y="294" font-size="11" fill="#0f172a">父 span 不等，按自己节奏结束</text>
+  <text x="876" y="316" font-size="11" text-anchor="end" fill="#b45309">忘记它 → 子独立成链</text>
+  <text x="735" y="344" font-size="11" text-anchor="middle" fill="#0f172a">语义：fire-and-forget → 不等</text>
+  <rect x="528" y="368" width="414" height="64" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="540" y="390" font-size="11" fill="#0f172a">忘记 ContinueContext → 子 goroutine 独立成链</text>
+  <text x="540" y="410" font-size="11" fill="#334155">协程池：每轮恢复本轮快照并 defer 结束，否则串到下个请求</text>
+
+  <text x="40" y="530" font-size="11" fill="#64748b">小结：「等它做完」用写法一；「不等、但把父子接上」用写法二；已在用 OTel ctx 传参的路径不要再叠这套快照机制</text>
+</svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="430" fill="#ffffff"/>
+  <defs>
+    <marker id="r1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">按用户限流：一个桶的生命周期</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">perUserLimiter 懒创建 + 定期 gc；不清理则 buckets map 只增不减 → 内存泄漏</text>
+
+  <rect x="40" y="140" width="190" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="135" y="168" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">无桶</text>
+  <text x="135" y="194" text-anchor="middle" font-size="10.5" fill="#334155">id 不在 buckets 里</text>
+  <text x="135" y="216" text-anchor="middle" font-size="10.5" fill="#334155">尚未到来或刚被回收</text>
+
+  <rect x="310" y="140" width="320" height="130" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="470" y="166" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">使用中</text>
+  <text x="470" y="190" text-anchor="middle" font-size="10.5" fill="#0f172a">未命中 → NewLimiter(limit,burst)</text>
+  <text x="470" y="210" text-anchor="middle" font-size="10.5" fill="#0f172a">新桶起步就是满桶（坑 1）</text>
+  <text x="470" y="230" text-anchor="middle" font-size="10.5" fill="#0f172a">每次请求刷新 lastSeen[id]</text>
+  <text x="470" y="250" text-anchor="middle" font-size="10.5" fill="#0f172a">Allow 消耗令牌，桶空 → false</text>
+
+  <rect x="770" y="140" width="190" height="110" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="865" y="168" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">闲置超时</text>
+  <text x="865" y="194" text-anchor="middle" font-size="10.5" fill="#7c2d12">now.Sub(lastSeen) &gt; idle</text>
+  <text x="865" y="216" text-anchor="middle" font-size="10.5" fill="#7c2d12">定时 gc 逐桶检查</text>
+
+  <line x1="230" y1="200" x2="306" y2="200" stroke="#334155" stroke-width="1.6" marker-end="url(#r1)"/>
+  <text x="268" y="190" text-anchor="middle" font-size="10" fill="#0f172a">首次请求</text>
+  <text x="268" y="218" text-anchor="middle" font-size="9.5" fill="#334155">懒创建</text>
+
+  <line x1="630" y1="200" x2="766" y2="200" stroke="#334155" stroke-width="1.6" marker-end="url(#r1)"/>
+  <text x="698" y="190" text-anchor="middle" font-size="10" fill="#0f172a">超过 idle 没请求</text>
+  <text x="698" y="218" text-anchor="middle" font-size="9.5" fill="#334155">定时 gc 检查</text>
+
+  <path d="M 400,140 C 400,105 540,105 540,140" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#r1)"/>
+  <text x="470" y="98" text-anchor="middle" font-size="10.5" fill="#0f172a">后续请求：消耗/恢复令牌，仍满 tokens ≤ burst</text>
+
+  <path d="M 865,250 L 865,330 L 135,330 L 135,250" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#r1)"/>
+  <text x="500" y="354" text-anchor="middle" font-size="11" fill="#0f172a">gc：delete(buckets[id]) 且 delete(lastSeen[id]) → 下次请求重建一个「新的满桶」</text>
+
+  <text x="40" y="392" font-size="11" fill="#64748b">小结：无桶 → 使用中（起步满桶）→ 闲置超时 → 被回收，循环往复；每次重建都是新满桶，所以按用户限流务必配 gc，否则就是内存泄漏。</text>
+  <text x="40" y="412" font-size="11" fill="#64748b">实测：limit=2/burst=2 时用户 A 第 3 次 Allow=false，而用户 B 用自己的桶第 1 次仍为 true。</text>
+</svg>

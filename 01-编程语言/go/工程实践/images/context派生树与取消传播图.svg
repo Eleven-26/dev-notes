@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="640" fill="#ffffff"/>
+<defs><marker id="arCTXa" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">context 派生树：四个具体类型串成一条链</text>
+<text x="40" y="58" font-size="13" fill="#64748b">类型名来自 go1.26.5 实测 %T 打印；根节点已从老文章的 emptyCtx 拆成 backgroundCtx / todoCtx</text>
+
+<rect x="330" y="78" width="300" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="480" y="102" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">context.backgroundCtx（根）</text>
+<text x="480" y="124" text-anchor="middle" font-size="12" fill="#1e3a8a">Background / TODO · 永不取消</text>
+
+<rect x="330" y="196" width="300" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="480" y="220" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">*context.valueCtx</text>
+<text x="480" y="242" text-anchor="middle" font-size="12" fill="#1e3a8a">WithValue · 存一个 k/v + 持父</text>
+
+<rect x="330" y="314" width="300" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="480" y="338" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">*context.cancelCtx</text>
+<text x="480" y="360" text-anchor="middle" font-size="12" fill="#1e3a8a">WithCancel · children 集合 + done</text>
+<text x="480" y="382" text-anchor="middle" font-size="12" fill="#1e3a8a">取消 = close(done) 广播</text>
+
+<rect x="330" y="448" width="300" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="480" y="472" text-anchor="middle" font-size="13" font-weight="bold" fill="#854d0e">*context.timerCtx</text>
+<text x="480" y="494" text-anchor="middle" font-size="12" fill="#854d0e">WithTimeout / WithDeadline</text>
+<text x="480" y="516" text-anchor="middle" font-size="12" fill="#854d0e">内嵌 cancelCtx + time.Timer</text>
+
+<rect x="700" y="286" width="250" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="825" y="308" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">child1（*cancelCtx）</text>
+<text x="825" y="330" text-anchor="middle" font-size="12" fill="#334155">父取消：context canceled</text>
+
+<rect x="700" y="360" width="250" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="825" y="382" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">child2（*timerCtx）</text>
+<text x="825" y="404" text-anchor="middle" font-size="12" fill="#334155">父取消：context canceled</text>
+
+<line x1="480" y1="138" x2="480" y2="189" stroke="#334155" stroke-width="1.5" marker-end="url(#arCTXa)"/>
+<line x1="480" y1="256" x2="480" y2="307" stroke="#334155" stroke-width="1.5" marker-end="url(#arCTXa)"/>
+<line x1="480" y1="390" x2="480" y2="441" stroke="#334155" stroke-width="1.5" marker-end="url(#arCTXa)"/>
+<path d="M630 336 L730 314" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#arCTXa)"/>
+<path d="M630 368 L730 388" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#arCTXa)"/>
+
+<path d="M330 486 L246 486 L246 226 L322 226" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="5,4" fill="none" marker-end="url(#arCTXa)"/>
+<text x="238" y="280" text-anchor="end" font-size="12" fill="#ea580c">Value(k) 沿父链</text>
+<text x="238" y="300" text-anchor="end" font-size="12" fill="#ea580c">逐级向上递归</text>
+<text x="238" y="320" text-anchor="end" font-size="12" fill="#64748b">复杂度 O(树深)</text>
+
+<text x="638" y="278" font-size="12" fill="#334155">cancel() 逐个通知 children</text>
+<text x="40" y="560" font-size="11" fill="#64748b">小结：父影响子、从不反向 —— 子取消不影响父（父 Err() = &lt;nil&gt;）；父先取消则子立即取消，超时取两者中更早的那个</text>
+<text x="40" y="582" font-size="11" fill="#64748b">timerCtx 到点：time.Timer → 内嵌 cancelCtx 的 cancel → 再向下传播；Err() = context deadline exceeded</text>
+<text x="40" y="604" font-size="11" fill="#64748b">取消后 cancelCtx 释放 children 引用；派生了却不 cancel，父节点会一直持有子节点（map 引用）直到父自己被取消</text>
+</svg>

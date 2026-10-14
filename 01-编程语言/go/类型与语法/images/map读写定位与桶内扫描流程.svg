@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="730" viewBox="0 0 1000 730" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="730" fill="#ffffff"/>
+<defs>
+<marker id="arMR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">m[k] 的读与 m[k] = v 的写：从前置检查到桶内落位</text>
+<text x="40" y="58" font-size="13" fill="#64748b">读走 mapaccess1/2，写走 mapassign，删走 mapdelete；读写都返回 value 的指针（第五节）</text>
+
+<rect x="300" y="80" width="400" height="40" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="500" y="105" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a8a">v := m[k]　·　m[k] = v</text>
+<line x1="500" y1="120" x2="500" y2="132" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+
+<rect x="300" y="138" width="400" height="118" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="312" y="160" font-size="12" font-weight="bold" fill="#854d0e">共同的前置检查</text>
+<text x="312" y="182" font-size="11" fill="#334155">① h == nil？读 → 零值；写 → fatal</text>
+<text x="312" y="204" font-size="11" fill="#334155">② h.flags &amp; hashWriting != 0？→ fatal</text>
+<text x="312" y="226" font-size="11" fill="#334155">③ hash = t.Hasher(key, h.hash0)</text>
+<text x="312" y="248" font-size="11" fill="#334155">④ h.buckets == nil → B == 0，首次写入才建首个桶</text>
+<line x1="700" y1="193" x2="736" y2="193" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+<line x1="300" y1="193" x2="284" y2="193" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+<line x1="500" y1="256" x2="500" y2="268" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+
+<rect x="300" y="274" width="400" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="312" y="296" font-size="12" font-weight="bold" fill="#1e3a8a">定位：低位定桶，高 8 位定槽</text>
+<text x="312" y="318" font-size="11" fill="#334155">桶索引 = hash &amp; (2^B - 1)（相当于对桶数取模）</text>
+<text x="312" y="340" font-size="11" fill="#334155">tophash = hash &gt;&gt; (64 - 8)</text>
+<line x1="500" y1="350" x2="500" y2="362" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+
+<rect x="300" y="368" width="400" height="96" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="312" y="390" font-size="12" font-weight="bold" fill="#14532d">扩容中的双桶查找（读路径独有）</text>
+<text x="312" y="412" font-size="11" fill="#334155">oldbuckets != nil → 双倍扩容时掩码 m &gt;&gt;= 1</text>
+<text x="312" y="434" font-size="11" fill="#334155">旧桶没打 evacuated* 标记 → b = oldb 查旧桶</text>
+<text x="312" y="456" font-size="11" fill="#14532d">写路径不这样：growWork 搬完后一律写新桶</text>
+<line x1="300" y1="416" x2="284" y2="416" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+<line x1="700" y1="416" x2="736" y2="416" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+<line x1="500" y1="464" x2="500" y2="476" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+
+<rect x="300" y="482" width="400" height="132" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="312" y="504" font-size="12" font-weight="bold" fill="#7c2d12">桶内扫描：外层溢出桶链 + 内层 8 个槽位</text>
+<text x="312" y="526" font-size="11" fill="#334155">tophash[i] 与本 key 的相等 → 再用 key 精确比较</text>
+<text x="312" y="548" font-size="11" fill="#334155">相等 → 命中；不等 → 继续（tophash 相同 ≠ key 相同）</text>
+<text x="312" y="570" font-size="11" fill="#334155">遇到空槽 → 记下第一个可用空位，供写入时落位</text>
+<text x="312" y="592" font-size="11" fill="#dc2626">遇到 emptyRest → 立刻跳出整个双层循环</text>
+<line x1="300" y1="548" x2="284" y2="548" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+<line x1="700" y1="548" x2="736" y2="548" stroke="#334155" stroke-width="1.5" marker-end="url(#arMR)"/>
+
+<rect x="40" y="138" width="240" height="118" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="52" y="160" font-size="12" font-weight="bold" fill="#0f172a">读会不会置 hashWriting？</text>
+<text x="52" y="182" font-size="11" fill="#334155">不会。读路径只检查这一位，</text>
+<text x="52" y="204" font-size="11" fill="#334155">用于发现读写并发；</text>
+<text x="52" y="226" font-size="11" fill="#334155">写路径才置起和清除。</text>
+
+<rect x="40" y="368" width="240" height="96" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="52" y="390" font-size="12" font-weight="bold" fill="#7f1d1d">两种 fatal 文案</text>
+<text x="52" y="412" font-size="11" fill="#7f1d1d">concurrent map writes</text>
+<text x="52" y="434" font-size="11" fill="#7f1d1d">concurrent map read and</text>
+<text x="52" y="456" font-size="11" fill="#7f1d1d">map write</text>
+
+<rect x="40" y="482" width="240" height="132" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="52" y="504" font-size="12" font-weight="bold" fill="#854d0e">emptyRest 与 emptyOne</text>
+<text x="52" y="526" font-size="11" fill="#334155">emptyRest：本槽位及其之后</text>
+<text x="52" y="548" font-size="11" fill="#334155">所有槽位、后续溢出桶都是</text>
+<text x="52" y="570" font-size="11" fill="#334155">空的 → 怎么找都没有数据</text>
+<text x="52" y="592" font-size="11" fill="#334155">emptyOne 只代表这一格空</text>
+
+<rect x="740" y="138" width="220" height="118" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="752" y="160" font-size="12" font-weight="bold" fill="#0f172a">为什么返回指针</text>
+<text x="752" y="182" font-size="11" fill="#334155">编译器要拿到 value 的地址</text>
+<text x="752" y="204" font-size="11" fill="#334155">直接写入，避免「取出 →</text>
+<text x="752" y="226" font-size="11" fill="#334155">改 → 写回」的两次拷贝</text>
+
+<rect x="740" y="368" width="220" height="96" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="752" y="390" font-size="12" font-weight="bold" fill="#0f172a">⚠️ ③ 的顺序不能反</text>
+<text x="752" y="412" font-size="11" fill="#334155">哈希计算本身可能 panic，</text>
+<text x="752" y="434" font-size="11" fill="#334155">标记一旦置起就永远留在</text>
+<text x="752" y="456" font-size="11" fill="#334155">那里，之后必报并发</text>
+
+<rect x="740" y="482" width="220" height="132" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="752" y="504" font-size="12" font-weight="bold" fill="#7c2d12">写路径：落不下就扩容</text>
+<text x="752" y="526" font-size="11" fill="#334155">① 遍历中记录可用槽位</text>
+<text x="752" y="548" font-size="11" fill="#334155">② 都满 → 申请新溢出桶</text>
+<text x="752" y="570" font-size="11" fill="#334155">③ 写入前判 overLoadFactor</text>
+<text x="752" y="592" font-size="11" fill="#334155">或溢出桶过多 → hashGrow</text>
+
+<rect x="40" y="632" width="920" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="654" font-size="11" fill="#0f172a">顺序：前置检查 → 定位 → （扩容中）双桶查找 → 桶内双层扫描 → 命中或落位；hashGrow 之后要回到定位重算，因为 B 变了、桶索引也变了</text>
+<text x="60" y="676" font-size="11" fill="#0f172a">申请新溢出桶时优先取 extra.nextOverflow，取不到才 newobject；写完 count++、清掉 hashWriting 标记、返回 value 指针</text>
+
+<text x="40" y="714" font-size="11" fill="#64748b">小结：读路径多一段「查旧桶」，写路径多一段「先搬完再写新桶」；emptyRest 是 map 查找平均很快的关键优化之一。</text>
+</svg>

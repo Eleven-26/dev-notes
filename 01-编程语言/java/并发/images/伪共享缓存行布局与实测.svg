@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="f1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="f2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">伪共享：CPU 按 64 字节缓存行搬运，而不是按变量</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两个逻辑上毫无关系的变量若落在同一缓存行，任一核写它都要抢整行 —— 缓存行在核之间来回弹（乒乓）</text>
+
+  <text x="40" y="96" font-size="12" font-weight="bold" fill="#b91c1c">❌ A / B：相邻两变量挤进同一条缓存行</text>
+  <rect x="270" y="104" width="460" height="44" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <rect x="278" y="110" width="70" height="32" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="313" y="131" text-anchor="middle" font-size="12" fill="#1e3a8a">x</text>
+  <rect x="652" y="110" width="70" height="32" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="687" y="131" text-anchor="middle" font-size="12" fill="#7c2d12">y</text>
+  <text x="498" y="131" text-anchor="middle" font-size="10.5" fill="#64748b">同一条缓存行 · 64 字节</text>
+  <rect x="60" y="104" width="180" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="150" y="131" text-anchor="middle" font-size="11.5" fill="#7f1d1d">核 0：写 x</text>
+  <rect x="780" y="104" width="180" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="870" y="131" text-anchor="middle" font-size="11.5" fill="#7f1d1d">核 1：写 y</text>
+  <line x1="240" y1="126" x2="270" y2="126" stroke="#dc2626" stroke-width="1.5" marker-end="url(#f2)"/>
+  <line x1="780" y1="126" x2="730" y2="126" stroke="#dc2626" stroke-width="1.5" marker-end="url(#f2)"/>
+  <text x="500" y="172" text-anchor="middle" font-size="11" fill="#b91c1c">一方写 x/y → 另一方的整行缓存失效 → 又要抢回来，如此乒乓</text>
+
+  <text x="40" y="206" font-size="12" font-weight="bold" fill="#15803d">✅ C / D：用 padding 把它们分到不同缓存行</text>
+  <rect x="270" y="214" width="460" height="38" rx="6" fill="#f8fafc" stroke="#16a34a" stroke-width="1.3"/>
+  <rect x="278" y="219" width="70" height="28" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="313" y="239" text-anchor="middle" font-size="12" fill="#1e3a8a">x</text>
+  <text x="500" y="238" text-anchor="middle" font-size="10.5" fill="#64748b">padding 7×long = 56 字节</text>
+  <rect x="60" y="214" width="180" height="38" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="150" y="238" text-anchor="middle" font-size="11" fill="#14532d">核 0 独占这一行</text>
+  <line x1="240" y1="233" x2="270" y2="233" stroke="#16a34a" stroke-width="1.5" marker-end="url(#f1)"/>
+
+  <rect x="270" y="256" width="460" height="38" rx="6" fill="#f8fafc" stroke="#16a34a" stroke-width="1.3"/>
+  <rect x="278" y="261" width="70" height="28" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="313" y="281" text-anchor="middle" font-size="12" fill="#7c2d12">y</text>
+  <text x="500" y="280" text-anchor="middle" font-size="10.5" fill="#64748b">padding 7×long = 56 字节</text>
+  <rect x="60" y="256" width="180" height="38" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="150" y="280" text-anchor="middle" font-size="11" fill="#14532d">核 1 独占这一行</text>
+  <line x1="240" y1="275" x2="270" y2="275" stroke="#16a34a" stroke-width="1.5" marker-end="url(#f1)"/>
+
+  <text x="40" y="326" font-size="11.5" fill="#334155">⭐ 四组工作量完全相同（2 线程各 1 亿次自增），唯一区别是内存布局 → 共享行的 A/B 慢 3.8~5.7 倍。</text>
+
+  <rect x="30" y="338" width="225" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="142" y="360" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">A 同对象相邻</text>
+  <text x="142" y="382" text-anchor="middle" font-size="11" fill="#b91c1c">3334 ~ 4513 ms</text>
+  <rect x="265" y="338" width="225" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="377" y="360" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">B 数组相邻元素</text>
+  <text x="377" y="382" text-anchor="middle" font-size="11" fill="#b91c1c">2876 ~ 4879 ms</text>
+  <rect x="500" y="338" width="225" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="612" y="360" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">C 带 padding 独立对象</text>
+  <text x="612" y="382" text-anchor="middle" font-size="11" fill="#166534">796 ~ 1270 ms</text>
+  <rect x="735" y="338" width="225" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="847" y="360" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">D 同对象隔开 7 个 long</text>
+  <text x="847" y="382" text-anchor="middle" font-size="11" fill="#166534">750 ~ 862 ms</text>
+
+  <text x="30" y="424" font-size="11" fill="#334155">处理：手工 padding（前后各 7 个 long 撑到 64 字节）· @sun.misc.Contended（JDK 8 需 -XX:-RestrictContended）· 直接用内部已填充的 LongAdder。</text>
+  <text x="30" y="448" font-size="11" fill="#dc2626">⚠️ 踩坑：AtomicLongArray 的元素 0 与 8 以为隔开了，实测却和相邻一样慢（3567 ms）—— 数组基址不保证 64 字节对齐，别靠算偏移量判断同缓存行。</text>
+  <text x="30" y="472" font-size="11" fill="#64748b">伪共享要跑到亿次量级的写才明显：先做正确性 → 压测定位热点字段 → 最后才考虑 padding。</text>
+</svg>

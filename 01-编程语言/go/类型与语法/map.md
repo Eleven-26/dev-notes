@@ -144,6 +144,11 @@ map 存在的意义，就是让 **key 起到"索引"的作用**，快速定位 v
 | **目的** | 增加空间 | 整理碎片 |
 | **典型场景** | 大量插入 | 大量删除后又插入 |
 
+![map 触发扩容的判定路径：不在扩容中才判断这两个条件，负载因子 ≥ 6.5 通向双倍扩容（B+1），溢出桶过多通向等量扩容（B 不变，内存整理）](images/map扩容触发的两个条件与两种方式.svg)
+
+**图怎么读**：顶部灰带是 `mapassign` 落位前那一处判断；左右两条车道分别是两个条件与它们各自导向的扩容方式，
+下面的浅色面板放的是原文里的那几组读数（20/24/26 的负载因子、`B <= 15` 与 `B > 15` 两段阈值）。
+
 ### 延伸追问
 
 - **负载因子为什么是 6.5 而不是 8？** → 留出余量。取 8 会导致大量写入直接落到溢出桶，
@@ -225,6 +230,8 @@ GC 扫描会**整块跳过桶内部**（性能好），但也因此**找不到�
 | `oldbuckets` | **扩容前的旧桶数组**，只在扩容期间非 nil |
 | `nevacuate` | **疏散进度计数器** |
 | `extra` | 可选扩展字段 `*mapextra` |
+
+![hmap 的九个字段、桶数组与 bmap 的四段内存布局（含溢出桶链与末尾桶哨兵）](images/map的hmap与bmap桶结构.svg)
 
 **`flags` 里的 `hashWriting` 就是那句著名报错的来源**：写流程开始前先检查这一位，发现已置起 →
 `fatal error: concurrent map writes`（读写并发则是 `concurrent map read and map write`）。
@@ -333,6 +340,8 @@ if h.oldbuckets != nil {
 ④ 写入 key / value，h.count++，清掉 hashWriting 标记，返回 value 指针
 ```
 
+![map 读写的完整路径：前置检查 → 低位定桶高 8 位定槽 → 扩容中的双桶查找 → 桶内双层扫描与 emptyRest 提前终止 → 写路径落位或扩容](images/map读写定位与桶内扫描流程.svg)
+
 ### 延伸追问
 
 - **为什么 `mapassign` 要返回指针？** → 编译器要拿到 value 的**地址**直接写入，
@@ -436,6 +445,8 @@ if h.growing() { evacuate(t, h, h.nevacuate) }    // ② 再顺手搬 nevacuate 
 
 > **这就是"`nevacuate` 只是下界"的原因**：计数器只在**恰好轮到它**时才前进，
 > 而搬迁是访问驱动的，可能先从桶 5 搬起——此时 `nevacuate` 还停在 0。
+
+![渐进式扩容的调用链 hashGrow → growWork → evacuate：双倍扩容时旧桶 i 的元素只去 x=i 或 y=i+2^B，等量扩容只去 x，搬迁状态用 tophash 的 evacuatedX / evacuatedY / evacuatedEmpty 三个标记复用](images/map渐进式扩容的搬迁与tophash标记.svg)
 
 ### 延伸追问
 

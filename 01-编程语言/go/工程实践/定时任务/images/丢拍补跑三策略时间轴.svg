@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="360" viewBox="0 0 1000 360" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="360" fill="#ffffff"/>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">标准库漏跑三策略：进程在 t10 才醒时各执行几次</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">实测 5.1 节场景：本应触发 11 拍（t0~t10），进程直到 t10 才醒过来</text>
+
+  <line x1="260" y1="80" x2="260" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="324" y1="80" x2="324" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="388" y1="80" x2="388" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="452" y1="80" x2="452" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="516" y1="80" x2="516" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="580" y1="80" x2="580" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="644" y1="80" x2="644" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="708" y1="80" x2="708" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="772" y1="80" x2="772" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="836" y1="80" x2="836" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <line x1="900" y1="80" x2="900" y2="92" stroke="#334155" stroke-width="1.3"/>
+  <text x="260" y="106" font-size="10" fill="#64748b" text-anchor="middle">t0</text>
+  <text x="324" y="106" font-size="10" fill="#64748b" text-anchor="middle">t1</text>
+  <text x="388" y="106" font-size="10" fill="#64748b" text-anchor="middle">t2</text>
+  <text x="452" y="106" font-size="10" fill="#64748b" text-anchor="middle">t3</text>
+  <text x="516" y="106" font-size="10" fill="#64748b" text-anchor="middle">t4</text>
+  <text x="580" y="106" font-size="10" fill="#64748b" text-anchor="middle">t5</text>
+  <text x="644" y="106" font-size="10" fill="#64748b" text-anchor="middle">t6</text>
+  <text x="708" y="106" font-size="10" fill="#64748b" text-anchor="middle">t7</text>
+  <text x="772" y="106" font-size="10" fill="#64748b" text-anchor="middle">t8</text>
+  <text x="836" y="106" font-size="10" fill="#64748b" text-anchor="middle">t9</text>
+  <text x="900" y="106" font-size="10" fill="#64748b" text-anchor="middle">t10</text>
+
+  <rect x="252" y="114" width="656" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="580" y="131" font-size="12" fill="#64748b" text-anchor="middle">进程停机：t0~t9 全部错过，t10 才醒</text>
+
+  <text x="40" y="175" font-size="12" fill="#0f172a">skip（只跑当前一拍）→ 1 次</text>
+  <rect x="888" y="158" width="24" height="22" rx="3" fill="#dbeafe" stroke="#2563eb"/>
+
+  <text x="40" y="219" font-size="12" fill="#0f172a">catch-up once（补一次+当前）→ 2 次</text>
+  <rect x="852" y="202" width="24" height="22" rx="3" fill="#dbeafe" stroke="#2563eb"/>
+  <rect x="888" y="202" width="24" height="22" rx="3" fill="#dbeafe" stroke="#2563eb"/>
+
+  <text x="40" y="263" font-size="12" fill="#0f172a">burst（缺几拍补几拍）→ 11 次</text>
+  <rect x="248" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="312" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="376" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="440" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="504" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="568" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="632" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="696" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="760" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="824" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="888" y="246" width="24" height="22" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+
+  <text x="40" y="310" font-size="11" fill="#64748b">小结：不是「越全越好」——burst 极少适用，会瞬间打满下游；进程停一天 + 全表扫描时用 burst 等于自杀</text>
+  <text x="40" y="336" font-size="11" fill="#64748b">⭐ 无论选哪种，「跳过了几次」必须进指标与日志：漏跑静默发生，是定时任务最经典的线上事故形态</text>
+</svg>

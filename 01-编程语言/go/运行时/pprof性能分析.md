@@ -112,6 +112,8 @@ go test -bench=. -benchmem -cpuprofile=cpu.out -memprofile=mem.out ./pkg
 - `-benchmem` 额外给出 `B/op` 与 `allocs/op` —— ⭐ **这两个数比 `ns/op` 更稳定**，
   做前后对比时优先看它们（时间会随机器负载抖，分配次数不会）。
 
+![pprof 的数据流：三种采集入口（程序内 runtime/pprof、net/http/pprof 端点、go test 旗标）都产出同一类 profile 文件，无头环境用 -top / -list / -peek / -traces / -diff_base 读成结论](images/pprof采集到读法的数据流.svg)
+
 ---
 
 ## 三、怎么读：没有浏览器时的命令集
@@ -340,6 +342,8 @@ Showing nodes accounting for 140ms, 70.00% of 200ms total
 1. **一次只改一个变量** —— 同时改三处，最后不知道哪个有用、哪个有害；
 2. **先验证再优化** —— 90% 的"性能问题"最后证实是别的原因（锁、IO、算法选择），
    pprof 的价值恰恰在于**先证明瓶颈在哪**。
+
+![pprof 优化闭环的六步流程：先测 → 定位一个热点 → 判断占比是否值得改 → 改一个变量 → 用 -diff_base 再测确认 → 回归测试兜底；不值得改的项沿虚线回到第 ① 步重新找热点](images/pprof优化闭环六步流程.svg)
 
 ---
 

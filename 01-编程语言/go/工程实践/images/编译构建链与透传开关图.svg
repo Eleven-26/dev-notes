@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="520" fill="#ffffff"/>
+<defs><marker id="arGCa" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">构建链与三个透传开关</text>
+<text x="40" y="58" font-size="13" fill="#64748b">go 命令只是构建入口：-gcflags / -asmflags / -ldflags 把参数分别转交给编译器、汇编器、链接器</text>
+
+<rect x="330" y="84" width="200" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="430" y="111" text-anchor="middle" font-size="12" fill="#9a3412">-gcflags 透传给编译器</text>
+
+<rect x="590" y="84" width="140" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="660" y="111" text-anchor="middle" font-size="12" fill="#334155">-asmflags</text>
+
+<rect x="810" y="84" width="170" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="895" y="111" text-anchor="middle" font-size="12" fill="#9a3412">-ldflags 透传给链接器</text>
+
+<rect x="60" y="170" width="200" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="160" y="196" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">go build / go test</text>
+<text x="160" y="222" text-anchor="middle" font-size="11" fill="#1e3a8a">默认已用一套调好的参数</text>
+
+<rect x="330" y="170" width="200" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="430" y="196" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">go tool compile</text>
+<text x="430" y="222" text-anchor="middle" font-size="11" fill="#1e3a8a">-m 逃逸 / -N -l 调试 / -S 汇编</text>
+
+<rect x="590" y="170" width="140" height="70" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="660" y="196" text-anchor="middle" font-size="13" fill="#334155">go tool asm</text>
+<text x="660" y="222" text-anchor="middle" font-size="11" fill="#64748b">很少用</text>
+
+<rect x="810" y="170" width="170" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="895" y="196" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">go tool link</text>
+<text x="895" y="218" text-anchor="middle" font-size="11" fill="#1e3a8a">-X 注入版本</text>
+<text x="895" y="234" text-anchor="middle" font-size="11" fill="#1e3a8a">-s -w 去符号表</text>
+
+<line x1="260" y1="205" x2="322" y2="205" stroke="#334155" stroke-width="1.5" marker-end="url(#arGCa)"/>
+<line x1="530" y1="205" x2="582" y2="205" stroke="#334155" stroke-width="1.5" marker-end="url(#arGCa)"/>
+<line x1="730" y1="205" x2="802" y2="205" stroke="#334155" stroke-width="1.5" marker-end="url(#arGCa)"/>
+
+<line x1="430" y1="128" x2="430" y2="163" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arGCa)"/>
+<line x1="660" y1="128" x2="660" y2="163" stroke="#64748b" stroke-width="1.5" marker-end="url(#arGCa)"/>
+<line x1="895" y1="128" x2="895" y2="163" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arGCa)"/>
+
+<rect x="590" y="290" width="220" height="60" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="700" y="316" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">构建产物二进制</text>
+<text x="700" y="338" text-anchor="middle" font-size="11" fill="#14532d">-s -w 实测少了 33.7%</text>
+
+<path d="M895 240 L895 320 L818 320" stroke="#16a34a" stroke-width="1.5" fill="none" marker-end="url(#arGCa)"/>
+
+<text x="60" y="310" font-size="12" fill="#334155">写法：-gcflags="[pattern=]参数列表"</text>
+<text x="60" y="332" font-size="11" fill="#64748b">不写 pattern 只作用于命令行直接指定的包</text>
+<text x="60" y="352" font-size="11" fill="#64748b">看依赖包（net/http、crypto/*）要 all=</text>
+
+<text x="60" y="400" font-size="12" fill="#334155">查看口子：go tool compile -h 最权威 · go tool compile -d help 列二级开关 · go build -x / -n 打印真实命令</text>
+
+<text x="40" y="450" font-size="11" fill="#64748b">小结：go help build 对 -gcflags 只有一行透传说明；完整参数表在编译器自己的 -h 里，源码注册在 $GOROOT/src/cmd/compile/internal/base/flag.go</text>
+<text x="40" y="472" font-size="11" fill="#64748b">go tool compile -m -S main.go 与 go build -gcflags="-S" 干同一件事，区别只是参数由谁传（真实项目需自备 -I/-importcfg/-p，继续用 go build）</text>
+</svg>

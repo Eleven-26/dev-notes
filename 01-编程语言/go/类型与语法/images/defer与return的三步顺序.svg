@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="520" fill="#ffffff"/>
+<defs>
+<marker id="arRT" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">return 是三步：先写返回槽，再跑 defer，最后才返回</text>
+<text x="40" y="58" font-size="13" fill="#64748b">同一份逻辑只改函数签名，defer 能不能改到返回值就分成了两支 —— 读数取自 2.2 的容器实测</text>
+
+<rect x="40" y="86" width="280" height="68" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="180" y="112" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e3a5f">① 把返回值写进返回槽</text>
+<text x="180" y="136" font-size="12" text-anchor="middle" fill="#334155">return 5 → 先赋值给命名返回值 r</text>
+
+<rect x="360" y="86" width="280" height="68" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="500" y="112" font-size="14" font-weight="bold" text-anchor="middle" fill="#854d0e">② 执行 defer 链表</text>
+<text x="500" y="136" font-size="12" text-anchor="middle" fill="#854d0e">deferreturn 按后进先出逐个跑</text>
+
+<rect x="680" y="86" width="280" height="68" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="820" y="112" font-size="14" font-weight="bold" text-anchor="middle" fill="#1e3a5f">③ 跳回调用者</text>
+<text x="820" y="136" font-size="12" text-anchor="middle" fill="#334155">取的是返回槽里此刻的值</text>
+
+<line x1="324" y1="120" x2="356" y2="120" stroke="#334155" stroke-width="1.5" marker-end="url(#arRT)"/>
+<line x1="644" y1="120" x2="676" y2="120" stroke="#334155" stroke-width="1.5" marker-end="url(#arRT)"/>
+
+<line x1="100" y1="154" x2="100" y2="206" stroke="#334155" stroke-width="1.5" marker-end="url(#arRT)"/>
+<line x1="260" y1="154" x2="260" y2="190" stroke="#334155" stroke-width="1.5"/>
+<line x1="260" y1="190" x2="740" y2="190" stroke="#334155" stroke-width="1.5"/>
+<line x1="740" y1="190" x2="740" y2="206" stroke="#334155" stroke-width="1.5" marker-end="url(#arRT)"/>
+<text x="300" y="182" font-size="12" fill="#64748b">返回槽是谁，决定了 defer 改不改得动</text>
+
+<rect x="40" y="210" width="440" height="140" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="60" y="236" font-size="13" font-weight="bold" fill="#14532d">命名返回值 (r int)：返回槽就是 r 本身</text>
+<text x="60" y="262" font-size="12" fill="#334155">defer func() { r = 100 }() 改的正是返回槽</text>
+<text x="60" y="288" font-size="12" fill="#334155">2b_return r : 100（返回槽被 defer 改成 100）</text>
+<text x="60" y="314" font-size="12" font-weight="bold" fill="#14532d">2c_return 5 : 100 ⭐ 不是 5</text>
+<text x="60" y="336" font-size="12" fill="#334155">先按三步把 5 写进 r，再被 defer 覆盖成 100</text>
+
+<rect x="520" y="210" width="440" height="140" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+<text x="540" y="236" font-size="13" font-weight="bold" fill="#7c2d12">匿名返回值 int：返回槽是另一份副本</text>
+<text x="540" y="262" font-size="12" fill="#334155">局部变量 r 与返回槽不是一个东西</text>
+<text x="540" y="288" font-size="12" fill="#334155">2a_匿名返回值 : 0（defer 改的是局部副本）</text>
+<text x="540" y="314" font-size="12" font-weight="bold" fill="#7c2d12">返回槽里已经拷进了 0，所以还是 0</text>
+<text x="540" y="336" font-size="12" fill="#334155">要 defer 修正返回值 → 把返回值命名</text>
+
+<rect x="40" y="370" width="920" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="396" font-size="13" font-weight="bold" fill="#0f172a">第 ② 步跑的那些 defer，实参早在注册那一行就求值完了（陷阱 ①）</text>
+<text x="60" y="420" font-size="12" fill="#334155">实测 1_参数在注册时求值: 打印 1 —— 注册时 x=1，之后再改成 2 也不影响这一次调用</text>
+<text x="60" y="442" font-size="12" fill="#334155">想要最终值就写成闭包 defer func() { fmt.Println(x) }() —— 闭包捕获的是变量，实测打印 2</text>
+
+<text x="40" y="498" font-size="11" fill="#64748b">小结：三步顺序与 2a / 2b / 2c 三行读数都来自本篇 2.2 原文；这也是「defer 能改返回值」的唯一正确解释</text>
+</svg>

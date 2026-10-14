@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+<defs>
+<marker id="arTG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">函数序言：栈增长检查与建帧（main.main 实测汇编）</text>
+<text x="40" y="58" font-size="13" fill="#64748b">每个普通函数开头都插入 ①② 这条检查——「Go 的栈为什么能自动增长」的直接证据</text>
+
+<rect x="40" y="88" width="360" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="56" y="108" font-size="11" fill="#1e3a8a">TEXT main.main(SB), ABIInternal, $88-0</text>
+<text x="56" y="128" font-size="11" fill="#1e3a8a">args=0x0 locals=0x58 —— 帧 88 字节 / 入参 0</text>
+
+<line x1="220" y1="142" x2="220" y2="168" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="40" y="170" width="360" height="64" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="56" y="194" font-size="12" font-weight="bold" fill="#854d0e">CMPQ SP, 16(R14) ① 栈空间检查</text>
+<text x="56" y="216" font-size="11" fill="#854d0e">R14 = g 寄存器，16(R14) = g.stackguard0</text>
+
+<line x1="402" y1="200" x2="488" y2="200" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="410" y="193" font-size="11" fill="#dc2626">不够 → 跳</text>
+
+<rect x="490" y="152" width="470" height="120" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="504" y="176" font-size="12" font-weight="bold" fill="#7f1d1d">JLS 125 ② 不够就跳去扩栈</text>
+<text x="504" y="198" font-size="11" fill="#7f1d1d">跳去 morestack：申请更大的栈、把旧栈搬过去</text>
+<text x="504" y="218" font-size="11" fill="#7f1d1d">运行时扫描并调整所有指向旧栈的指针</text>
+<text x="504" y="238" font-size="11" fill="#7f1d1d">—— 这也是 Go 需要精确 GC 类型信息的原因</text>
+
+<line x1="220" y1="234" x2="220" y2="292" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<text x="228" y="268" font-size="11" fill="#16a34a">够 → 继续</text>
+
+<path d="M725,272 L725,326 L402,326" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arTG)"/>
+
+<rect x="40" y="294" width="360" height="88" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="56" y="316" font-size="12" font-weight="bold" fill="#1e3a8a">PUSHQ BP → MOVQ SP, BP ③ 建立栈帧</text>
+<text x="56" y="340" font-size="12" fill="#1e3a8a">SUBQ $24, SP ④ 给局部变量下移栈顶</text>
+<text x="56" y="362" font-size="11" fill="#64748b">保存旧帧指针 → 设立新帧 → 下移栈顶</text>
+
+<line x1="220" y1="384" x2="220" y2="410" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="40" y="414" width="360" height="40" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="220" y="438" font-size="12" fill="#334155" text-anchor="middle">执行函数体</text>
+
+<text x="40" y="486" font-size="11" fill="#64748b">小结：这段序言出自 go build -gcflags="-S" 的实测输出——栈不够就跳 morestack 换大栈，够就直接建帧；它出现在每个普通函数开头。</text>
+</svg>

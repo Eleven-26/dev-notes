@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="566" viewBox="0 0 1000 566" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="566" fill="#ffffff"/>
+<defs>
+<marker id="arRA2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">heapArena 位图与 noMorePtrs 加速</text>
+<text x="40" y="58" font-size="13" fill="#64748b">bitmap 按「字」（1 字 = 8 字节）标记指针或标量，noMorePtrs 把 GC 的逐段判断变成整段跳过 —— 空间换时间</text>
+
+<rect x="40" y="78" width="920" height="256" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="56" y="100" font-size="13" font-weight="bold" fill="#334155">例：用户信息结构体 —— 前面是地址（指针），后面是名称、年龄等（全是标量）</text>
+
+<text x="60" y="158" font-size="11" fill="#64748b">字（1 字 = 8 字节）</text>
+<rect x="230" y="130" width="150" height="46" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+<text x="305" y="148" font-size="12" text-anchor="middle" fill="#0f172a">word 0 · 地址</text>
+<text x="305" y="166" font-size="11" text-anchor="middle" fill="#0f172a">存指针</text>
+<rect x="400" y="130" width="150" height="46" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="475" y="148" font-size="12" text-anchor="middle" fill="#0f172a">word 1 · 名称</text>
+<text x="475" y="166" font-size="11" text-anchor="middle" fill="#0f172a">标量</text>
+<rect x="570" y="130" width="150" height="46" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="645" y="148" font-size="12" text-anchor="middle" fill="#0f172a">word 2 · 年龄</text>
+<text x="645" y="166" font-size="11" text-anchor="middle" fill="#0f172a">标量</text>
+<rect x="740" y="130" width="150" height="46" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="815" y="148" font-size="12" text-anchor="middle" fill="#0f172a">word 3 · …</text>
+<text x="815" y="166" font-size="11" text-anchor="middle" fill="#0f172a">标量</text>
+<rect x="900" y="130" width="50" height="46" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="925" y="158" font-size="12" text-anchor="middle" fill="#64748b">…</text>
+
+<line x1="305" y1="176" x2="305" y2="222" stroke="#334155" stroke-width="1.5"/>
+<line x1="475" y1="176" x2="475" y2="222" stroke="#334155" stroke-width="1.5"/>
+<line x1="645" y1="176" x2="645" y2="222" stroke="#334155" stroke-width="1.5"/>
+<line x1="815" y1="176" x2="815" y2="222" stroke="#334155" stroke-width="1.5"/>
+
+<text x="60" y="244" font-size="11" fill="#64748b">bitmap（每位对应一字）</text>
+<rect x="278" y="222" width="54" height="34" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="305" y="244" font-size="13" text-anchor="middle" fill="#0f172a">1</text>
+<rect x="448" y="222" width="54" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="475" y="244" font-size="13" text-anchor="middle" fill="#0f172a">0</text>
+<rect x="618" y="222" width="54" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="645" y="244" font-size="13" text-anchor="middle" fill="#0f172a">0</text>
+<rect x="788" y="222" width="54" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="815" y="244" font-size="13" text-anchor="middle" fill="#0f172a">0</text>
+<rect x="898" y="222" width="54" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="925" y="244" font-size="13" text-anchor="middle" fill="#64748b">…</text>
+
+<line x1="305" y1="258" x2="305" y2="280" stroke="#334155" stroke-width="1.5" marker-end="url(#arRA2)"/>
+<text x="330" y="284" font-size="12" fill="#0f172a">noMorePtrs[0] = 1：i+1 位及之后全部为 0 → GC「后面不用扫了」</text>
+<text x="330" y="312" font-size="11" fill="#64748b">语义是「指针中止的位置」—— 扫描到下一个对象开始时仍要重新判断</text>
+
+<rect x="40" y="354" width="920" height="152" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="56" y="378" font-size="13" font-weight="bold" fill="#334155">两个数组，分工明确</text>
+<rect x="60" y="392" width="420" height="100" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="270" y="418" font-size="12" text-anchor="middle" fill="#0f172a">bitmap：逐字描述「指针还是标量」</text>
+<text x="270" y="442" font-size="12" text-anchor="middle" fill="#0f172a">指针 → 递归扫描该对象；标量 → 直接跳过</text>
+<text x="270" y="468" font-size="11" text-anchor="middle" fill="#64748b">GC 一个对象一个对象地扫，提前判定哪段不用扫</text>
+<rect x="520" y="392" width="420" height="100" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="730" y="418" font-size="12" text-anchor="middle" fill="#0f172a">noMorePtrs：bitmap 的加速索引</text>
+<text x="730" y="442" font-size="12" text-anchor="middle" fill="#0f172a">记录「指针中止位置」，换掉大段无效扫描</text>
+<text x="730" y="468" font-size="11" text-anchor="middle" fill="#64748b">不能与 bitmap 合并：后者描述逐字，前者加速</text>
+
+<text x="40" y="530" font-size="11" fill="#64748b">换算：Windows 64 位 4MB arena → 512 页；heapArenaBitmapWords = 4MB ÷ (8B × 8) = 65536 个字</text>
+<text x="40" y="552" font-size="11" fill="#64748b">小结：bitmap 砍掉扫描量，noMorePtrs 砍掉扫描段 —— 都是用一个额外数组换 GC 的时间。</text>
+</svg>

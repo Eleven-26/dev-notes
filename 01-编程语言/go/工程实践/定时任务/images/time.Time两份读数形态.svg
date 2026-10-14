@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="arSTD1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">time.Time 形态：内部同时存墙钟与单调时钟两份读数</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">实测 9.2 节（容器 go1.26.8）：用 String() 是否追加 m=+ 判断单调部分存留；抗回拨一条无法在容器内实测</text>
+
+  <rect x="380" y="80" width="240" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="108" font-size="14" fill="#0f172a" text-anchor="middle">time.Time</text>
+  <line x1="440" y1="124" x2="260" y2="156" stroke="#334155" stroke-width="1.6" marker-end="url(#arSTD1)"/>
+  <line x1="560" y1="124" x2="740" y2="156" stroke="#334155" stroke-width="1.6" marker-end="url(#arSTD1)"/>
+
+  <rect x="90" y="158" width="340" height="116" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="260" y="182" font-size="14" fill="#0f172a" text-anchor="middle">墙钟（wall clock）</text>
+  <text x="260" y="208" font-size="12" fill="#334155" text-anchor="middle">回答：现在是几点几分</text>
+  <text x="260" y="232" font-size="12" fill="#334155" text-anchor="middle">会被改：NTP 校时、人工改表、闰秒</text>
+  <text x="260" y="256" font-size="12" fill="#334155" text-anchor="middle">适合：展示、cron 对齐、每天 2 点</text>
+
+  <rect x="570" y="158" width="340" height="116" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="740" y="182" font-size="14" text-anchor="middle" fill="#0f172a">单调时钟（monotonic clock）</text>
+  <text x="740" y="208" font-size="12" fill="#334155" text-anchor="middle">回答：从某个起点过去了多久</text>
+  <text x="740" y="232" font-size="12" fill="#334155" text-anchor="middle">不会被动过：只增不减</text>
+  <text x="740" y="256" font-size="12" fill="#334155" text-anchor="middle">适合：算间隔、算耗时、算超时</text>
+
+  <path d="M260,274 L260,300 L306,300" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#arSTD1)"/>
+  <path d="M740,274 L740,300 L694,300" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#arSTD1)"/>
+
+  <rect x="310" y="276" width="380" height="68" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="500" y="302" font-size="13" fill="#0f172a" text-anchor="middle">b.Sub(a)：双方都带单调 → 走单调读数</text>
+  <text x="500" y="326" font-size="13" fill="#0f172a" text-anchor="middle">任一份被剥掉 → 退回墙钟，回拨时会出负数/荒谬值</text>
+
+  <rect x="90" y="372" width="340" height="100" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="260" y="396" font-size="13" fill="#0f172a" text-anchor="middle">保留单调部分（实测 true）</text>
+  <text x="112" y="422" font-size="12" fill="#334155">time.Now()</text>
+  <text x="112" y="444" font-size="12" fill="#334155">time.Now().Add(0)</text>
+
+  <rect x="570" y="372" width="340" height="100" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="740" y="396" font-size="13" fill="#0f172a" text-anchor="middle">剥掉单调部分（实测 false）</text>
+  <text x="592" y="422" font-size="12" fill="#334155">UTC()  Local()  In(时区)</text>
+  <text x="592" y="444" font-size="12" fill="#334155">Round  Truncate  Parse</text>
+  <text x="592" y="464" font-size="12" fill="#334155">Unix  Date  parsed.Add(0)</text>
+
+  <text x="40" y="506" font-size="11" fill="#64748b">小结：要「是几点」用墙钟，要「过了多久」用单调时钟；从 Parse/Unix/Date 造出来的时间本来就没有单调时钟</text>
+  <text x="40" y="528" font-size="11" fill="#64748b">纪律：算耗时的两个时间点，要么都来自未经 UTC/Round 处理的 time.Now()，要么同属一个无单调时钟来源——混着用 Sub 会退回墙钟</text>
+</svg>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="404" viewBox="0 0 1000 404" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="404" fill="#ffffff"/>
+<defs>
+<marker id="arTG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">泛型直算 vs interface{} 中转：1001 次分配从哪来</text>
+<text x="40" y="58" font-size="13" fill="#64748b">实测对 1000 个 int 求和（值都 > 256，避开装箱缓存）；只取 B/op 与 allocs/op，ns/op 随机器波动不列</text>
+
+<rect x="30" y="84" width="940" height="92" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+<text x="46" y="104" font-size="13" font-weight="bold" fill="#16a34a">泛型</text>
+<rect x="100" y="112" width="210" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="205" y="134" font-size="12" fill="#14532d" text-anchor="middle">[]int 1000 个元素</text>
+<text x="205" y="156" font-size="11" fill="#14532d" text-anchor="middle">值都 > 256</text>
+<line x1="312" y1="140" x2="378" y2="140" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<rect x="380" y="112" width="210" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="485" y="134" font-size="12" fill="#14532d" text-anchor="middle">Sum[T Number] 直接算</text>
+<text x="485" y="156" font-size="11" fill="#14532d" text-anchor="middle">零装箱，在 []int 上遍历</text>
+<line x1="592" y1="140" x2="658" y2="140" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<rect x="660" y="112" width="210" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="765" y="134" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">0 B/op</text>
+<text x="765" y="156" font-size="11" fill="#14532d" text-anchor="middle">0 allocs/op</text>
+
+<rect x="30" y="206" width="940" height="104" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+<text x="46" y="226" font-size="13" font-weight="bold" fill="#dc2626">interface{} 中转</text>
+<rect x="100" y="236" width="210" height="64" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="205" y="260" font-size="12" fill="#7f1d1d" text-anchor="middle">[]int 1000 个元素</text>
+<text x="205" y="282" font-size="11" fill="#7f1d1d" text-anchor="middle">装箱成 []any</text>
+<line x1="312" y1="268" x2="378" y2="268" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<rect x="380" y="236" width="210" height="64" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="485" y="260" font-size="12" fill="#7f1d1d" text-anchor="middle">每个元素单独分配一次</text>
+<text x="485" y="282" font-size="11" fill="#7f1d1d" text-anchor="middle">+ []any 本身 1 次</text>
+<line x1="592" y1="268" x2="658" y2="268" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+<rect x="660" y="236" width="210" height="64" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+<text x="765" y="260" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">24384 B/op</text>
+<text x="765" y="282" font-size="11" fill="#7f1d1d" text-anchor="middle">1001 allocs/op</text>
+
+<text x="40" y="336" font-size="12" fill="#334155">1001 = 1000 次装箱 + 1 次 []any 本身——泛型版直接在 []int 上算，零分配</text>
+<text x="40" y="360" font-size="11" fill="#64748b">⚠️ 造数据不避开 0~255 时，装箱被 staticuint64s 缓存消掉，会测出「接口版也不分配」的假结果</text>
+<text x="40" y="388" font-size="11" fill="#64748b">小结：热点路径上大量 any/interface{} 中转，换成泛型能直接把分配打掉（判据见 3.1）。</text>
+</svg>

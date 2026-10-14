@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="620" fill="#ffffff"/>
+<defs>
+<marker id="arSF" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+<marker id="arSR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+</defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">静态文件服务到 sendfile(2) 的调用链与四种静默退化</text>
+<text x="40" y="58" font-size="13" fill="#64748b">只要把 *os.File 交给 http.ResponseWriter，Go 就会自动启用 sendfile；快路径依赖类型断言，包一层就悄悄退回用户态</text>
+
+<rect x="40" y="100" width="430" height="54" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="255" y="122" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d4ed8">http.ServeFile(w, r, "big.zip")</text>
+<text x="255" y="142" font-size="11" text-anchor="middle" fill="#334155">或 http.FileServer 的调用链</text>
+<rect x="40" y="170" width="430" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="255" y="192" font-size="12" text-anchor="middle" fill="#0f172a">serveFile → serveContent</text>
+<text x="255" y="212" font-size="11" text-anchor="middle" fill="#64748b">顺带处理好 Range / If-Modified-Since</text>
+<rect x="40" y="240" width="430" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="255" y="262" font-size="12" text-anchor="middle" fill="#0f172a">io.CopyN(w, content, size)</text>
+<text x="255" y="282" font-size="11" text-anchor="middle" fill="#64748b">内部是 Copy(dst, LimitReader(src, n))，*io.LimitedReader 被特判解开</text>
+<rect x="40" y="310" width="430" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="255" y="332" font-size="12" text-anchor="middle" fill="#0f172a">(*http.response).ReadFrom</text>
+<text x="255" y="352" font-size="11" text-anchor="middle" fill="#64748b">类型断言就发生在这一层</text>
+<rect x="40" y="380" width="430" height="54" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="255" y="402" font-size="12" font-weight="bold" text-anchor="middle" fill="#15803d">sendFile → sendfile(2)</text>
+<text x="255" y="422" font-size="11" text-anchor="middle" fill="#64748b">数据不进用户态，1 次系统调用、2 次上下文切换</text>
+
+<line x1="255" y1="154" x2="255" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#arSF)"/>
+<line x1="255" y1="224" x2="255" y2="236" stroke="#334155" stroke-width="1.5" marker-end="url(#arSF)"/>
+<line x1="255" y1="294" x2="255" y2="306" stroke="#334155" stroke-width="1.5" marker-end="url(#arSF)"/>
+<line x1="255" y1="364" x2="255" y2="376" stroke="#334155" stroke-width="1.5" marker-end="url(#arSF)"/>
+
+<rect x="520" y="100" width="440" height="96" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="540" y="124" font-size="13" font-weight="bold" fill="#0f172a">两种写法</text>
+<text x="540" y="148" font-size="12" fill="#dc2626">❌ 自己造缓冲区循环 → 强制用户态拷贝，性能还不如标准库</text>
+<text x="540" y="172" font-size="12" fill="#16a34a">✅ 一行交给标准库 → 自动走 sendfile</text>
+
+<rect x="520" y="212" width="440" height="222" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="540" y="238" font-size="13" font-weight="bold" fill="#7f1d1d">以下情况会静默退化</text>
+<text x="540" y="266" font-size="12" fill="#7f1d1d">1. 中间件包装了 http.ResponseWriter</text>
+<text x="560" y="286" font-size="11" fill="#7f1d1d">类型断言失败，拿不到底层 ReadFrom</text>
+<text x="540" y="312" font-size="12" fill="#7f1d1d">2. 启用了 gzip 压缩 → 数据必须回用户态压缩</text>
+<text x="540" y="336" font-size="12" fill="#7f1d1d">3. 走 TLS（未开 kTLS）→ 必须回用户态加密</text>
+<text x="540" y="360" font-size="12" fill="#7f1d1d">4. 自己 make([]byte, 32*1024) 循环读写</text>
+<text x="560" y="380" font-size="11" fill="#7f1d1d">绕过了 io.Copy 的分发</text>
+<text x="540" y="410" font-size="12" font-weight="bold" fill="#b91c1c">共性代价：数据一旦要能被应用看到或改写，零拷贝立刻失效</text>
+<line x1="520" y1="337" x2="474" y2="337" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arSR)"/>
+
+<rect x="40" y="456" width="920" height="110" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="482" font-size="13" font-weight="bold" fill="#0f172a">同类坑：反向代理别自己写 buffer 转发</text>
+<text x="60" y="506" font-size="12" fill="#334155">io.Copy(dst, src) 在两端都是 *net.TCPConn 时会走 splice；自己写 for { src.Read(buf); dst.Write(buf) } 是纯用户态搬运</text>
+<text x="60" y="530" font-size="12" fill="#334155">线上验证：strace -c -e trace=read,write,sendfile,splice ./server，看 sendfile 计数是否上去了、read/write 是否贴近 0</text>
+<text x="60" y="554" font-size="12" fill="#64748b">凡是可能包住 *os.File 的中间件，都应该实现 WriteTo / ReadFrom 把快路径透传下去</text>
+<text x="40" y="600" font-size="11" fill="#64748b">小结：链上每一环都靠类型断言接力，任一环换了具体类型就整条退回 32 KiB 缓冲区的用户态拷贝</text>
+</svg>

@@ -235,6 +235,8 @@ http://172.29.0.4:9999,http://172.29.0.5:9999
 |---|---|---|---|---|---|
 | 1 | 5 | demoJobHandler | 200 | 200 | `demo done param=""` |
 
+![xxl-job 全链路时序：执行器注册（每 20s 心跳）→ 中心刷新地址列表 → 反向触发 :9999 → 执行任务体 → 回调 → 落 xxl_job_log](images/xxl-job注册派单回调时序.svg)
+
 ⭐ **`trigger_code` 与 `handle_code` 必须分开看**：前者是「中心有没有成功把请求打到执行器」，后者是「任务体跑得成不成功」。触发成功但执行失败是常态（见 4.4）。
 
 ⚠️ ⚠️ **一个极易误读的日志**：执行器每次都会打印「**任务回调成功**」——那说的是「回调这个 HTTP 动作成功了」（中心返回 200），**不是「任务成功了」**。任务失败的证据在 `handle_code=500`。
@@ -312,6 +314,8 @@ B 组的执行器日志（`executor_timeout=3` 形同虚设，一路跑满 90 �
 | 24 | **500** | 0 | 上一次还在跑 → 执行器回 `There are tasks running`，本次不执行 |
 
 ⭐ 所以 **`trigger_code=500` 不等于「网络不通」**：它同时覆盖「执行器主动拒绝」（**任务未注册** / **阻塞策略**）与「连不上执行器」两类。实测中两种都出现过 —— 前者的 `handle_msg` 是 `Task not registered` / `There are tasks running`，后者执行器侧**完全无日志**。排查时不能只看这个码。
+
+![xxl-job 超时流程：executor_timeout=3 被客户端转成 ctx 后，检查 ctx 的 A 组 3 秒停、不检查的 B 组跑满 90 秒且下一拍被 DISCARD_LATER 拒绝（trigger_code=500）](images/xxl-job超时两种结局流程.svg)
 
 
 ---

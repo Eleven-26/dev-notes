@@ -292,6 +292,8 @@ tag 不占实例内存（对比 1.2 节：`User{}` 的字段偏移里没有任�
 `structField` 元数据里，`reflect` 查询时才读。副作用：**tag 参与类型同一性**——两个字段相同、
 tag 不同的匿名 struct 是不同类型，实测的编译错误原文在 [类型系统.md](类型系统.md) 3.2，不重讲。
 
+![tag 从源码编译进 structField 类型元数据、经 reflect.Get/Lookup 查询时读取、再由各库按自家规矩拆 value 的完整流转（User.Name 一字段挂五种 key 即此机制的实测）](images/tag从类型元数据到各库解析的流转.svg)
+
 ---
 
 ## 六、"tag 只是字符串"与"tag 不随嵌入继承"各踩什么坑？

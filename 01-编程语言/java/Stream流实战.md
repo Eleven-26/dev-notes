@@ -26,6 +26,10 @@ List<String> ids = nestedItemList.stream()
 
 > ⭐ `map` 是**一对一**转换，`flatMap` 是**一对多后拍平**——处理嵌套集合必须用 `flatMap`。
 
+![map 一对一与 flatMap 把双层 list 拍平的形态对照](images/map一对一与flatMap拍平的形态对照.svg)
+
+**图怎么读**：左半是单层 `List<Item>` 经 `map(Item::getId)` 一格对一格变成 `id`；右半是 `List<List<Item>>` 的两个 `innerList` 先各自展开、再并进同一个结果列表——元素总数是各内层之和，这正是「一对多后拍平」。
+
 ## 二、取多列（转成 DTO）
 
 ```java
@@ -217,6 +221,10 @@ public static List<User> removeDuplicatesByNameAndPhone(List<User> userList) {
 | **在流中修改源集合** | 可能抛 `ConcurrentModificationException` | 先收集结果，再操作原集合 |
 | **`parallelStream()` 滥用** | 小数据量反而更慢，且共享可变状态时不安全 | 数据量大且无共享状态时再用 |
 | **空集合 `.get(0)`** | 返回 null 或越界 | 用 `findFirst().orElse(null)`、`Optional` 兜底 |
+
+![Stream 管道数据流转：数据源经中间操作链只记账，终端操作才一次性触发遍历，流消费后即作废](images/Stream管道惰性触发与一次性消费.svg)
+
+**图怎么读**：上排黄框里任何一步在遇到绿色终端框之前都不会执行——这解释了表中「sorted() 后忘了 collect」和「Stream 不能复用」两条坑；下排是第一节「取一列」链路的逐段标注。
 
 ---
 

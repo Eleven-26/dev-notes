@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">RocketMQ 客户端对象谁持有长活资源</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">架构图；对象、单例结论与 start() 语义出自第三节与第四节表（rocketmq-client 5.3.1，单机 1 NameServer + 1 Broker）</text>
+
+  <defs>
+    <marker id="arR1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="76" width="460" height="300" rx="10" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="60" y="98" font-size="13" font-weight="bold" fill="#1e3a8a">进程级：start() 一次并复用</text>
+
+  <rect x="60" y="108" width="420" height="66" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="72" y="128" font-size="10.5" font-weight="bold" fill="#0f172a">DefaultMQProducer ✅</text>
+  <text x="72" y="146" font-size="10" fill="#334155">持有 TCP 连接与心跳线程</text>
+  <text x="72" y="162" font-size="10" fill="#7c2d12">反复 new + start = 连接数线性膨胀</text>
+
+  <rect x="60" y="184" width="420" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="72" y="204" font-size="10.5" font-weight="bold" fill="#0f172a">TransactionMQProducer ✅</text>
+  <text x="72" y="222" font-size="10" fill="#334155">同生产者，另持有回查线程池（setExecutorService）</text>
+
+  <rect x="60" y="250" width="420" height="56" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="72" y="270" font-size="10.5" font-weight="bold" fill="#0f172a">RocketMQTemplate ✅ 单例 Bean</text>
+  <text x="72" y="288" font-size="10" fill="#334155">starter 自动装配，容器注入，别手写</text>
+
+  <rect x="60" y="316" width="420" height="50" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="72" y="336" font-size="10.5" fill="#0f172a">MessageQueueSelector ✅ 进程级</text>
+  <text x="72" y="354" font-size="10" fill="#64748b">无状态策略对象，配一次即可复用</text>
+
+  <rect x="520" y="76" width="440" height="300" rx="10" fill="#f8fafc" stroke="#ea580c"/>
+  <text x="540" y="98" font-size="13" font-weight="bold" fill="#7c2d12">非单例与请求级</text>
+
+  <rect x="540" y="108" width="400" height="86" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="552" y="128" font-size="10.5" font-weight="bold" fill="#7c2d12">DefaultMQPushConsumer ❌ 非单例</text>
+  <text x="552" y="146" font-size="10" fill="#7c2d12">绑定「消费组 + 订阅」，内部有长轮询与消费线程池</text>
+  <text x="552" y="162" font-size="10" fill="#7c2d12">shutdown 只作用于该实例</text>
+  <text x="552" y="180" font-size="10" fill="#7f1d1d">做成全局单例 → 顺序消费的队列锁被跨订阅共享</text>
+
+  <rect x="540" y="204" width="400" height="56" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="552" y="224" font-size="10.5" fill="#14532d">Message / MessageExt ❌ 请求级</text>
+  <text x="552" y="242" font-size="10" fill="#14532d">每条独立，跨请求复用会串内容</text>
+
+  <text x="540" y="284" font-size="10" fill="#64748b">同一消费组想提并发要的是多副本各自独立</text>
+  <text x="540" y="300" font-size="10" fill="#64748b">Consumer，而不是共享一个</text>
+  <text x="540" y="326" font-size="10" fill="#64748b">start() 里发生的三件事：建立 TCP、</text>
+  <text x="540" y="342" font-size="10" fill="#64748b">注册路由、起心跳线程 —— 所以</text>
+  <text x="540" y="358" font-size="10" fill="#64748b">setNamesrvAddr 与 subscribe 都必须在前</text>
+
+  <rect x="40" y="394" width="920" height="106" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="56" y="416" font-size="11" fill="#7f1d1d">初始化顺序三条：setNamesrvAddr 先于 start()（start() 时才解析 NameServer 与拉路由，晚设等于没设）；</text>
+  <text x="56" y="438" font-size="11" fill="#7f1d1d">subscribe 先于 start()（start() 时快照订阅关系，先 start 后 subscribe 订阅不生效）；</text>
+  <text x="56" y="460" font-size="11" fill="#7f1d1d">组名全局唯一且语义稳定，同名组在不同实例上参数不一致会启动报错或行为异常，事务消息的组不能与延迟 / 批量混用。</text>
+  <text x="56" y="486" font-size="11" font-weight="bold" fill="#7f1d1d">一句话：生产者单例（省连接），消费者非单例（一个订阅一份独立状态）。</text>
+
+  <line x1="270" y1="174" x2="270" y2="184" stroke="#334155" stroke-width="1.4" marker-end="url(#arR1)"/>
+  <line x1="270" y1="240" x2="270" y2="250" stroke="#334155" stroke-width="1.4" marker-end="url(#arR1)"/>
+  <line x1="270" y1="306" x2="270" y2="316" stroke="#334155" stroke-width="1.4" marker-end="url(#arR1)"/>
+  <line x1="740" y1="194" x2="740" y2="204" stroke="#334155" stroke-width="1.4" marker-end="url(#arR1)"/>
+
+  <text x="40" y="528" font-size="11" fill="#64748b">调用位置：进程启动阶段（main / @PostConstruct / 静态持有 OrderProducerHolder 的 static 块）建一次；不要在 HTTP handler 里每次 new + start。</text>
+  <text x="40" y="556" font-size="11" fill="#64748b">NameServer 不可达或 Topic 不存在时，start() 或首次发送抛 MQClientException: No route info of this topic。</text>
+  <text x="40" y="580" font-size="11" fill="#64748b">前者通常就是 Topic 没建且 Broker 未开 autoCreateTopicEnable=true。</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="370" viewBox="0 0 1000 370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="370" fill="#ffffff"/>
+<defs>
+<marker id="arTG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">tag 的生命周期：从源码到各库解释器</text>
+<text x="40" y="58" font-size="13" fill="#64748b">编译进 structField 元数据 → reflect 查询时才读 → 各家库按自己的规矩拆 value（第五、七节实测机制）</text>
+
+<rect x="40" y="92" width="214" height="170" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="52" y="118" font-size="13" font-weight="bold" fill="#1e3a8a">源码字段声明</text>
+<text x="52" y="144" font-size="12" fill="#0f172a">Name string</text>
+<text x="52" y="168" font-size="12" fill="#0f172a">json:"name"</text>
+<text x="52" y="192" font-size="12" fill="#334155">yaml·gorm·validate·db</text>
+<text x="52" y="216" font-size="12" fill="#334155">反引号包裹</text>
+<text x="52" y="240" font-size="12" fill="#334155">写在字段声明之后</text>
+
+<line x1="256" y1="176" x2="274" y2="176" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="276" y="92" width="214" height="170" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="288" y="118" font-size="13" font-weight="bold" fill="#334155">类型元数据（编译期）</text>
+<text x="288" y="144" font-size="12" fill="#0f172a">structField 元数据</text>
+<text x="288" y="168" font-size="12" fill="#334155">编译进类型信息</text>
+<text x="288" y="192" font-size="12" fill="#334155">不占实例内存</text>
+<text x="288" y="216" font-size="12" fill="#334155">语言本身不解释</text>
+<text x="288" y="240" font-size="12" fill="#334155">tag 参与类型同一性</text>
+
+<line x1="492" y1="176" x2="510" y2="176" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="512" y="92" width="214" height="170" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="524" y="118" font-size="13" font-weight="bold" fill="#9a3412">reflect 运行时查询</text>
+<text x="524" y="144" font-size="12" fill="#0f172a">StructField.Tag</text>
+<text x="524" y="168" font-size="12" fill="#334155">本质是 string</text>
+<text x="524" y="192" font-size="12" fill="#334155">Get 缺 key 得 ""</text>
+<text x="524" y="216" font-size="12" fill="#334155">Lookup 多返回 bool</text>
+<text x="524" y="240" font-size="12" fill="#334155">protobuf 未命中 false</text>
+
+<line x1="728" y1="176" x2="746" y2="176" stroke="#334155" stroke-width="1.6" marker-end="url(#arTG)"/>
+
+<rect x="748" y="92" width="212" height="170" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="760" y="118" font-size="13" font-weight="bold" fill="#14532d">各库拆 value</text>
+<text x="760" y="144" font-size="12" fill="#0f172a">json：按逗号拆</text>
+<text x="760" y="168" font-size="12" fill="#0f172a">gorm：用分号</text>
+<text x="760" y="192" font-size="12" fill="#334155">validate：逗号+等号</text>
+<text x="760" y="216" font-size="12" fill="#334155">各家只认自己的 key</text>
+<text x="760" y="240" font-size="12" fill="#334155">语法互不通用</text>
+
+<text x="40" y="292" font-size="12" fill="#334155">实测：User.Name 一个字段挂五种 key；Get("protobuf") 返回 ""、命中 false</text>
+<text x="40" y="316" font-size="12" fill="#334155">tag 跟着类型走、不跟着字段值走——用转换「洗」类型时 tag 一起被洗掉（6.3）</text>
+<text x="40" y="344" font-size="11" fill="#64748b">小结：tag 是编译进类型元数据的字符串——语言不解释，reflect 查询时才读，各库按自己的规矩拆 value。</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="410" viewBox="0 0 1000 410" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="410" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">agent 配置项的三级优先级：-D 参数 &gt; 环境变量 &gt; agent.config</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">客户端侧配置生效路径（第四节）；推荐 agent.config 保持原样不动，全部用环境变量覆盖</text>
+
+  <defs>
+    <marker id="arCfg" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="90" width="280" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="112" font-size="12" font-weight="bold" fill="#0f172a">最高：启动参数 -Dskywalking.xxx</text>
+  <text x="52" y="133" font-size="11" fill="#334155">-Dskywalking.agent.service_name=order-service</text>
+  <text x="52" y="154" font-size="11" fill="#334155">-Dskywalking.collector.backend_service=…:11800</text>
+  <text x="52" y="172" font-size="11" fill="#64748b">IDEA 填在运行配置的 VM options 里</text>
+
+  <rect x="360" y="90" width="280" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="372" y="112" font-size="12" font-weight="bold" fill="#0f172a">次之：环境变量</text>
+  <text x="372" y="133" font-size="11" fill="#334155">SW_AGENT_NAME=order-service</text>
+  <text x="372" y="154" font-size="11" fill="#334155">SW_AGENT_COLLECTOR_BACKEND_SERVICES</text>
+  <text x="372" y="172" font-size="11" fill="#64748b">容器里最常用：同一镜像跨环境复用</text>
+
+  <rect x="680" y="90" width="280" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="692" y="112" font-size="12" font-weight="bold" fill="#0f172a">兜底：config/agent.config 默认值</text>
+  <text x="692" y="133" font-size="11" fill="#334155">agent.service_name = Your_ApplicationName</text>
+  <text x="692" y="154" font-size="11" fill="#334155">collector.backend_service = 127.0.0.1:11800</text>
+  <text x="692" y="172" font-size="11" fill="#334155">agent.sample_n_per_3_secs = -1（全采样）</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="320" y1="133" x2="360" y2="133" marker-end="url(#arCfg)"/>
+    <line x1="640" y1="133" x2="680" y2="133" marker-end="url(#arCfg)"/>
+  </g>
+
+  <rect x="40" y="206" width="560" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="52" y="228" font-size="12" font-weight="bold" fill="#0f172a">配置项 ↔ 环境变量 ↔ 默认值（本篇原表）</text>
+  <text x="52" y="250" font-size="10.5" fill="#334155">agent.service_name ↔ SW_AGENT_NAME ↔ 默认 Your_ApplicationName</text>
+  <text x="52" y="270" font-size="10.5" fill="#334155">collector.backend_service ↔ SW_AGENT_COLLECTOR_BACKEND_SERVICES ↔ OAP 的 gRPC 地址</text>
+  <text x="52" y="290" font-size="10.5" fill="#334155">agent.sample_n_per_3_secs ↔ SW_AGENT_SAMPLE ↔ -1 全采，正数 = 每 3 秒最多几条</text>
+  <text x="52" y="310" font-size="10.5" fill="#334155">logging.level ↔ SW_LOGGING_LEVEL ↔ 默认 INFO，排查探针问题才开 DEBUG</text>
+
+  <rect x="620" y="206" width="340" height="112" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="632" y="228" font-size="12" font-weight="bold" fill="#7c2d12">⚠️ 采样语义与 Go 不同，别照抄</text>
+  <text x="632" y="250" font-size="11" fill="#7c2d12">Java：每 3 秒最多多少条（-1 全采）</text>
+  <text x="632" y="270" font-size="11" fill="#7c2d12">Go：0~1 的浮点概率</text>
+  <text x="632" y="290" font-size="11" fill="#dc2626">把 Go 的 0.1 填进 Java = 每 3 秒 0 条</text>
+  <text x="632" y="310" font-size="11" fill="#dc2626">等于全不采：不报错，UI 永远为空</text>
+
+  <text x="40" y="348" font-size="11" fill="#64748b">小结：同一个键三层都能写，取的是最高那层；agent.config 保持原样，环境差异全走环境变量。</text>
+  <text x="40" y="372" font-size="11" fill="#64748b">图怎么读：还有 plugin.exclude_plugins ↔ SW_AGENT_EXCLUDE_PLUGINS（排除插件，如 tomcat-7.x）。</text>
+</svg>

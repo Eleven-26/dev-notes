@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="560" fill="#ffffff"/>
+<defs><marker id="arCFb" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Reload 全有或全无：编译在锁外、切换在最后一步</text>
+<text x="40" y="58" font-size="13" fill="#64748b">g.Reload(cfg) 的流程 —— 绝不能有「半新半旧」的中间态，读者永远看不到「路由换了但鉴权器还是旧的」</text>
+
+<rect x="290" y="80" width="320" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="450" y="100" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">st, err := newState(cfg)</text>
+<text x="450" y="120" text-anchor="middle" font-size="11" fill="#1e3a8a">Validate / CIDR 解析 / 路由编译 —— 锁外</text>
+
+<rect x="290" y="180" width="320" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="450" y="207" text-anchor="middle" font-size="12" fill="#9a3412">编译失败？任一错误在校验期就拦下</text>
+
+<rect x="690" y="170" width="270" height="64" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="825" y="194" text-anchor="middle" font-size="12" fill="#854d0e">return nil, err 直接返回</text>
+<text x="825" y="216" text-anchor="middle" font-size="11" fill="#854d0e">当前快照保持不变 · 根本不动锁</text>
+
+<rect x="290" y="272" width="320" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="450" y="290" text-anchor="middle" font-size="12" fill="#1e3a8a">g.mu.Lock() + defer Unlock()</text>
+<text x="450" y="308" text-anchor="middle" font-size="11" fill="#1e3a8a">锁内只做状态搬运，不放耗时编译</text>
+
+<rect x="290" y="352" width="320" height="98" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="450" y="374" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">按分类搬运运行时状态</text>
+<text x="450" y="396" text-anchor="middle" font-size="11" fill="#1e3a8a">熔断器按服务名复用（不可自愈·绝不重建）</text>
+<text x="450" y="416" text-anchor="middle" font-size="11" fill="#1e3a8a">均衡器仅拓扑变化重建（可自愈）</text>
+<text x="450" y="436" text-anchor="middle" font-size="11" fill="#1e3a8a">代理缓存按新配置反推白名单清理</text>
+
+<rect x="290" y="480" width="320" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="450" y="502" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">g.st.Store(st)：最后一步才让请求看到新配置</text>
+<text x="450" y="524" text-anchor="middle" font-size="11" fill="#14532d">返回 ReloadSummary（BreakerKept / BalancerRebuilt / ProxiesPruned）</text>
+
+<line x1="450" y1="128" x2="450" y2="172" stroke="#334155" stroke-width="1.5" marker-end="url(#arCFb)"/>
+<line x1="610" y1="202" x2="682" y2="202" stroke="#b45309" stroke-width="1.5" marker-end="url(#arCFb)"/>
+<text x="646" y="192" text-anchor="middle" font-size="11" fill="#b45309">是</text>
+<line x1="450" y1="224" x2="450" y2="264" stroke="#334155" stroke-width="1.5" marker-end="url(#arCFb)"/>
+<text x="464" y="248" font-size="11" fill="#334155">否</text>
+<line x1="450" y1="316" x2="450" y2="344" stroke="#334155" stroke-width="1.5" marker-end="url(#arCFb)"/>
+<line x1="450" y1="450" x2="450" y2="472" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arCFb)"/>
+
+<text x="60" y="200" font-size="12" fill="#334155">编译要花时间（正则毫秒级），</text>
+<text x="60" y="220" font-size="12" fill="#334155">放锁里会让所有请求卡住</text>
+
+<text x="60" y="330" font-size="12" fill="#334155">正在飞的请求已持有旧快照引用，</text>
+<text x="60" y="350" font-size="12" fill="#334155">会整条走完旧配置 —— 不是 bug</text>
+
+<text x="60" y="500" font-size="11" fill="#64748b">重载摘要示例：routes=9 services=6 熔断器复用=6 均衡器重建=[slow-svc] 代理清理=0</text>
+</svg>

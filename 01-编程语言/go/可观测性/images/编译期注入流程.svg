@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="470" fill="#ffffff"/>
+  <defs>
+    <marker id="arSE" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arSR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">skywalking-go 编译期注入流程</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Go 产物是 AOT 机器码：没有 classloader、没有运行期改指令的口子，埋点在编译期固化进二进制</text>
+
+  <rect x="40" y="90" width="200" height="76" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="54" y="112" font-size="12" font-weight="bold" fill="#0f172a">go build 编译命令</text>
+  <text x="54" y="132" font-size="11" fill="#334155">-toolexec 劫持工具调用</text>
+  <text x="54" y="150" font-size="11" fill="#334155">-a 强制全量重编译</text>
+  <line x1="240" y1="128" x2="256" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#arSE)"/>
+
+  <rect x="262" y="90" width="190" height="76" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="276" y="112" font-size="12" font-weight="bold" fill="#0f172a">agent 分析 AST</text>
+  <text x="276" y="132" font-size="11" fill="#334155">匹配插件定义的方法调用点</text>
+  <text x="276" y="150" font-size="11" fill="#334155">在调用点前后插入埋点代码</text>
+  <line x1="452" y1="128" x2="468" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#arSE)"/>
+
+  <rect x="474" y="90" width="190" height="76" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="488" y="112" font-size="12" font-weight="bold" fill="#0f172a">改写源码交回真编译器</text>
+  <text x="488" y="132" font-size="11" fill="#334155">compile / link 继续编译</text>
+  <text x="488" y="150" font-size="11" fill="#334155">运行期不再改写指令</text>
+  <line x1="664" y1="128" x2="680" y2="128" stroke="#334155" stroke-width="1.6" marker-end="url(#arSE)"/>
+
+  <rect x="686" y="90" width="230" height="76" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="700" y="114" font-size="13" font-weight="bold" fill="#0f172a">产物：已埋好点的二进制</text>
+  <text x="700" y="136" font-size="11" fill="#334155">插件集钉死在编译产物里</text>
+  <text x="700" y="154" font-size="11" fill="#334155">服务名 / 地址 / 采样率运行期读</text>
+
+  <line x1="140" y1="166" x2="140" y2="206" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arSR)"/>
+
+  <rect x="40" y="210" width="200" height="64" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="54" y="232" font-size="12" font-weight="bold" fill="#0f172a">漏 -a：命中构建缓存</text>
+  <text x="54" y="252" font-size="11" fill="#334155">缓存里存的是未注入的旧包</text>
+  <line x1="240" y1="242" x2="256" y2="242" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arSR)"/>
+
+  <rect x="262" y="210" width="240" height="64" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="276" y="232" font-size="12" font-weight="bold" fill="#0f172a">成品没有埋点代码，且不报错</text>
+  <text x="276" y="252" font-size="11" fill="#334155">「配了 agent 却没 trace」首因</text>
+
+  <rect x="40" y="300" width="340" height="84" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="54" y="322" font-size="12" font-weight="bold" fill="#0f172a">编译期钉死的配置</text>
+  <text x="54" y="344" font-size="11" fill="#334155">-config 的插件开关改 yaml 重启无效</text>
+  <text x="54" y="364" font-size="11" fill="#334155">运行期无法一键摘除插件</text>
+
+  <rect x="400" y="300" width="520" height="84" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="414" y="322" font-size="12" font-weight="bold" fill="#0f172a">运行期读环境变量（${ENV:default} 形式）</text>
+  <text x="414" y="344" font-size="11" fill="#334155">SW_AGENT_NAME 先环境变量后默认值</text>
+  <text x="414" y="364" font-size="11" fill="#334155">SW_AGENT_REPORTER_GRPC_BACKEND_SERVICE 也是运行期读</text>
+
+  <text x="40" y="424" font-size="11" fill="#64748b">小结：三个推论——-a 不能省、-config 只在编译时生效、运行期无法一键摘除插件；配置与插件集被固化进二进制</text>
+</svg>

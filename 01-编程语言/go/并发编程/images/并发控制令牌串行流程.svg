@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="550" viewBox="0 0 1000 550" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="550" fill="#ffffff"/>
+  <defs>
+    <marker id="t1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Channel 令牌串行化：抢→打印→归还的单圈流程</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">升序打印方案三：缓冲区 1 的 channel 当唯一令牌，同一时刻只有一个协程持有它</text>
+
+  <rect x="330" y="88" width="340" height="54" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="112" text-anchor="middle" font-size="12" fill="#14532d">主协程先放初始令牌：token &lt;- struct{}{}</text>
+  <text x="500" y="132" text-anchor="middle" font-size="10" fill="#14532d">未放入：所有协程开局就阻塞在 &lt;-token</text>
+  <line x1="500" y1="142" x2="500" y2="172" stroke="#334155" stroke-width="1.6" marker-end="url(#t1)"/>
+
+  <rect x="330" y="176" width="340" height="50" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="198" text-anchor="middle" font-size="12.5" fill="#1e3a8a">&lt;-token 抢令牌</text>
+  <text x="500" y="218" text-anchor="middle" font-size="10" fill="#1e3a8a">别人归还了才轮到你抢（抢不到就阻塞）</text>
+  <line x1="500" y1="226" x2="500" y2="256" stroke="#334155" stroke-width="1.6" marker-end="url(#t1)"/>
+
+  <rect x="330" y="260" width="340" height="46" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="288" text-anchor="middle" font-size="12.5" fill="#78350f">counter &gt;= total ？</text>
+  <line x1="670" y1="283" x2="736" y2="283" stroke="#334155" stroke-width="1.6" marker-end="url(#t1)"/>
+  <text x="703" y="272" text-anchor="middle" font-size="11.5" fill="#0f172a">是</text>
+  <line x1="500" y1="306" x2="500" y2="336" stroke="#334155" stroke-width="1.6" marker-end="url(#t1)"/>
+  <text x="514" y="326" font-size="11.5" fill="#0f172a">否</text>
+
+  <rect x="740" y="256" width="230" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="855" y="280" text-anchor="middle" font-size="11" fill="#7f1d1d">退出路径也必须先归还：</text>
+  <text x="855" y="302" text-anchor="middle" font-size="10.5" fill="#7f1d1d">token &lt;- struct{}{} 后 return</text>
+
+  <rect x="330" y="340" width="340" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="362" text-anchor="middle" font-size="11.5" fill="#1e3a8a">fmt.Println(counter) · counter++</text>
+  <text x="500" y="382" text-anchor="middle" font-size="10" fill="#1e3a8a">取号与打印在同一个"持令牌"区间内</text>
+  <line x1="500" y1="392" x2="500" y2="418" stroke="#334155" stroke-width="1.6" marker-end="url(#t1)"/>
+
+  <rect x="330" y="422" width="340" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="452" text-anchor="middle" font-size="11.5" fill="#1e3a8a">token &lt;- struct{}{} 用完立即归还</text>
+
+  <path d="M 330,446 L 250,446 L 250,201 L 326,201" fill="none" stroke="#334155" stroke-width="1.6" marker-end="url(#t1)"/>
+  <text x="238" y="320" text-anchor="middle" font-size="10.5" fill="#334155">下一轮</text>
+
+  <rect x="740" y="344" width="230" height="152" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="855" y="368" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">两个必须归还的坑</text>
+  <text x="855" y="392" text-anchor="middle" font-size="10.5" fill="#7f1d1d">坑 1：用完不归还</text>
+  <text x="855" y="410" text-anchor="middle" font-size="10.5" fill="#7f1d1d">→ 其余永远阻塞在发送</text>
+  <text x="855" y="434" text-anchor="middle" font-size="10.5" fill="#7f1d1d">坑 2：退出路径不归还</text>
+  <text x="855" y="452" text-anchor="middle" font-size="10.5" fill="#7f1d1d">→ 最后一个卡在 &lt;-token</text>
+  <text x="855" y="474" text-anchor="middle" font-size="10.5" fill="#7f1d1d">wg.Wait() 直接死锁</text>
+
+  <text x="40" y="510" font-size="11" fill="#64748b">小结：令牌法把"取号 + 打印"绑进同一个互斥区间，所以打印顺序必等于计数器顺序；方案二只保证取号原子，打印顺序由调度器决定。</text>
+  <text x="40" y="532" font-size="11" fill="#64748b">实测（go1.26.5 windows/amd64）：case3_channel.go 输出 100 行，0..99 严格升序且完整。</text>
+</svg>

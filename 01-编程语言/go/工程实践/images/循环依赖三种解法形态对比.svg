@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="632" viewBox="0 0 1000 632" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="632" fill="#ffffff"/>
+  <defs>
+    <marker id="arCy" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arCyR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+    <marker id="arCyG" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">import cycle：复现形态与三种解法后的包图</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">红虚线是被断开的反向边，实线是实测通过的 import 边 —— cyclefix/ 三棵子树全部 go build + go vet 通过</text>
+
+  <text x="40" y="112" font-size="12" font-weight="bold" fill="#0f172a">复现 cycle/</text>
+  <rect x="150" y="86" width="110" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="205" y="112" font-size="12" text-anchor="middle" fill="#7f1d1d">cycle/a</text>
+  <rect x="300" y="86" width="110" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="355" y="112" font-size="12" text-anchor="middle" fill="#7f1d1d">cycle/b</text>
+  <line x1="260" y1="100" x2="296" y2="100" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arCyR)"/>
+  <line x1="300" y1="118" x2="264" y2="118" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arCyR)"/>
+  <text x="430" y="98" font-size="11" fill="#334155">package example.com/cycle/a</text>
+  <text x="446" y="116" font-size="11" fill="#334155">imports example.com/cycle/b from a.go</text>
+  <text x="446" y="134" font-size="11" fill="#7f1d1d">imports example.com/cycle/a from b.go: import cycle not allowed</text>
+
+  <line x1="40" y1="152" x2="960" y2="152" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="40" y="180" width="296" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="188" y="205" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">解法① 抽接口 · fx1/</text>
+  <rect x="52" y="240" width="124" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="114" y="260" font-size="12" text-anchor="middle" fill="#0f172a">fx1/notify</text>
+  <text x="114" y="278" font-size="11" text-anchor="middle" fill="#64748b">定义 Notifier</text>
+  <rect x="212" y="240" width="124" height="48" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="274" y="260" font-size="12" text-anchor="middle" fill="#14532d">fx1/user</text>
+  <text x="274" y="278" font-size="11" text-anchor="middle" fill="#14532d">实现它</text>
+  <line x1="212" y1="254" x2="180" y2="254" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arCyG)"/>
+  <line x1="176" y1="274" x2="208" y2="274" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arCyR)"/>
+
+  <rect x="352" y="180" width="296" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="205" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">解法② 下沉数据 · fx2/</text>
+  <rect x="408" y="234" width="196" height="48" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="506" y="254" font-size="12" text-anchor="middle" fill="#14532d">fx2/model</text>
+  <text x="506" y="272" font-size="11" text-anchor="middle" fill="#14532d">共享的 Prefix 沉到这里</text>
+  <rect x="368" y="316" width="110" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="423" y="341" font-size="12" text-anchor="middle" fill="#0f172a">fx2/alert</text>
+  <rect x="520" y="316" width="110" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="575" y="341" font-size="12" text-anchor="middle" fill="#0f172a">fx2/user</text>
+  <line x1="423" y1="316" x2="423" y2="286" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arCyG)"/>
+  <line x1="575" y1="316" x2="575" y2="286" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arCyG)"/>
+  <line x1="478" y1="336" x2="516" y2="336" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arCyR)"/>
+
+  <rect x="664" y="180" width="296" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="812" y="205" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">解法③ 拆包 · fx3/</text>
+  <rect x="676" y="240" width="124" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="738" y="260" font-size="12" text-anchor="middle" fill="#0f172a">fx3/upper</text>
+  <text x="738" y="278" font-size="11" text-anchor="middle" fill="#64748b">被依赖的只是一角</text>
+  <rect x="836" y="240" width="124" height="48" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="898" y="260" font-size="12" text-anchor="middle" fill="#0f172a">fx3/helper</text>
+  <text x="898" y="278" font-size="11" text-anchor="middle" fill="#64748b">只依赖 base</text>
+  <rect x="836" y="330" width="124" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="898" y="348" font-size="12" text-anchor="middle" fill="#14532d">fx3/base</text>
+  <text x="898" y="366" font-size="11" text-anchor="middle" fill="#14532d">无依赖</text>
+  <line x1="898" y1="288" x2="898" y2="326" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arCyG)"/>
+  <line x1="836" y1="254" x2="804" y2="254" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arCyR)"/>
+  <path d="M712,288 L712,352 L832,352" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arCy)"/>
+
+  <text x="56" y="316" font-size="11" fill="#64748b">notify 只认接口，不再 import user</text>
+  <text x="368" y="380" font-size="11" fill="#64748b">两边各自 import model，互不认识</text>
+  <text x="720" y="316" font-size="11" fill="#64748b">拆出一角到 base</text>
+
+  <text x="56" y="404" font-size="11" font-weight="bold" fill="#0f172a">什么时候选它</text>
+  <text x="56" y="424" font-size="11" fill="#334155">下层要回调上层</text>
+  <text x="368" y="404" font-size="11" font-weight="bold" fill="#0f172a">什么时候选它</text>
+  <text x="368" y="424" font-size="11" fill="#334155">只是常量 / 类型互引</text>
+  <text x="680" y="404" font-size="11" font-weight="bold" fill="#0f172a">什么时候选它</text>
+  <text x="680" y="424" font-size="11" fill="#334155">上层包太大、被依赖只是一角</text>
+
+  <rect x="40" y="446" width="296" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="56" y="468" font-size="11" font-weight="bold" fill="#0f172a">代价</text>
+  <text x="56" y="488" font-size="11" fill="#334155">多一层间接，方法选错要反复改接口</text>
+  <rect x="352" y="446" width="296" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="368" y="468" font-size="11" font-weight="bold" fill="#0f172a">代价</text>
+  <text x="368" y="488" font-size="11" fill="#334155">model 易成「上帝包」，只放最小集合</text>
+  <rect x="664" y="446" width="296" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="680" y="468" font-size="11" font-weight="bold" fill="#0f172a">代价</text>
+  <text x="680" y="488" font-size="11" fill="#334155">base 归属要讲清，否则只是换个名字的 util</text>
+
+  <text x="40" y="536" font-size="11" fill="#64748b">三个都用不上时（A、B 确实互相需要）：它们本就该是同一个包。</text>
+  <text x="40" y="558" font-size="11" fill="#64748b">go build -v 的依赖先行顺序：fx3/base → fx2/model → fx1/notify → fx2/alert → fx1/user → fx3/helper → fx2/user → fx3/upper</text>
+  <text x="40" y="580" font-size="11" fill="#64748b">循环依赖是编译期错误，不是 lint 警告：go test 同样编译不过，运行期不会「侥幸」绕过。</text>
+  <text x="40" y="602" font-size="11" fill="#64748b">解法① 与 DIP 同源，接口该定义在哪一侧见 依赖注入.md；一目录一包、包之间不能成环是切包的两条硬规则。</text>
+</svg>

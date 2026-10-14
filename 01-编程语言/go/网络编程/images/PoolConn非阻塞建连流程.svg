@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="800" viewBox="0 0 1000 800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="800" fill="#ffffff"/>
+  <defs>
+    <marker id="arE" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">Pool.Conn：非阻塞建连 + 按地址分锁</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">建连不进请求路径、不锁全局、双重检查不能省——否则一个黑洞上游会卡住所有地址的转码请求</text>
+
+  <!-- S -->
+  <rect x="140" y="80" width="360" height="40" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="320" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">Pool.Conn(up)，addr = up.Addr</text>
+  <line x1="320" y1="120" x2="320" y2="142" stroke="#334155" stroke-width="1.6" marker-end="url(#arE)"/>
+
+  <!-- D1 -->
+  <rect x="140" y="142" width="360" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="170" text-anchor="middle" font-size="12" fill="#1e3a8a">lookup(addr) 已建好？</text>
+  <rect x="620" y="142" width="320" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="780" y="164" text-anchor="middle" font-size="11.5" font-weight="700" fill="#14532d">命中 → 返回已有连接</text>
+  <text x="780" y="182" text-anchor="middle" font-size="11" fill="#334155">快路径，无锁</text>
+  <line x1="500" y1="166" x2="620" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#arE)"/>
+  <line x1="320" y1="190" x2="320" y2="212" stroke="#334155" stroke-width="1.6" marker-end="url(#arE)"/>
+
+  <!-- B2 -->
+  <rect x="140" y="212" width="360" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="234" text-anchor="middle" font-size="11.5" fill="#1e3a8a">dl := dialLock(addr); dl.Lock()</text>
+  <text x="320" y="254" text-anchor="middle" font-size="11" fill="#64748b">地址专属锁，在 p.mu 之外获取</text>
+  <line x1="320" y1="264" x2="320" y2="286" stroke="#334155" stroke-width="1.6" marker-end="url(#arE)"/>
+
+  <!-- D3 -->
+  <rect x="140" y="286" width="360" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="308" text-anchor="middle" font-size="11.5" fill="#1e3a8a">双重检查 lookup(addr) 命中？</text>
+  <text x="320" y="328" text-anchor="middle" font-size="11" fill="#64748b">拿到 per-addr 锁后再查一次</text>
+  <rect x="620" y="286" width="320" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="780" y="308" text-anchor="middle" font-size="11.5" font-weight="700" fill="#14532d">命中 → 返回</text>
+  <text x="780" y="328" text-anchor="middle" font-size="11" fill="#334155">等锁期间别人已建好</text>
+  <line x1="500" y1="312" x2="620" y2="312" stroke="#334155" stroke-width="1.5" marker-end="url(#arE)"/>
+  <line x1="320" y1="338" x2="320" y2="360" stroke="#334155" stroke-width="1.6" marker-end="url(#arE)"/>
+
+  <!-- B4 -->
+  <rect x="140" y="360" width="360" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="320" y="384" text-anchor="middle" font-size="11.5" font-weight="700" fill="#9a3412">grpc.NewClient(...) 非阻塞</text>
+  <text x="320" y="404" text-anchor="middle" font-size="11" fill="#334155">只解析 target ＋ 拉起后台连接 goroutine</text>
+  <text x="320" y="420" text-anchor="middle" font-size="11" fill="#64748b">不等握手；⚠️ 千万别加 WithBlock()</text>
+  <line x1="320" y1="424" x2="320" y2="446" stroke="#334155" stroke-width="1.6" marker-end="url(#arE)"/>
+
+  <!-- D5 -->
+  <rect x="140" y="446" width="360" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="472" text-anchor="middle" font-size="12" fill="#1e3a8a">err != nil ？</text>
+  <rect x="620" y="446" width="320" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="780" y="472" text-anchor="middle" font-size="11.5" font-weight="700" fill="#7f1d1d">是 → return nil, err</text>
+  <line x1="500" y1="468" x2="620" y2="468" stroke="#334155" stroke-width="1.5" marker-end="url(#arE)"/>
+  <line x1="320" y1="490" x2="320" y2="512" stroke="#334155" stroke-width="1.6" marker-end="url(#arE)"/>
+
+  <!-- B6 -->
+  <rect x="140" y="512" width="360" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="320" y="540" text-anchor="middle" font-size="11.5" fill="#1e3a8a">p.mu 下 conns[addr] = c</text>
+  <line x1="320" y1="560" x2="320" y2="582" stroke="#334155" stroke-width="1.6" marker-end="url(#arE)"/>
+
+  <!-- END -->
+  <rect x="140" y="582" width="360" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="320" y="608" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">return c（复用这一条）</text>
+
+  <!-- notes -->
+  <rect x="90" y="650" width="830" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="106" y="674" font-size="11.5" fill="#334155">三条判据：① 建连不进请求路径——NewClient 不等握手，真正的建连放进本请求自己的 ctx 超时；② 不锁全局——per-addr 锁在全局锁之外；</text>
+  <text x="106" y="694" font-size="11.5" fill="#334155">③ 双重检查不能省——否则并发首访同一地址会建出多条连接，多出来的既无人用也无人关（连接泄漏）。</text>
+  <text x="106" y="716" font-size="11.5" fill="#dc2626">实测：非阻塞 Conn(黑洞)=516.8µs 秒回；旧实现加 grpc.WithBlock() 撞黑洞 300.6801ms 后 context deadline exceeded。</text>
+
+  <text x="40" y="760" font-size="11" fill="#64748b">小结：gRPC 建连要做 TCP 握手＋HTTP/2 SETTINGS，每请求新建会吃光收益；更要紧的是建连既不占请求路径、也不锁全局。</text>
+</svg>

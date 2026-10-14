@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">单例边界：agent 自动持有，业务要管的是自己的池与线程</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">Java 进程内的对象持有形态（第八节）；判据只看「内部有没有长活的资源（连接、线程池、队列）」</text>
+
+  <defs>
+    <marker id="arSwSingleton" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="90" width="290" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="52" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">✅ 进程级：SkyWalking agent</text>
+  <text x="52" y="133" font-size="10.5" fill="#334155">随 -javaagent 由 premain 建一次</text>
+  <text x="52" y="152" font-size="10.5" fill="#334155">持有上报队列与消费线程</text>
+  <text x="52" y="171" font-size="10.5" fill="#334155">删 jar / 摘参数才能关</text>
+
+  <rect x="370" y="90" width="290" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="382" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">✅ 进程级：DataSource / HikariCP</text>
+  <text x="382" y="133" font-size="10.5" fill="#334155">内部是连接池，容器注入的 Bean</text>
+  <text x="382" y="152" font-size="10.5" fill="#334155">agent 要它保持同一实例，</text>
+  <text x="382" y="171" font-size="10.5" fill="#334155">才能把 SQL span 串进链路</text>
+
+  <rect x="700" y="90" width="260" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="712" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">✅ 进程级：ExecutorService</text>
+  <text x="712" y="133" font-size="10.5" fill="#334155">反复 new 会线程泄漏</text>
+  <text x="712" y="152" font-size="10.5" fill="#334155">跨线程传播依赖 bootstrap-plugins/</text>
+  <text x="712" y="171" font-size="10.5" fill="#334155">的线程池插件增强同一个池</text>
+
+  <rect x="40" y="210" width="290" height="86" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="52" y="232" font-size="11.5" font-weight="bold" fill="#7c2d12">❌ 请求级：两个 Wrapper</text>
+  <text x="52" y="253" font-size="10.5" fill="#7c2d12">RunnableWrapper / CallableWrapper</text>
+  <text x="52" y="272" font-size="10.5" fill="#7c2d12">每次提交时包一层，用完即弃</text>
+
+  <rect x="370" y="210" width="290" height="86" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="382" y="232" font-size="11.5" font-weight="bold" fill="#7c2d12">❌ 请求级：capture() 的快照</text>
+  <text x="382" y="253" font-size="10.5" fill="#7c2d12">绑定一次调用</text>
+  <text x="382" y="272" font-size="10.5" fill="#7c2d12">worker 复用每轮都要重新 capture /</text>
+  <text x="382" y="290" font-size="10.5" fill="#7c2d12">continued 并在结束时清理</text>
+
+  <rect x="700" y="210" width="260" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="712" y="232" font-size="11.5" font-weight="bold" fill="#0f172a">—（静态）TraceContext</text>
+  <text x="712" y="253" font-size="10.5" fill="#334155">只读 API</text>
+  <text x="712" y="272" font-size="10.5" fill="#334155">traceId() 按当前线程取</text>
+  <text x="712" y="290" font-size="10.5" fill="#334155">不持有状态</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="330" y1="133" x2="370" y2="133" marker-end="url(#arSwSingleton)"/>
+    <line x1="660" y1="133" x2="700" y2="133" marker-end="url(#arSwSingleton)"/>
+  </g>
+
+  <rect x="40" y="320" width="920" height="76" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="52" y="342" font-size="11.5" font-weight="bold" fill="#7f1d1d">⚠️ 写错的后果（本节原话）</text>
+  <text x="52" y="362" font-size="10.5" fill="#7f1d1d">请求路径里 new ThreadPoolExecutor：线程数随请求线性膨胀，线程池插件也增强不到临时池，链路断在提交点。</text>
+  <text x="52" y="382" font-size="10.5" fill="#7f1d1d">自己 new DataSource 绕过 Spring 托管：连接池失控，SQL span 也挂不上。✅ 复用池要按「每轮 capture → continue → 结束」配对。</text>
+
+  <text x="40" y="416" font-size="11" fill="#64748b">小结：agent 的生命周期不用业务管（挂在 JVM 参数上）；要管的是连接池与线程池——它们必须是同一个实例，增强与链路才连得上。</text>
+</svg>

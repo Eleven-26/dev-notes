@@ -20,6 +20,8 @@
 
 两条路最终都是 **OTel SDK → OTLP**，所以 Jaeger 后端与部署方式完全一致（见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md) 第四节）。
 
+![两条埋点路线的汇合点：路线 A 的 -javaagent 增强与路线 B 的 Micrometer 注入，最终都落到 OTel SDK → OTLP；下方是不能同挂两个 agent 与已归档的旧客户端](images/Jaeger接入的两条路线与共同出口.svg)
+
 ⚠️ **两个 agent 不能同时挂**：OTel Java Agent 与 SkyWalking agent 同时 `-javaagent` 会在同一个入口生成两份 span，Jaeger/SkyWalking 两侧各自收到一条链路，指标翻倍、`trace_id` 还不一致。选一条主线（分工见 [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md)）。
 
 ---
@@ -216,6 +218,8 @@ String traceId = tracer.currentSpan() != null ? tracer.currentSpan().context().t
 - ⚠️ 自己 `new DataSource` 绕过 Spring 托管：连接池失控、事务与观测全断（agent 也增强不到那个池）。
 - ✅ 两条路线都不需要手管 agent 生命周期：路线 A 由 `-javaagent` 管理，路线 B 由 Spring 容器的 `Tracer` Bean 管理。
 
+![谁持有长活资源：容器注入的 Tracer 背后是 OTelTracerProvider，再往下是导出器与批处理线程；Span / SpanInScope 绑定单次调用属请求级，右侧是每请求重建的后果](images/Jaeger侧Tracer与Span的单例与请求级边界.svg)
+
 ---
 
 ## 五、初始化顺序 ⭐
@@ -229,6 +233,8 @@ Java 侧三条实序：
 3. ⭐ **手动注册全局实例要排在捕获它的组件之前**。Micrometer Tracing 的 OTel 桥与各类 instrumentation 在初始化时会取一次 `GlobalOpenTelemetry`；Spring Boot 的自动装配已替你排好顺序——**一旦自己写 SDK 初始化，就要保证它在这些组件创建之前完成**，否则 span 走 noop provider，**永远不上报且不报错**。
 
 > ⚠️ 判「某个组件会不会被顺序影响」，就看它是**在初始化时取一次** `GlobalOpenTelemetry.get()`，还是**每次调用现取**：前者必须排在被捕获者之后，后者不受影响。Logback 的 `%X{traceId}` 是**每条日志时**解析，所以日志侧不受影响；日志器、配置、指标注册表也有同样的「先发布全局单例」特征（更细的初始化顺序坑见 [接入Jaeger.md](../../go/可观测性/接入Jaeger.md) 第五节）。
+
+![Java 侧三条实序：-javaagent 最先且写在 -jar 之前 → 加载期织入 → 手动注册 GlobalOpenTelemetry 要早于捕获它的组件；判错分支拿到 noop provider，永远不上报且不报错](images/Jaeger初始化的先后顺序与noop分支.svg)
 
 ---
 
@@ -295,6 +301,8 @@ public class TraceIdFilter extends OncePerRequestFilter {
 
 ⚠️ **别把请求体整体塞进 attribute**：会让 span 体积暴涨（ClickHouse 存储成本与查询延迟都涨），还可能带出敏感字段。要记就截断 + 脱敏。
 
+![同一个 traceId 的三个出口：tracer.currentSpan().context().traceId() 分别流向 MDC（Logback 的 %X{traceId}）、响应头 X-Trace-Id（TraceIdFilter）与 span 的 tag / error](images/Jaeger侧traceId写入MDC与响应头的流转.svg)
+
 ---
 
 ## 七、跨线程与异步
@@ -319,6 +327,8 @@ public ThreadPoolTaskExecutor traceExecutor(ContextPropagatingTaskDecorator deco
 ```
 
 ⚠️ **症状与判据**：接入后「HTTP 请求有 trace，但异步那部分查不到」，或日志里 `%X{traceId}` 是空——十有八九是线程池没做上下文传播。这与 SkyWalking 侧的 `@TraceCrossThread` 是同一类问题（见 [接入Skywalking.md](接入Skywalking.md) 第九节）。
+
+![断链发生在换线程那一刻：主线程 currentSpan() 有值，任务交给线程池后 %X{traceId} 变空；右侧四格是线程池 / @Async / CompletableFuture / Reactor 在两条路线下的处理方式](images/Jaeger跨线程上下文的四个场景与接法.svg)
 
 ---
 
@@ -348,6 +358,8 @@ void shutdownTracing() {
     tracerProvider.close();
 }
 ```
+
+![三种退出方式的分叉：span 先进 BatchSpanProcessor 内存队列，SIGTERM 触发 ShutdownHook 走 flush，kill -9 与 OOMKilled 不触发则丢最后一批；右侧是 PID 1 收信号与宽限期两个必要条件](images/Jaeger优雅停机三种退出方式对span队列的影响.svg)
 
 ---
 

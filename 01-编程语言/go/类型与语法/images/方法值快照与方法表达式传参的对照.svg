@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="600" fill="#ffffff"/>
+<defs>
+<marker id="arMV" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">方法值与方法表达式：接收者是在"取出的那一刻"绑定，还是"调用的那一刻"传入</text>
+<text x="40" y="58" font-size="13" fill="#64748b">写法对照取自第六节的表；每一步读数取自 6.1 的实测输出</text>
+
+<text x="40" y="92" font-size="12" font-weight="bold" fill="#0f172a">路径 A　方法值 f := x.M —— 绑定接收者，且取出的那一刻接收者已求值</text>
+
+<rect x="40" y="102" width="200" height="92" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="52" y="128" font-size="11" fill="#1e3a8a">d := Counter{n: 10}</text>
+<text x="52" y="150" font-size="11" fill="#1e3a8a">原对象</text>
+
+<line x1="240" y1="148" x2="276" y2="148" stroke="#334155" stroke-width="1.5" marker-end="url(#arMV)"/>
+
+<rect x="280" y="102" width="200" height="92" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="292" y="128" font-size="11" fill="#334155">val := d.Get</text>
+<text x="292" y="150" font-size="11" fill="#334155">立刻求值并复制接收者</text>
+<text x="292" y="172" font-size="11" fill="#334155">快照：n = 10</text>
+
+<line x1="480" y1="148" x2="516" y2="148" stroke="#334155" stroke-width="1.5" marker-end="url(#arMV)"/>
+
+<rect x="520" y="102" width="200" height="92" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="532" y="128" font-size="11" fill="#7c2d12">d.n = 99</text>
+<text x="532" y="150" font-size="11" fill="#7c2d12">改的是原对象</text>
+
+<line x1="720" y1="148" x2="756" y2="148" stroke="#334155" stroke-width="1.5" marker-end="url(#arMV)"/>
+
+<rect x="760" y="102" width="200" height="92" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="772" y="128" font-size="11" fill="#14532d">d.Get() = 99</text>
+<text x="772" y="150" font-size="11" fill="#14532d">而 val() = 10</text>
+<text x="772" y="172" font-size="11" fill="#14532d">val 不受影响</text>
+
+<text x="40" y="232" font-size="12" font-weight="bold" fill="#0f172a">路径 B　方法表达式 g := T.M —— 不绑定接收者，接收者变成第一个参数</text>
+
+<rect x="40" y="242" width="200" height="92" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="52" y="268" font-size="11" fill="#1e3a8a">expr := Counter.Get</text>
+<text x="52" y="290" font-size="11" fill="#1e3a8a">没有绑定任何对象</text>
+
+<line x1="240" y1="288" x2="276" y2="288" stroke="#334155" stroke-width="1.5" marker-end="url(#arMV)"/>
+
+<rect x="280" y="242" width="200" height="92" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="292" y="268" font-size="11" fill="#334155">类型 func(Counter) int</text>
+<text x="292" y="290" font-size="11" fill="#334155">指针版</text>
+<text x="292" y="312" font-size="11" fill="#334155">(*Counter).Inc</text>
+
+<line x1="480" y1="288" x2="516" y2="288" stroke="#334155" stroke-width="1.5" marker-end="url(#arMV)"/>
+
+<rect x="520" y="242" width="200" height="92" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="532" y="268" font-size="11" fill="#7c2d12">expr(d)</text>
+<text x="532" y="290" font-size="11" fill="#7c2d12">调用时自己传接收者</text>
+<text x="532" y="312" font-size="11" fill="#7c2d12">读到的是当前值</text>
+
+<line x1="720" y1="288" x2="756" y2="288" stroke="#334155" stroke-width="1.5" marker-end="url(#arMV)"/>
+
+<rect x="760" y="242" width="200" height="92" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="772" y="268" font-size="11" fill="#14532d">Counter.Get(d) = 99</text>
+<text x="772" y="290" font-size="11" fill="#14532d">incExpr(&amp;d) 之后</text>
+<text x="772" y="312" font-size="11" fill="#14532d">d.n = 100</text>
+
+<rect x="40" y="358" width="920" height="182" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="60" y="382" font-size="11" fill="#0f172a">实测读数（6.1）：d.n 改成 99 后，d.Get() = 99，而早先取出的 val() = 10　／　Counter.Get(d) = 99　／　d.n = 100　／　pc.Get() = 1</text>
+<text x="60" y="406" font-size="11" fill="#0f172a">结论：val 拿到的是 d 在 n=10 时的快照——方法值的接收者已经绑定并复制，之后改 d 不影响 val。</text>
+<text x="60" y="428" font-size="11" fill="#0f172a">对照：方法表达式没有绑定，所以 expr(d) 读到当前值 99；(*Counter).Inc 是指针接收者的表达式调用，能改到原对象。</text>
+<text x="60" y="450" font-size="11" fill="#0f172a">用法（6.2）方法值：延迟调用但对象已确定 —— http.HandlerFunc(srv.ServeHTTP)、time.AfterFunc(d, obj.Clean)、注册回调</text>
+<text x="60" y="472" font-size="11" fill="#0f172a">　　　　　　　方法表达式：需要「把接收者当参数传」的函数 —— 泛型工具、sort.Slice 里的比较、把方法当无状态函数传进管道</text>
+<text x="60" y="498" font-size="11" fill="#64748b">⚠️ 想让外层类型的值也能满足接口，就得避开指针接收者（或嵌指针）——见第五节方法集与第七节嵌入。</text>
+
+<text x="40" y="568" font-size="11" fill="#64748b">两条路径的差别只有一个：接收者在「取出方法」时求值，还是在「调用函数」时作为第一个参数传入。</text>
+</svg>

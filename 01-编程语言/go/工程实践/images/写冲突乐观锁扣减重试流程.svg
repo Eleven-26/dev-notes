@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="740" viewBox="0 0 1000 740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect width="1000" height="740" fill="#ffffff"/>
+<defs><marker id="arLKa" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker></defs>
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">乐观锁扣减：版本号 + RowsAffected 的重试流程</text>
+<text x="40" y="58" font-size="13" fill="#64748b">DeductOptimistic 的 for i := range retries 循环 + deductOnce 事务（错误名与常量取自代码原文）</text>
+
+<rect x="250" y="80" width="300" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="400" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">tx := db.BeginTx(ctx, nil)</text>
+
+<rect x="250" y="160" width="300" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="400" y="188" text-anchor="middle" font-size="12" fill="#1e3a8a">SELECT id, stock, version（快照读不加锁）</text>
+
+<rect x="250" y="240" width="300" height="48" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="400" y="268" text-anchor="middle" font-size="12" fill="#9a3412">cur.Stock &lt; qty ?</text>
+
+<rect x="640" y="240" width="300" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+<text x="790" y="262" text-anchor="middle" font-size="12" fill="#991b1b">ErrStockNotEnough</text>
+<text x="790" y="284" text-anchor="middle" font-size="11" fill="#991b1b">业务错误 · 直接 return 不重试</text>
+
+<rect x="250" y="320" width="300" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="400" y="342" text-anchor="middle" font-size="12" fill="#1e3a8a">UPDATE item SET stock = stock - ?</text>
+<text x="400" y="362" text-anchor="middle" font-size="12" fill="#1e3a8a">WHERE id = ? AND version = ?</text>
+
+<rect x="250" y="408" width="300" height="48" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="400" y="436" text-anchor="middle" font-size="12" fill="#9a3412">n := RowsAffected() · n == 0 ?</text>
+
+<rect x="250" y="488" width="300" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+<text x="400" y="516" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">tx.Commit() 扣减成功</text>
+
+<rect x="640" y="408" width="300" height="56" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+<text x="790" y="430" text-anchor="middle" font-size="12" fill="#854d0e">ErrConflict（版本已被别人改过）</text>
+<text x="790" y="452" text-anchor="middle" font-size="11" fill="#854d0e">冲突信号只有一个：影响行数为 0</text>
+
+<rect x="640" y="498" width="300" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="790" y="526" text-anchor="middle" font-size="12" fill="#334155">select ctx.Done() / time.After(jitter(i))</text>
+
+<rect x="640" y="588" width="300" height="48" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+<text x="790" y="616" text-anchor="middle" font-size="12" fill="#991b1b">ctx.Done() 先就绪 → return ctx.Err()</text>
+
+<rect x="250" y="588" width="300" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="400" y="610" text-anchor="middle" font-size="12" fill="#334155">等 jitter(i) 退避：5&lt;&lt;min(attempt,6) ms 基数</text>
+<text x="400" y="632" text-anchor="middle" font-size="11" fill="#64748b">指数退避 + 随机抖动 · 只退避不加抖动 = 惊群</text>
+
+<line x1="400" y1="128" x2="400" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<line x1="400" y1="208" x2="400" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<line x1="550" y1="264" x2="632" y2="264" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<text x="591" y="254" text-anchor="middle" font-size="11" fill="#dc2626">是</text>
+<line x1="400" y1="288" x2="400" y2="312" stroke="#334155" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<text x="414" y="306" font-size="11" fill="#334155">否</text>
+<line x1="400" y1="376" x2="400" y2="400" stroke="#334155" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<line x1="400" y1="456" x2="400" y2="480" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<text x="414" y="474" font-size="11" fill="#16a34a">n ≠ 0</text>
+<line x1="550" y1="432" x2="632" y2="432" stroke="#b45309" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<text x="591" y="422" text-anchor="middle" font-size="11" fill="#b45309">n == 0</text>
+<line x1="790" y1="464" x2="790" y2="490" stroke="#334155" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<line x1="790" y1="546" x2="790" y2="580" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arLKa)"/>
+<path d="M640 522 L590 522 L590 616 L558 616" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#arLKa)"/>
+<text x="596" y="572" font-size="11" fill="#64748b">未超时</text>
+
+<path d="M250 616 L180 616 L180 184 L242 184" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5,4" fill="none" marker-end="url(#arLKa)"/>
+<text x="172" y="390" text-anchor="end" font-size="11" fill="#2563eb">退避后回循环顶部</text>
+<text x="172" y="408" text-anchor="end" font-size="11" fill="#2563eb">i++ 重读版本</text>
+
+<text x="40" y="686" font-size="11" fill="#64748b">重试次数耗尽 → fmt.Errorf 包装 lastErr 返回；defer tx.Rollback() 全程兜底（提交成功后这行返回 ErrTxDone，忽略即可）</text>
+<text x="40" y="708" font-size="11" fill="#64748b">小结：冲突率高时重试期望值 ≈ 并发竞争者数量 —— 读多写少才用乐观锁；写密集应换悲观锁 / 队列串行化 / 条件更新（见第二、三节）</text>
+</svg>

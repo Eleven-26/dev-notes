@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="580" fill="#ffffff"/>
+  <defs>
+    <marker id="arRqC" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">rocketmq-client-go v2 消费端：订阅、回调与重试出口</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">NewPushConsumer → Subscribe（必须先于 Start）→ 回调 → ConsumeSuccess / ConsumeRetryLater → Shutdown</text>
+
+  <rect x="300" y="76" width="400" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="98" font-size="13" text-anchor="middle" fill="#0f172a">1. NewPushConsumer 建一个消费者</text>
+  <text x="500" y="116" font-size="12" text-anchor="middle" fill="#334155">WithGroupName lab_go_consumer</text>
+  <text x="500" y="134" font-size="12" text-anchor="middle" fill="#334155">WithConsumerModel consumer.Clustering</text>
+
+  <rect x="40" y="76" width="236" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="158" y="98" font-size="12" text-anchor="middle" fill="#334155">非单例：一个订阅一份状态</text>
+  <text x="158" y="118" font-size="11" text-anchor="middle" fill="#64748b">全局共享 → 队列锁边界失效</text>
+  <text x="158" y="136" font-size="11" text-anchor="middle" fill="#64748b">顺序不再成立</text>
+  <line x1="276" y1="110" x2="300" y2="110" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <line x1="500" y1="144" x2="500" y2="164" stroke="#334155" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <rect x="300" y="164" width="400" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="186" font-size="13" text-anchor="middle" fill="#0f172a">2. Subscribe 必须先于 Start</text>
+  <text x="500" y="204" font-size="12" text-anchor="middle" fill="#334155">lab-go · consumer.TAG · TagA || TagB</text>
+  <text x="500" y="222" font-size="12" text-anchor="middle" fill="#334155">常量写错报 undefined: consumer.Tag</text>
+
+  <rect x="744" y="164" width="216" height="68" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="852" y="186" font-size="12" text-anchor="middle" fill="#7c2d12">Start() 后才 Subscribe</text>
+  <text x="852" y="206" font-size="12" text-anchor="middle" fill="#7c2d12">订阅关系在 Start 时快照</text>
+  <text x="852" y="224" font-size="11" text-anchor="middle" fill="#7c2d12">所以 Subscribe 必须在前</text>
+  <line x1="700" y1="198" x2="744" y2="198" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <line x1="500" y1="232" x2="500" y2="252" stroke="#334155" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <rect x="300" y="252" width="400" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="274" font-size="13" text-anchor="middle" fill="#0f172a">3. c.Start() 开始拉取并回调</text>
+  <text x="500" y="294" font-size="12" text-anchor="middle" fill="#334155">客户端晚于全局 logger / tracer 初始化</text>
+
+  <line x1="500" y1="304" x2="500" y2="324" stroke="#334155" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <rect x="300" y="324" width="400" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="346" font-size="13" text-anchor="middle" fill="#0f172a">4. 回调 handleOrderMsg(ctx, msgs)</text>
+  <text x="500" y="364" font-size="12" text-anchor="middle" fill="#334155">m.MsgId · m.Queue.QueueId · m.QueueOffset</text>
+  <text x="500" y="382" font-size="12" text-anchor="middle" fill="#334155">GetTags() · GetProperty("x-biz-id")</text>
+
+  <rect x="24" y="324" width="252" height="68" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="150" y="346" font-size="12" text-anchor="middle" fill="#14532d">返回 ConsumeSuccess</text>
+  <text x="150" y="366" font-size="11" text-anchor="middle" fill="#14532d">位点提交，消费确认</text>
+  <text x="150" y="384" font-size="11" text-anchor="middle" fill="#14532d">Diff Total: 0 · Inflight: 0</text>
+  <line x1="300" y1="358" x2="276" y2="358" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <rect x="724" y="324" width="252" height="68" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="850" y="346" font-size="12" text-anchor="middle" fill="#7c2d12">返回 ConsumeRetryLater</text>
+  <text x="850" y="366" font-size="11" text-anchor="middle" fill="#7c2d12">等价 Java 的 RECONSUME_LATER</text>
+  <text x="850" y="384" font-size="11" text-anchor="middle" fill="#7c2d12">16 次上限后进 %DLQ%{group}</text>
+  <line x1="700" y1="358" x2="724" y2="358" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <line x1="500" y1="392" x2="500" y2="412" stroke="#334155" stroke-width="1.5" marker-end="url(#arRqC)"/>
+
+  <rect x="300" y="412" width="400" height="68" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="434" font-size="13" text-anchor="middle" fill="#0f172a">5. 退出顺序 = 反初始化顺序</text>
+  <text x="500" y="454" font-size="12" text-anchor="middle" fill="#334155">先停 HTTP 入口 → c.Shutdown() → p.Shutdown()</text>
+  <text x="500" y="472" font-size="12" text-anchor="middle" fill="#334155">c 不 Shutdown：在途消息重启后重复消费</text>
+
+  <text x="40" y="508" font-size="11" fill="#64748b">实测：GO-CONSUME msgId=C0A8300406C3000000003ec146f00003 queue=3 offset=1 tag=TagA body=go-sync-3</text>
+  <text x="40" y="530" font-size="11" fill="#64748b">属性往返：biz=ORDER_GO_2001 trace=trace-go-abc123；ctx 随回调传入，用完即弃，不塞进进程级结构体。</text>
+  <text x="40" y="552" font-size="11" fill="#64748b">队列、位点、重试与死信在服务端怎么运作不在本篇，见 03-数据与中间件/中间件/消息队列/RocketMQ/消费者与消费位点.md。</text>
+</svg>

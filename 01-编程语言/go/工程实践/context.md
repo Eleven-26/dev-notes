@@ -187,6 +187,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 - 只要 `ctx.Done()` 能作为 `select` 的一个 case，**就不要用 `time.After` 单独做超时**，
   否则每次循环都会新建一个 `Timer`，在等它触发前无法被 GC 回收。
 
+![超时 handler、后台协程、ctx 与 resultCh 的交互时序](images/context超时请求处理时序图.svg)
+
 ### case 3：一批任务一起收工（WithCancel + WaitGroup）
 
 ```go
@@ -473,6 +475,8 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 > ⭐ 一句话概括整棵树：**「父影响子，从不反向」**。
 > 值由父设置、子向上查得到；取消由父发起、向所有子蔓延。这两件事方向不同，但都**只朝一个方向生效** ——
 > 这正是它被设计成**树**而不是链表或图的原因（见第三节追问「为什么长得像树」）。
+
+![context 派生树：四个具体类型的嵌入关系，取消自上而下广播、取值沿父链向上查找](images/context派生树与取消传播图.svg)
 
 ### 6.3 两个实现细节，解释了"为什么要有这些规范"
 
