@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">Canal 在 CDC 版图里的位置</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#475569">独立服务端伪装成 MySQL 从库读 binlog，下游可 TCP 直连或经 MQ 中转</text>
+
+  <rect x="24" y="90" width="240" height="250" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="144" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">① 源：MySQL 主库</text>
+  <rect x="44" y="140" width="200" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="144" y="168" text-anchor="middle" font-size="12" fill="#334155">binlog（必须 ROW）</text>
+  <rect x="44" y="194" width="200" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="144" y="222" text-anchor="middle" font-size="12" fill="#334155">需复制权限账号</text>
+  <rect x="44" y="248" width="200" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="144" y="276" text-anchor="middle" font-size="12" fill="#334155">日志保留期要够长</text>
+  <text x="144" y="318" text-anchor="middle" font-size="11" fill="#64748b">每条变更都在日志里</text>
+
+  <line x1="268" y1="215" x2="308" y2="215" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="308,209 322,215 308,221" fill="#2563eb"/>
+
+  <rect x="326" y="90" width="348" height="250" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="#1e3a8a">② canal-server（伪装从库）</text>
+  <rect x="348" y="138" width="304" height="46" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="500" y="158" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">注册 dump（唯一 ServerID）</text>
+  <text x="500" y="176" text-anchor="middle" font-size="11" fill="#475569">与真实从库不同，否则被 MySQL 断开</text>
+  <rect x="348" y="192" width="304" height="46" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="500" y="212" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">解析 → 结构化事件</text>
+  <text x="500" y="230" text-anchor="middle" font-size="11" fill="#475569">库 / 表 / 操作 / 前后镜像</text>
+  <rect x="348" y="246" width="304" height="46" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="500" y="266" text-anchor="middle" font-size="12" font-weight="700" fill="#1e3a8a">投递：TCP 直连 / 投 MQ</text>
+  <text x="500" y="284" text-anchor="middle" font-size="11" fill="#475569">server 侧位点自行记录</text>
+  <text x="500" y="318" text-anchor="middle" font-size="11" fill="#64748b">可选：canal-admin 集中管多个 server</text>
+
+  <line x1="678" y1="215" x2="718" y2="215" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="718,209 732,215 718,221" fill="#16a34a"/>
+  <text x="700" y="203" text-anchor="middle" font-size="10" fill="#16a34a">两条链路</text>
+
+  <rect x="736" y="90" width="240" height="250" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="856" y="120" text-anchor="middle" font-size="15" font-weight="700" fill="#14532d">③ 下游</text>
+  <rect x="756" y="146" width="200" height="72" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="856" y="170" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">链路一：TCP 直连</text>
+  <text x="856" y="190" text-anchor="middle" font-size="11" fill="#475569">业务应用自己消费</text>
+  <text x="856" y="206" text-anchor="middle" font-size="11" fill="#475569">自己扛位点与故障</text>
+  <rect x="756" y="228" width="200" height="72" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="856" y="252" text-anchor="middle" font-size="12" font-weight="700" fill="#14532d">链路二：经 MQ</text>
+  <text x="856" y="272" text-anchor="middle" font-size="11" fill="#475569">Kafka / RocketMQ</text>
+  <text x="856" y="288" text-anchor="middle" font-size="11" fill="#475569">→ 一个或多个下游</text>
+  <text x="856" y="320" text-anchor="middle" font-size="11" fill="#64748b">与源库引擎无关</text>
+
+  <text x="500" y="378" text-anchor="middle" font-size="12" fill="#64748b">要点：Canal 只管「读日志」这一段 —— 前要源库开 ROW binlog，后要直连或经 MQ，计算与全量都得另做</text>
+  <text x="500" y="402" text-anchor="middle" font-size="12" fill="#64748b">注意：位点分 Canal 侧与 client 侧两套，不 ack 不推进；「不丢」仍靠下游按主键 upsert 幂等</text>
+  <text x="500" y="426" text-anchor="middle" font-size="11" fill="#94a3b8">本目录五篇均未实测，仅给结构与流程</text>
+</svg>

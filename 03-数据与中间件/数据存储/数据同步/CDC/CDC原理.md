@@ -217,7 +217,8 @@ func main() {
 ## 关联
 
 - [数据同步方式选型对比.md](../数据同步方式选型对比.md) — 上位：三条同步路线的族级横评与组合范式
-- [README.md](README.md) — 本目录导读：CDC 四篇的阅读顺序与依赖
+- [README.md](README.md) — 本目录导读：CDC 五篇的阅读顺序与依赖
+- [CanalCDC.md](CanalCDC.md) — Canal 这种「独立服务端伪装从库」的形态与两条链路
 - [CDC工具选型.md](CDC工具选型.md) — 把上面这些原理落到具体工具（Debezium / Canal / Flink CDC …）
 - [全量与增量一体化.md](全量与增量一体化.md) — 快照与增量的位点衔接、断点续传与幂等
 - [FlinkCDC.md](FlinkCDC.md) — 用 Flink 把全量 + 增量压进一个作业的形态

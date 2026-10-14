@@ -293,7 +293,8 @@ SeaTunnel 既不是「某生态的附属」，也不是「单一源的客户端�
 - [CDC原理.md](CDC原理.md) — 上位：变更日志、位点、投递语义的原理层
 - [全量与增量一体化.md](全量与增量一体化.md) — 工具选定后，全量快照与增量日志怎么无缝接上
 - [FlinkCDC.md](FlinkCDC.md) — Flink CDC 这种「一段化」形态的展开
-- [README.md](README.md) — 本目录导读：CDC 四篇的阅读顺序
+- [CanalCDC.md](CanalCDC.md) — Canal 这条路线的展开：伪装从库、两套位点、两条链路与三段式
+- [README.md](README.md) — 本目录导读：CDC 五篇的阅读顺序
 - [数据同步方式选型对比.md](../数据同步方式选型对比.md) — 更高一层：CDC / 双写 / 定时三条路线怎么比、怎么组合
 - [README.md](../定时同步/README.md) — 另一条同步路线：源库不给日志时改走定时批量
 - [README.md](../../../中间件/消息队列/Kafka/README.md) — Debezium 的落点，也是「事件先落 MQ」这一跳的载体
