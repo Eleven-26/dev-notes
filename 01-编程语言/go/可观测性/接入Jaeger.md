@@ -1,6 +1,6 @@
 # Go 接入 Jaeger
 
-> 内容整理自个人学习笔记 —— Go 侧接入 Jaeger 的完整手册，按**前提认知 → 依赖 → TracerProvider 初始化 → HTTP / SQL / MQ / 定时任务四类埋点 → context 传播铁律 → 日志关联 → 优雅退出 → 项目落地映射 → 验证排查**组织，并结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的实际接入点整理。
+> 内容整理自个人学习笔记 —— Go 侧接入 Jaeger 的完整手册，按**前提认知 → 依赖 → TracerProvider 初始化 → 单例边界与初始化顺序 → HTTP / SQL / MQ / 定时任务四类埋点 → context 传播铁律 → 日志关联 → 优雅退出 → 项目落地映射 → 验证排查**组织，并结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的实际接入点整理。
 >
 > Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md)；同一套埋点发往 SkyWalking OAP 的写法见 [接入Skywalking.md](接入Skywalking.md)。
 
@@ -35,6 +35,8 @@ go get go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
 ---
 
 ## 三、初始化 TracerProvider
+
+**本节要点**：`InitJaeger` 建导出器 + `TracerProvider` + 注册全局传播器，`Shutdown` 在退出前 flush；这一段是整篇的地基，只做「建」与「关」两件事。
 
 ```go
 // infrastructure/tracing.go
@@ -89,17 +91,53 @@ func Shutdown(ctx context.Context) error {
 }
 ```
 
-三个必须注意的点：
-
-1. ⚠️ **初始化顺序**：`InitJaeger` 必须在初始化数据库 / GORM **之前**。GORM 的 OTel 插件在安装时**捕获当时的全局 TracerProvider**，顺序颠倒会让 SQL span 走 noop provider、永远没有数据——而且不报错，只是 UI 里查不到 SQL。
-2. ⚠️ **单例**：`tp` 是包级变量、`main` 里初始化一次。**禁止**在请求路径里 `NewTracerProvider`：每次新建都会起一套批处理协程与 gRPC 连接，直接协程泄漏 + 连接爆炸。未启用链路追踪时应该让中间件返回 `nil`（见第四节），走 noop provider，请求路径零开销。
-3. ⚠️ **`ParentBased` 不能省**：它保证子 span 沿用父 span 的采样决策。只用 `TraceIDRatioBased` 会出现「上游采了、下游没采」，一条 trace 只剩半截，比不采更难排查。
+⚠️ **`ParentBased` 不能省**：它保证子 span 沿用父 span 的采样决策。只用 `TraceIDRatioBased` 会出现「上游采了、下游没采」，一条 trace 只剩半截，比不采更难排查。
 
 采样率的取值与尾部采样方案见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md) 第四节。
 
 ---
 
-## 四、HTTP 入口与出站调用
+## 四、单例边界 ⭐
+
+**本节要点**：判「要不要单例」只看一件事——**这个对象内部有没有长活的资源（连接、协程、连接池）**：有 → 进程级；没有、且绑定单次操作的 → 请求级。
+
+| 对象 | 单例？ | 为什么 |
+| --- | --- | --- |
+| `*sdktrace.TracerProvider`（`tp`） | ✅ 进程级 | 持有导出器与批处理协程（`WithBatcher`）；每次 `NewTracerProvider` 都会起一套批处理协程 + gRPC 连接 |
+| `trace.Tracer`（`otel.Tracer(name)`） | ✅ 进程级（包级变量） | 它只是 provider 的轻量句柄，取一次存包级变量即可 |
+| `*http.Client` | ✅ 进程级 | 内部是连接池；出站那个用 `otelhttp.NewTransport` 包装后同样要复用 |
+| `*gorm.DB` | ✅ 进程级 | 内部是 `sql.DB` 连接池，`Open` 一次全局复用 |
+| `ctx` / `span` | ❌ 请求级 | `tracer.Start` 返回的**新 ctx** 才是本次请求的链路上下文，用完即弃 |
+| `otelgin` 中间件 | ✅ 进程级（构造一次） | 无状态的 `gin.HandlerFunc`；**未启用追踪时返回 `nil`**，请求路径零开销 |
+
+**写错的后果**：
+
+- ⚠️ `tp` 必须是包级变量、`main` 里初始化一次。**禁止**在请求路径里 `NewTracerProvider`：每次新建都起一套批处理协程与 gRPC 连接，直接**协程泄漏 + 连接爆炸**。
+- ⚠️ `*http.Client` / `*gorm.DB` 在请求里现建同理——`&http.Client{}` 每次一套新连接池、`gorm.Open` 每次一套新连接，端口与连接数随 QPS 线性膨胀。
+- ✅ 未启用链路追踪时中间件返回 `nil`（见第六节的 HTTP 入口），请求路径完全不碰 tracer，零开销。
+
+---
+
+## 五、初始化顺序 ⭐
+
+**本节要点**：⭐ 判据是「**谁在初始化时捕获了全局单例**」——凡是有这个特征的下游组件（各类 instrumentation、SDK 全局 hook），都必须排在被捕获者**之后**初始化，否则它拿到的是初始化那一刻的旧值（常常是 noop），且**不报错**。
+
+`InitJaeger` 里的 `otel.SetTracerProvider(tp)` 就是「发布全局单例」。会在初始化时把它捕获下来的下游组件，必须排在 `InitJaeger` **之后**运行，最典型的一例是 **GORM 的 OTel 插件**——`tracing.NewPlugin(...).Install(db)` 在 **`Install` 时捕获当时的全局 TracerProvider**：
+
+```go
+// cmd/server/main.go —— 初始化顺序不能反
+InitJaeger(ctx, cfg.Jaeger.Endpoint, cfg.Jaeger.Service) // ① 先发布全局 TracerProvider
+InitMySQL(cfg)                                            // ② GORM 插件 Install 时捕获它
+InitNATS(cfg)                                             // ③ 其它 instrumentation 同理排在后面
+```
+
+**顺序颠倒的后果**：插件捕获到 noop provider → **SQL span 永远不上报，且不报错**，只是 Jaeger UI 里怎么都查不到 SQL，表现为「HTTP span 有、SQL span 全没有」。排查口径见第十四节的故障速查。
+
+> ⚠️ 判「某个组件会不会被顺序影响」，就看它是**在初始化时取一次** `otel.GetTracerProvider()`，还是**每次请求现取**：前者必须排在 `InitJaeger` 之后，后者不受影响。日志器、配置、指标注册表也有同样的「先发布全局单例、再初始化捕获它的下游」特征。
+
+---
+
+## 六、HTTP 入口与出站调用
 
 ```go
 import (
@@ -123,7 +161,7 @@ client := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 
 ---
 
-## 五、SQL：GORM 的 OTel 插件
+## 七、SQL：GORM 的 OTel 插件
 
 ```go
 import "gorm.io/plugin/opentelemetry/tracing"
@@ -142,7 +180,7 @@ if err := tracing.NewPlugin(tracing.WithoutMetrics()).Install(db); err != nil {
 
 ---
 
-## 六、手动埋点与 context 传播
+## 八、手动埋点与 context 传播
 
 ```go
 import (
@@ -196,11 +234,11 @@ go func(ctx context.Context) {
 
 ---
 
-## 七、MQ 与定时任务怎么串联？
+## 九、MQ 与定时任务怎么串联？
 
 **本节要点**：MQ 靠「生产端 Inject、消费端 Extract」；定时任务没有上游，要在任务入口创建**根 span** 独立成链。
 
-### 7.1 消息队列（以 NATS 为例）
+### 9.1 消息队列（以 NATS 为例）
 
 ```go
 // 生产端：把当前 span context 注入消息头
@@ -259,7 +297,7 @@ func handle(ctx context.Context, msg *nats.Msg) {
 
 ⚠️ 消息中间件必须支持**消息头**才能透传上下文。Kafka 用 record header、RabbitMQ 用 message properties、NATS 用 `Header`（需要 NATS 2.2+）。把 `traceparent` 塞进消息体是反模式——消费方要解析业务 payload 才能拿到链路信息，耦合且易错。
 
-### 7.2 定时任务
+### 9.2 定时任务
 
 定时任务没有上游请求，**不会自动产生 trace**。要在任务入口手动创建根 span，否则任务里的 SQL 会散落成一堆孤立 trace：
 
@@ -283,7 +321,7 @@ func traced(handler string, fn func(ctx context.Context) error) func(ctx context
 
 ---
 
-## 八、把 trace_id 关联到日志与响应
+## 十、把 trace_id 关联到日志与响应
 
 **本节要点**：链路数据只有在能被「从日志/工单一键跳回 UI」时才有排障价值。做法是把当前 span 的 `trace_id` 同时写进响应头、响应体和日志字段。
 
@@ -317,7 +355,7 @@ func TraceID() gin.HandlerFunc {
 
 ---
 
-## 九、优雅退出：别丢最后一批 span
+## 十一、优雅退出：别丢最后一批 span
 
 `WithBatcher` 是异步批量导出，span 先进内存队列、攒够一批或到超时（上面设的 5s）才发出去。所以**进程直接退出会丢掉队列里的那一批**。
 
@@ -338,11 +376,11 @@ infrastructure.Shutdown(ctx)   // 2. 再 flush span 队列
 
 ---
 
-## 十、项目落地映射（photography-server）
+## 十二、项目落地映射（photography-server）
 
 > 以下基于**实际读到的仓库文件**：`docker-compose.yml`、`docs/部署/*`、`docs/架构/02-系统架构图.md`、`internal/infrastructure/jaeger.go`、`internal/middleware/jaeger.go`、`internal/router/router.go`、`internal/infrastructure/{mysql,nats}.go`、`internal/mq/consumer.go`、`internal/job/*`、`config/jaeger.example.yaml`、`config/nacos/*.yaml`。
 
-### 10.1 现状：两条链路通道，二选一
+### 12.1 现状：两条链路通道，二选一
 
 项目**同时**编排了 SkyWalking native 与 **OTel→Jaeger** 两套链路后端，**互不依赖、建议二选一**（同开会同一请求双 span / 双上报）。
 
@@ -354,7 +392,7 @@ infrastructure.Shutdown(ctx)   // 2. 再 flush span 队列
 > 事实核对：compose 中 `jaeger` 镜像为 `jaegertracing/jaeger:2.20.0`，即 **Jaeger v2 单体（Collector+Query+UI）**；`config/jaeger.example.yaml` 说明 ClickHouse 为 v2.18 起官方原生存储（ADR-008）。
 > 生产默认 `jaeger.enable: false`（`config/nacos/photography-server-prod.yaml`），dev / test / docker.dev 三 profile 为 `true`。
 
-### 10.2 数据流（实际）
+### 12.2 数据流（实际）
 
 ```text
 前端 :8081/:8082/:8083 ── /api 剥前缀 ──▶ backend（Go + Gin，:8080）
@@ -367,7 +405,7 @@ infrastructure.Shutdown(ctx)   // 2. 再 flush span 队列
 jaeger（v2，collector+query 一体）──▶ ClickHouse（库 jaeger）──▶ Jaeger UI :16686
 ```
 
-### 10.3 接入落点
+### 12.3 接入落点
 
 | 层 | 文件 | 做了什么 |
 | --- | --- | --- |
@@ -381,7 +419,7 @@ jaeger（v2，collector+query 一体）──▶ ClickHouse（库 jaeger）─�
 | 定时任务 | `internal/job/*` | `traced()` 在任务入口创建根 span `xxl-job.<handler>`，无上游 trace，独立成链 |
 | 响应/日志 | `internal/middleware/traceid.go`、`internal/pkg/response/response.go` | `trace_id` 回写响应头 `X-Trace-Id` 与响应体 `Body.trace_id`；5xx 写 span 的 `exception.stacktrace` |
 
-### 10.4 与部署目录的对应
+### 12.4 与部署目录的对应
 
 | 部署侧 | 位置 |
 | --- | --- |
@@ -390,11 +428,11 @@ jaeger（v2，collector+query 一体）──▶ ClickHouse（库 jaeger）─�
 | 业务开关 | Nacos `data_id=photography-server-<profile>.yaml` 的 `jaeger.*` 段（`enable/endpoint/service/instance`），应急可用 `APP_JAEGER_*` 覆盖 |
 | 端口 | 4317（OTLP gRPC）/ 4318（OTLP HTTP）/ 16686（UI） |
 
-⚠️ 代码注释明确的已知限制：SQL span 挂在 GORM `Statement.Context` 下，**业务未透传请求 ctx 时会以独立 trace 入库**（第五节）；SkyWalking native 通道的 MQ 透传（`sw8` header）为待办。
+⚠️ 代码注释明确的已知限制：SQL span 挂在 GORM `Statement.Context` 下，**业务未透传请求 ctx 时会以独立 trace 入库**（第七节）；SkyWalking native 通道的 MQ 透传（`sw8` header）为待办。
 
 ---
 
-## 十一、怎么逐层确认接入生效？
+## 十三、怎么逐层确认接入生效？
 
 ```bash
 # 1. 后端可达：OTLP gRPC 端口
@@ -415,22 +453,22 @@ curl -s "http://localhost:16686/api/services"
 
 ---
 
-## 十二、常见故障速查
+## 十四、常见故障速查
 
 | 症状 | 大概率原因 | 处理 |
 | --- | --- | --- |
 | Jaeger UI 里一个 service 都没有 | `InitJaeger` 没调用；endpoint 端口填成 16686（UI 端口）而非 4317 | 确认调用与端口（第三节） |
-| HTTP span 有、SQL span 全没有 | `InitJaeger` 在 `InitMySQL` **之后**调用，GORM 插件捕获到 noop provider | 调整初始化顺序（第三节） |
-| SQL span 存在但都是孤立 trace | 业务层没把请求 ctx 透传到 repository | 所有 repo 方法收 `ctx` 并 `db.WithContext(ctx)`（第五节） |
-| 链路在服务边界断成两段 | 出站用了 `http.DefaultClient`，没注入 `traceparent` | 用 `otelhttp.NewTransport` 包装（第四节） |
+| HTTP span 有、SQL span 全没有 | `InitJaeger` 在 `InitMySQL` **之后**调用，GORM 插件捕获到 noop provider | 调整初始化顺序（第五节） |
+| SQL span 存在但都是孤立 trace | 业务层没把请求 ctx 透传到 repository | 所有 repo 方法收 `ctx` 并 `db.WithContext(ctx)`（第七节） |
+| 链路在服务边界断成两段 | 出站用了 `http.DefaultClient`，没注入 `traceparent` | 用 `otelhttp.NewTransport` 包装（第六节） |
 | 一条 trace 只有半截（有上游没下游） | 只用了 `TraceIDRatioBased`，父子采样决策不一致 | 换成 `ParentBased(TraceIDRatioBased(x))`（第三节） |
-| 中间件耗时在瀑布图上看不到 | `otelgin` 挂在业务中间件之后 | 挪到中间件链最前（第四节） |
-| 子 span 超出父 span 右边界 | 父 span 提前 `End()`，异步 goroutine 还在跑 | 用 `WaitGroup`/`errgroup` 让父等待（第六节） |
-| MQ 消费端是全新 trace | 生产端没 `Inject`，或 MQ 不支持消息头 | 按 7.1 实现 Inject/Extract；NATS 需 2.2+ |
-| 定时任务的 SQL 全是孤立 trace | 任务入口没创建根 span | 用 `traced()` 包装（7.2） |
-| 重启后最后几秒的 trace 缺失 | 没调 `tp.Shutdown`，批量队列未 flush | 按第九节接入优雅退出 |
+| 中间件耗时在瀑布图上看不到 | `otelgin` 挂在业务中间件之后 | 挪到中间件链最前（第六节） |
+| 子 span 超出父 span 右边界 | 父 span 提前 `End()`，异步 goroutine 还在跑 | 用 `WaitGroup`/`errgroup` 让父等待（第八节） |
+| MQ 消费端是全新 trace | 生产端没 `Inject`，或 MQ 不支持消息头 | 按 9.1 实现 Inject/Extract；NATS 需 2.2+ |
+| 定时任务的 SQL 全是孤立 trace | 任务入口没创建根 span | 用 `traced()` 包装（9.2） |
+| 重启后最后几秒的 trace 缺失 | 没调 `tp.Shutdown`，批量队列未 flush | 按第十一节接入优雅退出 |
 | ClickHouse 存储启动报错 | 漏了 `--feature-gates=storage.clickhouse` | 见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md) 第四节 |
-| 存储成本涨得离谱 | span attribute 里塞了完整请求体 / SQL 参数 | 4KB 截断 + 敏感字段脱敏；收紧采样率（第八节） |
+| 存储成本涨得离谱 | span attribute 里塞了完整请求体 / SQL 参数 | 4KB 截断 + 敏感字段脱敏；收紧采样率（第十节） |
 
 ---
 
@@ -447,12 +485,12 @@ curl -s "http://localhost:16686/api/services"
 
 ---
 
-## 十三、校验口径
+## 十五、校验口径
 
 > ✅ 本篇 Go 代码块的校验方式与范围（Go 1.26.5，windows/amd64）：
 >
-> - **真编译通过**（抽成独立模块，`go build ./...` + `go vet ./...` + `gofmt -l` 全绿）：第三节 `InitJaeger` / `Shutdown`、第四节 `otelgin.Middleware` 挂载与 `otelhttp.NewTransport` 包装、7.2 `traced` 包装器、第八节 `TraceID` 中间件。
-> - **未独立编译**：第五节 `tracing.NewPlugin(...).Install(db)`（依赖项目内的 `*gorm.DB` 实例）、第六节 `CreateOrder`（`OrderReq` / `repo` 为项目内类型）、7.1 NATS 的 `Inject` / `Extract`（依赖 `nc` 与 `nats.Msg`）。这三段是**接入模式示例**而非可独立编译的完整程序，只核对 API 签名与调用约定。
+> - **真编译通过**（抽成独立模块，`go build ./...` + `go vet ./...` + `gofmt -l` 全绿）：第三节 `InitJaeger` / `Shutdown`、第六节 `otelgin.Middleware` 挂载与 `otelhttp.NewTransport` 包装、9.2 `traced` 包装器、第十节 `TraceID` 中间件。
+> - **未独立编译**：第七节 `tracing.NewPlugin(...).Install(db)`（依赖项目内的 `*gorm.DB` 实例）、第八节 `CreateOrder`（`OrderReq` / `repo` 为项目内类型）、9.1 NATS 的 `Inject` / `Extract`（依赖 `nc` 与 `nats.Msg`）。这三段是**接入模式示例**而非可独立编译的完整程序，只核对 API 签名与调用约定。
 > - **shell / curl 片段**：`bash -n` 语法校验；⚠️ 本机没有 Jaeger + ClickHouse 实例，**未实际请求**，文中不含伪造的返回结果。
 
 | 依赖 | 实际解析版本 |
