@@ -1,6 +1,6 @@
 # Java 接入 Jaeger
 
-> 内容整理自个人学习笔记 —— Java 侧接入 Jaeger 的完整手册，按**前提认知 → 路线 A（OTel Java Agent 无侵入）→ 路线 B（Spring Boot 3 + Micrometer Tracing）→ 两条路线取舍 → 日志关联 → 跨线程 → 优雅停机 → 从 jaeger-client 迁移 → 验证排查**组织。
+> 内容整理自个人学习笔记 —— Java 侧接入 Jaeger 的完整手册，按**前提认知 → 路线 A（OTel Java Agent 无侵入）→ 路线 B（Spring Boot 3 + Micrometer Tracing）→ 单例边界与初始化顺序 → 日志关联 → 跨线程 → 优雅停机 → 从 jaeger-client 迁移 → 验证排查**组织。
 >
 > Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md)；SkyWalking 路线见 [接入Skywalking.md](接入Skywalking.md)。
 
@@ -195,7 +195,44 @@ String traceId = tracer.currentSpan() != null ? tracer.currentSpan().context().t
 
 ---
 
-## 四、把 trace_id 关联到日志与响应
+## 四、单例边界 ⭐
+
+**本节要点**：判「要不要单例」只看一件事——**这个对象内部有没有长活的资源（连接、线程池、导出线程）**：有 → 进程级（Bean）；没有、且绑定单次调用的 → 请求级。
+
+| 对象 | 单例？ | 为什么 |
+| --- | --- | --- |
+| `Tracer`（Micrometer / OTel） | ✅ 进程级（容器注入的 Bean） | 背后是 `OTelTracerProvider`，持有导出器与批处理线程；在方法里 `new` 或每请求重建 = 导出器与批处理线程泄漏 |
+| `SdkTracerProvider`（自己持有时） | ✅ 进程级 | 进程退出前才 `close()`；反复新建 = 批处理线程与 gRPC 连接泄漏 |
+| `OpenTelemetry` 全局实例 | ✅ 进程级 | 框架按 `GlobalOpenTelemetry` 取；注册一次即可 |
+| `DataSource` / `HikariCP` | ✅ 进程级（Bean） | 内部是连接池，`new` 一个就少一个池 |
+| `RestClient` / `WebClient` / `OkHttpClient` | ✅ 进程级 | 内部是连接池；路线 A 下自动被 agent 增强 |
+| OTel Java Agent（路线 A） | ✅ 进程级（自动） | 随 `-javaagent` 挂一次，由 JVM 在 `premain` 建好，业务代码不感知 |
+| `Span` / `Tracer.SpanInScope` | ❌ 请求级 | 绑定单次调用，`end()` 后即失效 |
+| `ContextPropagatingTaskDecorator` | ✅ 进程级 | 无状态装饰器，配到线程池即可复用 |
+
+**写错的后果**：
+
+- ⚠️ 在请求路径里 `new Tracer` 或每请求重建 `SdkTracerProvider`：每建一次起一套批处理线程与导出连接，**线程泄漏 + 连接爆炸**。
+- ⚠️ 自己 `new DataSource` 绕过 Spring 托管：连接池失控、事务与观测全断（agent 也增强不到那个池）。
+- ✅ 两条路线都不需要手管 agent 生命周期：路线 A 由 `-javaagent` 管理，路线 B 由 Spring 容器的 `Tracer` Bean 管理。
+
+---
+
+## 五、初始化顺序 ⭐
+
+**本节要点**：⭐ 判据是「**谁在初始化时捕获了全局单例**」——凡是有这个特征的下游组件，都必须排在被捕获者**之后**初始化，否则它拿到的是初始化那一刻的旧值（常常是 noop），且**不报错**。
+
+Java 侧三条实序：
+
+1. **`-javaagent` 必须最先，且写在 `-jar` 之前**。JVM 先跑 `premain` 装字节码增强器，之后每个类在**加载期**才被织入；agent 挂晚了，之前已加载的类就漏了。⚠️ 它是 JVM 参数，写到 `--spring.profiles.active` 那一侧（应用参数）完全不生效（见 2.1）。
+2. **多个 `-javaagent` 不能叠加**：OTel Java Agent 与 SkyWalking agent 同挂 = 同一入口两份 span、指标翻倍、`trace_id` 还不一致（见第一节）。
+3. ⭐ **手动注册全局实例要排在捕获它的组件之前**。Micrometer Tracing 的 OTel 桥与各类 instrumentation 在初始化时会取一次 `GlobalOpenTelemetry`；Spring Boot 的自动装配已替你排好顺序——**一旦自己写 SDK 初始化，就要保证它在这些组件创建之前完成**，否则 span 走 noop provider，**永远不上报且不报错**。
+
+> ⚠️ 判「某个组件会不会被顺序影响」，就看它是**在初始化时取一次** `GlobalOpenTelemetry.get()`，还是**每次调用现取**：前者必须排在被捕获者之后，后者不受影响。Logback 的 `%X{traceId}` 是**每条日志时**解析，所以日志侧不受影响；日志器、配置、指标注册表也有同样的「先发布全局单例」特征（更细的初始化顺序坑见 [接入Jaeger.md](../../go/可观测性/接入Jaeger.md) 第五节）。
+
+---
+
+## 六、把 trace_id 关联到日志与响应
 
 **本节要点**：链路数据只有能「从日志/工单一键跳回 UI」才有排障价值。Spring Boot 3 会自动把 `traceId` / `spanId` 放进 MDC，日志 pattern 里引用即可。
 
@@ -260,7 +297,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
 
 ---
 
-## 五、跨线程与异步
+## 七、跨线程与异步
 
 | 场景 | 路线 A（OTel Agent） | 路线 B（Micrometer） |
 | --- | --- | --- |
@@ -285,7 +322,7 @@ public ThreadPoolTaskExecutor traceExecutor(ContextPropagatingTaskDecorator deco
 
 ---
 
-## 六、优雅停机：别丢最后一批 span
+## 八、优雅停机：别丢最后一批 span
 
 OTel 的导出是**异步批量**的（`BatchSpanProcessor`），span 先进内存队列、攒够一批或到超时才发出去。所以进程被强杀时，队列里那一批就没了。
 
@@ -314,7 +351,7 @@ void shutdownTracing() {
 
 ---
 
-## 七、从 `jaeger-client` 迁移
+## 九、从 `jaeger-client` 迁移
 
 ⚠️ `io.jaegertracing:jaeger-client` 与 `jaeger-client-java` **已归档**，不要再用于新项目。
 
@@ -331,7 +368,7 @@ void shutdownTracing() {
 
 ---
 
-## 八、怎么逐层确认接入生效？
+## 十、怎么逐层确认接入生效？
 
 ```bash
 # 1. agent 是否真的挂上了（路线 A）
@@ -355,7 +392,7 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 
 ---
 
-## 九、常见故障速查
+## 十一、常见故障速查
 
 | 症状 | 大概率原因 | 处理 |
 | --- | --- | --- |
@@ -363,12 +400,12 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 | 路线 B 报 404 / 上报失败 | OTLP HTTP endpoint 漏了 `/v1/traces` 路径 | 补全路径（3.2） |
 | 进程正常但完全没有 span | 路线 A：agent 版本与框架版本不兼容 | `-Dotel.javaagent.debug=true` 查 instrumentation（2.5） |
 | HTTP span 有、SQL span 全没有 | 路线 B 没引 JPA/JDBC 的观测起步器；或数据源被自定义包装绕过了代理 | 引 `spring-boot-starter-data-jpa`；确认 `DataSource` 是 Spring 托管的 Bean |
-| 异步任务里的调用查不到、日志 traceId 为空 | 线程池未做上下文传播 | 按第五节配 `TaskDecorator` |
+| 异步任务里的调用查不到、日志 traceId 为空 | 线程池未做上下文传播 | 按第七节配 `TaskDecorator` |
 | 一条 trace 只有半截 | 采样是头部采样且父子不一致，或链路中间有服务没接入 | 确认全链路都接入；要「只保留错误」得上尾部采样 |
 | 指标翻倍、两条 trace_id 对不上 | OTel Agent 与 SkyWalking agent 同时挂着 | **只保留一个 `-javaagent`**（第一节） |
-| 每次发布最后几秒的 span 缺失 | `sh -c` 未 `exec`，SIGTERM 没到 JVM；或宽限期太短 | 加 `exec`、调大 `terminationGracePeriodSeconds`（2.3、第六节） |
+| 每次发布最后几秒的 span 缺失 | `sh -c` 未 `exec`，SIGTERM 没到 JVM；或宽限期太短 | 加 `exec`、调大 `terminationGracePeriodSeconds`（2.3、第八节） |
 | 加了 agent 就 OOMKilled | 容器内存 limit 没给 agent 留余量 | `limits.memory` 多留 200~500MB（2.4） |
-| 从旧项目迁来后链路断裂 | 存量服务发 `uber-trace-id`，新服务发 `traceparent` | 全量迁移，或过渡期开 Jaeger receiver 兼容（第七节） |
+| 从旧项目迁来后链路断裂 | 存量服务发 `uber-trace-id`，新服务发 `traceparent` | 全量迁移，或过渡期开 Jaeger receiver 兼容（第九节） |
 
 ---
 
@@ -386,12 +423,13 @@ curl -s "http://localhost:16686/api/traces/<trace_id>" | head -c 500
 
 ---
 
-## 十、校验口径
+## 十二、校验口径
 
 > ✅ 本篇校验方式与范围（本机 Maven 3.8.1 + JBR 17，网络可达 repo1.maven.org）：
 >
-> - **第三节 `OrderService`、第四节 `TraceIdFilter`**：逐字抽成独立 Maven 工程 `mvn -B clean compile` **真编译通过**（`Order` / `OrderReq` / `OrderRepository` 为项目内类型，用最小桩替代）。实际解析版本见下表。⚠️ **只编译、未运行**——本机没有 Jaeger 实例，也不启动完整 Spring 上下文。
-> - **第五~七节**：`ContextPropagatingTaskDecorator`、`tracerProvider.close()` 等为配置/生命周期片段，核对 API 签名与官方文档写法，未独立编译。
+> - **第三节 `OrderService`、第六节 `TraceIdFilter`**：逐字抽成独立 Maven 工程 `mvn -B clean compile` **真编译通过**（`Order` / `OrderReq` / `OrderRepository` 为项目内类型，用最小桩替代）。实际解析版本见下表。⚠️ **只编译、未运行**——本机没有 Jaeger 实例，也不启动完整 Spring 上下文。
+> - **第七~九节**：`ContextPropagatingTaskDecorator`、`tracerProvider.close()` 等为配置/生命周期片段，核对 API 签名与官方文档写法，未独立编译。
+> - **第四、五节**（单例边界 / 初始化顺序）：表格与 `-javaagent` 顺序说明，不含可独立编译的代码；`GlobalOpenTelemetry` 相关按官方 API 签名核对，未运行。
 > - **bash / Dockerfile / K8s YAML / pom 片段**：`bash -n` 语法校验 + 结构与坐标核对。
 > - 文中不含伪造的启动日志与 UI 输出。
 

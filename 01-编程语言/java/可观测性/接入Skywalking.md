@@ -1,6 +1,6 @@
 # Java 接入 SkyWalking
 
-> 内容整理自个人学习笔记 —— Java 侧接入 SkyWalking 的完整手册，按**javaagent 为什么能零改码 → 接入清单 → 配置优先级 → 插件目录 → Spring Boot / Dockerfile / K8s → 日志关联 → 跨线程 → 优雅停机 → 验证排查**组织。
+> 内容整理自个人学习笔记 —— Java 侧接入 SkyWalking 的完整手册，按**javaagent 为什么能零改码 → 接入清单 → 配置优先级 → 插件目录 → Spring Boot / Dockerfile / K8s → 单例边界与初始化顺序 → 日志关联 → 跨线程 → 优雅停机 → 验证排查**组织。
 >
 > SkyWalking 本体原理（javaAgent 机制、ByteBuddy 织入、轻量级队列内核、Dubbo 插件生命周期）、OAP 架构与 UI 六大面板见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md)；同命名口径的另两篇是 [接入Skywalking.md](../../go/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../../php/接入Skywalking.md)。
 
@@ -30,7 +30,7 @@ JVM 退出 → ShutdownHook 触发：先停消费者线程并 flush 队列，再
 
 1. **装/卸插件不用重新编译业务代码**。插件就是 jar，拷进 `plugins/` 即生效、删掉即失效；也可以用 `plugin.exclude_plugins` 排除。
 2. **配置在运行期读**。改环境变量重启即可，不像 Go 那样要重新编译（对照见 [接入Skywalking.md](../../go/可观测性/接入Skywalking.md) 第一节）。
-3. **`kill -9` 会丢最后一批数据**。flush 依赖 ShutdownHook，而 `SIGKILL` 不触发任何 hook（见第十节）。
+3. **`kill -9` 会丢最后一批数据**。flush 依赖 ShutdownHook，而 `SIGKILL` 不触发任何 hook（见第十二节）。
 
 ⚠️ 代价也要说清：字节码增强带来 CPU/内存开销；agent 与 **JDK 版本、框架版本、其他 agent** 存在兼容风险；探针异常理论上可能影响业务进程。所以生产要**灰度**，并保留「一键摘除」的能力（删 jar / 排除插件 / 摘掉 `-javaagent` 重启）。
 
@@ -145,23 +145,59 @@ ENTRYPOINT ["sh", "-c", "java -javaagent:/skywalking/agent/skywalking-agent.jar 
 
 K8s 侧的三个要点：
 
-1. **配置交给 Deployment 的 `env`**（同一个镜像跨环境复用），服务名用 `metadata.name` 注入：
+**① 配置交给 Deployment 的 `env`**（同一个镜像跨环境复用），服务名用 `metadata.name` 注入：
 
-   ```yaml
-   env:
-     - name: SW_AGENT_NAME
-       valueFrom:
-         fieldRef: { fieldPath: metadata.labels['app'] }
-     - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
-       value: oap.observability:11800
-   ```
+```yaml
+env:
+  - name: SW_AGENT_NAME
+    valueFrom:
+      fieldRef: { fieldPath: metadata.labels['app'] }
+  - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+    value: oap.observability:11800
+```
 
-2. **给 agent 预留额外内存**：`resources.limits.memory` 要比裸跑多留 200~500MB（agent 的元空间 + 队列缓冲）。不预留的典型症状是「加了探针就 OOMKilled」。
-3. ⚠️ **优雅停机**：`terminationGracePeriodSeconds` 要大于业务排空时间，且用 SIGTERM 触发 ShutdownHook（第十节）。`ENTRYPOINT` 走 `sh -c` 时，注意 shell 是否会转发信号——必要时用 `exec java ...` 或引入 `tini`（PHP 侧同一问题的详细讨论见 [接入Skywalking.md](../../php/接入Skywalking.md)）。
+**② 给 agent 预留额外内存**：`resources.limits.memory` 要比裸跑多留 200~500MB（agent 的元空间 + 队列缓冲）。不预留的典型症状是「加了探针就 OOMKilled」。
+
+**③ ⚠️ 优雅停机**：`terminationGracePeriodSeconds` 要大于业务排空时间，且用 SIGTERM 触发 ShutdownHook（第十二节）。`ENTRYPOINT` 走 `sh -c` 时，注意 shell 是否会转发信号——必要时用 `exec java ...` 或引入 `tini`（PHP 侧同一问题的详细讨论见 [接入Skywalking.md](../../php/接入Skywalking.md)）。
 
 ---
 
-## 八、日志怎么关联到同一条 trace？
+## 八、单例边界 ⭐
+
+**本节要点**：判「要不要单例」只看一件事——**这个对象内部有没有长活的资源（连接、线程池、队列）**：有 → 进程级；没有、且绑定单次调用的 → 请求级。agent 由 `-javaagent` 自动持有，业务要管的是自己的池与线程。
+
+| 对象 | 单例？ | 为什么 |
+| --- | --- | --- |
+| SkyWalking agent | ✅ 进程级（自动） | 随 `-javaagent` 由 `premain` 建一次，持有上报队列与消费线程；删 jar / 摘参数才能关 |
+| `DataSource` / `HikariCP` | ✅ 进程级（Bean） | 内部是连接池；agent 也需它保持同一个实例才能把 SQL span 串进链路 |
+| `TraceContext`（工具类） | —（静态） | 只读 API，`TraceContext.traceId()` 按当前线程取，不持有状态 |
+| 线程池 `ExecutorService` | ✅ 进程级 | 反复 `new` 会线程泄漏；跨线程传播依赖 `bootstrap-plugins/` 的线程池插件增强**同一个**池 |
+| `RunnableWrapper` / `CallableWrapper` | ❌ 请求级 | 每次提交时包一层，用完即弃 |
+| `ContextManager.capture()` 的快照 | ❌ 请求级 | 绑定一次调用；worker 复用时每轮都要重新 `capture` / `continued` 并结束清理 |
+
+**写错的后果**：
+
+- ⚠️ 在请求路径里 `new ThreadPoolExecutor`：线程数随请求线性膨胀，线程池插件也增强不到临时池，链路断在提交点。
+- ⚠️ 自己 `new DataSource` 绕过 Spring 托管：连接池失控，SQL span 也挂不上（插件增强的是被托管的那个池）。
+- ✅ 线程池复用的场景，务必按「每轮 capture → continue → 结束」配对（见第十一节）。
+
+---
+
+## 九、初始化顺序 ⭐
+
+**本节要点**：⭐ 判据是「**谁在初始化时捕获了全局单例**」——agent 在 `premain` 时就把字节码增强器与插件集装好，**必须排在被增强的类加载之前**；业务侧顺序稍颠倒，表现就是「进程正常、数据却是空的」。
+
+三条实序：
+
+1. **`-javaagent` 必须最先**，写在 `-jar` **之前**，且属 JVM 参数（写到 `--spring.profiles.active` 那一侧不生效）。JVM 先跑 `premain` 注册 transformer，之后每个匹配的类在**加载期**被 ByteBuddy 织入；agent 挂晚了，之前已加载的类就漏掉了（见第三节）。
+2. **配置要在启动前就绪**：`-Dskywalking.*` / `SW_AGENT_*` 是运行期读的，读的却是**启动那一刻**的值，改完要重启；用 `agent.config` 默认值时别指望运行期动态改（见第四节）。
+3. ⚠️ **不要与其他 `-javaagent` 叠加**：SkyWalking agent 与 OTel Java Agent 同挂，同一入口生成两份 span、CPM/Apdex 翻倍、`trace_id` 还不一致（见 [接入Jaeger.md](接入Jaeger.md) 第一节）。要切就只留一个。
+
+> ⚠️ 判「某个组件会不会被顺序影响」，就看它是**在初始化时取一次**全局单例，还是**每次调用现取**：前者必须排在被捕获者之后，后者不受影响。Logback 的 `%tid` layout 是**每条日志时**解析，日志侧不受挂载顺序影响；而线程池插件增强的是**类加载期**的那个池，挂晚了就增强不到。
+
+---
+
+## 十、日志怎么关联到同一条 trace？
 
 **本节要点**：日志与链路是两套数据，靠 `traceId` 串起来。两种做法：把 traceId 写进日志字段（自己查），或把日志直接上报到 OAP（UI 里按 Trace ID 反查）。
 
@@ -209,7 +245,7 @@ String traceId = TraceContext.traceId();  // 未接入 agent 时返回 ""
 
 ---
 
-## 九、跨线程与异步：最容易断链的地方 ⭐
+## 十一、跨线程与异步：最容易断链的地方 ⭐
 
 **本节要点**：span 上下文默认**跟线程走**。一旦交给线程池 / `@Async` / `CompletableFuture`，子线程拿不到 traceId，链路就断在那里。
 
@@ -238,7 +274,7 @@ public class ExportTask implements Runnable {
 
 ---
 
-## 十、优雅停机：别丢最后一批数据
+## 十二、优雅停机：别丢最后一批数据
 
 上报是**异步批量**的：拦截器产生的 span 先进内存队列（无锁环形队列 `DataCarrier`），消费线程按批 gRPC 发给 OAP。所以进程被强杀时，队列里还没发出去的那一批就没了。
 
@@ -250,13 +286,13 @@ agent 启动时注册了 **ShutdownHook**，JVM 正常退出时会：先停消�
 | `kill -9` / `SIGKILL` | ❌ 不触发 | **最后一批链路数据丢失** |
 | OOMKilled | ❌ 不触发 | 同上，且会连带丢掉故障时刻最关键的数据 |
 
-K8s 侧要保证 `terminationGracePeriodSeconds` 大于「业务请求排空 + 队列 flush」的总时间。这与 PHP 侧靠 `exec` 转发 SIGTERM、Go 侧靠 `tp.Shutdown(ctx)` 是**同一个道理**（对照见 [接入Skywalking.md](../../php/接入Skywalking.md) 第五节、[接入Jaeger.md](../../go/可观测性/接入Jaeger.md) 第九节）。
+K8s 侧要保证 `terminationGracePeriodSeconds` 大于「业务请求排空 + 队列 flush」的总时间。这与 PHP 侧靠 `exec` 转发 SIGTERM、Go 侧靠 `tp.Shutdown(ctx)` 是**同一个道理**（对照见 [接入Skywalking.md](../../php/接入Skywalking.md) 第五节、[接入Jaeger.md](../../go/可观测性/接入Jaeger.md) 第十一节）。
 
 ⚠️ 顺带一个设计取向：队列满时 SkyWalking 默认走 `IF_POSSIBLE` 策略——**宁可丢数据，也不阻塞业务线程**。所以高 QPS 下「链路偶发缺失」是设计取舍，不是 bug；要提高完整度得调大队列并评估 OAP 的写入能力。
 
 ---
 
-## 十一、怎么逐层确认接入生效？
+## 十三、怎么逐层确认接入生效？
 
 ```bash
 # 1. agent 是否真的挂上了（能看到 -javaagent 参数）
@@ -277,7 +313,7 @@ grep -m1 'TID' /path/to/app.log
 
 ---
 
-## 十二、常见故障速查
+## 十四、常见故障速查
 
 | 症状 | 大概率原因 | 处理 |
 | --- | --- | --- |
@@ -286,11 +322,11 @@ grep -m1 'TID' /path/to/app.log
 | 服务名显示 `Your_ApplicationName` | `SW_AGENT_NAME` 没注入到运行环境 | 检查 Deployment 的 `env`（第七节） |
 | HTTP span 有、SQL span 全没有 | 对应插件不在 `plugins/`，或框架版本超出支持区间 | 拷插件 / 核对 Support-Version-Matrix（第五节） |
 | 拷了插件仍不生效 | witness 类未命中（宿主没加载那个框架的核心类） | 确认框架真的被用到；或改手动埋点（第五节） |
-| 异步任务里的调用查不到、日志 `%tid` 是 `N/A` | 跨线程上下文未传播 | 按第九节四种方式之一处理 |
+| 异步任务里的调用查不到、日志 `%tid` 是 `N/A` | 跨线程上下文未传播 | 按第十一节四种方式之一处理 |
 | 采样率调了没反应，或 UI 直接空了 | 把 Go 的浮点概率填进了 Java 的「每 3 秒 N 条」 | 按第四节的语义表核对 |
 | 加了探针就 OOMKilled | 容器内存 limit 没给 agent 留余量 | `limits.memory` 多留 200~500MB（第七节） |
 | 指标翻倍、Apdex 失真 | SkyWalking agent 与 OTel Java Agent 同时挂着 | **只保留一个 `-javaagent`**（对照 [接入Jaeger.md](接入Jaeger.md)） |
-| 每次发布最后几秒的请求查不到 | `kill -9` / OOMKilled 跳过 ShutdownHook，或宽限期太短 | 用 SIGTERM + 调大 `terminationGracePeriodSeconds`（第十节） |
+| 每次发布最后几秒的请求查不到 | `kill -9` / OOMKilled 跳过 ShutdownHook，或宽限期太短 | 用 SIGTERM + 调大 `terminationGracePeriodSeconds`（第十二节） |
 | 拓扑图缺边 | 网关/Nginx 裁掉了 `sw8` 头 | 放行 `sw8` / `sw8-correlation` 请求头 |
 
 ---
@@ -309,12 +345,13 @@ grep -m1 'TID' /path/to/app.log
 
 ---
 
-## 十三、校验口径
+## 十五、校验口径
 
 > ✅ 本篇校验方式与范围（本机 Maven 3.8.1 + JBR 17，网络可达 repo1.maven.org）：
 >
-> - **第八、九节 Java 代码块**：`TraceContext.traceId()` 与 `@TraceCrossThread` 逐字抽成独立 Maven 工程，配 `org.apache.skywalking:apm-toolkit-trace:9.3.0` 后 `mvn -B clean compile` **真编译通过**（导入包名为 `org.apache.skywalking.apm.toolkit.trace`，不带 `agent` 段）。⚠️ **只编译、未挂载 agent 运行**，因此不产生真实链路数据，`TraceContext.traceId()` 在未接入时返回空串。
+> - **第十、十一节 Java 代码块**：`TraceContext.traceId()` 与 `@TraceCrossThread` 逐字抽成独立 Maven 工程，配 `org.apache.skywalking:apm-toolkit-trace:9.3.0` 后 `mvn -B clean compile` **真编译通过**（导入包名为 `org.apache.skywalking.apm.toolkit.trace`，不带 `agent` 段）。⚠️ **只编译、未挂载 agent 运行**，因此不产生真实链路数据，`TraceContext.traceId()` 在未接入时返回空串。
 > - **shell / bash 片段**：`bash -n` 语法校验通过。
+> - **第八、九节**（单例边界 / 初始化顺序）：表格与顺序说明，不含可独立编译的代码。
 > - **Dockerfile / K8s YAML / logback XML / pom 片段**：结构与字段名核对（`COPY --from`、`env.valueFrom.fieldRef`、`TraceIdPatternLogbackLayout` 均为官方文档写法），未实际构建镜像与加载 logback。
 > - 本机没有 SkyWalking OAP 实例，因此**只校验语法与编译、未实际接入运行**，文中不含伪造的 UI 输出与 agent 日志。
 

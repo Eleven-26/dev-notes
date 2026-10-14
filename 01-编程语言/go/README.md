@@ -113,8 +113,8 @@
 | [数据访问与连接池.md](工程实践/数据访问与连接池.md) | `sql.DB` 是池不是连接、`sql.Open` 惰性建连、四个旋钮的默认值陷阱、`rows` 生命周期与 `context` 打断、池开多大、与 GORM 的关系 |
 | [代码生成与资源嵌入.md](工程实践/代码生成与资源嵌入.md) | `go:generate` 的约定与四类常见生成器、用 `go/ast` + `go/parser` + `go/format` 手写生成器、⭐ `//go:embed` 的三种形态与路径约束、生成代码的提交策略与 CI 校验 |
 | [接入DTM.md](工程实践/接入DTM.md) | 分布式事务接入 DTM：服务端与两类表（屏障表 / 全局事务表）的准备、Saga / TCC / 二阶段消息的 Go 骨架、子事务屏障的 `CallWithDB` 写法（含 gorm / go-zero 取 `*sql.Tx`）、⭐ **容器实测**跑通的 Saga 成功与 409 回滚两条路径 |
-| [接入Kafka.md](工程实践/接入Kafka.md) | 接入 Kafka：`kafka-go` / `sarama` / `confluent-kafka-go` 三选一、`Writer` 的 `Balancer`（默认不哈希）与 `RequiredAcks`（默认不等确认）陷阱、消费者组 + 手动提交、优雅退出顺序、sarama 开幂等要设 `Net.MaxOpenRequests=1`；⭐ gofmt / vet / build 全通过，并对三节点 KRaft 集群实测（同 key 同分区、分区内有序、位点归零）。组件本体在 [消息队列/Kafka/](../../03-数据与中间件/中间件/消息队列/Kafka/README.md) |
-| [接入RocketMQ.md](工程实践/接入RocketMQ.md) | Go 侧**接入手册**（11 节体例）：客户端二选一（`rocketmq-client-go/v2` / `rocketmq-clients/golang/v5`）、前提（⚠️ NameServer 必须是 **IP**，写主机名报 `new Namesrv failed.: IP addr error`；Topic 未建报 `No route info of this topic`）、⭐ **单例边界**（Producer 进程级 / Consumer 非单例）、⭐ **初始化顺序**（`Subscribe` 先于 `Start`；判据「谁捕获了全局单例」）、`sync.Once` 封装、各场景调用（普通 / 延迟 / 顺序 / Tag 过滤 / 定时任务）、⭐ **消息属性 Inject-Extract 跨进程传播**（实测完整往返）、⭐ **优雅退出**（Shutdown 顺序 / 位点无残留）、验证与故障速查；⭐ gofmt / vet / build 全过。组件本体在 [消息队列/RocketMQ/](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) |
+| [接入Kafka.md](工程实践/接入Kafka.md) | Go 侧**接入手册**（12 节体例）：`kafka-go` / `sarama` / `confluent-kafka-go` 三选一、前提（⚠️ Topic 不预建报 `Unknown Topic Or Partition`）、⭐ **单例边界**（Writer 进程级 / Reader 非单例）、⭐ **初始化顺序**（判据「谁捕获了全局单例」）、`sync.OnceValue` 封装、`Balancer`（默认不哈希）与 `RequiredAcks`（默认不等确认）陷阱、⭐ **record headers Inject/Extract 跨进程传播**（实测完整往返）、优雅退出、校验口径；⭐ gofmt / vet / build 全过，三节点 KRaft 实测 |
+| [接入RocketMQ.md](工程实践/接入RocketMQ.md) | Go 侧**接入手册**（12 节体例）：客户端二选一（`rocketmq-client-go/v2` / `rocketmq-clients/golang/v5`）、前提（⚠️ NameServer 必须是 **IP**，写主机名报 `new Namesrv failed.: IP addr error`；Topic 未建报 `No route info of this topic`）、⭐ **单例边界**（Producer 进程级 / Consumer 非单例）、⭐ **初始化顺序**（`Subscribe` 先于 `Start`；判据「谁捕获了全局单例」）、`sync.Once` 封装、各场景调用（普通 / 延迟 / 顺序 / Tag 过滤 / 定时任务）、⭐ **消息属性 Inject-Extract 跨进程传播**（实测完整往返）、⭐ **优雅退出**（Shutdown 顺序 / 位点无残留）、验证与故障速查；⭐ gofmt / vet / build 全过。组件本体在 [消息队列/RocketMQ/](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) |
 | [写冲突控制的Go落地.md](工程实践/写冲突控制的Go落地.md) | 同一份数据被并发写的四种写法：版本号乐观锁（`RowsAffected` 判冲突 + 退避抖动）、⭐ **条件更新**（`UPDATE ... WHERE stock >= ?`，含 `LAST_INSERT_ID(expr)` 的连接级坑）、悲观锁的 `FOR UPDATE` 三条硬规矩与 `SKIP LOCKED`、⭐ **唯一索引兜底**（`INSERT IGNORE` / `ON DUPLICATE KEY UPDATE` 的两个坑）；⚠️ 未做运行时验证（概念侧在 `03-数据与中间件/数据存储/并发控制/`）|
 | [Kratos框架.md](工程实践/框架/微服务/Kratos框架.md) | 集成 ent / validate、注册发现与容器化、服务间鉴权与元数据传递 |
 | [Eino框架.md](工程实践/框架/LLM应用/Eino框架.md) | 字节 Eino 大模型应用框架 |
@@ -135,8 +135,8 @@
 
 | 篇 | 讲什么 |
 |---|---|
-| [接入Jaeger.md](可观测性/接入Jaeger.md) | OTel SDK 埋点、span 与上下文传播、容器里真报一条链路 |
-| [接入Skywalking.md](可观测性/接入Skywalking.md) | Go 侧接入与编译期注入、与 Java agent 路线的差异 |
+| [接入Jaeger.md](可观测性/接入Jaeger.md) | Go 侧**接入手册**（15 节体例）：OTel SDK 埋点与 TracerProvider 初始化、⭐ **单例边界**与⭐ **初始化顺序**（判据「谁捕获了全局单例」）、Gin / GORM / NATS / 定时任务四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、photography-server 落地映射与排障 |
+| [接入Skywalking.md](可观测性/接入Skywalking.md) | Go 侧接入与编译期注入（`-toolexec` + `-a`）、`toolkit/trace` 手动埋点与跨协程快照、OTel SDK + OTLP 路线、⭐ **单例边界**与⭐ **初始化顺序**（判据「谁捕获了全局单例」）、Dockerfile 多阶段构建、四层验证与故障速查 |
 | [手写Prometheus导出器.md](可观测性/手写Prometheus导出器.md) | `client_golang` 四类型与注册表、命名与基数红线、自定义 Collector、被真实抓到的证据 |
 
 ---

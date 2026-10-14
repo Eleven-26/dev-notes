@@ -78,8 +78,8 @@
 
 | 相关目录 | 关系 |
 |---|---|
-| [go/](../../../01-编程语言/go/) | 语言侧接入代码：`接入Skywalking.md`（编译期注入 + OTel 备选）、`接入Jaeger.md`（OTel SDK + OTLP）、`手写Prometheus导出器.md`（`client_golang` 注册表 / 四种指标类型 / 命名与基数规范 / 抓取闭环验证） |
-| [java/](../../../01-编程语言/java/) | `接入Skywalking.md`（`-javaagent`、日志关联、跨线程、优雅停机）、`接入Jaeger.md`（OTel Agent / Micrometer Tracing） |
+| [go/](../../../01-编程语言/go/) | 语言侧接入代码：`接入Skywalking.md`（编译期注入 + OTel 备选、单例边界与初始化顺序）、`接入Jaeger.md`（OTel SDK + OTLP、单例边界与初始化顺序）、`手写Prometheus导出器.md`（`client_golang` 注册表 / 四种指标类型 / 命名与基数规范 / 抓取闭环验证） |
+| [java/](../../../01-编程语言/java/) | `接入Skywalking.md`（`-javaagent`、单例边界与初始化顺序、日志关联、跨线程、优雅停机）、`接入Jaeger.md`（OTel Agent / Micrometer Tracing、单例边界与初始化顺序） |
 | [php/](../../../01-编程语言/php/) | `接入Skywalking.md`（扩展安装、php.ini、三种 reporter、容器化四坑） |
 | [部署/](../../../06-工程实践/部署/) | OAP / Collector / OAP 存储的部署形态与生命周期：`k8s/K8s部署与生命周期面试题.md` |
 | [linux/](../../../02-计算机基础/linux/) | 单机侧观测手段（[性能排查.md](../../../02-计算机基础/linux/性能排查.md)）——本目录只讲**应用埋点出来的数据** |

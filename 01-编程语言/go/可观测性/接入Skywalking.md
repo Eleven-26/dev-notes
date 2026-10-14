@@ -1,8 +1,8 @@
 # Go 接入 SkyWalking
 
-> 内容整理自个人学习笔记 —— Go 侧接入 SkyWalking 的完整手册，按**为什么只能编译期注入 → 路线一（skywalking-go 注入）→ 手动埋点 → 跨 goroutine → 日志与指标 → 路线二（OTel + OTLP）→ 两条路线取舍 → 验证排查**组织。
+> 内容整理自个人学习笔记 —— Go 侧接入 SkyWalking 的完整手册，按**为什么只能编译期注入 → 路线一（skywalking-go 注入）→ 手动埋点 → 跨 goroutine → 日志与指标 → 路线二（OTel + OTLP）→ 两条路线取舍 → 单例边界与初始化顺序 → Dockerfile 构建 → 验证排查**组织。
 >
-> SkyWalking 本体原理、OAP 架构与 UI 面板见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md)；OTel 路线的后端部署见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md)；同命名口径的另两篇是 [接入Skywalking.md](../../php/接入Skywalking.md) 与 [接入Skywalking.md](../../php/接入Skywalking.md)。
+> SkyWalking 本体原理、OAP 架构与 UI 面板见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md)；OTel 路线的后端部署见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md)；同命名口径的另两篇是 [接入Skywalking.md](../../java/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../../php/接入Skywalking.md)。
 
 ---
 
@@ -292,8 +292,8 @@ func InitTracer(ctx context.Context, endpoint, serviceName string) (func(context
 
 ⚠️ 这条路线有四个必踩的坑：
 
-1. **初始化顺序**：`InitTracer` 必须在初始化数据库 / GORM **之前**。GORM 的 OTel 插件在安装时**捕获当时的全局 TracerProvider**，顺序颠倒会让 SQL span 走 noop provider、永远没有数据。
-2. **TracerProvider 必须单例**：它是进程级资源（持有导出器与批量队列）。放在包级变量里由 `main` 初始化一次，**禁止**在请求路径里 `NewTracerProvider`——每次新建都会起一套批处理协程，直接协程泄漏 + 连接爆炸。
+1. **初始化顺序**：`InitTracer` 必须在初始化数据库 / GORM **之前**——GORM 的 OTel 插件在安装时**捕获当时的全局 TracerProvider**，顺序颠倒会让 SQL span 走 noop provider、永远没有数据。详见第九节。
+2. **TracerProvider 必须单例**：它是进程级资源（持有导出器与批量队列），放在包级变量里由 `main` 初始化一次。详见第八节。
 3. **传播头变了**：OTel 默认用 W3C `traceparent`，而 SkyWalking 原生探针用 `sw8`。与 Java / PHP 探针混跑时，要让 OAP 侧能解析两套头，或显式统一传播器，否则链路会断成两段独立 trace。
 4. **退出要 flush**：`defer shutdown(ctx)` 挂到优雅退出流程上，`kill -9` 等于放弃最后一批数据。
 
@@ -341,7 +341,53 @@ tp := sdktrace.NewTracerProvider(sdktrace.WithSampler(sdktrace.NeverSample()))
 
 ---
 
-## 八、在 Dockerfile 里怎么构建？
+## 八、单例边界 ⭐
+
+**本节要点**：判「要不要单例」只看一件事——**这个对象内部有没有长活的资源（连接、协程、队列）**：有 → 进程级；没有、且绑定单次操作的 → 请求级。路线一的 agent 由编译期注入自动持有，路线二（OTel SDK）则要靠你自己把住。
+
+| 对象 | 单例？ | 为什么 |
+| --- | --- | --- |
+| skywalking-go agent（路线一） | ✅ 进程级（自动） | 由编译期注入的 `init()` 建一次，持有上报队列与消费协程；运行期没有 API 可以重建 |
+| `*sdktrace.TracerProvider`（`tp`，路线二） | ✅ 进程级 | 持有导出器与批处理协程（`WithBatcher`）；每次 `NewTracerProvider` 都起一套批处理协程 + gRPC 连接 |
+| `trace.Tracer`（`otel.Tracer(name)`） | ✅ 进程级（包级变量） | 它只是 provider 的轻量句柄，取一次存包级变量即可 |
+| `*http.Client` | ✅ 进程级 | 内部是连接池；出站那个用 `otelhttp.NewTransport` 包装后同样要复用 |
+| `*gorm.DB` | ✅ 进程级 | 内部是 `sql.DB` 连接池，`Open` 一次全局复用 |
+| `ctx` / `span` | ❌ 请求级 | `tracer.Start` 返回的**新 ctx** 才是本次请求的链路上下文，用完即弃 |
+| `otelgin` 中间件 | ✅ 进程级（构造一次） | 无状态的 `gin.HandlerFunc`；**未启用追踪时返回 `nil`**，请求路径零开销 |
+
+**写错的后果**：
+
+- ⚠️ 路线二把 `tp` 做成请求级：每次新建都起一套批处理协程与 gRPC 连接，直接**协程泄漏 + 连接爆炸**。
+- ⚠️ `*http.Client` / `*gorm.DB` 在请求里现建同理——端口与连接数随 QPS 线性膨胀。
+- ⚠️ 路线一**没有**「重建 agent」这条路：它的单例由编译期注入的 `init()` 管理，运行期想停只能让 reporter 空转（`SW_AGENT_REPORTER_DISCARD=true`，见第七节 7.2）。
+- ✅ 未启用链路追踪时中间件返回 `nil`，请求路径完全不碰 tracer，零开销。
+
+---
+
+## 九、初始化顺序 ⭐
+
+**本节要点**：⭐ 判据是「**谁在初始化时捕获了全局单例**」——凡是有这个特征的下游组件（各类 instrumentation、SDK 全局 hook），都必须排在被捕获者**之后**初始化，否则它拿到的是初始化那一刻的旧值（常常是 noop），且**不报错**。
+
+两条路线各有一条实序。
+
+**路线二（OTel SDK）**：`InitTracer` 里的 `otel.SetTracerProvider(tp)` 就是「发布全局单例」。会在初始化时把它捕获下来的下游组件，必须排在 `InitTracer` **之后**——最典型的一例是 **GORM 的 OTel 插件**，`tracing.NewPlugin(...).Install(db)` 在 **`Install` 时捕获当时的全局 TracerProvider**：
+
+```go
+// cmd/server/main.go —— 初始化顺序不能反
+InitTracer(ctx, cfg.Endpoint, cfg.Service) // ① 先发布全局 TracerProvider
+InitMySQL(cfg)                             // ② GORM 插件 Install 时捕获它
+InitRedis(cfg)                             // ③ 其它 instrumentation 同理排在后面
+```
+
+**顺序颠倒的后果**：插件捕获到 noop provider → **SQL span 永远不上报，且不报错**，表现为「HTTP span 有、SQL span 全没有」。排查口径见第十二节。
+
+**路线一（skywalking-go）**：agent 的初始化代码是注入器往入口包塞的**空白导入**，它的 `init()` 天然**先于 `main()`** 执行，所以对业务代码而言它永远排在第一位——这也是「运行期无法开关插件」的另一面：顺序在编译期就定死了。
+
+> ⚠️ 判「某个组件会不会被顺序影响」，就看它是**在初始化时取一次** `otel.GetTracerProvider()`，还是**每次请求现取**：前者必须排在 `InitTracer` 之后，后者不受影响。日志器、配置、指标注册表也有同样的「先发布全局单例、再初始化捕获它的下游」特征。
+
+---
+
+## 十、在 Dockerfile 里怎么构建？
 
 官方提供了内置 agent 的基础镜像，把「注入 + 编译」都放进镜像构建阶段：
 
@@ -369,7 +415,7 @@ K8s 里把 `SW_AGENT_*` 交给 Deployment 的 `env`（同一个镜像跨环境�
 
 ---
 
-## 九、怎么逐层确认接入生效？
+## 十一、怎么逐层确认接入生效？
 
 **本节要点**：按「构建 → 进程 → 网络 → 后端」四层依次确认，能直接定位到哪一环断掉，而不是对着 UI 猜。
 
@@ -393,11 +439,12 @@ nc -vz oap.observability 11800
 
 ---
 
-## 十、常见故障速查
+## 十二、常见故障速查
 
 | 症状 | 大概率原因 | 处理 |
 | --- | --- | --- |
 | 编译通过，UI 里完全没这个服务 | 漏了 `-a`，命中构建缓存、注入被跳过 | 补 `-a` 全量重编译（第一节） |
+| 路线二：HTTP span 有、SQL span 全没有 | `InitTracer` 排在初始化 GORM **之后**，插件捕获到 noop provider | 调整初始化顺序（第九节） |
 | 同上，且 `-a` 已加 | `-inject` 没执行，`go.mod` 里没有 agent 依赖 | 先 `-inject` 再编译（2.3） |
 | 服务名显示 `Your_ApplicationName` | `SW_AGENT_NAME` 未注入到运行环境 | 检查 Deployment 的 `env`（2.5） |
 | HTTP span 有、SQL span 全没有 | GORM/驱动版本超出插件支持区间 | 核对 Support-Version-Matrix，降版本或改手动埋点（2.6） |
@@ -423,13 +470,14 @@ nc -vz oap.observability 11800
 
 ---
 
-## 十一、校验口径
+## 十三、校验口径
 
 > ✅ 本篇 Go 代码块的校验方式与范围（Go 1.26.5，windows/amd64）：
 >
 > - **真编译通过**（抽成独立模块，`go build ./...` + `go vet ./...` + `gofmt -l` 全绿）：第六节 `InitTracer`（含 `semconv/v1.26.0` 的 `ServiceName` / `ServiceVersion`）、7.2 节 `sdktrace.NeverSample()` 全关写法。
 > - **未编译**：第三节 `toolkit/trace` 手动埋点、第四节 `CaptureContext` / `ContinueContext` 快照传递。原因是 `github.com/apache/skywalking-go/toolkit/trace` 的符号只在**注入后的构建**里存在（未注入时是空实现桩），无法在未跑 `-toolexec` 的临时模块里真编译，因此只核对 API 签名与调用约定。
 > - **shell / makefile / dockerfile / yaml 片段**：`bash -n` 语法校验 + 结构核对，未实际执行注入构建与镜像构建。
+> - **第八、九节**（单例边界 / 初始化顺序）：表格与「先发布全局单例、再初始化捕获它的下游」的顺序片段，与第六节 `InitTracer` 同源，属**接入模式说明**，未独立编译（`InitMySQL` / `InitRedis` 为项目内函数）。
 > - 本机没有 SkyWalking OAP 实例，因此**只校验语法与编译、未实际接入运行**，文中不含伪造的 UI 输出。
 
 | 依赖 | 实际解析版本 |
