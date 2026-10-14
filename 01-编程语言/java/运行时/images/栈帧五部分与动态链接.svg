@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+<defs>
+<marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">栈帧的五部分与动态链接</text>
+<text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">方法调用入栈、方法结束出栈；Slot 分配与常量池项都是 javap 实测结果</text>
+
+<rect x="60" y="90" width="400" height="420" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+<text x="260" y="120" font-size="13" font-weight="700" text-anchor="middle" fill="#1e3a8a">虚拟机栈（线程私有，一个线程一份）</text>
+
+<rect x="90" y="140" width="340" height="228" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+<text x="110" y="164" font-size="12" fill="#0f172a">栈帧：slotDemo(int, long, int)</text>
+
+<rect x="100" y="176" width="320" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="112" y="197" font-size="12" fill="#14532d">局部变量表</text>
+<rect x="198" y="182" width="46" height="22" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+<text x="221" y="197" font-size="10" text-anchor="middle" fill="#334155">0: a</text>
+<rect x="246" y="182" width="46" height="22" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+<text x="269" y="197" font-size="10" text-anchor="middle" fill="#334155">1: b</text>
+<rect x="294" y="182" width="46" height="22" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+<text x="317" y="197" font-size="10" text-anchor="middle" fill="#334155">2: b</text>
+<rect x="342" y="182" width="46" height="22" rx="4" fill="#ffffff" stroke="#94a3b8"/>
+<text x="365" y="197" font-size="10" text-anchor="middle" fill="#334155">3: c</text>
+
+<rect x="100" y="218" width="320" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="112" y="239" font-size="12" fill="#14532d">操作数栈　字节码的工作区</text>
+
+<rect x="100" y="260" width="320" height="34" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+<text x="112" y="281" font-size="12" fill="#7c2d12">动态链接　符号引用 → 直接引用</text>
+
+<rect x="100" y="302" width="320" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+<text x="112" y="323" font-size="12" fill="#14532d">方法返回地址</text>
+
+<rect x="100" y="344" width="320" height="20" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="112" y="358" font-size="11" fill="#334155">附加信息　调试与性能监控</text>
+
+<rect x="100" y="378" width="320" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="260" y="403" font-size="11" text-anchor="middle" fill="#334155">调用者栈帧：main</text>
+
+<rect x="100" y="424" width="320" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="260" y="449" font-size="11" text-anchor="middle" fill="#64748b">更早的栈帧 …</text>
+
+<text x="100" y="492" font-size="12" fill="#7f1d1d">栈深超限 → StackOverflowError</text>
+
+<rect x="530" y="210" width="410" height="110" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+<text x="735" y="242" font-size="14" font-weight="700" text-anchor="middle" fill="#7c2d12">运行时常量池（方法区）</text>
+<text x="735" y="268" font-size="12" text-anchor="middle" fill="#7c2d12">invokevirtual  #17  virtualAdd:(II)I</text>
+<text x="735" y="294" font-size="12" text-anchor="middle" fill="#334155">虚方法查 vtable，接口方法查 itable</text>
+
+<line x1="420" y1="277" x2="526" y2="266" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+<rect x="60" y="540" width="880" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="80" y="572" font-size="12" font-weight="700" fill="#0f172a">javap -c 实测：slotDemo(int a, long b, int c) 的槽位与调用指令</text>
+<text x="80" y="600" font-size="12" fill="#334155">0: iload_0 → 参数 a 在 slot 0　　4: iload_3 → 参数 c 被排到 slot 3，不是 slot 2</text>
+<text x="80" y="628" font-size="12" fill="#334155">2: lload_1 → long 占 slot 1 和 slot 2 两个槽（参数顺序会影响栈帧大小）</text>
+<text x="80" y="656" font-size="12" fill="#334155">25: invokestatic　61: invokevirtual　100: invokeinterface（后面的 3 是参数槽数）</text>
+<text x="80" y="684" font-size="12" fill="#334155">114: invokedynamic → Lambda 不生成匿名内部类的 class 文件，只留合成方法 lambda$main$0</text>
+</svg>

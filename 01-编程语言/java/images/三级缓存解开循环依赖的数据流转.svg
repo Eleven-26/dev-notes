@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三级缓存解开循环依赖的数据流转</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">字段 / setter 注入能解（先造空壳再补依赖）；构造器注入解不开——参数必须在调用前就绪</text>
+
+  <rect x="24" y="100" width="280" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="164" y="124" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">① singletonObjects</text>
+  <text x="164" y="146" text-anchor="middle" font-size="11" fill="#1d4ed8">成品缓存：完全初始化好的 Bean</text>
+
+  <rect x="24" y="190" width="280" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="164" y="214" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">② earlySingletonObjects</text>
+  <text x="164" y="236" text-anchor="middle" font-size="11" fill="#166534">半成品：已实例化、未完成注入</text>
+
+  <rect x="24" y="280" width="280" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="164" y="304" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#9a3412">③ singletonFactories</text>
+  <text x="164" y="324" text-anchor="middle" font-size="11" fill="#c2410c">放的是「工厂」不是实例</text>
+  <text x="164" y="344" text-anchor="middle" font-size="11" fill="#c2410c">有 AOP 时这里放代理工厂</text>
+
+  <text x="164" y="392" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">为什么是三级不是两级？</text>
+  <text x="164" y="414" text-anchor="middle" font-size="11" fill="#334155">真发生循环依赖时才调工厂</text>
+  <text x="164" y="434" text-anchor="middle" font-size="11" fill="#334155">避免每个 Bean 都提前生成代理</text>
+
+  <rect x="340" y="100" width="340" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="510" y="122" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">① 实例化 A（构造器完成，是个空壳）</text>
+  <text x="510" y="142" text-anchor="middle" font-size="10.5" fill="#475569">缓存的是「引用」，才能先给空壳再塞依赖</text>
+
+  <line x1="510" y1="156" x2="510" y2="182" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="186" width="340" height="52" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="510" y="216" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">② 把「能取到 A 引用」的工厂放进 ③</text>
+
+  <line x1="510" y1="238" x2="510" y2="264" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="268" width="340" height="52" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="510" y="298" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">③ 填充 A 的字段时发现需要 B</text>
+
+  <line x1="510" y1="320" x2="510" y2="346" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="350" width="340" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="510" y="372" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">④ 建 B：B 的字段又需要 A</text>
+  <text x="510" y="392" text-anchor="middle" font-size="10.5" fill="#475569">命中循环：A 还在创建中</text>
+
+  <line x1="510" y1="406" x2="510" y2="432" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="436" width="340" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="510" y="458" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">⑤ 调工厂取 A 的早期引用，放入 ②</text>
+  <text x="510" y="478" text-anchor="middle" font-size="10.5" fill="#c2410c">必要时在这里生成代理</text>
+
+  <line x1="510" y1="492" x2="510" y2="518" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="340" y="522" width="340" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="510" y="544" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">⑥ B 注入完成 → B 进入 ①</text>
+  <text x="510" y="564" text-anchor="middle" font-size="10.5" fill="#1d4ed8">回到 A 注入 B，A 也从 ② 移到 ①</text>
+
+  <line x1="304" y1="316" x2="340" y2="452" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#a2)"/>
+
+  <rect x="700" y="186" width="276" height="96" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="838" y="210" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">构造器注入解不开</text>
+  <text x="838" y="232" text-anchor="middle" font-size="11" fill="#991b1b">参数必须在调用前就绪</text>
+  <text x="838" y="252" text-anchor="middle" font-size="11" fill="#991b1b">没有「先给空壳」的余地</text>
+  <text x="838" y="272" text-anchor="middle" font-size="10.5" fill="#991b1b">BeanCurrentlyInCreationException</text>
+
+  <rect x="700" y="330" width="276" height="84" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="838" y="354" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#854d0e">能解开 ≠ 应该这么写</text>
+  <text x="838" y="376" text-anchor="middle" font-size="11" fill="#b45309">循环依赖本身是设计问题</text>
+  <text x="838" y="396" text-anchor="middle" font-size="11" fill="#b45309">Spring 2.6+ 默认禁止循环依赖</text>
+
+  <text x="26" y="604" font-size="12.5" fill="#334155">⭐ 与实验 3 对应：字段注入的 A↔B 成功创建；构造器注入报 ctorA currently in creation——因为没有「暴露空壳」的环节</text>
+</svg>

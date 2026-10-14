@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="l1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">synchronized 的锁升级状态机（Mark Word 末两位）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">按竞争程度逐级升价；JDK 8 实现里这条路径单向不可逆，状态常量取自对象头 Mark Word</text>
+
+  <rect x="60" y="100" width="170" height="72" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="145" y="128" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">无锁</text>
+  <text x="145" y="152" text-anchor="middle" font-size="11" fill="#475569">末位 01 · hash/年龄</text>
+
+  <rect x="280" y="100" width="180" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="370" y="128" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">偏向锁</text>
+  <text x="370" y="152" text-anchor="middle" font-size="11" fill="#1d4ed8">末位 01(后三位 101)</text>
+
+  <rect x="510" y="100" width="180" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="600" y="128" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">轻量级锁</text>
+  <text x="600" y="152" text-anchor="middle" font-size="11" fill="#9a3412">末位 00 · 栈上锁记录</text>
+
+  <rect x="740" y="100" width="180" height="72" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="830" y="128" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">重量级锁</text>
+  <text x="830" y="152" text-anchor="middle" font-size="11" fill="#b91c1c">末位 10 · Monitor</text>
+
+  <line x1="230" y1="136" x2="280" y2="136" stroke="#334155" stroke-width="1.6" marker-end="url(#l1)"/>
+  <text x="255" y="128" text-anchor="middle" font-size="10.5" fill="#334155">首次加锁</text>
+  <line x1="460" y1="136" x2="510" y2="136" stroke="#334155" stroke-width="1.6" marker-end="url(#l1)"/>
+  <text x="485" y="128" text-anchor="middle" font-size="10.5" fill="#334155">第二线程</text>
+  <line x1="690" y1="136" x2="740" y2="136" stroke="#334155" stroke-width="1.6" marker-end="url(#l1)"/>
+  <text x="715" y="128" text-anchor="middle" font-size="10.5" fill="#334155">自旋失败</text>
+
+  <text x="145" y="192" text-anchor="middle" font-size="10.5" fill="#64748b">CAS 记线程 ID</text>
+  <text x="370" y="192" text-anchor="middle" font-size="10.5" fill="#64748b">同线程反复进出：零 CAS</text>
+  <text x="600" y="192" text-anchor="middle" font-size="10.5" fill="#64748b">加解锁各 1 次 CAS + 自旋</text>
+  <text x="830" y="192" text-anchor="middle" font-size="10.5" fill="#64748b">park 阻塞，进 _EntryList</text>
+
+  <rect x="20" y="212" width="960" height="196" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="240" font-size="11.5" fill="#334155">⭐ 无竞争时一个 CAS 就解决，没必要一上来就做内核态阻塞 —— 这是 JDK 6 之后按竞争程度逐级升价的原因。</text>
+  <text x="36" y="267" font-size="11.5" fill="#334155">Mark Word 末两位判状态：01 无锁（偏向后三位 101）、00 轻量级、10 重量级；11 是 GC 标记，不参与升级。</text>
+  <text x="36" y="294" font-size="11.5" fill="#dc2626">⚠️ 锁升级不可逆（JDK 8 实现）：一旦升到重量级就不会降回去，偶发一次高竞争会让这个对象之后一直付重量级代价。</text>
+  <text x="36" y="321" font-size="11.5" fill="#334155">偏向锁默认开（UseBiasedLocking=true），但 BiasedLockingStartupDelay=4000 —— 进程启动后前 4 秒走非偏向路径。</text>
+  <text x="36" y="348" font-size="11.5" fill="#334155">同一类对象被撤销偏向超 20 次触发批量重偏向、超 40 次批量撤销（BulkRebiasThreshold / BulkRevokeThreshold）。</text>
+  <text x="36" y="375" font-size="11.5" fill="#64748b">版本演进：JDK 15 起 UseBiasedLocking 默认改 false（JEP 374 废弃），JDK 18 正式移除 —— 只有 JDK 8 用户才需考虑偏向锁。</text>
+  <text x="36" y="399" font-size="11" fill="#64748b">（参数取自 -XX:+PrintFlagsFinal 本机实测）</text>
+</svg>

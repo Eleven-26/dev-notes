@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" width="1000" height="510" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">CopyOnWriteArrayList：写时复制 + 引用替换的数据流转</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">读侧完全无锁（它的全部价值），代价是每次写都复制整个数组 —— 迭代器与写者操作的是两个不同的数组</text>
+
+  <rect x="40" y="88" width="200" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="140" y="110" text-anchor="middle" font-size="11" fill="#1e3a8a">① 加锁</text>
+  <text x="140" y="128" text-anchor="middle" font-size="10" fill="#1d4ed8">写侧仍需锁，读侧无锁</text>
+  <line x1="240" y1="112" x2="270" y2="112" stroke="#334155" stroke-width="1.4" marker-end="url(#w1)"/>
+  <rect x="270" y="88" width="200" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="370" y="110" text-anchor="middle" font-size="11" fill="#1e3a8a">② 复制整个底层数组</text>
+  <text x="370" y="128" text-anchor="middle" font-size="10" fill="#1d4ed8">O(n) 分配新数组</text>
+  <line x1="470" y1="112" x2="500" y2="112" stroke="#334155" stroke-width="1.4" marker-end="url(#w1)"/>
+  <rect x="500" y="88" width="200" height="48" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="600" y="110" text-anchor="middle" font-size="11" fill="#7c2d12">③ 新数组末尾写 d</text>
+  <text x="600" y="128" text-anchor="middle" font-size="10" fill="#9a3412">旧数组原地不动</text>
+  <line x1="700" y1="112" x2="730" y2="112" stroke="#334155" stroke-width="1.4" marker-end="url(#w1)"/>
+  <rect x="730" y="88" width="200" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="830" y="110" text-anchor="middle" font-size="11" fill="#14532d">④ volatile 替换引用</text>
+  <text x="830" y="128" text-anchor="middle" font-size="10" fill="#166534">array = newArray</text>
+
+  <text x="216" y="206" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1d4ed8">旧数组 array（迭代器快照）</text>
+  <rect x="120" y="216" width="60" height="44" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="150" y="244" text-anchor="middle" font-size="13" fill="#1e3a8a">a</text>
+  <rect x="186" y="216" width="60" height="44" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="216" y="244" text-anchor="middle" font-size="13" fill="#1e3a8a">b</text>
+  <rect x="252" y="216" width="60" height="44" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="282" y="244" text-anchor="middle" font-size="13" fill="#1e3a8a">c</text>
+
+  <line x1="312" y1="238" x2="560" y2="238" stroke="#16a34a" stroke-width="1.6" marker-end="url(#w1)"/>
+  <text x="436" y="230" text-anchor="middle" font-size="10.5" fill="#15803d">引用改指新数组</text>
+
+  <text x="674" y="206" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#9a3412">新数组 newArray</text>
+  <rect x="560" y="216" width="60" height="44" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="590" y="244" text-anchor="middle" font-size="13" fill="#7c2d12">a</text>
+  <rect x="626" y="216" width="60" height="44" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="656" y="244" text-anchor="middle" font-size="13" fill="#7c2d12">b</text>
+  <rect x="692" y="216" width="60" height="44" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="722" y="244" text-anchor="middle" font-size="13" fill="#7c2d12">c</text>
+  <rect x="758" y="216" width="60" height="44" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="788" y="244" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">d</text>
+
+  <text x="216" y="288" text-anchor="middle" font-size="10.5" fill="#64748b">遍历期间看不到 d</text>
+  <text x="674" y="288" text-anchor="middle" font-size="10.5" fill="#64748b">d 只存在于这里</text>
+
+  <text x="40" y="330" font-size="11.5" fill="#166534">⑤ 读线程：iterator 创建时拿住旧数组引用 → array[index] 直接取值，全程无锁、无 CAS、不抛异常。</text>
+  <text x="40" y="356" font-size="11.5" fill="#dc2626">对照 ArrayList：遍历中 add → modCount 变 → ConcurrentModificationException（fail-fast）。</text>
+
+  <rect x="20" y="384" width="960" height="110" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="36" y="410" font-size="11.5" fill="#0f172a">⭐ 判据：读 : 写 ≥ 极高（几乎不写）且集合不大且需要「遍历快照」→ 才用它（监听器列表 / 事件订阅者 / 配置白名单）。</text>
+  <text x="36" y="438" font-size="11.5" fill="#0f172a">⚠️ 实测 4 线程各 add 5 万次：CopyOnWriteArrayList 10841.8 ms vs synchronizedList 28.1 ms —— 慢约 386 倍。</text>
+  <text x="36" y="466" font-size="11.5" fill="#64748b">size 涨到 20 万时每次 add 要复制 20 万个引用；别拿它当队列（add+remove(0) 是 O(n) 复制），队列用 BlockingQueue。</text>
+</svg>

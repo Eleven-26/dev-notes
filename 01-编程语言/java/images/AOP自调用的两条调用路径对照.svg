@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">AOP 自调用失效：经过代理与不经过代理的两条路径</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">实验 2 实测：从代理调 create() 后拦截次数只 +1，拦的是 create 本身——create 内部的 this.inner() 完全没经过代理</text>
+
+  <rect x="40" y="104" width="200" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="140" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">外部调用方</text>
+  <text x="140" y="148" text-anchor="middle" font-size="10.5" fill="#166534">调用代理的 create()</text>
+  <text x="140" y="166" text-anchor="middle" font-size="10.5" fill="#166534">注入拿到的是代理对象</text>
+
+  <line x1="240" y1="142" x2="278" y2="142" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="280" y="104" width="200" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="380" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">代理对象</text>
+  <text x="380" y="148" text-anchor="middle" font-size="10.5" fill="#166534">JDK 的 $Proxy0 或</text>
+  <text x="380" y="166" text-anchor="middle" font-size="10.5" fill="#166534">CGLIB 的 $$SpringCGLIB$$0</text>
+
+  <line x1="480" y1="142" x2="518" y2="142" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="520" y="104" width="200" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="620" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">切面链</text>
+  <text x="620" y="148" text-anchor="middle" font-size="10.5" fill="#166534">拦截到 create</text>
+  <text x="620" y="166" text-anchor="middle" font-size="10.5" fill="#166534">✅ 这次切面生效</text>
+
+  <line x1="720" y1="142" x2="758" y2="142" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="760" y="104" width="200" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="860" y="128" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">目标对象.create()</text>
+  <text x="860" y="148" text-anchor="middle" font-size="10.5" fill="#166534">进入方法体</text>
+  <text x="860" y="166" text-anchor="middle" font-size="10.5" fill="#166534">执行到 this.inner()</text>
+
+  <line x1="860" y1="180" x2="860" y2="208" stroke="#dc2626" stroke-width="1.6" marker-end="url(#a3)"/>
+
+  <rect x="760" y="212" width="200" height="76" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="860" y="236" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">this.inner()</text>
+  <text x="860" y="256" text-anchor="middle" font-size="10.5" fill="#991b1b">this 是目标对象自己</text>
+  <text x="860" y="274" text-anchor="middle" font-size="10.5" fill="#991b1b">不是代理对象</text>
+
+  <line x1="758" y1="250" x2="722" y2="250" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="520" y="212" width="200" height="76" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="620" y="236" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">目标对象.inner()</text>
+  <text x="620" y="256" text-anchor="middle" font-size="10.5" fill="#991b1b">一次普通 Java 方法调用</text>
+  <text x="620" y="274" text-anchor="middle" font-size="10.5" fill="#991b1b">方法执行了，但没被拦截</text>
+
+  <line x1="518" y1="250" x2="482" y2="250" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="280" y="212" width="200" height="76" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="380" y="236" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">❌ 绕过了代理</text>
+  <text x="380" y="256" text-anchor="middle" font-size="10.5" fill="#991b1b">切面链不在调用路径上</text>
+  <text x="380" y="274" text-anchor="middle" font-size="10.5" fill="#991b1b">注解因此静默失效</text>
+
+  <line x1="278" y1="250" x2="242" y2="250" stroke="#64748b" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="40" y="212" width="200" height="76" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="140" y="236" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">实验 2 读数</text>
+  <text x="140" y="256" text-anchor="middle" font-size="10.5" fill="#991b1b">inner() 被调用 2 次</text>
+  <text x="140" y="274" text-anchor="middle" font-size="10.5" fill="#991b1b">代理拦截只发生在外部调用</text>
+
+  <rect x="40" y="330" width="920" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="352" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">✅ 对照：从外部直接调 inner() → 代理 → 切面链 → 目标.inner()，切面生效（detail() 那次计数 = 1）</text>
+  <text x="500" y="374" text-anchor="middle" font-size="11" fill="#166534">关键是调用有没有「经过代理对象」，而不是方法有没有执行</text>
+
+  <rect x="40" y="414" width="440" height="96" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="260" y="438" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#854d0e">自调用时静默失效的注解</text>
+  <text x="260" y="460" text-anchor="middle" font-size="11" fill="#b45309">@Transactional 事务不生效（最危险）</text>
+  <text x="260" y="480" text-anchor="middle" font-size="11" fill="#b45309">@Async 变同步执行 · @Cacheable 缓存不生效</text>
+  <text x="260" y="500" text-anchor="middle" font-size="10.5" fill="#b45309">判据：同类方法 A 调 B 且 B 上有注解，就要怀疑失效</text>
+
+  <rect x="520" y="414" width="440" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="740" y="438" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">三种解法</text>
+  <text x="740" y="460" text-anchor="middle" font-size="11" fill="#1d4ed8">① 把 B 拆到另一个 Bean（让调用跨对象）</text>
+  <text x="740" y="480" text-anchor="middle" font-size="11" fill="#1d4ed8">② 注入自己：self.inner()</text>
+  <text x="740" y="500" text-anchor="middle" font-size="10.5" fill="#1d4ed8">③ AopContext.currentProxy() 需开 exposeProxy = true</text>
+
+  <text x="26" y="540" font-size="12.5" fill="#334155">⭐ 例外：@Scheduled 不经过代理链（ScheduledAnnotationBeanPostProcessor 直接注册反射调用），没有自调用问题——但多副本会各跑一次</text>
+</svg>

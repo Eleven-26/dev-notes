@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 662" width="1000" height="662" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="q1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="q2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="q3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c3aed"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">AQS 获取锁的两段式：tryAcquire → 入队 → 自旋 → park</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先自旋试几次、不行才 park 让出 CPU；被唤醒后回到 CAS 重试（非公平模式，手写 Mutex 同构）</text>
+
+  <rect x="150" y="88" width="300" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="300" y="110" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">acquire(1)</text>
+  <text x="300" y="131" text-anchor="middle" font-size="10.5" fill="#1d4ed8">lock() 进来尝试独占</text>
+
+  <rect x="150" y="160" width="300" height="56" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="300" y="182" text-anchor="middle" font-size="12" fill="#0f172a">tryAcquire：CAS state 0→1 ？</text>
+  <text x="300" y="203" text-anchor="middle" font-size="10.5" fill="#64748b">compareAndSetState（不用 synchronized）</text>
+
+  <rect x="150" y="232" width="300" height="56" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="300" y="254" text-anchor="middle" font-size="12" fill="#0f172a">owner 是自己？（可重入）</text>
+  <text x="300" y="275" text-anchor="middle" font-size="10.5" fill="#64748b">holdCount 从 1 加到 2</text>
+
+  <rect x="150" y="304" width="300" height="56" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="300" y="326" text-anchor="middle" font-size="12" fill="#7c2d12">抢不到 → 包成 Node 入队尾</text>
+  <text x="300" y="347" text-anchor="middle" font-size="10.5" fill="#9a3412">tail 后面接新节点</text>
+
+  <rect x="150" y="376" width="300" height="56" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="300" y="398" text-anchor="middle" font-size="12" fill="#0f172a">前驱是 head 且能拿到？</text>
+  <text x="300" y="419" text-anchor="middle" font-size="10.5" fill="#64748b">acquireQueued 里自旋试几次</text>
+
+  <rect x="150" y="448" width="300" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="300" y="470" text-anchor="middle" font-size="12" fill="#7f1d1d">仍失败 → LockSupport.park()</text>
+  <text x="300" y="491" text-anchor="middle" font-size="10.5" fill="#b91c1c">让出 CPU，不再空耗</text>
+
+  <rect x="620" y="160" width="300" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="770" y="182" text-anchor="middle" font-size="12" fill="#14532d">setOwner(自己) · 拿到锁</text>
+  <text x="770" y="203" text-anchor="middle" font-size="10.5" fill="#166534">直接返回去跑临界区</text>
+  <rect x="620" y="232" width="300" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="770" y="254" text-anchor="middle" font-size="12" fill="#1e3a8a">state +1（重入计数）</text>
+  <text x="770" y="275" text-anchor="middle" font-size="10.5" fill="#1d4ed8">unlock 减到 0 才真释放</text>
+  <rect x="620" y="376" width="300" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="770" y="398" text-anchor="middle" font-size="12" fill="#14532d">setHead · 出队继续跑</text>
+  <text x="770" y="419" text-anchor="middle" font-size="10.5" fill="#166534">轮到自己了</text>
+
+  <line x1="300" y1="144" x2="300" y2="160" stroke="#334155" stroke-width="1.5" marker-end="url(#q1)"/>
+  <line x1="300" y1="216" x2="300" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#q1)"/>
+  <text x="312" y="228" font-size="10.5" fill="#dc2626">否</text>
+  <line x1="300" y1="288" x2="300" y2="304" stroke="#334155" stroke-width="1.5" marker-end="url(#q1)"/>
+  <text x="312" y="300" font-size="10.5" fill="#dc2626">否</text>
+  <line x1="300" y1="360" x2="300" y2="376" stroke="#334155" stroke-width="1.5" marker-end="url(#q1)"/>
+  <line x1="300" y1="432" x2="300" y2="448" stroke="#334155" stroke-width="1.5" marker-end="url(#q1)"/>
+  <text x="312" y="444" font-size="10.5" fill="#dc2626">否</text>
+
+  <line x1="450" y1="188" x2="620" y2="188" stroke="#16a34a" stroke-width="1.5" marker-end="url(#q2)"/>
+  <text x="535" y="180" text-anchor="middle" font-size="10.5" fill="#15803d">是</text>
+  <line x1="450" y1="260" x2="620" y2="260" stroke="#16a34a" stroke-width="1.5" marker-end="url(#q2)"/>
+  <text x="535" y="252" text-anchor="middle" font-size="10.5" fill="#15803d">是</text>
+  <line x1="450" y1="404" x2="620" y2="404" stroke="#16a34a" stroke-width="1.5" marker-end="url(#q2)"/>
+  <text x="535" y="396" text-anchor="middle" font-size="10.5" fill="#15803d">成功</text>
+
+  <path d="M150 476 L70 476 L70 188 L150 188" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#q3)"/>
+  <text x="60" y="332" font-size="10.5" fill="#7c3aed" transform="rotate(-90 60 332)" text-anchor="middle">唤醒 · 重试</text>
+
+  <rect x="20" y="524" width="960" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="550" font-size="11.5" fill="#334155">⭐ 两段式（4.2）：先自旋试几次，不行才 park 让出 CPU —— 既不盲目重试、也不无限自旋空耗 CPU。</text>
+  <text x="36" y="576" font-size="11.5" fill="#7c3aed">紫色虚线：前驱 release 把 state 归 0、unpark 唤醒后继，被唤醒者回到 CAS 重试。</text>
+  <text x="36" y="602" font-size="11.5" fill="#334155">⚠️ 公平锁在 tryAcquire 多一步 hasQueuedPredecessors()：有人排队就让路，几乎每步进内核 → 实测 24 ms vs 7369 ms（约 300~370 倍）。</text>
+  <text x="36" y="624" font-size="11.5" fill="#334155">非公平锁允许新到达者先 CAS 抢一次（barging 插队），抢到就不进内核 —— 这就是它吞吐量高、synchronized 默认如此的原因。</text>
+</svg>

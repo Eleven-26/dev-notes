@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">退出方式如何决定最后一批 span 的命运</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">流程图；BatchSpanProcessor 先攒内存队列、攒够一批或超时才发，三分支结论出自第八节表</text>
+
+  <defs>
+    <marker id="c1" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="c2" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="360" y="90" width="280" height="48" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="119" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">JVM 退出</text>
+
+  <g font-size="12">
+    <rect x="50" y="180" width="260" height="46" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="180" y="208" fill="#0f172a" text-anchor="middle">SIGTERM（K8s 删 Pod / docker stop）</text>
+
+    <rect x="370" y="180" width="260" height="46" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="500" y="208" fill="#0f172a" text-anchor="middle">kill -9 / SIGKILL</text>
+
+    <rect x="690" y="180" width="260" height="46" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+    <text x="820" y="208" fill="#0f172a" text-anchor="middle">OOMKilled</text>
+  </g>
+
+  <g font-size="12">
+    <rect x="50" y="266" width="260" height="52" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+    <text x="180" y="288" fill="#14532d" text-anchor="middle">✅ 触发 ShutdownHook</text>
+    <text x="180" y="307" fill="#14532d" text-anchor="middle">Agent 与 SDK 都注册了它</text>
+
+    <rect x="370" y="266" width="260" height="52" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="500" y="288" fill="#7f1d1d" text-anchor="middle">❌ 不触发任何 hook</text>
+    <text x="500" y="307" fill="#7f1d1d" text-anchor="middle">进程当场死亡</text>
+
+    <rect x="690" y="266" width="260" height="52" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="820" y="288" fill="#7f1d1d" text-anchor="middle">❌ 同样不触发</text>
+    <text x="820" y="307" fill="#7f1d1d" text-anchor="middle">信号根本没到 JVM</text>
+  </g>
+
+  <g font-size="12">
+    <rect x="50" y="360" width="260" height="52" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+    <text x="180" y="382" fill="#14532d" text-anchor="middle">导出队列 flush</text>
+    <text x="180" y="401" fill="#14532d" text-anchor="middle">内存队列里那一批发出去</text>
+
+    <rect x="370" y="360" width="580" height="52" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="660" y="382" fill="#7f1d1d" text-anchor="middle">最后一批 span 直接丢失</text>
+    <text x="660" y="401" fill="#7f1d1d" text-anchor="middle">OOMKilled 还会连带丢掉故障时刻最关键的数据</text>
+  </g>
+
+  <rect x="50" y="452" width="260" height="46" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="180" y="480" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">数据完整</text>
+
+  <rect x="50" y="538" width="900" height="76" rx="10" fill="#f8fafc" stroke="#64748b"/>
+  <text x="500" y="562" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">flush 生效的两个必要条件</text>
+  <text x="500" y="584" font-size="12" fill="#334155" text-anchor="middle">① PID 1 要能收到 SIGTERM：ENTRYPOINT 走 sh -c 时必须 exec java，否则信号只打到 shell</text>
+  <text x="500" y="604" font-size="12" fill="#334155" text-anchor="middle">② terminationGracePeriodSeconds 大于「HTTP 请求排空 + span flush」的总时间</text>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="500" y1="138" x2="180" y2="180" marker-end="url(#c1)"/>
+    <line x1="500" y1="138" x2="500" y2="180" marker-end="url(#c1)"/>
+    <line x1="500" y1="138" x2="820" y2="180" marker-end="url(#c1)"/>
+    <line x1="180" y1="226" x2="180" y2="266" marker-end="url(#c1)"/>
+    <line x1="180" y1="318" x2="180" y2="360" marker-end="url(#c1)"/>
+    <line x1="180" y1="412" x2="180" y2="452" marker-end="url(#c1)"/>
+  </g>
+  <g stroke="#dc2626" stroke-width="1.6">
+    <line x1="500" y1="226" x2="500" y2="266" marker-end="url(#c2)"/>
+    <line x1="500" y1="318" x2="500" y2="360" marker-end="url(#c2)"/>
+    <line x1="820" y1="226" x2="820" y2="266" marker-end="url(#c2)"/>
+    <line x1="820" y1="318" x2="700" y2="360" marker-end="url(#c2)"/>
+  </g>
+</svg>

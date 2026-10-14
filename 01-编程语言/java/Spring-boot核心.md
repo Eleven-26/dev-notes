@@ -113,6 +113,10 @@ try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationCon
 
 ⚠️ **能解开 ≠ 应该这么写**：循环依赖本身是**设计问题**（两个类互相依赖说明边界没划清）。Spring 2.6+ 默认已经**禁止**循环依赖（`spring.main.allow-circular-references=false`），要靠配置显式打开 —— 这正是官方把它当反模式的态度。
 
+![三级缓存解开循环依赖的数据流转：实例化 A 后把工厂放进 ③，建 B 时命中循环，调工厂取 A 的早期引用放入 ②，B 与 A 最终都移入 ①](images/三级缓存解开循环依赖的数据流转.svg)
+
+**图怎么读**：左列三个缓存（①②③）与中列流程里标同色的两步互相呼应——流程第 ⑤ 步「调工厂」消耗的正是 ③ 里的工厂；右列红框说明构造器注入为什么走不进这条流。
+
 ---
 
 ## 三、Bean 的生命周期与作用域
@@ -141,6 +145,10 @@ try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationCon
 ⭐ **`@PostConstruct` 与 `afterPropertiesSet()` 语义等价**，但前者是注解、不用让类去实现 Spring 接口（解耦更好）—— **推荐注解**。同理销毁阶段推荐 `@PreDestroy`。
 
 ⚠️ **`@PreDestroy` 的执行条件**：Bean 必须是容器管理的**单例**，且容器要正常 `close()`（`try-with-resources` 或注册 shutdown hook）。**`prototype` 作用域的 Bean 容器不管销毁**，`@PreDestroy` 不会执行。
+
+![Bean 生命周期八阶段回调顺序：实例化→属性填充→三种初始化回调→使用中→两种销毁回调，U 形走向](images/Spring的Bean生命周期八阶段回调.svg)
+
+**图怎么读**：第一行从左到右、第二行从右到左走完 ①→⑧；橙色三个初始化回调与 ①② 的相对顺序就是实验 2 打印的顺序，红色两个销毁回调只在「容器管理的单例 + 容器正常 close」时执行。
 
 ### 3.2 作用域（实测）
 
@@ -215,6 +223,10 @@ try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationCon
 **三种解法**：① 拆到另一个 Bean（让调用跨对象）；② 注入自己（`@Autowired private MyService self;` 然后 `self.inner()`）；③ 用 `AopContext.currentProxy()`（需开 `exposeProxy = true`）。
 
 ⭐ **判断口径**：只要看到「一个类的方法 A 调用了同类的方法 B，而 B 上有注解」，就要怀疑失效 —— **除非那个注解不依赖代理**（比如 `@Scheduled` 由定时器直接反射调用，不受影响）。
+
+![AOP 自调用失效的两条调用路径：上行绿色「外部调用→代理→切面链→目标」生效，下行红色「this.inner() 直接落在目标对象」绕过代理](images/AOP自调用的两条调用路径对照.svg)
+
+**图怎么读**：对照正文里那张两行的文字版调用链——同一句 `inner()`，入口在代理（绿）就被拦，入口在方法体的 `this`（红）就不被拦；实验 2 的「计数只 +1」正是两条路径各走一次的读数。
 
 ### 4.3 `@Configuration` 的类也被 CGLIB 增强（实测）
 

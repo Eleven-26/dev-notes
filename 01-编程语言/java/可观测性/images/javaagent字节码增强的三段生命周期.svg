@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">SkyWalking javaagent 在 JVM 内的三段生命周期</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">流程图；由第一节 premain 原理推出「装插件拷 jar、一键摘除、kill -9 丢数据」</text>
+
+  <defs>
+    <marker id="s1" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="s2" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <!-- 三列标题 -->
+  <rect x="50" y="84" width="270" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="185" y="104" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">启动期 premain（main 之前）</text>
+  <rect x="370" y="84" width="270" height="30" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="505" y="104" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">类加载期（加载时才织入）</text>
+  <rect x="690" y="84" width="260" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="820" y="104" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">运行期与退出</text>
+
+  <g font-size="12">
+    <rect x="50" y="130" width="270" height="66" rx="6" fill="#f8fafc" stroke="#2563eb"/>
+    <text x="185" y="152" fill="#0f172a" text-anchor="middle">java -javaagent 挂上后</text>
+    <text x="185" y="171" font-size="11" fill="#334155" text-anchor="middle">premain(agentArgs, Instrumentation)</text>
+    <text x="185" y="190" fill="#64748b" text-anchor="middle">解析 agent.config / 环境变量</text>
+
+    <rect x="50" y="216" width="270" height="66" rx="6" fill="#f8fafc" stroke="#2563eb"/>
+    <text x="185" y="238" fill="#0f172a" text-anchor="middle">PluginBootstrap 扫描插件目录</text>
+    <text x="185" y="257" fill="#334155" text-anchor="middle">plugins/ + bootstrap-plugins/</text>
+    <text x="185" y="276" fill="#64748b" text-anchor="middle">读各 jar 的 skywalking-plugin.def</text>
+
+    <rect x="50" y="302" width="270" height="66" rx="6" fill="#f8fafc" stroke="#2563eb"/>
+    <text x="185" y="324" fill="#0f172a" text-anchor="middle">构建 PluginFinder</text>
+    <text x="185" y="343" fill="#334155" text-anchor="middle">插件定义 + 拦截器 + witness 类</text>
+    <text x="185" y="362" fill="#64748b" text-anchor="middle">命中 witness 才织入</text>
+
+    <rect x="50" y="388" width="270" height="66" rx="6" fill="#f8fafc" stroke="#2563eb"/>
+    <text x="185" y="410" fill="#0f172a" text-anchor="middle">建立到 OAP 的 gRPC 通道</text>
+    <text x="185" y="429" fill="#334155" text-anchor="middle">注册服务与实例（11800）</text>
+    <text x="185" y="448" fill="#64748b" text-anchor="middle">注册 sw8 头传播</text>
+
+    <rect x="50" y="474" width="270" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="185" y="496" fill="#1e3a8a" text-anchor="middle">addTransformer(...)</text>
+    <text x="185" y="516" fill="#1e3a8a" text-anchor="middle">注册字节码转换器</text>
+
+    <rect x="370" y="260" width="270" height="90" rx="6" fill="#fef3c7" stroke="#b45309"/>
+    <text x="505" y="286" fill="#854d0e" text-anchor="middle">transformer 匹配目标类</text>
+    <text x="505" y="308" fill="#854d0e" text-anchor="middle">ByteBuddy 在方法前 / 后 /</text>
+    <text x="505" y="330" fill="#854d0e" text-anchor="middle">异常分支织入拦截器</text>
+
+    <rect x="690" y="150" width="260" height="110" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="820" y="176" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">运行期</text>
+    <text x="820" y="199" fill="#14532d" text-anchor="middle">拦截器创建 span</text>
+    <text x="820" y="219" fill="#14532d" text-anchor="middle">Entry / Exit / Local</text>
+    <text x="820" y="239" fill="#14532d" text-anchor="middle">写入 DataCarrier 队列</text>
+
+    <rect x="690" y="290" width="260" height="80" rx="6" fill="#f8fafc" stroke="#16a34a"/>
+    <text x="820" y="314" fill="#14532d" text-anchor="middle">消费线程批量 gRPC</text>
+    <text x="820" y="335" fill="#14532d" text-anchor="middle">上报 OAP</text>
+    <text x="820" y="356" fill="#64748b" text-anchor="middle">日志上报复用同一条通道</text>
+
+    <rect x="690" y="400" width="260" height="92" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="820" y="424" font-size="13" font-weight="bold" fill="#7c2d12" text-anchor="middle">JVM 退出</text>
+    <text x="820" y="446" fill="#7c2d12" text-anchor="middle">ShutdownHook：先停消费</text>
+    <text x="820" y="466" fill="#7c2d12" text-anchor="middle">线程并 flush 队列</text>
+    <text x="820" y="486" fill="#7c2d12" text-anchor="middle">再关 gRPC 通道</text>
+  </g>
+
+  <g stroke="#334155" stroke-width="1.6">
+    <line x1="185" y1="196" x2="185" y2="216" marker-end="url(#s1)"/>
+    <line x1="185" y1="282" x2="185" y2="302" marker-end="url(#s1)"/>
+    <line x1="185" y1="368" x2="185" y2="388" marker-end="url(#s1)"/>
+    <line x1="185" y1="454" x2="185" y2="474" marker-end="url(#s1)"/>
+  </g>
+  <line x1="320" y1="504" x2="370" y2="350" stroke="#ea580c" stroke-width="1.7" marker-end="url(#s2)"/>
+  <text x="380" y="430" font-size="11" fill="#b45309" text-anchor="start">之后加载的类</text>
+  <text x="380" y="447" font-size="11" fill="#b45309" text-anchor="start">才被织入</text>
+  <line x1="640" y1="280" x2="690" y2="260" stroke="#334155" stroke-width="1.6" marker-end="url(#s1)"/>
+
+  <text x="500" y="568" font-size="12" fill="#64748b" text-anchor="middle">⚠️ agent 挂晚了：transformer 注册之前已加载的类不会再被处理，那部分 span 静默缺失</text>
+  <text x="500" y="592" font-size="12" fill="#64748b" text-anchor="middle">插件是 jar：拷进 plugins/ 即生效、删掉即失效，也可用 plugin.exclude_plugins 排除 —— 都不用重编译业务代码</text>
+</svg>
