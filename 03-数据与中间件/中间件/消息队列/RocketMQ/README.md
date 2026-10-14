@@ -58,7 +58,7 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 | 语言 | 篇 | 内容 |
 | --- | --- | --- |
 | Java | [接入RocketMQ.md](../../../../01-编程语言/java/工程实践/接入RocketMQ.md) | 原生 `DefaultMQProducer` / `DefaultMQPushConsumer`、顺序 / 延迟 / 事务三种消息的完整写法、Spring Boot 集成 |
-| Go | [接入RocketMQ.md](../../../../01-编程语言/go/工程实践/接入RocketMQ.md) | 两种客户端怎么选（`rocketmq-client-go/v2` / `rocketmq-clients/golang/v5`）、生产者与消费者完整示例、顺序与延迟消息 |
+| Go | [接入RocketMQ.md](../../../../01-编程语言/go/工程实践/接入RocketMQ.md) | 服务侧**接入手册**（11 节）：两种客户端怎么选、前提 / 初始化 / ⭐ 单例边界 / ⭐ 初始化顺序 / `sync.Once` 封装 / 各场景调用 / ⭐ 属性 Inject-Extract 传播 / ⭐ 优雅退出 / 验证与排障 |
 
 ### 依赖关系
 
