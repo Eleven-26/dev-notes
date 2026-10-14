@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1094" width="1000" height="1094" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ta" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#475569"/>
+    </marker>
+    <marker id="tk" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#0284c7"/>
+    </marker>
+    <marker id="tg" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="to" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="tr" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="1094" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">TCC 跨行转账的四条路径</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">Try 冻结 / Confirm 消费 / Cancel 解冻；蓝=Try，绿=Confirm，橙=Cancel，红=确定的失败</text>
+
+  <rect x="40" y="84" width="920" height="236" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="60" y="108" font-size="13.5" font-weight="bold" fill="#0f172a">① 成功路径</text>
+  <text x="150" y="130" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 发起方</text>
+  <text x="400" y="130" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">DTM · TM</text>
+  <text x="660" y="130" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">转出服务 A · RM</text>
+  <text x="880" y="130" font-size="12" font-weight="bold" fill="#3730a3" text-anchor="middle">转入服务 B · RM</text>
+  <line x1="150" y1="140" x2="150" y2="296" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="140" x2="400" y2="296" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="140" x2="660" y2="296" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="880" y1="140" x2="880" y2="296" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="156" y1="164" x2="394" y2="164" stroke="#475569" stroke-width="1.5" marker-end="url(#ta)"/>
+  <text x="275" y="158" font-size="11" fill="#334155" text-anchor="middle">① TccGlobalTransaction(gid)</text>
+  <line x1="400" y1="188" x2="654" y2="188" stroke="#0284c7" stroke-width="1.5" marker-end="url(#tk)"/>
+  <text x="527" y="182" font-size="11" fill="#0369a1" text-anchor="middle">② TransOutTry：balance −30 / 冻结 +30</text>
+  <line x1="400" y1="212" x2="874" y2="212" stroke="#0284c7" stroke-width="1.5" marker-end="url(#tk)"/>
+  <text x="637" y="206" font-size="11" fill="#0369a1" text-anchor="middle">③ TransInTry：校验可入账</text>
+  <line x1="400" y1="236" x2="874" y2="236" stroke="#16a34a" stroke-width="1.5" marker-end="url(#tg)"/>
+  <text x="637" y="230" font-size="11" fill="#15803d" text-anchor="middle">④ TransInConfirm：B balance +30</text>
+  <line x1="400" y1="260" x2="654" y2="260" stroke="#16a34a" stroke-width="1.5" marker-end="url(#tg)"/>
+  <text x="527" y="254" font-size="11" fill="#15803d" text-anchor="middle">⑤ TransOutConfirm：冻结 −30（消费）</text>
+  <text x="60" y="310" font-size="11.5" fill="#0f172a">结果：A 9970 / 冻结 0，B 10030；dtm.trans_global.status = succeed（实测 Confirm 顺序为 02 → 01）</text>
+
+  <rect x="40" y="334" width="920" height="236" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="60" y="358" font-size="13.5" font-weight="bold" fill="#0f172a">② 失败回滚路径（TransInTry 返回 409）</text>
+  <text x="150" y="380" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 发起方</text>
+  <text x="400" y="380" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">DTM · TM</text>
+  <text x="660" y="380" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">转出服务 A · RM</text>
+  <text x="880" y="380" font-size="12" font-weight="bold" fill="#3730a3" text-anchor="middle">转入服务 B · RM</text>
+  <line x1="150" y1="390" x2="150" y2="546" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="390" x2="400" y2="546" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="390" x2="660" y2="546" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="880" y1="390" x2="880" y2="546" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="156" y1="414" x2="394" y2="414" stroke="#475569" stroke-width="1.5" marker-end="url(#ta)"/>
+  <text x="275" y="408" font-size="11" fill="#334155" text-anchor="middle">① TccGlobalTransaction(gid)</text>
+  <line x1="400" y1="438" x2="654" y2="438" stroke="#0284c7" stroke-width="1.5" marker-end="url(#tk)"/>
+  <text x="527" y="432" font-size="11" fill="#0369a1" text-anchor="middle">② TransOutTry：A 冻结 30</text>
+  <line x1="400" y1="462" x2="874" y2="462" stroke="#0284c7" stroke-width="1.5" marker-end="url(#tk)"/>
+  <text x="637" y="456" font-size="11" fill="#0369a1" text-anchor="middle">③ TransInTry</text>
+  <line x1="880" y1="486" x2="406" y2="486" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#tr)"/>
+  <text x="643" y="500" font-size="11" fill="#b91c1c" text-anchor="middle">409 确定的失败</text>
+  <line x1="400" y1="510" x2="874" y2="510" stroke="#ea580c" stroke-width="1.5" marker-end="url(#to)"/>
+  <text x="637" y="504" font-size="11" fill="#c2410c" text-anchor="middle">④ TransInCancel：空补偿 → 跳过</text>
+  <line x1="400" y1="534" x2="654" y2="534" stroke="#ea580c" stroke-width="1.5" marker-end="url(#to)"/>
+  <text x="527" y="528" font-size="11" fill="#c2410c" text-anchor="middle">⑤ TransOutCancel：A 解冻 +30</text>
+  <text x="60" y="560" font-size="11.5" fill="#0f172a">结果：A 10000 / 冻结 0（完全复原），B 保持 10000；status = failed</text>
+
+  <rect x="40" y="584" width="920" height="236" fill="#fff7ed" stroke="#ea580c" stroke-width="1" rx="10"/>
+  <text x="60" y="608" font-size="13.5" font-weight="bold" fill="#0f172a">③ 空补偿路径（Cancel 先到，Try 从未执行）</text>
+  <text x="150" y="630" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 发起方</text>
+  <text x="400" y="630" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">DTM · TM</text>
+  <text x="660" y="630" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">转出服务 A · RM</text>
+  <text x="880" y="630" font-size="12" font-weight="bold" fill="#3730a3" text-anchor="middle">转入服务 B · RM</text>
+  <line x1="150" y1="640" x2="150" y2="796" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="640" x2="400" y2="796" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="640" x2="660" y2="796" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="880" y1="640" x2="880" y2="796" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="664" x2="654" y2="664" stroke="#ea580c" stroke-width="1.5" marker-end="url(#to)"/>
+  <text x="527" y="658" font-size="11" fill="#c2410c" text-anchor="middle">① TransOutCancel 先到（Try 尚未执行）</text>
+  <line x1="400" y1="688" x2="654" y2="688" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="527" y="682" font-size="11" fill="#c2410c" text-anchor="middle">② 补插 try 键 → 插入成功</text>
+  <line x1="660" y1="712" x2="406" y2="712" stroke="#ea580c" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#to)"/>
+  <text x="533" y="726" font-size="11" fill="#c2410c" text-anchor="middle">判为空补偿，提交事务、返回成功</text>
+  <line x1="400" y1="752" x2="654" y2="752" stroke="#0284c7" stroke-width="1.5" marker-end="url(#tk)"/>
+  <text x="527" y="746" font-size="11" fill="#0369a1" text-anchor="middle">③ Try 稍后到达</text>
+  <line x1="660" y1="776" x2="406" y2="776" stroke="#0284c7" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#tk)"/>
+  <text x="533" y="790" font-size="11" fill="#0369a1" text-anchor="middle">try 键已被代插 → 冲突，丢弃</text>
+  <text x="60" y="810" font-size="11.5" fill="#0f172a">要点：业务里的解冻 SQL 一次都没执行——空补偿与防悬挂发生在同一条判定链上</text>
+
+  <rect x="40" y="834" width="920" height="236" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="60" y="858" font-size="13.5" font-weight="bold" fill="#0f172a">④ 悬挂路径（Cancel 已完成，Try 才到）</text>
+  <text x="150" y="880" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 发起方</text>
+  <text x="400" y="880" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">DTM · TM</text>
+  <text x="660" y="880" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">转出服务 A · RM</text>
+  <text x="880" y="880" font-size="12" font-weight="bold" fill="#3730a3" text-anchor="middle">转入服务 B · RM</text>
+  <line x1="150" y1="890" x2="150" y2="1046" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="890" x2="400" y2="1046" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="890" x2="660" y2="1046" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="880" y1="890" x2="880" y2="1046" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="914" x2="406" y2="914" stroke="#ea580c" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#to)"/>
+  <text x="533" y="928" font-size="11" fill="#c2410c" text-anchor="middle">① Cancel 已完成（try 键被代插）</text>
+  <line x1="400" y1="950" x2="654" y2="950" stroke="#0284c7" stroke-width="1.5" marker-end="url(#tk)"/>
+  <text x="527" y="944" font-size="11" fill="#0369a1" text-anchor="middle">② 迟到的 TransOutTry 到达</text>
+  <line x1="400" y1="974" x2="654" y2="974" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="527" y="968" font-size="11" fill="#0369a1" text-anchor="middle">③ 尝试插入 try 键 → 唯一键冲突</text>
+  <line x1="660" y1="998" x2="406" y2="998" stroke="#0284c7" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#tk)"/>
+  <text x="533" y="1012" font-size="11" fill="#0369a1" text-anchor="middle">判定为悬挂：返回成功但不执行业务</text>
+  <text x="60" y="1044" font-size="11.5" fill="#0f172a">要点：冻结额不会被重新产生——已回滚的分支不会被迟到的 Try 重新拉起</text>
+</svg>

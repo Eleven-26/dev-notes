@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 566" width="1000" height="566" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ca" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#0284c7"/>
+    </marker>
+    <marker id="cg" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="co" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="566" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">trading_balance：把「扣款」拆成「冻结 + 消费」</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">A 转 B 30 元：转出账户在 Try / Confirm / Cancel 三个阶段的两个字段各是多少</text>
+
+  <text x="50" y="92" font-size="14" font-weight="bold" fill="#0f172a">① 转出账户 A 的三个状态</text>
+
+  <rect x="50" y="110" width="200" height="96" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4" rx="8"/>
+  <text x="150" y="136" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">初始</text>
+  <text x="150" y="162" font-size="12" fill="#0f172a" text-anchor="middle">balance = 10000</text>
+  <text x="150" y="184" font-size="12" fill="#0f172a" text-anchor="middle">trading_balance = 0</text>
+
+  <rect x="390" y="110" width="220" height="96" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4" rx="8"/>
+  <text x="500" y="136" font-size="13" font-weight="bold" fill="#0369a1" text-anchor="middle">Try 之后（冻结态）</text>
+  <text x="500" y="162" font-size="12" fill="#0f172a" text-anchor="middle">balance = 9970</text>
+  <text x="500" y="184" font-size="12" fill="#0f172a" text-anchor="middle">trading_balance = 30</text>
+
+  <rect x="740" y="110" width="210" height="96" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4" rx="8"/>
+  <text x="845" y="136" font-size="13" font-weight="bold" fill="#15803d" text-anchor="middle">Confirm 之后（已扣款）</text>
+  <text x="845" y="162" font-size="12" fill="#0f172a" text-anchor="middle">balance = 9970</text>
+  <text x="845" y="184" font-size="12" fill="#0f172a" text-anchor="middle">trading_balance = 0</text>
+
+  <line x1="252" y1="158" x2="384" y2="158" stroke="#0284c7" stroke-width="1.8" marker-end="url(#ca)"/>
+  <text x="318" y="146" font-size="11.5" fill="#0369a1" text-anchor="middle">Try</text>
+  <text x="318" y="196" font-size="10.5" fill="#64748b" text-anchor="middle">balance −30</text>
+  <text x="318" y="212" font-size="10.5" fill="#64748b" text-anchor="middle">冻结 +30</text>
+
+  <line x1="612" y1="158" x2="734" y2="158" stroke="#16a34a" stroke-width="1.8" marker-end="url(#cg)"/>
+  <text x="673" y="146" font-size="11.5" fill="#15803d" text-anchor="middle">Confirm</text>
+  <text x="673" y="196" font-size="10.5" fill="#64748b" text-anchor="middle">冻结 −30</text>
+  <text x="673" y="212" font-size="10.5" fill="#64748b" text-anchor="middle">（真正扣款）</text>
+
+  <path d="M500,208 C500,258 150,258 150,212" fill="none" stroke="#ea580c" stroke-width="1.6" marker-end="url(#co)"/>
+  <text x="330" y="248" font-size="11.5" fill="#c2410c" text-anchor="middle">Cancel：balance += 30，冻结 −= 30（解冻，完全复原）</text>
+
+  <text x="50" y="302" font-size="14" font-weight="bold" fill="#0f172a">② 同样一次「A 扣 30」，两种方案的中间态差别</text>
+
+  <rect x="50" y="318" width="440" height="128" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+  <text x="70" y="344" font-size="13" font-weight="bold" fill="#b91c1c">SAGA：中间态就是「真的扣了款」</text>
+  <text x="70" y="370" font-size="11.5" fill="#334155">正向操作直接改 balance：10000 → 9970，没有第二本账。</text>
+  <text x="70" y="394" font-size="11.5" fill="#334155">补偿成功才回到 10000；补偿慢或被卡住时，这个窗口无限长。</text>
+  <text x="70" y="418" font-size="11.5" fill="#334155">所以会出现「A 看到余额被扣减，B 却迟迟没收到钱」。</text>
+  <text x="70" y="440" font-size="11.5" fill="#b91c1c">中间态对终端用户可见，且没有「正在转账」这种说法。</text>
+
+  <rect x="510" y="318" width="440" height="128" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="530" y="344" font-size="13" font-weight="bold" fill="#15803d">TCC：中间态是「冻结」，扣款只发生在 Confirm</text>
+  <text x="530" y="370" font-size="11.5" fill="#334155">冻结额单独记在 trading_balance，业务可以表述为「转出中」。</text>
+  <text x="530" y="394" font-size="11.5" fill="#334155">Confirm 被设计为必然成功，因此扣款一定会落定，不留悬空窗口。</text>
+  <text x="530" y="418" font-size="11.5" fill="#334155">Cancel 复原、Confirm 消费，两条路都能把两本账做平。</text>
+  <text x="530" y="440" font-size="11.5" fill="#15803d">代价：账户表要多一个字段，接口从 1 个变 3 个。</text>
+
+  <rect x="50" y="462" width="900" height="84" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="70" y="488" font-size="13" font-weight="bold" fill="#0f172a">要点</text>
+  <text x="70" y="512" font-size="12" fill="#334155">trading_balance 的作用不是「多存一个数字」，而是把不可逆的「扣款」推后到 Confirm——Try 只做可撤销的冻结。</text>
+  <text x="70" y="534" font-size="12" fill="#334155">因此 Try 可以放心地做校验并失败回滚，而 Confirm / Cancel 必须幂等且最终成功，不允许返回「确定的失败」。</text>
+</svg>

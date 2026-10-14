@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1076" width="1000" height="1076" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sa" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#475569"/>
+    </marker>
+    <marker id="so" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="sg" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+      <path d="M0,0 L7,3.2 L0,6.4 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="1076" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">Saga 跨行转账的三条路径</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">A 转 B 30 元：正向 TransOut → TransIn；失败时按逆序补偿，补偿乱序交给子事务屏障</text>
+
+  <rect x="40" y="84" width="920" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="60" y="110" font-size="13.5" font-weight="bold" fill="#0f172a">① 成功路径</text>
+  <text x="150" y="132" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 发起方</text>
+  <text x="400" y="132" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">DTM · TM</text>
+  <text x="660" y="132" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">转出服务 A · RM</text>
+  <text x="880" y="132" font-size="12" font-weight="bold" fill="#3730a3" text-anchor="middle">转入服务 B · RM</text>
+  <line x1="150" y1="142" x2="150" y2="366" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="142" x2="400" y2="366" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="142" x2="660" y2="366" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="880" y1="142" x2="880" y2="366" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="156" y1="172" x2="394" y2="172" stroke="#475569" stroke-width="1.5" marker-end="url(#sa)"/>
+  <text x="275" y="166" font-size="11" fill="#334155" text-anchor="middle">① Submit(gid)</text>
+  <line x1="400" y1="198" x2="654" y2="198" stroke="#475569" stroke-width="1.5" marker-end="url(#sa)"/>
+  <text x="527" y="192" font-size="11" fill="#334155" text-anchor="middle">② TransOut：A −30</text>
+  <line x1="660" y1="224" x2="406" y2="224" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#sg)"/>
+  <text x="533" y="238" font-size="11" fill="#64748b" text-anchor="middle">200</text>
+  <line x1="400" y1="250" x2="874" y2="250" stroke="#475569" stroke-width="1.5" marker-end="url(#sa)"/>
+  <text x="637" y="244" font-size="11" fill="#334155" text-anchor="middle">③ TransIn：B +30</text>
+  <line x1="880" y1="276" x2="406" y2="276" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#sg)"/>
+  <text x="643" y="290" font-size="11" fill="#64748b" text-anchor="middle">200</text>
+  <line x1="400" y1="328" x2="156" y2="328" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#sg)"/>
+  <text x="278" y="322" font-size="11" fill="#64748b" text-anchor="middle">succeed</text>
+  <text x="60" y="378" font-size="11.5" fill="#0f172a">结果：A 10000 → 9970，B 10000 → 10030；dtm.trans_global.status = succeed</text>
+
+  <rect x="40" y="410" width="920" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="60" y="436" font-size="13.5" font-weight="bold" fill="#0f172a">② 失败回滚路径（TransIn 返回 409「确定的失败」）</text>
+  <text x="150" y="458" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 发起方</text>
+  <text x="400" y="458" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">DTM · TM</text>
+  <text x="660" y="458" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">转出服务 A · RM</text>
+  <text x="880" y="458" font-size="12" font-weight="bold" fill="#3730a3" text-anchor="middle">转入服务 B · RM</text>
+  <line x1="150" y1="468" x2="150" y2="692" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="468" x2="400" y2="692" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="468" x2="660" y2="692" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="880" y1="468" x2="880" y2="692" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="156" y1="498" x2="394" y2="498" stroke="#475569" stroke-width="1.5" marker-end="url(#sa)"/>
+  <text x="275" y="492" font-size="11" fill="#334155" text-anchor="middle">① Submit(gid)</text>
+  <line x1="400" y1="524" x2="654" y2="524" stroke="#475569" stroke-width="1.5" marker-end="url(#sa)"/>
+  <text x="527" y="518" font-size="11" fill="#334155" text-anchor="middle">② TransOut：A −30</text>
+  <line x1="660" y1="550" x2="406" y2="550" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#sg)"/>
+  <text x="533" y="564" font-size="11" fill="#64748b" text-anchor="middle">200</text>
+  <line x1="400" y1="576" x2="874" y2="576" stroke="#475569" stroke-width="1.5" marker-end="url(#sa)"/>
+  <text x="637" y="570" font-size="11" fill="#334155" text-anchor="middle">③ TransIn</text>
+  <line x1="880" y1="602" x2="406" y2="602" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#sg)"/>
+  <text x="643" y="616" font-size="11" fill="#b91c1c" text-anchor="middle">409 确定的失败</text>
+  <line x1="400" y1="628" x2="874" y2="628" stroke="#ea580c" stroke-width="1.5" marker-end="url(#so)"/>
+  <text x="637" y="622" font-size="11" fill="#c2410c" text-anchor="middle">④ TransInCompensate</text>
+  <line x1="880" y1="654" x2="406" y2="654" stroke="#ea580c" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#so)"/>
+  <text x="643" y="668" font-size="11" fill="#c2410c" text-anchor="middle">空补偿：正向键不存在 → 跳过</text>
+  <line x1="400" y1="680" x2="654" y2="680" stroke="#ea580c" stroke-width="1.5" marker-end="url(#so)"/>
+  <text x="527" y="674" font-size="11" fill="#c2410c" text-anchor="middle">⑤ TransOutCompensate：A +30</text>
+  <text x="60" y="704" font-size="11.5" fill="#0f172a">结果：A 9970 →（补偿 +30）10000，B 保持 10000；status = failed，rollback_reason 记录失败 URL</text>
+
+  <rect x="40" y="736" width="920" height="310" fill="#fff7ed" stroke="#ea580c" stroke-width="1" rx="10"/>
+  <text x="60" y="762" font-size="13.5" font-weight="bold" fill="#0f172a">③ 补偿乱序路径（逆序到达 + 补偿重试）</text>
+  <text x="150" y="784" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">AP 发起方</text>
+  <text x="400" y="784" font-size="12" font-weight="bold" fill="#92400e" text-anchor="middle">DTM · TM</text>
+  <text x="660" y="784" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">转出服务 A · RM</text>
+  <text x="880" y="784" font-size="12" font-weight="bold" fill="#3730a3" text-anchor="middle">转入服务 B · RM</text>
+  <line x1="150" y1="794" x2="150" y2="1018" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="794" x2="400" y2="1018" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="660" y1="794" x2="660" y2="1018" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="880" y1="794" x2="880" y2="1018" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="400" y1="824" x2="874" y2="824" stroke="#ea580c" stroke-width="1.5" marker-end="url(#so)"/>
+  <text x="637" y="818" font-size="11" fill="#c2410c" text-anchor="middle">① TransInCompensate 先到</text>
+  <line x1="880" y1="850" x2="406" y2="850" stroke="#ea580c" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#so)"/>
+  <text x="643" y="864" font-size="11" fill="#c2410c" text-anchor="middle">补插 try 键成功 → 判为空补偿，跳过业务</text>
+  <line x1="400" y1="890" x2="654" y2="890" stroke="#ea580c" stroke-width="1.5" marker-end="url(#so)"/>
+  <text x="527" y="884" font-size="11" fill="#c2410c" text-anchor="middle">② TransOutCompensate</text>
+  <line x1="660" y1="916" x2="406" y2="916" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#sg)"/>
+  <text x="533" y="930" font-size="11" fill="#64748b" text-anchor="middle">200</text>
+  <line x1="400" y1="956" x2="654" y2="956" stroke="#ea580c" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#so)"/>
+  <text x="527" y="950" font-size="11" fill="#c2410c" text-anchor="middle">②′ 补偿重试再次到达</text>
+  <line x1="660" y1="982" x2="406" y2="982" stroke="#ea580c" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#so)"/>
+  <text x="533" y="996" font-size="11" fill="#c2410c" text-anchor="middle">幂等：唯一键冲突 → 跳过业务</text>
+  <text x="60" y="1030" font-size="11.5" fill="#0f172a">要点：判定都发生在业务逻辑之前——键插不进去就直接返回成功，屏障内的补偿代码根本不执行</text>
+</svg>
