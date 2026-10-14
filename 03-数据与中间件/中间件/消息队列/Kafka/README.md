@@ -60,7 +60,7 @@
 | 语言 | 篇 | 内容 |
 | --- | --- | --- |
 | Go | [接入Kafka.md](../../../../01-编程语言/go/工程实践/接入Kafka.md) | 三种客户端怎么选（`kafka-go` / `sarama` / `confluent-kafka-go`）、生产者与消费者完整示例、手动提交与优雅退出 |
-| Java | [接入Kafka.md](../../../../01-编程语言/java/接入Kafka.md) | 原生 `KafkaProducer` / `KafkaConsumer`、Spring Kafka 的 `KafkaTemplate` 与 `@KafkaListener`、错误处理与死信 |
+| Java | [接入Kafka.md](../../../../01-编程语言/java/工程实践/接入Kafka.md) | 原生 `KafkaProducer` / `KafkaConsumer`、Spring Kafka 的 `KafkaTemplate` 与 `@KafkaListener`、错误处理与死信 |
 
 ### 依赖关系
 

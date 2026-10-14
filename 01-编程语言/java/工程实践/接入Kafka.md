@@ -2,7 +2,7 @@
 
 > 覆盖 Java 侧接入 Kafka 的完整手册：依赖坐标、原生 `KafkaProducer` / `KafkaConsumer`、Spring Kafka 的 `KafkaTemplate` 与 `@KafkaListener`、AckMode 与错误处理 / 死信，以及一组对三节点集群**真实编译并运行**的输出。
 >
-> 不覆盖：Kafka 的概念、分区与副本、可靠性参数与排障见 [Kafka 目录导读](../../03-数据与中间件/中间件/消息队列/Kafka/README.md)（零件篇从 [核心概念与架构.md](../../03-数据与中间件/中间件/消息队列/Kafka/核心概念与架构.md) 起读）。
+> 不覆盖：Kafka 的概念、分区与副本、可靠性参数与排障见 [Kafka 目录导读](../../../03-数据与中间件/中间件/消息队列/Kafka/README.md)（零件篇从 [核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/Kafka/核心概念与架构.md) 起读）。
 >
 > 内容整理自个人学习笔记。本篇**原生客户端**部分在 `maven:3.9-eclipse-temurin-17` + `kafka-clients 3.9.0` 下编译并运行通过，对本机三节点 KRaft 集群（`apache/kafka:3.9.0`）实测；**Spring Kafka 部分未编译验证**。
 
@@ -244,8 +244,8 @@ containerFactory.setCommonErrorHandler(errorHandler);                   // ⭐ �
 
 | 症状 | 先查什么 |
 | --- | --- |
-| `send failed: ... NotEnoughReplicasException` | 集群 `Isr` 是否少于 `min.insync.replicas`（见 [消息可靠性.md](../../03-数据与中间件/中间件/消息队列/Kafka/消息可靠性.md) 第五节） |
-| 消费组卡住不动 / 反复重平衡 | `max.poll.interval.ms` 是否被业务处理超时（见 [消费者组与重平衡.md](../../03-数据与中间件/中间件/消息队列/Kafka/消费者组与重平衡.md) 第四节） |
+| `send failed: ... NotEnoughReplicasException` | 集群 `Isr` 是否少于 `min.insync.replicas`（见 [消息可靠性.md](../../../03-数据与中间件/中间件/消息队列/Kafka/消息可靠性.md) 第五节） |
+| 消费组卡住不动 / 反复重平衡 | `max.poll.interval.ms` 是否被业务处理超时（见 [消费者组与重平衡.md](../../../03-数据与中间件/中间件/消息队列/Kafka/消费者组与重平衡.md) 第四节） |
 | `@KafkaListener` 一直重试同一条 | 是否漏配 `DefaultErrorHandler` 与死信兜底 |
 | 位点提交了但业务没做完 | `enable-auto-commit` 是否被设回 `true`，或 AckMode 是否落在 `BATCH` |
 
@@ -259,9 +259,9 @@ containerFactory.setCommonErrorHandler(errorHandler);                   // ⭐ �
 
 ## 关联
 
-- **上游/总纲**：[Kafka 目录导读](../../03-数据与中间件/中间件/消息队列/Kafka/README.md) — Kafka 的定位、阅读路线与实测坐标
-- **对照/互补**：[核心概念与架构.md](../../03-数据与中间件/中间件/消息队列/Kafka/核心概念与架构.md) — 同 key 同分区背后的分区路由与存储结构
-- **对照/互补**：[消息可靠性.md](../../03-数据与中间件/中间件/消息队列/Kafka/消息可靠性.md) — `acks` / 幂等 / 事务的服务端侧语义
-- **对照/互补**：[消费者组与重平衡.md](../../03-数据与中间件/中间件/消息队列/Kafka/消费者组与重平衡.md) — `concurrency` 与分区数的关系
-- **对照/互补**：[接入Kafka.md](../go/工程实践/接入Kafka.md) — Go 侧同一套语义的写法
-- **对照/互补**：[Spring-boot核心.md](Spring-boot核心.md) — `@KafkaListener` 依赖的容器与 Bean 生命周期基础
+- **上游/总纲**：[Kafka 目录导读](../../../03-数据与中间件/中间件/消息队列/Kafka/README.md) — Kafka 的定位、阅读路线与实测坐标
+- **对照/互补**：[核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/Kafka/核心概念与架构.md) — 同 key 同分区背后的分区路由与存储结构
+- **对照/互补**：[消息可靠性.md](../../../03-数据与中间件/中间件/消息队列/Kafka/消息可靠性.md) — `acks` / 幂等 / 事务的服务端侧语义
+- **对照/互补**：[消费者组与重平衡.md](../../../03-数据与中间件/中间件/消息队列/Kafka/消费者组与重平衡.md) — `concurrency` 与分区数的关系
+- **对照/互补**：[接入Kafka.md](../../go/工程实践/接入Kafka.md) — Go 侧同一套语义的写法
+- **对照/互补**：[Spring-boot核心.md](../Spring-boot核心.md) — `@KafkaListener` 依赖的容器与 Bean 生命周期基础

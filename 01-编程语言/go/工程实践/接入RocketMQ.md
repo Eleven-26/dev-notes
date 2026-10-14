@@ -2,7 +2,7 @@
 
 > 覆盖 Go 侧接入 RocketMQ 的完整手册：两种客户端怎么选、生产者（同步 / Tag / Key / 延迟级别）、消费者（Tag 过滤）、顺序消息的 `HashQueueSelector`，以及一组对真实单机集群**编译并运行**的输出。
 >
-> 不覆盖：RocketMQ 的概念、存储与可靠性机制见 [RocketMQ 目录导读](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md)（零件篇从 [核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/核心概念与架构.md) 起读）；Java 侧写法见 [接入RocketMQ.md](../../java/接入RocketMQ.md)。
+> 不覆盖：RocketMQ 的概念、存储与可靠性机制见 [RocketMQ 目录导读](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md)（零件篇从 [核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/核心概念与架构.md) 起读）；Java 侧写法见 [接入RocketMQ.md](../../java/工程实践/接入RocketMQ.md)。
 >
 > 内容整理自个人学习笔记。本篇代码在 `golang:1.26-alpine`（Go 1.26.8）+ `rocketmq-client-go/v2` 下编译运行通过，对本机单机集群（`apache/rocketmq:5.3.1`，1 NameServer + 1 Broker）实测。
 
@@ -228,7 +228,7 @@ GO CONSUME DONE
 ## 关联
 
 - **上游/总纲**：[RocketMQ 目录导读](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) — 组件本体（概念 / 存储 / 可靠性 / 排障）
-- **对照/互补**：[接入RocketMQ.md](../../java/接入RocketMQ.md) — Java 侧同一组场景的写法与差异
+- **对照/互补**：[接入RocketMQ.md](../../java/工程实践/接入RocketMQ.md) — Java 侧同一组场景的写法与差异
 - **对照/互补**：[接入Kafka.md](接入Kafka.md) — Go 接 Kafka 的对照手册（三种客户端取舍）
 - **对照/互补**：[消息类型与语义.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/消息类型与语义.md) — 顺序 / 延迟消息的机制与限制
 - **对照/互补**：[部署与配置.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/部署与配置.md) — `brokerIP1` 与容器网络

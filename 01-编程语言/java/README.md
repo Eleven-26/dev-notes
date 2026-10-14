@@ -57,9 +57,9 @@ JMM与内存屏障.md        ① 内存模型与可见性 —— 并发问题的
 | [集合容器.md](集合容器.md) | 在写业务代码、要选 `List`/`Map` 时 | 无（可与主线并行） |
 | [Spring-boot核心.md](Spring-boot核心.md) | 用 Spring 系框架时；**排查「注解为什么不生效」的先读它** | 建议先读 [锁与AQS.md](并发/锁与AQS.md)（单例的线程安全） |
 | [Stream流实战.md](Stream流实战.md) | 用流式写法处理集合时 | [集合容器.md](集合容器.md) |
-| [接入Jaeger.md](接入Jaeger.md) / [接入Skywalking.md](接入Skywalking.md) | 给 Java 服务接链路追踪时 | 属**接入手册**，用时再查；组件本体在 [可观测性/](../../03-数据与中间件/中间件/可观测性/) |
-| [接入Kafka.md](接入Kafka.md) | 给 Java 服务接 Kafka 生产者 / 消费者时 | 属**接入手册**，用时再查；组件本体在 [消息队列/Kafka/](../../03-数据与中间件/中间件/消息队列/Kafka/README.md)。⭐ 原生客户端已编译运行实测（Spring Kafka 部分未编译验证） |
-| [接入RocketMQ.md](接入RocketMQ.md) | 给 Java 服务接 RocketMQ 生产者 / 消费者时 | 属**接入手册**，用时再查；组件本体在 [消息队列/RocketMQ/](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md)。⭐ 原生客户端已编译运行实测（Spring Boot 部分未编译验证） |
+| [接入Jaeger.md](可观测性/接入Jaeger.md) / [接入Skywalking.md](可观测性/接入Skywalking.md) | 给 Java 服务接链路追踪时 | 属**接入手册**，用时再查；组件本体在 [可观测性/](../../03-数据与中间件/中间件/可观测性/) |
+| [接入Kafka.md](工程实践/接入Kafka.md) | 给 Java 服务接 Kafka 生产者 / 消费者时 | 属**接入手册**，用时再查；组件本体在 [消息队列/Kafka/](../../03-数据与中间件/中间件/消息队列/Kafka/README.md)。⭐ 原生客户端已编译运行实测（Spring Kafka 部分未编译验证） |
+| [接入RocketMQ.md](工程实践/接入RocketMQ.md) | 给 Java 服务接 RocketMQ 生产者 / 消费者时 | 属**接入手册**，用时再查；组件本体在 [消息队列/RocketMQ/](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md)。⭐ 原生客户端已编译运行实测（Spring Boot 部分未编译验证） |
 | [写冲突控制的Java落地.md](写冲突控制的Java落地.md) | 要写「同一份数据被并发写」的代码时 | 概念侧在 [并发控制/](../../03-数据与中间件/数据存储/并发控制/README.md)；Go 侧对照 [写冲突控制的Go落地.md](../go/工程实践/写冲突控制的Go落地.md)。⚠️ 未编译校验 |
 
 ---
@@ -105,7 +105,7 @@ JMM与内存屏障.md        ① 内存模型与可见性 —— 并发问题的
 | 集合容器 | [集合容器.md](集合容器.md)（ArrayList / LinkedList / HashMap / 树化） |
 | Spring | [Spring-boot核心.md](Spring-boot核心.md)（IoC / 依赖注入 / AOP / 自动装配） |
 | JMM | [JMM与内存屏障.md](并发/JMM与内存屏障.md)（`happens-before`、伪共享、安全发布） |
-| gRPC 接入 | [接入gRPC.md](接入gRPC.md)（手写 `MethodDescriptor` + `Marshaller`、四种模式、拦截器与 metadata；本体篇在 [gRPC 目录](../../03-数据与中间件/中间件/RPC框架/gRPC/README.md)） |
+| gRPC 接入 | [接入gRPC.md](工程实践/接入gRPC.md)（手写 `MethodDescriptor` + `Marshaller`、四种模式、拦截器与 metadata；本体篇在 [gRPC 目录](../../03-数据与中间件/中间件/RPC框架/gRPC/README.md)） |
 
 **仍然缺的**：
 

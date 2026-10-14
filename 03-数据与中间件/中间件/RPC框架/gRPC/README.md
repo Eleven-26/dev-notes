@@ -96,7 +96,7 @@
 | [生态与网关.md](生态与网关.md) | 基础概念 | [网关选型对比.md](../../网关与代理/网关选型对比.md)、[Nacos.md](../../注册与配置中心/Nacos.md) |
 | [可观测性.md](可观测性.md) | 拦截器与元数据 | [可观测性选型对比.md](../../可观测性/可观测性选型对比.md) |
 | [性能与调优.md](性能与调优.md) | 四种通信模式、HTTP2机制 | [RPC框架选型对比.md](../RPC框架选型对比.md) |
-| [实战示例.md](实战示例.md) | 前面各篇 | [接入gRPC.md](../../../../01-编程语言/java/接入gRPC.md)（Java 分册） |
+| [实战示例.md](实战示例.md) | 前面各篇 | [接入gRPC.md](../../../../01-编程语言/java/工程实践/接入gRPC.md)（Java 分册） |
 | [故障排查与调试.md](故障排查与调试.md) | 基础概念 | 全目录（它是「症状 → 篇目」的索引） |
 | [gRPC-Web与Connect.md](gRPC-Web与Connect.md) | 四种通信模式 | [生态与网关.md](生态与网关.md) |
 
@@ -119,7 +119,7 @@
 | [实战示例.md](实战示例.md) | 该不该上的判据、工程布局、`.proto` 与生成物审查、上线十条、语言分册索引 | 各机制的原理（→ 前面各篇） |
 | [故障排查与调试.md](故障排查与调试.md) | 「症状 → 判据 → 处置」的五层定位、静默失效三连、工具箱与排查顺序 | 各问题背后的机制（逐条指向对应篇目）、后端侧的运维 |
 | [gRPC-Web与Connect.md](gRPC-Web与Connect.md) | 浏览器为什么说不了 gRPC、gRPC-Web 的边界、三条接法、Connect、选型判据 | 前端工程化与框架集成；**本篇没有任何实测** |
-| [接入gRPC.md](../../../../01-编程语言/java/接入gRPC.md) | **Java 侧接入分册**（另一个目录，见第六节） | —— |
+| [接入gRPC.md](../../../../01-编程语言/java/工程实践/接入gRPC.md) | **Java 侧接入分册**（另一个目录，见第六节） | —— |
 | [不使用protoc的gRPC.md](../../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) | **Go 侧接入分册**（另一个目录） | —— |
 
 ![gRPC十三篇硬前置依赖地图](images/gRPC十三篇硬前置依赖地图.svg)
@@ -135,7 +135,7 @@
 | [数据序列化.md](../../../../02-计算机基础/网络/数据序列化.md) | **JSON 与 Protobuf 的横向对比与格式选型**。本目录的 [Protobuf.md](Protobuf.md) 讲的是 **Protobuf 本体**（编码 / 纪律 / 演进） |
 | [不使用protoc的gRPC.md](../../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) | **Go 侧接入分册**：换 codec、手写 `ServiceDesc`、`ForceServerCodec`、连接池设计 |
 | [从零实现网关.md](../../../../01-编程语言/go/网络编程/从零实现网关.md) | **HTTP → gRPC 转码**的完整网关实现（本目录只给判据与配置清单） |
-| [接入gRPC.md](../../../../01-编程语言/java/接入gRPC.md) | **Java 侧接入分册**（grpc-java + Netty；不用 protoc 的手写 `MethodDescriptor`） |
+| [接入gRPC.md](../../../../01-编程语言/java/工程实践/接入gRPC.md) | **Java 侧接入分册**（grpc-java + Netty；不用 protoc 的手写 `MethodDescriptor`） |
 | [网关选型对比.md](../../网关与代理/网关选型对比.md) | 网关横向选型：谁支持 gRPC 转码与 `grpc_pass` |
 | [可观测性选型对比.md](../../可观测性/可观测性选型对比.md) | 可观测性后端的横向选型（本目录只讲 gRPC 侧该埋什么） |
 | [Dubbo/README.md](../Dubbo/README.md) | 另一个调用框架，**目前是占位** |
@@ -265,7 +265,7 @@
 - [gRPC-Web与Connect.md](gRPC-Web与Connect.md) — 浏览器侧的三条路与选型
 - [HTTP与gRPC.md](../../../../02-计算机基础/网络/HTTP与gRPC.md) — gRPC 的底座（HTTP/2 本体）
 - [数据序列化.md](../../../../02-计算机基础/网络/数据序列化.md) — JSON 与 Protobuf 的横向对比
-- [接入gRPC.md](../../../../01-编程语言/java/接入gRPC.md) — Java 侧接入分册
+- [接入gRPC.md](../../../../01-编程语言/java/工程实践/接入gRPC.md) — Java 侧接入分册
 - [不使用protoc的gRPC.md](../../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) — Go 侧接入分册
 - [目录.md](../../../../目录.md) — 全仓知识点索引
 - [素材清单.md](../../../../素材清单.md) — 素材来源登记

@@ -196,7 +196,7 @@ Query 服务自带 UI，与查询接口同进程：`http://127.0.0.1:16686/`。�
 | 语言 | 分册 | 覆盖内容 |
 | --- | --- | --- |
 | Go | [接入Jaeger.md](../../../01-编程语言/go/可观测性/接入Jaeger.md) | OTel SDK 初始化、Gin / GORM / NATS / xxl-job 四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、[photography-server](https://github.com/Eleven-26/photography-server) 落地映射 |
-| Java | [接入Jaeger.md](../../../01-编程语言/java/接入Jaeger.md) | OTel Java Agent 无侵入路线、Spring Boot 3 + Micrometer Tracing、日志 MDC 与响应头、跨线程传播、从 `jaeger-client` 迁移 |
+| Java | [接入Jaeger.md](../../../01-编程语言/java/可观测性/接入Jaeger.md) | OTel Java Agent 无侵入路线、Spring Boot 3 + Micrometer Tracing、日志 MDC 与响应头、跨线程传播、从 `jaeger-client` 迁移 |
 
 > ⚠️ `jaeger-client-go` / `jaeger-client-java` **均已归档**，新项目一律用 OTel SDK + OTLP，不要再用私有客户端与私有 `uber-trace-id` 头。
 
@@ -228,7 +228,7 @@ Query 服务自带 UI，与查询接口同进程：`http://127.0.0.1:16686/`。�
 
 - [README.md](README.md) — 本目录导读：三篇的分工、阅读顺序与本机实测坐标
 - [接入Jaeger.md](../../../01-编程语言/go/可观测性/接入Jaeger.md) — Go 侧 OTel SDK 埋点的完整接入手册（含 [photography-server](https://github.com/Eleven-26/photography-server) 落地映射）
-- [接入Jaeger.md](../../../01-编程语言/java/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
+- [接入Jaeger.md](../../../01-编程语言/java/可观测性/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
 - [Skywalking.md](Skywalking.md) — 探针式 APM 的另一条路线与分工
 - [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) — 多语言探针接入的对照
 - [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播

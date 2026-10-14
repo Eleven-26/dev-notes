@@ -498,7 +498,7 @@ services:
 | 语言 | 分册 | 覆盖内容 |
 | --- | --- | --- |
 | Go | [接入Skywalking.md](../../../01-编程语言/go/可观测性/接入Skywalking.md) | 编译期注入（`-toolexec`）、`toolkit/trace` 手动埋点、跨 goroutine 快照、OTel SDK + OTLP 备选路线、两条路线对比与「不要同开」 |
-| Java | [接入Skywalking.md](../../../01-编程语言/java/接入Skywalking.md) | `-javaagent` 接入、配置优先级、插件目录机制、Spring Boot / Dockerfile / K8s、日志与跨线程关联、优雅停机 |
+| Java | [接入Skywalking.md](../../../01-编程语言/java/可观测性/接入Skywalking.md) | `-javaagent` 接入、配置优先级、插件目录机制、Spring Boot / Dockerfile / K8s、日志与跨线程关联、优雅停机 |
 | PHP | [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) | 扩展安装、php.ini、三种 reporter、容器化四坑、PSR-3 日志上报 |
 
 ---
@@ -523,7 +523,7 @@ services:
 - [可观测性选型对比.md](可观测性选型对比.md) — **选型主线**：三支柱定位、五层选型、契合语言与 UI 体验两个横切维度、三套推荐组合
 - [Jaeger.md](Jaeger.md) — **本篇的直接对照面**：OTel 路线的 Trace/Span 概念、部署、采样策略
 - [接入Skywalking.md](../../../01-编程语言/go/可观测性/接入Skywalking.md) — Go 侧编译期注入与 OTel 备选路线
-- [接入Skywalking.md](../../../01-编程语言/java/接入Skywalking.md) — Java 侧 `-javaagent` 接入、日志关联、跨线程与优雅停机
+- [接入Skywalking.md](../../../01-编程语言/java/可观测性/接入Skywalking.md) — Java 侧 `-javaagent` 接入、日志关联、跨线程与优雅停机
 - [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤
 - [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — OAP / UI 的部署形态与生命周期

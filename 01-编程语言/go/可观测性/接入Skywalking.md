@@ -446,7 +446,7 @@ nc -vz oap.observability 11800
 
 - [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md) — 探针原理（javaAgent / 轻量级队列内核 / PHP SAPI 生命周期）、OAP 架构、UI 六大面板
 - [接入Jaeger.md](接入Jaeger.md) — 同一套 OTel 埋点、换 endpoint 即换后端的对照写法
-- [接入Skywalking.md](../../java/接入Skywalking.md) — Java agent 路线，对照「运行期字节码增强 vs 编译期注入」的差异
+- [接入Skywalking.md](../../java/可观测性/接入Skywalking.md) — Java agent 路线，对照「运行期字节码增强 vs 编译期注入」的差异
 - [接入Skywalking.md](../../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型
 - [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 链路追踪五方案横向对比与「契合语言」维度
 - [context.md](../工程实践/context.md) — OTel 路线下 ctx 传播的基础

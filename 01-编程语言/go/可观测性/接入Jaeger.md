@@ -471,7 +471,7 @@ curl -s "http://localhost:16686/api/services"
 
 - [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
 - [接入Skywalking.md](接入Skywalking.md) — 同一套 OTel 埋点发往 SkyWalking OAP；以及编译期注入路线的对照
-- [接入Jaeger.md](../../java/接入Jaeger.md) — Java 侧的 OTel Agent 与 Micrometer Tracing 两条路线
+- [接入Jaeger.md](../../java/可观测性/接入Jaeger.md) — Java 侧的 OTel Agent 与 Micrometer Tracing 两条路线
 - [context.md](../工程实践/context.md) — ctx 传播、超时预算与级联取消的基础
 - [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 `terminationGracePeriodSeconds`

@@ -2,7 +2,7 @@
 
 > 覆盖 Java 侧接入 RocketMQ 的完整手册：依赖坐标与版本兼容、原生 `DefaultMQProducer` / `DefaultMQPushConsumer` 的普通 / 顺序 / 延迟 / 事务四种消息写法、Spring Boot 集成，以及一组对真实单机集群**编译并运行**的输出。
 >
-> 不覆盖：RocketMQ 的概念、存储与可靠性机制见 [RocketMQ 目录导读](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md)（零件篇从 [核心概念与架构.md](../../03-数据与中间件/中间件/消息队列/RocketMQ/核心概念与架构.md) 起读）；Go 侧写法见 [接入RocketMQ.md](../go/工程实践/接入RocketMQ.md)。
+> 不覆盖：RocketMQ 的概念、存储与可靠性机制见 [RocketMQ 目录导读](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md)（零件篇从 [核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/核心概念与架构.md) 起读）；Go 侧写法见 [接入RocketMQ.md](../../go/工程实践/接入RocketMQ.md)。
 >
 > 内容整理自个人学习笔记。本篇代码在 `maven:3.9-eclipse-temurin-17` + `rocketmq-client 5.3.1` 下编译运行通过，对本机单机集群（`apache/rocketmq:5.3.1`，1 NameServer + 1 Broker）实测。
 
@@ -47,7 +47,7 @@ producer.shutdown();
 > ⚠️ **方法名坑**：单向发送的 API 是 `sendOneway(Message)`，不是 `sendOneWay`——本机用 `javap` 查 `DefaultMQProducer` 确认过；网上大量示例写成 `sendOneWay`，直接编译不过。
 
 异常处理：`MQClientException`（未 start / 路由为空 / 消息体超限 / Topic 未创建）、`RemotingException`（网络断连）、`MQBrokerException`（Broker 错误码，如 `SERVICE_NOT_AVAILABLE`）、`InterruptedException`（线程中断）。
-⚠️ 重试只发生在**发送阶段**且是「换队列 / 换 Broker 重发」；Broker 已成功但客户端超时同样会重发，因此**消费端幂等必须有**（见 [消息可靠性.md](../../03-数据与中间件/中间件/消息队列/RocketMQ/消息可靠性.md) 第三节）。
+⚠️ 重试只发生在**发送阶段**且是「换队列 / 换 Broker 重发」；Broker 已成功但客户端超时同样会重发，因此**消费端幂等必须有**（见 [消息可靠性.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/消息可靠性.md) 第三节）。
 
 ### 2.1 生产者必须单例
 
@@ -304,9 +304,9 @@ public class OrderConsumer implements RocketMQListener<OrderDTO> {
 
 ## 关联
 
-- **上游/总纲**：[RocketMQ 目录导读](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) — 组件本体（概念 / 存储 / 可靠性 / 排障）
-- **对照/互补**：[接入RocketMQ.md](../go/工程实践/接入RocketMQ.md) — Go 侧同一组场景的写法与差异
+- **上游/总纲**：[RocketMQ 目录导读](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) — 组件本体（概念 / 存储 / 可靠性 / 排障）
+- **对照/互补**：[接入RocketMQ.md](../../go/工程实践/接入RocketMQ.md) — Go 侧同一组场景的写法与差异
 - **对照/互补**：[接入Kafka.md](接入Kafka.md) — Java 接 Kafka 的对照手册（`KafkaTemplate` / `@KafkaListener`）
-- **对照/互补**：[消息类型与语义.md](../../03-数据与中间件/中间件/消息队列/RocketMQ/消息类型与语义.md) — 顺序 / 延迟 / 事务消息的机制与限制
-- **对照/互补**：[消费者与消费位点.md](../../03-数据与中间件/中间件/消息队列/RocketMQ/消费者与消费位点.md) — 线程模型与位点
-> 反向引用（本篇被下列文档引到）：[部署与配置.md](../../03-数据与中间件/中间件/消息队列/RocketMQ/部署与配置.md)
+- **对照/互补**：[消息类型与语义.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/消息类型与语义.md) — 顺序 / 延迟 / 事务消息的机制与限制
+- **对照/互补**：[消费者与消费位点.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/消费者与消费位点.md) — 线程模型与位点
+> 反向引用（本篇被下列文档引到）：[部署与配置.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/部署与配置.md)

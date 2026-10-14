@@ -2,7 +2,7 @@
 
 > 不用 protoc 的 Java gRPC 接入：手写 `MethodDescriptor` + 自定义 `Marshaller`、四种通信模式、拦截器 / metadata / deadline / 状态码，以及与 Go 侧的逐行对照。
 >
-> 内容整理自个人学习笔记，实测基于本机 Docker Desktop（容器 `eclipse-temurin:17-jdk` 内 java 17.0.20.1 + grpc-java 1.60.0；对照组是容器 `golang:1.26-alpine` 内 go1.26.8 + grpc-go v1.84.0），原始输出见 `.workbuddy/tmp/exp/grpclab/out/`。素材见 [素材清单](../../素材清单.md)。
+> 内容整理自个人学习笔记，实测基于本机 Docker Desktop（容器 `eclipse-temurin:17-jdk` 内 java 17.0.20.1 + grpc-java 1.60.0；对照组是容器 `golang:1.26-alpine` 内 go1.26.8 + grpc-go v1.84.0），原始输出见 `.workbuddy/tmp/exp/grpclab/out/`。素材见 [素材清单](../../../素材清单.md)。
 
 ---
 
@@ -66,7 +66,7 @@ protoc 自带 java 输出，出 stub 的那部分是插件 `protoc-gen-grpc-java
 protoc --java_out=gen/java --grpc-java_out=gen/java api/order/v1/order.proto
 ```
 
-⚠️ 对照 Go 侧：Go 必须另外装 `protoc-gen-go` 与 `protoc-gen-go-grpc` 两个插件并加进 PATH；Java 只需要这一个插件，消息类由 protoc 自己出。这个「装几个插件」的差异在 [数据序列化.md](../../02-计算机基础/网络/数据序列化.md) 第一节的格式对照里也被点到，Go 侧的完整流程见 [不使用protoc的gRPC.md](../go/网络编程/不使用protoc的gRPC.md)。
+⚠️ 对照 Go 侧：Go 必须另外装 `protoc-gen-go` 与 `protoc-gen-go-grpc` 两个插件并加进 PATH；Java 只需要这一个插件，消息类由 protoc 自己出。这个「装几个插件」的差异在 [数据序列化.md](../../../02-计算机基础/网络/数据序列化.md) 第一节的格式对照里也被点到，Go 侧的完整流程见 [不使用protoc的gRPC.md](../../go/网络编程/不使用protoc的gRPC.md)。
 
 「能不能不用 protoc」的答案是**能**，只是两门语言换掉的是**不同层的对象**：Go 换 codec（注册 `jsonCodec` + 手写 `ServiceDesc`），Java 换 `Marshaller`（第二节）。
 
@@ -672,19 +672,19 @@ status: code=NOT_FOUND desc=no such key: 42 isNotFound=true
 - **两个流式的客户端方法为什么收 `ClientCall`？** → options 在 `channel.newCall(method, options)` 那一步就定下来了，方法本身只再收一个响应 observer；一元与服务端流那对 `blocking*` 方法才是把 options 当参数传的形态（第六节 ③）。
 - **`Status.Code` 与 Go 的 `codes` 是一一对应的吗？** → 是，都是 gRPC 规范里那 16 个 code，只是命名风格不同（`NotFound` ↔ `NOT_FOUND`、`DeadlineExceeded` ↔ `DEADLINE_EXCEEDED`）。所以判据统一写成「按 code 判定，不按描述文字判定」。
 - **metadata 的 key 在 Java 侧有什么约束？** → 必须用 `Metadata.Key.of(name, marshaller)` 建；名字里只能有小写字母、数字、`-`、`_`、`.`，用 `ASCII_STRING_MARSHALLER` 表示值是 ASCII 字符串。二进制值要用 `BINARY_BYTE_MARSHALLER` 并给键名加 `-bin` 后缀。
-- **为什么 Java 侧要数「流跑在同一条连接上」？** → 与 Go 侧同一个理由：`server stats` 里的计数是服务端**全局**的，它只能证明「一共收了几条流」，证明不了「这些流跑在同一条 TCP 上」。连接复用这层证据在 Go 侧已经数过（见 [实战示例.md](../../03-数据与中间件/中间件/RPC框架/gRPC/实战示例.md) 第四节 ⑨ 与 [不使用protoc的gRPC.md](../go/网络编程/不使用protoc的gRPC.md) 第五节）；Java 侧本实验**未单独数连接**，只对照了服务端统计。
+- **为什么 Java 侧要数「流跑在同一条连接上」？** → 与 Go 侧同一个理由：`server stats` 里的计数是服务端**全局**的，它只能证明「一共收了几条流」，证明不了「这些流跑在同一条 TCP 上」。连接复用这层证据在 Go 侧已经数过（见 [实战示例.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/实战示例.md) 第四节 ⑨ 与 [不使用protoc的gRPC.md](../../go/网络编程/不使用protoc的gRPC.md) 第五节）；Java 侧本实验**未单独数连接**，只对照了服务端统计。
 
 ---
 
 ## 关联
 
-- [不使用protoc的gRPC.md](../go/网络编程/不使用protoc的gRPC.md) — Go 侧同主题实证：`encoding.RegisterCodec`、手写 `ServiceDesc`、metadata 通道、连接复用；两篇是同一命题的两种语言落点
-- [接入Jaeger.md](接入Jaeger.md) — 本目录另一份分册手册（Java 接链路追踪），体例与鉴权口径可互相参照
-- [接入Skywalking.md](接入Skywalking.md) — 同一目录的 Java 分册，讲字节码增强那条路线
-- [README.md](README.md) — Java 目录导读（本篇的定位与依赖关系）
-- [基础概念.md](../../03-数据与中间件/中间件/RPC框架/gRPC/基础概念.md) — gRPC 是什么、与 HTTP/2 的关系（本体篇）
-- [四种通信模式.md](../../03-数据与中间件/中间件/RPC框架/gRPC/四种通信模式.md) — 四种模式的定义与适用（本篇给的是 Java 侧的落地写法）
-- [实战示例.md](../../03-数据与中间件/中间件/RPC框架/gRPC/实战示例.md) — 该主题的本体篇：工程布局、`.proto` 审查、上线前十条
-- [HTTP与gRPC.md](../../02-计算机基础/网络/HTTP与gRPC.md) — 那篇的「使用二：Java」讲的是 JDK `HttpClient` / OkHttp 的**连接池与超时参数**，本篇讲的是 **gRPC 存根层**（`MethodDescriptor` / `StreamObserver` / 拦截器），两者在 Java 侧一个管通用 HTTP 客户端、一个管 gRPC 调用栈，不重叠
-- [数据序列化.md](../../02-计算机基础/网络/数据序列化.md) — Protobuf 与 JSON 的格式选型、体积与耗时读数，以及「Go 要装几个 protoc 插件」的对照
-> 反向引用（本篇被下列文档引到）：[RPC框架选型对比.md](../../03-数据与中间件/中间件/RPC框架/RPC框架选型对比.md)、[安全与认证.md](../../03-数据与中间件/中间件/RPC框架/gRPC/安全与认证.md)、[拦截器与元数据.md](../../03-数据与中间件/中间件/RPC框架/gRPC/拦截器与元数据.md)、[故障排查与调试.md](../../03-数据与中间件/中间件/RPC框架/gRPC/故障排查与调试.md)、[生态与网关.md](../../03-数据与中间件/中间件/RPC框架/gRPC/生态与网关.md)
+- [不使用protoc的gRPC.md](../../go/网络编程/不使用protoc的gRPC.md) — Go 侧同主题实证：`encoding.RegisterCodec`、手写 `ServiceDesc`、metadata 通道、连接复用；两篇是同一命题的两种语言落点
+- [接入Jaeger.md](../可观测性/接入Jaeger.md) — 本目录另一份分册手册（Java 接链路追踪），体例与鉴权口径可互相参照
+- [接入Skywalking.md](../可观测性/接入Skywalking.md) — 同一目录的 Java 分册，讲字节码增强那条路线
+- [README.md](../README.md) — Java 目录导读（本篇的定位与依赖关系）
+- [基础概念.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/基础概念.md) — gRPC 是什么、与 HTTP/2 的关系（本体篇）
+- [四种通信模式.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/四种通信模式.md) — 四种模式的定义与适用（本篇给的是 Java 侧的落地写法）
+- [实战示例.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/实战示例.md) — 该主题的本体篇：工程布局、`.proto` 审查、上线前十条
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — 那篇的「使用二：Java」讲的是 JDK `HttpClient` / OkHttp 的**连接池与超时参数**，本篇讲的是 **gRPC 存根层**（`MethodDescriptor` / `StreamObserver` / 拦截器），两者在 Java 侧一个管通用 HTTP 客户端、一个管 gRPC 调用栈，不重叠
+- [数据序列化.md](../../../02-计算机基础/网络/数据序列化.md) — Protobuf 与 JSON 的格式选型、体积与耗时读数，以及「Go 要装几个 protoc 插件」的对照
+> 反向引用（本篇被下列文档引到）：[RPC框架选型对比.md](../../../03-数据与中间件/中间件/RPC框架/RPC框架选型对比.md)、[安全与认证.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/安全与认证.md)、[拦截器与元数据.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/拦截器与元数据.md)、[故障排查与调试.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/故障排查与调试.md)、[生态与网关.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/生态与网关.md)
