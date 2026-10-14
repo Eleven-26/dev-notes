@@ -15,6 +15,10 @@ HTTP 全程明文，链路上任何一台设备都能看到并改写内容。TLS
 
 ⚠️ **高频澄清：HTTPS 不是新协议**。分层是「应用层 HTTP / 安全层 TLS / 传输层 TCP / 网络层 IP」，TLS 是夹在中间的一层：**HTTPS = HTTP over TLS**，HTTP 报文原封不动塞进 TLS 记录层再交给 TCP（同理还有 gRPC over TLS、数据库连接加密）。
 
+**再往下还有一层**：IP 数据包最终要装进**链路层的以太网帧**才出得了网卡，封装链完整写法是 `HTTP over TLS over TCP over IP over 链路层帧`。这一层跟 TLS 无关，但排障时最容易看错——**每一跳只重写链路层的 MAC 地址并把 IP 的 TTL 减 1，端到端 IP 不变（除非有 NAT）**，所以中间设备上看到的「改动」不是 TLS 造成的（逐项过程见 [网络分层与数据包旅程.md](网络分层与数据包旅程.md) 第七节）。
+
+![HTTPS 的分层封装：HTTP 报文交给 TLS 记录层，再依次交给 TCP、IP 与链路层帧，TLS 就是夹在中间的那一层](images/HTTPS的分层封装结构.svg)
+
 握手的前提是 **TCP 三次握手已完成**（见 [TCP三次握手.md](tcp/TCP三次握手.md)）——TLS 的 RTT 是**叠加在 TCP 之上**的额外开销，这也是后面为什么要压缩握手往返。另外，HTTPS 默认**只认证服务器**（单向认证），要认证客户端必须上 **mTLS**（第八、九节）。
 
 ## 二、TLS 与 SSL 的关系
@@ -28,6 +32,8 @@ SSL 由 Netscape 发明，**SSL 3.0（1996）是最后一版**，之后改名交
 | TLS 1.3（2018, RFC 8446） | ⭐ 推荐 | 1-RTT、0-RTT、**强制前向安全**、套件大精简 |
 
 口语里的「SSL 证书」「SSL 握手」其实几乎都是 TLS，只是名字沿用下来了。
+
+![SSL 到 TLS 的版本演进时间轴：1996 最后一版 SSL、1999/2006/2008/2018 四个 TLS 版本与 2020 年浏览器禁用事件](images/SSL与TLS版本演进时间轴.svg)
 
 ## 三、TLS 1.2 完整握手 ⭐
 
@@ -53,6 +59,12 @@ Client                                              Server
   |<-- ⑫ Finished（已加密）------------------------------|
   |<========= ⑬ Application Data（对称加密）===========>|
 ```
+
+📌 **与配图对应关系**：上面的编号把 **mTLS 才出现**的 `CertificateRequest` 与客户端 `Certificate + CertificateVerify` 也列了出来（⑤、⑧），所以一共 13 条；
+`images/TLS1.2完整握手时序图.svg` 画的是**默认基线——单向认证**，这两条不出现，图里因此是 11 条消息（应用数据算最后一条）。
+两边讲的流程完全一致，只是**单向 / 双向之差**，对号入座时看这条说明，不要以为少画了步骤。
+
+![TLS 1.2 完整握手的两次往返时序：ClientHello 到 Finished 各消息的先后与 RTT 归属（单向认证基线）](images/TLS1.2完整握手时序图.svg)
 
 1. **ClientHello**：支持的 TLS 版本、**Client Random**（32 字节随机数）、**密码套件列表**、压缩方法、扩展（**SNI** 域名、ALPN 如 h2/http1.1、supported_groups 曲线列表、signature_algorithms、session_ticket 等）。⚠️ 明文发送，**SNI 里的域名是可见的**。
 2. **ServerHello**：选定版本与**一个**密码套件，回 **Server Random** 与 session_id；若复用会话则走第五节。
@@ -105,6 +117,13 @@ Session Keys: client_write_key / server_write_key
 - **两个随机数都参与推导**，任一方随机数变了密钥就不同，这是防重放的关键设计；
 - 现代套件都是 **AEAD**（AES-GCM / ChaCha20-Poly1305），加密即认证，不再需要额外 MAC 密钥；
 - ⚠️ 链式设计的效果：**任何握手消息被篡改，双方算出的 Finished 摘要就对不上，握手立刻失败**。
+
+> 📌 **口径补充**：`Server Random` 与 `Client Random` 一样是 **32 字节**随机数；两次 PRF 调用的**输入顺序是反的**
+> （第一次 `ClientRandom + ServerRandom`，第二次 `ServerRandom + ClientRandom`），所以收发两侧切出来的密钥不会串位。
+> ⚠️ 另外明确一句：`Master Secret` 与下面切出的 `Session Keys` **都只在双方本地计算，从不在链路上发送**——
+> 链路上跑的只有 PMS 的两种来源（RSA 加密后的 PMS / ECDHE 的临时公钥），这正是 3.1 节「安全地协商出只有双方知道的会话密钥」的落点。
+
+![TLS 1.2 会话密钥的三级推导：PMS 经两次 PRF 得到 Master Secret 与密钥块，再切成收发方向各自的六项](images/会话密钥三级推导的数据流转.svg)
 
 ## 四、TLS 1.3 的变化 ⭐
 
@@ -162,6 +181,8 @@ Client                                                Server
 | 服务器证书 | 明文发送 | ⭐ **加密发送** |
 | 密码套件数量 / 密钥推导 | 上百个 / TLS PRF | 5 个左右 / **HKDF** |
 
+![TLS 1.2 与 TLS 1.3 握手并排对比：2-RTT 对 1-RTT，以及前向安全、证书可见性与套件/密钥推导的差别](images/TLS1.2与1.3握手对比.svg)
+
 ### 4.5 扩展阅读：ECH 与 `HTTPS` / `SVCB` 记录的关系
 
 TLS 1.3 把**证书**加密了（4.1 的步骤 ④），但 **`ClientHello` 里的 SNI 仍然是明文**——中间设备照样能看到你在访问哪个域名。**ECH（Encrypted Client Hello）** 要解决的正是这一处泄露。
@@ -196,6 +217,8 @@ ECH 恰好**同时需要**这两件事才能成立。
 | 握手开销 | 复用成功 = 1-RTT | 同左 |
 
 Session Ticket 因为无状态、利于横向扩容，是主流 CDN / 负载均衡的默认选择。
+
+![会话复用的两条路线：Session ID 把状态放服务端（须命中同一节点），Session Ticket 把加密后的状态放客户端（任意节点可解票）](images/会话复用的两条路线对比.svg)
 
 ### 5.2 TLS 1.3 的 PSK / 0-RTT
 1.3 把上面两者统一成 **PSK**：**外部 PSK**（预置共享密钥，IoT / 内部服务）与**恢复 PSK**（由上次握手的 `resumption_master_secret` 推导，即新一代 Session Ticket）。客户端在 ClientHello 带 `pre_shared_key` + `early_data` 扩展，服务端接受后，**Finished 之前的 application data 就是 early data**。

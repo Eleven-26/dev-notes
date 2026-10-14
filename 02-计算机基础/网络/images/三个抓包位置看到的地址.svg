@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="tBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+  </defs>
+  <rect width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一个连接，三个抓包位置看到三种样子</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">在哪抓决定你能看到什么——改写前（内网源地址）还是改写后（NAT / LB 之后的地址）</text>
+
+  <rect x="70" y="120" width="180" height="56" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="160" y="144" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">客户端</text>
+  <text x="160" y="164" text-anchor="middle" font-size="11" fill="#1e3a8a">10.44.x:54321</text>
+
+  <rect x="300" y="120" width="170" height="56" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="385" y="144" text-anchor="middle" font-size="14" font-weight="bold" fill="#92400e">出口网关</text>
+  <text x="385" y="164" text-anchor="middle" font-size="11" fill="#92400e">SNAT</text>
+
+  <rect x="560" y="120" width="180" height="56" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="650" y="144" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">服务端</text>
+  <text x="650" y="164" text-anchor="middle" font-size="11" fill="#334155">收到请求</text>
+
+  <line x1="250" y1="148" x2="294" y2="148" stroke="#2563eb" stroke-width="1.7" marker-end="url(#tBlue)"/>
+  <line x1="470" y1="148" x2="554" y2="148" stroke="#2563eb" stroke-width="1.7" marker-end="url(#tBlue)"/>
+  <text x="272" y="110" text-anchor="middle" font-size="11" fill="#334155">改写前</text>
+  <text x="512" y="110" text-anchor="middle" font-size="11" fill="#334155">源变 203.0.113.9:40001</text>
+
+  <rect x="60" y="232" width="280" height="120" rx="10" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="76" y="258" font-size="13" font-weight="bold" fill="#1e3a8a">抓包点 ①：客户端本机</text>
+  <text x="76" y="284" font-size="12" fill="#334155">源 IP 是内网地址</text>
+  <text x="76" y="306" font-size="12" fill="#334155">（尚未被 SNAT）</text>
+  <text x="76" y="332" font-size="11.5" fill="#64748b">回答：本机发出 / 收到回包 / 重传几次</text>
+
+  <rect x="360" y="232" width="280" height="120" rx="10" fill="#f8fafc" stroke="#b45309"/>
+  <text x="376" y="258" font-size="13" font-weight="bold" fill="#92400e">抓包点 ③：LB / 代理上</text>
+  <text x="376" y="284" font-size="12" fill="#334155">同时看到两段连接</text>
+  <text x="376" y="306" font-size="12" fill="#334155">客户端↔LB、LB↔后端</text>
+  <text x="376" y="332" font-size="11.5" fill="#64748b">回答：时间花在哪一段 / 后端是否健康</text>
+
+  <rect x="660" y="232" width="280" height="120" rx="10" fill="#f8fafc" stroke="#64748b"/>
+  <text x="676" y="258" font-size="13" font-weight="bold" fill="#0f172a">抓包点 ②：服务端本机</text>
+  <text x="676" y="284" font-size="12" fill="#334155">源 IP 是出口公网 / LB 地址</text>
+  <text x="676" y="306" font-size="12" fill="#334155">（已被改写）</text>
+  <text x="676" y="332" font-size="11.5" fill="#64748b">回答：请求真到了吗 / 到哪个实例</text>
+
+  <rect x="60" y="372" width="880" height="72" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="76" y="402" font-size="13" font-weight="bold" fill="#7f1d1d">注意：只有一端的抓包，结论只对那一端成立。</text>
+  <text x="76" y="428" font-size="12" fill="#7f1d1d">客户端看到"没有 ACK"，可能只是回程走了另一条 AS 路径——要判定回程问题，得对端或中间设备配合一起抓。</text>
+</svg>

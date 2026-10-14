@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="sBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="sGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect width="1000" height="430" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同步调用 vs 异步消息：交互形态的对比</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">选型的第一个岔路——调用方必须立刻拿到结果就同步；只关心"最终会处理"就异步</text>
+
+  <rect x="40" y="90" width="440" height="300" rx="12" fill="#f8fafc" stroke="#2563eb"/>
+  <text x="260" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">同步调用（HTTP / RPC）</text>
+  <rect x="90" y="180" width="150" height="56" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="165" y="212" text-anchor="middle" font-size="14" fill="#1e3a8a">调用方</text>
+  <rect x="290" y="180" width="150" height="56" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="365" y="212" text-anchor="middle" font-size="14" fill="#1e3a8a">被调服务</text>
+  <line x1="240" y1="196" x2="284" y2="196" stroke="#2563eb" stroke-width="1.7" marker-end="url(#sBlue)"/>
+  <text x="262" y="172" text-anchor="middle" font-size="12" fill="#1e3a8a">请求</text>
+  <line x1="290" y1="222" x2="246" y2="222" stroke="#16a34a" stroke-width="1.7" stroke-dasharray="5 4" marker-end="url(#sGreen)"/>
+  <text x="262" y="252" text-anchor="middle" font-size="12" fill="#14532d">响应</text>
+  <text x="260" y="300" text-anchor="middle" font-size="12.5" fill="#334155">调用方阻塞等待结果，强耦合、链路清晰、易调试</text>
+  <text x="260" y="326" text-anchor="middle" font-size="12.5" fill="#dc2626">注意：下游慢会拖垮上游（级联故障）</text>
+
+  <rect x="520" y="90" width="440" height="300" rx="12" fill="#f8fafc" stroke="#16a34a"/>
+  <text x="740" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#14532d">异步消息（MQ）</text>
+  <rect x="540" y="180" width="120" height="56" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="600" y="212" text-anchor="middle" font-size="13" fill="#14532d">生产者</text>
+  <rect x="685" y="180" width="120" height="56" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="745" y="212" text-anchor="middle" font-size="13" fill="#92400e">队列 Topic</text>
+  <rect x="830" y="180" width="110" height="56" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="885" y="212" text-anchor="middle" font-size="13" fill="#14532d">消费者</text>
+  <line x1="660" y1="208" x2="681" y2="208" stroke="#16a34a" stroke-width="1.7" marker-end="url(#sGreen)"/>
+  <line x1="805" y1="208" x2="826" y2="208" stroke="#16a34a" stroke-width="1.7" marker-end="url(#sGreen)"/>
+  <text x="740" y="300" text-anchor="middle" font-size="12.5" fill="#334155">发送即返回，解耦、削峰填谷、下游挂不影响上游</text>
+  <text x="740" y="326" text-anchor="middle" font-size="12.5" fill="#dc2626">注意：最终一致，需幂等、重试、死信处理</text>
+</svg>

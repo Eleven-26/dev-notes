@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 610" width="1000" height="610" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="610" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">建堆的层级代价账：宽层沉得浅、窄层沉得深，乘出来的和收敛到 O(n)</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12.5" fill="#64748b">左侧按 3.2 的求和表画（节点数取 n / 2^(h+1)）；右侧净耗时取自 3.3 实测（n = 1 000 000，每项重复 20 轮累计）</text>
+
+  <rect x="20" y="70" width="580" height="330" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="36" y="92" font-size="13.5" font-weight="bold" fill="#0f172a">按「子树高度 h」分层的节点数与代价</text>
+  <text x="36" y="112" font-size="11.5" fill="#64748b">条长按 n / 2^(h+1) 逐级减半；h = 0 就是叶子层</text>
+  <line x1="100" y1="130" x2="100" y2="372" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="94,360 106,360 100,372" fill="#94a3b8"/>
+  <text x="110" y="128" font-size="11" fill="#94a3b8">h 自上而下：树高 → 0</text>
+
+  <rect x="110" y="140" width="6" height="22" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="126" y="156" font-size="11.5" fill="#334155">顶层 1 个节点：数量最少，却要一次沉满 log n 步</text>
+
+  <rect x="110" y="180" width="19" height="22" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="139" y="196" font-size="11.5" fill="#334155">中间层一般式：n / 2^(h+1) 个 × 每个沉 h 步 = h·n / 2^(h+1)</text>
+
+  <rect x="110" y="220" width="38" height="22" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="158" y="236" font-size="11.5" fill="#334155">h = 3：n/16 个 × 沉 3 步</text>
+
+  <rect x="110" y="260" width="75" height="22" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="195" y="276" font-size="11.5" fill="#334155">h = 2：n/8 个 × 沉 2 步 = 2n/8</text>
+
+  <rect x="110" y="300" width="150" height="22" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="270" y="316" font-size="11.5" fill="#334155">h = 1：n/4 个 × 沉 1 步 = n/4</text>
+
+  <rect x="110" y="340" width="300" height="22" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="320" y="356" text-anchor="middle" font-size="11.5" fill="#334155">h = 0：n/2 个叶子 × 沉 0 步 = 0</text>
+
+  <rect x="620" y="70" width="360" height="330" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="634" y="92" font-size="13.5" font-weight="bold" fill="#0f172a">实测净耗时（ms，3.3 抄录）</text>
+  <text x="634" y="114" font-size="13" font-weight="bold" fill="#334155">A 递减序列：插入的最坏情况</text>
+  <text x="634" y="132" font-size="11.5" fill="#64748b">拷贝基线（20 轮）53 ms</text>
+  <rect x="634" y="140" width="210" height="22" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="852" y="156" font-size="11.5" fill="#7f1d1d">逐个 push 净 769 ms</text>
+  <rect x="634" y="170" width="48" height="22" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="690" y="186" font-size="11.5" fill="#1e40af">O(n) 建堆 净 175 ms</text>
+  <text x="634" y="212" font-size="13" font-weight="bold" fill="#b45309">push / build = 4.39 倍</text>
+
+  <text x="634" y="242" font-size="13" font-weight="bold" fill="#334155">B 随机序列：平均只上浮约 1 层</text>
+  <text x="634" y="260" font-size="11.5" fill="#64748b">拷贝基线（20 轮）34 ms</text>
+  <rect x="634" y="268" width="122" height="22" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="764" y="284" font-size="11.5" fill="#7c2d12">逐个 push 净 446 ms</text>
+  <rect x="634" y="298" width="100" height="22" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="742" y="314" font-size="11.5" fill="#14532d">O(n) 建堆 净 367 ms</text>
+  <text x="634" y="340" font-size="13" font-weight="bold" fill="#b45309">push / build = 1.22 倍 → 优势几乎消失</text>
+  <text x="634" y="362" font-size="11.5" fill="#64748b">净耗时 = 累计总耗时 − 拷贝基线</text>
+  <text x="634" y="382" font-size="11.5" fill="#64748b">递减输入下本机倍数落在 4~6 倍区间</text>
+
+  <rect x="20" y="420" width="960" height="96" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="36" y="444" font-size="13.5" font-weight="bold" fill="#0f172a">求和：总代价 = Σ h · n / 2^(h+1) = (n/2) · Σ h/2^h，而 Σ(h≥0) h/2^h = 2 是收敛级数</text>
+  <text x="36" y="468" font-size="12.5" fill="#14532d">所以 总代价 ≤ (n/2) · 2 = n → O(n)。两个方向刚好抵消：节点多的层沉得浅，沉得深的层节点极少。</text>
+  <text x="36" y="492" font-size="12" fill="#334155">建堆循环就是从最后一个非叶节点 n/2 - 1 倒着做到下标 0；下标 ≥ n/2 的全是叶子，对它们做 siftDown 是空转。</text>
+
+  <text x="30" y="546" font-size="12.5" fill="#b45309">常见错误推理：「n/2 个内部节点 × 每个 O(log n) = O(n log n)」—— 错在用同一个高度去乘所有节点</text>
+  <text x="30" y="570" font-size="12.5" fill="#7f1d1d">O(n) 建堆的价值是最坏情况保证（对任何输入都是 O(n)），而不是「随机输入下更快」</text>
+  <text x="30" y="594" font-size="12" fill="#64748b">实测口径：容器 golang:1.26-alpine，本机 time.Now 分辨率约 1 ms；耗时只断言单调趋势，绝对值随机器与负载波动</text>
+</svg>

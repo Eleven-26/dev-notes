@@ -20,6 +20,8 @@ Docker 本身**支持 IPv6，但默认不启用**。启用要三件事：
 2. 改 **Docker 守护进程配置 `daemon.json`**（主体内容）；
 3. **重载 + 重启 Docker**，再验证容器确实拿到了 IPv6 地址。
 
+![Docker 启用 IPv6 的四步链路：第 1 步内核 disable_ipv6 必须是 0，第 2 步 daemon.json 里 ipv6 与 fixed-cidr-v6 两项，第 3 步 daemon-reload 之后必须 restart docker，第 4 步用带方括号的 curl 验证；之后分两条分支，默认 bridge 靠配置文件就够，自定义网络要显式 --ipv6 --subnet](images/Docker启用IPv6的四步与两条分支.svg)
+
 ### 1.2 内核参数：先确认宿主机支持 IPv6
 
 ```bash
@@ -174,6 +176,8 @@ RUN mkdir -p /etc/apt \
   "registry-mirrors": ["https://<你的加速地址>.mirror.aliyuncs.com"]
 }
 ```
+
+![拉镜像与装软件的两条加速路线：路线一 docker pull 走宿主机 daemon.json 里的 registry-mirrors，加速的是镜像层下载；路线二容器内 apt-get install 走镜像内部的 sources.list，加速的是软件包下载；两条路线各管一跳互不覆盖，宿主机配了代理但构建环境是隔离的依旧慢](images/拉镜像与装软件的两条加速路线.svg)
 
 一句话记：**mirror 管"拉镜像"，apt 源管"装软件"，两个加速要分别配。**
 

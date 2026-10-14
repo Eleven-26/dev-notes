@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="dp1a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="dp1b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <text x="20" y="26" font-size="16" font-weight="bold" fill="#0f172a">RocketMQ 三种部署形态：节点角色与端口对照</text>
+  <text x="20" y="46" font-size="11" fill="#64748b">① 单 Master 为本机实跑；② ③ 摘自 apache/rocketmq:5.3.1 镜像自带的官方样例配置，未实跑</text>
+  <text x="980" y="26" text-anchor="end" font-size="11" fill="#64748b">实线 = 注册 / 取路由 · 粗线 = 复制通道</text>
+
+  <rect x="14" y="58" width="972" height="140" rx="8" fill="#f7fbff" stroke="#c9d6e4" stroke-width="1"/>
+  <text x="26" y="76" font-size="12" font-weight="bold" fill="#0b5fa5">① 单 Master：本机实测 w2rmqCluster / broker-a / BID=0</text>
+
+  <rect x="40" y="98" width="160" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="120" y="122" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f172a">Producer / Consumer</text>
+  <text x="120" y="144" text-anchor="middle" font-size="10" fill="#475569">同一 Docker 网络</text>
+
+  <rect x="270" y="98" width="150" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+  <text x="345" y="116" text-anchor="middle" font-size="11" font-weight="bold" fill="#0c4a6e">NameServer</text>
+  <text x="345" y="134" text-anchor="middle" font-size="10" fill="#075985">listenPort 9876</text>
+  <text x="345" y="152" text-anchor="middle" font-size="9" fill="#0369a1">宿主 22801</text>
+
+  <rect x="470" y="98" width="190" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="565" y="116" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">Broker broker-a BID=0</text>
+  <text x="565" y="134" text-anchor="middle" font-size="10" fill="#166534">10911 主通道 / 10912 HA</text>
+  <text x="565" y="152" text-anchor="middle" font-size="9" fill="#166534">ASYNC_MASTER + ASYNC_FLUSH</text>
+
+  <rect x="700" y="98" width="270" height="64" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.3"/>
+  <text x="835" y="116" text-anchor="middle" font-size="10" fill="#713f12">clusterList 实测只有 1 行：BID 0</text>
+  <text x="835" y="134" text-anchor="middle" font-size="10" fill="#713f12">宿主端口 22802 到 10911</text>
+  <text x="835" y="152" text-anchor="middle" font-size="10" fill="#713f12">22803 到 10912、22804 到 10909</text>
+
+  <path d="M200 118 L266 118" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="233" y="112" text-anchor="middle" font-size="9" fill="#334155">取路由</text>
+  <path d="M470 140 L424 140" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="447" y="134" text-anchor="middle" font-size="9" fill="#334155">注册</text>
+  <path d="M120 162 L120 186 L565 186 L565 164" fill="none" stroke="#b45309" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#dp1b)"/>
+  <text x="250" y="180" font-size="9.5" fill="#b45309">收发直连 10911，不经过 NameServer</text>
+
+  <rect x="14" y="206" width="972" height="190" rx="8" fill="#fdf9ff" stroke="#d9cbe8" stroke-width="1"/>
+  <text x="26" y="224" font-size="12" font-weight="bold" fill="#7c3aed">② 2m-2s 主从：官方样例 conf/2m-2s-sync，主与从同 brokerName</text>
+
+  <rect x="40" y="278" width="160" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="120" y="302" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f172a">Producer / Consumer</text>
+  <text x="120" y="324" text-anchor="middle" font-size="10" fill="#475569">写只落在 Master</text>
+
+  <rect x="270" y="278" width="150" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+  <text x="345" y="296" text-anchor="middle" font-size="11" font-weight="bold" fill="#0c4a6e">NameServer</text>
+  <text x="345" y="314" text-anchor="middle" font-size="10" fill="#075985">9876，生产起 2 台</text>
+  <text x="345" y="332" text-anchor="middle" font-size="9" fill="#0369a1">路由里主从都在</text>
+
+  <rect x="470" y="222" width="200" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="570" y="240" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">broker-a BID=0</text>
+  <text x="570" y="258" text-anchor="middle" font-size="10" fill="#166534">SYNC_MASTER</text>
+  <text x="570" y="276" text-anchor="middle" font-size="10" fill="#166534">10911 / HA 10912</text>
+
+  <rect x="470" y="330" width="200" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="570" y="348" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">broker-a BID=1</text>
+  <text x="570" y="366" text-anchor="middle" font-size="10" fill="#b91c1c">SLAVE，只读不升主</text>
+  <text x="570" y="384" text-anchor="middle" font-size="10" fill="#b91c1c">10911 / HA 10912</text>
+
+  <path d="M200 310 L266 310" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="233" y="304" text-anchor="middle" font-size="9" fill="#334155">取路由</text>
+  <path d="M470 250 L424 288" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="452" y="262" text-anchor="middle" font-size="9" fill="#334155">注册</text>
+  <path d="M470 350 L424 332" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="452" y="348" text-anchor="middle" font-size="9" fill="#334155">注册</text>
+  <path d="M610 286 L610 330" fill="none" stroke="#7c3aed" stroke-width="2.4" marker-end="url(#dp1a)"/>
+  <text x="622" y="312" font-size="9.5" fill="#6d28d9">HA 通道 10912：SYNC 等副本 / ASYNC 不等</text>
+
+  <rect x="700" y="286" width="270" height="56" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.3"/>
+  <text x="835" y="306" text-anchor="middle" font-size="10" fill="#713f12">2 组主从共 4 台，样例是 2m-2s-sync</text>
+  <text x="835" y="326" text-anchor="middle" font-size="10" fill="#713f12">改 ASYNC_MASTER 即 2m-2s-async</text>
+
+  <rect x="14" y="404" width="972" height="200" rx="8" fill="#f6fdfa" stroke="#c3e6d2" stroke-width="1"/>
+  <text x="26" y="422" font-size="12" font-weight="bold" fill="#047857">③ DLedger 三节点：官方样例 conf/dledger，三节点同名 RaftNode00</text>
+
+  <rect x="470" y="424" width="210" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="575" y="442" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">n0：dLegerSelfId=n0</text>
+  <text x="575" y="462" text-anchor="middle" font-size="9.5" fill="#166534">listenPort 30911 · Raft 40911</text>
+
+  <rect x="470" y="484" width="210" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="575" y="502" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#0f172a">n1：dLegerSelfId=n1</text>
+  <text x="575" y="522" text-anchor="middle" font-size="9.5" fill="#475569">listenPort 30921 · Raft 40912</text>
+
+  <rect x="470" y="544" width="210" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="575" y="562" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#0f172a">n2：dLegerSelfId=n2</text>
+  <text x="575" y="582" text-anchor="middle" font-size="9.5" fill="#475569">listenPort 30931 · Raft 40913</text>
+
+  <rect x="40" y="484" width="160" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="120" y="508" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f172a">Producer / Consumer</text>
+  <text x="120" y="530" text-anchor="middle" font-size="10" fill="#475569">只见选出来的主</text>
+
+  <rect x="270" y="484" width="150" height="64" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+  <text x="345" y="502" text-anchor="middle" font-size="11" font-weight="bold" fill="#0c4a6e">NameServer</text>
+  <text x="345" y="520" text-anchor="middle" font-size="10" fill="#075985">9876</text>
+  <text x="345" y="538" text-anchor="middle" font-size="9" fill="#0369a1">路由随选主变</text>
+
+  <path d="M200 516 L266 516" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="233" y="510" text-anchor="middle" font-size="9" fill="#334155">取路由</text>
+  <path d="M470 450 L424 498" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="450" y="466" text-anchor="middle" font-size="9" fill="#334155">注册</text>
+  <path d="M470 510 L424 516" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="447" y="505" text-anchor="middle" font-size="9" fill="#334155">注册</text>
+  <path d="M470 570 L424 534" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#dp1a)"/>
+  <text x="447" y="566" text-anchor="middle" font-size="9" fill="#334155">注册</text>
+
+  <rect x="700" y="452" width="270" height="128" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.3"/>
+  <text x="835" y="472" text-anchor="middle" font-size="10" fill="#713f12">enableDLegerCommitLog=true</text>
+  <text x="835" y="492" text-anchor="middle" font-size="10" fill="#713f12">三节点 Raft 互连，端口成组</text>
+  <text x="835" y="512" text-anchor="middle" font-size="10" fill="#713f12">样例不写 brokerId 与 brokerRole</text>
+  <text x="835" y="532" text-anchor="middle" font-size="10" fill="#713f12">主由 Raft 选，写多数派确认</text>
+  <text x="835" y="552" text-anchor="middle" font-size="10" fill="#713f12">5.x 另有 Controller 模式：brokerId=-1</text>
+
+  <text x="20" y="622" font-size="10" fill="#0f172a">⭐ 判主只看 BID：0 是 Master、大于 0 是 Slave，同一个 brokerName 下不能有两个 0</text>
+  <text x="20" y="640" font-size="10" fill="#b45309">⚠️ 官方样例把 fileReservedTime 显式写成 48，本机 getBrokerConfig 实测默认是 72：样例是模板，不是默认值</text>
+</svg>

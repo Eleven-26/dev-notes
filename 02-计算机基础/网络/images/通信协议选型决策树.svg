@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="dBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+  </defs>
+  <rect width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">通信协议选型决策树</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">第一个岔路是同步 / 异步，比选协议更重要；确定后再看对外还是内部、是否实时、单向还是双向</text>
+
+  <rect x="130" y="96" width="200" height="56" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="230" y="128" text-anchor="middle" font-size="13" fill="#92400e">调用方必须立刻知道结果？</text>
+  <rect x="130" y="190" width="200" height="56" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="230" y="222" text-anchor="middle" font-size="13" fill="#92400e">对外 API 还是内部调用？</text>
+  <rect x="130" y="284" width="200" height="56" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="230" y="316" text-anchor="middle" font-size="13" fill="#92400e">内部需要实时 / 流式吗？</text>
+  <rect x="130" y="378" width="200" height="56" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="230" y="410" text-anchor="middle" font-size="13" fill="#92400e">客户端要持续上行吗？</text>
+
+  <rect x="560" y="96" width="290" height="56" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="705" y="128" text-anchor="middle" font-size="13" fill="#14532d">异步消息：MQ（Kafka + Avro）</text>
+  <rect x="560" y="190" width="290" height="56" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="705" y="222" text-anchor="middle" font-size="13" fill="#1e3a8a">HTTP/2 + JSON（REST）</text>
+  <rect x="560" y="284" width="290" height="56" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="705" y="316" text-anchor="middle" font-size="13" fill="#1e3a8a">gRPC + Protobuf</text>
+  <rect x="560" y="352" width="290" height="50" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="705" y="382" text-anchor="middle" font-size="13" fill="#1e3a8a">SSE（单向推送）</text>
+  <rect x="560" y="416" width="290" height="50" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="705" y="446" text-anchor="middle" font-size="13" fill="#1e3a8a">WebSocket（双向）</text>
+
+  <line x1="330" y1="124" x2="554" y2="124" stroke="#16a34a" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="442" y="116" text-anchor="middle" font-size="11.5" fill="#14532d">否 · 只需最终处理</text>
+  <line x1="230" y1="152" x2="230" y2="184" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="246" y="172" font-size="11.5" fill="#1e3a8a">是</text>
+
+  <line x1="330" y1="218" x2="554" y2="218" stroke="#16a34a" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="442" y="210" text-anchor="middle" font-size="11.5" fill="#14532d">对外</text>
+  <line x1="230" y1="246" x2="230" y2="278" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="246" y="266" font-size="11.5" fill="#1e3a8a">内部</text>
+
+  <line x1="330" y1="312" x2="554" y2="312" stroke="#16a34a" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="442" y="304" text-anchor="middle" font-size="11.5" fill="#14532d">不需要</text>
+  <line x1="230" y1="340" x2="230" y2="372" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="246" y="360" font-size="11.5" fill="#1e3a8a">需要</text>
+
+  <line x1="330" y1="398" x2="554" y2="377" stroke="#ea580c" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="445" y="384" text-anchor="middle" font-size="11.5" fill="#9a3412">单向</text>
+  <line x1="330" y1="414" x2="554" y2="441" stroke="#ea580c" stroke-width="1.6" marker-end="url(#dBlue)"/>
+  <text x="445" y="446" text-anchor="middle" font-size="11.5" fill="#9a3412">双向</text>
+
+  <text x="130" y="500" font-size="12.5" fill="#64748b">补充：弱网 / 移动端 / 跨境访问 → 优先 HTTP/3（QUIC）；IoT 海量设备 → MQTT；GraphQL 适合前端多样、数据关系复杂的 BFF 层。</text>
+  <text x="130" y="524" font-size="12.5" fill="#7f1d1d">注意：不要把"同步接口包一层 MQ"当解耦——那只是把延迟藏起来了；协议边界应放在网关。</text>
+</svg>

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 770" width="1000" height="770" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="770" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">手写版 Resolver 的线程模型：两个更新源，一个可变引用</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">对应本篇第四节骨架与 4.2 节实测（eclipse-temurin:8-jdk，1.8.0_504，连跑 3 次）</text>
+
+  <!-- 两个更新源 -->
+  <rect x="60" y="86" width="380" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="250" y="110" text-anchor="middle" font-size="13" fill="#1e40af">更新源 ①：推送回调线程</text>
+  <text x="250" y="132" text-anchor="middle" font-size="11.5" fill="#334155">naming.subscribe(service, clusters -&gt; refresh())</text>
+
+  <rect x="560" y="86" width="380" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="750" y="110" text-anchor="middle" font-size="13" fill="#1e40af">更新源 ②：定时兜底线程</text>
+  <text x="750" y="132" text-anchor="middle" font-size="11.5" fill="#334155">scheduleWithFixedDelay(refresh, 5, 5, SECONDS)</text>
+
+  <line x1="250" y1="150" x2="400" y2="180" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <line x1="750" y1="150" x2="600" y2="180" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="330" y="182" width="340" height="64" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+  <text x="500" y="206" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">refresh()：拉全量后整体替换</text>
+  <text x="500" y="228" text-anchor="middle" font-size="11.5" fill="#64748b">两条路径各调一次，两者都能覆盖到</text>
+
+  <line x1="500" y1="246" x2="500" y2="272" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <!-- 三条判定分支 -->
+  <rect x="60" y="274" width="880" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="90" y="300" font-size="12.5" font-weight="bold" fill="#334155">分支与实测行为（每轮观察 8 秒，三轮读数一致的部分加粗）：</text>
+  <rect x="90" y="312" width="14" height="14" fill="#dc2626"/>
+  <text x="114" y="324" font-size="12" fill="#475569">解析到空列表：只记告警、直接返回 —— 实测告警计数 1，快照仍是 v66 的 4 个地址，没把空表换上去</text>
+  <rect x="90" y="336" width="14" height="14" fill="#dc2626"/>
+  <text x="114" y="348" font-size="12" fill="#475569">拉取抛异常：同样只记告警 —— 实测告警计数 1，注册中心抖动不等于全部实例下线</text>
+  <rect x="90" y="360" width="14" height="14" fill="#16a34a"/>
+  <text x="114" y="372" font-size="12" fill="#475569">正常：copy 一份新列表再 set —— 8 秒内推送换 65~66 版、兜底跑 8 轮，合计 refresh 74~75 次</text>
+
+  <line x1="500" y1="378" x2="500" y2="404" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+
+  <!-- 快照本体 -->
+  <rect x="330" y="406" width="340" height="84" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="500" y="430" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">唯一可变的只有这个引用</text>
+  <text x="500" y="452" text-anchor="middle" font-size="11.5" fill="#334155">AtomicReference&lt;List&lt;String&gt;&gt; snapshot</text>
+  <text x="500" y="474" text-anchor="middle" font-size="11.5" fill="#64748b">列表本身 unmodifiable，旧版本没人引用后等 GC</text>
+
+  <line x1="500" y1="490" x2="500" y2="516" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <!-- 读线程 -->
+  <rect x="60" y="518" width="880" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="544" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">4 个业务读线程：instances() 只做 snapshot.get()，无锁、常数时间</text>
+  <text x="500" y="568" text-anchor="middle" font-size="12" fill="#334155">实测读取 40,705,343 ~ 98,601,623 次，读到混合代次（中间态）= 0 次（三轮全 0）</text>
+
+  <!-- 结论面板 -->
+  <rect x="40" y="608" width="920" height="148" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="632" font-size="12.5" font-weight="bold" fill="#334155">实测读数与口径：</text>
+  <text x="60" y="654" font-size="12" fill="#475569">· 兜底线程相邻两轮间隔 min / median / max = 1000 / 1000~1003 / 1002~1019 ms（示例把周期配成 1s 才跑得满 8 轮，正文代码是 5s）；</text>
+  <text x="60" y="674" font-size="12" fill="#475569">· 只断言「间隔 ≈ 配置周期」，不断言严格相等；读取次数受 CPU 影响波动到 2.4 倍，只作量级参照；</text>
+  <text x="60" y="694" font-size="12" fill="#475569">· pick() 用 floorMod(cursor.getAndIncrement(), size)：400,000 次分布为 a/b/c/d 各 100,000，无偏；溢出点的裸 % 见 4.1 节；</text>
+  <text x="60" y="716" font-size="12" fill="#b45309">注意：验证的是无锁快照机制本身，用的是可控的假 NamingService；真实 nacos-client、Spring Cloud Alibaba 与 Nacos 服务端阈值均未实测（见篇首说明）。</text>
+  <text x="60" y="740" font-size="12" fill="#64748b">对照：Go 侧同样结构见 客户端负载均衡的Go实现.md 与 服务注册与发现的Go实现.md，那边的读侧不变量由 atomic.Pointer 保证。</text>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+</svg>

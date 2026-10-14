@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一个 MTU 报文里的首部与载荷布局（MSS 怎么算出来）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">MSS = MTU − IP 头 − TCP 头；IPv6 的固定头比 IPv4 大 20 字节，所以 MSS 少 20</text>
+
+  <text x="60" y="104" font-size="13" font-weight="bold" fill="#2563eb">IPv4（MTU 1500）</text>
+  <rect x="60" y="112" width="60" height="46" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="90" y="140" text-anchor="middle" font-size="11.5" fill="#334155">以太头</text>
+  <rect x="120" y="112" width="80" height="46" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="160" y="140" text-anchor="middle" font-size="11.5" fill="#1e3a8a">IP 头 20</text>
+  <rect x="200" y="112" width="80" height="46" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="240" y="140" text-anchor="middle" font-size="11.5" fill="#14532d">TCP 头 20</text>
+  <rect x="280" y="112" width="600" height="46" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="580" y="140" text-anchor="middle" font-size="12.5" fill="#9a3412">TCP 数据 = MSS ≤ 1460（1500 − 20 − 20）</text>
+  <rect x="880" y="112" width="40" height="46" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="900" y="140" text-anchor="middle" font-size="11" fill="#334155">FCS</text>
+
+  <text x="60" y="200" font-size="13" font-weight="bold" fill="#7c3aed">IPv6（MTU 1500）</text>
+  <rect x="60" y="208" width="60" height="46" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="90" y="236" text-anchor="middle" font-size="11.5" fill="#334155">以太头</text>
+  <rect x="120" y="208" width="120" height="46" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="180" y="236" text-anchor="middle" font-size="11.5" fill="#5b21b6">IPv6 头 40</text>
+  <rect x="240" y="208" width="80" height="46" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="280" y="236" text-anchor="middle" font-size="11.5" fill="#14532d">TCP 头 20</text>
+  <rect x="320" y="208" width="560" height="46" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="600" y="236" text-anchor="middle" font-size="12.5" fill="#9a3412">TCP 数据 = MSS ≤ 1440（1500 − 40 − 20）</text>
+  <rect x="880" y="208" width="40" height="46" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="900" y="236" text-anchor="middle" font-size="11" fill="#334155">FCS</text>
+
+  <rect x="60" y="284" width="860" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="76" y="308" font-size="12.5" fill="#334155">实测（pktmon 抓一条 IPv6 HTTPS 连接）：客户端 SYN 选项 mss 1440，与 1500−40−20 完全吻合；服务端选项 mss 1300、wscale 13。</text>
+  <text x="76" y="328" font-size="12.5" fill="#334155">双方各自宣告，实际取较小值 → 这条连接真正能发的最大段是 1300（云 / CDN 留了隧道与额外封装余量）。</text>
+
+  <text x="60" y="368" font-size="12.5" fill="#b45309">注意：MSS 是握手 SYN 里的 TCP 选项（抓包显示为 options [mss NNNN]），不是每个包头上都带的长度字段。</text>
+  <text x="60" y="392" font-size="12.5" fill="#b45309">注意：抓包点在本机时看到的"段"可能远大于 MSS（如实测 3900 字节）——那是网卡 TSO 卸载，不代表真实 MTU。</text>
+  <text x="60" y="428" font-size="12.5" fill="#334155">IP 分片发生在 IP 层（Flags 的 MF 位 + 片偏移），和 TCP 把字节流切成段是两回事。</text>
+</svg>

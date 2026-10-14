@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 830" width="1000" height="830" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="830" fill="#ffffff"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">上树之前按顺序问完十二问：每一问答错，就对应一条反模式</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12.5" fill="#64748b">问句与落点取自 5.2 自查清单；括号里的数字是本目录零件篇的容器实测读数（出处见正文各节标注）</text>
+
+  <rect x="30" y="70" width="940" height="26" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="44" y="88" font-size="13" font-weight="bold" fill="#991b1b">第一组（正文第一节 · 结构选错）：需求里有没有「序」，数据会不会变</text>
+
+  <rect x="30" y="100" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="122" r="15" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="122" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#991b1b">①</text>
+  <text x="84" y="117" font-size="13.5" font-weight="bold" fill="#0f172a">需求里有没有「区间 / 顺序 / 前缀 / 附近」？</text>
+  <text x="84" y="137" font-size="12" fill="#dc2626">一个都没有 → 哈希表（1.2）：树是在为「序」付费，没有序需求就是白付</text>
+
+  <rect x="30" y="148" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="170" r="15" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="170" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#991b1b">②</text>
+  <text x="84" y="165" font-size="13.5" font-weight="bold" fill="#0f172a">这份数据还会变吗？</text>
+  <text x="84" y="185" font-size="12" fill="#dc2626">几乎不变 → 排序数组 + 二分（1.3）：几十到几千条静态配置不值得上结构</text>
+
+  <rect x="30" y="196" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="218" r="15" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="218" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#991b1b">③</text>
+  <text x="84" y="213" font-size="13.5" font-weight="bold" fill="#0f172a">插入键可能单调 / 近序吗？</text>
+  <text x="84" y="233" font-size="12" fill="#dc2626">可能 → 别用裸 BST（1.1）：实测升序插 65536 个键 → 树高 65536，而 log₂ n 只有 16</text>
+
+  <rect x="30" y="244" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="266" r="15" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="266" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#991b1b">⑩</text>
+  <text x="84" y="261" font-size="13.5" font-weight="bold" fill="#0f172a">那两个堆会被反复合并吗？（编号沿用 5.2，故排在第一组末尾）</text>
+  <text x="84" y="281" font-size="12" fill="#dc2626">不会 → 二叉堆就够（1.4）：只插入 + 取最小时，左偏树 11078904 次 vs 二叉堆 6519019 次</text>
+
+  <rect x="30" y="300" width="940" height="26" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="44" y="318" font-size="13" font-weight="bold" fill="#9a3412">第二组（第二节 · 介质与实现选错）：内存还是磁盘、键长什么样、动不动</text>
+
+  <rect x="30" y="330" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="352" r="15" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="58" y="352" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#9a3412">④</text>
+  <text x="84" y="347" font-size="13.5" font-weight="bold" fill="#0f172a">这次有序查找在内存还是磁盘？</text>
+  <text x="84" y="367" font-size="12" fill="#ea580c">磁盘 → B+ 树（2.1）：层数 = I/O 次数，扇出 ≈ 500 时 10⁷ 行约 3 层，红黑树约 24 层</text>
+
+  <rect x="30" y="378" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="400" r="15" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="58" y="400" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#9a3412">⑤</text>
+  <text x="84" y="395" font-size="13.5" font-weight="bold" fill="#0f172a">键的前缀共享度高吗？</text>
+  <text x="84" y="415" font-size="12" fill="#ea580c">不高 → 别用 Trie（2.2）：同一组词 app / apple / api / bat，Trie 9 个节点、Radix 只要 6 个</text>
+
+  <rect x="30" y="426" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="448" r="15" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="58" y="448" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#9a3412">⑥</text>
+  <text x="84" y="443" font-size="13.5" font-weight="bold" fill="#0f172a">空间对象的位置变得勤吗？</text>
+  <text x="84" y="463" font-size="12" fill="#ea580c">勤 → 网格 / GeoHash（2.3）：R 树删除重插要维护 MBR；注意：更新代价本目录未实测，只给判据</text>
+
+  <rect x="30" y="482" width="940" height="26" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="44" y="500" font-size="13" font-weight="bold" fill="#78350f">第三组（第三节 · 维护段写错）：这三问错了不抛异常，只悄悄给错值</text>
+
+  <rect x="30" y="512" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="534" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="58" y="534" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#78350f">⑦</text>
+  <text x="84" y="529" font-size="13.5" font-weight="bold" fill="#0f172a">有懒标记的路径吗？写了 pushdown、清了标记、有没有对拍？</text>
+  <text x="84" y="549" font-size="12" fill="#b45309">漏一项就静默出错（3.1）：判据是与无标记实现对拍，实测两份实现同为 4835082 才算数</text>
+
+  <rect x="30" y="560" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="582" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="58" y="582" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#78350f">⑧</text>
+  <text x="84" y="577" font-size="13.5" font-weight="bold" fill="#0f172a">区间运算可差分（可减）吗？</text>
+  <text x="84" y="597" font-size="12" fill="#b45309">不可 → 别用树状数组做最值（3.2）：静态最值改 ST 表，实测查询期省 33268 倍</text>
+
+  <rect x="30" y="608" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="630" r="15" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="58" y="630" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#78350f">⑨</text>
+  <text x="84" y="625" font-size="13.5" font-weight="bold" fill="#0f172a">树的深度可预测吗？</text>
+  <text x="84" y="645" font-size="12" fill="#b45309">不可控 → 迭代 / Morris（3.3）：链式 100 万层实测递归栈 +128 MiB，迭代常驻只要 8.7 MiB</text>
+
+  <rect x="30" y="664" width="940" height="26" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="44" y="682" font-size="13" font-weight="bold" fill="#1e40af">第四组（第四节 · 测量方式错）：结构对了，口径错了照样得出错误结论</text>
+
+  <rect x="30" y="694" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="716" r="15" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="716" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#1e40af">⑪</text>
+  <text x="84" y="711" font-size="13.5" font-weight="bold" fill="#0f172a">报的是分位数吗？有没有叠加后台负载、边写边读采样？</text>
+  <text x="84" y="731" font-size="12" fill="#2563eb">只看均值 → p99 被打爆（4.1）：实测写放大 7.04，其中 Compaction 占写盘量 69%</text>
+
+  <rect x="30" y="742" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="58" cy="764" r="15" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="58" y="764" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#1e40af">⑫</text>
+  <text x="84" y="759" font-size="13.5" font-weight="bold" fill="#0f172a">方案是只比 Big-O 定的吗？</text>
+  <text x="84" y="779" font-size="12" fill="#2563eb">是 → 补实测常数与局部性（4.2）：同为 O(log n)，查 10 万次区间和树状数组 1.59 ms、线段树 17.57 ms</text>
+  <text x="30" y="812" font-size="12.5" fill="#334155">要点：先问「需求 → 介质 → 会不会变 → 深度可不可控」，再问「怎么测」；前三组答错是结构错，第四组答错是结论错（顺序见 5.2）。</text>
+</svg>

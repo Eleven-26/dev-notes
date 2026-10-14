@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640">
+  <rect width="1000" height="640" fill="#ffffff"/>
+  <defs>
+    <marker id="ge" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="38" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="24" fill="#0f172a" text-anchor="middle">select → poll → epoll：三代接口各解决了什么、还剩什么</text>
+  <text x="500" y="64" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569" text-anchor="middle">口径取自正文第三节的对照表：n 是监视的 fd 总数，k 是本轮就绪数</text>
+
+  <rect x="50" y="86" width="290" height="366" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="195" y="112" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="18" fill="#7f1d1d" text-anchor="middle">select</text>
+  <text x="68" y="142" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">数据结构：位图 fd_set</text>
+  <text x="68" y="170" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">数量上限：常见 FD_SETSIZE = 1024</text>
+  <text x="68" y="198" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">每轮等待：复制全量 fd</text>
+  <text x="68" y="226" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">返回之后：扫描 0 到 maxfd</text>
+  <text x="68" y="254" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">复杂度：等待是 O(n)</text>
+  <text x="68" y="282" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">触发方式：只有 LT</text>
+  <text x="68" y="310" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">改关注集合：重建位图</text>
+  <text x="68" y="348" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7f1d1d">三个缺点：数量限制、</text>
+  <text x="68" y="370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7f1d1d">重复拷贝、全量遍历</text>
+
+  <rect x="360" y="86" width="290" height="366" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="2"/>
+  <text x="505" y="112" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="18" fill="#78350f" text-anchor="middle">poll</text>
+  <text x="378" y="142" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">数据结构：动态 pollfd 数组</text>
+  <text x="378" y="170" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">数量上限：无固定 1024 限制</text>
+  <text x="378" y="198" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">每轮等待：仍复制整个数组</text>
+  <text x="378" y="226" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">返回之后：仍线性扫描全部</text>
+  <text x="378" y="254" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">复杂度：等待是 O(n)</text>
+  <text x="378" y="282" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">触发方式：只有 LT</text>
+  <text x="378" y="310" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">改关注集合：修改数组</text>
+  <text x="378" y="348" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#78350f">改进：输入与结果分离</text>
+  <text x="378" y="370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#78350f">还剩：成本仍随 n 增长</text>
+
+  <rect x="670" y="86" width="290" height="366" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="815" y="112" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="18" fill="#1e3a8a" text-anchor="middle">epoll</text>
+  <text x="688" y="142" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">数据结构：红黑树加就绪链表</text>
+  <text x="688" y="170" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">上限：受 fd、内存与配置限制</text>
+  <text x="688" y="198" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">每轮等待：不复制全量集合</text>
+  <text x="688" y="226" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">返回之后：只交付就绪的 k 项</text>
+  <text x="688" y="254" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">复杂度：O(k)，控制 O(log n)</text>
+  <text x="688" y="282" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">触发方式：LT 默认，另有 ET</text>
+  <text x="688" y="310" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">改关注集合：epoll_ctl 增删改</text>
+  <text x="688" y="348" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#1e3a8a">改进：注册关系持久保存</text>
+  <text x="688" y="370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#1e3a8a">注意：说它是 O(1) 不严谨</text>
+
+  <line x1="340" y1="270" x2="360" y2="270" stroke="#64748b" stroke-width="2" marker-end="url(#ge)"/>
+  <line x1="650" y1="270" x2="670" y2="270" stroke="#64748b" stroke-width="2" marker-end="url(#ge)"/>
+
+  <text x="60" y="490" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：三代的分水岭不是「有没有更快的轮询」，而是关注集合是否持久存在内核、结果是否只交付就绪项。</text>
+  <text x="60" y="515" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：连接多而活跃少时，扫描 n 与处理 k 的差距就是 epoll 的收益来源。</text>
+  <text x="60" y="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">实测：容器里读到 syscall.FD_SETSIZE = 1024（golang:1.26-alpine，go1.26.8），与正文的位图上限一致。</text>
+  <text x="60" y="565" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569">注意：「epoll 靠 mmap 减少拷贝」不严谨——核心是避免每轮复制全量兴趣集合，epoll_wait 仍要拷回就绪事件。</text>
+  <text x="60" y="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569">注意：fd 数量上限要连同 fs.file-max、缓冲区与 backlog 一起看，见本篇 9.1 节。</text>
+</svg>

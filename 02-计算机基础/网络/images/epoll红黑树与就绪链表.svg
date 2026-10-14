@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="eBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="eGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+    <marker id="eAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+  </defs>
+  <rect width="1000" height="460" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">epoll 实例的两块结构：红黑树 + 就绪链表</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">兴趣集合持久存在内核里；关注的事件变化时回调把 fd 挂进就绪链表，epoll_wait 只取就绪项</text>
+
+  <rect x="60" y="96" width="900" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="72" y="116" font-size="12" fill="#64748b">内核态</text>
+
+  <rect x="90" y="200" width="180" height="90" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="180" y="232" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">应用程序</text>
+  <text x="180" y="258" text-anchor="middle" font-size="11.5" fill="#1e3a8a">用户态 events 数组</text>
+
+  <rect x="430" y="126" width="250" height="86" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="555" y="160" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">兴趣列表 · 红黑树</text>
+  <text x="555" y="186" text-anchor="middle" font-size="11.5" fill="#14532d">epoll_ctl 增删改 O(log n)</text>
+
+  <rect x="430" y="286" width="250" height="72" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="555" y="314" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#9a3412">就绪链表 ready list</text>
+  <text x="555" y="336" text-anchor="middle" font-size="11.5" fill="#9a3412">只收集本轮活跃 fd</text>
+
+  <rect x="770" y="286" width="170" height="72" rx="10" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="855" y="314" text-anchor="middle" font-size="12.5" fill="#0f172a">网卡 / 驱动</text>
+  <text x="855" y="336" text-anchor="middle" font-size="11.5" fill="#334155">fd 状态变化回调</text>
+
+  <line x1="270" y1="220" x2="424" y2="168" stroke="#2563eb" stroke-width="1.6" marker-end="url(#eBlue)"/>
+  <text x="300" y="185" font-size="11.5" fill="#1e3a8a">epoll_ctl ADD/MOD/DEL</text>
+  <line x1="555" y1="212" x2="555" y2="280" stroke="#16a34a" stroke-width="1.6" marker-end="url(#eGreen)"/>
+  <text x="566" y="250" font-size="11" fill="#14532d">就绪时挂入</text>
+  <line x1="770" y1="322" x2="686" y2="322" stroke="#ea580c" stroke-width="1.6" marker-end="url(#eAmber)"/>
+  <text x="694" y="314" font-size="11" fill="#9a3412">回调</text>
+  <line x1="430" y1="336" x2="276" y2="270" stroke="#2563eb" stroke-width="1.6" marker-end="url(#eBlue)"/>
+  <text x="238" y="322" font-size="11.5" fill="#1e3a8a">epoll_wait 只拷回就绪的 k 项</text>
+
+  <text x="60" y="392" font-size="12.5" fill="#334155">要点：关注集合持久保存在内核，不必每轮重复拷贝全量 fd；等待返回只交付 k 个就绪项，不再扫描全部 n 项。</text>
+  <text x="60" y="418" font-size="12.5" fill="#7f1d1d">注意：说"epoll 是 O(1)"不严谨——epoll_ctl 有树操作 O(log n)，事件交付至少 O(k)；epoll_wait 仍把就绪事件拷到用户数组。</text>
+</svg>

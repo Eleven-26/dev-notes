@@ -215,6 +215,8 @@ func assign(keys []string, r *HashRing) (map[string]string, error) {
 > 平滑做法把 b、c **插进 a 的空档里**。
 > 一句话：**加权轮询要的是"长期比例正确"，平滑加权额外要"短期也别把一台打死"。**
 
+![权重同为 a:5 b:1 c:1 时，朴素复制表轮询与平滑加权轮询的 21 次逐格序列对比：分布相同、节奏不同](images/平滑加权与朴素加权的21次节奏对比.svg)
+
 **② 一致性哈希 vs 哈希取模**（10000 个 key，节点 `10.0.0.1~5:8080`）：
 
 | 变更 | 一致性哈希换归属的 key | 哈希取模换归属的 key |
@@ -374,6 +376,8 @@ func NewClient(service string, r *Resolver, w Balancer) *http.Client {
 > 所以上面只对 `*net.OpError` 和 `EOF` 类错误换实例，
 > 并且**换实例时必须 `req.Clone`**——`RoundTrip` 的契约要求实现**不得修改入站请求**，
 > 而且请求体可能是只能读一次的 `io.Reader`。
+
+![RoundTrip 的换实例重试判定流程：先算额度 tries，再问 err 是否为空、还有没有额度，最后按错误类别决定能不能换实例](images/RoundTrip换实例重试判定流程.svg)
 
 ---
 

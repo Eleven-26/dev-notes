@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">探测唯一性：判定与认领是否在同一临界区</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13.5" fill="#64748b">出自本篇 4.1 节实测：每轮 2 个并发请求同时 Pick 一个冷却刚到期、连续失败已达 3 次的节点</text>
+
+  <text x="60" y="92" font-size="14" font-weight="bold" fill="#b91c1c">A. 判定与认领拆成两个临界区</text>
+  <text x="530" y="92" font-size="14" font-weight="bold" fill="#15803d">B. 判定与认领同一个临界区（本篇第四节）</text>
+
+  <line x1="500" y1="84" x2="500" y2="470" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 5"/>
+
+  <!-- A 生命线 -->
+  <line x1="110" y1="110" x2="110" y2="470" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="290" y1="110" x2="290" y2="470" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="440" y1="110" x2="440" y2="470" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="110" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">请求 X</text>
+  <text x="290" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">请求 Y</text>
+  <text x="440" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">health 状态</text>
+
+  <line x1="110" y1="140" x2="436" y2="140" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="120" y="134" font-size="11.5" fill="#1d4ed8">① 进锁判定：可用，随即放锁</text>
+  <line x1="290" y1="185" x2="436" y2="185" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="200" y="179" font-size="11.5" fill="#1d4ed8">② 进锁判定：probing 还没置上，也可用</text>
+  <line x1="110" y1="235" x2="436" y2="235" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="150" y="229" font-size="11.5" fill="#b91c1c">③ 第二次进锁认领：probing=true</text>
+  <line x1="290" y1="280" x2="436" y2="280" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="200" y="274" font-size="11.5" fill="#b91c1c">④ 第二次进锁认领：也当成那次探测</text>
+
+  <rect x="90" y="300" width="360" height="46" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="270" y="320" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b91c1c">两个请求各自飞出一个探测</text>
+  <text x="270" y="338" text-anchor="middle" font-size="11.5" fill="#7f1d1d">「只放一个探测」这条不变量被破坏</text>
+
+  <text x="60" y="376" font-size="11.5" fill="#475569">自然交错 3000 轮：双探测 4 轮（另一轮复跑 5 轮）</text>
+  <text x="60" y="396" font-size="11.5" fill="#475569">强制交错 300 轮：双探测 300 轮，命中概率 0.13% 到 0.17%</text>
+  <text x="60" y="416" font-size="11.5" fill="#64748b">窗口只在放锁与再进锁之间，窄到几乎复现不出</text>
+
+  <!-- B 生命线 -->
+  <line x1="580" y1="110" x2="580" y2="470" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="760" y1="110" x2="760" y2="470" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="910" y1="110" x2="910" y2="470" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="580" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">请求 X</text>
+  <text x="760" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">请求 Y</text>
+  <text x="910" y="106" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">health 状态</text>
+
+  <line x1="580" y1="140" x2="906" y2="140" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="600" y="134" font-size="11.5" fill="#15803d">① 进锁：判定 + 选节点 + 占租约</text>
+  <line x1="760" y1="185" x2="906" y2="185" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arS)"/>
+  <text x="700" y="179" font-size="11.5" fill="#64748b">② 排在锁外，进不来</text>
+  <line x1="760" y1="235" x2="906" y2="235" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="700" y="229" font-size="11.5" fill="#b91c1c">③ 进锁重新判定：跳过</text>
+  <line x1="580" y1="280" x2="906" y2="280" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="600" y="274" font-size="11.5" fill="#15803d">④ 探测结算后放锁，额度归还</text>
+
+  <rect x="560" y="300" width="360" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="740" y="320" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#15803d">那一轮只有 1 个探测飞出去</text>
+  <text x="740" y="338" text-anchor="middle" font-size="11.5" fill="#14532d">自然 3000 轮 + 强制 300 轮：双探测 0 轮</text>
+
+  <text x="530" y="376" font-size="11.5" fill="#475569">代价：Pick 之间有锁竞争，换来探测唯一性</text>
+  <text x="530" y="396" font-size="11.5" fill="#475569">反向约束：Done / Report / Stats 不得持锁调用，否则自锁</text>
+  <text x="530" y="416" font-size="11.5" fill="#64748b">inflight 变负要夹回 0，否则最少连接误判最闲</text>
+
+  <rect x="40" y="440" width="920" height="240" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="466" font-size="13" font-weight="bold" fill="#334155">同一份程序里的另外三条读数（不属于上面的交错实验）：</text>
+  <text x="60" y="492" font-size="12.5" fill="#475569">租约（注入时钟）：探测请求 panic 不结算时，无租约版再推进 10 个 Cooldown 仍放行 0 次，节点永久回不了列；</text>
+  <text x="60" y="514" font-size="12.5" fill="#475569">有租约版在超一个 Cooldown 后作废那次探测，放行下一次探测 1 次 —— 这就是第三节那条租约规则的作用。</text>
+  <text x="60" y="538" font-size="12.5" fill="#475569">探测窗口（真实时钟，Cooldown=50ms，5 轮）：摘除到第一次被放行等待 50.02 到 51.70 ms，</text>
+  <text x="60" y="560" font-size="12.5" fill="#475569">多出来的是 0.2ms 轮询粒度 —— 趋势是「等待等于一个 Cooldown」，不是精确值。</text>
+  <text x="60" y="584" font-size="12.5" fill="#475569">立即回列：探测成功让 streak=0、probing=false，冷却还剩 500ms 也判定可用（使用节 2) 的那条口径）。</text>
+  <text x="60" y="608" font-size="12" fill="#64748b">未实测：生产 Cooldown=5s 与真实流量分布下的绝对交错概率不可比，需要流量回放才能测。</text>
+  <text x="60" y="630" font-size="12" fill="#64748b">摘除的状态机、冷却续期与 fail-open 不在本图：见同目录 节点被动摘除状态机与探测租约.svg；</text>
+  <text x="60" y="652" font-size="12" fill="#64748b">Ejected 指标的口径是「此刻 Pick 会不会跳过它」，冷却已到而探测未飞出时它显示可用。</text>
+
+  <defs>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

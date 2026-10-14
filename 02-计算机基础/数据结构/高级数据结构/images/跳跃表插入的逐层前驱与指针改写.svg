@@ -1,0 +1,227 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <defs>
+    <marker id="skBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="skOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    </marker>
+    <marker id="skGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">跳跃表插入的三个动作：下降记前驱、掷骰定层 l、改写 l 对指针</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">两个实测现场（Go 1.26.8 与 JDK 1.8.0_504 同种子 42，输出逐行一致）：插 15 只付 1 对指针；插 7 抽到 7 层触发晋升</text>
+
+  <rect x="30" y="72" width="940" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="98" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">现场一：往 2.2 建好的九键表中间插 15（抽到 l=1，全局层数 L6 不变）</text>
+
+  <text x="92" y="130" text-anchor="end" font-size="12" fill="#64748b">L1 未动</text>
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#skBlue)">
+    <line x1="148" y1="125" x2="162" y2="125"/>
+    <line x1="208" y1="125" x2="222" y2="125"/>
+    <line x1="268" y1="125" x2="282" y2="125"/>
+    <line x1="328" y1="125" x2="342" y2="125"/>
+    <line x1="388" y1="125" x2="402" y2="125"/>
+    <line x1="448" y1="125" x2="462" y2="125"/>
+    <line x1="508" y1="125" x2="522" y2="125"/>
+  </g>
+  <g font-size="13">
+    <rect x="104" y="112" width="44" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="126" y="130" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="164" y="112" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="186" y="130" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="224" y="112" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="246" y="130" text-anchor="middle" fill="#1e3a8a">7</text>
+    <rect x="284" y="112" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="306" y="130" text-anchor="middle" fill="#1e3a8a">12</text>
+    <rect x="344" y="112" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="366" y="130" text-anchor="middle" fill="#1e3a8a">18</text>
+    <rect x="404" y="112" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="426" y="130" text-anchor="middle" fill="#1e3a8a">21</text>
+    <rect x="464" y="112" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="486" y="130" text-anchor="middle" fill="#1e3a8a">25</text>
+    <rect x="524" y="112" width="44" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="546" y="130" text-anchor="middle" fill="#64748b">尾</text>
+  </g>
+
+  <text x="96" y="174" text-anchor="end" font-size="12" fill="#64748b">L0 改写前</text>
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#skBlue)">
+    <line x1="148" y1="169" x2="162" y2="169"/>
+    <line x1="208" y1="169" x2="222" y2="169"/>
+    <line x1="268" y1="169" x2="282" y2="169"/>
+    <line x1="328" y1="169" x2="342" y2="169"/>
+    <line x1="388" y1="169" x2="402" y2="169"/>
+    <line x1="448" y1="169" x2="462" y2="169"/>
+    <line x1="508" y1="169" x2="522" y2="169"/>
+    <line x1="568" y1="169" x2="582" y2="169"/>
+    <line x1="628" y1="169" x2="642" y2="169"/>
+    <line x1="688" y1="169" x2="702" y2="169"/>
+  </g>
+  <g font-size="13">
+    <rect x="104" y="156" width="44" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="126" y="174" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="164" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="186" y="174" text-anchor="middle" fill="#1e3a8a">1</text>
+    <rect x="224" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="246" y="174" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="284" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="306" y="174" text-anchor="middle" fill="#1e3a8a">6</text>
+    <rect x="344" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="366" y="174" text-anchor="middle" fill="#1e3a8a">7</text>
+    <rect x="404" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="426" y="174" text-anchor="middle" fill="#1e3a8a">9</text>
+    <rect x="464" y="156" width="44" height="26" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="486" y="174" text-anchor="middle" fill="#92400e">12</text>
+    <rect x="524" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="546" y="174" text-anchor="middle" fill="#1e3a8a">18</text>
+    <rect x="584" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="606" y="174" text-anchor="middle" fill="#1e3a8a">21</text>
+    <rect x="644" y="156" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="666" y="174" text-anchor="middle" fill="#1e3a8a">25</text>
+    <rect x="704" y="156" width="44" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="726" y="174" text-anchor="middle" fill="#64748b">尾</text>
+  </g>
+  <text x="770" y="174" font-size="12" fill="#b45309">黄色 = update[0] 记下的前驱</text>
+
+  <text x="96" y="222" text-anchor="end" font-size="12" fill="#64748b">L0 改写后</text>
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#skBlue)">
+    <line x1="148" y1="217" x2="162" y2="217"/>
+    <line x1="208" y1="217" x2="222" y2="217"/>
+    <line x1="268" y1="217" x2="282" y2="217"/>
+    <line x1="328" y1="217" x2="342" y2="217"/>
+    <line x1="388" y1="217" x2="402" y2="217"/>
+    <line x1="448" y1="217" x2="462" y2="217"/>
+    <line x1="628" y1="217" x2="642" y2="217"/>
+    <line x1="688" y1="217" x2="702" y2="217"/>
+    <line x1="748" y1="217" x2="762" y2="217"/>
+  </g>
+  <g stroke="#ea580c" stroke-width="2" marker-end="url(#skOrange)">
+    <line x1="508" y1="217" x2="522" y2="217"/>
+    <line x1="568" y1="217" x2="582" y2="217"/>
+  </g>
+  <g font-size="13">
+    <rect x="104" y="204" width="44" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="126" y="222" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="164" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="186" y="222" text-anchor="middle" fill="#1e3a8a">1</text>
+    <rect x="224" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="246" y="222" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="284" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="306" y="222" text-anchor="middle" fill="#1e3a8a">6</text>
+    <rect x="344" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="366" y="222" text-anchor="middle" fill="#1e3a8a">7</text>
+    <rect x="404" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="426" y="222" text-anchor="middle" fill="#1e3a8a">9</text>
+    <rect x="464" y="204" width="44" height="26" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="486" y="222" text-anchor="middle" fill="#92400e">12</text>
+    <rect x="524" y="204" width="44" height="26" rx="5" fill="#ffedd5" stroke="#ea580c"/><text x="546" y="222" text-anchor="middle" fill="#9a3412">15</text>
+    <rect x="584" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="606" y="222" text-anchor="middle" fill="#1e3a8a">18</text>
+    <rect x="644" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="666" y="222" text-anchor="middle" fill="#1e3a8a">21</text>
+    <rect x="704" y="204" width="44" height="26" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="726" y="222" text-anchor="middle" fill="#1e3a8a">25</text>
+    <rect x="764" y="204" width="44" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8"/><text x="786" y="222" text-anchor="middle" fill="#64748b">尾</text>
+  </g>
+
+  <text x="500" y="254" text-anchor="middle" font-size="13" fill="#334155">实测读数：update 只用到一个前驱 L0=12，改写 1 对指针（12→18 变为 12→15→18），L1~L6 层表逐行不变</text>
+  <text x="500" y="276" text-anchor="middle" font-size="13" fill="#64748b">插入的代价只跟「抽到几层」有关，跟表有多大、插在哪儿无关 —— 没有再平衡阶段</text>
+
+  <rect x="30" y="312" width="940" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="336" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">现场二：同一颗种子只建 1 3 6（全局最高层 L2）后再插 7，抽到 l=7 —— 晋升</text>
+  <text x="500" y="356" text-anchor="middle" font-size="13" fill="#9a3412">update 数组实测：L6=head L5=head L4=head L3=head L2=3 L1=3 L0=6（下降到不了的新层，前驱只能是 head）</text>
+
+  <rect x="44" y="368" width="320" height="228" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="204" y="386" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">插入前：层表 L2 / L1 / L0</text>
+  <g font-size="11" fill="#64748b">
+    <text x="88" y="418" text-anchor="end">L6</text>
+    <text x="88" y="446" text-anchor="end">L5</text>
+    <text x="88" y="474" text-anchor="end">L4</text>
+    <text x="88" y="502" text-anchor="end">L3</text>
+    <text x="88" y="530" text-anchor="end">L2</text>
+    <text x="88" y="558" text-anchor="end">L1</text>
+    <text x="88" y="586" text-anchor="end">L0</text>
+  </g>
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#skBlue)">
+    <line x1="130" y1="414" x2="144" y2="414"/>
+    <line x1="130" y1="442" x2="144" y2="442"/>
+    <line x1="130" y1="470" x2="144" y2="470"/>
+    <line x1="130" y1="498" x2="144" y2="498"/>
+    <line x1="130" y1="526" x2="144" y2="526"/>
+    <line x1="176" y1="526" x2="190" y2="526"/>
+    <line x1="130" y1="554" x2="144" y2="554"/>
+    <line x1="176" y1="554" x2="190" y2="554"/>
+    <line x1="130" y1="582" x2="144" y2="582"/>
+    <line x1="176" y1="582" x2="190" y2="582"/>
+    <line x1="222" y1="582" x2="236" y2="582"/>
+    <line x1="268" y1="582" x2="282" y2="582"/>
+  </g>
+  <g font-size="12">
+    <rect x="96" y="402" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="113" y="418" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="146" y="402" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="163" y="418" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="96" y="430" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="113" y="446" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="146" y="430" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="163" y="446" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="96" y="458" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="113" y="474" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="146" y="458" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="163" y="474" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="96" y="486" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="113" y="502" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="146" y="486" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="163" y="502" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="96" y="514" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="113" y="530" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="146" y="514" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="163" y="530" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="196" y="514" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="213" y="530" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="96" y="542" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="113" y="558" text-anchor="middle" fill="#64748b">头</text>
+    <rect x="146" y="542" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="163" y="558" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="196" y="542" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="213" y="558" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="96" y="570" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="113" y="586" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="146" y="570" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="163" y="586" text-anchor="middle" fill="#1e3a8a">1</text>
+    <rect x="196" y="570" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="213" y="586" text-anchor="middle" fill="#92400e">3</text>
+    <rect x="246" y="570" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="263" y="586" text-anchor="middle" fill="#1e3a8a">6</text>
+    <rect x="296" y="570" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="313" y="586" text-anchor="middle" fill="#64748b">尾</text>
+  </g>
+
+  <g stroke="#64748b" stroke-width="2" marker-end="url(#skGray)">
+    <line x1="376" y1="482" x2="512" y2="482"/>
+  </g>
+  <text x="444" y="470" text-anchor="middle" font-size="12" fill="#64748b">插 7</text>
+
+  <rect x="520" y="368" width="440" height="228" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="740" y="386" text-anchor="middle" font-size="13" font-weight="700" fill="#9a3412">插入后：7 挂满 L0~L6，全局层数升到 L6</text>
+  <g font-size="11" fill="#64748b">
+    <text x="560" y="418" text-anchor="end">L6</text>
+    <text x="560" y="446" text-anchor="end">L5</text>
+    <text x="560" y="474" text-anchor="end">L4</text>
+    <text x="560" y="502" text-anchor="end">L3</text>
+    <text x="560" y="530" text-anchor="end">L2</text>
+    <text x="560" y="558" text-anchor="end">L1</text>
+    <text x="560" y="586" text-anchor="end">L0</text>
+  </g>
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#skBlue)">
+    <line x1="598" y1="526" x2="612" y2="526"/>
+    <line x1="644" y1="526" x2="658" y2="526"/>
+    <line x1="598" y1="554" x2="612" y2="554"/>
+    <line x1="644" y1="554" x2="658" y2="554"/>
+    <line x1="598" y1="582" x2="612" y2="582"/>
+    <line x1="644" y1="582" x2="658" y2="582"/>
+    <line x1="690" y1="582" x2="704" y2="582"/>
+    <line x1="736" y1="582" x2="750" y2="582"/>
+  </g>
+  <g stroke="#ea580c" stroke-width="2" marker-end="url(#skOrange)">
+    <line x1="598" y1="414" x2="612" y2="414"/>
+    <line x1="644" y1="414" x2="658" y2="414"/>
+    <line x1="598" y1="442" x2="612" y2="442"/>
+    <line x1="644" y1="442" x2="658" y2="442"/>
+    <line x1="598" y1="470" x2="612" y2="470"/>
+    <line x1="644" y1="470" x2="658" y2="470"/>
+    <line x1="598" y1="498" x2="612" y2="498"/>
+    <line x1="644" y1="498" x2="658" y2="498"/>
+    <line x1="782" y1="582" x2="796" y2="582"/>
+  </g>
+  <g font-size="12">
+    <rect x="564" y="402" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="581" y="418" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="614" y="402" width="34" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/><text x="631" y="418" text-anchor="middle" fill="#9a3412">7</text>
+    <rect x="664" y="402" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="681" y="418" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="564" y="430" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="581" y="446" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="614" y="430" width="34" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/><text x="631" y="446" text-anchor="middle" fill="#9a3412">7</text>
+    <rect x="664" y="430" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="681" y="446" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="564" y="458" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="581" y="474" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="614" y="458" width="34" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/><text x="631" y="474" text-anchor="middle" fill="#9a3412">7</text>
+    <rect x="664" y="458" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="681" y="474" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="564" y="486" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="581" y="502" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="614" y="486" width="34" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/><text x="631" y="502" text-anchor="middle" fill="#9a3412">7</text>
+    <rect x="664" y="486" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="681" y="502" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="564" y="514" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="581" y="530" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="614" y="514" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="631" y="530" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="664" y="514" width="34" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/><text x="681" y="530" text-anchor="middle" fill="#9a3412">7</text>
+    <rect x="714" y="514" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="731" y="530" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="564" y="542" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="581" y="558" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="614" y="542" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="631" y="558" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="664" y="542" width="34" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/><text x="681" y="558" text-anchor="middle" fill="#9a3412">7</text>
+    <rect x="714" y="542" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="731" y="558" text-anchor="middle" fill="#64748b">尾</text>
+    <rect x="564" y="570" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="581" y="586" text-anchor="middle" fill="#92400e">头</text>
+    <rect x="614" y="570" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="631" y="586" text-anchor="middle" fill="#1e3a8a">1</text>
+    <rect x="664" y="570" width="34" height="24" rx="4" fill="#dbeafe" stroke="#2563eb"/><text x="681" y="586" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="714" y="570" width="34" height="24" rx="4" fill="#fef3c7" stroke="#b45309"/><text x="731" y="586" text-anchor="middle" fill="#92400e">6</text>
+    <rect x="764" y="570" width="34" height="24" rx="4" fill="#ffedd5" stroke="#ea580c"/><text x="781" y="586" text-anchor="middle" fill="#9a3412">7</text>
+    <rect x="814" y="570" width="34" height="24" rx="4" fill="#f1f5f9" stroke="#94a3b8"/><text x="831" y="586" text-anchor="middle" fill="#64748b">尾</text>
+  </g>
+  <text x="856" y="418" font-size="11" fill="#9a3412">L3~L6 这四层</text>
+  <text x="856" y="434" font-size="11" fill="#9a3412">插入前是空的</text>
+  <text x="856" y="450" font-size="11" fill="#9a3412">（head 直连尾）</text>
+
+  <rect x="30" y="624" width="940" height="46" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="500" y="643" text-anchor="middle" font-size="13" fill="#334155">晋升的代价 = 把 update 的高位填成 head（4.1 的那一句）+ 全局层数 L2 → L6 一个整数变化 + 7 对指针改写</text>
+  <text x="500" y="661" text-anchor="middle" font-size="13" fill="#64748b">九键建表全程只有 3（抽到 3 层）和 7（抽到 7 层）触发晋升，其余七键各付自己那几对指针</text>
+</svg>

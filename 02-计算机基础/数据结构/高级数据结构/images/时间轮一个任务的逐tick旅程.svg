@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="twBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">时间轮的逐 tick 旅程：入槽靠取模、推进只看一格、超过一圈的那格提前触发</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">实测 8 槽单轮、游标从 0 起、5 个任务 · Go 1.26.8（golang:1.26-alpine）· 结构读数不依赖计时，连跑两遍逐行相同</text>
+
+  <rect x="30" y="72" width="940" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">第一步 Add：只算下标 槽号 = (cursor + delay) % 8，一次比较都没有</text>
+  <g font-size="11">
+    <rect x="42" y="110" width="104" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8"/><text x="94" y="128" text-anchor="middle" fill="#64748b" font-size="11">槽 0</text><text x="94" y="152" text-anchor="middle" fill="#64748b" font-size="11">空</text>
+    <rect x="158" y="110" width="104" height="64" rx="6" fill="#ffedd5" stroke="#ea580c"/><text x="210" y="128" text-anchor="middle" fill="#9a3412" font-size="11">槽 1</text><text x="210" y="148" text-anchor="middle" fill="#9a3412" font-size="11">E13 延1</text><text x="210" y="166" text-anchor="middle" fill="#9a3412" font-size="11">D14 延9</text>
+    <rect x="274" y="110" width="104" height="64" rx="6" fill="#dbeafe" stroke="#2563eb"/><text x="326" y="128" text-anchor="middle" fill="#1e3a8a" font-size="11">槽 2</text><text x="326" y="152" text-anchor="middle" fill="#1e3a8a" font-size="11">A10 延2</text>
+    <rect x="390" y="110" width="104" height="64" rx="6" fill="#dbeafe" stroke="#2563eb"/><text x="442" y="128" text-anchor="middle" fill="#1e3a8a" font-size="11">槽 3</text><text x="442" y="152" text-anchor="middle" fill="#1e3a8a" font-size="11">B11 延3</text>
+    <rect x="506" y="110" width="104" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8"/><text x="558" y="128" text-anchor="middle" fill="#64748b" font-size="11">槽 4</text><text x="558" y="152" text-anchor="middle" fill="#64748b" font-size="11">空</text>
+    <rect x="622" y="110" width="104" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8"/><text x="674" y="128" text-anchor="middle" fill="#64748b" font-size="11">槽 5</text><text x="674" y="152" text-anchor="middle" fill="#64748b" font-size="11">空</text>
+    <rect x="738" y="110" width="104" height="64" rx="6" fill="#dbeafe" stroke="#2563eb"/><text x="790" y="128" text-anchor="middle" fill="#1e3a8a" font-size="11">槽 6</text><text x="790" y="152" text-anchor="middle" fill="#1e3a8a" font-size="11">C12 延6</text>
+    <rect x="854" y="110" width="104" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8"/><text x="906" y="128" text-anchor="middle" fill="#64748b" font-size="11">槽 7</text><text x="906" y="152" text-anchor="middle" fill="#64748b" font-size="11">空</text>
+  </g>
+  <text x="500" y="200" text-anchor="middle" font-size="12" fill="#334155">入槽后的轮面：0:[] 1:[13,14] 2:[10] 3:[11] 4:[] 5:[] 6:[12] 7:[]　橙色格 = 延迟 9 被 8 槽取模折回的 D</text>
+
+  <rect x="30" y="238" width="940" height="210" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="260" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">第二步 Tick：每个 tick 只清空 cursor 那一格，然后走一步</text>
+  <g font-size="11">
+    <rect x="42" y="276" width="104" height="118" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+    <rect x="158" y="276" width="104" height="118" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+    <rect x="274" y="276" width="104" height="118" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <rect x="390" y="276" width="104" height="118" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <rect x="506" y="276" width="104" height="118" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+    <rect x="622" y="276" width="104" height="118" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+    <rect x="738" y="276" width="104" height="118" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+    <rect x="854" y="276" width="104" height="118" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  </g>
+  <g font-size="12" font-weight="700" fill="#334155">
+    <text x="94" y="296" text-anchor="middle">tick 0</text>
+    <text x="210" y="296" text-anchor="middle">tick 1</text>
+    <text x="326" y="296" text-anchor="middle">tick 2</text>
+    <text x="442" y="296" text-anchor="middle">tick 3</text>
+    <text x="558" y="296" text-anchor="middle">tick 4</text>
+    <text x="674" y="296" text-anchor="middle">tick 5</text>
+    <text x="790" y="296" text-anchor="middle">tick 6</text>
+    <text x="906" y="296" text-anchor="middle">tick 7</text>
+  </g>
+  <g font-size="10" fill="#64748b">
+    <text x="94" y="316" text-anchor="middle">处理槽 0</text>
+    <text x="210" y="316" text-anchor="middle">处理槽 1</text>
+    <text x="326" y="316" text-anchor="middle">处理槽 2</text>
+    <text x="442" y="316" text-anchor="middle">处理槽 3</text>
+    <text x="558" y="316" text-anchor="middle">处理槽 4</text>
+    <text x="674" y="316" text-anchor="middle">处理槽 5</text>
+    <text x="790" y="316" text-anchor="middle">处理槽 6</text>
+    <text x="906" y="316" text-anchor="middle">处理槽 7</text>
+  </g>
+  <g font-size="11" fill="#334155">
+    <text x="94" y="344" text-anchor="middle" fill="#64748b">到期 空</text>
+    <text x="210" y="338" text-anchor="middle" fill="#9a3412" font-size="11">到期 E(13)</text>
+    <text x="210" y="356" text-anchor="middle" fill="#9a3412" font-size="11">D14 提前</text>
+    <text x="326" y="344" text-anchor="middle" font-size="11">到期 A(10)</text>
+    <text x="442" y="344" text-anchor="middle" font-size="11">到期 B(11)</text>
+    <text x="558" y="344" text-anchor="middle" fill="#64748b">到期 空</text>
+    <text x="674" y="344" text-anchor="middle" fill="#64748b">到期 空</text>
+    <text x="790" y="344" text-anchor="middle" font-size="11">到期 C(12)</text>
+    <text x="906" y="344" text-anchor="middle" fill="#64748b">到期 空</text>
+  </g>
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#twBlue)">
+    <line x1="120" y1="376" x2="168" y2="376"/>
+    <line x1="236" y1="376" x2="284" y2="376"/>
+    <line x1="352" y1="376" x2="400" y2="376"/>
+    <line x1="468" y1="376" x2="516" y2="376"/>
+    <line x1="584" y1="376" x2="632" y2="376"/>
+    <line x1="700" y1="376" x2="748" y2="376"/>
+    <line x1="816" y1="376" x2="864" y2="376"/>
+  </g>
+  <g font-size="10" fill="#64748b">
+    <text x="94" y="380" text-anchor="middle">下一格 1</text>
+    <text x="210" y="380" text-anchor="middle">下一格 2</text>
+    <text x="326" y="380" text-anchor="middle">下一格 3</text>
+    <text x="442" y="380" text-anchor="middle">下一格 4</text>
+    <text x="558" y="380" text-anchor="middle">下一格 5</text>
+    <text x="674" y="380" text-anchor="middle">下一格 6</text>
+    <text x="790" y="380" text-anchor="middle">下一格 7</text>
+    <text x="906" y="380" text-anchor="middle">下一格 0</text>
+  </g>
+  <text x="500" y="418" text-anchor="middle" font-size="12" fill="#334155">走完 8 个 tick：E 与 D 同在 tick 1 出来，A 在 tick 2、B 在 tick 3、C 在 tick 6，其余四格空转</text>
+  <text x="500" y="438" text-anchor="middle" font-size="12" fill="#64748b">空转那四格也是 O(1)：只看这一格，格是空的就什么都不做 —— 这就是「空闲也要推进」不再付全表钱</text>
+
+  <rect x="30" y="464" width="940" height="76" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="500" y="484" text-anchor="middle" font-size="13" fill="#334155">读数：推进 8 个 tick 累计「看过的任务」= 5 个（任务总数 5 个，其中 1 个提前触发），轮面最终 8 格全空</text>
+  <text x="500" y="504" text-anchor="middle" font-size="13" fill="#9a3412">D 期望第 9 个 tick、实际第 1 个 tick 触发：槽号只取 (cursor + delay) % 8，圈数没记在任何地方</text>
+  <text x="500" y="524" text-anchor="middle" font-size="13" fill="#64748b">同口径放大到第四节：10000 个任务、256 槽、推进 200 个 tick 共看过 9950 个 —— 每个任务也只被看到一次</text>
+</svg>

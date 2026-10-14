@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两条加速路线各管哪一跳：拉镜像与装软件</text>
+  <text x="500" y="52" text-anchor="middle" font-size="13" fill="#64748b">mirror 配在宿主机管拉镜像，apt 源配在镜像内部管装软件</text>
+
+  <text x="20" y="80" font-size="13" font-weight="bold" fill="#1e3a8a">路线一 · 配在宿主机 —— 生效时机：拉镜像时（守护进程层面）</text>
+
+  <rect x="20" y="90" width="200" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="120" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">docker pull</text>
+  <text x="120" y="131" text-anchor="middle" font-size="11" fill="#1d4ed8">宿主机上发起</text>
+  <text x="120" y="149" text-anchor="middle" font-size="10.5" fill="#475569">拉取基础镜像</text>
+
+  <rect x="250" y="90" width="230" height="68" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="365" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">registry-mirrors</text>
+  <text x="365" y="131" text-anchor="middle" font-size="11" fill="#1d4ed8">/etc/docker/daemon.json</text>
+  <text x="365" y="149" text-anchor="middle" font-size="10.5" fill="#475569">守护进程层面生效</text>
+
+  <rect x="510" y="90" width="210" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="615" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">国内加速地址</text>
+  <text x="615" y="140" text-anchor="middle" font-size="11" fill="#475569">mirror.aliyuncs.com</text>
+
+  <rect x="750" y="90" width="230" height="68" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="865" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">镜像层下载加速</text>
+  <text x="865" y="131" text-anchor="middle" font-size="11" fill="#c2410c">加速的是这一段</text>
+  <text x="865" y="149" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#dc2626">不能加速 apt 装包</text>
+
+  <line x1="220" y1="124" x2="250" y2="124" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="480" y1="124" x2="510" y2="124" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="720" y1="124" x2="750" y2="124" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+
+  <text x="20" y="186" font-size="13" font-weight="bold" fill="#14532d">路线二 · 配在镜像内部 —— 生效时机：构建 / 运行容器时（容器内部）</text>
+
+  <rect x="20" y="196" width="200" height="68" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="120" y="218" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">apt-get install</text>
+  <text x="120" y="237" text-anchor="middle" font-size="11" fill="#3f6212">容器内执行装包</text>
+  <text x="120" y="255" text-anchor="middle" font-size="10.5" fill="#3f6212">Dockerfile 的 RUN</text>
+
+  <rect x="250" y="196" width="230" height="68" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="365" y="218" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">/etc/apt/sources.list</text>
+  <text x="365" y="237" text-anchor="middle" font-size="10.5" fill="#3f6212">sed 换成 aliyun 地址</text>
+  <text x="365" y="255" text-anchor="middle" font-size="10.5" fill="#3f6212">文件不存在就自己创建</text>
+
+  <rect x="510" y="196" width="210" height="68" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="615" y="220" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">国内软件源</text>
+  <text x="615" y="240" text-anchor="middle" font-size="11" fill="#475569">mirrors.aliyun.com</text>
+  <text x="615" y="257" text-anchor="middle" font-size="10.5" fill="#475569">debian bookworm main</text>
+
+  <rect x="750" y="196" width="230" height="68" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="865" y="218" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">软件包下载加速</text>
+  <text x="865" y="237" text-anchor="middle" font-size="11" fill="#c2410c">加速的是这一段</text>
+  <text x="865" y="255" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#dc2626">不能加速拉镜像</text>
+
+  <line x1="220" y1="230" x2="250" y2="230" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="480" y1="230" x2="510" y2="230" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="720" y1="230" x2="750" y2="230" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+
+  <text x="20" y="288" font-size="12" fill="#475569">补充：新版 Debian ≥ 12 / Ubuntu ≥ 24.04 用 deb822 格式，源文件在 /etc/apt/sources.list.d/debian.sources</text>
+  <text x="20" y="308" font-size="12" fill="#475569">CentOS / Rocky 改 /etc/yum.repos.d/*.repo 里的 baseurl；没有文件就 mkdir -p /etc/apt 再 echo 写进去</text>
+
+  <rect x="20" y="320" width="960" height="88" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="40" y="344" font-size="13.5" font-weight="bold" fill="#7f1d1d">常见误判：宿主机配了代理，构建镜像还是慢</text>
+  <text x="40" y="366" font-size="12" fill="#991b1b">原因：容器是相对独立的环境，宿主机的东西它不一定继承 —— 构建环境要当成一台全新的虚拟机</text>
+  <text x="40" y="388" font-size="12" fill="#991b1b">现象：脚手架模板在境外服务器构建正常，搬到境内后 RUN apt install 仍走境外软件源而卡住；解法：加速在 Dockerfile 里单独配</text>
+
+  <rect x="20" y="420" width="960" height="70" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="40" y="444" font-size="14" font-weight="bold" fill="#78350f">一句话记：mirror 管“拉镜像”，apt 源管“装软件”，两个加速要分别配</text>
+  <text x="40" y="468" font-size="12.5" fill="#92400e">两个方向互不覆盖：registry-mirrors 不能加速装包，换 apt 源不能加速拉镜像（见对照表最后两行）</text>
+</svg>

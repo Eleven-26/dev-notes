@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">etcd 自建服务发现的三方角色与注册链路</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">口径出自本篇 1.1、2.2～2.6 节：租约是容器、KeepAlive 即被动健康检查、拉取 + Watch 双机制</text>
+
+  <!-- 服务端 -->
+  <rect x="40" y="110" width="240" height="230" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="160" y="136" text-anchor="middle" font-size="15" font-weight="bold" fill="#334155">服务端（User 服务）</text>
+  <rect x="60" y="152" width="200" height="40" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="160" y="177" text-anchor="middle" font-size="12" fill="#334155">实例 10.0.0.1:8080</text>
+  <rect x="60" y="200" width="200" height="40" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="160" y="225" text-anchor="middle" font-size="12" fill="#334155">实例 10.0.0.2:8080</text>
+  <rect x="60" y="248" width="200" height="40" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="160" y="273" text-anchor="middle" font-size="12" fill="#334155">实例 10.0.0.3:8080</text>
+  <text x="160" y="316" text-anchor="middle" font-size="11.5" fill="#b91c1c">宕机 → 续约停 → key 过期</text>
+  <text x="160" y="332" text-anchor="middle" font-size="11.5" fill="#b91c1c">（不需要额外探测器）</text>
+
+  <!-- etcd -->
+  <rect x="390" y="110" width="250" height="290" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="515" y="136" text-anchor="middle" font-size="15" font-weight="bold" fill="#1d4ed8">etcd 集群（Raft）</text>
+  <rect x="406" y="152" width="218" height="96" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="515" y="172" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">租约（lease，容器）</text>
+  <text x="515" y="192" text-anchor="middle" font-size="11" fill="#92400e">TTL 10s · 剩余不足 5s 续回 10s</text>
+  <text x="515" y="212" text-anchor="middle" font-size="11" fill="#92400e">一个租约可挂多个 KV</text>
+  <text x="515" y="232" text-anchor="middle" font-size="11" fill="#92400e">（地址与元数据同生共死）</text>
+  <text x="515" y="276" text-anchor="middle" font-size="12" fill="#1e40af">/services/user/10-0-0-1-8080</text>
+  <text x="515" y="296" text-anchor="middle" font-size="12" fill="#1e40af">/services/user/10-0-0-2-8080</text>
+  <text x="515" y="316" text-anchor="middle" font-size="12" fill="#1e40af">/services/user/10-0-0-3-8080</text>
+  <text x="515" y="352" text-anchor="middle" font-size="11.5" fill="#64748b">key = 服务名前缀 + IP:端口</text>
+  <text x="515" y="376" text-anchor="middle" font-size="11.5" fill="#64748b">名称不变、地址会变</text>
+
+  <!-- 客户端 -->
+  <rect x="740" y="110" width="220" height="230" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="850" y="136" text-anchor="middle" font-size="15" font-weight="bold" fill="#15803d">客户端</text>
+  <rect x="756" y="152" width="188" height="76" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="850" y="174" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">本地 list 缓存</text>
+  <text x="850" y="194" text-anchor="middle" font-size="11" fill="#334155">[地址1 地址2 地址3]</text>
+  <text x="850" y="212" text-anchor="middle" font-size="11" fill="#334155">每次请求本地挑一台</text>
+  <text x="850" y="250" text-anchor="middle" font-size="11.5" fill="#334155">★ 客户端负载均衡</text>
+  <text x="850" y="278" text-anchor="middle" font-size="11.5" fill="#334155">拉取保证初始有数据</text>
+  <text x="850" y="298" text-anchor="middle" font-size="11.5" fill="#334155">Watch 保证数据最新</text>
+  <text x="850" y="326" text-anchor="middle" font-size="11.5" fill="#b91c1c">注册中心挂 → 旧列表继续用</text>
+
+  <!-- 边 -->
+  <line x1="280" y1="172" x2="386" y2="172" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arB)"/>
+  <text x="333" y="162" text-anchor="middle" font-size="11" fill="#1d4ed8">① 建租约+挂KV</text>
+  <line x1="386" y1="230" x2="284" y2="230" stroke="#b45309" stroke-width="2.5" marker-end="url(#arY)"/>
+  <text x="335" y="252" text-anchor="middle" font-size="11" fill="#b45309">② KeepAlive 续约</text>
+  <line x1="740" y1="172" x2="644" y2="172" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arG)"/>
+  <text x="692" y="162" text-anchor="middle" font-size="11" fill="#15803d">③ 按前缀拉取</text>
+  <line x1="640" y1="238" x2="736" y2="238" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arR)"/>
+  <text x="688" y="258" text-anchor="middle" font-size="11" fill="#b91c1c">④ Watch 推送变更</text>
+  <path d="M850 340 L850 430 L160 430 L160 344" fill="none" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arS)"/>
+  <text x="505" y="422" text-anchor="middle" font-size="11.5" fill="#475569">⑤ 业务调用：从本地 list 选实例直接访问服务端（不必每请求查 etcd）</text>
+
+  <!-- 底部链路总结 -->
+  <rect x="40" y="460" width="920" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="486" font-size="13" font-weight="bold" fill="#334155">完整链路（2.6 节一图总结的文字版）：</text>
+  <text x="60" y="510" font-size="12" fill="#475569">【注册】服务启动 → 创建租约(10s) → 写入 KV(服务名+IP:端口) → 周期性 KeepAlive 续约；</text>
+  <text x="60" y="532" font-size="12" fill="#475569">服务挂掉 → 心跳停 → key 过期删除 —— 等价于被动健康检查，不需要额外探测器。</text>
+  <text x="60" y="554" font-size="12" fill="#475569">【发现】客户端按服务名拉取地址列表 → 本地 list + 本地负载均衡；Watch 前缀变化 → 实时更新本地 list。</text>
+  <text x="60" y="582" font-size="12" font-weight="bold" fill="#1d4ed8">为什么用服务名而不是 IP：名称不变、地址会变 —— 宕机后重新加入的新节点依然挂在同一个服务名下，客户端代码无需修改。</text>
+
+  <defs>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b45309"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

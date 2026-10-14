@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 730" width="1000" height="730" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="dB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="dG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="730" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">怎么确认连接到底有没有被复用：三层观测路径</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12" fill="#64748b">要回答的三个问题：这次请求有没有新建连接、握手花了多久、首字节多久回来；客户端侧、命令行侧、抓包侧各答一段</text>
+
+  <rect x="24" y="66" width="956" height="176" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="40" y="86" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 客户端侧：httptrace 把机制说法变成可观测数据（本机容器实测，golang:1.26-alpine / go1.26.8）</text>
+  <rect x="40" y="96" width="196" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="138" y="115" text-anchor="middle" font-size="10.5" fill="#1e3a8a">ConnectStart / ConnectDone</text>
+  <rect x="268" y="96" width="176" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="356" y="115" text-anchor="middle" font-size="10.5" fill="#1e3a8a">GotConn：Reused 与地址</text>
+  <rect x="476" y="96" width="176" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="564" y="115" text-anchor="middle" font-size="10.5" fill="#1e3a8a">GotFirstResponseByte</text>
+  <rect x="684" y="96" width="196" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="782" y="115" text-anchor="middle" font-size="10.5" fill="#1e3a8a">Do 返回：Total 未含读 body</text>
+  <line x1="236" y1="111" x2="264" y2="111" stroke="#2563eb" stroke-width="1.5" marker-end="url(#dB)"/>
+  <line x1="444" y1="111" x2="472" y2="111" stroke="#2563eb" stroke-width="1.5" marker-end="url(#dB)"/>
+  <line x1="652" y1="111" x2="680" y2="111" stroke="#2563eb" stroke-width="1.5" marker-end="url(#dB)"/>
+
+  <text x="40" y="146" font-size="11" font-weight="bold" fill="#7f1d1d">新建分支（进程内第一个请求）</text>
+  <text x="40" y="164" font-size="11" fill="#334155">Reused=false　Dial=200µs ~ 900µs　FirstByte=108ms ~ 118ms</text>
+  <text x="40" y="182" font-size="11" fill="#334155">proto=HTTP/2.0、alpn=h2；只给 http/1.1 时 alpn 为空</text>
+  <text x="40" y="200" font-size="10.5" fill="#64748b">拨号一次，池刚建立时本来就要建，这不算异常</text>
+  <text x="500" y="146" font-size="11" font-weight="bold" fill="#14532d">复用分支（第 2 次起，连跑 4 轮全一致）</text>
+  <text x="500" y="164" font-size="11" fill="#334155">Reused=true　Dial=0s（ConnectStart 根本不触发）</text>
+  <text x="500" y="182" font-size="11" fill="#334155">FirstByte=101ms ~ 105ms ≈ 服务端 sleep 的 100ms</text>
+  <text x="500" y="200" font-size="10.5" fill="#64748b">Remote 恒定；区分是否同一条连接要看本地端口</text>
+  <text x="40" y="226" font-size="11" fill="#1e3a8a">8 并发对照：MaxConnsPerHost=0 时 1.1 得到 8 个不同本地端口（8 次拨号），HTTP/2 只有 1 个本地端口</text>
+  <text x="40" y="240" font-size="10.5" fill="#b45309">注意：那一轮 HTTP/2 的拨号次数仍记到 8，但 8 个请求都压在同一条连接上 —— 拨号次数不等于承载请求的连接数</text>
+
+  <line x1="500" y1="242" x2="500" y2="262" stroke="#16a34a" stroke-width="1.6" marker-end="url(#dG)"/>
+
+  <rect x="24" y="266" width="956" height="170" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.2"/>
+  <text x="40" y="286" font-size="12.5" font-weight="bold" fill="#14532d">② 命令行侧：curl 只看协商结果与是否复用（容器实测，curl 8.12.1 / nghttp2/1.62.1）</text>
+  <text x="40" y="308" font-size="11" fill="#166534">ALPN: curl offers h2,http/1.1 → ALPN: server accepted h2 → 回 HTTP/2 200；</text>
+  <text x="40" y="326" font-size="11" fill="#166534">改成 --http1.1 就是 accepted http/1.1 配 HTTP/1.1 200 OK —— 同一场 TLS 握手换应用层版本。</text>
+  <text x="40" y="344" font-size="11" fill="#166534">一次传两个 URL：第二条前面是 Re-using existing connection with host，两条都是 HTTP/2 200。</text>
+  <text x="40" y="362" font-size="11" fill="#166534">同一个自定义头：1.1 回 X-Served-Proto，h2 回 x-served-proto —— HPACK 要求字段名小写。</text>
+  <text x="40" y="380" font-size="11" fill="#166534">-j --parallel --parallel-max 4 打四个各睡 1.5s 的 URL，6 轮一致：h2 的 Connected to = 1、Re-using = 3，</text>
+  <text x="40" y="398" font-size="11" fill="#166534">四条 time_total 都是 1.508s ~ 1.516s；--http1.1 则 Connected to = 4、Re-using = 0，ALPN 也握手 4 次。</text>
+  <text x="40" y="416" font-size="10.5" fill="#b45309">注意：这一场两协议墙钟没差别（-j 会给 1.1 另开连接并行），省的是连接数与握手次数；比墙钟要把并发压到同一条连接上。</text>
+  <text x="40" y="430" font-size="10.5" fill="#b45309">另两处坑：新版 curl 已不再打印 Using HTTP2, server supports multiplexing；--http2-prior-knowledge 打 TLS 端口回 curl (16) Error in the HTTP2 framing layer。</text>
+
+  <line x1="500" y1="436" x2="500" y2="456" stroke="#16a34a" stroke-width="1.6" marker-end="url(#dG)"/>
+
+  <rect x="24" y="460" width="956" height="150" rx="10" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.2"/>
+  <text x="40" y="480" font-size="12.5" font-weight="bold" fill="#7c2d12">③ 抓包侧：tshark 解开 TLS 才能看帧（先配 SSLKEYLOGFILE）</text>
+  <text x="40" y="502" font-size="11" fill="#7c2d12">想验证帧加流 ID 重排 —— 看 http2.streamid 在同一个 TCP 连接上交错出现</text>
+  <text x="40" y="522" font-size="11" fill="#7c2d12">想验证同一条流的数据不要求连续 —— 同一 stream 有多个 DATA 帧，中间夹着别的 stream</text>
+  <text x="40" y="542" font-size="11" fill="#7c2d12">想验证 HPACK 增量索引 —— 只看 HEADERS 帧，第二个请求的 HEADERS 帧长度显著变小</text>
+  <text x="40" y="562" font-size="11" fill="#7c2d12">想验证服务端推送 —— 出现 PUSH_PROMISE 帧（Go 标准库不支持推送，要用 h2_bundle 或换语言）</text>
+  <text x="40" y="582" font-size="11" fill="#7c2d12">想验证流的优先级 —— HEADERS 帧里的 PRIORITY 段，即 dependency 与 weight</text>
+  <text x="40" y="602" font-size="10.5" fill="#b45309">注意：本机与本机镜像里都没有 tcpdump 与 tshark，这一层未实测，给的是命令、字段名与判据。</text>
+
+  <rect x="24" y="626" width="956" height="94" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="40" y="646" font-size="12.5" font-weight="bold" fill="#92400e">症状到结论：四条判据</text>
+  <text x="40" y="666" font-size="11" fill="#92400e">稳态下持续 Reused=false → 池被参数卡住，第一个要查 MaxIdleConnsPerHost（默认只有 2）</text>
+  <text x="40" y="682" font-size="11" fill="#92400e">本地端口不止一个 → 并发靠多开连接达成，等于没吃到单连接多流，检查 MaxConnsPerHost 与 ALPN 结果</text>
+  <text x="40" y="698" font-size="11" fill="#92400e">curl 里没有出现 h2 → 被中间代理降级；非 h2-aware 的代理要么降级成 1.1，要么逐条转发丢掉多路复用</text>
+  <text x="40" y="714" font-size="11" fill="#92400e">响应体没读完就关连接 → 剩下的字节被当成下一条响应的开头，连接池被污染，这条连接不该再复用</text>
+</svg>

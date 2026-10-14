@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 536" width="1000" height="536" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="536" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">空间索引四路线的二维落点：对象形态 × 更新频率</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">两条轴取自 6.2 的三条依次问与 5.1 的判据；右栏读数为 3.3 容器实测（20000 个均匀点、坐标 [0,1000)²、R 树 M=8、四叉树桶容量 8 / 深度上限 12）</text>
+
+  <text x="30" y="90" font-size="12" font-weight="bold" fill="#0f172a">纵轴：更新频率 —— 越往上越频繁</text>
+  <rect x="100" y="104" width="520" height="316" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="112" y="116" width="236" height="142" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="230" y="140" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">网格 / GeoHash</text>
+  <text x="230" y="162" text-anchor="middle" font-size="10.5" fill="#14532d">更新 O(1)：旧格删、新格加</text>
+  <text x="230" y="182" text-anchor="middle" font-size="10.5" fill="#14532d">Redis GEO：52 位编码进 ZSet</text>
+  <text x="230" y="202" text-anchor="middle" font-size="10.5" fill="#14532d">MongoDB 2dsphere：层级网格</text>
+  <text x="230" y="228" text-anchor="middle" font-size="10.5" fill="#7f1d1d">注意：边界要补查九宫格</text>
+  <rect x="372" y="116" width="236" height="142" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="490" y="140" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">高频 + 任意几何</text>
+  <text x="490" y="164" text-anchor="middle" font-size="10.5" fill="#7f1d1d">本篇判据只到「动得频繁</text>
+  <text x="490" y="184" text-anchor="middle" font-size="10.5" fill="#7f1d1d">就换网格 / GeoHash」</text>
+  <text x="490" y="208" text-anchor="middle" font-size="10.5" fill="#7f1d1d">这一格本篇未实测</text>
+  <rect x="112" y="272" width="236" height="136" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="230" y="296" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">四叉树 / k-d 树 / BKD</text>
+  <text x="230" y="318" text-anchor="middle" font-size="10.5" fill="#1e3a8a">四叉树：固定四等分，点且均匀</text>
+  <text x="230" y="338" text-anchor="middle" font-size="10.5" fill="#1e3a8a">k-d 树：静态低维点集</text>
+  <text x="230" y="358" text-anchor="middle" font-size="10.5" fill="#1e3a8a">BKD 树：ES / Lucene 的 geo 查询</text>
+  <text x="230" y="380" text-anchor="middle" font-size="10.5" fill="#7f1d1d">注意：k-d 树频繁增删会失衡</text>
+  <rect x="372" y="272" width="236" height="136" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="490" y="296" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">R 树 / R* 树</text>
+  <text x="490" y="318" text-anchor="middle" font-size="10.5" fill="#7c2d12">自适应 MBR：矩形、多边形都行</text>
+  <text x="490" y="338" text-anchor="middle" font-size="10.5" fill="#7c2d12">范围查询 + kNN</text>
+  <text x="490" y="358" text-anchor="middle" font-size="10.5" fill="#7c2d12">PostGIS GiST、MySQL SPATIAL</text>
+  <text x="490" y="380" text-anchor="middle" font-size="10.5" fill="#7c2d12">代价：一次更新 = 删 + 重插维护 MBR</text>
+  <line x1="360" y1="112" x2="360" y2="258" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="360" y1="266" x2="360" y2="416" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="108" y1="263" x2="352" y2="263" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="368" y1="263" x2="612" y2="263" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="360" y="438" text-anchor="middle" font-size="12" fill="#334155">对象形态：点（左）→ 任意几何体（右）</text>
+
+  <rect x="640" y="104" width="330" height="316" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="654" y="128" font-size="12" font-weight="bold" fill="#0f172a">3.3 实测：一次 100×100 的范围查询</text>
+  <text x="654" y="152" font-size="11" fill="#334155">暴力扫描：20000 个点全查</text>
+  <text x="654" y="174" font-size="11" fill="#7c2d12">R 树：检查 1099 个候选点，剪掉 94.5%</text>
+  <text x="654" y="192" font-size="11" fill="#7c2d12">（节点 7015 个、树高 11、M=8）</text>
+  <text x="654" y="214" font-size="11" fill="#1e3a8a">四叉树：检查 424 个候选点</text>
+  <text x="654" y="232" font-size="11" fill="#1e3a8a">（节点 5401 个、深度 7）</text>
+  <text x="654" y="256" font-size="11" fill="#14532d">要点：均匀点数据上四叉树只花约 1/2.6</text>
+  <text x="654" y="274" font-size="11" fill="#14532d">三方命中结果完全一致</text>
+  <text x="654" y="298" font-size="11" fill="#7f1d1d">注意：教学简化分裂（按中心 x 对半切）</text>
+  <text x="654" y="316" font-size="11" fill="#7f1d1d">MBR 重叠偏大 → 剪枝被削弱</text>
+  <text x="654" y="342" font-size="11.5" font-weight="bold" fill="#0f172a">三条依次问（6.2）</text>
+  <text x="654" y="362" font-size="11" fill="#334155">① 点还是任意几何？② 对象动不动？</text>
+  <text x="654" y="382" font-size="11" fill="#334155">③ 要不要 kNN？三问答完结构就定了</text>
+  <text x="654" y="406" font-size="11" fill="#b45309">调优抓手：MBR 重叠、九宫格补偿</text>
+
+  <text x="30" y="452" font-size="12" fill="#0f172a">判据（5.1 / 6.3）：对象动得频繁 → 网格 / GeoHash；动得少但要范围或几何关系 → R 树；点且分布均匀、实现要最简 → 四叉树；静态低维点集 → k-d 树 / BKD</text>
+  <text x="30" y="478" font-size="12" fill="#b45309">注意：同一类查询在不同引擎走了完全不同的路线 —— PostGIS 与 MySQL 用 R 树，MongoDB 用层级网格（常称 S2），Redis 用 GeoHash + ZSet，ES 用 BKD</text>
+  <text x="30" y="504" font-size="12" fill="#0f172a">⭐ 所以「空间索引」不是一个结构，而是一族结构：选型跟着数据形态（点 / 几何）、更新频率、引擎整体的存储模型走（6.2 第 6 条）</text>
+</svg>

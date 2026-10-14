@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">LZ77 滑动窗口与匹配过程：指针 =（回溯距离, 长度）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">窗口 window=32、最短匹配 minMatch=4；token 与边界读数为 golang:1.26-alpine（go1.26.8）容器实跑</text>
+
+  <rect x="20" y="76" width="960" height="196" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="15" font-weight="bold" fill="#0f172a">A. 输入 A（50 字节，连续重复）：4 个字面量 + 4 个匹配 = 8 个 token → 16 字节</text>
+
+  <path d="M 106 158 Q 114 132 122 158" fill="none" stroke="#16a34a" stroke-width="1.6"/>
+  <path d="M 266 158 Q 274 132 282 158" fill="none" stroke="#16a34a" stroke-width="1.6"/>
+  <path d="M 426 158 Q 434 132 442 158" fill="none" stroke="#16a34a" stroke-width="1.6"/>
+  <path d="M 586 158 Q 602 126 618 158" fill="none" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="114" y="126" text-anchor="middle" font-size="10.5" fill="#16a34a">offset=1 length=9</text>
+  <text x="274" y="126" text-anchor="middle" font-size="10.5" fill="#16a34a">offset=1 length=9</text>
+  <text x="434" y="126" text-anchor="middle" font-size="10.5" fill="#16a34a">offset=1 length=9</text>
+  <text x="610" y="120" text-anchor="middle" font-size="10.5" fill="#16a34a">offset=1 length=19</text>
+
+  <rect x="90" y="158" width="160" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="250" y="158" width="160" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="410" y="158" width="160" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="570" y="158" width="320" height="36" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="90" y="158" width="16" height="36" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="250" y="158" width="16" height="36" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="410" y="158" width="16" height="36" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="570" y="158" width="16" height="36" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="170" y="181" text-anchor="middle" font-size="12" fill="#1e40af">a × 10</text>
+  <text x="330" y="181" text-anchor="middle" font-size="12" fill="#1e40af">b × 10</text>
+  <text x="490" y="181" text-anchor="middle" font-size="12" fill="#1e40af">c × 10</text>
+  <text x="730" y="181" text-anchor="middle" font-size="12" fill="#1e40af">d × 20</text>
+  <text x="490" y="212" text-anchor="middle" font-size="10.5" fill="#64748b">黄色 = 段首字面量；绿色弧 = 从段首回看 1 字节的匹配指针（覆盖余下 9/9/9/19 字节）</text>
+
+  <rect x="90" y="230" width="52" height="24" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="146" y="230" width="52" height="24" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <rect x="202" y="230" width="52" height="24" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="258" y="230" width="52" height="24" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <rect x="314" y="230" width="52" height="24" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="370" y="230" width="52" height="24" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <rect x="426" y="230" width="52" height="24" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="482" y="230" width="52" height="24" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="116" y="246" text-anchor="middle" font-size="10" fill="#9a3412">L("a")</text>
+  <text x="172" y="246" text-anchor="middle" font-size="10" fill="#166534">M(1,9)</text>
+  <text x="228" y="246" text-anchor="middle" font-size="10" fill="#9a3412">L("b")</text>
+  <text x="284" y="246" text-anchor="middle" font-size="10" fill="#166534">M(1,9)</text>
+  <text x="340" y="246" text-anchor="middle" font-size="10" fill="#9a3412">L("c")</text>
+  <text x="396" y="246" text-anchor="middle" font-size="10" fill="#166534">M(1,9)</text>
+  <text x="452" y="246" text-anchor="middle" font-size="10" fill="#9a3412">L("d")</text>
+  <text x="508" y="246" text-anchor="middle" font-size="10" fill="#166534">M(1,19)</text>
+  <text x="556" y="246" font-size="10.5" fill="#64748b">输出 8 token（每 token 记 2 字节 = 16 字节）；RLE 同输入 4 token = 8 字节</text>
+
+  <rect x="20" y="288" width="960" height="252" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="312" font-size="15" font-weight="bold" fill="#0f172a">B. 窗口边界实验：同一段 19 字节 unit 重复出现，间隔决定能否命中</text>
+
+  <rect x="60" y="336" width="152" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="212" y="336" width="152" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <rect x="108" y="330" width="256" height="42" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <path d="M 364 330 Q 356 306 216 330" fill="none" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="70" y="356" font-size="11" fill="#1e40af">unit 1</text>
+  <text x="222" y="356" font-size="11" fill="#166534">unit 2</text>
+  <text x="236" y="322" font-size="10.5" fill="#64748b">窗口回看 32 字节（虚线框）</text>
+  <text x="392" y="356" font-size="11.5" fill="#166534">gap = 0：回溯距离 19 ≤ 32 → 整段命中，匹配覆盖 19 字节，token 20 个</text>
+
+  <rect x="60" y="418" width="152" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <rect x="212" y="418" width="160" height="30" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <rect x="372" y="418" width="152" height="30" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <rect x="268" y="412" width="256" height="42" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="70" y="438" font-size="11" fill="#1e40af">unit 1</text>
+  <text x="264" y="438" text-anchor="middle" font-size="11" fill="#64748b">x × 20</text>
+  <text x="382" y="438" font-size="11" fill="#991b1b">unit 2</text>
+  <text x="276" y="404" font-size="10.5" fill="#64748b">窗口只回看 32 字节，够不到 unit 1</text>
+  <text x="548" y="438" font-size="11.5" fill="#991b1b">gap = 20：距离 39 &gt; 32 → 单位串落空，只剩 x 串自匹配，token 39 个</text>
+
+  <text x="36" y="492" font-size="11.5" fill="#0f172a">分水岭（实跑 6 档：gap 0/20/31/32/40/60 的 token 数 = 20 / 39 / 39 / 39 / 39 / 39）：</text>
+  <text x="36" y="512" font-size="11.5" fill="#0f172a">能命中的条件是 gap + 19 ≤ 32，即 gap ≤ 13——这就是 1.4 节「小块/短流里 LZ 收益差」的量化版本。</text>
+  <text x="500" y="532" font-size="10.5" fill="#64748b">数字出处：正文第二节「容器复测与逐 token 明细」「滑动窗口够不够得着」两段实测</text>
+</svg>

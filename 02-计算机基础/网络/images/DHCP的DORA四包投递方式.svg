@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="hB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="hR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+    <marker id="hO" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">DHCP 的 DORA 四包投递方式</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">实测：alpine:3.21 + dnsmasq 2.90（no-ping）+ busybox udhcpc 1.37，自定义 bridge 192.168.128.0/24，tcpdump 4.99.5</text>
+
+  <rect x="196" y="76" width="190" height="52" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="291" y="97" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">客户端 eth0（UDP 68）</text>
+  <text x="291" y="116" text-anchor="middle" font-size="11" fill="#1e3a8a">MAC 4a:88:df:9d:10:c7</text>
+  <rect x="634" y="76" width="190" height="52" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="729" y="97" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">dnsmasq（UDP 67）</text>
+  <text x="729" y="116" text-anchor="middle" font-size="11" fill="#14532d">192.168.128.10</text>
+
+  <line x1="291" y1="128" x2="291" y2="504" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="729" y1="128" x2="729" y2="504" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+
+  <rect x="36" y="166" width="132" height="26" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="102" y="184" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7f1d1d">① 广播</text>
+  <line x1="295" y1="179" x2="723" y2="179" stroke="#dc2626" stroke-width="1.7" marker-end="url(#hR)"/>
+  <text x="310" y="160" font-size="11.5" fill="#7f1d1d">DISCOVER  0.0.0.0.68 → 255.255.255.255.67，二层 ff:ff:ff:ff:ff:ff</text>
+  <text x="310" y="204" font-size="11" fill="#64748b">17:29:52.503（+0 ms）｜ xid 0xe9b1d507 ｜ chaddr = 客户端 MAC ｜ ciaddr、yiaddr 均为 0</text>
+
+  <rect x="36" y="260" width="132" height="26" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="102" y="278" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">② 单播</text>
+  <line x1="725" y1="273" x2="297" y2="273" stroke="#2563eb" stroke-width="1.7" marker-end="url(#hB)"/>
+  <text x="310" y="254" font-size="11.5" fill="#1e3a8a">OFFER  192.168.128.10.67 → 192.168.128.115.68，二层目的 = 客户端 MAC</text>
+  <text x="310" y="298" font-size="11" fill="#64748b">+1.6 ms ｜ yiaddr 192.168.128.115、siaddr 192.168.128.10 ｜ 51=120、58=60、59=105</text>
+
+  <rect x="36" y="354" width="132" height="26" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="102" y="372" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7f1d1d">③ 广播</text>
+  <line x1="295" y1="367" x2="723" y2="367" stroke="#ea580c" stroke-width="1.7" marker-end="url(#hO)"/>
+  <text x="310" y="348" font-size="11.5" fill="#7c2d12">REQUEST  广播，带 53=Request + 50=Requested-IP 192.168.128.115 + 54=Server-ID</text>
+  <text x="310" y="392" font-size="11" fill="#64748b">+40 ms ｜ 故意广播：让其它发过 Offer 的服务器收回预留地址（本轮只有一台，行为照旧）</text>
+
+  <rect x="36" y="448" width="132" height="26" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="102" y="466" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">④ 单播</text>
+  <text x="310" y="432" font-size="11" fill="#64748b">+48 ms → 进入 BOUND，客户端脚本收到第一个位置参数 bound（不是环境变量 $reason）</text>
+  <text x="310" y="458" font-size="11.5" fill="#1e3a8a">ACK  单播回 192.168.128.115.68，附 1=255.255.255.0、3、6=192.168.128.10、15、28</text>
+  <line x1="725" y1="481" x2="297" y2="481" stroke="#2563eb" stroke-width="1.7" marker-end="url(#hB)"/>
+
+  <rect x="20" y="520" width="960" height="124" rx="12" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="36" y="544" font-size="12.5" font-weight="bold" fill="#92400e">这轮抓包能钉死的三条结论</text>
+  <text x="36" y="567" font-size="12" fill="#92400e">① 客户端广播标志位没置（Flags 0x0000），服务器照样按 yiaddr + chaddr 单播回 Offer / ACK ⇒「DORA 全广播」不是验收条件</text>
+  <text x="36" y="588" font-size="12" fill="#92400e">② 关 ping 检查后 48 ms 走完四步；打开 dnsmasq 默认的事前 ping 检查，实测 Discover→Offer 变成 3.008 秒（3 轮均在 3 秒上下）</text>
+  <text x="36" y="609" font-size="12" fill="#7f1d1d">③ 抓包要带 -e：只过滤 ether broadcast 会整幅漏掉 Offer 与 ACK，看起来就像「发了 Discover 但没人应答」</text>
+</svg>

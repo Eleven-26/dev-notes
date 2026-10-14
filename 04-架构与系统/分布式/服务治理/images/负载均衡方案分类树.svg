@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">负载均衡方案分类树：先分软硬，再分谁替调用方选实例</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">分层与代表实现出自本篇 1.2 节；「选实例这件事归谁做」正是 1.3 节答题结构的主线</text>
+
+  <!-- 根 -->
+  <rect x="400" y="88" width="200" height="48" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="118" text-anchor="middle" font-size="17" font-weight="bold" fill="#334155">负载均衡</text>
+
+  <path d="M 500 136 L 500 154 L 135 154 L 135 170" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <line x1="500" y1="136" x2="500" y2="170" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <path d="M 500 136 L 500 154 L 865 154 L 865 170" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <!-- 第一层 -->
+  <rect x="40" y="170" width="190" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="135" y="192" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">硬负载</text>
+  <text x="135" y="212" text-anchor="middle" font-size="11" fill="#64748b">F5 等硬件设备</text>
+  <text x="135" y="228" text-anchor="middle" font-size="11" fill="#64748b">一般不用自己考虑</text>
+
+  <rect x="430" y="170" width="140" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="500" y="196" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">软负载</text>
+  <text x="500" y="218" text-anchor="middle" font-size="11" fill="#64748b">自己搭的软件方案</text>
+
+  <rect x="770" y="170" width="190" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="865" y="192" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">云厂商负载均衡</text>
+  <text x="865" y="212" text-anchor="middle" font-size="11" fill="#64748b">CLB / ALB，直接购买</text>
+  <text x="865" y="228" text-anchor="middle" font-size="11" fill="#64748b">适合上云场景</text>
+
+  <!-- 第二层：软负载的两个分支 -->
+  <path d="M 500 234 L 500 258 L 335 258 L 335 280" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <path d="M 500 234 L 500 258 L 665 258 L 665 280" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+
+  <rect x="210" y="280" width="250" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="335" y="304" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">客户端负载均衡</text>
+  <text x="335" y="326" text-anchor="middle" font-size="11" fill="#334155">客户端自己维护实例列表</text>
+  <text x="335" y="344" text-anchor="middle" font-size="11" fill="#334155">并由客户端决定调哪一台</text>
+  <text x="335" y="364" text-anchor="middle" font-size="11" fill="#475569">典型形态：gRPC 结合 etcd</text>
+
+  <rect x="540" y="280" width="250" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="665" y="304" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">服务端负载均衡（反向代理）</text>
+  <text x="665" y="326" text-anchor="middle" font-size="11" fill="#334155">代理层替调用方选实例</text>
+  <text x="665" y="344" text-anchor="middle" font-size="11" fill="#334155">对客户端透明，运维更简单</text>
+  <text x="665" y="364" text-anchor="middle" font-size="11" fill="#475569">再按工作层次分 L4 / L7</text>
+
+  <!-- 第三层：服务端的两个层次 -->
+  <path d="M 665 376 L 665 404 L 615 404 L 615 430" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <path d="M 665 376 L 665 404 L 825 404 L 825 430" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+
+  <rect x="520" y="430" width="190" height="112" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="615" y="454" text-anchor="middle" font-size="14" font-weight="bold" fill="#78350f">L4 传输层</text>
+  <text x="615" y="476" text-anchor="middle" font-size="11" fill="#334155">只根据 IP / 端口转发</text>
+  <text x="615" y="494" text-anchor="middle" font-size="11" fill="#334155">看不见 HTTP 内容</text>
+  <text x="615" y="516" text-anchor="middle" font-size="11" fill="#475569">代表：Docker Swarm</text>
+  <text x="615" y="534" text-anchor="middle" font-size="11" fill="#475569">K8s Service</text>
+
+  <rect x="730" y="430" width="190" height="112" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="825" y="454" text-anchor="middle" font-size="14" font-weight="bold" fill="#78350f">L7 应用层</text>
+  <text x="825" y="476" text-anchor="middle" font-size="11" fill="#334155">能识别 HTTP 内容</text>
+  <text x="825" y="494" text-anchor="middle" font-size="11" fill="#334155">可按路径 / 域名分发</text>
+  <text x="825" y="516" text-anchor="middle" font-size="11" fill="#475569">Nginx 反向代理：默认轮询</text>
+  <text x="825" y="534" text-anchor="middle" font-size="11" fill="#475569">K8s Ingress，底层 Nginx/Kong</text>
+
+  <!-- 左侧说明 -->
+  <rect x="40" y="280" width="150" height="262" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="56" y="306" font-size="12.5" font-weight="bold" fill="#334155">两条主线的区别</text>
+  <text x="56" y="330" font-size="11.5" fill="#475569">客户端 LB：</text>
+  <text x="56" y="348" font-size="11.5" fill="#475569">少一跳、性能好，但</text>
+  <text x="56" y="366" font-size="11.5" fill="#475569">每个客户端都要自己</text>
+  <text x="56" y="384" font-size="11.5" fill="#475569">实现服务发现逻辑</text>
+  <text x="56" y="410" font-size="11.5" fill="#475569">服务端 LB：</text>
+  <text x="56" y="428" font-size="11.5" fill="#475569">对客户端透明、运维</text>
+  <text x="56" y="446" font-size="11.5" fill="#475569">简单，代价是多一跳</text>
+  <text x="56" y="472" font-size="11.5" fill="#64748b">答完分类要接一句：</text>
+  <text x="56" y="490" font-size="11.5" fill="#64748b">项目里用了哪一档、</text>
+  <text x="56" y="508" font-size="11.5" fill="#64748b">为什么选它</text>
+
+  <!-- 底部结论 -->
+  <rect x="40" y="566" width="920" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="592" font-size="12.5" font-weight="bold" fill="#334155">一句话口径：</text>
+  <text x="60" y="614" font-size="12" fill="#475569">「客户端 LB 还是服务端 LB」决定选实例这件事归谁做；「L4 还是 L7」决定代理层能不能看懂请求内容、</text>
+  <text x="60" y="634" font-size="12" fill="#475569">从而决定它能不能按路径分发、能不能做细粒度健康检查。容器编排已经在 L4 帮你做了一层，够用就直接用。</text>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="arro" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">编排选型决策树：先问调度域，再问运维成本，最后看生态</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">分支阈值见 2.4 节；图内秒数、进程号、版本号全部来自 2.1~2.3 节的本机实测读数</text>
+
+  <rect x="290" y="78" width="420" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="102" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">第一问：需要跨机调度吗？</text>
+  <text x="500" y="124" text-anchor="middle" font-size="11.5" fill="#1d4ed8">副本要分到 ≥2 台引擎，或容器挂后要换机重启</text>
+
+  <line x1="430" y1="136" x2="262" y2="196" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <line x1="570" y1="136" x2="738" y2="196" stroke="#334155" stroke-width="1.8" marker-end="url(#arw)"/>
+  <text x="330" y="166" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">不需要</text>
+  <text x="668" y="166" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">需要</text>
+
+  <rect x="60" y="200" width="400" height="58" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="260" y="224" text-anchor="middle" font-size="14" font-weight="bold" fill="#78350f">第二问：要几项编排能力？</text>
+  <text x="260" y="246" text-anchor="middle" font-size="11.5" fill="#92400e">自愈回路 / 滚动发布 / 自动扩缩，命中 ≥1 项？</text>
+
+  <rect x="540" y="200" width="400" height="58" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="740" y="224" text-anchor="middle" font-size="14" font-weight="bold" fill="#78350f">第三问：控制面谁长期运维？</text>
+  <text x="740" y="246" text-anchor="middle" font-size="11.5" fill="#92400e">有人负责升级 / etcd / CNI 排障吗？</text>
+
+  <line x1="200" y1="258" x2="125" y2="308" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arg)"/>
+  <line x1="320" y1="258" x2="359" y2="308" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arro)"/>
+  <line x1="680" y1="258" x2="641" y2="308" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arro)"/>
+  <line x1="800" y1="258" x2="875" y2="308" stroke="#ea580c" stroke-width="1.8" marker-end="url(#arro)"/>
+  <text x="142" y="288" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">0 项</text>
+  <text x="356" y="288" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">≥1 项</text>
+  <text x="642" y="288" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">没有</text>
+  <text x="858" y="288" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">有</text>
+
+  <rect x="16" y="312" width="218" height="104" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="125" y="336" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">Compose（单机）</text>
+  <text x="125" y="360" text-anchor="middle" font-size="11" fill="#15803d">3 服务首建 4.9~6.6s</text>
+  <text x="125" y="380" text-anchor="middle" font-size="11" fill="#15803d">幂等重入 1.1~1.7s</text>
+  <text x="125" y="400" text-anchor="middle" font-size="11" fill="#15803d">kill 后无人重启</text>
+
+  <rect x="250" y="312" width="218" height="104" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="359" y="336" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">发布外置到 CI</text>
+  <text x="359" y="360" text-anchor="middle" font-size="11" fill="#9a3412">滚动交给 CI 逐批 up</text>
+  <text x="359" y="380" text-anchor="middle" font-size="11" fill="#9a3412">或单机 K8s 发行版</text>
+  <text x="359" y="400" text-anchor="middle" font-size="11" fill="#9a3412">不要选 Swarm 过渡</text>
+
+  <rect x="532" y="312" width="218" height="104" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="641" y="336" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">托管 K8s</text>
+  <text x="641" y="360" text-anchor="middle" font-size="11" fill="#9a3412">ACK / TKE / EKS</text>
+  <text x="641" y="380" text-anchor="middle" font-size="11" fill="#9a3412">控制面不为零人力买单</text>
+  <text x="641" y="400" text-anchor="middle" font-size="11" fill="#9a3412">镜像仓库另配 Harbor</text>
+
+  <rect x="766" y="312" width="218" height="104" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="875" y="336" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">自建 K8s + 生态</text>
+  <text x="875" y="360" text-anchor="middle" font-size="11" fill="#9a3412">≥2 项生态才值得</text>
+  <text x="875" y="380" text-anchor="middle" font-size="11" fill="#9a3412">HPA / 网络策略 / GitOps</text>
+  <text x="875" y="400" text-anchor="middle" font-size="11" fill="#9a3412">网格按 3 节另判</text>
+
+  <rect x="16" y="444" width="968" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="34" y="468" font-size="13" font-weight="bold" fill="#0f172a">图内数字的出处（本机 Docker Desktop 29.7.2 实测）</text>
+  <text x="34" y="492" font-size="11.5" fill="#334155">Compose：3 服务（alpine:3.21）down 后 up -d 首建 4931 / 6592 / 6347 / 6475 ms，幂等重入 1137 / 1329 / 1586 / 1703 ms。</text>
+  <text x="34" y="514" font-size="11.5" fill="#334155">无控制器：kill 掉 api 后 t+1/6/11/16s 都是 exited pid=0，手动 up -d 用 1522ms 才回到 running pid=45121。</text>
+  <text x="34" y="536" font-size="11.5" fill="#334155">无节点概念：--scale web=3 后 web-1/-2/-3 三个副本全部 running 在同一台引擎；25 行 YAML 里 deploy/replicas 出现 0 处。</text>
+  <text x="34" y="558" font-size="11.5" fill="#334155">restart=always 兜进程自退：24s 内 RestartCount 1→6（pid 46350→46762）；docker stop / kill 之后计数冻结不被拉起。</text>
+  <text x="34" y="580" font-size="11.5" fill="#dc2626">未实测：Swarm 为 inactive（本机不做 swarm init）、kubectl 只有客户端 v1.36.1 无集群、podman / nomad 未安装。</text>
+
+  <text x="20" y="634" font-size="12.5" fill="#0f172a">⭐ 落子顺序固定：调度域决定「要不要编排器」，运维成本决定「托管还是自建」，生态决定「加不加网格 / Rollouts」。</text>
+</svg>

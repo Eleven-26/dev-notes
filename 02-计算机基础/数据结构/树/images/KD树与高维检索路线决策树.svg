@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">按「对象形状 → 维度 → 数据量」分岔的高维检索路线决策树</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12.5" fill="#64748b">分岔条件取自第五节选型判据与 1.2 适合面表；叶子里的读数取自第三节实测（n = 20000，golang:1.26-alpine）</text>
+
+  <rect x="330" y="76" width="340" height="48" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="500" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">第一问：查询对象是什么？</text>
+
+  <line x1="400" y1="124" x2="400" y2="148" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="400" y1="148" x2="165" y2="148" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="165" y1="148" x2="165" y2="172" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="500" y1="124" x2="500" y2="172" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="600" y1="124" x2="600" y2="148" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="600" y1="148" x2="835" y2="148" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="835" y1="148" x2="835" y2="172" stroke="#64748b" stroke-width="1.5"/>
+
+  <rect x="30" y="172" width="270" height="60" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="165" y="196" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">矩形 / 多边形，或要频繁增删</text>
+  <text x="165" y="218" text-anchor="middle" font-size="12.5" fill="#7f1d1d">R 树 / R* 树（适用面最广）</text>
+
+  <rect x="375" y="172" width="250" height="60" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="196" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">点集，且以静态数据为主</text>
+  <text x="500" y="218" text-anchor="middle" font-size="12.5" fill="#1e40af">往下走：还有第二问</text>
+
+  <rect x="700" y="172" width="270" height="60" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="835" y="196" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">点、分布均匀、实现要最简</text>
+  <text x="835" y="218" text-anchor="middle" font-size="12.5" fill="#14532d">四叉树（固定四等分）</text>
+
+  <line x1="500" y1="232" x2="500" y2="254" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="375" y="254" width="250" height="34" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="276" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">第二问：维度 d 与数据量</text>
+
+  <line x1="395" y1="288" x2="395" y2="306" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="395" y1="306" x2="170" y2="306" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="170" y1="306" x2="170" y2="320" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="500" y1="288" x2="500" y2="320" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="605" y1="288" x2="605" y2="306" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="605" y1="306" x2="830" y2="306" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="830" y1="306" x2="830" y2="320" stroke="#64748b" stroke-width="1.5"/>
+
+  <rect x="20" y="320" width="300" height="86" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="170" y="344" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">d ≤ 10 且要精确 → KD 树</text>
+  <text x="170" y="366" text-anchor="middle" font-size="11.5" fill="#334155">范围查询检查 263 点 / 1.31% / 76.0×</text>
+  <text x="170" y="386" text-anchor="middle" font-size="11.5" fill="#334155">kNN 平均访问 20.1 个节点 / 993.0×</text>
+
+  <rect x="350" y="320" width="300" height="86" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="344" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">10 ~ 50 维，只要能定义距离</text>
+  <text x="500" y="366" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">球树 / VP 树</text>
+  <text x="500" y="386" text-anchor="middle" font-size="11.5" fill="#334155">不靠坐标切，改用球或到锚点的距离</text>
+
+  <rect x="680" y="320" width="300" height="86" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="830" y="344" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">d &gt; 50，或数据量到百万级</text>
+  <text x="830" y="366" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">放弃精确，转近似（ANN）</text>
+  <text x="830" y="386" text-anchor="middle" font-size="11.5" fill="#334155">LSH ｜ IVF-PQ ｜ HNSW（当前主流）</text>
+
+  <polygon points="159,160 171,160 165,172" fill="#64748b"/>
+  <polygon points="494,160 506,160 500,172" fill="#64748b"/>
+  <polygon points="829,160 841,160 835,172" fill="#64748b"/>
+  <polygon points="494,242 506,242 500,254" fill="#64748b"/>
+  <polygon points="164,308 176,308 170,320" fill="#64748b"/>
+  <polygon points="494,308 506,308 500,320" fill="#64748b"/>
+  <polygon points="824,308 836,308 830,320" fill="#64748b"/>
+  <rect x="20" y="430" width="960" height="112" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>  <text x="36" y="454" font-size="13" font-weight="bold" fill="#0f172a">三条近似路线各自的适用面（第五节表格原样）</text>
+  <text x="36" y="476" font-size="12" fill="#334155">LSH 局部敏感哈希：设计哈希函数让相近的点高概率落进同一桶 —— 高维、只要近似、喜欢简单</text>
+  <text x="36" y="496" font-size="12" fill="#334155">IVF-PQ 倒排 + 乘积量化：先聚类分桶，桶内向量用量化编码压缩 —— 大规模（百万级）、内存是瓶颈</text>
+  <text x="36" y="516" font-size="12" fill="#334155">HNSW 分层可导航小世界图：用图代替树，上层稀疏做长跳、下层稠密做精修 —— 召回 / 延迟折中最好的主流方案</text>
+
+  <text x="30" y="572" font-size="12.5" fill="#7f1d1d">注意：不是「近似更好」，而是「精确在高维不可行」—— d 维精确最近邻最坏复杂度的指数项随 d 增长；d = 16 实测 kNN 平均访问 19 440.3 个节点，等于全扫的 1.0×</text>
+  <text x="30" y="594" font-size="12.5" fill="#334155">读数对照：d = 2 时范围查询只检查 263 个点（1.31%，76.0×）；d = 16 涨到 9 204 个（46.02%，只快 2.2×）—— 同一份代码，只是维度从 2 到 16</text>
+  <text x="30" y="616" font-size="12" fill="#64748b">建树是一次性成本：各维度比较次数都约 2 150 000，与维度几乎无关；查询盒边长按 L = 0.01^(1/d) 取，体积占比恒为 1%，命中数才稳定在 ~200</text>
+  <text x="30" y="640" font-size="12.5" font-weight="bold" fill="#16a34a">判据：维度 ≤ 10 且要精确 → KD 树 / R 树；10~50、只要能定义距离 → 球树 / VP 树；大于 50 或数据量大 → 放弃精确，转 LSH / IVF-PQ / HNSW</text>
+</svg>

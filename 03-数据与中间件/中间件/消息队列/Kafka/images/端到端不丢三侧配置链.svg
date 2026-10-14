@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="c1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">端到端「不丢」：生产者、Broker、消费者三处缺一不可</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">任何一处漏配都会丢：只做一侧时另一侧的漏洞会把消息吞掉</text>
+
+  <rect x="40" y="92" width="280" height="210" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="180" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">① 生产者侧</text>
+  <text x="58" y="150" font-size="12.5" fill="#1e3a8a">acks = all（= -1）</text>
+  <text x="58" y="176" font-size="12.5" fill="#1e3a8a">retries &gt; 0</text>
+  <text x="58" y="202" font-size="12.5" fill="#1e3a8a">enable.idempotence = true</text>
+  <text x="58" y="228" font-size="12.5" fill="#1e3a8a">发送回调处理异常</text>
+  <text x="58" y="256" font-size="11.5" fill="#1d4ed8">只做这侧：送到了 ISR，</text>
+  <text x="58" y="276" font-size="11.5" fill="#1d4ed8">但消费端可能提前提交位点</text>
+
+  <line x1="320" y1="197" x2="360" y2="197" stroke="#334155" stroke-width="1.6" marker-end="url(#c1)"/>
+
+  <rect x="360" y="92" width="280" height="210" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="500" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#7c2d12">② Broker 侧</text>
+  <text x="378" y="150" font-size="12.5" fill="#7c2d12">replication.factor ≥ 3</text>
+  <text x="378" y="176" font-size="12.5" fill="#7c2d12">min.insync.replicas ≥ 2</text>
+  <text x="378" y="202" font-size="12.5" fill="#7c2d12">unclean.leader.election=false</text>
+  <text x="378" y="228" font-size="12.5" fill="#7c2d12">Follower 同步进 ISR 才算 HW</text>
+  <text x="378" y="256" font-size="11.5" fill="#9a3412">只做这侧：副本多了，</text>
+  <text x="378" y="276" font-size="11.5" fill="#9a3412">但 ISR 只剩 1 时 all 形同 1</text>
+
+  <line x1="640" y1="197" x2="680" y2="197" stroke="#334155" stroke-width="1.6" marker-end="url(#c1)"/>
+
+  <rect x="680" y="92" width="280" height="210" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="820" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#14532d">③ 消费者侧</text>
+  <text x="698" y="150" font-size="12.5" fill="#14532d">enable.auto.commit = false</text>
+  <text x="698" y="176" font-size="12.5" fill="#14532d">先处理业务，成功后提交</text>
+  <text x="698" y="202" font-size="12.5" fill="#14532d">commitSync 手动提交</text>
+  <text x="698" y="228" font-size="12.5" fill="#14532d">消费端幂等（业务唯一键）</text>
+  <text x="698" y="256" font-size="11.5" fill="#166534">只做这侧：处理成功才提交，</text>
+  <text x="698" y="276" font-size="11.5" fill="#166534">但上游若已丢也无能为力</text>
+
+  <text x="20" y="338" font-size="13" fill="#0f172a">⭐ 一句话：丢消息从来不是某个参数没设，而是三处里有一处被漏掉了——四步缺一，链条就断。</text>
+  <text x="20" y="366" font-size="13" fill="#dc2626">⚠️ acks=all 只确认到「ISR 全部写进各自 PageCache」，不保证落盘；实测 log.flush.interval.messages 默认 9223372036854775807。</text>
+  <text x="20" y="394" font-size="12" fill="#64748b">读数来自 apache/kafka:3.9.0：kafka-configs.sh --describe --entity-type brokers --all 查到的默认值。</text>
+</svg>

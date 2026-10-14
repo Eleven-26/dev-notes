@@ -111,6 +111,8 @@
 > ⭐ 一句话取舍：**推送优先 SSE（便宜、穿透好、自带重连）；要双向才上 WebSocket**；
 > **服务间通信才考虑 gRPC 流式。**
 
+![WebSocket、SSE 与 gRPC 流式三条推送链路的逐项对照：方向、协议底座、数据格式、浏览器支持、自动重连、穿透性与各自的坑，底部给出三条落点判据与一句话取舍](images/WebSocket与SSE与gRPC流的链路对照.svg)
+
 ---
 
 ## 使用一：Go（HTTP 客户端与「租约」这两件事）⭐
@@ -253,6 +255,23 @@ func GetWithTrace(ctx context.Context, url string) (*http.Response, Timing, erro
 > `Reused=false` 不一定是坏事（连接池刚建立时本来就要建），
 > 但**稳态下仍然持续 `Reused=false`** 就说明池被参数卡住了——第一个要查的就是 `MaxIdleConnsPerHost`。
 
+**容器实测**（`golang:1.26-alpine`，`go1.26.8 linux/amd64`；`httptest` 起 TLS 服务、每个请求固定 sleep 100ms；
+把上面的 `GetWithTrace` 串行调 8 次，再把并发放到 8、`MaxConnsPerHost` 放到 0；连跑 4 轮，趋势一致）：
+
+| 分支 / 场景 | 实测读数 |
+|---|---|
+| 新建（进程内第一个请求） | `Reused=false`、`Dial=200µs~900µs`、`FirstByte=108ms~118ms` |
+| 复用（第二次起） | `Reused=true`、`Dial=0s`（`ConnectStart` 根本不触发）、`FirstByte=101ms~105ms`，≈ 服务端 sleep 的 100ms |
+| 协商结果 | h2 时 `resp.Proto=HTTP/2.0`、`resp.TLS.NegotiatedProtocol=h2`；ALPN 里只给 `http/1.1` 时 `NegotiatedProtocol` 为空、`Proto=HTTP/1.1` |
+| 8 并发且不限连接数 | HTTP/1.1 得到 **8 个不同本地端口**、8 次拨号；HTTP/2 只有 **1 个本地端口**（8 个请求全压在同一条连接上），但拨号次数仍记到 8 |
+
+两条必须写清的口径：
+
+- ⚠️ **`Remote` 相同不能证明复用**——它只是服务端地址，同一进程里本来就恒定；要区分「是不是同一条连接」得看 `Reused` 与本地端口（`GotConnInfo.Conn.LocalAddr()`）。
+- ⚠️ **拨号次数不等于承载请求的连接数**——并发瞬间标准库会多拨几条连接，但请求仍然走已经建好的那条，量级判断时别把两者混为一谈。
+
+> 📌 客户端 `httptrace`、命令行 `curl` / `openssl`、抓包 `tshark` 这三层怎么串起来回答同一个问题，见「使用三」开头的观测路径图。
+
 ### 3. 一条连接 vs 多条连接：正文「多路复用」的实测
 
 这段是**在本机（Windows + Go，`httptest` 起 TLS 服务，每个请求固定 sleep 100ms，共 60 个请求）真实跑出来的**：
@@ -282,6 +301,8 @@ func GetWithTrace(ctx context.Context, url string) (*http.Response, Timing, erro
    所以 HTTP/2 省的不是"能不能并发"，而是**连接数**：
    60 次 TCP+TLS 握手 vs 1 次。**这就是移动端/弱网/大量小接口场景下 HTTP/2 的真实收益，也是 HPACK 能生效的前提**
    （索引表是按连接维护的，正文第 ③ 点）。
+
+![60 个请求打满一条连接的实测耗时比例：HTTP/1.1 无论并发 1、6 还是 60 都钉在 6.05s，HTTP/2 单连接随并发数一路降到 110ms；不限连接数时两者落到同一量级，但都要 60 次 TCP 拨号](images/单连接60个请求的串行与多路复用耗时对比.svg)
 
 复现程序（单文件，`go mod init x && go run main.go`）：
 
@@ -383,6 +404,16 @@ func main() {
 	}
 }
 ```
+
+**容器内复跑核对**（`golang:1.26-alpine`，`go1.26.8 linux/amd64`，同一份程序连跑 4 轮、每轮 12 组读数）：
+
+| 组 | 上表读数（Windows 宿主机） | 容器内 4 轮区间 |
+|---|---|---|
+| HTTP/1.1 单连接，并发 1 / 6 / 60 | 6.05s / 6.04s / 6.05s | 6.06s ~ 6.11s，与并发数无关 |
+| HTTP/2 单连接，并发 1 → 60 | 6.05s / 1.01s / 510ms / 210ms / 110ms | 6.08s ~ 6.10s / 1.02s ~ 1.03s / 510ms ~ 530ms / 210ms / 110ms |
+| 不限连接数，并发 60 | 1.1 170ms、2 140ms | 1.1 170ms ~ 240ms、2 140ms ~ 220ms，拨号 54 ~ 60 次 |
+
+> 📌 只断言趋势：单连接上 HTTP/1.1 钉死在 60 × 100ms，HTTP/2 随并发数一路下降；不限连接数时两者落到同一量级、但都要 60 次拨号。绝对值随机器与容器负载浮动，跨轮次读数不混用。
 
 > ⚠️ 这个实验量的是**应用层并发**，没有真网络，所以绝对值不代表线上。
 > 想加上网络代价：`srv.Close()` 换成真实远端服务，或在 Linux 上用 `tc netem` 加延迟与丢包
@@ -523,7 +554,17 @@ public class OkHttpSingleton {
 | 阶段观测 | `httptrace` | `EventListener` | ❌ |
 | 强制 h1 | ALPN `NextProtos` | `protocols(List.of(HTTP_1_1))` | `.version(HTTP_1_1)` |
 
+表里只写了参数名，**具体取值以上面两段代码为准**，画图时不要把口径写歪：
+
+- Go：`MaxIdleConns=200`（全局空闲上限）、`MaxIdleConnsPerHost=64`（⚠️ 标准库默认只有 2）、`IdleConnTimeout=90 * time.Second`（90s）；`DialContext` 里另配 `Timeout=3 * time.Second`（3s）与 `KeepAlive=30 * time.Second`（30s）——这两个值就是上面那条提醒「一旦自定义 `DialContext`，`net.Dialer` 的默认值就不再自动生效」要求写全的东西；超时三档是 `TLSHandshakeTimeout=5s` / `ResponseHeaderTimeout=10s` / `ExpectContinueTimeout=1s`。
+- OkHttp：`ConnectionPool(64, 5, TimeUnit.MINUTES)`＝空闲上限 64、空闲存活 **5 分钟**；超时四档 `connectTimeout=3s` / `readTimeout=10s` / `writeTimeout=5s` / `callTimeout=15s`。
+- JDK HttpClient：空闲存活只能靠系统属性 `jdk.httpclient.keepalive.timeout`（构造器里没有这一档），整体超时走 `HttpRequest.timeout`。
+
+![三套 HTTP 客户端的归属与参数对照：业务调用只碰 Client 这个壳，池在 Transport / ConnectionPool 里；单例、空闲连接数、空闲存活、整体超时、只等响应头、阶段观测、强制退回 1.1 七件事逐项对齐，底部给出每次新建 Transport 的三个代价与超时分档](images/Go与Java三套HTTP客户端的连接池对照.svg)
+
 ## 使用三：抓包与命令实操
+
+![连接是否复用这条链路的三层观测路径：客户端侧 httptrace 的新建与复用两分支读数、命令行侧 curl 的关键三行与 -j 并发下 h2 一条连接对 1.1 四条连接的对照、抓包侧 tshark 按帧字段验证五项机制，底部是症状到结论的四条判据](images/连接是否复用的三层观测路径.svg)
 
 ### 1. 一眼看清协议版本、ALPN 与帧
 
@@ -540,6 +581,31 @@ curl -v --http2-prior-knowledge http://127.0.0.1:8080/
 # 证书链与到期：TLS 是 h2 的事实前提（HTTP 与 TLS 是两层，靠 ALPN 协商出 h2）
 echo | openssl s_client -connect example.com:443 -alpn h2 2>/dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
 ```
+
+**容器实测**（服务端：`golang:1.26-alpine` 里 `net/http` 起的 TLS 服务，标准库自动开 h2；客户端：`nginx:1.26-alpine` 自带的 `curl 8.12.1`（nghttp2/1.62.1），两个容器接在同一张自建网络里；`-k` 只因为服务端证书是每次启动现生成的自签证书）：
+
+```text
+* ALPN: curl offers h2,http/1.1
+* SSL connection using TLSv1.3 / TLS_AES_128_GCM_SHA256 / x25519 / id-ecPublicKey
+* ALPN: server accepted h2
+* Connected to w2ra2d-h2srv (192.168.208.2) port 8443
+< HTTP/2 200
+< x-served-proto: HTTP/2.0
+```
+
+六条读数说明的事：
+
+- **同一个地址、同一场 TLS 握手，加不加 `--http1.1` 就换掉应用层版本**：改成 `--http1.1` 后是 `ALPN: server accepted http/1.1` 配 `< HTTP/1.1 200 OK`——版本是**协商**出来的，不是「升级」出来的，也再次印证 HTTP 与 TLS 是两层（1.2 那条常见错误说法）。
+- **头部字段名在 h2 上是小写**：同一个自定义头，1.1 响应回 `X-Served-Proto: HTTP/1.1`，h2 响应回 `x-served-proto: HTTP/2.0`（HPACK 要求字段名小写），过网关时按大小写取头就会踩坑。
+- **复用能亲眼看到**：一次 `curl` 传两个 URL，第二条前面是 `Re-using existing connection with host w2ra2d-h2srv`，两条都是 `< HTTP/2 200`——对应「使用一」第 2 节里 `GotConn` 的 `Reused=true`。
+- ⚠️ **`Using HTTP2, server supports multiplexing` 这行在新版 curl 里已经没有了**：上面这台 `curl 8.12.1` 的 `-v` 输出搜不到它，判据改成看 `ALPN: server accepted h2` 与 `< HTTP/2 200` 两行。
+- **明文 h2c 走不通**：`curl --http2-prior-knowledge http://同一地址:8443/` 直接回 `curl: (16) Error in the HTTP2 framing layer`（退出码 16），因为 Go 标准库的 HTTP/2 只在 TLS 之上靠 ALPN 开启。
+- **并发下「省的是连接数」也能在命令行上量出来**：`curl -j --parallel --parallel-max 4` 一次传 4 个会让服务端睡 1.5s 的 URL（`?slow=x`），分两批各跑 3 轮、共 6 轮，趋势一致——
+  - `--http2`：`Connected to` 只出现 **1 次**、`Re-using existing connection` **3 次**、`ALPN: curl offers` **1 次**，四条各自的 `time_total` 全落在 **1.508s ~ 1.516s**（四条同时在同一条连接上跑完）；
+  - `--http1.1`：`Connected to` **4 次**、`Re-using` **0 次**，四条各自 **1.511s ~ 1.555s**，且 `ALPN: curl offers http/1.1` 也重复了 **4 次**——4 场 TLS 握手；
+  - ⚠️ **两者墙钟时间在这个场景看不出差别**：`-j` 会给 1.1 另开 4 条连接去并行，所以省下来的是**连接数与握手次数**，不是请求耗时。要把墙钟的差别压出来，必须把并发压到**同一条连接**上，见「使用一」第 3 节那组 60 个请求的实测。
+
+  > 📌 这台服务端把 `?slow=` 的睡眠固定在 1.5s（`time.Sleep`），所以「单条请求 1.5s」是**服务端下限**，读数只用来比连接数与并发形态，不用来比真实性能。
 
 ### 2. 直接看 HTTP/2 的帧与 HPACK
 
@@ -560,6 +626,8 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 | 「各自维护一张索引表」 | 第二个请求的 `HEADERS` 帧长度显著变小 |
 | 「服务端推送」 | 出现 `PUSH_PROMISE` 帧（Go 标准库**不支持**推送，要用 h2_bundle 或换语言） |
 | 「流的优先级」 | `HEADERS` 帧里的 `PRIORITY` 段；h2 `dependency`/`weight` |
+
+> 📌 环境口径：本节 1 小节的命令行读数与「使用一」第 2 节的 `httptrace` 读数都在容器里实跑过；**抓包这一层未实测**——本机与本机镜像里都没有 `tcpdump` / `tshark`，这张表给的是命令、字段名和判据。帧与 HPACK 的字节级细节见 [HTTP2机制.md](../../03-数据与中间件/中间件/RPC框架/gRPC/HTTP2机制.md)。
 
 ---
 

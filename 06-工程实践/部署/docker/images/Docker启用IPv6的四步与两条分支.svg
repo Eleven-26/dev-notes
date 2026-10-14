@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" width="1000" height="530" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw6" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="530" fill="#ffffff"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Docker 启用 IPv6：四步链路与两条网络分支</text>
+  <text x="500" y="52" text-anchor="middle" font-size="13" fill="#64748b">前提：内核没禁用 IPv6；缺 fixed-cidr-v6 时 ipv6 形同虚设；只 reload 不 restart 配置没生效</text>
+
+  <rect x="20" y="84" width="220" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="130" y="103" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">第 1 步 · 内核没禁用</text>
+  <text x="130" y="123" text-anchor="middle" font-size="10.5" fill="#1d4ed8">disable_ipv6 必须是 0</text>
+  <text x="130" y="141" text-anchor="middle" font-size="10.5" fill="#475569">/proc/sys/net/ipv6/conf/all</text>
+  <text x="130" y="159" text-anchor="middle" font-size="10.5" fill="#475569">为 1 时后面全无用</text>
+  <text x="130" y="177" text-anchor="middle" font-size="10.5" fill="#475569">sysctl -w 改成 0</text>
+
+  <rect x="270" y="84" width="220" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="380" y="103" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">第 2 步 · 改 daemon.json</text>
+  <text x="380" y="121" text-anchor="middle" font-size="10.5" fill="#1d4ed8">“ipv6”: true 打开能力</text>
+  <text x="380" y="138" text-anchor="middle" font-size="10.5" fill="#1d4ed8">“fixed-cidr-v6” 指定网段</text>
+  <text x="380" y="155" text-anchor="middle" font-size="10.5" fill="#475569">例 2001:db8:1::/64</text>
+  <text x="380" y="172" text-anchor="middle" font-size="10.5" fill="#dc2626">缺它容器分不到地址</text>
+
+  <rect x="520" y="84" width="220" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="630" y="103" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">第 3 步 · 重载并重启</text>
+  <text x="630" y="123" text-anchor="middle" font-size="10.5" fill="#475569">daemon-reload 只重读 unit</text>
+  <text x="630" y="141" text-anchor="middle" font-size="10.5" fill="#dc2626">改完必须 restart docker</text>
+  <text x="630" y="159" text-anchor="middle" font-size="10.5" fill="#475569">只 reload 配置没生效</text>
+  <text x="630" y="177" text-anchor="middle" font-size="10.5" fill="#475569">重启会重建容器</text>
+
+  <rect x="770" y="84" width="210" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="875" y="103" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">第 4 步 · 验证</text>
+  <text x="875" y="123" text-anchor="middle" font-size="10.5" fill="#1d4ed8">curl -g “http://[::1]:端口/”</text>
+  <text x="875" y="141" text-anchor="middle" font-size="10.5" fill="#475569">方括号必须带上</text>
+  <text x="875" y="159" text-anchor="middle" font-size="10.5" fill="#475569">ifconfig 同见两个地址</text>
+  <text x="875" y="177" text-anchor="middle" font-size="10.5" fill="#475569">stop 后访问不到</text>
+
+  <line x1="240" y1="132" x2="270" y2="132" stroke="#334155" stroke-width="1.8" marker-end="url(#arw6)"/>
+  <line x1="490" y1="132" x2="520" y2="132" stroke="#334155" stroke-width="1.8" marker-end="url(#arw6)"/>
+  <line x1="740" y1="132" x2="770" y2="132" stroke="#334155" stroke-width="1.8" marker-end="url(#arw6)"/>
+
+  <line x1="250" y1="180" x2="250" y2="212" stroke="#334155" stroke-width="1.8" marker-end="url(#arw6)"/>
+  <line x1="750" y1="180" x2="750" y2="212" stroke="#334155" stroke-width="1.8" marker-end="url(#arw6)"/>
+
+  <text x="500" y="200" text-anchor="middle" font-size="11" fill="#64748b">上面四步按顺序走完，再按网络形态分两条分支</text>
+
+  <rect x="20" y="212" width="460" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="250" y="236" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">分支一 · 默认 bridge 网络就够</text>
+  <text x="250" y="258" text-anchor="middle" font-size="11.5" fill="#3f6212">靠 daemon.json 的 ipv6 与 fixed-cidr-v6 两项</text>
+  <text x="250" y="280" text-anchor="middle" font-size="11.5" fill="#3f6212">不用为网络单独加参数，容器即可分到 IPv6 地址</text>
+
+  <rect x="520" y="212" width="460" height="86" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="750" y="236" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">分支二 · 自定义网络要显式开启</text>
+  <text x="750" y="258" text-anchor="middle" font-size="11" fill="#c2410c">docker network create --ipv6 --subnet=fd00:1::/64 mynet6</text>
+  <text x="750" y="280" text-anchor="middle" font-size="11" fill="#c2410c">docker run -d --network=mynet6 --name nginx6 nginx</text>
+
+  <rect x="20" y="316" width="960" height="84" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="40" y="338" font-size="13" font-weight="bold" fill="#78350f">验证要点：方括号写法、链路本地作用域与反证</text>
+  <text x="40" y="360" font-size="12" fill="#92400e">链路本地地址（fe80::/10 开头）访问必须带网卡作用域，即指定网络接口 fe80::xxxx%eth0，否则访问不通</text>
+  <text x="40" y="382" font-size="12" fill="#92400e">反证：docker stop nginx 之后再访问就访问不到了 —— 说明刚才访问到的确实是这个容器</text>
+
+  <rect x="20" y="412" width="960" height="76" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="40" y="434" font-size="12" fill="#334155">注意：2001:db8::/32 是 RFC 3849 保留给文档示例的地址段，生产上请把 fixed-cidr-v6 换成自己实际拥有的网段</text>
+  <text x="40" y="456" font-size="12" fill="#334155">只开 IPv6 的容器要访问 IPv4 外网需要 NAT64 / DNS64 做协议与地址转换，这类能力由网络侧统一提供，不是 Docker 自己能解决的</text>
+
+  <text x="20" y="514" font-size="12.5" fill="#0f172a">四步顺序不能颠倒：内核为 1 时后面全无用；缺 fixed-cidr-v6 时“ipv6”: true 形同虚设；只 daemon-reload 不 restart docker 则配置没生效</text>
+</svg>

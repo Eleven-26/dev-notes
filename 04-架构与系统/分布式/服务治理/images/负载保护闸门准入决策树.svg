@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">并发闸门准入决策树：放行、排队还是拒绝</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">判据出自本篇 2.1～2.2 节代码与第三节实测（并发上限 / 队列上限 / 排队时限三层判定）</text>
+
+  <!-- 主链（左列） -->
+  <rect x="60" y="96" width="300" height="52" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="210" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">请求到达闸门</text>
+  <text x="210" y="139" text-anchor="middle" font-size="11" fill="#64748b">生产配置示例：128 / 32 / 1s</text>
+
+  <line x1="210" y1="148" x2="210" y2="168" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="60" y="170" width="300" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="210" y="190" text-anchor="middle" font-size="13" fill="#1e40af">① max_inflight = 0 ？</text>
+  <text x="210" y="210" text-anchor="middle" font-size="11" fill="#64748b">0 = 不启用负载保护</text>
+
+  <line x1="210" y1="222" x2="210" y2="252" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <text x="222" y="242" font-size="12" fill="#475569">否</text>
+
+  <rect x="60" y="254" width="300" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="210" y="274" text-anchor="middle" font-size="13" fill="#1e40af">② 非阻塞拿槽位成功？</text>
+  <text x="210" y="294" text-anchor="middle" font-size="11" fill="#64748b">select slots 的 default 分支（快路径）</text>
+
+  <line x1="210" y1="306" x2="210" y2="336" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <text x="222" y="326" font-size="12" fill="#475569">否：并发已满</text>
+
+  <rect x="60" y="338" width="300" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="210" y="358" text-anchor="middle" font-size="13" fill="#1e40af">③ waiting+1 大于 max_queue ？</text>
+  <text x="210" y="378" text-anchor="middle" font-size="11" fill="#64748b">队列有界：连排队都不让排？</text>
+
+  <line x1="210" y1="390" x2="210" y2="420" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <text x="222" y="410" font-size="12" fill="#475569">否：占住队列位</text>
+
+  <rect x="60" y="422" width="300" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="210" y="442" text-anchor="middle" font-size="13" fill="#1e40af">④ 排队等到槽位（未超时限）？</text>
+  <text x="210" y="462" text-anchor="middle" font-size="11" fill="#64748b">channel 等待队列天然 FIFO</text>
+
+  <line x1="210" y1="474" x2="210" y2="500" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="222" y="492" font-size="12" fill="#15803d">是</text>
+
+  <rect x="60" y="502" width="300" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="210" y="521" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">放行：排到了槽位才进入</text>
+  <text x="210" y="538" text-anchor="middle" font-size="11" fill="#334155">waiting 计数随即减回</text>
+
+  <!-- 右侧结果 -->
+  <line x1="360" y1="196" x2="616" y2="196" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="372" y="188" font-size="12" fill="#15803d">是</text>
+  <rect x="620" y="170" width="330" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="636" y="192" font-size="13" font-weight="bold" fill="#15803d">直接放行（闸门为 nil）</text>
+  <text x="636" y="212" font-size="11" fill="#334155">实测：nil.Acquire 返回 reason 空、err 空</text>
+
+  <line x1="360" y1="280" x2="616" y2="280" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="372" y="272" font-size="12" fill="#15803d">是：绝大多数请求</text>
+  <rect x="620" y="254" width="330" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="636" y="276" font-size="13" font-weight="bold" fill="#15803d">放行：inflight+1，返回 release</text>
+  <text x="636" y="296" font-size="11" fill="#334155">release 用 sync.Once 兜底：必须幂等</text>
+
+  <line x1="360" y1="364" x2="616" y2="364" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="372" y="356" font-size="12" fill="#b91c1c">是：队列也满了</text>
+  <rect x="620" y="338" width="330" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="636" y="360" font-size="13" font-weight="bold" fill="#b91c1c">拒绝：queue_full → 503</text>
+  <text x="636" y="380" font-size="11" fill="#334155">运维含义：瞬时争抢太激烈（调大队列或扩容）</text>
+
+  <line x1="360" y1="448" x2="616" y2="448" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="372" y="440" font-size="12" fill="#b91c1c">否：ctx 到期</text>
+  <rect x="620" y="422" width="330" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="636" y="444" font-size="13" font-weight="bold" fill="#b91c1c">拒绝：queue_timeout → 503</text>
+  <text x="636" y="464" font-size="11" fill="#334155">运维含义：槽位周转太慢（查上游为什么慢）</text>
+
+  <!-- 底部说明 -->
+  <rect x="40" y="566" width="920" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="590" font-size="12.5" font-weight="bold" fill="#334155">本机实测（并发上限 2 / 队列上限 1 / 排队超时 200ms）：</text>
+  <text x="60" y="612" font-size="12" fill="#475569">第 1、2 个拿槽 inflight=2；第 3 个排队 waiting=1；第 4 个 queue_full；释放 1 个槽位后第 3 个放行；</text>
+  <text x="60" y="632" font-size="12" fill="#475569">槽位被立刻抢走的场景排队者 queue_timeout；连调 release 3 次后 inflight 仍为 0（不会把额度还多）。</text>
+  <text x="60" y="656" font-size="12" fill="#64748b">waiting 是准入计数不是精确队列长度：允许轻微超发换一把锁；真正的上限由 slots 的容量保证。两种拒绝必须都带 Retry-After。</text>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">怎么选 DFS 还是 BFS：三问决策树</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">判据依次为 要不要最短 → 要不要路径状态（回溯）→ 图是宽还是深；叶子对应正文第二节场景对照表的行</text>
+
+  <rect x="30" y="76" width="200" height="90" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="130" y="108" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">① 要不要最短</text>
+  <text x="130" y="130" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">或分层？</text>
+  <text x="130" y="154" text-anchor="middle" font-size="11" fill="#7c2d12">先问这一条，它直接定生死</text>
+
+  <rect x="270" y="76" width="710" height="44" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="282" y="103" font-size="12.5" fill="#14532d">是 · 无权图最短步数、最少转换次数 → BFS：层数即距离，唯一正确选择</text>
+  <rect x="270" y="124" width="710" height="44" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="282" y="151" font-size="12.5" fill="#14532d">是 · 层级展示、按距离分波次、邻域/多源扩散 → 层序 BFS、多源 BFS（先快照 size）</text>
+  <rect x="270" y="172" width="710" height="44" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="282" y="199" font-size="12.5" fill="#14532d">是 · 依赖先后顺序（编译、启动、建表）→ Kahn（BFS 入度），收到点数少于 n 即判环</text>
+  <rect x="270" y="220" width="710" height="44" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="282" y="247" font-size="12.5" fill="#9a3412">是但边权不等 · 带权图最短路 → Dijkstra（堆）或 0-1 BFS：普通 BFS 的层数不等于距离</text>
+  <rect x="270" y="268" width="710" height="44" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="282" y="295" font-size="12.5" fill="#9a3412">是但空间巨大 · 状态空间巨大且解可能很深 → IDDFS 或双向 BFS：平衡空间与最短性</text>
+
+  <line x1="230" y1="121" x2="245" y2="121" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="121" x2="245" y2="98" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="98" x2="270" y2="98" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="121" x2="245" y2="146" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="146" x2="270" y2="146" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="121" x2="245" y2="194" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="194" x2="270" y2="194" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="121" x2="245" y2="242" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="242" x2="270" y2="242" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="121" x2="245" y2="290" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="290" x2="270" y2="290" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="258,92 258,104 270,98" fill="#64748b"/>
+  <polygon points="258,140 258,152 270,146" fill="#64748b"/>
+  <polygon points="258,188 258,200 270,194" fill="#64748b"/>
+  <polygon points="258,236 258,248 270,242" fill="#64748b"/>
+  <polygon points="258,284 258,296 270,290" fill="#64748b"/>
+  <text x="230" y="115" font-size="11" fill="#16a34a">是</text>
+
+  <line x1="130" y1="166" x2="130" y2="320" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="124,308 136,308 130,320" fill="#64748b"/>
+  <text x="138" y="252" font-size="11" fill="#dc2626">否</text>
+
+  <rect x="30" y="320" width="200" height="90" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="130" y="352" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">② 要不要路径状态</text>
+  <text x="130" y="374" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">并能撤销（回溯）？</text>
+  <text x="130" y="398" text-anchor="middle" font-size="11" fill="#7c2d12">上一问答「否」才到这里</text>
+
+  <rect x="270" y="320" width="710" height="44" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="282" y="347" font-size="12.5" fill="#7f1d1d">是 · 全排列 / 子集 / 组合 / 数独 → DFS + 回溯：要携带整条路径并撤销，BFS 记不住</text>
+  <rect x="270" y="368" width="710" height="44" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="282" y="395" font-size="12.5" fill="#7f1d1d">仍走 DFS · 求子树聚合、删除整棵目录 → 后序 DFS；判 BST、取有序序列 → 中序 DFS</text>
+
+  <line x1="230" y1="365" x2="245" y2="365" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="365" x2="245" y2="342" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="342" x2="270" y2="342" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="365" x2="245" y2="390" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="390" x2="270" y2="390" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="258,336 258,348 270,342" fill="#64748b"/>
+  <polygon points="258,384 258,396 270,390" fill="#64748b"/>
+  <text x="230" y="359" font-size="11" fill="#16a34a">是</text>
+
+  <line x1="130" y1="410" x2="130" y2="430" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="124,418 136,418 130,430" fill="#64748b"/>
+  <text x="138" y="426" font-size="11" fill="#dc2626">否</text>
+
+  <rect x="30" y="430" width="200" height="90" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="130" y="462" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">③ 图是宽还是深</text>
+  <text x="130" y="484" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">（内存画像）？</text>
+  <text x="130" y="508" text-anchor="middle" font-size="11" fill="#7c2d12">时间同为 O(V+E)，只差在峰值</text>
+
+  <rect x="270" y="430" width="710" height="56" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="282" y="454" font-size="12.5" font-weight="bold" fill="#1e40af">宽而浅（星形、满二叉树）→ DFS（迭代显式栈）</text>
+  <text x="282" y="476" font-size="11.5" fill="#334155">判环用三色 DFS、连通分量用显式栈；队列装最宽一层（实测峰值 524288，占节点数一半），DFS 栈深只有 20</text>
+  <rect x="270" y="496" width="710" height="56" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="282" y="520" font-size="12.5" font-weight="bold" fill="#14532d">深而窄（长链、大网格）→ BFS，或把递归改成显式栈</text>
+  <text x="282" y="542" font-size="11.5" fill="#334155">链上 BFS 队列峰值 = 1；Java 默认栈约 2 万层就爆栈（同机两次 10410 / 22503，阈值不可依赖）</text>
+
+  <line x1="230" y1="475" x2="245" y2="475" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="475" x2="245" y2="458" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="458" x2="270" y2="458" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="475" x2="245" y2="524" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="245" y1="524" x2="270" y2="524" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="258,452 258,464 270,458" fill="#64748b"/>
+  <polygon points="258,518 258,530 270,524" fill="#64748b"/>
+  <text x="249" y="453" font-size="10.5" fill="#2563eb">宽</text>
+  <text x="249" y="520" font-size="10.5" fill="#16a34a">深</text>
+
+  <rect x="30" y="572" width="950" height="68" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="596" font-size="12.5" fill="#334155">都不卡这两条 · GC 存活对象标记：原理上 DFS / BFS 皆可，标记阶段常用 DFS（峰值更低）；复制式 GC 里 Cheney 是 BFS</text>
+  <text x="40" y="620" font-size="12.5" fill="#b45309">口诀：要最短用 BFS，要回溯用 DFS，剩下看宽窄；三问都答不上来时，回到正文第二节对照表逐行对号入座</text>
+</svg>

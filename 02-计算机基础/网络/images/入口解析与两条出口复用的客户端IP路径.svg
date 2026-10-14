@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">入口只解析一次，两条出口复用同一个值</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">多跳实测：客户端走 https，前置 nginx 已把 X-Real-IP 与 X-Forwarded-Proto 写对；四容器拓扑见反向代理篇 4.2</text>
+
+  <rect x="40" y="72" width="260" height="52" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="170" y="92" text-anchor="middle" font-size="12" fill="#0f172a">入站，网关这一跳</text>
+  <text x="170" y="112" text-anchor="middle" font-size="10.5" fill="#64748b">remote 192.168.224.2、tls=false</text>
+  <rect x="360" y="72" width="240" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="480" y="92" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">入口 Resolve 一次</text>
+  <text x="480" y="112" text-anchor="middle" font-size="10.5" fill="#1e3a8a">可信链解析，结论只算一遍</text>
+  <rect x="660" y="72" width="300" height="52" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.3"/>
+  <text x="810" y="92" text-anchor="middle" font-size="12" font-weight="bold" fill="#4c1d95">结果挂进 context</text>
+  <text x="810" y="112" text-anchor="middle" font-size="10.5" fill="#4c1d95">入站已带 real_ip 192.168.224.6、proto https</text>
+  <line x1="300" y1="98" x2="356" y2="98" stroke="#64748b" stroke-width="1.6" marker-end="url(#arI)"/>
+  <line x1="600" y1="98" x2="656" y2="98" stroke="#64748b" stroke-width="1.6" marker-end="url(#arI)"/>
+
+  <line x1="810" y1="124" x2="810" y2="140" stroke="#64748b" stroke-width="1.4"/>
+  <line x1="270" y1="140" x2="810" y2="140" stroke="#64748b" stroke-width="1.4"/>
+  <line x1="270" y1="140" x2="270" y2="150" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arJ)"/>
+  <line x1="730" y1="140" x2="730" y2="150" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arJ)"/>
+
+  <rect x="60" y="152" width="420" height="110" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="76" y="176" font-size="12.5" font-weight="bold" fill="#7f1d1d">甲：出口按自己这一跳重写</text>
+  <text x="76" y="198" font-size="11" fill="#7f1d1d">X-Real-IP 取 SplitHostPort(RemoteAddr)</text>
+  <text x="76" y="220" font-size="11" fill="#7f1d1d">X-Forwarded-Proto 按 r.TLS 判，等于一律覆盖</text>
+  <text x="76" y="248" font-size="12" font-weight="bold" fill="#7f1d1d">上游收到：192.168.224.2、http</text>
+  <rect x="520" y="152" width="420" height="110" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="536" y="176" font-size="12.5" font-weight="bold" fill="#14532d">乙：复用入口结果，可信入口写的值不覆盖</text>
+  <text x="536" y="198" font-size="11" fill="#14532d">X-Real-IP 取 context 里 Resolve 好的值</text>
+  <text x="536" y="220" font-size="11" fill="#14532d">X-Forwarded-Proto 只在缺省时才写</text>
+  <text x="536" y="248" font-size="12" font-weight="bold" fill="#14532d">上游收到：1.2.3.4、https</text>
+
+  <text x="40" y="286" font-size="12" fill="#0f172a">两组的 X-Forwarded-For 完全相同：1.2.3.4, 192.168.224.6, 192.168.224.2 —— 链本身不受出口写法影响，受影响的只有网关替上游算好的那个单值。</text>
+
+  <line x1="40" y1="300" x2="960" y2="300" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="322" font-size="12" fill="#475569">单跳用例（go test）：入站 remote=127.0.0.1:5000 属可信代理、XFF=9.9.9.9，上游看到 X-Real-IP=9.9.9.9。</text>
+  <text x="40" y="344" font-size="12" fill="#7f1d1d">改回从 RemoteAddr 推之后第一条立刻 FAIL：realip_test.go:74 上游看到的 X-Real-IP 为 127.0.0.1，期望 9.9.9.9。</text>
+  <text x="40" y="366" font-size="12" fill="#7f1d1d">两个字段一起错：甲把上一跳 nginx 的地址写成客户端，又把客户端实际用的 https 降级成 http，而请求成功、日志正常。</text>
+  <text x="40" y="388" font-size="12" fill="#7c2d12">乙组的 1.2.3.4 不是比 192.168.224.6 更准，而是这次 trusted 写的是整段 lab 网段 —— 可信网段配多大直接决定解析结果。</text>
+  <text x="40" y="410" font-size="12" font-weight="bold" fill="#14532d">通用判据：入站解析出来的可信身份，出站必须从 context 取，不能重新从原始头或原始地址推导。</text>
+
+  <defs>
+    <marker id="arI" markerWidth="9" markerHeight="9" refX="8" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arJ" markerWidth="9" markerHeight="9" refX="8" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rb4a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="rb4b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="20" y="26" font-size="16" font-weight="bold" fill="#0f172a">RocketMQ 再平衡的交接窗口：为什么重复发生在换实例的那一刻</text>
+  <text x="20" y="46" font-size="11" fill="#64748b">时间向下；窗口宽度由实测参数决定：位点提交周期 5000 ms、心跳 30000 ms、单次拉取 32 条、实测每队列在途 150 条</text>
+
+  <rect x="60" y="66" width="180" height="44" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.4"/>
+  <text x="150" y="94" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e3a8a">旧实例 inst-0</text>
+  <rect x="410" y="66" width="180" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="500" y="94" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">Broker broker-a</text>
+  <rect x="760" y="66" width="180" height="44" rx="8" fill="#fae8ff" stroke="#a21caf" stroke-width="1.4"/>
+  <text x="850" y="94" text-anchor="middle" font-size="11" font-weight="bold" fill="#701a75">新实例 inst-1</text>
+
+  <line x1="150" y1="110" x2="150" y2="452" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="500" y1="110" x2="500" y2="452" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="850" y1="110" x2="850" y2="452" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <line x1="500" y1="134" x2="152" y2="134" stroke="#334155" stroke-width="1.5" marker-end="url(#rb4a)"/>
+  <text x="326" y="128" text-anchor="middle" font-size="9.5" fill="#334155">① 分配队列：4 个队列全给 inst-0</text>
+  <line x1="150" y1="166" x2="498" y2="166" stroke="#334155" stroke-width="1.5" marker-end="url(#rb4a)"/>
+  <text x="324" y="160" text-anchor="middle" font-size="9.5" fill="#334155">② 拉取 pullBatchSize = 32</text>
+  <line x1="500" y1="198" x2="152" y2="198" stroke="#334155" stroke-width="1.5" marker-end="url(#rb4a)"/>
+  <text x="326" y="192" text-anchor="middle" font-size="9.5" fill="#334155">③ 返回消息，进 ProcessQueue：实测每队列在途 150</text>
+  <line x1="150" y1="230" x2="498" y2="230" stroke="#334155" stroke-width="1.5" marker-end="url(#rb4a)"/>
+  <text x="324" y="224" text-anchor="middle" font-size="9.5" fill="#334155">④ 每 5000 ms 提交一次位点，提交到 X</text>
+
+  <rect x="1" y="252" width="999" height="150" fill="#fef3c7" fill-opacity="0.55" stroke="#b45309" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="12" y="268" font-size="10" font-weight="bold" fill="#78350f">交接窗口：位点提交与队列移交不是原子操作</text>
+
+  <line x1="500" y1="292" x2="152" y2="292" stroke="#334155" stroke-width="1.5" marker-end="url(#rb4a)"/>
+  <text x="326" y="286" text-anchor="middle" font-size="9.5" fill="#334155">⑤ 成员变化通知 rebalance（心跳 30000 ms 感知）</text>
+  <line x1="150" y1="326" x2="498" y2="326" stroke="#334155" stroke-width="1.5" marker-end="url(#rb4a)"/>
+  <text x="324" y="320" text-anchor="middle" font-size="9.5" fill="#334155">⑥ 移交前最后提交：仍是位点 X，本地 150 条未提交</text>
+  <line x1="850" y1="360" x2="498" y2="360" stroke="#334155" stroke-width="1.5" marker-end="url(#rb4a)"/>
+  <text x="674" y="354" text-anchor="middle" font-size="9.5" fill="#334155">⑦ 新实例上线，从 Broker 上的 X 开始拉</text>
+  <line x1="500" y1="392" x2="848" y2="392" stroke="#dc2626" stroke-width="2" marker-end="url(#rb4b)"/>
+  <text x="674" y="386" text-anchor="middle" font-size="9.5" fill="#b91c1c">⑧ X 之后的消息再发一遍 = 重复消费</text>
+
+  <line x1="150" y1="424" x2="498" y2="424" stroke="#dc2626" stroke-width="1.5" marker-end="url(#rb4b)"/>
+  <text x="324" y="418" text-anchor="middle" font-size="9.5" fill="#b91c1c">⑨ 旧实例把手上 150 条处理完，位点却已不归它管</text>
+
+  <text x="20" y="482" font-size="10.5" fill="#0f172a">⭐ 重复量上界 ≈ 一个提交周期内的在途条数：实测提交周期 5000 ms、慢消费时四队列在途合计 598 条</text>
+  <text x="20" y="506" font-size="10.5" fill="#b45309">⚠️ 这个窗口在协议层消不掉：并发消费只能靠幂等消化，顺序消费则改成向 Broker 申请队列锁，把双主变成接管等待</text>
+  <text x="20" y="530" font-size="10.5" fill="#64748b">未实测项：rebalance 瞬间到底重复几条，需要精确控制上下线时刻并按 MsgId 对账，本机本轮没有做，上图只给量级</text>
+  <text x="20" y="556" font-size="10" fill="#64748b">同一次实测里第 5 个实例分到 0 个队列：并行度的天花板是队列数，不是实例数，也不是线程数</text>
+</svg>

@@ -43,6 +43,8 @@ spring:
 容忍连续丢 2 次心跳，第 3 次还没来才摘——
 把 `lease-expiration` 调到 5s 只是"心跳周期"，**一次网络抖动就会误摘实例**。
 
+![Nacos 心跳租约时间轴：三条泳道对比正常续约、连续丢三次到 25s 被摘、只丢一次到期线后移，说明 15 = 3 × 5 给出的两个心跳周期余量](images/Nacos心跳租约的15秒到期窗口时间轴.svg)
+
 **和 etcd 的两点差异**：
 
 | | etcd | Nacos |
@@ -106,6 +108,8 @@ LoadBalancer（默认 RoundRobin，可换 ZonePreference / 加权 / 最少连接
 ```
 
 > **所以 Java 侧同样是"客户端负载均衡"**——`@LoadBalanced` 只是把使用一那 200 行做成了框架能力。
+
+![一次请求在 @LoadBalanced 模板里的六步改写链：服务名 URL 被拦截器取下，经子容器、供给器读本地缓存、RoundRobin 挑选，最后把 host 改写成真实 IP 与端口；每步右侧标注取舍与建连 200ms、读 2s 的超时归属](images/LoadBalanced一次请求的六步改写链.svg)
 
 ## 三、换策略：自定义 `ServiceInstanceListSupplier`（预热摘除的例子）
 
@@ -246,6 +250,72 @@ public final class NacosResolver {
 > **`Math.floorMod` 而不是 `%`**：`AtomicInteger` 溢出成负数后，
 > `-2147483648 % 3` 在 Java 里是 `-2` → `IndexOutOfBounds`。这个坑每年都有人踩。
 
+### 4.1 本机实测：溢出点上的 `%` 与 `floorMod`
+
+**本节要点**：上面那句坑不用背，JDK 8 容器里跑一次就能看见下标真的是负数。
+
+环境：Docker Desktop + `eclipse-temurin:8-jdk`，`java.version = 1.8.0_504`，`java.vm.name = OpenJDK 64-Bit Server VM`。
+连跑 3 次输出逐行一致（纯确定性计算，不涉及耗时）。
+
+```text
+-2147483648 % 3          = -2
+Math.floorMod(min, 3)    = 1
+裸 % 在溢出点算出的下标  = -2
+取 List 时抛错：ArrayIndexOutOfBoundsException：-2
+取数组时抛错：ArrayIndexOutOfBoundsException：-2
+floorMod 在同一溢出点 = 1 -> 访问 b
+0..999 内两种写法结果相同的个数 = 1000 / 1000
+3,000,000 次轮询分布 = {a=1000000, b=1000000, c=1000000}
+```
+
+三点读法：
+
+- **只有溢出才出问题**：`0..999` 区间里 `%` 与 `floorMod` 结果 1000/1000 相同，所以测试环境永远复现不出来；
+- **抛的是 `ArrayIndexOutOfBoundsException` 而不是返回 `null`**，`List.get()` 和数组下标行为一致，负数下标没有"绕回末尾"的语义；
+- **`floorMod` 的 300 万次轮询分布仍是严格均匀**（三个节点各 1,000,000 次），换成 `floorMod` 不改变轮询语义，只消掉溢出这一类边界。
+
+### 4.2 本机实测：双更新源 + 不可变快照 + 空列表保护
+
+**本节要点**：把上面骨架里"不依赖 nacos-client 也能验证"的三条铁律，在真实线程模型下跑出来。
+
+同一个运行进程里放**两个更新源**（模拟 `naming.subscribe` 的推送回调线程，每 120ms 换一版；
+模拟 `scheduleWithFixedDelay` 的定时兜底线程，这里为跑满几轮配 1s，**正文代码里是 5s**）
+和 **4 个业务读线程**（只做 `snapshot.get()`），读侧每轮校验"列表里所有元素是否同一代次"——
+混代即代表读到了改到一半的中间态。
+
+```bash
+MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w/.workbuddy/tmp/round495 \
+  eclipse-temurin:8-jdk sh -c "javac W2R7rSnapshot.java && java W2R7rSnapshot"
+```
+
+连跑 3 次（观察窗口 8 秒）的读数与波动范围：
+
+| 观测项 | run1 | run2 | run3 | 读法 |
+|---|---|---|---|---|
+| 兜底刷新轮数（周期 1000ms） | 8 | 8 | 8 | 与 `scheduleWithFixedDelay` 周期一致 |
+| 相邻两轮间隔 min / median / max | 1000 / 1001 / 1019 ms | 1000 / 1003 / 1019 ms | 1000 / 1000 / 1002 ms | 中位数贴着 1s，长尾 ~1.02s；只断言"≈ 配置周期"不断言严格相等 |
+| 推送回调换快照次数 | 66 | 65 | 66 | 120ms 一次，8s 约 66 次 |
+| 两个更新源合计 refresh | 75 | 74 | 75 | 基线 1 + 推送 + 兜底，两条路径都能覆盖到 |
+| 4 个读线程合计读取次数 | 40,705,343 | 51,375,971 | 98,601,623 | 无锁读路径的量级（波动大，只作参照） |
+| **读到混合代次（中间态）次数** | **0** | **0** | **0** | 三轮全为 0：读侧只见完整版本 |
+| 注入空列表后快照 | 保留 v66 四项 | 保留 v65 四项 | 保留 v66 四项 | 空列表告警计数 = 1，**没有将空表换上去** |
+| 注入拉取异常后快照 | 保留 v66 四项 | 保留 v65 四项 | 保留 v66 四项 | 失败告警计数 = 1，旧列表继续用 |
+| `pick()` 400,000 次分布 | a/b/c/d 各 100,000 | 同左 | 同左 | `floorMod` + `AtomicInteger` 的轮询无偏 |
+
+由此确认四条（对应正文骨架里的四个 ★）：
+
+1. **整体替换指针**是唯一可变的写入动作，读线程 4000 万次以上读取里没有一次看到"改到一半"的列表；
+2. **空列表必须当异常处理**：`list.isEmpty()` 分支直接 `return`，快照保持上一版，不会把"解析到空"当成"全部下线"；
+3. **拉取失败保留旧列表**：`catch` 分支同样只记警告，注册中心抖动不影响正在使用的地址表；
+4. **定时兜底不是冗余**：推送回调 66 次与兜底 8 次是两条独立触发路径，任一条丢事件另一条仍能覆盖——
+   这正是"订阅回调可能丢事件"这句注释的实测形态。
+
+> ⚠️ 这一节验证的是**无锁快照机制本身**，用的假 `NamingService` 可控地返回全量 / 空列表 / 抛异常。
+> **Nacos 服务端的真实心跳与摘除阈值（第六节那两个 15s / 30s）未在本机连服务端实测**；
+> 同理，`nacos-client`、Spring Cloud Alibaba 的完整代码仍因需要联网拉包而未编译校验（见篇首说明）。
+
+![手写版 Resolver 的线程模型：推送回调线程与定时兜底线程两个更新源共同整体替换 AtomicReference 快照，业务读线程只做 get；下方是 JDK 8 三轮实测的间隔与中间态读数](images/NacosResolver双更新源与无锁读线程模型.svg)
+
 ## 五、K8s 里到底谁在做负载均衡（正文方案 B 的完整分层）
 
 | 层 | 组件 | 层级 | 粒度 | 典型坑 |
@@ -260,6 +330,8 @@ public final class NacosResolver {
 > **K8s Service 是连接级 LB**，对短连接 HTTP 完全够用；
 > **对 gRPC / 数据库长连接这类"一条连接跑到底"的协议，它等效于没做负载均衡**。
 > 这句话说出来，基本就能把这一题从"背过"变成"做过"。
+
+![K8s 里一次调用的分层与两条分支：外部流量先经 Ingress 做请求级七层分流，集群内调用从 CoreDNS 解析出 ClusterIP 交给 kube-proxy 做连接级转发；ClusterIP 与 Headless 两条分支分别对应"长连接打偏"和"负载均衡交回客户端"，ReadinessProbe 决定 Pod 是否进 Endpoints](images/K8s分层负载均衡的两条分支.svg)
 
 **用了 K8s 还要不要 Nacos？**（高频追问，给结论）
 

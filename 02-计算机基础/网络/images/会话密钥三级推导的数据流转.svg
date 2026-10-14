@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620">
+  <rect width="1000" height="620" fill="#ffffff"/>
+  <defs>
+    <marker id="kd" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="40" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="24" fill="#0f172a" text-anchor="middle">TLS 1.2 会话密钥的三级推导：从共享秘密到六把密钥</text>
+  <text x="500" y="66" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569" text-anchor="middle">链式设计的效果：任何一条握手消息被篡改，双方算出的 Finished 摘要就对不上，握手立刻失败</text>
+
+  <rect x="90" y="100" width="380" height="96" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="110" y="128" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="16" fill="#1e3a8a">Pre-Master Secret（PMS）</text>
+  <text x="110" y="152" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e3a8a">RSA：客户端生成的 48 字节随机数</text>
+  <text x="110" y="176" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e3a8a">ECDHE：共享秘密，不落盘、用完即弃</text>
+
+  <line x1="280" y1="196" x2="280" y2="236" stroke="#64748b" stroke-width="2" marker-end="url(#kd)"/>
+  <text x="300" y="212" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">PRF(PMS, "master secret",</text>
+  <text x="300" y="230" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">ClientRandom + ServerRandom) → 48 字节</text>
+
+  <rect x="90" y="236" width="380" height="70" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="110" y="264" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="16" fill="#14532d">Master Secret（48 字节）</text>
+  <text x="110" y="288" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d">只有双方能算出，从不在链路上发送</text>
+
+  <line x1="280" y1="306" x2="280" y2="346" stroke="#64748b" stroke-width="2" marker-end="url(#kd)"/>
+  <text x="300" y="322" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">PRF(MasterSecret, "key expansion",</text>
+  <text x="300" y="340" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">ServerRandom + ClientRandom) → 密钥块</text>
+
+  <rect x="60" y="346" width="880" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="80" y="374" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="16" fill="#0f172a">Session Keys：密钥块切出来的六项</text>
+  <text x="80" y="402" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">client_write_key / server_write_key —— 收发方向各一把，避免单密钥在双向流量下出现 nonce 或 IV 复用</text>
+  <text x="80" y="428" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">client_write_MAC_key / server_write_MAC_key —— 只有非 AEAD 套件才用，AEAD 加密即认证</text>
+  <text x="80" y="454" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">client_write_IV / server_write_IV —— AEAD 的 nonce 盐</text>
+  <text x="80" y="480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">之后所有应用数据走对称加密 + AEAD，每条记录带显式 nonce</text>
+
+  <text x="60" y="530" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：Client Random 与 Server Random 各 32 字节，两次推导都让它们参与——任一方变了密钥就不同，这是防重放的关键。</text>
+  <text x="60" y="555" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：两次的输入顺序是反的（先 Client + Server，后 Server + Client），所以收发两侧的密钥不会串位。</text>
+  <text x="60" y="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569">注意：Master Secret 不在链路上发送；PMS 的两种来源就是 RSA 与 ECDHE 的分野，只有 ECDHE 有前向安全。</text>
+  <text x="60" y="605" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569">注意：以上是 TLS 1.2 的 TLS PRF 口径；TLS 1.3 改用 HKDF，并拆成 early / handshake / master 多级流量密钥。</text>
+</svg>

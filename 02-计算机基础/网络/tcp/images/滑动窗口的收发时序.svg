@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+  <title>TCP 滑动窗口的收发时序</title>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">窗口随确认滑动：发满 → 累积确认 → 右移</text>
+  <text x="500" y="55" text-anchor="middle" font-size="12.5" fill="#64748b">起点 seq=100、MSS=1000、窗口 5 段 = 5000 字节（不考虑拥塞与接收端能力导致的窗口变化）</text>
+
+  <rect x="150" y="72" width="200" height="44" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="99" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">发送方</text>
+  <rect x="650" y="72" width="200" height="44" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="750" y="99" text-anchor="middle" font-size="15" font-weight="bold" fill="#854d0e">接收方</text>
+
+  <line x1="250" y1="116" x2="250" y2="330" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4"/>
+  <line x1="750" y1="116" x2="750" y2="330" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4"/>
+
+  <line x1="250" y1="150" x2="744" y2="150" stroke="#2563eb" stroke-width="1.6" marker-end="url(#mb)"/>
+  <text x="500" y="139" text-anchor="middle" font-size="13" fill="#1e3a8a">① 连发 5 段：seq 100 / 1100 / 2100 / 3100 / 4100（共 5000 字节）</text>
+  <text x="240" y="172" text-anchor="end" font-size="11.5" fill="#9a3412">窗口 [100,5100) 打满</text>
+  <text x="760" y="172" text-anchor="start" font-size="11.5" fill="#64748b">一个确认都还没回</text>
+
+  <line x1="750" y1="222" x2="256" y2="222" stroke="#b45309" stroke-width="1.6" marker-end="url(#ma)"/>
+  <text x="500" y="211" text-anchor="middle" font-size="13" fill="#854d0e">② ACK = 5100（累积确认：一个 ACK 顶掉 5 段）</text>
+
+  <line x1="250" y1="288" x2="744" y2="288" stroke="#16a34a" stroke-width="1.6" marker-end="url(#mg)"/>
+  <text x="500" y="277" text-anchor="middle" font-size="13" fill="#14532d">③ 窗口右移 5000 → [5100,10100)，继续发送</text>
+
+  <rect x="55" y="336" width="890" height="52" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="73" y="360" font-size="12.5" fill="#0f172a">要点：未收到确认前窗口就是「最多容忍 5 段的未确认数据」；ACK 一到，窗口整体向右滑动，</text>
+  <text x="73" y="380" font-size="12.5" fill="#0f172a">再确认 1 段（ACK=6100）就再滑 1000 → [6100,11100)。发送方向接收方发→确认→窗口随确认滑动。</text>
+
+  <defs>
+    <marker id="mb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="ma" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker>
+    <marker id="mg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+</svg>

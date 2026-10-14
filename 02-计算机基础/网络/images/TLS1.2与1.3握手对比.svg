@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="kBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="kAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker>
+    <marker id="kGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">TLS 1.2（2-RTT） vs TLS 1.3（1-RTT）握手对比</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12.5" fill="#64748b">1.3 把密钥交换参数提前放进 ClientHello（key_share），省掉一个往返；ServerHello 之后全部消息加密</text>
+
+  <text x="270" y="76" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">TLS 1.2 · 2-RTT</text>
+  <text x="730" y="76" text-anchor="middle" font-size="13" font-weight="bold" fill="#16a34a">TLS 1.3 · 1-RTT</text>
+
+  <rect x="65" y="86" width="150" height="40" rx="9" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="140" y="111" text-anchor="middle" font-size="13" fill="#1e3a8a">客户端</text>
+  <rect x="325" y="86" width="150" height="40" rx="9" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="400" y="111" text-anchor="middle" font-size="13" fill="#0f172a">服务端</text>
+  <rect x="525" y="86" width="150" height="40" rx="9" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="600" y="111" text-anchor="middle" font-size="13" fill="#1e3a8a">客户端</text>
+  <rect x="785" y="86" width="150" height="40" rx="9" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="860" y="111" text-anchor="middle" font-size="13" fill="#0f172a">服务端</text>
+
+  <line x1="140" y1="126" x2="140" y2="330" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="400" y1="126" x2="400" y2="330" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="600" y1="126" x2="600" y2="330" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 5"/>
+  <line x1="860" y1="126" x2="860" y2="330" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 5"/>
+
+  <line x1="140" y1="150" x2="394" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#kBlue)"/>
+  <text x="270" y="144" text-anchor="middle" font-size="10.5" fill="#1e3a8a">ClientHello</text>
+  <line x1="400" y1="192" x2="146" y2="192" stroke="#b45309" stroke-width="1.5" marker-end="url(#kAmber)"/>
+  <text x="270" y="186" text-anchor="middle" font-size="10.5" fill="#92400e">ServerHello / Cert / SKE / HelloDone</text>
+  <line x1="140" y1="240" x2="394" y2="240" stroke="#2563eb" stroke-width="1.5" marker-end="url(#kBlue)"/>
+  <text x="270" y="234" text-anchor="middle" font-size="10.5" fill="#1e3a8a">ClientKE / CCS / Finished</text>
+  <line x1="400" y1="286" x2="146" y2="286" stroke="#b45309" stroke-width="1.5" marker-end="url(#kAmber)"/>
+  <text x="270" y="280" text-anchor="middle" font-size="10.5" fill="#92400e">CCS / Finished</text>
+  <line x1="140" y1="322" x2="394" y2="322" stroke="#16a34a" stroke-width="1.5" marker-end="url(#kGreen)"/>
+  <text x="270" y="316" text-anchor="middle" font-size="10.5" fill="#14532d">Application Data</text>
+
+  <line x1="600" y1="150" x2="854" y2="150" stroke="#2563eb" stroke-width="1.5" marker-end="url(#kBlue)"/>
+  <text x="730" y="144" text-anchor="middle" font-size="10.5" fill="#1e3a8a">ClientHello + key_share</text>
+  <line x1="860" y1="212" x2="606" y2="212" stroke="#16a34a" stroke-width="1.5" marker-end="url(#kGreen)"/>
+  <text x="730" y="206" text-anchor="middle" font-size="10.5" fill="#14532d">ServerHello + [加密] Cert / Finished</text>
+  <line x1="600" y1="286" x2="854" y2="286" stroke="#2563eb" stroke-width="1.5" marker-end="url(#kBlue)"/>
+  <text x="730" y="280" text-anchor="middle" font-size="10.5" fill="#1e3a8a">Finished + Application Data</text>
+
+  <rect x="497" y="86" width="4" height="248" fill="#e2e8f0"/>
+
+  <text x="60" y="366" font-size="12.5" fill="#334155">握手 RTT：1.2 需 2-RTT → 1.3 只要 1-RTT（客户端提前在 ClientHello 带 key_share 赌曲线）。</text>
+  <text x="60" y="392" font-size="12.5" fill="#334155">前向安全：1.2 取决于套件（可选）→ 1.3 强制 ECDHE，彻底删除 RSA 密钥交换与静态 DH。</text>
+  <text x="60" y="418" font-size="12.5" fill="#14532d">服务器证书：1.2 明文广播（谁抓包都看得到）→ 1.3 加密发送，只有合法客户端能解。</text>
+  <text x="60" y="444" font-size="12.5" fill="#334155">套件 / 密钥推导：1.2 上百个 + TLS PRF → 1.3 精简到约 5 个（仅 AEAD）+ HKDF，交换与认证分离。</text>
+  <text x="60" y="474" font-size="12.5" fill="#7f1d1d">注意：1.3 版本协商走 supported_versions 扩展，记录层版本固定写 legacy 0x0303，不能靠记录层版本判断。</text>
+</svg>

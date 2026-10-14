@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600">
+  <rect width="1000" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="sr" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="40" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="24" fill="#0f172a" text-anchor="middle">会话复用的两条路线：状态放服务端，还是放客户端</text>
+  <text x="500" y="66" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569" text-anchor="middle">每次完整握手都要做非对称运算，连接量大时开销可观——复用即「协商一次、多次使用」</text>
+
+  <rect x="50" y="90" width="440" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="270" y="112" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="17" fill="#1e3a8a" text-anchor="middle">Session ID：服务端有状态</text>
+
+  <rect x="185" y="126" width="170" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="270" y="148" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle">客户端</text>
+  <text x="270" y="168" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e3a8a" text-anchor="middle">带上次的 session_id</text>
+
+  <rect x="78" y="300" width="124" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="140" y="324" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">节点 A</text>
+  <text x="140" y="344" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">存着会话</text>
+  <rect x="238" y="300" width="124" height="58" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="300" y="324" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155" text-anchor="middle">节点 B</text>
+  <text x="300" y="344" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155" text-anchor="middle">查不到</text>
+  <rect x="398" y="300" width="124" height="58" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="460" y="324" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155" text-anchor="middle">节点 C</text>
+  <text x="460" y="344" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155" text-anchor="middle">查不到</text>
+
+  <line x1="240" y1="180" x2="140" y2="300" stroke="#16a34a" stroke-width="2" marker-end="url(#sr)"/>
+  <line x1="270" y1="180" x2="300" y2="300" stroke="#94a3b8" stroke-width="2" marker-end="url(#sr)"/>
+  <line x1="300" y1="180" x2="460" y2="300" stroke="#94a3b8" stroke-width="2" marker-end="url(#sr)"/>
+  <text x="120" y="240" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d">命中同节点才复用</text>
+
+  <text x="70" y="392" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">会话参数按 session_id 索引存在服务端</text>
+  <text x="70" y="418" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">多机部署：要么命中同一节点，要么共享缓存</text>
+  <text x="70" y="444" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#dc2626">落到没存过的那台，就只能退回完整握手</text>
+
+  <rect x="510" y="90" width="440" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="730" y="112" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="17" fill="#7c2d12" text-anchor="middle">Session Ticket：服务端无状态</text>
+
+  <rect x="645" y="126" width="170" height="54" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="730" y="148" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle">客户端</text>
+  <text x="730" y="168" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#7c2d12" text-anchor="middle">持有加密的 ticket</text>
+
+  <rect x="538" y="300" width="124" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="600" y="324" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">节点 A</text>
+  <text x="600" y="344" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">能解票</text>
+  <rect x="698" y="300" width="124" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="760" y="324" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">节点 B</text>
+  <text x="760" y="344" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">能解票</text>
+  <rect x="858" y="300" width="124" height="58" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="920" y="324" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">节点 C</text>
+  <text x="920" y="344" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d" text-anchor="middle">能解票</text>
+
+  <line x1="700" y1="180" x2="600" y2="300" stroke="#16a34a" stroke-width="2" marker-end="url(#sr)"/>
+  <line x1="730" y1="180" x2="760" y2="300" stroke="#16a34a" stroke-width="2" marker-end="url(#sr)"/>
+  <line x1="760" y1="180" x2="920" y2="300" stroke="#16a34a" stroke-width="2" marker-end="url(#sr)"/>
+  <text x="580" y="240" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#14532d">任意节点都能解票</text>
+
+  <text x="530" y="392" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">会话参数加密后交客户端保管，服务端不留副本</text>
+  <text x="530" y="418" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#334155">加密用的是服务端持有的 ticket key</text>
+  <text x="530" y="444" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#dc2626">各节点 key 不一致：B 解不开 A 发的票 → 悄悄降级</text>
+
+  <text x="60" y="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：两种机制复用成功都只花 1-RTT；Ticket 因服务端无状态、利于横向扩容，是主流 CDN 与负载均衡的默认选择。</text>
+  <text x="60" y="525" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：拿到 ticket key 就解得开所有用它加密的票，所以它长期不变会削弱前向安全。</text>
+  <text x="60" y="550" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：集群共享同一份 ticket key（Nginx ssl_session_ticket_key 可配多份平滑轮转），并定期轮换，建议不超过 24 小时。</text>
+  <text x="60" y="575" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569">注意：降级没有报错，只表现为突发的握手延迟抖动，很难察觉；追求更强前向安全可直接关掉 ssl_session_tickets。</text>
+</svg>

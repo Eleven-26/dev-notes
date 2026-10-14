@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">部署拓扑：单节点起步 vs 三节点验副本</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">3.0 起可用 KRaft 省掉 ZooKeeper；一个进程同时当 broker 和 controller 即可起步</text>
+
+  <rect x="24" y="80" width="452" height="290" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="250" y="106" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">单节点（KRaft 合并角色）</text>
+
+  <rect x="60" y="120" width="340" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="74" y="140" font-size="12" font-weight="bold" fill="#1e3a8a">节点 1　broker + controller</text>
+  <text x="74" y="158" font-size="11" fill="#1d4ed8">NODE_ID=1　PROCESS_ROLES=broker,controller</text>
+
+  <text x="60" y="192" font-size="12.5" fill="#0f172a">LISTENERS　PLAINTEXT://:9092</text>
+  <text x="60" y="214" font-size="12.5" fill="#0f172a">　　　　　　CONTROLLER://:9093</text>
+  <text x="60" y="236" font-size="12.5" fill="#0f172a">ADVERTISED　PLAINTEXT://localhost:9092</text>
+  <text x="60" y="258" font-size="12.5" fill="#0f172a">VOTERS　　　1@kafka:9093</text>
+  <text x="60" y="284" font-size="12.5" fill="#0f172a">内部 Topic 副本 OFFSETS...=1</text>
+  <text x="60" y="314" font-size="12.5" font-weight="bold" fill="#dc2626">⚠️ 只能验 API，验不了副本与 ISR</text>
+  <text x="60" y="336" font-size="12" fill="#b91c1c">rf=3 在单 broker 建不出→InvalidReplicationFactor</text>
+
+  <text x="498" y="230" text-anchor="middle" font-size="14" font-weight="bold" fill="#94a3b8">对比</text>
+
+  <rect x="524" y="80" width="452" height="290" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="750" y="106" text-anchor="middle" font-size="15" font-weight="bold" fill="#14532d">三节点 KRaft 集群（本目录实测）</text>
+
+  <rect x="544" y="120" width="130" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="609" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Broker 1</text>
+  <text x="609" y="158" text-anchor="middle" font-size="10.5" fill="#166534">NODE_ID 1</text>
+  <rect x="685" y="120" width="130" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="750" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Broker 2</text>
+  <text x="750" y="158" text-anchor="middle" font-size="10.5" fill="#166534">NODE_ID 2</text>
+  <rect x="826" y="120" width="130" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="891" y="140" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Broker 3</text>
+  <text x="891" y="158" text-anchor="middle" font-size="10.5" fill="#166534">NODE_ID 3</text>
+
+  <text x="544" y="192" font-size="12.5" fill="#0f172a">每节点均为 broker + controller 合并角色</text>
+  <text x="544" y="214" font-size="12.5" fill="#0f172a">VOTERS 1@b1:9093,2@b2:9093,3@b3:9093</text>
+  <text x="544" y="236" font-size="12.5" fill="#0f172a">宿主端口 19091/19092/19093 → 9092</text>
+  <text x="544" y="258" font-size="12.5" fill="#0f172a">OFFSETS/TRANSACTION 副本=3，MIN_ISR=2</text>
+  <text x="544" y="284" font-size="12.5" fill="#0f172a">能测 ISR 收缩、Leader 改选、拒写</text>
+  <text x="544" y="314" font-size="12.5" font-weight="bold" fill="#dc2626">⚠️ 合并角色集群停 2 台 → 同时丢</text>
+  <text x="544" y="336" font-size="12" fill="#b91c1c">broker 与 controller 多数派 → 整个集群不可写</text>
+
+  <rect x="24" y="382" width="952" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="408" font-size="13" font-weight="bold" fill="#0f172a">实测默认值（apache/kafka:3.9.0，kafka-configs.sh --describe --entity-type brokers --all）：</text>
+  <text x="40" y="432" font-size="12.5" fill="#0f172a">· offsets.topic.num.partitions = 50　· transaction.state.log.num.partitions = 50</text>
+  <text x="40" y="456" font-size="12.5" fill="#0f172a">· default.replication.factor = 1 ⚠️ 自动建的 Topic 无冗余　· num.partitions = 1 ⚠️ 并行度封顶为 1</text>
+  <text x="40" y="482" font-size="12.5" fill="#0f172a">· 内部 Topic 副本不跟 default.replication.factor 走，必须显式设（本图三节点用 OFFSETS_TOPIC_REPLICATION_FACTOR=3）</text>
+
+  <text x="20" y="524" font-size="13" fill="#0f172a">⭐ 判断集群是否就绪：能否列出 Topic（kafka-topics.sh --list）比看日志快；--bootstrap-server 指向容器名即可从集群内访问。</text>
+</svg>

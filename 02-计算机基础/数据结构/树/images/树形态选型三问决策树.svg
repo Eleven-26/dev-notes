@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" width="1000" height="750" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="750" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">三问筛完，结构自动浮现：介质 → 读写比 → 要不要「序」</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12.5" fill="#64748b">分岔条件与理由全部取自 2.1 三问表与 2.2 场景对照表；括号里的倍数是本目录各零件篇的实测</text>
+
+  <rect x="30" y="76" width="190" height="90" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="125" y="110" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">① 内存还是磁盘？</text>
+  <text x="125" y="132" text-anchor="middle" font-size="11" fill="#334155">先问介质</text>
+  <text x="125" y="152" text-anchor="middle" font-size="11" fill="#334155">磁盘只有两条路</text>
+
+  <rect x="250" y="76" width="730" height="40" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="101" font-size="12.5" fill="#334155">磁盘 · 读为主 → B+ 树：一页一节点、高扇出，一次查找 2~4 次读页</text>
+  <rect x="250" y="126" width="730" height="40" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="151" font-size="12.5" fill="#334155">磁盘 · 写极多 → LSM 树：顺序写换读放大（本机实测写放大 7.04）</text>
+  <line x1="220" y1="121" x2="235" y2="121" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="121" x2="235" y2="96" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="96" x2="250" y2="96" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="121" x2="235" y2="146" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="146" x2="250" y2="146" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="238,90 238,102 250,96" fill="#64748b"/>
+  <polygon points="238,140 238,152 250,146" fill="#64748b"/>
+
+  <line x1="125" y1="166" x2="125" y2="196" stroke="#64748b" stroke-width="1.5"/>
+  <text x="134" y="186" font-size="11" fill="#2563eb">答：内存</text>
+  <polygon points="119,184 131,184 125,196" fill="#64748b"/>
+
+  <rect x="30" y="196" width="190" height="130" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="125" y="238" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">② 读多还是写多？</text>
+  <text x="125" y="262" text-anchor="middle" font-size="11" fill="#334155">读得多就换更矮的树</text>
+  <text x="125" y="284" text-anchor="middle" font-size="11" fill="#334155">写得多就看旋转与锁</text>
+
+  <rect x="250" y="196" width="730" height="40" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="221" font-size="12.5" fill="#334155">读远多于写、数据基本静态 → AVL：树更矮，省下的旋转代价用不上</text>
+  <rect x="250" y="246" width="730" height="40" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="271" font-size="12.5" fill="#334155">写也不少（现实分布）→ 红黑树：内存里的有序 Map（TreeMap / std::map）</text>
+  <rect x="250" y="296" width="730" height="40" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="321" font-size="12.5" fill="#334155">写极多 + 并发（内存）→ 跳表：局部指针改动、无锁实现容易（Redis ZSet）</text>
+  <line x1="220" y1="261" x2="235" y2="261" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="261" x2="235" y2="216" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="216" x2="250" y2="216" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="261" x2="235" y2="266" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="266" x2="250" y2="266" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="261" x2="235" y2="316" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="316" x2="250" y2="316" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="238,210 238,222 250,216" fill="#64748b"/>
+  <polygon points="238,260 238,272 250,266" fill="#64748b"/>
+  <polygon points="238,310 238,322 250,316" fill="#64748b"/>
+
+  <line x1="125" y1="326" x2="125" y2="356" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="119,344 131,344 125,356" fill="#64748b"/>
+
+  <rect x="30" y="356" width="190" height="264" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="125" y="452" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">③ 需求里有没有</text>
+  <text x="125" y="474" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">「序」？</text>
+  <text x="125" y="500" text-anchor="middle" font-size="11" fill="#7c2d12">最容易被跳过</text>
+  <text x="125" y="520" text-anchor="middle" font-size="11" fill="#7c2d12">也最贵的一问</text>
+  <text x="125" y="544" text-anchor="middle" font-size="11" fill="#7c2d12">这一条能把方案</text>
+  <text x="125" y="564" text-anchor="middle" font-size="11" fill="#7c2d12">从哈希换到树</text>
+
+  <rect x="250" y="358" width="730" height="36" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="262" y="381" font-size="12.5" fill="#7f1d1d">只要等值 / 去重 / 缓存 → 哈希表：无「序」需求时它最快，还省内存</text>
+  <rect x="250" y="404" width="730" height="36" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="427" font-size="12.5" fill="#334155">要范围 / 有序枚举 → 就用 ① ② 筛出的那棵：B+ 树 / AVL / 红黑树 / 跳表</text>
+  <rect x="250" y="450" width="730" height="36" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="473" font-size="12.5" fill="#334155">要前缀 / 最长匹配 → Radix Tree（路由、IP 表）/ Trie（自动补全、敏感词）</text>
+  <rect x="250" y="496" width="730" height="36" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="519" font-size="12.5" fill="#334155">要区间和 / 区间最值 + 修改 → 线段树 / 树状数组（树状数组只能可差分运算）</text>
+  <rect x="250" y="542" width="730" height="36" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="565" font-size="12.5" fill="#334155">多维空间（附近、GIS）→ R 树系；均匀点要最简 → 四叉树；高频变动 → 网格 / GeoHash</text>
+  <rect x="250" y="588" width="730" height="36" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="262" y="611" font-size="12.5" fill="#334155">反复合并两个堆 → 可并堆：左偏树 merge 实测 44 次比较（省 42 745 倍）</text>
+  <line x1="220" y1="488" x2="235" y2="488" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="488" x2="235" y2="376" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="376" x2="250" y2="376" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="488" x2="235" y2="422" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="422" x2="250" y2="422" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="488" x2="235" y2="468" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="468" x2="250" y2="468" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="488" x2="235" y2="514" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="514" x2="250" y2="514" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="488" x2="235" y2="560" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="560" x2="250" y2="560" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="488" x2="235" y2="606" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="235" y1="606" x2="250" y2="606" stroke="#64748b" stroke-width="1.5"/>
+  <polygon points="238,370 238,382 250,376" fill="#64748b"/>
+  <polygon points="238,416 238,428 250,422" fill="#64748b"/>
+  <polygon points="238,462 238,474 250,468" fill="#64748b"/>
+  <polygon points="238,508 238,520 250,514" fill="#64748b"/>
+  <polygon points="238,554 238,566 250,560" fill="#64748b"/>
+  <polygon points="238,600 238,612 250,606" fill="#64748b"/>
+
+  <text x="30" y="656" font-size="13" font-weight="bold" fill="#16a34a">口诀：内存有序用红黑树，磁盘索引用 B+ 树，写多读少用 LSM，并发写用跳表；多维空间用 R 树，前缀匹配用 Radix，区间统计用线段树，只要等值用哈希</text>
+  <text x="30" y="682" font-size="12.5" fill="#b45309">注意：第 ③ 问最贵 —— 「要不要有序」这一条能把方案从哈希表整体换到树；三问筛完还要回看第三节的隐藏代价总表</text>
+  <text x="30" y="706" font-size="12" fill="#7f1d1d">代价提醒：不涉及合并时也上可并堆反而更慢（左偏树实测比二叉堆慢 1.7 倍）；未平衡 BST 有序插入会退化成链（65 536 个键 → 树高 65 536，而 log₂n = 16）</text>
+  <text x="30" y="730" font-size="12" fill="#64748b">与本目录另一张图的关系：那张「上树之前十二问」问的是「该不该上树」，这张问的是「上哪一棵树」</text>
+</svg>

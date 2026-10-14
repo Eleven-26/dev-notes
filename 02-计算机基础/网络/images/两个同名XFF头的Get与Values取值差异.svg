@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一个头出现两次：Get 截断链，Values 才是完整链</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12" fill="#64748b">HTTP 允许同名头多次出现，语义上等价于按到达顺序用逗号拼接；Go 的 http.Header 把两种形态暴露成两个方法</text>
+
+  <rect x="40" y="76" width="420" height="128" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="56" y="98" font-size="12" font-weight="bold" fill="#0f172a">入站报文里同一个头出现了两次</text>
+  <text x="56" y="126" font-size="12.5" fill="#0f172a">X-Forwarded-For: 10.9.9.9</text>
+  <text x="322" y="126" font-size="10.5" fill="#991b1b">第 1 跳的头</text>
+  <text x="56" y="154" font-size="12.5" fill="#0f172a">X-Forwarded-For: 9.9.9.9</text>
+  <text x="322" y="154" font-size="10.5" fill="#14532d">第 2 跳的头</text>
+  <text x="56" y="182" font-size="11" fill="#64748b">10.9.9.9 由可信网段内的代理写下，9.9.9.9 才是真实客户端</text>
+
+  <line x1="460" y1="120" x2="516" y2="120" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arG)"/>
+  <line x1="460" y1="232" x2="516" y2="232" stroke="#16a34a" stroke-width="1.8" marker-end="url(#arG)"/>
+
+  <rect x="520" y="76" width="440" height="104" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="536" y="98" font-size="12.5" fill="#7f1d1d">h.Get("X-Forwarded-For")</text>
+  <text x="536" y="122" font-size="12" font-weight="bold" fill="#7f1d1d">只返回第一个头 → 链只剩 10.9.9.9</text>
+  <text x="536" y="146" font-size="11" fill="#7f1d1d">第二个头整个丢掉，两跳被截成一跳</text>
+  <text x="536" y="168" font-size="11.5" font-weight="bold" fill="#7f1d1d">Resolve 结果：10.9.9.9，可信跳被当成客户端</text>
+
+  <rect x="520" y="192" width="440" height="104" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="536" y="214" font-size="12.5" fill="#14532d">h.Values("X-Forwarded-For")</text>
+  <text x="536" y="238" font-size="12" font-weight="bold" fill="#14532d">按到达顺序返回全部 → [10.9.9.9  9.9.9.9]</text>
+  <text x="536" y="262" font-size="11" fill="#14532d">parseChain 内部再按逗号拆，得到一条两跳的完整链</text>
+  <text x="536" y="284" font-size="11.5" font-weight="bold" fill="#14532d">Resolve 结果：9.9.9.9，从右往左第一个不可信地址</text>
+
+  <line x1="40" y1="316" x2="960" y2="316" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="338" font-size="12" fill="#7f1d1d">失败方向：Get 既不报错也不返回空，它返回一个看起来很合法的 IP，于是限流与审计里表现为「客户端 IP 变成内网地址」</text>
+  <text x="40" y="360" font-size="12" fill="#7f1d1d">又一次静默失效：请求能通、日志正常、只是值错了。算法对、输入错，结果一样是错的</text>
+  <text x="40" y="384" font-size="12" fill="#14532d">修法：parseChain 收 []string 而不是 string —— 先遍历多个同名头，再拆每个头里的逗号列表，非法条目跳过并继续</text>
+  <text x="40" y="408" font-size="12" fill="#475569">X-Real-IP 没有这个问题（单值语义，Get 就够），代价是它表达不了多跳 —— 两个头的取舍见本篇「使用」段第 3 条</text>
+
+  <defs>
+    <marker id="arG" markerWidth="9" markerHeight="9" refX="8" refY="3.2" orient="auto">
+      <path d="M0,0 L8,3.2 L0,6.4 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

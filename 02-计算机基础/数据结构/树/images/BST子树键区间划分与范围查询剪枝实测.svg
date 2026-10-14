@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">BST 的划分依据：不变式让每棵子树占住一段键区间</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">划分依据取自第一节不变式与 6.1 的两个剪枝判据；示例树取自第四节；下方读数为第六节容器实测（n = 100 000 随机 BST、树高 41）</text>
+
+  <text x="30" y="82" font-size="13.5" font-weight="bold" fill="#0f172a">① 区间是继承来的：插入 50 30 70 20 40 60 80 长出的那棵树（第四节）</text>
+
+  <rect x="30" y="92" width="430" height="180" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="245" y1="125" x2="150" y2="185" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="245" y1="125" x2="340" y2="185" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="150" y1="185" x2="100" y2="245" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="150" y1="185" x2="200" y2="245" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="340" y1="185" x2="295" y2="245" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="340" y1="185" x2="385" y2="245" stroke="#94a3b8" stroke-width="1.3"/>
+  <circle cx="245" cy="125" r="16" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="245" y="130" text-anchor="middle" font-size="13" fill="#7f1d1d">50</text>
+  <circle cx="150" cy="185" r="16" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="150" y="190" text-anchor="middle" font-size="13" fill="#14532d">30</text>
+  <circle cx="340" cy="185" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="340" y="190" text-anchor="middle" font-size="13" fill="#14532d">70</text>
+  <circle cx="100" cy="245" r="16" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="100" y="250" text-anchor="middle" font-size="13" fill="#1e3a8a">20</text>
+  <circle cx="200" cy="245" r="16" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="200" y="250" text-anchor="middle" font-size="13" fill="#1e3a8a">40</text>
+  <circle cx="295" cy="245" r="16" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="295" y="250" text-anchor="middle" font-size="13" fill="#7c2d12">60</text>
+  <circle cx="385" cy="245" r="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="385" y="250" text-anchor="middle" font-size="13" fill="#14532d">80</text>
+  <text x="245" y="100" text-anchor="middle" font-size="10.5" fill="#dc2626">区间 ( -inf , +inf )</text>
+  <text x="112" y="168" text-anchor="middle" font-size="10.5" fill="#2563eb">( -inf , 50 )</text>
+  <text x="378" y="168" text-anchor="middle" font-size="10.5" fill="#16a34a">( 50 , +inf )</text>
+  <text x="295" y="275" text-anchor="middle" font-size="10.5" fill="#ea580c">( 50 , 70 )</text>
+
+  <rect x="490" y="92" width="480" height="180" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="504" y="112" font-size="12" font-weight="bold" fill="#0f172a">同一棵树落到键轴上：一次划分、互不重叠</text>
+  <rect x="504" y="122" width="226" height="26" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="512" y="139" font-size="11" fill="#1e3a8a">子树 30 占 ( -inf , 50 )</text>
+  <rect x="734" y="122" width="222" height="26" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="742" y="139" font-size="11" fill="#14532d">子树 70 占 ( 50 , +inf )</text>
+  <rect x="734" y="160" width="86" height="26" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="828" y="177" font-size="11" fill="#7c2d12">子树 60 只占 ( 50 , 70 )</text>
+  <line x1="732" y1="118" x2="732" y2="192" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="732" y="206" text-anchor="middle" font-size="11" fill="#dc2626">分界键 50</text>
+  <line x1="504" y1="240" x2="956" y2="240" stroke="#64748b" stroke-width="1.4"/>
+  <text x="504" y="232" font-size="10.5" fill="#64748b">键轴：每个键只属于一段区间</text>
+  <text x="596" y="232" text-anchor="middle" font-size="10.5" fill="#2563eb">20 · 30 · 40</text>
+  <text x="860" y="232" text-anchor="middle" font-size="10.5" fill="#16a34a">60 · 70 · 80</text>
+
+  <text x="30" y="292" font-size="11.5" fill="#334155">区间由祖先路径继承：30 被划到 50 的左边，于是它整棵子树的上界就是 50 —— 这不是节点自己的属性，而是一条不变式（第一节）</text>
+  <text x="30" y="312" font-size="11.5" fill="#7f1d1d">第一节的反例正是划分被破坏：7 落进 ( -inf , 50 ) 这段里却大于 50；父子判据逐条查全过，中序 2 7 5 8 当场暴露</text>
+
+  <rect x="30" y="330" width="940" height="196" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="352" font-size="12.5" font-weight="bold" fill="#0f172a">② 剪枝就是按区间整棵排除：第六节实测（横条 = 访问节点数，同一比例尺，满格 100 000）</text>
+  <text x="44" y="376" font-size="11" fill="#64748b">查询区间</text>
+  <text x="250" y="376" text-anchor="end" font-size="11" fill="#64748b">命中</text>
+  <text x="336" y="376" text-anchor="end" font-size="11" fill="#64748b">访问</text>
+  <text x="420" y="376" text-anchor="end" font-size="11" fill="#64748b">剪掉</text>
+  <text x="460" y="376" font-size="11" fill="#64748b">访问数</text>
+  <line x1="44" y1="382" x2="956" y2="382" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="404" font-size="11.5" fill="#334155">[0, 99999] 全范围</text>
+  <text x="250" y="404" text-anchor="end" font-size="11.5" fill="#334155">100000</text>
+  <text x="336" y="404" text-anchor="end" font-size="11.5" fill="#334155">100000</text>
+  <text x="420" y="404" text-anchor="end" font-size="11.5" fill="#94a3b8">0.00%</text>
+  <rect x="460" y="392" width="500" height="16" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="44" y="430" font-size="11.5" fill="#334155">[40000, 50000]</text>
+  <text x="250" y="430" text-anchor="end" font-size="11.5" fill="#334155">10001</text>
+  <text x="336" y="430" text-anchor="end" font-size="11.5" fill="#1e3a8a">10015</text>
+  <text x="420" y="430" text-anchor="end" font-size="11.5" fill="#16a34a">89.98%</text>
+  <rect x="460" y="418" width="50" height="16" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="44" y="456" font-size="11.5" fill="#334155">[49990, 50010] 窄区间</text>
+  <text x="250" y="456" text-anchor="end" font-size="11.5" fill="#334155">21</text>
+  <text x="336" y="456" text-anchor="end" font-size="11.5" fill="#7c2d12">40</text>
+  <text x="420" y="456" text-anchor="end" font-size="11.5" fill="#16a34a">99.96%</text>
+  <rect x="460" y="444" width="4" height="16" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="474" y="456" font-size="10.5" fill="#7c2d12">40 个不足比例尺 1 px，画成 4 px 才看得见</text>
+  <text x="44" y="484" font-size="11.5" fill="#1e3a8a">关键读数：访问 10015 贴着命中 10001 —— 多出的 14 个是两条边界路径；窄区间命中 21 只访问 40，10 万节点里 99960 个一次都没被看</text>
+  <text x="44" y="506" font-size="11.5" fill="#334155">三条区间的命中结果都与「全遍历后过滤」一致 ✅ —— 剪枝只剪「区间不可能命中」的子树，不改变答案</text>
+
+  <text x="30" y="550" font-size="12" fill="#0f172a">⭐ 划分的红利：判据落在「子树区间与查询区间是否相交」上，于是整棵子树一次扔掉（6.1 的剪枝判据①②），而不是进去看一眼再决定</text>
+  <text x="30" y="574" font-size="12" fill="#7f1d1d">⚠️ 划分只在不变式成立时存在：结构一旦被写坏，剪枝会静默少给结果 —— 所以先用中序有序校验结构（第一节），再谈剪枝收益</text>
+</svg>

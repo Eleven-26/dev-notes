@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">60 个请求打满一条连接：1.1 串行排队与 HTTP/2 多路复用的耗时比例</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12" fill="#64748b">服务端每个请求固定 sleep 100ms，共 60 个请求；蓝条与绿条 = 单连接（MaxConnsPerHost=1），橙条 = 不限连接数；条长按真实耗时等比绘制</text>
+
+  <rect x="256" y="66" width="614" height="24" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="266" y="82" font-size="10.5" fill="#64748b">0 ms</text>
+  <line x1="563" y1="66" x2="563" y2="90" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="549" y="82" font-size="10.5" fill="#64748b">条长中点</text>
+  <text x="862" y="82" text-anchor="end" font-size="10.5" fill="#64748b">6.05s 满格</text>
+  <text x="880" y="82" font-size="10.5" fill="#64748b">总耗时</text>
+  <text x="994" y="82" text-anchor="end" font-size="10.5" fill="#64748b">TCP 拨号</text>
+
+  <text x="24" y="112" font-size="11.5" font-weight="bold" fill="#334155">HTTP/1.1 单连接 并发 1</text>
+  <rect x="256" y="99" width="614" height="20" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="563" y="113" text-anchor="middle" font-size="10.5" fill="#1e3a8a">60 × 100ms 串行，一个响应没回来下一个请求只能等</text>
+  <text x="930" y="113" text-anchor="end" font-size="11.5" font-weight="bold" fill="#1e3a8a">6.05s</text>
+  <text x="994" y="113" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <text x="24" y="140" font-size="11.5" font-weight="bold" fill="#334155">HTTP/1.1 单连接 并发 6</text>
+  <rect x="256" y="127" width="614" height="20" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="930" y="141" text-anchor="end" font-size="11.5" font-weight="bold" fill="#1e3a8a">6.04s</text>
+  <text x="994" y="141" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <text x="24" y="168" font-size="11.5" font-weight="bold" fill="#334155">HTTP/1.1 单连接 并发 60</text>
+  <rect x="256" y="155" width="614" height="20" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="930" y="169" text-anchor="end" font-size="11.5" font-weight="bold" fill="#1e3a8a">6.05s</text>
+  <text x="994" y="169" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <rect x="24" y="182" width="956" height="18" rx="4" fill="#fef2f2" stroke="#fecaca" stroke-width="1"/>
+  <text x="34" y="195" font-size="11" fill="#7f1d1d">结论一：并发从 1 提到 60，总耗时死死钉在 6.05s = 60 × 100ms —— 同一条连接上 1.1 加并发毫无用处，这就是应用层队头阻塞</text>
+
+  <text x="24" y="220" font-size="11.5" font-weight="bold" fill="#334155">HTTP/2 单连接 并发 1</text>
+  <rect x="256" y="207" width="614" height="20" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="563" y="221" text-anchor="middle" font-size="10.5" fill="#1e3a8a">没有并发就没有可复用的流，跟 1.1 一模一样</text>
+  <text x="930" y="221" text-anchor="end" font-size="11.5" font-weight="bold" fill="#1e3a8a">6.05s</text>
+  <text x="994" y="221" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <text x="24" y="248" font-size="11.5" font-weight="bold" fill="#334155">HTTP/2 单连接 并发 6</text>
+  <rect x="256" y="235" width="103" height="20" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="374" y="249" font-size="10.5" fill="#14532d">6 条流同时起步</text>
+  <text x="930" y="249" text-anchor="end" font-size="11.5" font-weight="bold" fill="#14532d">1.01s</text>
+  <text x="994" y="249" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <text x="24" y="276" font-size="11.5" font-weight="bold" fill="#334155">HTTP/2 单连接 并发 12</text>
+  <rect x="256" y="263" width="52" height="20" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="374" y="277" font-size="10.5" fill="#14532d">12 条流的帧交错，接收端按流 ID 重排</text>
+  <text x="930" y="277" text-anchor="end" font-size="11.5" font-weight="bold" fill="#14532d">510ms</text>
+  <text x="994" y="277" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <text x="24" y="304" font-size="11.5" font-weight="bold" fill="#334155">HTTP/2 单连接 并发 30</text>
+  <rect x="256" y="291" width="21" height="20" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="374" y="305" font-size="10.5" fill="#14532d">30 条流：接近「并发数」倍的加速</text>
+  <text x="930" y="305" text-anchor="end" font-size="11.5" font-weight="bold" fill="#14532d">210ms</text>
+  <text x="994" y="305" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <text x="24" y="332" font-size="11.5" font-weight="bold" fill="#334155">HTTP/2 单连接 并发 60</text>
+  <rect x="256" y="319" width="11" height="20" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="374" y="333" font-size="10.5" fill="#14532d">60 条流全压在这一条 TCP 上，条短到只剩 11px —— 这正是结论本身</text>
+  <text x="930" y="333" text-anchor="end" font-size="11.5" font-weight="bold" fill="#14532d">110ms</text>
+  <text x="994" y="333" text-anchor="end" font-size="10" fill="#64748b">拨号 1</text>
+
+  <rect x="24" y="346" width="956" height="18" rx="4" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="34" y="359" font-size="11" fill="#14532d">结论二与三：1.1 恒为 6.05s（纯排队），HTTP/2 降到 110ms（真并发）；但 conc=1 时两者都是 6.05s，多路复用不是「服务端变快」</text>
+
+  <text x="24" y="384" font-size="11.5" font-weight="bold" fill="#334155">HTTP/1.1 不限连接 并发 60</text>
+  <rect x="256" y="371" width="17" height="20" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="286" y="385" font-size="10.5" fill="#7c2d12">靠开 60 条 TCP 连接也能压到 170ms —— 这才是现实</text>
+  <text x="930" y="385" text-anchor="end" font-size="11.5" font-weight="bold" fill="#7c2d12">170ms</text>
+  <text x="994" y="385" text-anchor="end" font-size="10" fill="#64748b">拨号 60</text>
+
+  <text x="24" y="412" font-size="11.5" font-weight="bold" fill="#334155">HTTP/2 不限连接 并发 60</text>
+  <rect x="256" y="399" width="14" height="20" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="286" y="413" font-size="10.5" fill="#7c2d12">同样 60 次握手，140ms；省下的不是「能不能并发」，而是连接数</text>
+  <text x="930" y="413" text-anchor="end" font-size="11.5" font-weight="bold" fill="#7c2d12">140ms</text>
+  <text x="994" y="413" text-anchor="end" font-size="10" fill="#64748b">拨号 60</text>
+
+  <rect x="24" y="426" width="956" height="18" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="34" y="439" font-size="11" fill="#92400e">结论四：60 次 TCP + TLS 握手 vs 1 次 —— 这是弱网与大量小接口场景的真实收益，也是 HPACK 索引表能生效的前提（表按连接维护）</text>
+
+  <rect x="24" y="456" width="470" height="126" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="478" font-size="12.5" font-weight="bold" fill="#0f172a">串行与交错：一条连接上的两种时序</text>
+  <text x="40" y="498" font-size="11" fill="#1e3a8a">1.1：请求 1 → 响应 1 → 请求 2 → 响应 2</text>
+  <text x="40" y="516" font-size="11" fill="#64748b">60 段首尾相接，总耗时 = 60 × 100ms</text>
+  <rect x="40" y="524" width="60" height="14" fill="#dbeafe" stroke="#2563eb" stroke-width="0.8"/>
+  <rect x="102" y="524" width="60" height="14" fill="#dbeafe" stroke="#2563eb" stroke-width="0.8"/>
+  <rect x="164" y="524" width="60" height="14" fill="#dbeafe" stroke="#2563eb" stroke-width="0.8"/>
+  <rect x="226" y="524" width="60" height="14" fill="#dbeafe" stroke="#2563eb" stroke-width="0.8"/>
+  <text x="294" y="536" font-size="11" fill="#64748b">… 直到第 60 段</text>
+  <text x="40" y="558" font-size="11" fill="#14532d">HTTP/2：流 1、3、5、7 同时起步，帧交错发送，</text>
+  <text x="40" y="574" font-size="11" fill="#14532d">接收方按流 ID 重排 —— 应用层队头阻塞消失</text>
+
+  <rect x="510" y="456" width="470" height="126" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.2"/>
+  <text x="526" y="478" font-size="12.5" font-weight="bold" fill="#14532d">容器内复跑：趋势一致（go1.26.8 linux/amd64）</text>
+  <text x="526" y="498" font-size="11" fill="#166534">golang:1.26-alpine 连跑 4 轮，每轮 12 组读数</text>
+  <text x="526" y="516" font-size="11" fill="#166534">1.1 单连接：6.06s ~ 6.11s，与并发数无关</text>
+  <text x="526" y="534" font-size="11" fill="#166534">HTTP/2 单连接：110ms / 210ms / 510~530ms / 1.02~1.03s</text>
+  <text x="526" y="552" font-size="11" fill="#166534">不限连接：140ms ~ 240ms，拨号 54 ~ 60 次</text>
+  <text x="526" y="570" font-size="11" fill="#166534">只断言趋势：串行钉死、交错随并发数下降</text>
+
+  <rect x="24" y="598" width="956" height="72" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.2"/>
+  <text x="40" y="620" font-size="12" font-weight="bold" fill="#7f1d1d">注意：这个实验量的是应用层并发，没有真网络，绝对值不代表线上</text>
+  <text x="40" y="640" font-size="11" fill="#7f1d1d">加上网络代价后，HTTP/2 在丢包链路上的优势会缩水：它的队头阻塞从应用层下移到了 TCP 层，丢一个包会阻塞这条连接上的全部流。</text>
+  <text x="40" y="658" font-size="11" fill="#7f1d1d">每个请求都必须把 body 读干再 Close，否则连接不归还池 —— 这本身就是一个队头阻塞来源。</text>
+</svg>

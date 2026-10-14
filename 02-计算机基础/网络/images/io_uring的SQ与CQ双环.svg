@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="uBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="uAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+  </defs>
+  <rect width="1000" height="430" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">io_uring 的两个环：SQ 提交 / CQ 完成（内核与用户态共享内存）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">一次 io_uring_enter 可同时提交 N 个请求、收割 M 个完成；SQPOLL 下由内核线程轮询 SQ，提交可零系统调用</text>
+
+  <rect x="40" y="110" width="120" height="60" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="100" y="146" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">应用程序</text>
+
+  <circle cx="285" cy="140" r="66" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <circle cx="285" cy="140" r="30" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="285" y="136" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">SQ</text>
+  <text x="285" y="156" text-anchor="middle" font-size="11" fill="#14532d">提交环</text>
+
+  <rect x="440" y="100" width="190" height="80" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="535" y="132" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">内核按 SQE 执行</text>
+  <text x="535" y="156" text-anchor="middle" font-size="11.5" fill="#9a3412">含数据搬运</text>
+
+  <circle cx="745" cy="140" r="66" fill="#fef2f2" stroke="#b91c1c" stroke-width="2"/>
+  <circle cx="745" cy="140" r="30" fill="#ffffff" stroke="#b91c1c" stroke-width="1.5"/>
+  <text x="745" y="136" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">CQ</text>
+  <text x="745" y="156" text-anchor="middle" font-size="11" fill="#7f1d1d">完成环</text>
+
+  <line x1="160" y1="140" x2="217" y2="140" stroke="#2563eb" stroke-width="1.6" marker-end="url(#uBlue)"/>
+  <text x="188" y="128" text-anchor="middle" font-size="11" fill="#1e3a8a">写 SQE</text>
+  <line x1="353" y1="140" x2="438" y2="140" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="395" y="128" text-anchor="middle" font-size="11" fill="#14532d">内核读</text>
+  <line x1="630" y1="140" x2="677" y2="140" stroke="#ea580c" stroke-width="1.6" marker-end="url(#uAmber)"/>
+  <text x="654" y="128" text-anchor="middle" font-size="11" fill="#9a3412">写 CQE</text>
+
+  <path d="M745,206 L745,250 L100,250 L100,172" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#uBlue)"/>
+  <text x="420" y="242" text-anchor="middle" font-size="11.5" fill="#1e3a8a">应用读 CQE 收割结果（数据已在用户缓冲区）</text>
+
+  <text x="60" y="300" font-size="12.5" fill="#334155">对比 epoll：epoll 通知"fd 就绪了，你自己去读"（readiness，第二阶段由应用拷贝，仍是同步 I/O）。</text>
+  <text x="60" y="326" font-size="12.5" fill="#14532d">io_uring 通知"你要的操作已完成"（completion，内核推进了两阶段，是真正的异步 I/O）。</text>
+  <text x="60" y="356" font-size="12.5" fill="#7f1d1d">注意：两环是 mmap 共享内存，省的是系统调用与上下文切换，不消除数据拷贝；收益随提交频率上升而变大。</text>
+  <text x="60" y="386" font-size="12.5" fill="#64748b">本机为 Windows，io_uring 需 Linux 内核支持，此处为机制说明、未实测。</text>
+</svg>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">实测：ISR &lt; min.insync.replicas 时，acks=1 能写但 HW 冻住</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">strict-events（3 分副本、minIsr=3）停一台 broker 后按 5 步观察；读数来自 apache/kafka:3.9.0 三节点</text>
+
+  <rect x="20" y="96" width="170" height="64" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="105" y="123" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">① 停 Broker 3</text>
+  <text x="105" y="145" text-anchor="middle" font-size="11.5" fill="#92400e">等 30000 ms</text>
+  <line x1="190" y1="128" x2="220" y2="128" stroke="#334155" stroke-width="1.5" marker-end="url(#d1)"/>
+  <rect x="220" y="96" width="170" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="305" y="123" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">② acks=all 写</text>
+  <text x="305" y="145" text-anchor="middle" font-size="11.5" fill="#b91c1c">strict 被拒</text>
+  <line x1="390" y1="128" x2="420" y2="128" stroke="#334155" stroke-width="1.5" marker-end="url(#d1)"/>
+  <rect x="420" y="96" width="170" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="505" y="123" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">③ acks=1 写</text>
+  <text x="505" y="145" text-anchor="middle" font-size="11.5" fill="#1d4ed8">改试 4 条</text>
+  <line x1="590" y1="128" x2="620" y2="128" stroke="#334155" stroke-width="1.5" marker-end="url(#d1)"/>
+  <rect x="620" y="96" width="170" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="705" y="123" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">④ 读位点</text>
+  <text x="705" y="145" text-anchor="middle" font-size="11.5" fill="#64748b">get-offsets</text>
+  <line x1="790" y1="128" x2="820" y2="128" stroke="#334155" stroke-width="1.5" marker-end="url(#d1)"/>
+  <rect x="820" y="96" width="170" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="905" y="123" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">⑤ Broker 3 回归</text>
+  <text x="905" y="145" text-anchor="middle" font-size="11.5" fill="#166534">副本追上</text>
+
+  <text x="26" y="188" font-size="11.5" fill="#0f172a">Isr 3→2</text>
+  <text x="26" y="208" font-size="11.5" fill="#0f172a">P2 Leader 3→1</text>
+  <text x="26" y="228" font-size="11.5" fill="#0f172a">判定阈值</text>
+  <text x="26" y="248" font-size="11.5" fill="#0f172a">replica.lag.time.max.ms</text>
+
+  <text x="226" y="188" font-size="11.5" fill="#0f172a">连报 3 次重试</text>
+  <text x="226" y="208" font-size="11.5" fill="#0f172a">后失败：</text>
+  <text x="226" y="228" font-size="11.5" fill="#dc2626">NOT_ENOUGH_REPLICAS</text>
+
+  <text x="426" y="188" font-size="11.5" fill="#0f172a">生产者不报错</text>
+  <text x="426" y="208" font-size="11.5" fill="#0f172a">消息进了 Leader</text>
+  <text x="426" y="228" font-size="11.5" fill="#0f172a">的 LEO</text>
+
+  <text x="626" y="188" font-size="11.5" fill="#0f172a">strict-events:0</text>
+  <text x="626" y="208" font-size="11.5" fill="#dc2626">位点冻结在 0</text>
+  <text x="626" y="228" font-size="11.5" fill="#0f172a">acks=1 也没推进</text>
+
+  <text x="826" y="188" font-size="11.5" fill="#0f172a">strict-events:0</text>
+  <text x="826" y="208" font-size="11.5" fill="#16a34a">位点 0→4 补齐</text>
+  <text x="826" y="228" font-size="11.5" fill="#0f172a">Isr→3</text>
+  <text x="826" y="248" font-size="11.5" fill="#0f172a">offsetLag→0</text>
+
+  <line x1="20" y1="278" x2="980" y2="278" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="304" font-size="13" font-weight="bold" fill="#0f172a">对照组：order-events（minIsr=1）在同一时刻位点立刻 +2 —— 冻住的是 min.insync.replicas 这个门槛，不是「停了一台机器」本身。</text>
+
+  <rect x="20" y="324" width="960" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="352" font-size="13" font-weight="bold" fill="#1e3a8a">⭐ 结论：ISR 数量少于 min.insync.replicas 时，Leader 会停止推进 HW（高水位）。</text>
+  <text x="40" y="378" font-size="12.5" fill="#0f172a">· acks=all 直接被拒（NotEnoughReplicasException）；acks=1 被接受、数据也进了 Leader 日志，但 HW 不前进 → 消费者读不到。</text>
+  <text x="40" y="402" font-size="12.5" fill="#0f172a">· 副本回归、ISR 恢复后位点立刻补齐（上表 0→4 正好是那几条消息）；get-offsets 读到的位点就是被冻住的那个值。</text>
+
+  <text x="20" y="446" font-size="13" fill="#0f172a">实用价值 —— 排障：生产者还在「成功」写、消费者却突然不消费，先查 Isr 与 min.insync.replicas，而不是先怀疑消费者。</text>
+  <text x="20" y="474" font-size="13" fill="#0f172a">选型：宁可拒写就把 min.insync.replicas 提上去（配 acks=all）；只要 Leader 活着就能写，就接受 acks=1 这条更短但更脆的路径。</text>
+  <text x="20" y="506" font-size="12" fill="#64748b">本图为 kfk-w1a6 同构三节点独立复现（acks=1 写 4 条 → strict-events-0 位点 0→4）；正文表 0→2 来自 kafka-lab 轮次，趋势一致、条数不同，读数不混用。</text>
+</svg>

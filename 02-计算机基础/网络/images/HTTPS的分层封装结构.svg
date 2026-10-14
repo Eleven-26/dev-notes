@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTPS 不是新协议：TLS 是夹在 HTTP 与 TCP 之间的一层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">封装关系是 HTTP over TLS over TCP over IP：HTTP 报文原封不动塞进 TLS 记录层，再交给 TCP</text>
+
+  <rect x="60" y="90" width="880" height="300" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="72" y="106" font-size="12.5" fill="#334155">链路层 · 以太网帧（每跳重写 MAC、TTL−1）</text>
+
+  <rect x="100" y="124" width="800" height="232" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="112" y="140" font-size="12.5" fill="#9a3412">网络层 · IP 数据包（端到端 IP 不变，NAT 除外）</text>
+
+  <rect x="140" y="158" width="720" height="164" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="152" y="174" font-size="12.5" fill="#14532d">传输层 · TCP 段（TLS 的 RTT 叠加在三次握手之上）</text>
+
+  <rect x="180" y="192" width="640" height="96" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="192" y="208" font-size="12.5" font-weight="bold" fill="#b91c1c">安全层 · TLS 记录 ★ 就是这一层夹在中间，提供机密性 / 完整性 / 身份认证</text>
+
+  <rect x="220" y="226" width="560" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="232" y="252" font-size="13" font-weight="bold" fill="#1e3a8a">应用层 · HTTP 报文（原封不动地加密后交给 TLS）</text>
+
+  <text x="60" y="420" font-size="12.5" fill="#334155">要点：握手只在 TLS 层做，握手完成后 HTTP 报文作为 TLS 记录层的载荷被对称加密 + AEAD 传输。</text>
+  <text x="60" y="446" font-size="12.5" fill="#7f1d1d">注意：同理还有 gRPC over TLS、数据库连接加密；"SSL 证书 / SSL 握手" 口语里指的其实都是 TLS。</text>
+</svg>

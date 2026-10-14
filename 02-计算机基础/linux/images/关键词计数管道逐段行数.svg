@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+
+  <text x="20" y="28" font-size="20" font-weight="bold" fill="#0f172a">grep -oE | sort | uniq -c | sort -rn：逐段行数（920 行日志，Linux 实测）</text>
+
+  <defs>
+    <marker id="arrGray" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <g stroke-width="1.5">
+    <rect x="18" y="60" width="168" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+    <rect x="210" y="60" width="168" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <rect x="402" y="60" width="168" height="86" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <rect x="594" y="60" width="168" height="86" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <rect x="786" y="60" width="168" height="86" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  </g>
+
+  <g font-size="13" font-weight="bold" text-anchor="middle">
+    <text x="102" y="80" fill="#475569">app.log</text>
+    <text x="294" y="80" fill="#1d4ed8">① grep -oE</text>
+    <text x="486" y="80" fill="#1d4ed8">② sort</text>
+    <text x="678" y="80" fill="#15803d">③ uniq -c</text>
+    <text x="870" y="80" fill="#b45309">④ sort -rn</text>
+  </g>
+  <g font-size="15" font-weight="bold" text-anchor="middle">
+    <text x="102" y="104" fill="#475569">920 行</text>
+    <text x="294" y="104" fill="#1d4ed8">920 行</text>
+    <text x="486" y="104" fill="#1d4ed8">920 行</text>
+    <text x="678" y="104" fill="#15803d">3 行</text>
+    <text x="870" y="104" fill="#b45309">3 行</text>
+  </g>
+  <g font-size="10" text-anchor="middle" fill="#64748b">
+    <text x="102" y="126" fill="#475569">ERROR×500 INFO×300</text>
+    <text x="102" y="140" fill="#475569">WARNING×120</text>
+    <text x="294" y="126">每行只输出命中片段</text>
+    <text x="294" y="140">行数不变，形状变了</text>
+    <text x="486" y="126">把相同值排到相邻</text>
+    <text x="486" y="140">uniq 才合并得动</text>
+    <text x="678" y="126">920 → 3</text>
+    <text x="678" y="140">全程唯一"改数"的一步</text>
+    <text x="870" y="126">500 / 300 / 120</text>
+    <text x="870" y="140">按数值倒序</text>
+  </g>
+
+  <g stroke="#64748b" stroke-width="1.5">
+    <path d="M186 103 L 206 103" marker-end="url(#arrGray)"/>
+    <path d="M378 103 L 398 103" marker-end="url(#arrGray)"/>
+    <path d="M570 103 L 590 103" marker-end="url(#arrGray)"/>
+    <path d="M762 103 L 782 103" marker-end="url(#arrGray)"/>
+  </g>
+
+  <text x="20" y="176" font-size="12" font-weight="bold" fill="#334155">行数可视化（条高 ∝ 行数）：</text>
+  <rect x="80" y="190" width="64" height="32" fill="#94a3b8"/>
+  <rect x="272" y="190" width="64" height="32" fill="#2563eb"/>
+  <rect x="464" y="190" width="64" height="32" fill="#2563eb"/>
+  <rect x="656" y="220" width="64" height="2" fill="#16a34a"/>
+  <rect x="848" y="220" width="64" height="2" fill="#b45309"/>
+  <text x="80" y="238" font-size="10" fill="#64748b">920</text>
+  <text x="272" y="238" font-size="10" fill="#64748b">920</text>
+  <text x="464" y="238" font-size="10" fill="#64748b">920</text>
+  <text x="656" y="238" font-size="10" fill="#64748b">3</text>
+  <text x="848" y="238" font-size="10" fill="#64748b">3</text>
+
+  <rect x="14" y="252" width="972" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="28" y="274" font-size="13" font-weight="bold" fill="#334155">Linux 侧补充证据：交替顺序口径（100 行全 WARNING 的文件）</text>
+  <text x="44" y="296" font-size="12" fill="#334155">grep -oE "WARN|WARNING"  →  WARNING ×100　　BusyBox / POSIX ERE：最长匹配</text>
+  <text x="44" y="316" font-size="12" fill="#334155">grep -oE "WARNING|WARN"  →  WARNING ×100　　词序不影响</text>
+  <text x="44" y="336" font-size="12" fill="#dc2626">Go regexp，WARN 在前 → WARN ×100（正文实测四：左起优先，和 grep 不一样）</text>
+  <text x="640" y="296" font-size="12" fill="#b45309">→ 用代码复刻这条管道时，</text>
+  <text x="640" y="316" font-size="12" fill="#b45309">长词要排在前面（WARNING|WARN）</text>
+  <text x="640" y="336" font-size="12" fill="#64748b">两家族规则不同，只有对拍才会暴露</text>
+
+  <text x="20" y="384" font-size="11" fill="#94a3b8">数字出处：正文「Linux 容器逐段行数实测」（alpine:3.20，连跑两轮一致）；920 行构成与 Go 侧对照见正文实测四</text>
+</svg>

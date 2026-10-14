@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 672" width="1000" height="672" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="672" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">WebSocket、SSE 与 gRPC 流式：三条推送链路的对照</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">判据只有两条：要不要双向、能不能穿过中间设备；底座形态决定了各自的坑落在哪一段链路</text>
+
+  <rect x="24" y="74" width="152" height="50" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="34" y="104" font-size="12.5" font-weight="bold" fill="#334155">对照项</text>
+  <rect x="184" y="74" width="266" height="50" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="317" y="95" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">WebSocket</text>
+  <text x="317" y="114" text-anchor="middle" font-size="10.5" fill="#1e3a8a">TCP（HTTP 升级）</text>
+  <rect x="462" y="74" width="266" height="50" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="595" y="95" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">SSE</text>
+  <text x="595" y="114" text-anchor="middle" font-size="10.5" fill="#14532d">一条普通 HTTP 响应</text>
+  <rect x="740" y="74" width="240" height="50" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="860" y="95" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">gRPC 流式</text>
+  <text x="860" y="114" text-anchor="middle" font-size="10.5" fill="#7c2d12">HTTP/2 的一条流</text>
+
+  <rect x="184" y="130" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="462" y="130" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="740" y="130" width="240" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="156" font-size="12" font-weight="bold" fill="#0f172a">方向</text>
+  <text x="196" y="156" font-size="11.5" fill="#1e3a8a">双向</text>
+  <text x="474" y="156" font-size="11.5" fill="#14532d">单向：服务端 → 客户端</text>
+  <text x="752" y="156" font-size="11.5" fill="#7c2d12">双向</text>
+
+  <rect x="184" y="178" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="462" y="178" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="740" y="178" width="240" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="204" font-size="12" font-weight="bold" fill="#0f172a">协议底座</text>
+  <text x="196" y="198" font-size="11" fill="#1e3a8a">Upgrade: websocket 升级后</text>
+  <text x="196" y="214" font-size="11" fill="#1e3a8a">脱离 HTTP 语义，无请求响应配对</text>
+  <text x="474" y="198" font-size="11" fill="#14532d">Content-Type: text/event-stream</text>
+  <text x="474" y="214" font-size="11" fill="#14532d">用 chunked 定界的持续响应</text>
+  <text x="752" y="198" font-size="11" fill="#7c2d12">HTTP/2 的流</text>
+  <text x="752" y="214" font-size="11" fill="#7c2d12">帧交错，靠流 ID 归组</text>
+
+  <rect x="184" y="226" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="462" y="226" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="740" y="226" width="240" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="252" font-size="12" font-weight="bold" fill="#0f172a">数据格式</text>
+  <text x="196" y="252" font-size="11" fill="#1e3a8a">任意：文本帧 / 二进制帧</text>
+  <text x="474" y="252" font-size="11" fill="#14532d">只能 UTF-8 文本（data: 行）</text>
+  <text x="752" y="252" font-size="11" fill="#7c2d12">Protobuf（默认）</text>
+
+  <rect x="184" y="274" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="462" y="274" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="740" y="274" width="240" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="300" font-size="12" font-weight="bold" fill="#0f172a">浏览器支持</text>
+  <text x="196" y="300" font-size="11" fill="#1e3a8a">有原生 WebSocket</text>
+  <text x="474" y="300" font-size="11" fill="#14532d">有原生 EventSource</text>
+  <text x="752" y="300" font-size="11" fill="#7c2d12">需 grpc-web + 网关</text>
+
+  <rect x="184" y="322" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="462" y="322" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="740" y="322" width="240" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="348" font-size="12" font-weight="bold" fill="#0f172a">自动重连</text>
+  <text x="196" y="348" font-size="11" fill="#9f1239">协议没有，自己写</text>
+  <text x="474" y="348" font-size="11" fill="#15803d">自带，配 Last-Event-ID 还能续传</text>
+  <text x="752" y="348" font-size="11" fill="#9f1239">自己管</text>
+
+  <rect x="184" y="370" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="462" y="370" width="266" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="740" y="370" width="240" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="396" font-size="12" font-weight="bold" fill="#0f172a">穿透中间设备</text>
+  <text x="196" y="390" font-size="11" fill="#1e3a8a">需每一层都认 Upgrade</text>
+  <text x="196" y="406" font-size="11" fill="#64748b">有一层不认，升级就失败</text>
+  <text x="474" y="390" font-size="11" fill="#15803d">最好：对代理来说就是个慢响应</text>
+  <text x="474" y="406" font-size="11" fill="#64748b">但每条 SSE 占一条 HTTP 连接</text>
+  <text x="752" y="390" font-size="11" fill="#7c2d12">最差：要 h2 且代理支持</text>
+  <text x="752" y="406" font-size="11" fill="#64748b">空闲超时会掐断长流</text>
+
+  <rect x="184" y="418" width="266" height="56" rx="6" fill="#fff1f2" stroke="#fecaca" stroke-width="1"/>
+  <rect x="462" y="418" width="266" height="56" rx="6" fill="#fff1f2" stroke="#fecaca" stroke-width="1"/>
+  <rect x="740" y="418" width="240" height="56" rx="6" fill="#fff1f2" stroke="#fecaca" stroke-width="1"/>
+  <text x="34" y="440" font-size="12" font-weight="bold" fill="#0f172a">各自的坑</text>
+  <text x="34" y="458" font-size="10.5" fill="#64748b">都落在链路上</text>
+  <text x="196" y="436" font-size="10.5" fill="#7f1d1d">Upgrade 是逐跳语义；升级成功后</text>
+  <text x="196" y="452" font-size="10.5" fill="#7f1d1d">没有请求响应配对，空闲超时只能</text>
+  <text x="196" y="468" font-size="10.5" fill="#7f1d1d">靠应用层心跳顶住</text>
+  <text x="474" y="436" font-size="10.5" fill="#7f1d1d">HTTP/1.1 下同域浏览器只有 6 条</text>
+  <text x="474" y="452" font-size="10.5" fill="#7f1d1d">连接，每条 SSE 占一条，多开标签</text>
+  <text x="474" y="468" font-size="10.5" fill="#7f1d1d">页就互相挤（HTTP/2 下缓解）</text>
+  <text x="752" y="436" font-size="10.5" fill="#7f1d1d">浏览器不能直连；代理空闲超时</text>
+  <text x="752" y="452" font-size="10.5" fill="#7f1d1d">同样掐断长流，要配</text>
+  <text x="752" y="468" font-size="10.5" fill="#7f1d1d">keepalive ping</text>
+
+  <rect x="184" y="482" width="266" height="42" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <rect x="462" y="482" width="266" height="42" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <rect x="740" y="482" width="240" height="42" rx="6" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+  <text x="34" y="508" font-size="12" font-weight="bold" fill="#0f172a">落点判据</text>
+  <text x="196" y="502" font-size="11" fill="#1e3a8a">真双向、要低延迟：聊天、协同</text>
+  <text x="196" y="518" font-size="11" fill="#1e3a8a">编辑、实时游戏</text>
+  <text x="474" y="502" font-size="11" fill="#14532d">只有服务端推、客户端不常上行</text>
+  <text x="474" y="518" font-size="11" fill="#14532d">实现最便宜，还自带重连</text>
+  <text x="752" y="502" font-size="11" fill="#7c2d12">后端服务之间，且已有</text>
+  <text x="752" y="518" font-size="11" fill="#7c2d12">gRPC 生态</text>
+
+  <rect x="24" y="540" width="956" height="34" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="500" y="562" text-anchor="middle" font-size="12" fill="#92400e">一句话取舍：推送优先 SSE（便宜、穿透好、自带重连）；要双向才上 WebSocket；服务间通信才考虑 gRPC 流式</text>
+
+  <rect x="24" y="584" width="956" height="66" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="606" font-size="12" font-weight="bold" fill="#0f172a">注意：三条链路的空闲超时都不是应用层能控制的</text>
+  <text x="40" y="626" font-size="11" fill="#334155">WebSocket 与 gRPC 流都靠长连接，NAT 与负载均衡的超时先到就得重连；SSE 在 HTTP/1.1 下还要额外吃一条同域连接额度。</text>
+  <text x="40" y="644" font-size="11" fill="#334155">完整协议选型（含 MQ、REST、HTTP/3、MQTT）的决策树在 通信选型.md，本图只对照「服务端主动推」这三条链路。</text>
+</svg>

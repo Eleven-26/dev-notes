@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="hBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="hAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker>
+    <marker id="hGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">TLS 1.2 完整握手时序（2-RTT）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">前提是 TCP 三次握手已完成；非对称（证书 + 密钥交换）保护协商，之后数据全部走对称加密 + AEAD</text>
+
+  <rect x="225" y="84" width="150" height="44" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="300" y="112" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">客户端</text>
+  <rect x="645" y="84" width="150" height="44" rx="10" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="720" y="112" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">服务端</text>
+
+  <line x1="300" y1="128" x2="300" y2="510" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="720" y1="128" x2="720" y2="510" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+
+  <line x1="300" y1="152" x2="714" y2="152" stroke="#2563eb" stroke-width="1.6" marker-end="url(#hBlue)"/>
+  <text x="510" y="145" text-anchor="middle" font-size="12" fill="#1e3a8a">① ClientHello（版本 / 套件列表 / SNI / Client Random）明文</text>
+
+  <line x1="720" y1="186" x2="306" y2="186" stroke="#b45309" stroke-width="1.6" marker-end="url(#hAmber)"/>
+  <text x="510" y="179" text-anchor="middle" font-size="12" fill="#92400e">② ServerHello（选定套件 / Server Random）</text>
+
+  <line x1="720" y1="220" x2="306" y2="220" stroke="#b45309" stroke-width="1.6" marker-end="url(#hAmber)"/>
+  <text x="510" y="213" text-anchor="middle" font-size="12" fill="#92400e">③ Certificate（证书链）</text>
+
+  <line x1="720" y1="254" x2="306" y2="254" stroke="#b45309" stroke-width="1.6" marker-end="url(#hAmber)"/>
+  <text x="510" y="247" text-anchor="middle" font-size="12" fill="#92400e">④ ServerKeyExchange（仅 ECDHE/DHE，用证书私钥签名）</text>
+
+  <line x1="720" y1="288" x2="306" y2="288" stroke="#b45309" stroke-width="1.6" marker-end="url(#hAmber)"/>
+  <text x="510" y="281" text-anchor="middle" font-size="12" fill="#92400e">⑤ ServerHelloDone（服务端握手消息发完）</text>
+
+  <line x1="300" y1="328" x2="714" y2="328" stroke="#2563eb" stroke-width="1.6" marker-end="url(#hBlue)"/>
+  <text x="510" y="321" text-anchor="middle" font-size="12" fill="#1e3a8a">⑥ ClientKeyExchange（核心：协商共享秘密）</text>
+
+  <line x1="300" y1="362" x2="714" y2="362" stroke="#2563eb" stroke-width="1.6" marker-end="url(#hBlue)"/>
+  <text x="510" y="355" text-anchor="middle" font-size="12" fill="#1e3a8a">⑦ ChangeCipherSpec（独立协议，非握手消息）</text>
+
+  <line x1="300" y1="396" x2="714" y2="396" stroke="#2563eb" stroke-width="1.6" marker-end="url(#hBlue)"/>
+  <text x="510" y="389" text-anchor="middle" font-size="12" fill="#1e3a8a">⑧ Finished（第一条加密消息，含握手 transcript 摘要）</text>
+
+  <line x1="720" y1="430" x2="306" y2="430" stroke="#b45309" stroke-width="1.6" marker-end="url(#hAmber)"/>
+  <text x="510" y="423" text-anchor="middle" font-size="12" fill="#92400e">⑨ ChangeCipherSpec</text>
+
+  <line x1="720" y1="464" x2="306" y2="464" stroke="#b45309" stroke-width="1.6" marker-end="url(#hAmber)"/>
+  <text x="510" y="457" text-anchor="middle" font-size="12" fill="#92400e">⑩ Finished（已加密）</text>
+
+  <line x1="300" y1="498" x2="714" y2="498" stroke="#16a34a" stroke-width="1.6" marker-end="url(#hGreen)"/>
+  <text x="510" y="491" text-anchor="middle" font-size="12" fill="#14532d">⑪ Application Data（双向，对称加密 + AEAD）</text>
+
+  <line x1="150" y1="146" x2="150" y2="292" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="140" y="220" text-anchor="end" font-size="12" font-weight="bold" fill="#64748b">RTT 1</text>
+  <line x1="150" y1="322" x2="150" y2="468" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="140" y="396" text-anchor="end" font-size="12" font-weight="bold" fill="#64748b">RTT 2</text>
+
+  <text x="200" y="546" font-size="12.5" fill="#334155">要点：mTLS 时 ②~⑤ 间加 CertificateRequest、⑥ 后客户端补 Certificate + CertificateVerify。</text>
+  <text x="200" y="572" font-size="12.5" fill="#7f1d1d">注意：ClientHello 明文发送，SNI 里的域名在链路上可见；任何握手消息被篡改，双方 Finished 摘要就对不上。</text>
+</svg>

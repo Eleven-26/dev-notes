@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">权重都是 a:5 b:1 c:1，两种加权轮询的 21 次节奏</text>
+  <text x="500" y="58" text-anchor="middle" font-size="14" fill="#64748b">序列与分布出自本篇 §二 实测表；复制表形态出自 §一 策略 2 的注释</text>
+
+  <!-- 朴素 -->
+  <text x="60" y="92" font-size="13" font-weight="bold" fill="#7c2d12">朴素做法：按权重把节点重复放进列表，再轮询</text>
+  <text x="60" y="110" font-size="11" fill="#64748b">w=5,1,1 → 列表 [a a a a a b c]，一轮 7 个格子，21 次 = 转 3 轮</text>
+
+  <rect x="60" y="120" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="79" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">a</text>
+  <rect x="102" y="120" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="121" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">a</text>
+  <rect x="144" y="120" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="163" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">a</text>
+  <rect x="186" y="120" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="205" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">a</text>
+  <rect x="228" y="120" width="38" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="247" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">b</text>
+  <rect x="270" y="120" width="38" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="289" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">c</text>
+  <rect x="312" y="120" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="331" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">a</text>
+  <text x="362" y="142" font-size="12" fill="#94a3b8">……（实测打印的是前 7 次：a a a a b c a）</text>
+
+  <text x="60" y="172" font-size="11.5" fill="#b91c1c">开头连着一串 a：实测前 4 次全打在 a 上，a 短时间内被连打</text>
+
+  <!-- 平滑 -->
+  <text x="60" y="206" font-size="13" font-weight="bold" fill="#1e40af">平滑加权轮询：每轮 current += weight，选最大者，再减去 total</text>
+  <g font-size="14" font-weight="bold" text-anchor="middle">
+    <rect x="60"  y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="79"  y="238" fill="#7c2d12">a</text>
+    <rect x="102" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="121" y="238" fill="#7c2d12">a</text>
+    <rect x="144" y="216" width="38" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/><text x="163" y="238" fill="#1e40af">b</text>
+    <rect x="186" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="205" y="238" fill="#7c2d12">a</text>
+    <rect x="228" y="216" width="38" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/><text x="247" y="238" fill="#15803d">c</text>
+    <rect x="270" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="289" y="238" fill="#7c2d12">a</text>
+    <rect x="312" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="331" y="238" fill="#7c2d12">a</text>
+    <rect x="354" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="373" y="238" fill="#7c2d12">a</text>
+    <rect x="396" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="415" y="238" fill="#7c2d12">a</text>
+    <rect x="438" y="216" width="38" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/><text x="457" y="238" fill="#1e40af">b</text>
+    <rect x="480" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="499" y="238" fill="#7c2d12">a</text>
+    <rect x="522" y="216" width="38" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/><text x="541" y="238" fill="#15803d">c</text>
+    <rect x="564" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="583" y="238" fill="#7c2d12">a</text>
+    <rect x="606" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="625" y="238" fill="#7c2d12">a</text>
+    <rect x="648" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="667" y="238" fill="#7c2d12">a</text>
+    <rect x="690" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="709" y="238" fill="#7c2d12">a</text>
+    <rect x="732" y="216" width="38" height="34" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/><text x="751" y="238" fill="#1e40af">b</text>
+    <rect x="774" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="793" y="238" fill="#7c2d12">a</text>
+    <rect x="816" y="216" width="38" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/><text x="835" y="238" fill="#15803d">c</text>
+    <rect x="858" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="877" y="238" fill="#7c2d12">a</text>
+    <rect x="900" y="216" width="38" height="34" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/><text x="919" y="238" fill="#7c2d12">a</text>
+  </g>
+  <text x="60" y="270" font-size="11.5" fill="#1e40af">实测 21 次原样序列：a a b a c a a a a b a c a a a a b a c a a —— b、c 被插进 a 的空档里</text>
+
+  <!-- 分布条 -->
+  <text x="60" y="304" font-size="13" font-weight="bold" fill="#334155">21 次的总分布：两者一模一样</text>
+  <text x="60" y="330" font-size="11" fill="#64748b">朴素</text>
+  <rect x="100" y="316" width="637" height="22" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="418" y="332" text-anchor="middle" font-size="11" fill="#7c2d12">a：15 次</text>
+  <rect x="737" y="316" width="128" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="801" y="332" text-anchor="middle" font-size="11" fill="#1e40af">b：3</text>
+  <rect x="865" y="316" width="128" height="22" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="929" y="332" text-anchor="middle" font-size="11" fill="#15803d">c：3</text>
+
+  <text x="60" y="364" font-size="11" fill="#64748b">平滑</text>
+  <rect x="100" y="350" width="637" height="22" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="418" y="366" text-anchor="middle" font-size="11" fill="#7c2d12">a：15 次</text>
+  <rect x="737" y="350" width="128" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="801" y="366" text-anchor="middle" font-size="11" fill="#1e40af">b：3</text>
+  <rect x="865" y="350" width="128" height="22" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="929" y="366" text-anchor="middle" font-size="11" fill="#15803d">c：3</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="390" width="920" height="112" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="416" font-size="12.5" font-weight="bold" fill="#334155">分布完全一样，但节奏不一样：</text>
+  <text x="60" y="440" font-size="12" fill="#475569">加权轮询要的是「长期比例正确」，平滑加权额外要「短期也别把一台打死」——朴素做法开头连打 4~5 次 a，</text>
+  <text x="60" y="460" font-size="12" fill="#475569">在冷启动、连接复用、下游有并发上限时，这一下就足以把 a 的队列打满；平滑后任意子区间的分布都接近权重比。</text>
+  <text x="60" y="484" font-size="12" fill="#64748b">⚠️ 权重是静态的，感知不到实时负载：要按最少连接 / 最短队列分流时，这两个算法都得升级（见 §一 策略对比表）。</text>
+</svg>

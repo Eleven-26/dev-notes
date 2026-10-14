@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">递归 DFS 逐轮快照：进入压栈、走不动弹栈（回退）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">源点 0、进入时标记；12 个事件与栈内容均为 go1.26.8 容器实跑，与正文第八节推演表逐行一致</text>
+
+  <text x="56" y="96" font-size="12" font-weight="bold" fill="#0f172a">步</text>
+  <text x="120" y="96" font-size="12" font-weight="bold" fill="#0f172a">事件</text>
+  <text x="300" y="96" font-size="12" font-weight="bold" fill="#0f172a">栈（底 → 顶）</text>
+  <text x="560" y="96" font-size="12" font-weight="bold" fill="#0f172a">输出（到本步）</text>
+  <text x="790" y="96" font-size="12" font-weight="bold" fill="#0f172a">说明</text>
+  <line x1="40" y1="104" x2="960" y2="104" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <rect x="40" y="110" width="920" height="26" fill="#f8fafc"/>
+  <rect x="40" y="162" width="920" height="26" fill="#f8fafc"/>
+  <rect x="40" y="214" width="920" height="26" fill="#f8fafc"/>
+  <rect x="40" y="266" width="920" height="26" fill="#f8fafc"/>
+  <rect x="40" y="318" width="920" height="26" fill="#f8fafc"/>
+  <rect x="40" y="370" width="920" height="26" fill="#f8fafc"/>
+
+  <text x="56" y="128" font-size="11.5" fill="#334155">1</text>
+  <text x="120" y="128" font-size="11.5" fill="#2563eb">进入 0</text>
+  <text x="300" y="128" font-size="11.5" fill="#334155">[0]</text>
+  <text x="560" y="128" font-size="11.5" fill="#334155">0</text>
+  <text x="790" y="128" font-size="10.5" fill="#64748b">源点入栈即标记</text>
+
+  <text x="56" y="154" font-size="11.5" fill="#334155">2</text>
+  <text x="120" y="154" font-size="11.5" fill="#2563eb">进入 1</text>
+  <text x="300" y="154" font-size="11.5" fill="#334155">[0 1]</text>
+  <text x="560" y="154" font-size="11.5" fill="#334155">0 1</text>
+  <text x="790" y="154" font-size="10.5" fill="#64748b">adj[0]=[1 2 3]，1 未访问</text>
+
+  <text x="56" y="180" font-size="11.5" fill="#334155">3</text>
+  <text x="120" y="180" font-size="11.5" fill="#2563eb">进入 4</text>
+  <text x="300" y="180" font-size="11.5" fill="#334155">[0 1 4]</text>
+  <text x="560" y="180" font-size="11.5" fill="#334155">0 1 4</text>
+  <text x="790" y="180" font-size="10.5" fill="#64748b">adj[1]=[0 4]，0 已访问看 4</text>
+
+  <text x="56" y="206" font-size="11.5" fill="#334155">4</text>
+  <text x="120" y="206" font-size="11.5" fill="#2563eb">进入 2</text>
+  <text x="300" y="206" font-size="11.5" fill="#334155">[0 1 4 2]　栈最深</text>
+  <text x="560" y="206" font-size="11.5" fill="#334155">0 1 4 2</text>
+  <text x="790" y="206" font-size="10.5" fill="#64748b">adj[4]=[1 2 3 5]，1 已访问</text>
+
+  <text x="56" y="232" font-size="11.5" fill="#334155">5</text>
+  <text x="120" y="232" font-size="11.5" fill="#dc2626">离开 2（回退）</text>
+  <text x="300" y="232" font-size="11.5" fill="#334155">[0 1 4]</text>
+  <text x="560" y="232" font-size="11.5" fill="#334155">0 1 4 2</text>
+  <text x="790" y="232" font-size="10.5" fill="#dc2626">adj[2]=[0 4] 全访问过 → 弹栈</text>
+
+  <text x="56" y="258" font-size="11.5" fill="#334155">6</text>
+  <text x="120" y="258" font-size="11.5" fill="#2563eb">进入 3</text>
+  <text x="300" y="258" font-size="11.5" fill="#334155">[0 1 4 3]</text>
+  <text x="560" y="258" font-size="11.5" fill="#334155">0 1 4 2 3</text>
+  <text x="790" y="258" font-size="10.5" fill="#64748b">回到 4 从 3 继续（不重来）</text>
+
+  <text x="56" y="284" font-size="11.5" fill="#334155">7</text>
+  <text x="120" y="284" font-size="11.5" fill="#dc2626">离开 3（回退）</text>
+  <text x="300" y="284" font-size="11.5" fill="#334155">[0 1 4]</text>
+  <text x="560" y="284" font-size="11.5" fill="#334155">0 1 4 2 3</text>
+  <text x="790" y="284" font-size="10.5" fill="#dc2626">adj[3]=[0 4] 全访问过</text>
+
+  <text x="56" y="310" font-size="11.5" fill="#334155">8</text>
+  <text x="120" y="310" font-size="11.5" fill="#2563eb">进入 5</text>
+  <text x="300" y="310" font-size="11.5" fill="#334155">[0 1 4 5]</text>
+  <text x="560" y="310" font-size="11.5" fill="#334155">0 1 4 2 3 5</text>
+  <text x="790" y="310" font-size="10.5" fill="#64748b">adj[4] 的最后一项 5</text>
+
+  <text x="56" y="336" font-size="11.5" fill="#334155">9</text>
+  <text x="120" y="336" font-size="11.5" fill="#dc2626">离开 5（回退）</text>
+  <text x="300" y="336" font-size="11.5" fill="#334155">[0 1 4]</text>
+  <text x="560" y="336" font-size="11.5" fill="#334155">0 1 4 2 3 5</text>
+  <text x="790" y="336" font-size="10.5" fill="#dc2626">adj[5]=[4] 已访问</text>
+
+  <text x="56" y="362" font-size="11.5" fill="#334155">10</text>
+  <text x="120" y="362" font-size="11.5" fill="#dc2626">离开 4</text>
+  <text x="300" y="362" font-size="11.5" fill="#334155">[0 1]</text>
+  <text x="560" y="362" font-size="11.5" fill="#334155">0 1 4 2 3 5</text>
+  <text x="790" y="362" font-size="10.5" fill="#64748b">adj[4] 扫描完毕</text>
+
+  <text x="56" y="388" font-size="11.5" fill="#334155">11</text>
+  <text x="120" y="388" font-size="11.5" fill="#dc2626">离开 1</text>
+  <text x="300" y="388" font-size="11.5" fill="#334155">[0]</text>
+  <text x="560" y="388" font-size="11.5" fill="#334155">0 1 4 2 3 5</text>
+  <text x="790" y="388" font-size="10.5" fill="#64748b">adj[1] 扫描完毕</text>
+
+  <text x="56" y="414" font-size="11.5" fill="#334155">12</text>
+  <text x="120" y="414" font-size="11.5" fill="#dc2626">离开 0</text>
+  <text x="300" y="414" font-size="11.5" fill="#334155">[]　栈空结束</text>
+  <text x="560" y="414" font-size="11.5" fill="#334155">0 1 4 2 3 5</text>
+  <text x="790" y="414" font-size="10.5" fill="#64748b">adj[0] 的 2、3 都已访问</text>
+
+  <rect x="20" y="440" width="960" height="64" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" rx="10"/>
+  <text x="500" y="464" text-anchor="middle" font-size="12.5" fill="#1e40af">DFS 访问序 [0 1 4 2 3 5]：3 距 0 只有 1 步却排在第 5 位——拿 DFS 的输出序推断「离起点多远」一定错</text>
+  <text x="500" y="488" text-anchor="middle" font-size="12.5" fill="#1e40af">栈里装的永远是「当前这条路径上没走完的节点」：递归深度 = 路径长，最坏 O(V)</text>
+</svg>

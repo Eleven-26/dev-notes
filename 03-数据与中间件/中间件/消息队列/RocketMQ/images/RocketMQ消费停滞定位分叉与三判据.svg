@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w2r2gb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+  <text x="20" y="26" font-size="16" font-weight="bold" fill="#0f172a">排查「某队列消费停滞」：先定位到队列与实例，再用 Diff / Inflight 切两刀</text>
+  <text x="20" y="46" font-size="11" fill="#64748b">读数取自本篇 1.1 与 3.1 节：同一 Topic 4 队列 600 条，apache/rocketmq 5.3.1 单 Broker</text>
+
+  <rect x="250" y="62" width="500" height="106" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="84" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">第一步 定位：哪个队列、在谁手里</text>
+  <text x="500" y="106" text-anchor="middle" font-size="9.5" fill="#1e40af">consumerProgress -g 组名 -s true → 表里多一列 Client IP</text>
+  <text x="500" y="126" text-anchor="middle" font-size="9.5" fill="#1e40af">实测 q2 那行给出 192.168.240.4；实例下线后该列变 N/A</text>
+  <text x="500" y="146" text-anchor="middle" font-size="9.5" fill="#b91c1c">从未订阅过的组：抛 CODE 17 无路由，不是一张空表</text>
+
+  <rect x="20" y="206" width="470" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="255" y="228" text-anchor="middle" font-size="11" font-weight="bold" fill="#78350f">分支一：Diff 均匀落在每个队列</text>
+  <text x="255" y="250" text-anchor="middle" font-size="9.5" fill="#92400e">切法：Inflight 与 Diff 是否相等且同步下降</text>
+  <text x="255" y="270" text-anchor="middle" font-size="9.5" fill="#92400e">实测一轮 150 / 150 / 150 / 149 全同步</text>
+
+  <rect x="510" y="206" width="470" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="745" y="228" text-anchor="middle" font-size="11" font-weight="bold" fill="#78350f">分支二：Diff 集中在个别队列</text>
+  <text x="745" y="250" text-anchor="middle" font-size="9.5" fill="#92400e">切法：卡住的是不是同一条业务 Key</text>
+  <text x="745" y="270" text-anchor="middle" font-size="9.5" fill="#92400e">扩消费者实例在这个分支里无用</text>
+
+  <rect x="20" y="320" width="228" height="122" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="134" y="342" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#14532d">能力不足，不是停滞</text>
+  <text x="134" y="364" text-anchor="middle" font-size="9.5" fill="#166534">实测 Diff 599</text>
+  <text x="134" y="384" text-anchor="middle" font-size="9.5" fill="#166534">Inflight 同为 599</text>
+  <text x="134" y="404" text-anchor="middle" font-size="9.5" fill="#166534">三轮 599→444→307</text>
+  <text x="134" y="424" text-anchor="middle" font-size="9.5" fill="#166534">回第一节第 3~4 步</text>
+
+  <rect x="262" y="320" width="228" height="122" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="376" y="342" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#7c2d12">② 拉取流控</text>
+  <text x="376" y="364" text-anchor="middle" font-size="9.5" fill="#9a3412">阈值调到 10 后</text>
+  <text x="376" y="384" text-anchor="middle" font-size="9.5" fill="#9a3412">Diff 514 / 365 / 282</text>
+  <text x="376" y="404" text-anchor="middle" font-size="9.5" fill="#9a3412">Inflight 钉在 138 / 117</text>
+  <text x="376" y="424" text-anchor="middle" font-size="9.5" fill="#9a3412">缓存条数 31~39 不再涨</text>
+
+  <rect x="510" y="320" width="228" height="122" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="624" y="342" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#991b1b">① 毒消息卡整队</text>
+  <text x="624" y="364" text-anchor="middle" font-size="9.5" fill="#b91c1c">实测 q2 恒 150</text>
+  <text x="624" y="384" text-anchor="middle" font-size="9.5" fill="#b91c1c">q0 q1 q3 均归零</text>
+  <text x="624" y="404" text-anchor="middle" font-size="9.5" fill="#b91c1c">同一条 B_3 重投</text>
+  <text x="624" y="424" text-anchor="middle" font-size="9.5" fill="#b91c1c">attempt 0→69 约 1000ms</text>
+
+  <rect x="752" y="320" width="228" height="122" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="866" y="342" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#0f172a">③ 队列锁滞留</text>
+  <text x="866" y="364" text-anchor="middle" font-size="9.5" fill="#475569">顺序消费实例宕机</text>
+  <text x="866" y="384" text-anchor="middle" font-size="9.5" fill="#475569">队列锁没释放</text>
+  <text x="866" y="404" text-anchor="middle" font-size="9.5" fill="#475569">停滞数分钟后突然追平</text>
+  <text x="866" y="424" text-anchor="middle" font-size="9.5" fill="#b45309">本轮未实测，按机制判</text>
+
+  <rect x="20" y="482" width="960" height="98" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="500" y="506" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f172a">处置梯度：按「能不能自愈」决定要不要人工介入</text>
+  <text x="500" y="530" text-anchor="middle" font-size="9.5" fill="#334155">能自动退避自愈的不干预 → 毒消息从重试队列摘除，转 DLQ 或补偿表人工处理</text>
+  <text x="500" y="550" text-anchor="middle" font-size="9.5" fill="#334155">顺序队列卡死超过阈值要告警介入（有限次后落库告警，见消息可靠性.md 第二节）</text>
+  <text x="500" y="570" text-anchor="middle" font-size="9.5" fill="#334155">分支一的实测对照说明：位点慢推不等于流控——真正的流控是缓存条数被钉死在阈值附近</text>
+
+  <line x1="500" y1="168" x2="270" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#w2r2gb)"/>
+  <text x="360" y="180" font-size="9.5" fill="#334155">Diff 均匀</text>
+  <line x1="500" y1="168" x2="730" y2="204" stroke="#334155" stroke-width="1.5" marker-end="url(#w2r2gb)"/>
+  <text x="612" y="180" font-size="9.5" fill="#334155">Diff 集中</text>
+  <line x1="130" y1="282" x2="134" y2="318" stroke="#334155" stroke-width="1.5" marker-end="url(#w2r2gb)"/>
+  <text x="104" y="306" font-size="9.5" fill="#16a34a">是，相等</text>
+  <line x1="380" y1="282" x2="376" y2="318" stroke="#334155" stroke-width="1.5" marker-end="url(#w2r2gb)"/>
+  <text x="350" y="306" font-size="9.5" fill="#ea580c">否，钉水位</text>
+  <line x1="620" y1="282" x2="624" y2="318" stroke="#334155" stroke-width="1.5" marker-end="url(#w2r2gb)"/>
+  <text x="594" y="306" font-size="9.5" fill="#dc2626">是同一条</text>
+  <line x1="870" y1="282" x2="866" y2="318" stroke="#334155" stroke-width="1.5" marker-end="url(#w2r2gb)"/>
+  <text x="842" y="306" font-size="9.5" fill="#64748b">刚有宕机</text>
+
+  <text x="20" y="612" font-size="10" fill="#b45309">注意：并发消费下「单条消息慢」不会形成单队列停滞——20 线程会把这条队列的延迟摊平；</text>
+  <text x="20" y="634" font-size="10" fill="#b45309">实测只对 q2 每条睡 200 ms 时，四队列在 5 秒内全部消费完（Diff Total 归 0）。</text>
+  <text x="20" y="656" font-size="10" fill="#64748b">真正的单队列停滞只有两类来源：位点被卡（毒消息 / 顺序挂起）与该队列根本没有被拉（流控、实例掉线）。</text>
+  <text x="20" y="698" font-size="10" fill="#64748b">对应正文：第一节第 2 步（分布判据）、第三节三步定位与 3.1 节实测读数</text>
+</svg>

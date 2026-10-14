@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="720" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">@LoadBalanced RestTemplate 的一次请求改写链</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">判据出自本篇第二节「@LoadBalanced 背后发生了什么」与第三节配置注释，右侧注明每步的取舍</text>
+
+  <!-- 左列：调用链 -->
+  <rect x="50" y="86" width="430" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="265" y="110" text-anchor="middle" font-size="13" fill="#1e40af">① 业务发起调用，URL 里写的是服务名</text>
+  <text x="265" y="132" text-anchor="middle" font-size="11" fill="#334155">http://order-service/api/order/{id}</text>
+
+  <line x1="265" y1="150" x2="265" y2="168" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="50" y="170" width="430" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="265" y="194" text-anchor="middle" font-size="13" fill="#1e40af">② LoadBalancerInterceptor 拦下请求</text>
+  <text x="265" y="216" text-anchor="middle" font-size="11" fill="#334155">发现 host = "order-service" 不是真实地址</text>
+
+  <line x1="265" y1="234" x2="265" y2="252" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="50" y="254" width="430" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="265" y="278" text-anchor="middle" font-size="13" fill="#1e40af">③ LoadBalancerClientFactory 取子容器</text>
+  <text x="265" y="300" text-anchor="middle" font-size="11" fill="#334155">一个服务名对应一个子容器</text>
+
+  <line x1="265" y1="318" x2="265" y2="336" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="50" y="338" width="430" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="265" y="362" text-anchor="middle" font-size="13" fill="#15803d">④ ServiceInstanceListSupplier.get()</text>
+  <text x="265" y="384" text-anchor="middle" font-size="11" fill="#334155">读的是本地缓存实例列表，不是现查注册中心</text>
+
+  <line x1="265" y1="402" x2="265" y2="420" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="50" y="422" width="430" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="265" y="446" text-anchor="middle" font-size="13" fill="#15803d">⑤ LoadBalancer 挑一个 ServiceInstance</text>
+  <text x="265" y="468" text-anchor="middle" font-size="11" fill="#334155">默认 RoundRobin，可换 ZonePreference / 加权</text>
+
+  <line x1="265" y1="486" x2="265" y2="504" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="50" y="506" width="430" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="265" y="530" text-anchor="middle" font-size="13" fill="#b45309">⑥ host 改写成真实 IP:端口后发出</text>
+  <text x="265" y="552" text-anchor="middle" font-size="11" fill="#334155">SimpleClientHttpRequestFactory：200ms / 2s</text>
+
+  <!-- 右列：每步的取舍 -->
+  <rect x="520" y="88" width="430" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="735" y="112" text-anchor="middle" font-size="12" fill="#334155">order-service 是 spring.application.name</text>
+  <text x="735" y="134" text-anchor="middle" font-size="11.5" fill="#64748b">这正是正文方案 B「地址完全不用考虑」的 Java 形态</text>
+
+  <rect x="520" y="172" width="430" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="735" y="196" text-anchor="middle" font-size="12" fill="#334155">@LoadBalanced 只负责装上这个拦截器</text>
+  <text x="735" y="218" text-anchor="middle" font-size="11.5" fill="#64748b">没有它，服务名会被当成主机名去做 DNS 解析</text>
+
+  <rect x="520" y="256" width="430" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="735" y="280" text-anchor="middle" font-size="12" fill="#334155">实例列表、缓存、轮询游标都在这个容器里</text>
+  <text x="735" y="302" text-anchor="middle" font-size="11.5" fill="#64748b">状态在对象里 → 所以模板必须是一个单例 Bean</text>
+
+  <rect x="520" y="340" width="430" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="735" y="364" text-anchor="middle" font-size="12" fill="#334155">withCaching()：拉取 + 缓存 + 变更同步</text>
+  <text x="735" y="386" text-anchor="middle" font-size="11.5" fill="#64748b">cache.ttl 默认 35 秒，对「秒级摘除」来说太慢</text>
+
+  <rect x="520" y="424" width="430" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="735" y="448" text-anchor="middle" font-size="12" fill="#334155">加权 / 最少连接 / 按 zone 优先都可替换</text>
+  <text x="735" y="470" text-anchor="middle" font-size="11.5" fill="#64748b">扩展点在供给器，不在挑选算法（见第三节）</text>
+
+  <rect x="520" y="508" width="430" height="60" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="735" y="532" text-anchor="middle" font-size="12" fill="#334155">建连超时 200ms、读超时 2s</text>
+  <text x="735" y="554" text-anchor="middle" font-size="11.5" fill="#64748b">超时最终要落到「每次挑中的实例」上，版本差异注意</text>
+
+  <line x1="480" y1="118" x2="520" y2="118" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="480" y1="202" x2="520" y2="202" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="480" y1="286" x2="520" y2="286" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="480" y1="370" x2="520" y2="370" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="480" y1="454" x2="520" y2="454" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="480" y1="538" x2="520" y2="538" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <!-- 底部结论 -->
+  <rect x="40" y="588" width="920" height="120" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="612" font-size="12.5" font-weight="bold" fill="#334155">这条链说明了三件事：</text>
+  <text x="60" y="634" font-size="12" fill="#475569">· Java 侧同样是「客户端负载均衡」：挑选动作发生在调用方进程内，@LoadBalanced 只是把那 200 行做成了框架能力。</text>
+  <text x="60" y="654" font-size="12" fill="#475569">· 注册中心不在每请求路径上：④ 读本地缓存，只有刷新/推送时才访问 Nacos，对应正文「不必每请求拉全量」。</text>
+  <text x="60" y="674" font-size="12" fill="#475569">· 反面写法（生产事故级）：在业务方法里 new RestTemplate() —— 每次都重建连接池与 TCP+TLS，高并发下 TIME_WAIT 打满。</text>
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

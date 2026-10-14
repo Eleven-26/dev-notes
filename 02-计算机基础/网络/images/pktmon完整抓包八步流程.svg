@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="fBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+  </defs>
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 pktmon 完整抓包与读取的八步流程（本机实测）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">过滤器 → 抓 → 停 → 转文本 → 探编码 → 去重；Windows 10 1809 起内置 pktmon，没有 tcpdump 也能真抓</text>
+
+  <rect x="40" y="90" width="212" height="112" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="146" y="114" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">① 清空过滤器</text>
+  <text x="146" y="138" text-anchor="middle" font-size="10.5" fill="#1e3a8a">pktmon filter remove</text>
+  <text x="146" y="158" text-anchor="middle" font-size="10.5" fill="#334155">先做，免得受</text>
+  <text x="146" y="176" text-anchor="middle" font-size="10.5" fill="#334155">上次残留影响</text>
+
+  <rect x="278" y="90" width="212" height="112" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="384" y="114" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">② 加过滤条件</text>
+  <text x="384" y="138" text-anchor="middle" font-size="10.5" fill="#1e3a8a">pktmon filter add -p 443</text>
+  <text x="384" y="158" text-anchor="middle" font-size="10.5" fill="#334155">只抓 443 端口</text>
+  <text x="384" y="176" text-anchor="middle" font-size="10.5" fill="#334155">filter list 确认</text>
+
+  <rect x="516" y="90" width="212" height="112" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="622" y="114" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">③ 开始抓包</text>
+  <text x="622" y="138" text-anchor="middle" font-size="10.5" fill="#1e3a8a">pktmon start --capture</text>
+  <text x="622" y="158" text-anchor="middle" font-size="10.5" fill="#334155">--pkt-size 0 = 整包</text>
+  <text x="622" y="176" text-anchor="middle" font-size="10.5" fill="#334155">--file-name cap.etl</text>
+
+  <rect x="754" y="90" width="212" height="112" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="860" y="114" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">④ 复现请求</text>
+  <text x="860" y="138" text-anchor="middle" font-size="10.5" fill="#14532d">curl --noproxy '*' -sS</text>
+  <text x="860" y="158" text-anchor="middle" font-size="10.5" fill="#14532d">https://example.com</text>
+  <text x="860" y="176" text-anchor="middle" font-size="10.5" fill="#14532d">实测 HTTP 200 · 握手 0.244s</text>
+
+  <rect x="754" y="250" width="212" height="112" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="860" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">⑤ 停止并看告警</text>
+  <text x="860" y="298" text-anchor="middle" font-size="10.5" fill="#14532d">pktmon stop</text>
+  <text x="860" y="318" text-anchor="middle" font-size="10.5" fill="#dc2626">须显示「无事件丢失」</text>
+  <text x="860" y="338" text-anchor="middle" font-size="10.5" fill="#14532d">丢事件=不能作为证据</text>
+
+  <rect x="516" y="250" width="212" height="112" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="622" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">⑥ 转文本</text>
+  <text x="622" y="298" text-anchor="middle" font-size="10" fill="#92400e">pktmon format cap.etl -o cap.txt</text>
+  <text x="622" y="318" text-anchor="middle" font-size="10.5" fill="#334155">已格式化事件数 1381</text>
+  <text x="622" y="338" text-anchor="middle" font-size="10.5" fill="#334155">.etl 不能直接进 Wireshark</text>
+
+  <rect x="278" y="250" width="212" height="112" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="384" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">⑦ 探测编码</text>
+  <text x="384" y="298" text-anchor="middle" font-size="10.5" fill="#9a3412">UTF-8 命中 0 行</text>
+  <text x="384" y="318" text-anchor="middle" font-size="10.5" fill="#9a3412">UTF-16LE 命中 591 行</text>
+  <text x="384" y="338" text-anchor="middle" font-size="10.5" fill="#334155">两种各试一次取命中多的</text>
+
+  <rect x="40" y="250" width="212" height="112" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="146" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">⑧ 整行去重</text>
+  <text x="146" y="298" text-anchor="middle" font-size="10.5" fill="#9a3412">同一包被多个组件</text>
+  <text x="146" y="318" text-anchor="middle" font-size="10.5" fill="#9a3412">（Ethernet / WiFi）各记一次</text>
+  <text x="146" y="338" text-anchor="middle" font-size="10.5" fill="#334155">得到 12 行连接骨架</text>
+
+  <line x1="252" y1="146" x2="272" y2="146" stroke="#2563eb" stroke-width="1.7" marker-end="url(#fBlue)"/>
+  <line x1="490" y1="146" x2="510" y2="146" stroke="#2563eb" stroke-width="1.7" marker-end="url(#fBlue)"/>
+  <line x1="728" y1="146" x2="748" y2="146" stroke="#2563eb" stroke-width="1.7" marker-end="url(#fBlue)"/>
+  <line x1="860" y1="202" x2="860" y2="244" stroke="#2563eb" stroke-width="1.7" marker-end="url(#fBlue)"/>
+  <line x1="754" y1="306" x2="734" y2="306" stroke="#2563eb" stroke-width="1.7" marker-end="url(#fBlue)"/>
+  <line x1="516" y1="306" x2="496" y2="306" stroke="#2563eb" stroke-width="1.7" marker-end="url(#fBlue)"/>
+  <line x1="278" y1="306" x2="258" y2="306" stroke="#2563eb" stroke-width="1.7" marker-end="url(#fBlue)"/>
+
+  <rect x="40" y="392" width="920" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="418" font-size="12.5" fill="#334155">实测结果：一条 IPv6 HTTPS 连接去重后 12 行骨架：SYN、SYN-ACK、ClientHello（len 292）、……、双方各一个 FIN 收尾。</text>
+  <text x="56" y="442" font-size="12.5" fill="#334155">其中服务端一段 len 3900，超过 MSS 1300——是 TSO 卸载而非网络异常（3.5 节假象①）。</text>
+  <text x="56" y="466" font-size="12.5" fill="#334155">步骤①-⑥是 2.3 节的 pktmon 命令，⑦⑧是 4.4 节的读取处理；第③步 --pkt-size 0 即"抓多大"旋钮之一。</text>
+  <text x="56" y="490" font-size="12.5" fill="#7f1d1d">注意：stop 报「有事件丢失」时，这份抓包不能用来证明"某个包没收到"，要加大缓冲区或收窄过滤条件重抓。</text>
+  <text x="56" y="514" font-size="12" fill="#64748b">流程与全部读数取自本篇 2.3、4.1、4.2、4.4 节；示例命令与逐条解读见第四节的原始报文表。</text>
+</svg>

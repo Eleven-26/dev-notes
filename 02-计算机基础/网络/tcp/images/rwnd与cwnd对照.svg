@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">rwnd 与 cwnd：两个窗口取小者决定吞吐上限</text>
+  <text x="500" y="55" text-anchor="middle" font-size="12.5" fill="#64748b">流量控制看接收方（rwnd），拥塞控制看中间链路（cwnd），二者独立，实际可发送 = min(rwnd, cwnd)</text>
+
+  <rect x="55" y="82" width="420" height="188" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="265" y="110" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e40af">rwnd（接收窗口）</text>
+  <text x="75" y="140" font-size="12.5" fill="#1e3a8a">谁维护：接收方，在 ACK 里通告</text>
+  <text x="75" y="168" font-size="12.5" fill="#1e3a8a">反映什么：接收缓冲区还能装多少</text>
+  <text x="75" y="196" font-size="12.5" fill="#1e3a8a">它变小意味着：对端处理慢，</text>
+  <text x="75" y="218" font-size="12.5" fill="#1e3a8a">或它的缓冲区小</text>
+  <text x="75" y="250" font-size="11.5" fill="#64748b">观测：ss -ti 的 rcv_space / rcv_ssthresh</text>
+
+  <rect x="525" y="82" width="420" height="188" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="735" y="110" text-anchor="middle" font-size="16" font-weight="bold" fill="#9a3412">cwnd（拥塞窗口）</text>
+  <text x="545" y="140" font-size="12.5" fill="#7c2d12">谁维护：发送方，自己按网络状况算</text>
+  <text x="545" y="168" font-size="12.5" fill="#7c2d12">反映什么：网络大概还能承受多少</text>
+  <text x="545" y="196" font-size="12.5" fill="#7c2d12">在途数据；丢包即被压缩</text>
+  <text x="545" y="224" font-size="12.5" fill="#7c2d12">它变小意味着：链路拥塞、或刚丢包</text>
+  <text x="545" y="250" font-size="11.5" fill="#64748b">观测：ss -ti 的 snd_cwnd</text>
+
+  <rect x="55" y="300" width="890" height="72" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="330" text-anchor="middle" font-size="15" font-weight="bold" fill="#14532d">实际可发送的未确认数据上限 = min(rwnd, cwnd)</text>
+  <text x="500" y="356" text-anchor="middle" font-size="12" fill="#14532d">判据：snd_cwnd 小、rcv_space 大 → 瓶颈在拥塞控制（网络侧）；反之查接收缓冲与对端处理速度</text>
+</svg>

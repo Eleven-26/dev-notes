@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="rGreen" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">重复 ACK 判丢包还是乱序：四步决策树</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判据要合起来看——先查对端窗口，再看同一 seq 是否重传、缺失序号的去向，最后看 RTO 计数</text>
+
+  <rect x="60" y="90" width="400" height="64" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="260" y="116" text-anchor="middle" font-size="13" fill="#92400e">① 对端窗口一直很小，或出现 win 0？</text>
+  <text x="260" y="138" text-anchor="middle" font-size="11" fill="#92400e">（抓包里对端 ACK 携带的窗口字段）</text>
+
+  <rect x="60" y="194" width="400" height="64" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="260" y="220" text-anchor="middle" font-size="13" fill="#92400e">② 重复 ACK 之后紧跟同一 seq 的重传？</text>
+  <text x="260" y="242" text-anchor="middle" font-size="11" fill="#92400e">（先看到 3 个重复 ACK，随后重传）</text>
+
+  <rect x="60" y="298" width="400" height="64" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="260" y="324" text-anchor="middle" font-size="13" fill="#92400e">③ 缺失的 seq 后来自己到达了？</text>
+  <text x="260" y="346" text-anchor="middle" font-size="11" fill="#92400e">（没有任何重传，报文自己补上了位）</text>
+
+  <rect x="60" y="402" width="400" height="64" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="260" y="428" text-anchor="middle" font-size="13" fill="#92400e">④ 大量同 seq 超时重传、间隔逐步拉长？</text>
+  <text x="260" y="450" text-anchor="middle" font-size="11" fill="#92400e">（RTO 退避；netstat -s 重传计数持续增长）</text>
+
+  <rect x="540" y="90" width="400" height="64" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="740" y="116" text-anchor="middle" font-size="13" fill="#9a3412">接收方缓冲区满了、处理不过来</text>
+  <text x="740" y="138" text-anchor="middle" font-size="11.5" fill="#9a3412">是它对端慢，不是网络慢；等窗口更新的 ACK</text>
+
+  <rect x="540" y="194" width="400" height="64" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="740" y="220" text-anchor="middle" font-size="13" fill="#7f1d1d">丢包：快速重传被触发</text>
+  <text x="740" y="242" text-anchor="middle" font-size="11.5" fill="#7f1d1d">丢的包被后续包"顶出来"了</text>
+
+  <rect x="540" y="298" width="400" height="64" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="740" y="324" text-anchor="middle" font-size="13" fill="#1e3a8a">乱序：网络重排，不是丢</text>
+  <text x="740" y="346" text-anchor="middle" font-size="11.5" fill="#1e3a8a">多路径 / 并行转发导致到达顺序变化</text>
+
+  <rect x="540" y="402" width="400" height="64" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="740" y="428" text-anchor="middle" font-size="13" fill="#7f1d1d">链路丢包（超时重传兜底）</text>
+  <text x="740" y="450" text-anchor="middle" font-size="11.5" fill="#7f1d1d">还要排除对端应用没读、本机网卡/驱动丢包</text>
+
+  <line x1="460" y1="122" x2="534" y2="122" stroke="#16a34a" stroke-width="1.7" marker-end="url(#rGreen)"/>
+  <text x="497" y="112" text-anchor="middle" font-size="11.5" fill="#14532d">是</text>
+  <line x1="460" y1="226" x2="534" y2="226" stroke="#16a34a" stroke-width="1.7" marker-end="url(#rGreen)"/>
+  <text x="497" y="216" text-anchor="middle" font-size="11.5" fill="#14532d">是</text>
+  <line x1="460" y1="330" x2="534" y2="330" stroke="#16a34a" stroke-width="1.7" marker-end="url(#rGreen)"/>
+  <text x="497" y="320" text-anchor="middle" font-size="11.5" fill="#14532d">是</text>
+  <line x1="460" y1="434" x2="534" y2="434" stroke="#16a34a" stroke-width="1.7" marker-end="url(#rGreen)"/>
+  <text x="497" y="424" text-anchor="middle" font-size="11.5" fill="#14532d">是</text>
+
+  <line x1="260" y1="154" x2="260" y2="188" stroke="#2563eb" stroke-width="1.7" marker-end="url(#rBlue)"/>
+  <text x="276" y="176" font-size="11.5" fill="#1e3a8a">否</text>
+  <line x1="260" y1="258" x2="260" y2="292" stroke="#2563eb" stroke-width="1.7" marker-end="url(#rBlue)"/>
+  <text x="276" y="280" font-size="11.5" fill="#1e3a8a">否</text>
+  <line x1="260" y1="362" x2="260" y2="396" stroke="#2563eb" stroke-width="1.7" marker-end="url(#rBlue)"/>
+  <text x="276" y="384" font-size="11.5" fill="#1e3a8a">否</text>
+
+  <rect x="40" y="492" width="920" height="88" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="518" font-size="12.5" fill="#7f1d1d">注意："重复 ACK 多 = 丢包"是过度简化——重复 ACK 只是"有问题"的信号，直接等同丢包会误判。</text>
+  <text x="56" y="542" font-size="12.5" fill="#334155">判据出处：本篇 3.2 节两张表（超时重传 / 快速重传 / 零窗口 / 窗口更新，以及丢包与乱序的合判表）。</text>
+  <text x="56" y="566" font-size="12.5" fill="#334155">窗口为 0 与重传计数的读法，另见 3.5 节假象③与延伸追问"看到大量重复 ACK，就一定是丢包吗？"。</text>
+</svg>

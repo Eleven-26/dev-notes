@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">重试风暴的层数放大与熔断短路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13.5" fill="#64748b">读数出自本篇 3.5 节容器实测（go1.26.8，httptest 真实链路，每层尝试 3 次，上游恒定 503）</text>
+
+  <!-- A 组：放大链 -->
+  <rect x="30" y="90" width="170" height="100" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="115" y="120" text-anchor="middle" font-size="15" font-weight="bold" fill="#1d4ed8">1 个业务请求</text>
+  <text x="115" y="146" text-anchor="middle" font-size="12" fill="#334155">客户端发起</text>
+  <text x="115" y="166" text-anchor="middle" font-size="12" fill="#334155">只等一次结果</text>
+
+  <rect x="225" y="90" width="170" height="100" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="310" y="120" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">客户端层</text>
+  <text x="310" y="146" text-anchor="middle" font-size="12" fill="#334155">尝试 3 次</text>
+  <text x="310" y="166" text-anchor="middle" font-size="12" fill="#334155">网关收到 3 次</text>
+
+  <rect x="420" y="90" width="170" height="100" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="505" y="120" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">网关层</text>
+  <text x="505" y="146" text-anchor="middle" font-size="12" fill="#334155">尝试 3 次</text>
+  <text x="505" y="166" text-anchor="middle" font-size="12" fill="#334155">SDK 收到 9 次</text>
+
+  <rect x="615" y="90" width="170" height="100" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="700" y="120" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">SDK 层</text>
+  <text x="700" y="146" text-anchor="middle" font-size="12" fill="#334155">尝试 3 次</text>
+  <text x="700" y="166" text-anchor="middle" font-size="12" fill="#334155">上游收到 27 次</text>
+
+  <rect x="810" y="90" width="170" height="100" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="895" y="120" text-anchor="middle" font-size="15" font-weight="bold" fill="#b91c1c">上游 503</text>
+  <text x="895" y="146" text-anchor="middle" font-size="12" fill="#334155">收到 27 次</text>
+  <text x="895" y="166" text-anchor="middle" font-size="12" fill="#334155">全部是注定失败的</text>
+
+  <line x1="200" y1="140" x2="221" y2="140" stroke="#b45309" stroke-width="2.5" marker-end="url(#arY)"/>
+  <line x1="395" y1="140" x2="416" y2="140" stroke="#b45309" stroke-width="2.5" marker-end="url(#arY)"/>
+  <line x1="590" y1="140" x2="611" y2="140" stroke="#b45309" stroke-width="2.5" marker-end="url(#arY)"/>
+  <line x1="785" y1="140" x2="806" y2="140" stroke="#dc2626" stroke-width="2.5" marker-end="url(#arR)"/>
+  <text x="210" y="80" text-anchor="middle" font-size="12" fill="#92400e">×3</text>
+  <text x="405" y="80" text-anchor="middle" font-size="12" fill="#92400e">×3</text>
+  <text x="600" y="80" text-anchor="middle" font-size="12" fill="#92400e">×3</text>
+  <text x="795" y="80" text-anchor="middle" font-size="12" fill="#b91c1c">= 27</text>
+
+  <text x="40" y="212" font-size="13" fill="#334155">A 组：一层重试 3 次、两层 9 次、三层 27 倍 —— 放大按层数取幂，不是相加</text>
+
+  <!-- 量级对照条 -->
+  <text x="40" y="252" font-size="13.5" font-weight="bold" fill="#0f172a">同一批 100 个业务请求，上游实际收到多少次调用（条宽按次数线性，满条 = 2700 次）</text>
+
+  <text x="40" y="282" font-size="12.5" fill="#334155">B 组 无熔断 · 三层重试</text>
+  <rect x="320" y="270" width="560" height="16" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="890" y="283" font-size="12.5" font-weight="bold" fill="#b91c1c">2700</text>
+
+  <text x="40" y="308" font-size="12.5" fill="#334155">C 组 熔断优先于重试 · 只报最终结果</text>
+  <rect x="320" y="296" width="17" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="890" y="309" font-size="12.5" font-weight="bold" fill="#15803d">81</text>
+
+  <text x="40" y="334" font-size="12.5" fill="#334155">E 组 重试预算 ≤10%</text>
+  <rect x="320" y="322" width="23" height="16" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="890" y="335" font-size="12.5" font-weight="bold" fill="#1d4ed8">110</text>
+
+  <text x="40" y="360" font-size="12.5" fill="#334155">D1 半开探测 · 客户端不查熔断</text>
+  <rect x="320" y="348" width="8" height="16" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="890" y="361" font-size="12.5" font-weight="bold" fill="#c2410c">27</text>
+
+  <text x="40" y="386" font-size="12.5" fill="#334155">D2 半开探测 · 重试先问熔断</text>
+  <rect x="320" y="374" width="8" height="16" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="890" y="387" font-size="12.5" font-weight="bold" fill="#c2410c">9</text>
+
+  <!-- F 组：上报粒度对照 -->
+  <rect x="40" y="410" width="440" height="80" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="260" y="436" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">口径一：一次业务只报最终结果</text>
+  <text x="260" y="458" text-anchor="middle" font-size="12" fill="#334155">上游 300 次 · 成功 100 · 拒绝 0 · 末态 CLOSED</text>
+  <text x="260" y="478" text-anchor="middle" font-size="12" fill="#334155">分母里只有业务请求，抖动型上游不会触发</text>
+
+  <rect x="520" y="410" width="440" height="80" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="740" y="436" text-anchor="middle" font-size="14" font-weight="bold" fill="#b91c1c">口径二：每次尝试都上报</text>
+  <text x="740" y="458" text-anchor="middle" font-size="12" fill="#334155">上游 12 次 · 成功 4 · 拒绝 96 · 末态 OPEN</text>
+  <text x="740" y="478" text-anchor="middle" font-size="12" fill="#334155">12 个样本里 8 个是中间失败，错误率 0.7</text>
+
+  <line x1="480" y1="450" x2="516" y2="450" stroke="#64748b" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arS)"/>
+
+  <!-- 底部结论 -->
+  <rect x="40" y="510" width="920" height="170" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="536" font-size="13" font-weight="bold" fill="#334155">四条结论（对应 3.4 表格里的四条措施）：</text>
+  <text x="60" y="560" font-size="12.5" fill="#475569">熔断的收益全部来自「请求不再进入重试链」：C 组 81 次等于 3 个学费请求各 27 次，短路掉其余 97 个请求的放大。</text>
+  <text x="60" y="582" font-size="12.5" fill="#475569">熔断要逐层生效：客户端不查熔断状态时，一次快速失败仍被重试填满（D1 的 27 次）；重试先问熔断只剩 9 次。</text>
+  <text x="60" y="604" font-size="12.5" fill="#475569">重试预算 ≤10% 把放大倍数压到 1.1 倍（110 次），代价是后 90 次重试不再发生；只对幂等接口重试。</text>
+  <text x="60" y="626" font-size="12.5" fill="#475569">同一个抖动型上游（前两次 503、第三次 200）：只报最终结果时熔断从不打开，每次尝试都报则 96 个本可成功的请求被误拒。</text>
+  <text x="60" y="650" font-size="12.5" fill="#64748b">注意：只有「次数」是实测读数；退避间隔与重试的时间分布需要把四层拆成跨容器部署，本篇标注为未实测。</text>
+  <text x="60" y="670" font-size="12.5" fill="#64748b">三态机的迁移与半开阈值不在本图：见同目录 熔断器.md 的状态机图；闸门与流水线的顺序见 负载保护.md。</text>
+
+  <defs>
+    <marker id="arY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b45309"/>
+    </marker>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

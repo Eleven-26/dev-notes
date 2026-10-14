@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">Nacos 心跳租约时间轴：15 秒到期窗口 = 3 × 5 秒心跳</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">数值全部取自本篇第一节配置注释（心跳 5s、到期 15s 均为默认值）</text>
+
+  <!-- 泳道一：正常续约 -->
+  <text x="60" y="96" font-size="13.5" font-weight="bold" fill="#334155">① 正常续约：每 5s 一次心跳，到期线跟着往后推</text>
+  <circle cx="100" cy="125" r="8" fill="#16a34a"/>
+  <circle cx="220" cy="125" r="8" fill="#16a34a"/>
+  <circle cx="340" cy="125" r="8" fill="#16a34a"/>
+  <circle cx="460" cy="125" r="8" fill="#16a34a"/>
+  <circle cx="580" cy="125" r="8" fill="#16a34a"/>
+  <circle cx="700" cy="125" r="8" fill="#16a34a"/>
+  <circle cx="820" cy="125" r="8" fill="#16a34a"/>
+  <rect x="100" y="143" width="840" height="10" fill="#dcfce7"/>
+  <text x="520" y="172" text-anchor="middle" font-size="12" fill="#15803d">实例始终在线：任意时刻距最后一次心跳都不超过 5s，离 15s 到期还差 2 个心跳周期</text>
+
+  <!-- 泳道二：连续丢三次 -->
+  <text x="60" y="204" font-size="13.5" font-weight="bold" fill="#334155">② 实例挂掉：最后一次心跳 10s，之后 15s / 20s / 25s 三次都没来</text>
+  <circle cx="100" cy="233" r="8" fill="#16a34a"/>
+  <circle cx="220" cy="233" r="8" fill="#16a34a"/>
+  <circle cx="340" cy="233" r="8" fill="#16a34a"/>
+  <circle cx="460" cy="233" r="8" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <circle cx="580" cy="233" r="8" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <circle cx="700" cy="233" r="8" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <text x="460" y="259" text-anchor="middle" font-size="11" fill="#b91c1c">丢第 1 次</text>
+  <text x="580" y="259" text-anchor="middle" font-size="11" fill="#b91c1c">丢第 2 次</text>
+  <text x="700" y="259" text-anchor="middle" font-size="11" fill="#b91c1c">丢第 3 次</text>
+  <rect x="340" y="272" width="360" height="10" fill="#ffedd5"/>
+  <text x="520" y="300" text-anchor="middle" font-size="12" fill="#b45309">到期窗口 = 最后一次心跳 10s 起算 + lease-expiration 15s</text>
+  <rect x="682" y="212" width="36" height="36" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="700" y="330" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">25s：判定到期，实例被摘掉</text>
+
+  <!-- 泳道三：只丢一次 -->
+  <text x="60" y="362" font-size="13.5" font-weight="bold" fill="#334155">③ 只丢一次（网络抖动）：10s 没来，15s 补上 → 到期线重新计时</text>
+  <circle cx="100" cy="391" r="8" fill="#16a34a"/>
+  <circle cx="220" cy="391" r="8" fill="#16a34a"/>
+  <circle cx="340" cy="391" r="8" fill="none" stroke="#dc2626" stroke-width="2"/>
+  <circle cx="460" cy="391" r="8" fill="#16a34a"/>
+  <circle cx="580" cy="391" r="8" fill="#16a34a"/>
+  <rect x="340" y="404" width="600" height="10" fill="#fef3c7"/>
+  <text x="640" y="432" text-anchor="middle" font-size="12" fill="#b45309">最后一次成功心跳 20s + 15s = 35s 才可能到期：一次抖动吃掉 10s 余量仍然安全</text>
+
+  <!-- 时间轴 -->
+  <line x1="100" y1="452" x2="940" y2="452" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="100" y1="447" x2="100" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="220" y1="447" x2="220" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="340" y1="447" x2="340" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="460" y1="447" x2="460" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="580" y1="447" x2="580" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="700" y1="447" x2="700" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="820" y1="447" x2="820" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="940" y1="447" x2="940" y2="457" stroke="#94a3b8" stroke-width="2"/>
+  <text x="100" y="474" text-anchor="middle" font-size="11" fill="#64748b">0s</text>
+  <text x="220" y="474" text-anchor="middle" font-size="11" fill="#64748b">5s</text>
+  <text x="340" y="474" text-anchor="middle" font-size="11" fill="#64748b">10s</text>
+  <text x="460" y="474" text-anchor="middle" font-size="11" fill="#64748b">15s</text>
+  <text x="580" y="474" text-anchor="middle" font-size="11" fill="#64748b">20s</text>
+  <text x="700" y="474" text-anchor="middle" font-size="11" fill="#64748b">25s</text>
+  <text x="820" y="474" text-anchor="middle" font-size="11" fill="#64748b">30s</text>
+  <text x="940" y="474" text-anchor="middle" font-size="11" fill="#64748b">35s</text>
+  <text x="520" y="494" text-anchor="middle" font-size="11.5" fill="#64748b">实心圆 = 心跳送达；空心红圆 = 未送达；横条 = 该刻起算的到期窗口</text>
+
+  <!-- 结论面板 -->
+  <rect x="40" y="506" width="920" height="138" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="528" font-size="12.5" font-weight="bold" fill="#334155">为什么 15 = 3 × 5 不是巧合（正文第一节）：</text>
+  <text x="60" y="550" font-size="12" fill="#475569">· 心跳：lease-renewal-interval-in-seconds: 5（默认值），每 5s 发一次；</text>
+  <text x="60" y="570" font-size="12" fill="#475569">· 到期：lease-expiration-duration-in-seconds: 15（默认值），15s 没收到就摘；两者比值给出 2 个心跳周期的余量。</text>
+  <text x="60" y="590" font-size="12" fill="#475569">· 反面：把到期调成 5s（等于心跳周期），一次网络抖动就误摘实例；调大则故障发现变慢——TTL 是发现延迟与续约开销的折中。</text>
+  <text x="60" y="612" font-size="12" fill="#64748b">口径说明：本节数值是官方默认配置值的语义推演，未连真实 Nacos 服务端跑；注册与摘除的机制差异见本篇第六节对照表。</text>
+</svg>

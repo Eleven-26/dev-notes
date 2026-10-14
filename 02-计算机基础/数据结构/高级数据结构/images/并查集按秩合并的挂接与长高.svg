@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 730" width="1000" height="730" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="730" fill="#ffffff"/>
+  <defs>
+    <marker id="ufGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="ufRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="ufBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">并查集按秩合并的两条分支：秩不等只挂树，秩相等才长高</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">实测 8 个元素 · useRank 开、usePC 全程关闭 · Go 1.26.8（golang:1.26-alpine）· 连跑两遍输出逐行相同</text>
+
+  <rect x="30" y="72" width="940" height="262" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="96" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">分支一：递增 union(i, i+1) —— 七次合并里只有第一次秩相等</text>
+
+  <rect x="48" y="110" width="430" height="208" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="263" y="132" text-anchor="middle" font-size="13" font-weight="700" fill="#16a34a">按秩合并：一根七叶的星</text>
+  <g stroke="#16a34a" stroke-width="1.5" marker-end="url(#ufGreen)">
+    <line x1="252" y1="178" x2="95" y2="248"/>
+    <line x1="256" y1="178" x2="151" y2="248"/>
+    <line x1="260" y1="178" x2="207" y2="248"/>
+    <line x1="263" y1="178" x2="263" y2="248"/>
+    <line x1="267" y1="178" x2="319" y2="248"/>
+    <line x1="271" y1="178" x2="375" y2="248"/>
+    <line x1="275" y1="178" x2="431" y2="248"/>
+  </g>
+  <g font-size="12">
+    <rect x="236" y="150" width="54" height="28" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="263" y="169" text-anchor="middle" fill="#14532d">0 根</text>
+    <rect x="75" y="248" width="40" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="95" y="267" text-anchor="middle" fill="#1e3a8a">1</text>
+    <rect x="131" y="248" width="40" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="151" y="267" text-anchor="middle" fill="#1e3a8a">2</text>
+    <rect x="187" y="248" width="40" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="207" y="267" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="243" y="248" width="40" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="263" y="267" text-anchor="middle" fill="#1e3a8a">4</text>
+    <rect x="299" y="248" width="40" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="319" y="267" text-anchor="middle" fill="#1e3a8a">5</text>
+    <rect x="355" y="248" width="40" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="375" y="267" text-anchor="middle" fill="#1e3a8a">6</text>
+    <rect x="411" y="248" width="40" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="431" y="267" text-anchor="middle" fill="#1e3a8a">7</text>
+  </g>
+  <text x="263" y="302" text-anchor="middle" font-size="12" fill="#64748b">parent=[0 0 0 0 0 0 0 0]　秩[0]=1、其余全 0</text>
+  <text x="263" y="322" text-anchor="middle" font-size="12" font-weight="700" fill="#16a34a">树高 1　放大到 n=20000 仍是 1</text>
+
+  <rect x="502" y="110" width="418" height="208" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="711" y="132" text-anchor="middle" font-size="13" font-weight="700" fill="#dc2626">朴素写法：一条链（不看秩）</text>
+  <g stroke="#dc2626" stroke-width="1.5" marker-end="url(#ufRed)">
+    <line x1="554" y1="190" x2="568" y2="190"/>
+    <line x1="604" y1="190" x2="618" y2="190"/>
+    <line x1="654" y1="190" x2="668" y2="190"/>
+    <line x1="704" y1="190" x2="718" y2="190"/>
+    <line x1="754" y1="190" x2="768" y2="190"/>
+    <line x1="804" y1="190" x2="818" y2="190"/>
+    <line x1="854" y1="190" x2="868" y2="190"/>
+  </g>
+  <g font-size="12">
+    <rect x="518" y="176" width="36" height="28" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="536" y="195" text-anchor="middle" fill="#991b1b">0</text>
+    <rect x="568" y="176" width="36" height="28" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="586" y="195" text-anchor="middle" fill="#991b1b">1</text>
+    <rect x="618" y="176" width="36" height="28" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="636" y="195" text-anchor="middle" fill="#991b1b">2</text>
+    <rect x="668" y="176" width="36" height="28" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="686" y="195" text-anchor="middle" fill="#991b1b">3</text>
+    <rect x="718" y="176" width="36" height="28" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="736" y="195" text-anchor="middle" fill="#991b1b">4</text>
+    <rect x="768" y="176" width="36" height="28" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="786" y="195" text-anchor="middle" fill="#991b1b">5</text>
+    <rect x="818" y="176" width="36" height="28" rx="5" fill="#fee2e2" stroke="#dc2626"/><text x="836" y="195" text-anchor="middle" fill="#991b1b">6</text>
+    <rect x="868" y="176" width="36" height="28" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="886" y="195" text-anchor="middle" fill="#92400e">7</text>
+  </g>
+  <text x="886" y="171" text-anchor="middle" font-size="10" fill="#92400e">根</text>
+  <text x="711" y="230" text-anchor="middle" font-size="12" fill="#64748b">parent=[1 2 3 4 5 6 7 7]　到根距离 0:7 1:6 … 6:1 7:0</text>
+  <text x="711" y="250" text-anchor="middle" font-size="12" font-weight="700" fill="#dc2626">树高 7　放大到 n=20000 就是 2.1 的 19999</text>
+  <text x="711" y="274" text-anchor="middle" font-size="12" fill="#64748b">注意：链和星都是合并时决定的，</text>
+  <text x="711" y="294" text-anchor="middle" font-size="12" fill="#64748b">这一段一次 find 也没压缩过</text>
+
+  <rect x="30" y="350" width="940" height="288" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="374" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">分支二：配对序列 {0,1} {2,3} {0,3} {4,5} {6,7} {4,7} {0,4} —— 七次全都秩相等</text>
+  <text x="500" y="394" text-anchor="middle" font-size="12" fill="#9a3412">最后一次 union(0,4)：两根秩都 = 2 → 4 挂到 0 下，秩[0] 由 2 变 3（树高就此到 3）</text>
+
+  <g stroke="#2563eb" stroke-width="1.5" marker-end="url(#ufBlue)">
+    <line x1="230" y1="470" x2="486" y2="428"/>
+    <line x1="420" y1="470" x2="500" y2="428"/>
+    <line x1="690" y1="470" x2="514" y2="428"/>
+    <line x1="380" y1="530" x2="412" y2="498"/>
+    <line x1="640" y1="530" x2="682" y2="498"/>
+    <line x1="740" y1="530" x2="698" y2="498"/>
+    <line x1="740" y1="590" x2="740" y2="558"/>
+  </g>
+  <g font-size="12">
+    <rect x="478" y="400" width="44" height="28" rx="5" fill="#dcfce7" stroke="#16a34a"/><text x="500" y="419" text-anchor="middle" fill="#14532d">0</text>
+    <rect x="208" y="470" width="44" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="230" y="489" text-anchor="middle" fill="#1e3a8a">1</text>
+    <rect x="398" y="470" width="44" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="420" y="489" text-anchor="middle" fill="#1e3a8a">2</text>
+    <rect x="668" y="470" width="44" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="690" y="489" text-anchor="middle" fill="#1e3a8a">4</text>
+    <rect x="358" y="530" width="44" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="380" y="549" text-anchor="middle" fill="#1e3a8a">3</text>
+    <rect x="618" y="530" width="44" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="640" y="549" text-anchor="middle" fill="#1e3a8a">5</text>
+    <rect x="718" y="530" width="44" height="28" rx="5" fill="#dbeafe" stroke="#2563eb"/><text x="740" y="549" text-anchor="middle" fill="#1e3a8a">6</text>
+    <rect x="718" y="590" width="44" height="28" rx="5" fill="#fef3c7" stroke="#b45309"/><text x="740" y="609" text-anchor="middle" fill="#92400e">7</text>
+  </g>
+  <g font-size="11" fill="#64748b">
+    <text x="530" y="419">秩 3 · 到根 0</text>
+    <text x="258" y="489">到根 1</text>
+    <text x="470" y="489">秩 1 · 到根 1</text>
+    <text x="718" y="489">秩 2 · 到根 1</text>
+    <text x="408" y="549">到根 2</text>
+    <text x="668" y="549">到根 2</text>
+    <text x="770" y="546">秩 1 · 到根 2</text>
+    <text x="770" y="609">到根 3</text>
+  </g>
+  <text x="140" y="530" text-anchor="middle" font-size="12" fill="#64748b">箭头方向 = parent 指针</text>
+  <text x="140" y="550" text-anchor="middle" font-size="12" fill="#64748b">秩相等才让树长高</text>
+  <text x="500" y="630" text-anchor="middle" font-size="12" fill="#334155">最终 parent=[0 0 0 2 0 4 4 6]　rank=[3 0 1 0 2 0 1 0]　树高 3 = log2 8</text>
+
+  <rect x="30" y="654" width="940" height="56" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="500" y="674" text-anchor="middle" font-size="13" fill="#334155">把分支二这套构造逐级放大：n = 8 / 16 / 64 / 256 / 16384 → 树高 3 / 4 / 6 / 8 / 14</text>
+  <text x="500" y="694" text-anchor="middle" font-size="13" fill="#64748b">全量 find 总跳数 12 / 32 / 192 / 1024 / 114688 —— 树高跟着 log2 n 走，与 n 本身无关</text>
+</svg>

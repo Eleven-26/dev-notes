@@ -34,6 +34,8 @@
 | 信号驱动 I/O | 就绪时收到 `SIGIO` | 收信号后调用 `read` 同步拷贝 | 等待被通知，拷贝仍同步 |
 | 异步 I/O（AIO） | 提交后立即返回 | 内核完成拷贝后通知 | 通知到达时数据已在用户缓冲区 |
 
+![五种 I/O 模型的两阶段对照：等待数据与拷贝数据分别由谁推进，只有异步 I/O 的两阶段都由内核完成](images/五种IO模型的等待与拷贝两阶段对比.svg)
+
 ### 2.1 各模型一句话展开
 
 - **阻塞 I/O**：最简单，但一个线程同一时刻只能等待一个操作。
@@ -82,11 +84,15 @@ if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 | 触发方式 | LT | LT | LT（默认）/ ET |
 | 修改关注集合 | 重建/修改位图 | 修改数组 | `epoll_ctl` 增删改 |
 
+![select → poll → epoll 三代接口逐项对照：数据结构、数量上限、每轮是否复制全量、返回后扫描范围、复杂度、触发方式与改关注集合的代价](images/select与poll与epoll三代演进.svg)
+
 ### 3.1 select 的三个缺点
 
 1. **数量限制**：`fd_set` 是固定位图，常见 `FD_SETSIZE` 为 1024。
 2. **重复拷贝**：每次调用都要在用户态与内核态之间传递 fd 集合。
 3. **全量遍历**：返回后仍需 `O(n)` 检查哪个 fd 就绪；集合还会被改写，下轮要重建。
+
+📌 本机容器实测：`golang:1.26-alpine`（`go1.26.8 linux/amd64`）里读 Go `syscall` 包常量 `syscall.FD_SETSIZE` 得 **1024**，连跑 4 次读数一致 —— 与上面第 1 条的上限口径对得上。
 
 ### 3.2 poll 改进了什么、还剩什么
 
@@ -115,6 +121,8 @@ int n = epoll_wait(epfd, events, maxevents, -1);  // 返回就绪事件
 资料常把第 4 点简称为“通过 mmap 减少拷贝”。严格说，核心是**避免每轮复制全量兴趣集合**；
 `epoll_wait` 仍要把就绪事件复制到用户数组，不能理解成完全零拷贝。
 ⚠️ “epoll 是 `O(1)`”也不严谨：`epoll_ctl` 有树操作，事件交付至少为 `O(k)`。
+
+![epoll 实例的两块结构：兴趣列表红黑树与就绪链表，以及驱动回调、epoll_ctl 与 epoll_wait 各自接触哪一块](images/epoll红黑树与就绪链表.svg)
 
 ---
 
@@ -181,6 +189,8 @@ Reactor 把流程拆成“等待事件 → 分发给 Handler → 执行业务 �
 
 Nginx 更准确地说是“多个 worker 进程各自运行单线程 Reactor”；master 管生命周期而不负责 accept，
 阻塞文件任务可交给线程池，因此它不应被机械等同为教科书式主从 Reactor。
+
+![主从 Reactor 线程模型：主 Reactor（bossGroup）只 accept，新连接注册给从 Reactor（EventLoop），阻塞业务再移出到业务线程池](images/主从Reactor与Netty线程模型.svg)
 
 ---
 
@@ -480,6 +490,8 @@ lsof -p "$PID" -a -iTCP
 | **CQ**（Completion Queue） | **内核写**，应用读 | 完成项 **CQE**：做完了、结果码与字节数是多少 |
 
 ⭐ **批量是它省系统调用的关键**：一次 `io_uring_enter` 可以**同时提交 N 个请求并收割 M 个完成**；更进一步还有 **SQPOLL** 模式——由内核线程轮询 SQ，应用**提交时一次系统调用都不用做**（代价是一个常驻内核线程）。
+
+![io_uring 的 SQ 与 CQ 双环：应用写 SQE、内核读并执行、内核写 CQE、应用收割，两环都是内核与用户态共享内存](images/io_uring的SQ与CQ双环.svg)
 
 ### 10.2 与 epoll 的本质差异
 

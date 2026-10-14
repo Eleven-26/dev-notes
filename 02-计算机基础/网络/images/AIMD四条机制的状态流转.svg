@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600">
+  <rect width="1000" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="40" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="24" fill="#0f172a" text-anchor="middle">AIMD 四条机制的状态流转：什么时候翻倍，什么时候砍半</text>
+  <text x="500" y="68" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569" text-anchor="middle">没出问题时加性增（线性试探上限），出问题后乘法减（把窗口砍半）——四条机制拼起来才是完整骨架</text>
+
+  <rect x="70" y="150" width="190" height="95" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="165" y="182" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" fill="#1e3a8a" text-anchor="middle">慢启动</text>
+  <text x="165" y="207" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle">起点 cwnd = 1 MSS</text>
+  <text x="165" y="228" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#1e3a8a" text-anchor="middle">每 RTT 翻倍</text>
+
+  <rect x="405" y="150" width="190" height="95" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="182" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" fill="#14532d" text-anchor="middle">拥塞避免</text>
+  <text x="500" y="207" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#14532d" text-anchor="middle">cwnd 不小于 ssthresh</text>
+  <text x="500" y="228" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#14532d" text-anchor="middle">每 RTT 只加 1 MSS</text>
+
+  <rect x="740" y="150" width="190" height="95" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="835" y="182" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" fill="#7c2d12" text-anchor="middle">快恢复</text>
+  <text x="835" y="207" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle">ssthresh = cwnd / 2</text>
+  <text x="835" y="228" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7c2d12" text-anchor="middle">cwnd = ssthresh + 3</text>
+
+  <rect x="405" y="380" width="190" height="95" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="500" y="412" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" fill="#7f1d1d" text-anchor="middle">超时回到起点</text>
+  <text x="500" y="437" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7f1d1d" text-anchor="middle">ssthresh = cwnd / 2</text>
+  <text x="500" y="458" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7f1d1d" text-anchor="middle">cwnd = 1，重走慢启动</text>
+
+  <line x1="260" y1="197" x2="405" y2="197" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="332" y="188" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#334155" text-anchor="middle">cwnd 达到 ssthresh</text>
+
+  <line x1="595" y1="197" x2="740" y2="197" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="667" y="188" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#334155" text-anchor="middle">三个重复 ACK</text>
+
+  <path d="M 835 245 L 835 320 L 545 320 L 545 245" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="690" y="312" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#9a3412" text-anchor="middle">之后进入拥塞避免</text>
+
+  <line x1="455" y1="245" x2="455" y2="380" stroke="#64748b" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="404" y="315" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#334155" text-anchor="middle">RTO 超时</text>
+
+  <path d="M 405 427 L 165 427 L 165 245" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="285" y="419" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#7f1d1d" text-anchor="middle">回到 1 之后重新翻倍</text>
+
+  <text x="70" y="525" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：快恢复只属于 Reno——三个重复 ACK 说明后续包还在到达，网络里已少占三段数据，所以窗口从 ssthresh + 3 起步。</text>
+  <text x="70" y="550" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#0f172a">要点：Tahoe 不分丢包类型，三个重复 ACK 和超时一律把 cwnd 打回 1；超时这条路径连 Reno 也必须回到 1。</text>
+  <text x="70" y="575" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#475569">注意：慢启动阶段同样可能丢包，处理方式与上图两条出边一致；本图的 ssthresh、cwnd 取值口径见正文第二节。</text>
+</svg>

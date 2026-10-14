@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rq2a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="rq2b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">RocketMQ 端到端「不丢」三段责任：每段只管段内失败</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">跨段的窟窿由下一段的对策兜住；投递语义是 at-least-once，「不重」只有消费端幂等一道闸</text>
+
+  <text x="255" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">典型失败点</text>
+  <text x="540" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">段内对策</text>
+  <text x="840" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">跨段残留风险</text>
+
+  <rect x="20" y="110" width="110" height="92" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="75" y="148" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">第一段</text>
+  <text x="75" y="170" text-anchor="middle" font-size="10.5" fill="#475569">生产端→Broker</text>
+  <rect x="140" y="110" width="230" height="92" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="255" y="136" text-anchor="middle" font-size="10.5" fill="#991b1b">网络超时 / Broker 拒写</text>
+  <text x="255" y="158" text-anchor="middle" font-size="10.5" fill="#991b1b">磁盘满、禁写</text>
+  <text x="255" y="180" text-anchor="middle" font-size="10.5" fill="#991b1b">客户端误以为已发</text>
+  <rect x="400" y="110" width="280" height="92" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="540" y="136" text-anchor="middle" font-size="10.5" fill="#14532d">同步发送 + 校验 SEND_OK</text>
+  <text x="540" y="158" text-anchor="middle" font-size="10.5" fill="#166534">换 Broker 重试：默认 2 次（共 3 次）</text>
+  <text x="540" y="180" text-anchor="middle" font-size="10.5" fill="#166534">关键消息用事务消息；杜绝 oneway</text>
+  <rect x="710" y="110" width="260" height="92" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="840" y="136" text-anchor="middle" font-size="10.5" fill="#713f12">超时重发 → 造成重复</text>
+  <text x="840" y="158" text-anchor="middle" font-size="10.5" fill="#713f12">Broker 成功但客户端超时</text>
+  <text x="840" y="180" text-anchor="middle" font-size="10.5" fill="#713f12">状态未知，靠事务 / 对账收敛</text>
+  <line x1="372" y1="156" x2="398" y2="156" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2a)"/>
+  <line x1="682" y1="156" x2="708" y2="156" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2a)"/>
+
+  <rect x="20" y="270" width="110" height="92" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="75" y="308" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">第二段</text>
+  <text x="75" y="330" text-anchor="middle" font-size="10.5" fill="#475569">Broker 存储</text>
+  <rect x="140" y="270" width="230" height="92" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="255" y="296" text-anchor="middle" font-size="10.5" fill="#991b1b">OS 宕机丢 PageCache</text>
+  <text x="255" y="318" text-anchor="middle" font-size="10.5" fill="#991b1b">Master 挂丢未复制尾部</text>
+  <text x="255" y="340" text-anchor="middle" font-size="10.5" fill="#991b1b">过期删除 / 磁盘强删</text>
+  <rect x="400" y="270" width="280" height="92" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="540" y="296" text-anchor="middle" font-size="10.5" fill="#14532d">SYNC_FLUSH 同步刷盘</text>
+  <text x="540" y="318" text-anchor="middle" font-size="10.5" fill="#166534">SYNC_MASTER 复制或 DLedger（≥3 节点）</text>
+  <text x="540" y="340" text-anchor="middle" font-size="10.5" fill="#166534">保留期覆盖最慢消费者</text>
+  <rect x="710" y="270" width="260" height="92" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="840" y="296" text-anchor="middle" font-size="10.5" fill="#713f12">ACK 后、消费前被过期删除</text>
+  <text x="840" y="318" text-anchor="middle" font-size="10.5" fill="#713f12">没有「未消费不删」承诺</text>
+  <text x="840" y="340" text-anchor="middle" font-size="10.5" fill="#713f12">只能靠容量与告警防住</text>
+  <line x1="372" y1="316" x2="398" y2="316" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2a)"/>
+  <line x1="682" y1="316" x2="708" y2="316" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2a)"/>
+
+  <rect x="20" y="430" width="110" height="92" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="75" y="468" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">第三段</text>
+  <text x="75" y="490" text-anchor="middle" font-size="10.5" fill="#475569">Broker→消费端</text>
+  <rect x="140" y="430" width="230" height="92" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="255" y="456" text-anchor="middle" font-size="10.5" fill="#991b1b">拉到没处理完进程就挂</text>
+  <text x="255" y="478" text-anchor="middle" font-size="10.5" fill="#991b1b">处理失败、rebalance 交接</text>
+  <text x="255" y="500" text-anchor="middle" font-size="10.5" fill="#991b1b">位点提交丢失</text>
+  <rect x="400" y="430" width="280" height="92" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="540" y="456" text-anchor="middle" font-size="10.5" fill="#14532d">先处理后提交（框架默认）</text>
+  <text x="540" y="478" text-anchor="middle" font-size="10.5" fill="#166534">失败进 %RETRY% 退避：10 s → 30 s</text>
+  <text x="540" y="500" text-anchor="middle" font-size="10.5" fill="#166534">超限（默认 16 次）进 %DLQ%</text>
+  <rect x="710" y="430" width="260" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="840" y="456" text-anchor="middle" font-size="10.5" fill="#1e3a8a">重试 / 再平衡必带重复</text>
+  <text x="840" y="478" text-anchor="middle" font-size="10.5" fill="#1e3a8a">消费端幂等是最后一道闸</text>
+  <text x="840" y="500" text-anchor="middle" font-size="10.5" fill="#1e3a8a">去重表 / SETNX / 业务状态机</text>
+  <line x1="372" y1="476" x2="398" y2="476" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2a)"/>
+  <line x1="682" y1="476" x2="708" y2="476" stroke="#334155" stroke-width="1.5" marker-end="url(#rq2a)"/>
+
+  <path d="M840,204 L840,236 L540,236 L540,266" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#rq2b)"/>
+  <text x="690" y="228" text-anchor="middle" font-size="10.5" fill="#b45309">残留风险 → 归下一段兜</text>
+  <path d="M840,364 L840,396 L540,396 L540,426" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#rq2b)"/>
+  <text x="690" y="388" text-anchor="middle" font-size="10.5" fill="#b45309">残留风险 → 归下一段兜</text>
+
+  <line x1="20" y1="540" x2="980" y2="540" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="20" y="564" font-size="12" fill="#0f172a">⭐ 不丢 = 三段对策连乘，任何一段失守即全链失守；不重 = Broker 不管，只有消费端幂等。</text>
+  <text x="20" y="586" font-size="12" fill="#64748b">实测：sync 单条 2.7~7.1 ms 能校验 SEND_OK；oneway 0.15~0.57 ms，无回执也不重试（4.1 节）。</text>
+</svg>

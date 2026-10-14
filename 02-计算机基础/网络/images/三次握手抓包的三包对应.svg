@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="pBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="pAmber" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三次握手在抓包里的三个包（标志位与 seq/ack 对应）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">看标志位 [S]/[S.]/[.]、seq 与 ack 的递增关系，就能判断连接卡在哪一步</text>
+
+  <rect x="150" y="86" width="200" height="44" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="250" y="114" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">客户端</text>
+  <rect x="650" y="86" width="200" height="44" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="750" y="114" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">服务端</text>
+
+  <line x1="250" y1="130" x2="250" y2="400" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+  <line x1="750" y1="130" x2="750" y2="400" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 5"/>
+
+  <line x1="250" y1="180" x2="744" y2="180" stroke="#2563eb" stroke-width="1.7" marker-end="url(#pBlue)"/>
+  <text x="497" y="167" text-anchor="middle" font-size="12.5" fill="#1e3a8a">① Flags [S]　seq=x　（win=64800, mss 1440）</text>
+
+  <line x1="750" y1="250" x2="256" y2="250" stroke="#b45309" stroke-width="1.7" marker-end="url(#pAmber)"/>
+  <text x="497" y="237" text-anchor="middle" font-size="12.5" fill="#92400e">② Flags [S.]　seq=y, ack=x+1　（[S.]=SYN+ACK）</text>
+
+  <line x1="250" y1="320" x2="744" y2="320" stroke="#2563eb" stroke-width="1.7" marker-end="url(#pBlue)"/>
+  <text x="497" y="307" text-anchor="middle" font-size="12.5" fill="#1e3a8a">③ Flags [.]　ack=y+1　（纯 ACK，len 0）</text>
+
+  <text x="497" y="388" text-anchor="middle" font-size="12.5" fill="#334155">之后第一个带载荷的包（len 292）= TLS ClientHello（含 SNI / ALPN / key_share）</text>
+
+  <rect x="20" y="410" width="960" height="132" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="36" y="436" font-size="13" font-weight="bold" fill="#0f172a">一眼判据（缺哪个包 → 断在哪一步）：</text>
+  <text x="36" y="462" font-size="12.5" fill="#dc2626">有 [S] 无 [S.] → 服务端没回（被防火墙丢 / 端口没监听 / SYN 到不了）</text>
+  <text x="36" y="486" font-size="12.5" fill="#dc2626">有 [S.] 无第三个 [.] → 回程被丢或客户端没收到，服务端半连接队列堆积</text>
+  <text x="36" y="510" font-size="12.5" fill="#dc2626">反复出现同 seq 的 [S] → 客户端在重传 SYN（对端不回）</text>
+  <text x="36" y="532" font-size="12.5" fill="#334155">数据来自本机 pktmon 真抓一条 HTTPS 连接：客户端 mss 1440（IPv6）、win=64800；服务端 mss 1300、wscale 13。</text>
+</svg>

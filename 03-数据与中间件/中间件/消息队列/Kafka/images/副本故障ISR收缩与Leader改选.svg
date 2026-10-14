@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">副本故障观察：ISR 收缩与 Leader 改选（order-events 3 分区 3 副本）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">apache/kafka:3.9.0 三节点实测；停掉 Broker 3 并等 replica.lag.time.max.ms=30000 ms 后的 describe 读数</text>
+
+  <rect x="24" y="80" width="452" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="250" y="106" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">停机前（三副本全部在 ISR）</text>
+
+  <rect x="44" y="120" width="412" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="60" y="142" font-size="13" font-weight="bold" fill="#14532d">分区 0　Leader 1</text>
+  <text x="60" y="162" font-size="12.5" fill="#166534">Replicas 1,2,3　Isr 1,2,3</text>
+  <rect x="44" y="178" width="412" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="60" y="200" font-size="13" font-weight="bold" fill="#14532d">分区 1　Leader 2</text>
+  <text x="60" y="220" font-size="12.5" fill="#166534">Replicas 2,3,1　Isr 2,3,1</text>
+  <rect x="44" y="236" width="412" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="60" y="258" font-size="13" font-weight="bold" fill="#14532d">分区 2　Leader 3</text>
+  <text x="60" y="278" font-size="12.5" fill="#166534">Replicas 3,1,2　Isr 3,1,2</text>
+
+  <line x1="476" y1="206" x2="524" y2="206" stroke="#334155" stroke-width="2" marker-end="url(#a1)"/>
+
+  <rect x="524" y="80" width="452" height="252" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="750" y="106" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">停掉 Broker 3 后（ISR 收缩为 2）</text>
+
+  <rect x="544" y="120" width="412" height="52" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="560" y="142" font-size="13" font-weight="bold" fill="#7c2d12">分区 0　Leader 1</text>
+  <text x="560" y="162" font-size="12.5" fill="#92400e">Isr 1,2　（副本 3 被踢出 ISR）</text>
+  <rect x="544" y="178" width="412" height="52" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="560" y="200" font-size="13" font-weight="bold" fill="#7c2d12">分区 1　Leader 2</text>
+  <text x="560" y="220" font-size="12.5" fill="#92400e">Isr 2,1　（副本 3 被踢出 ISR）</text>
+  <rect x="544" y="236" width="412" height="52" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="560" y="258" font-size="13" font-weight="bold" fill="#7f1d1d">分区 2　Leader 3 → 1（改选）</text>
+  <text x="560" y="278" font-size="12.5" fill="#b91c1c">Isr 1,2　原 Leader 3 下线，从 ISR 改选 1</text>
+
+  <line x1="20" y1="360" x2="980" y2="360" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="20" y="388" font-size="13" fill="#0f172a">⭐ 停机后同时发生三件事：ISR 由 3 收缩为 2；落在 Broker 3 上的分区 2 的 Leader 由 3 改选为 1；其余分区 Leader 不变。</text>
+  <text x="20" y="414" font-size="13" fill="#0f172a">⭐ 只要 ISR ≥ min.insync.replicas，改选期间仍可读写；minIsr=1 时 ISR=2 照常推进位点（order-events 实测位点立刻 +2）。</text>
+  <text x="20" y="440" font-size="13" fill="#0f172a">⭐ 副本回归（重启 Broker 3）后 kafka-log-dirs.sh 的 offsetLag 回到 0，三个节点上 order-events-1 的 size 都是 100 字节、完全相等。</text>
+  <text x="20" y="470" font-size="13" fill="#dc2626">⚠️ ISR=2 只是「少一台」的表面现象；真正决定能否写入的是 ISR 与 min.insync.replicas 的比较（见 消息可靠性.md）。</text>
+  <text x="20" y="500" font-size="12" fill="#64748b">读数取自 kafka-topics.sh --describe --topic order-events；Leader 改选由 Controller 完成，判定副本落后的阈值 replica.lag.time.max.ms 默认 30000 ms。</text>
+</svg>

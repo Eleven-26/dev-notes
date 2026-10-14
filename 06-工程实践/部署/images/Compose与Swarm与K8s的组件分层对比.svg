@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">四套方案的组件分层：自愈回路在哪一跳，一眼看清差距</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">第一列是本机（Docker Desktop 29.7.2）按父子进程实测出的链路，pid 为真实读数；后三列是各自的控制回路所在层</text>
+
+  <rect x="16" y="78" width="150" height="32" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="91" y="99" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">层级 / 方案</text>
+  <rect x="176" y="78" width="196" height="32" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="274" y="99" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Docker（dockerd）</text>
+  <rect x="380" y="78" width="196" height="32" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="478" y="99" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Docker Compose</text>
+  <rect x="584" y="78" width="196" height="32" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="682" y="99" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Docker Swarm</text>
+  <rect x="788" y="78" width="196" height="32" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="886" y="99" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Kubernetes</text>
+
+  <rect x="16" y="118" width="150" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="91" y="156" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">入口层</text>
+  <rect x="176" y="118" width="196" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="274" y="142" text-anchor="middle" font-size="11" fill="#475569">docker CLI / REST API</text>
+  <text x="274" y="164" text-anchor="middle" font-size="11" fill="#475569">构建 + 运行 + 镜像</text>
+  <rect x="380" y="118" width="196" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="478" y="142" text-anchor="middle" font-size="11" fill="#475569">docker compose v5.5.0</text>
+  <text x="478" y="164" text-anchor="middle" font-size="11" fill="#475569">CLI 插件，无常驻进程</text>
+  <rect x="584" y="118" width="196" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="682" y="142" text-anchor="middle" font-size="11" fill="#475569">docker swarm 子命令</text>
+  <text x="682" y="164" text-anchor="middle" font-size="11" fill="#475569">命令面仍在</text>
+  <rect x="788" y="118" width="196" height="64" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="886" y="142" text-anchor="middle" font-size="11" fill="#475569">kubectl v1.36.1</text>
+  <text x="886" y="164" text-anchor="middle" font-size="11" fill="#475569">本机仅客户端</text>
+
+  <rect x="16" y="190" width="150" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="91" y="228" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">控制层</text>
+  <rect x="176" y="190" width="196" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="274" y="214" text-anchor="middle" font-size="11" fill="#1d4ed8">dockerd pid=98</text>
+  <text x="274" y="236" text-anchor="middle" font-size="11" fill="#1d4ed8">父进程 /initd services 18</text>
+  <rect x="380" y="190" width="196" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="478" y="214" text-anchor="middle" font-size="11" fill="#1d4ed8">没有这一层</text>
+  <text x="478" y="236" text-anchor="middle" font-size="11" fill="#1d4ed8">up 执行那一次才收敛</text>
+  <rect x="584" y="190" width="196" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="682" y="214" text-anchor="middle" font-size="11" fill="#1d4ed8">manager：raft + 调度</text>
+  <text x="682" y="236" text-anchor="middle" font-size="11" fill="#1d4ed8">本机 LocalNodeState=inactive</text>
+  <rect x="788" y="190" width="196" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="886" y="214" text-anchor="middle" font-size="11" fill="#1d4ed8">apiserver + etcd</text>
+  <text x="886" y="236" text-anchor="middle" font-size="11" fill="#1d4ed8">+ 控制器调和回路</text>
+
+  <rect x="16" y="262" width="150" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="91" y="300" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">运行时层</text>
+  <rect x="176" y="262" width="196" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="274" y="286" text-anchor="middle" font-size="11" fill="#15803d">containerd v2.3.3 pid=71</text>
+  <text x="274" y="308" text-anchor="middle" font-size="11" fill="#15803d">commit aad11006b869</text>
+  <rect x="380" y="262" width="196" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="478" y="286" text-anchor="middle" font-size="11" fill="#15803d">复用 dockerd 的</text>
+  <text x="478" y="308" text-anchor="middle" font-size="11" fill="#15803d">不新增一层</text>
+  <rect x="584" y="262" width="196" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="682" y="286" text-anchor="middle" font-size="11" fill="#15803d">节点内置 engine</text>
+  <text x="682" y="308" text-anchor="middle" font-size="11" fill="#15803d">+ containerd</text>
+  <rect x="788" y="262" width="196" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="886" y="286" text-anchor="middle" font-size="11" fill="#15803d">kubelet 经 CRI 直连</text>
+  <text x="886" y="308" text-anchor="middle" font-size="11" fill="#15803d">1.24 起无 dockershim</text>
+
+  <rect x="16" y="334" width="150" height="64" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="91" y="364" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">OCI 执行</text>
+  <text x="91" y="384" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">与隔离</text>
+  <rect x="176" y="334" width="196" height="64" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="274" y="358" text-anchor="middle" font-size="11" fill="#9a3412">shim-runc-v2 pid=49762</text>
+  <text x="274" y="380" text-anchor="middle" font-size="11" fill="#9a3412">父进程=1，容器进程 49786</text>
+  <rect x="380" y="334" width="196" height="64" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="478" y="358" text-anchor="middle" font-size="11" fill="#9a3412">不起新进程</text>
+  <text x="478" y="380" text-anchor="middle" font-size="11" fill="#9a3412">网络用自动 bridge</text>
+  <rect x="584" y="334" width="196" height="64" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="682" y="358" text-anchor="middle" font-size="11" fill="#9a3412">runc + overlay 网络</text>
+  <text x="682" y="380" text-anchor="middle" font-size="11" fill="#9a3412">驱动列表含 overlay</text>
+  <rect x="788" y="334" width="196" height="64" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="886" y="358" text-anchor="middle" font-size="11" fill="#9a3412">runc + CNI / CSI</text>
+  <text x="886" y="380" text-anchor="middle" font-size="11" fill="#9a3412">挂后能在别节点重建</text>
+
+  <rect x="16" y="406" width="150" height="64" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="91" y="444" text-anchor="middle" font-size="12" font-weight="bold" fill="#78350f">自愈回路</text>
+  <rect x="176" y="406" width="196" height="64" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="274" y="430" text-anchor="middle" font-size="11" fill="#92400e">restart 策略在 dockerd</text>
+  <text x="274" y="452" text-anchor="middle" font-size="11" fill="#92400e">stop / kill 不触发</text>
+  <rect x="380" y="406" width="196" height="64" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="478" y="430" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">无回路</text>
+  <text x="478" y="452" text-anchor="middle" font-size="11" fill="#b91c1c">kill 后 t+16s 仍 exited</text>
+  <rect x="584" y="406" width="196" height="64" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="682" y="430" text-anchor="middle" font-size="11" fill="#92400e">有基础副本收敛</text>
+  <text x="682" y="452" text-anchor="middle" font-size="11" fill="#92400e">本机未实测</text>
+  <rect x="788" y="406" width="196" height="64" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="886" y="430" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">持续调和 + 重新调度</text>
+  <text x="886" y="452" text-anchor="middle" font-size="11" fill="#15803d">本机无集群，未实测</text>
+
+  <rect x="16" y="490" width="968" height="118" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="34" y="514" font-size="13" font-weight="bold" fill="#0f172a">四列的真实差距只有两处：有没有常驻回路、调度域是不是只有一台引擎</text>
+  <text x="34" y="538" font-size="11.5" fill="#334155">Docker 链实测父子关系：dockerd(98) → containerd(71) → shim(49762，父进程 1) → 容器 1 号进程(49786)；cgroup 为 v2 的 0::/../4524eb1d。</text>
+  <text x="34" y="560" font-size="11.5" fill="#334155">shim 挂在 init 下 —— dockerd 重启不影响运行中的容器：daemon 单点在 API 面，不在运行面。</text>
+  <text x="34" y="582" font-size="11.5" fill="#dc2626">Swarm / K8s 两列的行为差异来自官方口径，本机 swarm=inactive、无集群，标为未实测，不作为观测结论。</text>
+
+  <text x="20" y="628" font-size="12.5" fill="#0f172a">⭐ 自上而下数一数各列多了哪几层，就能解释「Compose 上不了多机生产」：它缺的是控制层和跨节点的调度域，不是缺 YAML。</text>
+</svg>

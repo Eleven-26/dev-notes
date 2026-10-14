@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="680" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">多副本网关的共享状态拓扑与熔断采纳窗口</text>
+  <text x="500" y="62" text-anchor="middle" font-size="14" fill="#64748b">口径出自本篇第一、三、五节与使用节配置：限流每请求判定，熔断单向发布 + 每秒拉取结论</text>
+
+  <!-- 网关副本面板 -->
+  <rect x="40" y="96" width="260" height="250" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="170" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">网关集群（3 副本示例）</text>
+  <rect x="60" y="132" width="100" height="40" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="110" y="157" text-anchor="middle" font-size="12" fill="#334155">副本 A</text>
+  <rect x="180" y="132" width="100" height="40" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="230" y="157" text-anchor="middle" font-size="12" fill="#334155">副本 B</text>
+  <rect x="60" y="182" width="100" height="40" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="110" y="207" text-anchor="middle" font-size="12" fill="#334155">副本 C</text>
+  <text x="230" y="196" text-anchor="middle" font-size="11" fill="#64748b">各副本各有</text>
+  <text x="230" y="214" text-anchor="middle" font-size="11" fill="#64748b">本地状态机</text>
+  <rect x="60" y="246" width="220" height="86" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="170" y="270" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">本地桶（兜底降级档）</text>
+  <text x="170" y="292" text-anchor="middle" font-size="11" fill="#92400e">状态服务不可用 → 退回本地判</text>
+  <text x="170" y="312" text-anchor="middle" font-size="11" fill="#92400e">3 副本 × 100/s = 实际 300/s</text>
+
+  <!-- 状态服务 -->
+  <rect x="430" y="120" width="240" height="160" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="550" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">状态服务（HTTP）</text>
+  <text x="550" y="172" text-anchor="middle" font-size="11.5" fill="#1e40af">POST /ratelimit 每请求判定</text>
+  <text x="550" y="192" text-anchor="middle" font-size="11.5" fill="#1e40af">POST /breaker  收跳闸结论</text>
+  <text x="550" y="212" text-anchor="middle" font-size="11.5" fill="#1e40af">GET /breaker   返回 until 表</text>
+  <text x="550" y="238" text-anchor="middle" font-size="11" fill="#64748b">不读配置、不做业务判断，</text>
+  <text x="550" y="256" text-anchor="middle" font-size="11" fill="#64748b">判定逻辑留在网关侧</text>
+
+  <!-- 上游 -->
+  <rect x="760" y="150" width="190" height="100" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="855" y="180" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">上游 order-svc</text>
+  <text x="855" y="206" text-anchor="middle" font-size="11" fill="#334155">熔断打开后收到的探测</text>
+  <text x="855" y="226" text-anchor="middle" font-size="11" fill="#334155">≈ 每 SyncInterval 一次</text>
+
+  <!-- 边 1：每请求判定 -->
+  <line x1="300" y1="150" x2="426" y2="150" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arB)"/>
+  <text x="363" y="140" text-anchor="middle" font-size="11" fill="#1d4ed8">① 限流：每请求</text>
+  <text x="363" y="170" text-anchor="middle" font-size="10.5" fill="#64748b">RTT 1~5ms</text>
+
+  <!-- 边 2：发布跳闸 -->
+  <line x1="300" y1="212" x2="426" y2="212" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arO)"/>
+  <text x="363" y="202" text-anchor="middle" font-size="11" fill="#c2410c">② 跳闸时 Publish</text>
+  <text x="363" y="232" text-anchor="middle" font-size="10.5" fill="#64748b">单向 · 队列满即丢</text>
+
+  <!-- 边 3：周期拉取（反向） -->
+  <line x1="430" y1="262" x2="304" y2="262" stroke="#16a34a" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arG)"/>
+  <text x="367" y="284" text-anchor="middle" font-size="11" fill="#15803d">③ 每 1s Snapshot 拉取</text>
+  <text x="367" y="300" text-anchor="middle" font-size="10.5" fill="#64748b">timeout 200ms</text>
+
+  <!-- 边 4：业务调用 -->
+  <line x1="300" y1="330" x2="855" y2="330" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arS)"/>
+  <line x1="855" y1="330" x2="855" y2="254" stroke="#94a3b8" stroke-width="2.5" marker-end="url(#arS)"/>
+  <text x="520" y="322" text-anchor="middle" font-size="11" fill="#64748b">④ 业务请求：放行与否由 ①③ 的判定决定（判定挂在请求路径上，发布不挂）</text>
+
+  <!-- 时间轴：熔断采纳窗口 -->
+  <rect x="40" y="366" width="920" height="128" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="392" font-size="13" font-weight="bold" fill="#334155">熔断结论的跨副本生效窗口（SyncInterval=1s 的代价，5.2 节示例）</text>
+  <line x1="80" y1="440" x2="920" y2="440" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="240" y1="432" x2="240" y2="448" stroke="#dc2626" stroke-width="2"/>
+  <text x="240" y="424" text-anchor="middle" font-size="11" fill="#b91c1c">0.1s 副本 A 判定跳闸并发布</text>
+  <line x1="760" y1="432" x2="760" y2="448" stroke="#16a34a" stroke-width="2"/>
+  <text x="760" y="424" text-anchor="middle" font-size="11" fill="#15803d">1.1s 副本 B 最迟采纳</text>
+  <line x1="240" y1="466" x2="760" y2="466" stroke="#ea580c" stroke-width="3" marker-end="url(#arO)"/>
+  <text x="500" y="484" text-anchor="middle" font-size="11.5" fill="#c2410c">这 1 秒内 B 仍在往 order-svc 打流量 —— 熔断晚 1 秒只是「多几个请求失败」，配额类状态晚 1 秒就是超发</text>
+
+  <!-- 底部原则 -->
+  <rect x="40" y="512" width="920" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="538" font-size="13" font-weight="bold" fill="#334155">三条刻意的设计（5.2 / 5.3 节）：</text>
+  <text x="60" y="562" font-size="12" fill="#475569">· 只共享「打开到 until」的结论，不共享滑动窗口原始计数：各副本样本本来就不同，汇总既贵又没意义。</text>
+  <text x="60" y="584" font-size="12" fill="#475569">· Publish 只在本地跳闸时触发（单向）：若每个副本把收到的状态再转发，一次跳闸变 N² 级消息（发布风暴）。</text>
+  <text x="60" y="606" font-size="12" fill="#475569">· 发布绝不在请求路径上做网络 IO：跳闸恰好发生在请求里，同步 POST 会让保护机制变成新故障点。</text>
+  <text x="60" y="634" font-size="12" font-weight="bold" fill="#b91c1c">fail-open 静默放行必须计数（gw_shared_state_errors_total）—— 它是「限流此刻没在生效」的唯一信号。</text>
+
+  <defs>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

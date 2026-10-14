@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="760" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">负载保护在网关防线链里的准入顺序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13.5" fill="#64748b">顺序出自本篇第四节的两条约束与「使用」节 3) 防线对照表，拒绝码与 reason 口径出自第三节实测</text>
+
+  <line x1="70" y1="108" x2="70" y2="566" stroke="#94a3b8" stroke-width="3"/>
+
+  <circle cx="70" cy="130" r="15" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="70" y="135" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">1</text>
+  <text x="100" y="124" font-size="15" font-weight="bold" fill="#0f172a">self 路由（/healthz 一类）</text>
+  <text x="100" y="146" font-size="12" fill="#475569">必须先于闸门：把健康检查也拒了，负载均衡会判定整个网关挂了</text>
+  <rect x="700" y="112" width="250" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="825" y="135" text-anchor="middle" font-size="11.5" fill="#15803d">闸门只 shed 业务流量</text>
+
+  <circle cx="70" cy="200" r="15" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="70" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#c2410c">2</text>
+  <text x="100" y="194" font-size="15" font-weight="bold" fill="#0f172a">负载保护闸门（并发水位）</text>
+  <text x="100" y="216" font-size="12" fill="#475569">判据：此刻有多少在飞。生产示例 128 / 32 / 1s，实测档位 2 / 1 / 200ms</text>
+  <rect x="700" y="182" width="250" height="36" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="825" y="205" text-anchor="middle" font-size="11.5" fill="#c2410c">503 + Retry-After</text>
+
+  <circle cx="70" cy="270" r="15" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="70" y="275" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">3</text>
+  <text x="100" y="264" font-size="15" font-weight="bold" fill="#0f172a">鉴权</text>
+  <text x="100" y="286" font-size="12" fill="#475569">闸门要省的是 goroutine 与连接，而鉴权得查签名、比密钥、读缓存</text>
+  <rect x="700" y="252" width="250" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="825" y="275" text-anchor="middle" font-size="11.5" fill="#1d4ed8">401 / 403</text>
+
+  <circle cx="70" cy="340" r="15" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="70" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">4</text>
+  <text x="100" y="334" font-size="15" font-weight="bold" fill="#0f172a">限流（按速率）</text>
+  <text x="100" y="356" font-size="12" fill="#475569">判据：每秒进来多少，按「谁在用」计数（用户 / IP / 路由）</text>
+  <rect x="700" y="322" width="250" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="825" y="345" text-anchor="middle" font-size="11.5" fill="#1d4ed8">429 + Retry-After</text>
+
+  <circle cx="70" cy="410" r="15" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="70" y="415" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">5</text>
+  <text x="100" y="404" font-size="15" font-weight="bold" fill="#0f172a">熔断检查（必须在选节点之前）</text>
+  <text x="100" y="426" font-size="12" fill="#475569">顺序反了会白算一次负载均衡，还可能已建好到已挂上游的连接</text>
+  <rect x="700" y="392" width="250" height="36" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="825" y="415" text-anchor="middle" font-size="11.5" fill="#b91c1c">503 + circuit_open</text>
+
+  <circle cx="70" cy="480" r="15" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="70" y="485" text-anchor="middle" font-size="13" font-weight="bold" fill="#64748b">6</text>
+  <text x="100" y="474" font-size="15" font-weight="bold" fill="#0f172a">选节点（负载均衡 + 被动摘除）</text>
+  <text x="100" y="496" font-size="12" fill="#475569">摘除发生在这一层：跳过坏节点，不拒绝请求，只换一个节点</text>
+  <rect x="700" y="462" width="250" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="825" y="485" text-anchor="middle" font-size="11.5" fill="#64748b">不拒绝，换节点</text>
+
+  <circle cx="70" cy="550" r="15" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="70" y="555" text-anchor="middle" font-size="13" font-weight="bold" fill="#64748b">7</text>
+  <text x="100" y="544" font-size="15" font-weight="bold" fill="#0f172a">转发上游，结算后上报</text>
+  <text x="100" y="566" font-size="12" fill="#475569">一次业务只上报一个最终结果；熔断打开期间不再进入重试链</text>
+  <rect x="700" y="532" width="250" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="825" y="555" text-anchor="middle" font-size="11.5" fill="#64748b">cb.Report / gate.release</text>
+
+  <rect x="40" y="596" width="920" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="622" font-size="13" font-weight="bold" fill="#334155">两条顺序约束的理由完全不同，别混成一条：</text>
+  <text x="60" y="646" font-size="12.5" fill="#475569">self 路由在闸门之前是「保命」—— 本来只是忙，把健康检查也拒了就变成全站不可用；</text>
+  <text x="60" y="668" font-size="12.5" fill="#475569">闸门在鉴权之前是「省钱」—— 过载时更不该先做昂贵的事，限流反而必须在鉴权之后才拿得到用户维度。</text>
+  <text x="60" y="692" font-size="12.5" fill="#475569">同为 503 含义不同：闸门是「我这里忙」（等槽位释放），熔断是「上游不行了」（冷却 + 半开探测），</text>
+  <text x="60" y="714" font-size="12.5" fill="#475569">所以 reason 必须区分 queue_full / queue_timeout / circuit_open，否则分不清该重试还是该降级。</text>
+  <text x="60" y="736" font-size="12" fill="#64748b">注意：网关七个模块的完整流水线（路由、协议转换、可观测性）见 go/网络编程/从零实现网关.md，本图只画防线准入顺序。</text>
+</svg>

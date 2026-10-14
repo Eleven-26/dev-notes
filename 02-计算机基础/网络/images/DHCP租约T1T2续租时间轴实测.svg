@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">DHCP 租约 T1／T2 续租时间轴实测</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">租期 120 s（dnsmasq 2.90 下发 51=120、58=60、59=105），客户端 busybox udhcpc 1.37；服务端在 T1 之前就被停掉</text>
+
+  <text x="60" y="86" font-size="11.5" font-weight="bold" fill="#0f172a">时间轴：0 → 120 秒（左侧 4 个 DORA 包实际只占 48 ms，为看清做了放大）</text>
+  <rect x="60" y="96" width="440" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <rect x="500" y="96" width="251" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.1"/>
+  <rect x="751" y="96" width="66" height="30" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <rect x="817" y="96" width="123" height="30" fill="#fee2e2" stroke="#dc2626" stroke-width="1.1"/>
+  <text x="280" y="116" text-anchor="middle" font-size="11.5" fill="#14532d">BOUND（0 → 60 s：地址已生效，静默）</text>
+  <text x="625" y="116" text-anchor="middle" font-size="11.5" fill="#92400e">RENEWING：单播续租</text>
+  <text x="784" y="116" text-anchor="middle" font-size="10.5" fill="#7c2d12">REBIND</text>
+  <text x="878" y="116" text-anchor="middle" font-size="11.5" fill="#7f1d1d">回 INIT 重新 DORA</text>
+
+  <line x1="60" y1="140" x2="940" y2="140" stroke="#94a3b8" stroke-width="1.6"/>
+  <line x1="830" y1="130" x2="830" y2="176" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="940" y1="130" x2="940" y2="176" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="830" y="192" text-anchor="middle" font-size="10.5" fill="#64748b">option 59 = 105 s</text>
+  <text x="940" y="192" text-anchor="middle" font-size="10.5" fill="#7f1d1d">option 51 = 120 s</text>
+  <text x="60" y="192" font-size="10.5" fill="#64748b">0 s</text>
+  <text x="500" y="192" text-anchor="middle" font-size="10.5" fill="#64748b">option 58 = 60 s（T1，50%）</text>
+
+  <circle cx="64" cy="140" r="5" fill="#2563eb"/>
+  <text x="64" y="224" font-size="10.5" fill="#1e3a8a">+0 ms DISCOVER 广播</text>
+  <circle cx="80" cy="140" r="5" fill="#16a34a"/>
+  <text x="80" y="244" font-size="10.5" fill="#14532d">+1.6 ms OFFER 单播（1.0~6.1 ms，3 轮）</text>
+  <circle cx="98" cy="140" r="5" fill="#ea580c"/>
+  <text x="98" y="264" font-size="10.5" fill="#7c2d12">+40 ms REQUEST 广播（带 50＋54）</text>
+  <circle cx="112" cy="140" r="5" fill="#16a34a"/>
+  <text x="112" y="284" font-size="10.5" fill="#14532d">+48 ms ACK 单播 → 进入 BOUND</text>
+
+  <circle cx="500" cy="140" r="6" fill="#2563eb"/>
+  <text x="500" y="216" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">T1 实测 +60.1 s（17:30:52.644）</text>
+  <text x="500" y="316" text-anchor="middle" font-size="10.5" fill="#1e3a8a">单播 192.168.128.115.68 → 192.168.128.10.67</text>
+  <text x="500" y="334" text-anchor="middle" font-size="10.5" fill="#1e3a8a">二层目的 = 服务器 MAC e2:10:cb:77:46:6d</text>
+  <text x="500" y="352" text-anchor="middle" font-size="10.5" fill="#1e3a8a">ciaddr 填自己的地址，不再带 option 50</text>
+
+  <circle cx="751" cy="140" r="6" fill="#dc2626"/>
+  <text x="751" y="216" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7f1d1d">+94.2 s 转广播（17:31:26.704）</text>
+  <text x="751" y="316" text-anchor="middle" font-size="10.5" fill="#7f1d1d">192.168.128.115.68 → 255.255.255.255.67</text>
+  <text x="751" y="334" text-anchor="middle" font-size="10.5" fill="#7f1d1d">共 3 轮：+94.2 / +97.2 / +100.2 s</text>
+  <text x="751" y="352" text-anchor="middle" font-size="10.5" fill="#7f1d1d">secs 字段 3 → 6 → 9</text>
+
+  <circle cx="817" cy="140" r="6" fill="#dc2626"/>
+  <text x="817" y="236" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7f1d1d">+103.3 s 放弃旧租约</text>
+  <text x="817" y="256" text-anchor="middle" font-size="10.5" fill="#7f1d1d">17:31:35.801 起广播 DISCOVER</text>
+
+  <rect x="20" y="368" width="960" height="118" rx="12" fill="#fef2f2" stroke="#fecaca" stroke-width="1.2"/>
+  <text x="36" y="392" font-size="12.5" font-weight="bold" fill="#7f1d1d">三处「实现不守着 option 值」的偏差（同一轮抓包 + 脚本日志）</text>
+  <text x="36" y="415" font-size="12" fill="#7f1d1d">58=60 s ⇒ 实测 60.1 s 单播，精确；59=105 s ⇒ 实测 94.2 s 就转广播，提前约 11 s；51=120 s ⇒ 实测 103.3 s 已回 INIT，提前约 17 s</text>
+  <text x="36" y="436" font-size="12" fill="#7f1d1d">新事务换了 xid：0xe9b1d507 → 0x55f8e53f，但 DISCOVER 里仍带 50=192.168.128.115（客户端想续用原地址）</text>
+  <text x="36" y="457" font-size="12" fill="#7f1d1d">脚本回调顺序：deconfig（17:31:35）→ leasefail（17:31:50）→ leasefail（17:32:26）；此后每 ~3 s 一次 DISCOVER，无应答</text>
+
+  <rect x="20" y="498" width="470" height="104" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="36" y="522" font-size="12.5" font-weight="bold" fill="#14532d">服务端不停时应当看到</text>
+  <text x="36" y="545" font-size="12" fill="#14532d">T1 单播 REQUEST → 单播 ACK → 租期整段前移，重回 BOUND</text>
+  <text x="36" y="566" font-size="12" fill="#14532d">用户侧无感、IP 不变（正文 1.4「不换网络 IP 基本不变」的根据）</text>
+  <text x="36" y="590" font-size="12" fill="#334155">本轮特意停掉服务端，只为逼出 T2 与到期分支</text>
+
+  <rect x="510" y="498" width="470" height="104" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="526" y="522" font-size="12.5" font-weight="bold" fill="#0f172a">复现要点（本轮踩过的三个坑）</text>
+  <text x="526" y="545" font-size="12" fill="#334155">udhcpc 的 reason 是脚本第一个位置参数 $1，不是环境变量 $reason</text>
+  <text x="526" y="566" font-size="12" fill="#334155">dnsmasq 把过小租期夹到 2 分钟：请求 60 s 实得 120 s</text>
+  <text x="526" y="590" font-size="12" fill="#334155">dhcp-option 要写 option:t1／option:t2，写 renewal-time 会报 bad</text>
+</svg>

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 692" width="1000" height="692" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="692" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">Resolver 的内存形态：唯一可变的只有那个指针</text>
+  <text x="500" y="58" text-anchor="middle" font-size="14" fill="#64748b">结构出自本篇 §三 的 Snapshot / Resolver 代码，底部读数来自 §四「4. 本机实测」的同一次运行日志</text>
+
+  <!-- 左：内存布局 -->
+  <rect x="50" y="86" width="400" height="118" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="66" y="106" font-size="13" font-weight="bold" fill="#1e40af">type Resolver struct { … }</text>
+  <line x1="50" y1="114" x2="450" y2="114" stroke="#93c5fd" stroke-width="1"/>
+  <text x="66" y="132" font-size="11.5" fill="#334155">cli      *clientv3.Client</text>
+  <text x="66" y="150" font-size="11.5" fill="#334155">prefix   "/services/user/"</text>
+  <text x="66" y="168" font-size="11.5" font-weight="bold" fill="#1e40af">snap     atomic.Pointer[Snapshot]</text>
+  <text x="66" y="186" font-size="11.5" fill="#334155">lastErr  atomic.Pointer[error]</text>
+
+  <line x1="250" y1="204" x2="250" y2="232" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="262" y="222" font-size="11" fill="#1e40af">Load() / Store()：只换指针</text>
+
+  <rect x="50" y="234" width="400" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="66" y="256" font-size="13" font-weight="bold" fill="#15803d">type Snapshot struct（一份不可变列表）</text>
+  <line x1="50" y1="264" x2="450" y2="264" stroke="#86efac" stroke-width="1"/>
+  <text x="66" y="284" font-size="11.5" fill="#334155">Instances []string   ← 指向下面那块底层数组</text>
+  <text x="66" y="304" font-size="11.5" fill="#334155">Revision   int64 = 148   ← 这份列表是啥时候的</text>
+
+  <line x1="250" y1="320" x2="250" y2="346" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="262" y="338" font-size="11" fill="#15803d">切片的 ptr / len = 2 / cap = 4</text>
+
+  <rect x="50" y="348" width="400" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="150" y1="348" x2="150" y2="406" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="250" y1="348" x2="250" y2="406" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="350" y1="348" x2="350" y2="406" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="100" y="382" text-anchor="middle" font-size="10.5" fill="#334155">10.0.0.2:8080</text>
+  <text x="200" y="382" text-anchor="middle" font-size="10.5" fill="#334155">10.0.0.3:8080</text>
+  <text x="300" y="382" text-anchor="middle" font-size="10.5" fill="#94a3b8">（空槽）</text>
+  <text x="400" y="382" text-anchor="middle" font-size="10.5" fill="#94a3b8">（空槽）</text>
+  <text x="50" y="426" font-size="11.5" fill="#64748b">底层数组是 copy 出来的新的一份，不和旧快照共享可写内存。</text>
+
+  <!-- 右：写路径 -->
+  <text x="490" y="104" font-size="13" font-weight="bold" fill="#334155">写路径（Run 里收到事件时）</text>
+
+  <rect x="490" y="114" width="470" height="42" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="506" y="132" font-size="11.5" fill="#334155">① Watch 一次送来 2 个事件，都是 DELETE</text>
+  <text x="506" y="148" font-size="11.5" fill="#64748b">（同一个租约的两个 key 一起没，rev=148）</text>
+
+  <line x1="725" y1="156" x2="725" y2="172" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="490" y="172" width="470" height="42" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="506" y="190" font-size="11.5" fill="#334155">② old := r.snap.Load()</text>
+  <text x="506" y="206" font-size="11.5" fill="#334155">next := make(…); copy(next, old.Instances)  ← 先复制</text>
+
+  <line x1="725" y1="214" x2="725" y2="230" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="490" y="230" width="470" height="42" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="506" y="248" font-size="11.5" fill="#334155">③ 在 next 上按事件增删</text>
+  <text x="506" y="264" font-size="11.5" fill="#334155">删除事件要用 prev_kv 才知道被删的是哪个地址</text>
+
+  <line x1="725" y1="272" x2="725" y2="288" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+
+  <rect x="490" y="288" width="470" height="42" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="506" y="306" font-size="11.5" font-weight="bold" fill="#15803d">④ r.snap.Store(&amp;Snapshot{next, 148}) —— 整体替换指针</text>
+  <text x="506" y="322" font-size="11.5" fill="#334155">旧快照从此没人引用，等 GC 收；正拿着它的读者不受影响</text>
+
+  <rect x="490" y="344" width="470" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="506" y="364" font-size="11.5" font-weight="bold" fill="#1e40af">读路径：Instances() 只做 Load().Instances</text>
+  <text x="506" y="382" font-size="11.5" fill="#334155">无锁、常数时间；看到的必定是某一版完整列表，不会看到「改到一半」</text>
+
+  <rect x="490" y="408" width="470" height="52" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="506" y="428" font-size="11.5" font-weight="bold" fill="#b91c1c">反面写法：边被请求遍历边 in-place 改切片或 map</text>
+  <text x="506" y="446" font-size="11.5" fill="#7f1d1d">那是 data race（go run -race 会直接报），不是性能问题</text>
+
+  <!-- 底部实测 -->
+  <rect x="40" y="478" width="920" height="196" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="504" font-size="12.5" font-weight="bold" fill="#334155">同一次运行里快照被换掉的真实轨迹（日志原样）：</text>
+  <text x="60" y="528" font-size="11.5" fill="#475569">· [启动] 快照替换：n=3  rev=145  addrs=[10.0.0.1:8080 10.0.0.2:8080 10.0.0.3:8080]</text>
+  <text x="60" y="548" font-size="11.5" fill="#475569">· 一个实例注册（地址 key + 元数据 key）→ 增量更新：事件=1 → n=4 rev=146；事件=1 → n=5 rev=147</text>
+  <text x="60" y="568" font-size="11.5" fill="#475569">· 它优雅下线（Revoke）→ 增量更新：事件=2 → n=2 rev=148。两条 DELETE 一起到，列表一次换到位</text>
+  <text x="60" y="588" font-size="11.5" fill="#475569">· 把元数据 key 也按前缀收进来了 → 列表里混进 {"zone":"sh-a","weight":"100"}，这就是那个坑</text>
+  <text x="60" y="612" font-size="11.5" font-weight="bold" fill="#b91c1c">· 制造 ErrCompacted（从已压缩的 revision 订阅）：</text>
+  <text x="60" y="632" font-size="11.5" fill="#7f1d1d">  watch 出错 err=etcdserver: mvcc: required revision has been compacted → Healthy=false，旧列表继续用 n=3</text>
+  <text x="60" y="652" font-size="11.5" fill="#475569">  [重连后回补] 快照替换：n=3 rev=145 —— 先保留再全量回补，正是铁律 2 + 铁律 3 的顺序</text>
+
+  <defs>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

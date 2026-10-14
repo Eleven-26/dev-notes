@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 712" width="1000" height="712" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="cB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="712" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三套 HTTP 客户端的归属与参数对照：池在 Transport 里，不在 Client 里</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12" fill="#64748b">Go 用 net/http 标准库，Java 侧给 OkHttp 与 JDK HttpClient 两种写法；同一件事在三套里的字段名逐一对齐</text>
+
+  <rect x="24" y="66" width="214" height="42" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="131" y="84" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">业务调用</text>
+  <text x="131" y="101" text-anchor="middle" font-size="10.5" fill="#64748b">client.Do / send / get</text>
+  <rect x="268" y="66" width="214" height="42" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="375" y="84" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">Client 只是壳</text>
+  <text x="375" y="101" text-anchor="middle" font-size="10.5" fill="#1e3a8a">挂超时与重定向策略</text>
+  <rect x="512" y="66" width="214" height="42" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="619" y="84" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">池本体</text>
+  <text x="619" y="101" text-anchor="middle" font-size="10.5" fill="#14532d">Transport / ConnectionPool</text>
+  <rect x="756" y="66" width="220" height="42" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="866" y="84" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">持久连接</text>
+  <text x="866" y="101" text-anchor="middle" font-size="10.5" fill="#7c2d12">keep-alive 空闲连接、h2 多流载体</text>
+  <line x1="238" y1="87" x2="264" y2="87" stroke="#2563eb" stroke-width="1.5" marker-end="url(#cB)"/>
+  <line x1="482" y1="87" x2="508" y2="87" stroke="#2563eb" stroke-width="1.5" marker-end="url(#cB)"/>
+  <line x1="726" y1="87" x2="752" y2="87" stroke="#2563eb" stroke-width="1.5" marker-end="url(#cB)"/>
+
+  <rect x="24" y="116" width="956" height="20" rx="5" fill="#fef2f2" stroke="#fecaca" stroke-width="1"/>
+  <text x="34" y="130" font-size="10.5" fill="#7f1d1d">要点：Client 没有 Close，只有 Transport().CloseIdleConnections()；Clone() 与 newBuilder() 派生出的客户端仍共享同一个池</text>
+
+  <rect x="24" y="146" width="184" height="32" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="116" y="167" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">想要控制的事</text>
+  <rect x="216" y="146" width="308" height="32" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="370" y="167" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">Go：http.Transport</text>
+  <rect x="532" y="146" width="224" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="644" y="167" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">OkHttp 4.12</text>
+  <rect x="764" y="146" width="212" height="32" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="870" y="167" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">JDK HttpClient 17</text>
+
+  <rect x="216" y="184" width="308" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="532" y="184" width="224" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="764" y="184" width="212" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <text x="34" y="208" font-size="11" font-weight="bold" fill="#0f172a">单例怎么保证</text>
+  <text x="226" y="200" font-size="10.5" fill="#1e3a8a">sync.OnceValue 造一个 Transport，</text>
+  <text x="226" y="216" font-size="10.5" fill="#1e3a8a">全进程共用</text>
+  <text x="542" y="200" font-size="10.5" fill="#14532d">static final 一个 CLIENT，</text>
+  <text x="542" y="216" font-size="10.5" fill="#14532d">只对外暴露 client()</text>
+  <text x="774" y="200" font-size="10.5" fill="#7c2d12">static final；每次 new</text>
+  <text x="774" y="216" font-size="10.5" fill="#7c2d12">会泄漏它的 executor</text>
+
+  <rect x="216" y="228" width="308" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="532" y="228" width="224" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="764" y="228" width="212" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <text x="34" y="252" font-size="11" font-weight="bold" fill="#0f172a">空闲连接数</text>
+  <text x="226" y="244" font-size="10.5" fill="#1e3a8a">MaxIdleConnsPerHost 64（默认只有 2！</text>
+  <text x="226" y="260" font-size="10.5" fill="#1e3a8a">超出的直接关闭）；MaxIdleConns 200</text>
+  <text x="542" y="244" font-size="10.5" fill="#14532d">ConnectionPool(64, 5,</text>
+  <text x="542" y="260" font-size="10.5" fill="#14532d">MINUTES) 的 64</text>
+  <text x="774" y="244" font-size="10.5" fill="#b91c1c">没有对应项，只能靠</text>
+  <text x="774" y="260" font-size="10.5" fill="#b91c1c">jdk.httpclient.connectionPoolSize</text>
+
+  <rect x="216" y="272" width="308" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="532" y="272" width="224" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="764" y="272" width="212" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <text x="34" y="296" font-size="11" font-weight="bold" fill="#0f172a">空闲存活时间</text>
+  <text x="226" y="288" font-size="10.5" fill="#1e3a8a">IdleConnTimeout 90s；另配 Dialer</text>
+  <text x="226" y="304" font-size="10.5" fill="#1e3a8a">KeepAlive 30s（自定义拨号后不再自动生效）</text>
+  <text x="542" y="288" font-size="10.5" fill="#14532d">keepAliveDuration</text>
+  <text x="542" y="304" font-size="10.5" fill="#14532d">= 5 分钟</text>
+  <text x="774" y="288" font-size="10.5" fill="#b91c1c">jdk.httpclient.</text>
+  <text x="774" y="304" font-size="10.5" fill="#b91c1c">keepalive.timeout</text>
+
+  <rect x="216" y="316" width="308" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="532" y="316" width="224" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="764" y="316" width="212" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <text x="34" y="340" font-size="11" font-weight="bold" fill="#0f172a">整体超时</text>
+  <text x="226" y="332" font-size="10.5" fill="#1e3a8a">Client.Timeout 15s：从拨号到读完</text>
+  <text x="226" y="348" font-size="10.5" fill="#1e3a8a">响应体整段，流式响应会被误杀</text>
+  <text x="542" y="332" font-size="10.5" fill="#14532d">callTimeout 15s，另有</text>
+  <text x="542" y="348" font-size="10.5" fill="#14532d">connect 3s / read 10s / write 5s</text>
+  <text x="774" y="332" font-size="10.5" fill="#7c2d12">HttpRequest.timeout 10s</text>
+  <text x="774" y="348" font-size="10.5" fill="#7c2d12">请求级；connectTimeout 3s</text>
+
+  <rect x="216" y="360" width="308" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="532" y="360" width="224" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="764" y="360" width="212" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <text x="34" y="384" font-size="11" font-weight="bold" fill="#0f172a">只等响应头</text>
+  <text x="226" y="376" font-size="10.5" fill="#1e3a8a">ResponseHeaderTimeout 10s（最常用），</text>
+  <text x="226" y="392" font-size="10.5" fill="#1e3a8a">ExpectContinueTimeout 1s、TLS 握手 5s</text>
+  <text x="542" y="376" font-size="10.5" fill="#14532d">readTimeout 10s</text>
+  <text x="542" y="392" font-size="10.5" fill="#14532d">读 body 的间隔超时</text>
+  <text x="774" y="376" font-size="10.5" fill="#b91c1c">没有对应项</text>
+  <text x="774" y="392" font-size="10.5" fill="#b91c1c">精确控池时工程上换 OkHttp</text>
+
+  <rect x="216" y="404" width="308" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="532" y="404" width="224" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="764" y="404" width="212" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <text x="34" y="428" font-size="11" font-weight="bold" fill="#0f172a">阶段观测</text>
+  <text x="226" y="420" font-size="10.5" fill="#1e3a8a">httptrace：ConnectStart / ConnectDone</text>
+  <text x="226" y="436" font-size="10.5" fill="#1e3a8a">给出 Dial，GotConn 给出 Reused</text>
+  <text x="542" y="420" font-size="10.5" fill="#14532d">EventListener 才是逐阶段耗时；</text>
+  <text x="542" y="436" font-size="10.5" fill="#14532d">Interceptor 只看请求与响应</text>
+  <text x="774" y="420" font-size="10.5" fill="#b91c1c">没有对应项</text>
+  <text x="774" y="436" font-size="10.5" fill="#b91c1c">只能在应用层打点</text>
+
+  <rect x="216" y="448" width="308" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="532" y="448" width="224" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <rect x="764" y="448" width="212" height="40" rx="5" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+  <text x="34" y="472" font-size="11" font-weight="bold" fill="#0f172a">强制退回 1.1</text>
+  <text x="226" y="464" font-size="10.5" fill="#1e3a8a">TLSConfig.NextProtos = http/1.1；</text>
+  <text x="226" y="480" font-size="10.5" fill="#1e3a8a">ForceAttemptHTTP2 只管 TLS，明文 h2c 不支持</text>
+  <text x="542" y="464" font-size="10.5" fill="#14532d">protocols(List.of(HTTP_1_1))</text>
+  <text x="542" y="480" font-size="10.5" fill="#14532d">即 ALPN 偏好</text>
+  <text x="774" y="464" font-size="10.5" fill="#7c2d12">.version(HTTP_1_1)；</text>
+  <text x="774" y="480" font-size="10.5" fill="#7c2d12">HTTP_2 只是优先，不是强制</text>
+
+  <rect x="24" y="500" width="470" height="120" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.2"/>
+  <text x="40" y="522" font-size="12.5" font-weight="bold" fill="#7f1d1d">每次请求 new 一个 Transport 的三个代价</text>
+  <text x="40" y="544" font-size="11" fill="#7f1d1d">① 每请求重新 TCP + TLS 握手，持久连接收益全丢；</text>
+  <text x="40" y="564" font-size="11" fill="#7f1d1d">② 旧 Transport 缓存的空闲连接不会自动关闭，只被 GC 掉</text>
+  <text x="40" y="580" font-size="11" fill="#7f1d1d">→ 连接数与 TIME_WAIT 一路涨；</text>
+  <text x="40" y="600" font-size="11" fill="#7f1d1d">③ 每份 Transport 各自一条连接，等于回到 HTTP/1.1；</text>
+  <text x="40" y="614" font-size="11" fill="#7f1d1d">单请求想换超时用 ctx，不要 new Client。</text>
+
+  <rect x="510" y="500" width="470" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="526" y="522" font-size="12.5" font-weight="bold" fill="#0f172a">超时要分档：谁覆盖哪一段</text>
+  <text x="526" y="544" font-size="11" fill="#334155">Dialer.Timeout 3s 只管建连；TLSHandshakeTimeout 5s 只管握手</text>
+  <text x="526" y="564" font-size="11" fill="#334155">ResponseHeaderTimeout 10s 只等响应头，是最常用的一档</text>
+  <text x="526" y="584" font-size="11" fill="#334155">Client.Timeout 15s 覆盖「拨号 → 读完响应体」，包含读 body 的时间</text>
+  <text x="526" y="604" font-size="11" fill="#7f1d1d">注意：服务端推送与流式响应必须改用 ResponseHeaderTimeout 加 ctx 取消，</text>
+  <text x="526" y="618" font-size="11" fill="#7f1d1d">否则只设 Client.Timeout 会必然超时，也分不清连不上与响应慢。</text>
+
+  <rect x="24" y="636" width="956" height="56" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="40" y="658" font-size="12" font-weight="bold" fill="#92400e">池该配多大：看「并发请求数 ÷ 单连接可承载并发」</text>
+  <text x="40" y="678" font-size="11" fill="#92400e">HTTP/2 一条连接能跑多流，池子该小；HTTP/1.1 才需要按并发数放大。稳态下持续 Reused=false，第一个要查的就是 MaxIdleConnsPerHost。</text>
+</svg>

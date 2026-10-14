@@ -49,6 +49,25 @@
 
 > ⭐ 易混点：从根到 TLD 到权威，全都是**权威服务器，但只给"下一级线索"**；真正「替你跑腿」的只有**递归服务器（LDNS）**。
 
+### 实测：委派链上的真实应答
+
+**本节要点**：「权威只给下一级线索」这句话在报文里是看得见的 —— **`ANSWER` 段是空的，名字全在 `AUTHORITY` 段**，能直接用的地址在 `ADDITIONAL`（glue）段。
+
+容器内 `dig` 实测（DiG 9.18.50 / `alpine:3.21`，同一轮次取得，命令与读数一一对应）：
+
+| 命令 | 关键读数 |
+|---|---|
+| `dig @a.root-servers.net com NS +norecurse` | `flags: qr;`（**只有 `qr`，没有 `ra`** —— 根服务器不做递归）、`QUERY: 1, ANSWER: 0, AUTHORITY: 13, ADDITIONAL: 27`；`com. 172800 IN NS a.gtld-servers.net.` |
+| `dig @a.gtld-servers.net example.com A +norecurse` | `flags: qr;`、`QUERY: 1, ANSWER: 0, AUTHORITY: 2, ADDITIONAL: 13`；`example.com. 172800 IN NS hera.ns.cloudflare.com.` / `example.com. 172800 IN NS elliott.ns.cloudflare.com.`，glue `hera.ns.cloudflare.com. 172800 IN A 108.162.192.162` |
+| `dig example.com SOA +noall +answer` | `example.com. 578 IN SOA elliott.ns.cloudflare.com. dns.cloudflare.com. 2416374680 10000 2400 604800 1800`（刷新 10000 / 重试 2400 / 过期 604800 / **末位 1800**） |
+| `dig example.com A` | `flags: qr rd ra;`（**有 `rd`、无 `aa`** = 递归代查、非权威应答）、`QUERY: 1, ANSWER: 2`；`example.com. 600 IN A 172.66.147.243`、`example.com. 600 IN A 104.20.23.154` |
+
+⭐ 两个可对照的量级：**委派记录（NS）的 TTL 实测 172800（48 小时）**，**业务记录（A）的 TTL 实测 600（10 分钟）** —— 递归服务器把「该问谁」记得比「答案是什么」久得多。这也是换 IP 时不需要重新收敛委派链的原因。
+
+⚠️ `SOA` 的最后一个字段 **1800** 就是第六节说的**负缓存时长**（negative TTL）；正文表格里的「`minimum`」在报文里就是这个位置。
+
+![域名层级与 NS 委派链：根、.com TLD、example.com 权威、主机名四级，每级持有哪条 NS、委派 TTL 172800 与记录 TTL 600 的对照](images/域名层级与NS委派链.svg)
+
 ---
 
 ## 三、解析流程（⭐ 核心）
@@ -83,6 +102,27 @@ LDNS ──7──▶ 客户端     : 返回 IP，并把结果按 TTL 缓存
 
 5. 客户端拿到 IP 才开始建 TCP 连接（本篇不展开，见 [TCP三次握手.md](tcp/TCP三次握手.md)）；
 6. ⚠️ **CNAME 会重启一轮**：第 6 步若返回 CNAME，LDNS 要**对别名再解析一次**，直到拿到 A/AAAA。
+
+### 实测：时延、TTL 递减与缓存命中
+
+**本节要点**：上面 7 步的成本几乎全部落在「LDNS 有没有缓存」这一件事上 —— 缓存命中时**一次 UDP 都不发**，未命中时才走那三级迭代。
+
+容器内 `dig` 实测（DiG 9.18.50 / `alpine:3.21`；**本节读数出自另一轮执行**，与第二节表格里的委派读数不同轮，不要互推）：
+
+| 场景 | 命令 | 实测读数 |
+|---|---|---|
+| 递归应答（非权威） | `dig example.com A` | `flags: qr rd ra`（无 `aa`）、TTL **600** |
+| 未命中缓存的往返时延 | `dig @223.5.5.5 example.com A` ×5 | `Query time` = **96 / 88 / 88 / 164 / 36 msec**（波动 36~164ms，只断言量级） |
+| 命中缓存 | `dig github.com A` 连查 ×3 | `Query time` = **4 / 4 / 8 msec** —— 比上一行低一个数量级 |
+| TTL 递减计时 | `dig example.com A` 间隔 3s ×3 | TTL **88 → 85 → 82**，每查一次正好少 3 秒 |
+| CNAME 重启一轮 | `dig www.github.com A` | `www.github.com. 487 IN CNAME github.com.` → `github.com. 487 IN A 20.205.243.166` |
+| hosts 短路（不发 DNS 包） | 写入 `/etc/hosts` 后 `getent hosts` | 返回 `10.20.30.40 w2ra2c-hosts.test` |
+| 名字不存在 | `dig nosuchname-w2ra2c.example.com A` | `status: NXDOMAIN`、`ANSWER: 0, AUTHORITY: 0`、`Query time 152 msec` |
+| 有名字无该类型记录 | `dig github.com AAAA` | `status: NOERROR`、`ANSWER: 0`（**不是 NXDOMAIN**） |
+
+⚠️ 这一轮里 `NXDOMAIN` 的应答 `AUTHORITY: 0`，说明**本机这一跳递归没有把 SOA 一起带回来**（负缓存时长仍然由权威侧 SOA 的末位 1800 决定，见第二节）。排障时如果只盯 `AUTHORITY` 段有没有 SOA 来判断「是不是权威给的否定应答」，**要先确认中间那跳递归会不会改写应答段**。
+
+![DNS 递归与迭代查询调用时序：客户端到 LDNS 一段递归，LDNS 到根、.com TLD、权威三级迭代，含浏览器/OS/hosts/LDNS 四处缓存命中分支与实测时延](images/DNS递归与迭代查询时序图.svg)
 
 ### TTL 与缓存（⚠️ 高频故障）
 
@@ -121,6 +161,32 @@ LDNS ──7──▶ 客户端     : 返回 IP，并把结果按 TTL 缓存
 | **不能用在根域名（zone apex）** | `example.com.` 本身已有 NS/SOA，再加 CNAME 会冲突 → 根域要指向 CDN 只能用 **ALIAS / ANAME / Flattening**（各云厂商私有实现，本质是把 CNAME 解析成 A 后返回） |
 | **CNAME 链过长** | `a → b → c → A` 每多一跳就多一轮查询，时延与失败面都增加 → **控制在 1~2 跳**，不要指向跨服务商的深层域名 |
 
+### 报文结构：四段与三个计数
+
+上面这些记录类型，是**装在同一个报文的四个段里**的。头部固定 12 字节：
+
+| 字段 | 长度 | 作用 | 本机实测对应值 |
+|---|---|---|---|
+| `ID` | 2 字节 | 事务标识，应答原样带回 | `dig` 尾行 `id: 188` / `id: 64611` |
+| `FLAGS` | 2 字节 | 位段：`QR` `OPCODE` `AA` `TC` `RD` `RA` `Z` `AD` `CD` `RCODE` | `qr rd ra`（递归代查、**无 `aa`**）／`qr;`（权威，**连 `ra` 都没有**） |
+| `QDCOUNT` | 2 字节 | Question 段条数 | `QUERY: 1` |
+| `ANCOUNT` | 2 字节 | Answer 段条数 | `ANSWER: 2`（两条 A）／`ANSWER: 0`（referral） |
+| `NSCOUNT` | 2 字节 | Authority 段条数 | `AUTHORITY: 13`（根给的 `.com` NS）／`AUTHORITY: 2`（TLD 给的 `example.com` NS）／`AUTHORITY: 0` |
+| `ARCOUNT` | 2 字节 | Additional 段条数 | `ADDITIONAL: 27`（根的 glue）／`ADDITIONAL: 13`（TLD 的 glue） |
+
+其后依次是 **Question → Answer → Authority → Additional** 四段，每段都是若干条 `RR`（`NAME / TYPE / CLASS / TTL / RDLENGTH / RDATA`）。
+
+⭐ **读报文的两条实用判据**（都由上面那三个计数直接得出）：
+
+1. **`ANSWER: 0` 而 `AUTHORITY` 有 NS** = 这是一条**委派/引荐（referral）**，不是答案 —— 对应第二节里「权威只给下一级线索」；
+2. **`ANSWER` 有值但 `AA` 位没置** = 应答来自**缓存**而非权威，正是第三节说的 `aa=0`。
+
+⚠️ **`TC` 位与 EDNS0**：UDP 单包载荷超过上限时置 `TC=1`，客户端改用 **TCP 53** 重发一次。本机 `dig` 默认在 OPT 记录里申报的 UDP 载荷上限实测为 `udp: 1472`（问根时）与 `udp: 4096`（问 `.com` 时）—— 这就是第一节说的「EDNS0 把 UDP 上限抬到 4096」。
+
+⚠️ 一个**最小应答**的量级参考：另一轮实测里，`NXDOMAIN` 的应答 `MSG SIZE rcvd: 47` 字节（整个报文，含 12 字节头部与问题名）—— 与「DNS 报文小、一次往返就够，所以默认走 UDP」互相印证。
+
+![DNS 报文布局：12 字节头部的十个标志位与三个计数，以及 Question、Answer、Authority、Additional 四段与本机实测计数对照](images/DNS报文的四段与标志位布局.svg)
+
 ---
 
 ## 五、DNS 与负载均衡
@@ -152,6 +218,8 @@ www  A  1.1.1.3     ← 应答顺序随机轮换
 | **七层 LB**（Nginx、云 CLB 七层、Ingress） | 按 Host/Path/Header 路由 | **按业务规则**分发、健康检查、熔断、灰度 |
 
 > ⭐ **DNS 决定"去哪个机房"，LB 决定"去机房里的哪台机器"。** DNS 只做粗筛与兜底，真正的故障摘除交给 LB 的健康检查。
+
+![DNS 轮询与 GSLB 的差别：同一份多值 A 记录被各级缓存放大成流量倾斜，GSLB 改按来源返回不同地址，故障摘除仍要交给四七层 LB](images/DNS轮询与GSLB的调度分工对比.svg)
 
 ---
 

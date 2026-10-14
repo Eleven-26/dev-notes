@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 764" width="1000" height="764" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="764" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">服务发现的两条更新路径：每请求拉取 vs Watch 推送</text>
+  <text x="500" y="58" text-anchor="middle" font-size="14" fill="#64748b">读数出自本篇 2.7 节本机实测：etcd v3.5.21 单节点容器，grpc-gateway REST，同脚本连跑 4 轮</text>
+
+  <!-- 参与者 -->
+  <rect x="30" y="86" width="180" height="36" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="120" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">服务端实例 A</text>
+  <rect x="290" y="86" width="180" height="36" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="380" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#78350f">etcd 注册中心</text>
+  <rect x="560" y="86" width="180" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="650" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">客户端：Get + Watch</text>
+  <rect x="810" y="86" width="180" height="36" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="900" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">客户端：每请求拉取</text>
+
+  <!-- 生命线 -->
+  <line x1="120" y1="124" x2="120" y2="604" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5 4"/>
+  <line x1="380" y1="124" x2="380" y2="604" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5 4"/>
+  <line x1="650" y1="124" x2="650" y2="604" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5 4"/>
+  <line x1="900" y1="124" x2="900" y2="604" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5 4"/>
+
+  <!-- 阶段一 -->
+  <text x="42" y="146" font-size="12" font-weight="bold" fill="#64748b">阶段一：注册 + 建立本地列表</text>
+
+  <line x1="120" y1="166" x2="376" y2="166" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="248" y="160" text-anchor="middle" font-size="12" fill="#b91c1c">① Grant，TTL = 10s</text>
+
+  <line x1="120" y1="198" x2="376" y2="198" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="248" y="192" text-anchor="middle" font-size="12" fill="#b91c1c">② Put：服务名前缀 + IP:端口</text>
+
+  <line x1="650" y1="230" x2="384" y2="230" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="517" y="224" text-anchor="middle" font-size="12" fill="#1e40af">③ 按前缀 Get 一次，拿基线</text>
+
+  <line x1="380" y1="258" x2="646" y2="258" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arS)"/>
+  <text x="513" y="252" text-anchor="middle" font-size="12" fill="#475569">本地 list = 3 个地址，记下行号 rev = R</text>
+
+  <line x1="650" y1="290" x2="384" y2="290" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="517" y="284" text-anchor="middle" font-size="12" fill="#1e40af">④ Watch 同一前缀，FromRev = R+1</text>
+
+  <line x1="900" y1="322" x2="384" y2="322" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <text x="642" y="316" text-anchor="middle" font-size="12" fill="#334155">⑤ 每个业务请求之前都 Get 一次全量</text>
+
+  <text x="642" y="344" text-anchor="middle" font-size="11.5" fill="#64748b">实测单次中位 3.9 ~ 5.7 ms（50 次采样，最慢单次 27.3 ~ 30.7 ms）</text>
+
+  <line x1="30" y1="362" x2="970" y2="362" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="8 6"/>
+
+  <!-- 阶段二 -->
+  <text x="42" y="386" font-size="12" font-weight="bold" fill="#64748b">阶段二：A 宕机之后，两种客户端各自的代价</text>
+
+  <rect x="34" y="400" width="172" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="120" y="418" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">⑥ 进程被 kill -9</text>
+  <text x="120" y="434" text-anchor="middle" font-size="11" fill="#7f1d1d">⑦ 心跳立刻停</text>
+
+  <rect x="294" y="400" width="172" height="40" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="380" y="418" text-anchor="middle" font-size="12" font-weight="bold" fill="#78350f">⑧ 不再续约 → 租约到期</text>
+  <text x="380" y="434" text-anchor="middle" font-size="11" fill="#78350f">key 被自动删除</text>
+
+  <line x1="120" y1="462" x2="376" y2="462" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arR)"/>
+  <text x="248" y="456" text-anchor="middle" font-size="12" fill="#b91c1c">心跳缺席（没有任何通知）</text>
+
+  <rect x="286" y="478" width="188" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="380" y="496" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">实测：停心跳后 10.31 ~ 10.53 s</text>
+  <text x="380" y="512" text-anchor="middle" font-size="11" fill="#7f1d1d">key 才消失（TTL = 10s，略大于 TTL）</text>
+
+  <line x1="380" y1="538" x2="646" y2="538" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="513" y="532" text-anchor="middle" font-size="12" fill="#15803d">⑨ DELETE 事件推过来</text>
+
+  <text x="513" y="556" text-anchor="middle" font-size="11.5" fill="#64748b">实测推送落地 5 ~ 30 ms，最坏一轮 109 ms</text>
+
+  <rect x="560" y="566" width="180" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="650" y="589" text-anchor="middle" font-size="12" fill="#15803d">⑩ 本地 list 删掉 A：零往返</text>
+
+  <line x1="900" y1="584" x2="384" y2="584" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <text x="642" y="578" text-anchor="middle" font-size="12" fill="#334155">⑪ 只有下一个请求的 Get 才看到 A 没了</text>
+
+  <!-- 结论 -->
+  <rect x="40" y="622" width="920" height="124" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="648" font-size="12.5" font-weight="bold" fill="#334155">两条路径的差别不在「谁更快」，而在「什么时候付钱」：</text>
+  <text x="60" y="672" font-size="12" fill="#475569">· 每请求拉取：没变化也要付一次往返。本机 100 个请求都拉全量 = 额外 390 / 408 / 441 / 569 ms（4 轮）。</text>
+  <text x="60" y="692" font-size="12" fill="#475569">· Watch：没变化时零往返，一次变更的推送比一次 Get 还慢几毫秒到几十毫秒——但这份钱只在真出事时付。</text>
+  <text x="60" y="712" font-size="12" fill="#475569">· 真正的感知时延由租约决定（本机 10.3 ~ 10.5 s），推送只是最后一段；所以 2.4 节说 TTL 才是故障发现延迟。</text>
+  <text x="60" y="734" font-size="12" fill="#64748b">结论：③ + ④ 组合（先拉基线、再增量维护），⑤ 只在没有 Watch 能力时才用；两者不是二选一。</text>
+
+  <defs>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">限流 / 熔断 / 降级：各保护什么，又怎么互相触发</text>
+  <text x="500" y="58" text-anchor="middle" font-size="14" fill="#64748b">分工与落点出自本篇一（对照表）与 2.3（部署位置表），数字出自 3.2 / 3.3 / 3.4 / 5.2 与七</text>
+
+  <!-- 第一行：一条链上的四个位置 -->
+  <rect x="30" y="92" width="120" height="92" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="90" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#334155">入口流量</text>
+  <text x="90" y="140" text-anchor="middle" font-size="11" fill="#64748b">QPS 超过容量</text>
+  <text x="90" y="158" text-anchor="middle" font-size="11" fill="#64748b">或下游正在坏</text>
+
+  <rect x="176" y="92" width="230" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="291" y="116" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">限流：流量防护</text>
+  <text x="291" y="138" text-anchor="middle" font-size="11" fill="#334155">保护自己，控制「进来多少」</text>
+  <text x="291" y="156" text-anchor="middle" font-size="11" fill="#334155">判据：入口 QPS、并发数、热点参数</text>
+  <text x="291" y="174" text-anchor="middle" font-size="11" fill="#475569">落点：网关 / 接入层 / 接口入口</text>
+
+  <rect x="432" y="92" width="150" height="92" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="507" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">业务代码</text>
+  <text x="507" y="142" text-anchor="middle" font-size="11" fill="#334155">核心链路优先放行</text>
+  <text x="507" y="160" text-anchor="middle" font-size="11" fill="#334155">非核心可被放弃</text>
+
+  <rect x="608" y="92" width="230" height="92" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="723" y="116" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">熔断：依赖防护</text>
+  <text x="723" y="138" text-anchor="middle" font-size="11" fill="#334155">保护下游，控制「出去多少」</text>
+  <text x="723" y="156" text-anchor="middle" font-size="11" fill="#334155">判据：错误率 / 慢调用比例</text>
+  <text x="723" y="174" text-anchor="middle" font-size="11" fill="#475569">落点：RPC/HTTP Client、DAO 层</text>
+
+  <rect x="864" y="92" width="106" height="92" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="917" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#334155">下游依赖</text>
+  <text x="917" y="142" text-anchor="middle" font-size="11" fill="#64748b">DB / 缓存</text>
+  <text x="917" y="160" text-anchor="middle" font-size="11" fill="#64748b">第三方 API</text>
+
+  <line x1="150" y1="138" x2="172" y2="138" stroke="#94a3b8" stroke-width="2" marker-end="url(#arS)"/>
+  <line x1="406" y1="138" x2="428" y2="138" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <line x1="582" y1="138" x2="604" y2="138" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <line x1="838" y1="138" x2="860" y2="138" stroke="#ea580c" stroke-width="2" marker-end="url(#arO)"/>
+
+  <!-- 第二行：降级 + 人工开关 -->
+  <rect x="30" y="214" width="120" height="94" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="90" y="240" text-anchor="middle" font-size="13" font-weight="bold" fill="#78350f">人工开关</text>
+  <text x="90" y="262" text-anchor="middle" font-size="11" fill="#475569">配置中心秒级</text>
+  <text x="90" y="278" text-anchor="middle" font-size="11" fill="#475569">下发，不靠发版</text>
+  <text x="90" y="298" text-anchor="middle" font-size="11" fill="#64748b">可独立触发</text>
+
+  <rect x="176" y="214" width="662" height="94" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="507" y="238" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">降级：业务取舍，决定「放弃什么」</text>
+  <text x="507" y="260" text-anchor="middle" font-size="11" fill="#334155">兜底做法：返回默认值 / 兜底缓存 / 异步化 / 关闭非核心功能 / 排队提示（429 + Retry-After）</text>
+  <text x="507" y="280" text-anchor="middle" font-size="11" fill="#334155">三种触发：人工开关 / 熔断触发 / 限流触发 —— 降级是被触发后的表现，不是第三道自动闸门</text>
+  <text x="507" y="300" text-anchor="middle" font-size="11" fill="#475569">写降级必须配补偿：落本地消息表或 MQ，恢复后补做并核对（读降级可直接丢弃）</text>
+
+  <line x1="291" y1="184" x2="291" y2="210" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="302" y="202" font-size="11" fill="#15803d">限流触发降级</text>
+  <line x1="723" y1="184" x2="723" y2="210" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="734" y="202" font-size="11" fill="#15803d">熔断触发降级</text>
+  <line x1="150" y1="261" x2="172" y2="261" stroke="#b45309" stroke-width="2" marker-end="url(#arY)"/>
+
+  <!-- 第三行：两张卡 -->
+  <rect x="40" y="328" width="450" height="178" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="56" y="352" font-size="12.5" font-weight="bold" fill="#334155">熔断判定的几个数字（3.2 / 3.3 / 5.2 节）</text>
+  <text x="56" y="376" font-size="11.5" fill="#475569">· 错误率阈值：一般 50%（如 Sentinel count=0.5）</text>
+  <text x="56" y="396" font-size="11.5" fill="#475569">· 最小请求数必须配：10 或 20。总共 2 个请求失败 1 个</text>
+  <text x="66" y="414" font-size="11.5" fill="#475569">就是 50%，不配这条会误熔断</text>
+  <text x="56" y="434" font-size="11.5" fill="#475569">· 熔断时长 timeWindow：一般 5~30s，太短频繁试探</text>
+  <text x="56" y="454" font-size="11.5" fill="#475569">· 半开放行：Sentinel 只放 1 个，Resilience4j 默认 10，</text>
+  <text x="66" y="472" font-size="11.5" fill="#475569">gobreaker MaxRequests=3（设 0 则只放 1 个）</text>
+  <text x="56" y="492" font-size="11.5" fill="#475569">· 慢调用比例比错误率更早发现问题（先变慢再报错）</text>
+
+  <rect x="510" y="328" width="450" height="178" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="526" y="352" font-size="12.5" font-weight="bold" fill="#b91c1c">三条必须一起讲的坑（3.4 与七）</text>
+  <text x="526" y="376" font-size="11.5" fill="#475569">· 熔断后必须有降级兜底，否则熔断只是把「慢」变成「错」</text>
+  <text x="526" y="396" font-size="11.5" fill="#475569">· 熔断期间要禁用重试：多层重试是乘性放大，客户端 /</text>
+  <text x="536" y="414" font-size="11.5" fill="#475569">网关 / SDK 各重试 3 次 = 3 层 ×3 = 27 倍</text>
+  <text x="526" y="434" font-size="11.5" fill="#475569">· 重试预算 ≤10%，配指数退避 + 抖动，只重试幂等接口</text>
+  <text x="526" y="454" font-size="11.5" fill="#475569">· 网关与应用两层限流会重复计数：阈值要按实例数折算对齐，</text>
+  <text x="536" y="472" font-size="11.5" fill="#475569">两个口径上报到同一个看板</text>
+  <text x="526" y="492" font-size="11.5" fill="#475569">· 半开试探要走真实调用，不能被缓存命中误判成已恢复</text>
+
+  <!-- 底部一句话 -->
+  <rect x="40" y="524" width="920" height="118" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="550" font-size="12.5" font-weight="bold" fill="#334155">一句话分清三者：</text>
+  <text x="60" y="574" font-size="12" fill="#475569">限流 =「我扛不住了，少来点」，保护自己，通常一直生效，看的是入口流量；</text>
+  <text x="60" y="594" font-size="12" fill="#475569">熔断 =「你（下游）不行了，我先不调你」，保护下游，只在故障期临时生效，看的是调用结果；</text>
+  <text x="60" y="614" font-size="12" fill="#475569">降级 =「这个先不做了，把资源留给核心」，业务取舍，可被开关 / 熔断 / 限流任一个触发。</text>
+  <text x="60" y="636" font-size="11.5" fill="#64748b">三态机的迁移与实测阈值不在本图：见同目录 熔断器.md 的状态机图；多副本下阈值被放大的问题见 多副本共享状态.md。</text>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    </marker>
+    <marker id="arY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

@@ -259,6 +259,125 @@ git reset --hard HEAD@{2}
 
 > ⭐ 一句话准则：**「公共分支用 merge，私人分支用 rebase」**——rebase 是为了让提交历史好看，代价是改写历史，只对未推送的本地提交使用才安全。
 
+## 四、实测：命令执行后提交图和三个区分别变成什么样？
+
+**本节要点**：上面的命令都是"背下来就会"的写法，但 `merge` / `rebase` / `reset` / `fetch` 改的到底是**提交图的哪几个节点**、**工作区 / 暂存区 / 仓库的哪一区**，只有真跑一遍才有底。本节全部是实测输出，短哈希、`git status --short` 的左列右列都是原样粘贴。
+
+### 4.1 实验环境与做法
+
+- 运行时：`git version 2.44.0.windows.1`（Git Bash，Windows）。
+- 实验仓库全部新建在仓库外的临时目录（`.workbuddy/tmp/round495/` 下的 `w2ra6-gitdemo`、`w2ra6-gitreset-*`、`w2ra6-gitremote` / `w2ra6-gitlocal`），**不在 `dev-notes` 主仓里做**，避免污染笔记仓库的历史。
+- 提交作者与时间用环境变量固定（`GIT_AUTHOR_NAME` / `GIT_COMMITTER_NAME` 等），保证输出可复现；换机器跑出来哈希会变（父提交内容、时间戳都参与计算），**结构不变、短哈希变**，所以下面的哈希只用于对齐本节文字，不要当常量记。
+
+### 4.2 先造出一个真实分叉：merge 之前的提交图
+
+从第 2 个提交拉出 `feature-login`，`main` 上再补一个提交，得到两个分支各自前进的分叉：
+
+```text
+* 07a93e3 test: 登录用例
+| * b69296f fix: 补配置
+* | cc577d8 feat: 登录页
+|/
+* f29d2aa feat: 登录
+* 2cd5113 init: v1
+```
+
+`git branch -v` 同一时刻的指针位置：`feature-login` 指向 `07a93e3`，`main` 指向 `b69296f`，两者的**公共祖先是 `f29d2aa`**（`git merge-base main feature-login` 的就是它）。上面这棵树里 `|/` 那一行就是分叉点，图上表现成两条竖线并成一条。
+
+![Git 提交图的 DAG 形态：两个分支指针、公共祖先 f29d2aa 与合并后的双父提交](images/Git提交图的DAG形态与双父提交.svg)
+
+`git merge --no-ff feature-login` 之后，多出一个**有两个父提交**的合并提交，分叉结构原样保留：
+
+```text
+*   f054075 merge: 合并登录功能
+|\
+* | b69296f fix: 补配置
+| * 07a93e3 test: 登录用例
+| * cc577d8 feat: 登录页
+|/
+* f29d2aa feat: 登录
+* 2cd5113 init: v1
+```
+
+`f054075` 的父提交是 `b69296f` 和 `07a93e3`（第一父是合并时所在分支的位置，第二父是被合并进来的分支头）。**被合并的五个提交一个都没变**——这就是第三节说的"merge 不改写历史"的具体含义。
+
+### 4.3 rebase 重放：同一条提交信息，换一批哈希
+
+把 `main` 退回合并前（`git reset --hard` 到 `b69296f`），在 `feature-login` 上执行 `git rebase main`，再回 `main` 执行 `git merge --ff-only feature-login`，提交图变成一条直线：
+
+```text
+* 81209f9 test: 登录用例
+* 2112dd9 feat: 登录页
+* b69296f fix: 补配置
+* f29d2aa feat: 登录
+* 2cd5113 init: v1
+```
+
+对照 rebase 前后的哈希，`git reflog show feature-login` 的真实输出：
+
+```text
+81209f9 feature-login@{0}: rebase (finish): refs/heads/feature-login onto b69296f356728752a84ad5099a73f31911ace33d
+07a93e3 feature-login@{1}: commit: test: 登录用例
+cc577d8 feature-login@{2}: commit: feat: 登录页
+f29d2aa feature-login@{3}: branch: Created from main
+```
+
+三条实测结论：
+
+| 提交 | rebase 前 | rebase 后 | 变了吗 |
+|---|---|---|---|
+| `feat: 登录页` | `cc577d8` | `2112dd9` | ✅ 变 |
+| `test: 登录用例` | `07a93e3` | `81209f9` | ✅ 变 |
+| `fix: 补配置`（在 `main` 上） | `b69296f` | `b69296f` | ❌ 不变 |
+| `feat: 登录` / `init: v1` | `f29d2aa` / `2cd5113` | 同上 | ❌ 不变 |
+
+**只有被重放的那批提交换哈希**（它们的父提交变成了 `b69296f`，父指针进了哈希计算），`main` 上原有的提交一个没动。`rebase (finish) ... onto b69296f3...` 这一行就是"重放到哪个提交之后"的凭据。
+
+![merge 与 rebase 的提交形态对比：同一初始分叉走两条路，右侧两个哈希被改写](images/Git的merge与rebase提交形态对比.svg)
+
+### 4.4 reset 三种模式：工作区 / 暂存区 / 仓库各改了哪一区
+
+基线是三个提交的干净仓库（`commit-A1` ← `commit-A2` ← `commit-A3`，`c.txt` 是 A3 新增的文件），每次都执行 `git reset --<模式> A2`，也就是**把 HEAD 从 A3 退回 A2**。三个模式各用一个独立仓库跑，避免互相污染。
+
+| 模式 | HEAD | `git status --short` 原样输出 | `git diff --cached --name-only` | `git diff --name-only` | 工作区实际文件 |
+|---|---|---|---|---|---|
+| `--soft` | 退回 A2 | `A  c.txt` | `c.txt` | （空） | `a.txt b.txt c.txt` |
+| `--mixed` | 退回 A2 | `?? c.txt` | （空） | （空） | `a.txt b.txt c.txt` |
+| `--hard` | 退回 A2 | （空） | （空） | （空） | `a.txt b.txt` |
+
+逐条读这张表：
+
+- **`--soft`**：左列 `A` 表示 `c.txt` **还在暂存区**（索引没动，仍是 A3 的样子），右列是空的说明工作区和索引一致。退回后直接 `git commit` 就把 A3 重新提交一次，这是"改提交信息 / 合并多个提交"的用法。
+- **`--mixed`**：索引被重置成 A2，于是 `c.txt` 变成**未跟踪**（`??`）而不是"已修改"。注意这个区别——`git diff` 看不到它，`git add .` 才会重新收进来；反过来，`git clean -fd` 会把它删掉。
+- **`--hard`**：三区全部对齐 A2，`git status` 干净，`ls` 少一个 `c.txt`，改动**真的没了**。
+
+甩掉的提交并没有立刻消失，`git reflog` 里还留着：
+
+```text
+98aff32 HEAD@{0}: reset: moving to 98aff32
+560fd38 HEAD@{1}: commit: commit-A3
+98aff32 HEAD@{2}: commit: commit-A2
+63ca649 HEAD@{3}: commit (initial): commit-A1
+```
+
+实测用 `git branch back-560fd38 560fd38` 把 A3 重新挂上分支，再 `git show 560fd38:c.txt` 输出 `third`——文件内容确实还在对象库里。所以 2.4 节那句"reset --hard 之后还能救"是对的，前提是**对象还没被 gc**。
+
+![reset 三种模式的三区数据流转：HEAD 都退回 A2，但暂存区与工作区的落点不同](images/Git-reset三种模式的三区数据流转.svg)
+
+### 4.5 fetch 与 pull：动的不是同一层
+
+用一个裸仓库当远程，本地 `git clone` 之后，在另一处把工作副本的 `app.txt` 追加一行并 push（远程从 `5d03fda` 前进到 `9592af4`），然后逐条观察本地三个位置。
+
+| 时点 | 本地分支 `main` | 远程跟踪分支 `origin/main` | 工作区 `app.txt` | `git status -sb` 首行 |
+|---|---|---|---|---|
+| fetch 前 | `5d03fda seed: 初始提交` | `5d03fda` | `line-1` | `## main...origin/main` |
+| `git fetch origin` 后 | `5d03fda seed: 初始提交` | `9592af4 feat: 远程新增第 2 行` | `line-1` | `## main...origin/main [behind 1]` |
+| `git pull origin main` 后 | `9592af4 feat: 远程新增第 2 行` | `9592af4` | `line-1` + `line-2 别人的改动` | `## main...origin/main` |
+
+关键的一行是 `[behind 1]`：fetch **只把对象下载下来、把 `refs/remotes/origin/main` 往前推**，本地分支指针和工作区都没碰。要落进工作区还差第二步，`pull` 就是把这一步替你做了（等价于 `git fetch` + `git merge origin/main`，实测 `git reset --hard` 退回后手动 `merge origin/main` 的结果与 `pull` 完全一致：`main` 都是 `9592af4`、`app.txt` 都是两行）。
+
+![fetch 与 pull 各自改动的层：fetch 只推进远程跟踪分支，pull 才动本地分支与工作区](images/Git-fetch与pull各自动了哪一层.svg)
+
 ---
 
 ## 延伸追问
@@ -274,4 +393,4 @@ git reset --hard HEAD@{2}
 
 - [CI-CD面试题.md](../部署/CI-CD面试题.md) — 这些命令在流水线里的自动化用法
 - [常用命令.md](../../02-计算机基础/linux/常用命令.md) — 同一台机器上的其他日常命令
-> 反向引用（本篇被下列文档引到）：[LCS.md](../../02-计算机基础/算法/动态规划/LCS.md)、[GitLab CI-CD.md](../部署/GitLab-CI-CD.md)
+> 反向引用（本篇被下列文档引到）：[LCS.md](../../02-计算机基础/算法/动态规划/LCS.md)、[GitLab-CI-CD.md](../部署/GitLab-CI-CD.md)

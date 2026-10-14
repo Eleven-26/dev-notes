@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="e1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两条 90 秒答题链：为什么快、怎么不丢</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">把散点串成一条因果链，每一步都是上一步的必然延伸</text>
+
+  <text x="20" y="84" font-size="14" font-weight="bold" fill="#1e3a8a">链① 为什么快</text>
+
+  <rect x="20" y="94" width="148" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="94" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">① 顺序写</text>
+  <text x="28" y="144" font-size="10.5" fill="#1d4ed8">append 免随机 IO</text>
+  <line x1="168" y1="127" x2="184" y2="127" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="184" y="94" width="148" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="258" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">② PageCache</text>
+  <text x="192" y="144" font-size="10.5" fill="#1d4ed8">读写走页缓存</text>
+  <line x1="332" y1="127" x2="348" y2="127" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="348" y="94" width="148" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="422" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">③ 零拷贝</text>
+  <text x="356" y="144" font-size="10.5" fill="#1d4ed8">sendfile 直送网卡</text>
+  <line x1="496" y1="127" x2="512" y2="127" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="512" y="94" width="148" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="586" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">④ 批量+压缩</text>
+  <text x="520" y="144" font-size="10.5" fill="#1d4ed8">实测 542 条/16KiB</text>
+  <line x1="660" y1="127" x2="676" y2="127" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="676" y="94" width="148" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="750" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">⑤ 分区并行</text>
+  <text x="684" y="144" font-size="10.5" fill="#1d4ed8">加分区提并行度</text>
+  <line x1="824" y1="127" x2="840" y2="127" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="840" y="94" width="148" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="914" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">⑥ 稀疏索引</text>
+  <text x="848" y="144" font-size="10.5" fill="#1d4ed8">二分+顺序扫定位</text>
+
+  <text x="20" y="196" font-size="14" font-weight="bold" fill="#7c2d12">链② 怎么不丢</text>
+
+  <rect x="20" y="206" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="130" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">① 生产端 acks=all</text>
+  <text x="30" y="256" font-size="10.5" fill="#9a3412">+ retries &gt; 0 + 处理发送异常</text>
+  <line x1="240" y1="239" x2="260" y2="239" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="260" y="206" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="370" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">② Broker 多副本</text>
+  <text x="270" y="256" font-size="10.5" fill="#9a3412">rf≥3 + minIsr≥2 + unclean=false</text>
+  <line x1="480" y1="239" x2="500" y2="239" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="500" y="206" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="610" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">③ 消费端先处理后提交</text>
+  <text x="510" y="256" font-size="10.5" fill="#9a3412">关自动提交 · commitSync</text>
+  <line x1="720" y1="239" x2="740" y2="239" stroke="#334155" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <rect x="740" y="206" width="220" height="66" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="850" y="232" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">④ 消费端幂等兜底</text>
+  <text x="750" y="256" font-size="10.5" fill="#b91c1c">业务唯一键去重（不用 offset）</text>
+
+  <text x="20" y="316" font-size="13" fill="#0f172a">⭐ 链①：只说「磁盘顺序写」不完整——PageCache、零拷贝、批量压缩、分区并行、稀疏索引是一整套组合拳。</text>
+  <text x="20" y="344" font-size="13" fill="#0f172a">⭐ 链②：前两步做到「不丢」（At Least Once），但重平衡后仍会重复，所以第 ④ 步消费端幂等不可省。</text>
+  <text x="20" y="378" font-size="12" fill="#64748b">「恰好一次」只在 Kafka 内部流链路（读 Topic→写 Topic）成立；跨系统写库 / 发 HTTP 做不到，只能靠幂等等价实现。详见 消息可靠性.md。</text>
+</svg>

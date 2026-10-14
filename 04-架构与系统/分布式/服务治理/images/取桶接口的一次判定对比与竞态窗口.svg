@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">取桶接口走不通：三条补救都退化成一次判定</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13.5" fill="#64748b">出处：本篇二节的方案 a/b/c 推演、1.1 节「3 副本 × 100/s → 实际放行 300/s」与接口签名代码块</text>
+
+  <rect x="40" y="88" width="430" height="34" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="255" y="110" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#b91c1c">错路：GetBucket(key) 把桶取回本地判</text>
+  <rect x="530" y="88" width="430" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="745" y="110" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#15803d">对路：Allow(key, policy) 一次调用完成判定</text>
+
+  <rect x="40" y="132" width="430" height="104" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="60" y="156" font-size="13" font-weight="bold" fill="#0f172a">方案 a：把桶缓存到本地，本地判</text>
+  <text x="60" y="180" font-size="12" fill="#475569">共享了个寂寞：又变回各算各的，阈值 × 副本数</text>
+  <text x="60" y="202" font-size="12" fill="#475569">读数：100/s 配置 × 3 副本 → 实际放行 300/s</text>
+  <text x="60" y="224" font-size="12" fill="#475569">现象：上游收到三倍压力，而且没有任何报错</text>
+
+  <rect x="40" y="246" width="430" height="126" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="60" y="270" font-size="13" font-weight="bold" fill="#0f172a">方案 b：每请求两次往返，桶还在本地改</text>
+  <text x="60" y="294" font-size="12" fill="#475569">延迟翻倍：判定挂在每个请求的路径上</text>
+  <text x="60" y="316" font-size="12" fill="#475569">竞态窗口：GetBucket 与 Allow 之间别的副本已改过桶</text>
+  <text x="60" y="338" font-size="12" fill="#475569">两个请求都读到「还剩 1 个令牌」→ 双双放行（超发）</text>
+  <text x="60" y="360" font-size="12" fill="#475569">远程接口本该表达意图，这里暴露的是状态</text>
+
+  <rect x="40" y="382" width="430" height="96" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="60" y="406" font-size="13" font-weight="bold" fill="#0f172a">方案 c：取桶时就把桶锁在服务端</text>
+  <text x="60" y="430" font-size="12" fill="#475569">那其实已经是一次判定 —— 只是签名骗了人</text>
+  <text x="60" y="454" font-size="12" fill="#475569">三条补救全部回到同一个形状：桶不离开服务端</text>
+
+  <rect x="530" y="132" width="430" height="110" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="550" y="156" font-size="13" font-weight="bold" fill="#15803d">一次判定的接口形状（本篇代码块）</text>
+  <text x="550" y="180" font-size="12" fill="#334155">Allow(key string, p LimitPolicy) (bool, Duration)</text>
+  <text x="550" y="202" font-size="12" fill="#334155">意图进、结论出：「我要放行一个」</text>
+  <text x="550" y="224" font-size="12" fill="#334155">不暴露状态：桶永远不离开服务端</text>
+
+  <rect x="530" y="252" width="430" height="110" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="550" y="276" font-size="13" font-weight="bold" fill="#1d4ed8">代价对照：一个请求只有一次往返</text>
+  <text x="550" y="300" font-size="12" fill="#334155">副本 → 状态服务：POST /ratelimit {key, rate, burst}</text>
+  <text x="550" y="322" font-size="12" fill="#334155">状态服务 → 副本：{allowed: true, retry_ms: 0}</text>
+  <text x="550" y="344" font-size="12" fill="#334155">读—改—写在服务端同一处完成，没有窗口</text>
+
+  <rect x="530" y="372" width="430" height="106" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="550" y="396" font-size="13" font-weight="bold" fill="#92400e">一条判据（本篇正文原话）</text>
+  <text x="550" y="420" font-size="12.5" fill="#475569">凡是「先取状态、再在本地改状态」的接口，</text>
+  <text x="550" y="442" font-size="12.5" fill="#475569">都无法正确地远程化 —— 读—改—写之间必有窗口，</text>
+  <text x="550" y="464" font-size="12.5" fill="#475569">这个窗口在分布式下会被放大成正确性问题。</text>
+
+  <line x1="470" y1="312" x2="528" y2="312" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arS)"/>
+  <line x1="470" y1="430" x2="528" y2="430" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arY)"/>
+
+  <text x="500" y="500" text-anchor="middle" font-size="12" fill="#64748b">两条虚线各指一件事：b 的两次往返换成右栏的一次往返；c 的「锁在服务端」就是右栏判据的实质</text>
+
+  <rect x="40" y="512" width="920" height="124" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="536" font-size="13" font-weight="bold" fill="#334155">同一类错误（本篇正文的对照）</text>
+  <text x="60" y="560" font-size="12.5" fill="#475569">分布式锁：Lock()/Unlock() 拆成 GetLockState() + SetLock()，就完全失去意义；</text>
+  <text x="60" y="582" font-size="12.5" fill="#475569">库存扣减：GetStock() + SetStock() 也必然超卖 —— 一次调用完成一次判定，是分布式接口的基本形状。</text>
+  <text x="60" y="606" font-size="12" fill="#64748b">注意：本图全部来自本篇正文的推演与配置读数，没有新增实测；远程判定延迟的量级（1~5ms）见第三节路线对照表。</text>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

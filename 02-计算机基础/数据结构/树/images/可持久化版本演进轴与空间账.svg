@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">可持久化的演进轴：改一次只多「树高」个节点，历史版本一个都没被动过</text>
+  <text x="500" y="53" text-anchor="middle" font-size="12.5" fill="#64748b">版本链与连通读数取自 4.1（8 个元素），空间账取自 2.1（20000 个版本），查询代价取自 3.1，均为容器 Go 1.26.8 实测</text>
+
+  <circle cx="140" cy="195" r="28" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="140" y="195" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#334155">v0</text>
+  <circle cx="360" cy="195" r="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="360" y="195" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#1e40af">v1</text>
+  <circle cx="580" cy="195" r="28" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="580" y="195" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#1e40af">v2</text>
+  <circle cx="800" cy="195" r="28" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="800" y="195" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="bold" fill="#14532d">v3</text>
+  <line x1="170" y1="195" x2="330" y2="195" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="390" y1="195" x2="550" y2="195" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="610" y1="195" x2="770" y2="195" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="250" y="180" text-anchor="middle" font-size="12" fill="#334155">union 1,2</text>
+  <text x="470" y="180" text-anchor="middle" font-size="12" fill="#334155">union 3,4</text>
+  <text x="690" y="180" text-anchor="middle" font-size="12" fill="#334155">union 1,3</text>
+  <text x="250" y="216" text-anchor="middle" font-size="11.5" fill="#64748b">新建 O(log n) 个节点</text>
+  <text x="470" y="216" text-anchor="middle" font-size="11.5" fill="#64748b">新建 O(log n) 个节点</text>
+  <text x="690" y="216" text-anchor="middle" font-size="11.5" fill="#64748b">新建 O(log n) 个节点</text>
+  <text x="140" y="240" text-anchor="middle" font-size="11.5" fill="#64748b">8 个元素各自成集</text>
+  <text x="940" y="163" text-anchor="end" font-size="11.5" fill="#64748b">版本轴（时间方向）</text>
+  <line x1="905" y1="172" x2="945" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <text x="500" y="266" text-anchor="middle" font-size="12.5" fill="#334155">历史查询读数：v3 上「1 与 4 连通」= true ｜ v1 上「1 与 3」= false ｜ v2 上「1 与 3」= false ｜ 回 v3 复查仍 = true</text>
+  <text x="500" y="288" text-anchor="middle" font-size="12" fill="#16a34a">要点：验收标准不是「当前版本对不对」，而是「查完历史版本之后，当前版本还对不对」</text>
+
+  <rect x="30" y="304" width="300" height="42" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="322" font-size="12.5" font-weight="bold" fill="#0f172a">部分持久化</text>
+  <text x="44" y="338" font-size="11.5" fill="#64748b">只能查历史版本，不能改（最常见）</text>
+  <rect x="350" y="304" width="300" height="42" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="364" y="322" font-size="12.5" font-weight="bold" fill="#0f172a">完全持久化</text>
+  <text x="364" y="338" font-size="11.5" fill="#ea580c">任意版本上继续改 → 链变版本树</text>
+  <rect x="670" y="304" width="300" height="42" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="684" y="322" font-size="12.5" font-weight="bold" fill="#0f172a">合流持久化</text>
+  <text x="684" y="338" font-size="11.5" fill="#64748b">两个版本还能合并（Git merge 量级）</text>
+
+  <rect x="30" y="360" width="940" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="46" y="386" font-size="14" font-weight="bold" fill="#0f172a">同一个 20000 版本实验的空间账（版本数 → 累计节点数）</text>
+  <text x="46" y="412" font-size="12.5" fill="#14532d">路径复制 + 结构共享：所有版本共用 307 232 个节点，平均每版新建 15.4 个</text>
+  <rect x="46" y="420" width="6" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="62" y="433" font-size="11.5" fill="#64748b">条长按 2604 : 1 计，这条真实宽度不到 1 px，放大到 6 px 才画得出来</text>
+  <text x="46" y="462" font-size="12.5" fill="#7f1d1d">每版完整快照：39 999 个 / 版 × 20000 版 = 799 980 000 个节点</text>
+  <rect x="46" y="470" width="900" height="16" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="46" y="508" font-size="12.5" fill="#334155">结论：n 个版本的总空间从 O(n²) 被压成 O(n log n)，省下 2604 倍 —— 与「改一次只付树高」是同一件事的两种表述</text>
+
+  <text x="30" y="558" font-size="12" fill="#334155">沿这条轴查询：区间 [l, r] 第 k 小 = 版本 r − 版本 (l−1)；区间长 10 / 100 / 1000 时固定探 15 个节点，长 10000 时探 16 个 —— 代价与区间长度无关。</text>
+  <text x="30" y="580" font-size="12" fill="#64748b">注意：版本之间靠根指针 roots[i] 区分；路径复制只写新节点、从不碰旧节点，所以多版本并发读不需要加锁。</text>
+  <text x="30" y="602" font-size="12" fill="#64748b">持久化强度只看一句判据：「要不要在历史版本上继续写」—— 只要答是需要，链条就升级成版本树。</text>
+</svg>

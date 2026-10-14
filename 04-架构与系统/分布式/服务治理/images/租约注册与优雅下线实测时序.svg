@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="780" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">租约注册、优雅下线与硬挂过期：两条下线路径的实测时序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="14" fill="#64748b">读数出自本篇 §四「4. 本机实测」：真实 client/v3 v3.5.9 连 etcd v3.5.21 单节点容器，同参数复跑 2 组</text>
+
+  <rect x="30" y="86" width="200" height="36" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="130" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">服务实例（子进程）</text>
+  <rect x="300" y="86" width="240" height="36" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="420" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#78350f">etcd（租约 + KV）</text>
+  <rect x="630" y="86" width="200" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="730" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">Resolver 客户端</text>
+
+  <line x1="130" y1="124" x2="130" y2="648" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5 4"/>
+  <line x1="420" y1="124" x2="420" y2="648" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5 4"/>
+  <line x1="730" y1="124" x2="730" y2="648" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="5 4"/>
+
+  <text x="42" y="146" font-size="12" font-weight="bold" fill="#64748b">注册与订阅（两条路径共用）</text>
+
+  <line x1="130" y1="158" x2="416" y2="158" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="273" y="152" text-anchor="middle" font-size="12" fill="#b91c1c">① Grant，TTL = 10s</text>
+
+  <line x1="130" y1="186" x2="416" y2="186" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="273" y="180" text-anchor="middle" font-size="12" fill="#b91c1c">② Put 地址 key（挂在租约上）</text>
+
+  <line x1="130" y1="214" x2="416" y2="214" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="273" y="208" text-anchor="middle" font-size="12" fill="#b91c1c">③ Put 元数据 key（同一租约）</text>
+
+  <rect x="290" y="228" width="260" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="420" y="245" text-anchor="middle" font-size="11" fill="#334155">TimeToLive：剩余 9s</text>
+  <text x="420" y="261" text-anchor="middle" font-size="11" fill="#334155">两个 key 同生共死（实验 A）</text>
+
+  <line x1="130" y1="288" x2="416" y2="288" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arR)"/>
+  <text x="273" y="282" text-anchor="middle" font-size="12" fill="#b91c1c">④ KeepAlive 周期续约 = 被动健康检查</text>
+
+  <line x1="730" y1="316" x2="424" y2="316" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="577" y="310" text-anchor="middle" font-size="12" fill="#1e40af">⑤ Get 前缀，拿基线列表</text>
+
+  <line x1="420" y1="342" x2="726" y2="342" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arS)"/>
+  <text x="573" y="336" text-anchor="middle" font-size="12" fill="#475569">n = 3，rev = 145</text>
+
+  <line x1="730" y1="370" x2="424" y2="370" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <text x="577" y="364" text-anchor="middle" font-size="12" fill="#1e40af">⑥ Watch：WithRev(146) + WithPrevKV</text>
+
+  <line x1="30" y1="392" x2="970" y2="392" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="8 6"/>
+  <text x="42" y="412" font-size="12" font-weight="bold" fill="#15803d">分支①：优雅下线（Deregister 走 Revoke）</text>
+
+  <line x1="130" y1="430" x2="416" y2="430" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="273" y="424" text-anchor="middle" font-size="12" fill="#15803d">⑦ Revoke(lease)</text>
+
+  <line x1="420" y1="458" x2="726" y2="458" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="573" y="452" text-anchor="middle" font-size="12" fill="#15803d">⑧ DELETE 事件：实测 6.0 ~ 13.4 ms</text>
+
+  <rect x="290" y="474" width="260" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="420" y="492" text-anchor="middle" font-size="11" fill="#15803d">⑨ Get 侧两个 key 同时不可见</text>
+  <text x="420" y="510" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803d">9.4 ~ 23.6 ms</text>
+
+  <line x1="30" y1="534" x2="970" y2="534" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="8 6"/>
+  <text x="42" y="554" font-size="12" font-weight="bold" fill="#b91c1c">分支②：硬挂（等价 kill -9：不 Revoke、不 Close）</text>
+
+  <rect x="30" y="566" width="200" height="48" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="130" y="585" text-anchor="middle" font-size="11" font-weight="bold" fill="#b91c1c">⑩ 进程被 kill -9</text>
+  <text x="130" y="603" text-anchor="middle" font-size="11" fill="#7f1d1d">心跳当场断，无通知</text>
+
+  <rect x="290" y="566" width="260" height="48" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="420" y="585" text-anchor="middle" font-size="11" fill="#78350f">⑪ 不再续约 → 到期才被删</text>
+  <text x="420" y="603" text-anchor="middle" font-size="11" font-weight="bold" fill="#78350f">实测 9.78 ~ 10.23 s（TTL=10s）</text>
+
+  <line x1="420" y1="628" x2="726" y2="628" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="573" y="622" text-anchor="middle" font-size="12" fill="#b91c1c">⑫ DELETE 事件这才到达客户端</text>
+
+  <text x="42" y="646" font-size="11.5" fill="#b91c1c">这 10 秒里业务请求仍会打到死地址——摘除延迟就是一个 TTL</text>
+
+  <rect x="40" y="664" width="920" height="100" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="690" font-size="12.5" font-weight="bold" fill="#334155">三条实测结论：</text>
+  <text x="60" y="712" font-size="12" fill="#475569">· 同一次下线，Revoke 是 9.4 ~ 23.6 ms、硬挂是 9.78 ~ 10.23 s，差约 500 倍——优雅下线不是礼节，是把摘除延迟压成一次往返。</text>
+  <text x="60" y="732" font-size="12" fill="#475569">· 铁律 2 / 3 的真实形态：制造 ErrCompacted 时先 Healthy=false + 旧列表继续用（n=3），再「重连后回补」全量替换（rev=145）。</text>
+  <text x="60" y="752" font-size="12" fill="#475569">· 坑：按前缀拉取会把元数据 key 也当成实例（列表里混进 zone 那段 JSON）——meta key 不能和地址 key 共用同一个前缀。</text>
+
+  <defs>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

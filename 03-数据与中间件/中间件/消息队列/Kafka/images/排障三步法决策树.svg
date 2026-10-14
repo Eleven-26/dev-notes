@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="b1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">排障三步法：从 LAG 定位到分区，再判副本，最后看追赶</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">三步只靠 describe 类命令，不登机器翻日志；先定位问题分区，再判断是否副本侧，最后确认是否在追</text>
+
+  <rect x="320" y="84" width="360" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="104" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">第一步　看 LAG</text>
+  <text x="500" y="122" text-anchor="middle" font-size="11.5" fill="#1d4ed8">kafka-consumer-groups.sh --describe --group</text>
+
+  <line x1="500" y1="130" x2="180" y2="166" stroke="#334155" stroke-width="1.4" marker-end="url(#b1)"/>
+  <line x1="500" y1="130" x2="500" y2="166" stroke="#334155" stroke-width="1.4" marker-end="url(#b1)"/>
+  <line x1="500" y1="130" x2="820" y2="166" stroke="#334155" stroke-width="1.4" marker-end="url(#b1)"/>
+
+  <rect x="40" y="168" width="280" height="44" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="180" y="188" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">单分区 LAG 高</text>
+  <text x="180" y="205" text-anchor="middle" font-size="11" fill="#92400e">该分区 key 热点</text>
+  <rect x="360" y="168" width="280" height="44" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="500" y="188" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">所有分区 LAG 齐涨</text>
+  <text x="500" y="205" text-anchor="middle" font-size="11" fill="#92400e">消费能力不足</text>
+  <rect x="680" y="168" width="280" height="44" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="820" y="188" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">忽高忽低 / 频繁重平衡</text>
+  <text x="820" y="205" text-anchor="middle" font-size="11" fill="#92400e">慢调用 / GC 抖动</text>
+
+  <line x1="180" y1="212" x2="180" y2="246" stroke="#334155" stroke-width="1.4" marker-end="url(#b1)"/>
+  <line x1="500" y1="212" x2="500" y2="246" stroke="#334155" stroke-width="1.4" marker-end="url(#b1)"/>
+  <line x1="820" y1="212" x2="820" y2="246" stroke="#334155" stroke-width="1.4" marker-end="url(#b1)"/>
+
+  <rect x="40" y="248" width="280" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="180" y="272" text-anchor="middle" font-size="12" fill="#14532d">检查 key 设计</text>
+  <text x="180" y="291" text-anchor="middle" font-size="12" fill="#14532d">拆分热点 key</text>
+  <rect x="360" y="248" width="280" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="500" y="272" text-anchor="middle" font-size="12" fill="#14532d">提并发（≤ 分区数）</text>
+  <text x="500" y="291" text-anchor="middle" font-size="12" fill="#14532d">批量消费 / 下游异步化</text>
+  <rect x="680" y="248" width="280" height="56" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="820" y="272" text-anchor="middle" font-size="12" fill="#14532d">查下游 RT 与 GC</text>
+  <text x="820" y="291" text-anchor="middle" font-size="12" fill="#14532d">调大 max.poll.interval.ms</text>
+
+  <line x1="20" y1="330" x2="980" y2="330" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="60" y="352" width="400" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="76" y="378" font-size="13" font-weight="bold" fill="#1e3a8a">第二步　看 ISR</text>
+  <text x="76" y="400" font-size="11.5" fill="#1d4ed8">--describe --topic：Isr 是否 &lt; min.insync.replicas</text>
+  <line x1="464" y1="382" x2="536" y2="382" stroke="#334155" stroke-width="1.5" marker-end="url(#b1)"/>
+  <rect x="540" y="352" width="400" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="556" y="378" font-size="13" font-weight="bold" fill="#1e3a8a">第三步　看 offsetLag</text>
+  <text x="556" y="400" font-size="11.5" fill="#1d4ed8">kafka-log-dirs.sh：offsetLag≠0 就是在追</text>
+
+  <text x="20" y="446" font-size="13" fill="#0f172a">⭐ 判断顺序：先看 LAG 定位到分区 → 再看 ISR 判断是不是副本问题 → 最后用 offsetLag 确认副本是否在追赶，三步都不用翻日志。</text>
+  <text x="20" y="474" font-size="13" fill="#dc2626">⚠️ 加消费实例前先确认「分区数 &gt; 消费者数」，否则多出来的实例分不到分区、纯空闲。</text>
+  <text x="20" y="502" font-size="12" fill="#64748b">实测锚点（apache/kafka:3.9.0）：停 Broker 3 后 Isr 由 3 收缩为 2、分区 2 的 Leader 由 3 改选为 1、副本回归后 offsetLag 回 0。</text>
+</svg>

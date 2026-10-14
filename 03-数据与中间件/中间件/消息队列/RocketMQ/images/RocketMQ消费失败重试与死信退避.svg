@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rq3a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">RocketMQ 消费失败的两条出路：退避重投与死信</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">退避借 messageDelayLevel 的档位（第 3 档 10 s、第 4 档 30 s）；超限由 Broker 改投 %DLQ%</text>
+
+  <text x="40" y="80" font-size="13" font-weight="bold" fill="#0f172a">① 机制链路（并发消费）</text>
+  <rect x="40" y="92" width="160" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="120" y="116" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">首投</text>
+  <text x="120" y="136" text-anchor="middle" font-size="10.5" fill="#1d4ed8">reconsumeTimes=0</text>
+  <text x="120" y="154" text-anchor="middle" font-size="10.5" fill="#1d4ed8">实测落 qId 2/3/0</text>
+  <rect x="230" y="92" width="160" height="76" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="310" y="116" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#991b1b">处理失败</text>
+  <text x="310" y="136" text-anchor="middle" font-size="10.5" fill="#b91c1c">回调返回</text>
+  <text x="310" y="154" text-anchor="middle" font-size="10.5" fill="#b91c1c">RECONSUME_LATER</text>
+  <rect x="420" y="92" width="160" height="76" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="500" y="116" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">发回重试 Topic</text>
+  <text x="500" y="136" text-anchor="middle" font-size="10.5" fill="#9a3412">%RETRY%{group}</text>
+  <text x="500" y="154" text-anchor="middle" font-size="10.5" fill="#9a3412">实测单队列 QID 0</text>
+  <rect x="610" y="92" width="160" height="76" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="690" y="116" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#713f12">按档位延迟重投</text>
+  <text x="690" y="136" text-anchor="middle" font-size="10.5" fill="#854d0e">delayTimeLevel 3 → 4</text>
+  <text x="690" y="154" text-anchor="middle" font-size="10.5" fill="#854d0e">= 10 s / 30 s</text>
+  <rect x="800" y="92" width="160" height="76" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="880" y="116" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">超限进死信</text>
+  <text x="880" y="136" text-anchor="middle" font-size="10.5" fill="#475569">%DLQ%{group}</text>
+  <text x="880" y="154" text-anchor="middle" font-size="10.5" fill="#475569">并发默认上限 16 次</text>
+  <line x1="202" y1="130" x2="228" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#rq3a)"/>
+  <line x1="392" y1="130" x2="418" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#rq3a)"/>
+  <line x1="582" y1="130" x2="608" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#rq3a)"/>
+  <line x1="772" y1="130" x2="798" y2="130" stroke="#334155" stroke-width="1.5" marker-end="url(#rq3a)"/>
+  <text x="500" y="186" text-anchor="middle" font-size="11" fill="#64748b">顺序消费不走这条路：返回 SUSPEND_CURRENT_QUEUE_A_MOMENT，挂起原队列原地重试</text>
+
+  <text x="40" y="216" font-size="13" font-weight="bold" fill="#0f172a">② 三轮实测的到达时刻（maxReconsumeTimes=2，横轴每格 10 s）</text>
+
+  <line x1="240" y1="256" x2="740" y2="256" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="60" y="260" font-size="11" fill="#0f172a">轮1 · 首投 17:22:31.66</text>
+  <text x="340" y="244" text-anchor="middle" font-size="10.5" fill="#b45309">+20.0 s</text>
+  <text x="590" y="244" text-anchor="middle" font-size="10.5" fill="#b45309">+30.0 s</text>
+  <text x="240" y="242" text-anchor="middle" font-size="10.5" fill="#1d4ed8">rt=0</text>
+  <text x="440" y="276" text-anchor="middle" font-size="10" fill="#9a3412">rt=1 · level 3</text>
+  <text x="740" y="276" text-anchor="middle" font-size="10" fill="#991b1b">rt=2 · level 4 · 进 DLQ</text>
+  <circle cx="240" cy="256" r="5" fill="#2563eb"/>
+  <circle cx="440" cy="256" r="5" fill="#ea580c"/>
+  <circle cx="740" cy="256" r="6" fill="#dc2626"/>
+
+  <line x1="240" y1="316" x2="640" y2="316" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="60" y="320" font-size="11" fill="#0f172a">轮2 · 首投 17:32:57.54</text>
+  <text x="290" y="304" text-anchor="middle" font-size="10.5" fill="#b45309">+10.1 s</text>
+  <text x="490" y="304" text-anchor="middle" font-size="10.5" fill="#b45309">+30.0 s</text>
+  <text x="240" y="302" text-anchor="middle" font-size="10.5" fill="#1d4ed8">rt=0</text>
+  <text x="341" y="336" text-anchor="middle" font-size="10" fill="#9a3412">rt=1 · level 3</text>
+  <text x="641" y="336" text-anchor="middle" font-size="10" fill="#991b1b">rt=2 · level 4 · 进 DLQ</text>
+  <circle cx="240" cy="316" r="5" fill="#2563eb"/>
+  <circle cx="341" cy="316" r="5" fill="#ea580c"/>
+  <circle cx="641" cy="316" r="6" fill="#dc2626"/>
+
+  <line x1="240" y1="376" x2="640" y2="376" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="60" y="380" font-size="11" fill="#0f172a">轮3 · 首投 17:34:07.57</text>
+  <text x="290" y="364" text-anchor="middle" font-size="10.5" fill="#b45309">+10.0 s</text>
+  <text x="490" y="364" text-anchor="middle" font-size="10.5" fill="#b45309">+30.1 s</text>
+  <text x="240" y="362" text-anchor="middle" font-size="10.5" fill="#1d4ed8">rt=0</text>
+  <text x="340" y="396" text-anchor="middle" font-size="10" fill="#9a3412">rt=1 · level 3</text>
+  <text x="641" y="396" text-anchor="middle" font-size="10" fill="#991b1b">rt=2 · level 4 · 进 DLQ</text>
+  <circle cx="240" cy="376" r="5" fill="#2563eb"/>
+  <circle cx="340" cy="376" r="5" fill="#ea580c"/>
+  <circle cx="641" cy="376" r="6" fill="#dc2626"/>
+
+  <line x1="200" y1="420" x2="900" y2="420" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="240" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">0 s</text>
+  <text x="340" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">10 s</text>
+  <text x="440" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">20 s</text>
+  <text x="540" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">30 s</text>
+  <text x="640" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">40 s</text>
+  <text x="740" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">50 s</text>
+
+  <text x="20" y="464" font-size="11.5" fill="#0f172a">⭐ 三次首投分散在 qId 2 / 3 / 0，两次重投全部从 %RETRY%w2rmq-g1 的 QID 0 回来 —— 重试 Topic 与原 Topic 队列没有映射。</text>
+  <text x="20" y="484" font-size="11.5" fill="#0f172a">⭐ 3 轮累计：重试 Topic 18 条（3 轮 × 3 条 × 2 次）、死信 Topic 9 条；两个 Topic 都由 Broker 在首次订阅时自动创建。</text>
+  <text x="20" y="504" font-size="11.5" fill="#64748b">注意：轮 1 首次重投多出的 10 s 与重试 Topic 首次创建同现，后两轮 10.0 s 才对应第 3 档；只断言递增趋势，不锁定绝对值。</text>
+</svg>
