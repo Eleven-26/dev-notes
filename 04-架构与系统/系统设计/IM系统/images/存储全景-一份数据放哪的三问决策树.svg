@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620">
+<rect width="1000" height="620" fill="#ffffff"/>
+<defs>
+<marker id="arw" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+<path d="M0,0L10,4L0,8z" fill="#64748b"/>
+</marker>
+</defs>
+<text x="500" y="32" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" font-weight="bold" fill="#1e293b">IM 的一份新数据该放哪：三问决策树</text>
+<text x="500" y="54" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#64748b">第一问只分「权威源还是副本」；第二、三问再把可重建的那一支分出短命状态、高频副本与归档</text>
+
+<rect x="30" y="80" width="250" height="64" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="155" y="104" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" font-weight="bold" fill="#92400e">第①问 · 丢了能不能从别处重建？</text>
+<text x="155" y="126" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#92400e">不能＝权威源，能＝副本（一）</text>
+
+<rect x="30" y="196" width="250" height="64" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="155" y="220" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" font-weight="bold" fill="#92400e">第②问 · 是连接级的短命状态吗？</text>
+<text x="155" y="242" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#92400e">连接断了即失效＝不必持久化</text>
+
+<rect x="30" y="312" width="250" height="64" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="155" y="336" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" font-weight="bold" fill="#92400e">第③问 · 读得频繁吗？</text>
+<text x="155" y="358" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#92400e">高频随机读，还是极少回读</text>
+
+<rect x="350" y="74" width="600" height="76" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+<text x="650" y="98" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#7f1d1d">权威源 · MySQL（按 convID 分库分表）</text>
+<text x="650" y="120" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">会话表 / 成员表 / 消息流（含会话内 seq）</text>
+<text x="650" y="140" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">要事务、要按 seq 有序读、要强持久化 —— 丢了不可重建</text>
+
+<rect x="350" y="190" width="600" height="76" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="650" y="214" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#14532d">副本 · Redis 带 TTL（在线状态与连接路由）</text>
+<text x="650" y="236" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">重建即重连；靠 TTL 兜住异常断连</text>
+<text x="650" y="256" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">持久化反而让「死连接」的信息残留</text>
+
+<rect x="350" y="306" width="600" height="76" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="650" y="330" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#14532d">副本 · Redis（近期消息热窗口 / 未读计数）</text>
+<text x="650" y="352" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">读远多于写、按序取一段、可容忍丢失</text>
+<text x="650" y="372" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">计数只是加速，对不上时以位点差为准</text>
+
+<rect x="350" y="422" width="600" height="76" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+<text x="650" y="446" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#1e3a8a">归档 / 静态资源 · 对象存储 + 列存文件 + CDN</text>
+<text x="650" y="468" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e3a8a">历史消息：访问频率随时间为长尾，最便宜介质承载最低频的读</text>
+<text x="650" y="488" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e3a8a">图片 / 语音 / 文件：大文件不进关系库，消息库里只存 URL</text>
+
+<line x1="280" y1="112" x2="350" y2="112" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<text x="315" y="104" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#dc2626">不能</text>
+<line x1="155" y1="144" x2="155" y2="196" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<text x="142" y="174" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#16a34a">能</text>
+
+<line x1="280" y1="228" x2="350" y2="228" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<text x="315" y="220" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#16a34a">是</text>
+<line x1="155" y1="260" x2="155" y2="312" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<text x="142" y="290" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#b45309">否</text>
+
+<line x1="280" y1="336" x2="350" y2="336" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<text x="315" y="328" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#16a34a">频繁</text>
+<line x1="280" y1="358" x2="325" y2="358" stroke="#64748b" stroke-width="2"/>
+<line x1="325" y1="358" x2="325" y2="460" stroke="#64748b" stroke-width="2"/>
+<line x1="325" y1="460" x2="350" y2="460" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<text x="298" y="378" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#2563eb">极少</text>
+
+<text x="30" y="528" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#1e293b">★ 贯穿全篇的判据（三）：权威源只有一个（MySQL），其余全是它的派生——派生载体可以丢、可以换、可以重建，只要权威源在。</text>
+<text x="30" y="552" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">顺序不能反（一）：先分角色、再选存储；先由「能不能重建」定角色，再由角色定载体，不是反过来由存储成本决定角色。</text>
+<text x="30" y="574" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">IM 的特殊性（四）：只有「消息流」这一行在第①问永远回答「不能」——不可丢逼它必须走落库 + ACK + 补拉，这就是 IM 与 Feed / 弹幕的分界。</text>
+<text x="30" y="596" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">注意：本图只画 IM 的落位判定；五种角色、同步三路线、冷热三层的通用判据见 存储选型与组合.md，图中不含任何性能读数。</text>
+</svg>

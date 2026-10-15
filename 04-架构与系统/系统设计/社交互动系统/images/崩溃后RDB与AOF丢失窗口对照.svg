@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 670" width="1000" height="670">
+<rect width="1000" height="670" fill="#ffffff"/>
+
+<defs>
+<marker id="arw" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+<path d="M0,0L10,4L0,8z" fill="#64748b"/>
+</marker>
+</defs>
+
+<text x="30" y="34" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" font-weight="bold" fill="#1e293b">同一份榜单被 SIGKILL 打断：RDB 容器丢 20 万条，AOF 容器一条不丢</text>
+<text x="30" y="56" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#64748b">两个 redis:7-alpine 容器各写入 20 万个 ZSET 成员，然后 docker kill、重启、再数一遍；上下两条道只差持久化配置</text>
+
+<text x="40" y="118" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#b91c1c">RDB 容器</text>
+<rect x="110" y="78" width="210" height="104" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+<text x="124" y="100" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#7f1d1d">① CONFIG GET 原文</text>
+<text x="124" y="122" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">save 3600 1 300 100 60 10000</text>
+<text x="124" y="144" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">只开快照，未开 AOF</text>
+<text x="124" y="166" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">没有每秒追加日志</text>
+
+<rect x="350" y="78" width="170" height="104" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="364" y="100" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#334155">② 写入实时榜</text>
+<text x="364" y="122" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#334155">ZADD 20 万个成员</text>
+<text x="364" y="144" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#334155">崩溃前</text>
+<text x="364" y="164" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#334155">ZCARD = 200000</text>
+
+<rect x="550" y="78" width="180" height="104" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="564" y="100" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#92400e">③ docker kill</text>
+<text x="564" y="122" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">SIGKILL，不给优雅退出</text>
+<text x="564" y="144" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">距上次快照不足 60 秒</text>
+<text x="564" y="166" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">这段写入还没落盘</text>
+
+<rect x="760" y="78" width="200" height="104" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+<text x="774" y="100" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#7f1d1d">④ 重启后再数一遍</text>
+<text x="774" y="124" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#b91c1c">ZCARD = 0</text>
+<text x="774" y="148" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">两次快照之间的</text>
+<text x="774" y="168" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">全部写入一起丢</text>
+
+<line x1="320" y1="130" x2="348" y2="130" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="520" y1="130" x2="548" y2="130" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="730" y1="130" x2="758" y2="130" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+
+<text x="40" y="252" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#15803d">AOF 容器</text>
+<rect x="110" y="212" width="210" height="104" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="124" y="234" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#14532d">① CONFIG GET 原文</text>
+<text x="124" y="256" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">appendonly yes</text>
+<text x="124" y="278" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">appendfsync everysec</text>
+<text x="124" y="300" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">每秒把缓冲刷一次盘</text>
+
+<rect x="350" y="212" width="170" height="104" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="364" y="234" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#334155">② 同一批写入</text>
+<text x="364" y="256" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#334155">ZADD 20 万个成员</text>
+<text x="364" y="278" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#334155">崩溃前</text>
+<text x="364" y="298" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#334155">ZCARD = 200000</text>
+
+<rect x="550" y="212" width="180" height="104" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="564" y="234" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#92400e">③ sleep 2 后 kill</text>
+<text x="564" y="256" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">跨过 everysec 的</text>
+<text x="564" y="276" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">1 秒刷盘窗口</text>
+<text x="564" y="298" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">同样吃 SIGKILL</text>
+
+<rect x="760" y="212" width="200" height="104" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="774" y="234" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#14532d">④ 重启后再数一遍</text>
+<text x="774" y="258" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" font-weight="bold" fill="#15803d">ZCARD = 200000</text>
+<text x="774" y="282" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">本次一条没丢</text>
+<text x="774" y="302" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">日志重放回来了</text>
+
+<line x1="320" y1="264" x2="348" y2="264" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="520" y1="264" x2="548" y2="264" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="730" y1="264" x2="758" y2="264" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+
+<rect x="40" y="346" width="300" height="126" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="56" y="370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#334155">落盘产物：RDB 侧</text>
+<text x="56" y="394" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">dump.rdb</text>
+<text x="56" y="414" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">3,088,999 字节 ≈ 3.0 MB</text>
+<text x="56" y="436" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">存的是压缩后的最终状态</text>
+<text x="56" y="456" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">重启快、文件小、方便备份</text>
+
+<rect x="370" y="346" width="300" height="126" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="386" y="370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#334155">落盘产物：AOF 侧（三个部件）</text>
+<text x="386" y="394" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">appendonly.aof.1.incr.aof</text>
+<text x="386" y="414" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">20,133,462 字节 ≈ 19.2 MB</text>
+<text x="386" y="436" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">base.rdb 89 字节 / manifest 88 字节</text>
+<text x="386" y="456" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">incr 段存的是所有写命令</text>
+
+<rect x="700" y="346" width="260" height="126" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="716" y="370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#92400e">同一份数据的体积账</text>
+<text x="716" y="394" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">AOF 增量约为 RDB 的 6.5 倍</text>
+<text x="716" y="416" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">AOF 不无限增长：靠</text>
+<text x="716" y="436" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">BGREWRITEAOF 重写成新基线</text>
+<text x="716" y="458" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#92400e">生产通常两者都开</text>
+
+<rect x="40" y="492" width="460" height="140" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="56" y="516" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#14532d">丢的到底是什么</text>
+<text x="56" y="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">RDB 是快照：丢的是两次快照之间的全部写入</text>
+<text x="56" y="562" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">触发条件任一满足：900 秒 1 次修改 /</text>
+<text x="56" y="582" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">300 秒 100 次 / 60 秒 10000 次</text>
+<text x="56" y="604" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">AOF 是日志：只丢最后一次 fsync 之后的一小段</text>
+<text x="56" y="624" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">everysec 最多约 1 秒</text>
+
+<rect x="520" y="492" width="440" height="140" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+<text x="536" y="516" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#7f1d1d">注意：别说成「AOF 一定比 RDB 好」</text>
+<text x="536" y="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">RDB 的丢弃窗口有上界：把触发点加密、</text>
+<text x="536" y="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">或主动 BGSAVE，窗口就缩短 —— 关键是说清窗口</text>
+<text x="536" y="582" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">不能只看配置：本次第一次 RDB 测试因写入已超过</text>
+<text x="536" y="602" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">60 秒而「意外没丢」，第二次收紧时间窗才复现全丢</text>
+<text x="536" y="624" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">出处：本篇 4.1 与 4.3 节本机双容器实测读数</text>
+</svg>

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="650" viewBox="0 0 1000 650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <text x="24" y="28" font-size="16" font-weight="bold" fill="#0f172a">时间线副本重建的两条路径：整段重扫 vs 逐作者走索引</text>
+  <text x="24" y="48" font-size="11" fill="#64748b">读数取自 5.2 与 5.3 的同一轮实测，各 5 次重复的取值范围；耗时类只断言趋势</text>
+
+  <rect x="24" y="58" width="636" height="76" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="36" y="78" font-size="11" fill="#334155">前提：MySQL 权威源 120,000 行 · 300 个作者 · 每人 400 条 · body 370 ~ 375 字节</text>
+  <text x="36" y="96" font-size="11" fill="#334155">生命线：KEY idx_author_time (author_id, created_at)</text>
+  <text x="36" y="114" font-size="11" fill="#334155">目标：重建某个人的 inbox —— 关注 200 个作者、只保留最近 500 条</text>
+
+  <rect x="24" y="150" width="300" height="182" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="174" y="170" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">A 整段重扫：一条 SQL</text>
+  <text x="36" y="192" font-size="10" fill="#334155">WHERE author_id IN (200 个)</text>
+  <text x="36" y="209" font-size="10" fill="#334155">ORDER BY created_at DESC LIMIT 500</text>
+  <text x="36" y="230" font-size="10" fill="#334155">索引扫 120,000 行 → 过滤出 80,000 行</text>
+  <text x="36" y="251" font-size="10" fill="#334155">filesort：有（全局排序后再截断）</text>
+  <text x="36" y="272" font-size="10" fill="#334155">端到端 94 ~ 282 ms</text>
+  <text x="36" y="293" font-size="10" fill="#7c2d12">首轮 282 → 后几轮降到 94</text>
+  <text x="36" y="314" font-size="10" fill="#7c2d12">扫描量 = 这 200 人的全部历史</text>
+
+  <rect x="360" y="150" width="300" height="182" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="510" y="170" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">B 逐作者走索引：200 次小查询</text>
+  <text x="372" y="192" font-size="10" fill="#334155">WHERE author_id = ? ORDER BY created_at</text>
+  <text x="372" y="209" font-size="10" fill="#334155">DESC LIMIT 3</text>
+  <text x="372" y="230" font-size="10" fill="#334155">共读 600 行 = 200 × 3</text>
+  <text x="372" y="251" font-size="10" fill="#334155">覆盖索引逆序 · 无 filesort</text>
+  <text x="372" y="272" font-size="10" fill="#334155">单条 0.0775 ~ 0.1600 ms</text>
+  <text x="372" y="293" font-size="10" fill="#334155">整批 81.3 ~ 94.3 ms</text>
+  <text x="372" y="314" font-size="10" fill="#14532d">近似：只取每作者最近 3 条</text>
+
+  <rect x="690" y="58" width="286" height="274" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="833" y="80" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="middle">存指针还是存本体（5.3）</text>
+  <text x="833" y="98" font-size="10" fill="#64748b" text-anchor="middle">同一批 500 条内容，两种存法各建一个集合</text>
+  <text x="700" y="122" font-size="10" fill="#334155">只存指针：内容 ID + 排序键</text>
+  <rect x="700" y="130" width="38" height="16" rx="3" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="746" y="143" font-size="10" fill="#1e3a8a">87.2 ~ 87.8 字节/条</text>
+  <text x="700" y="172" font-size="10" fill="#334155">存本体：整段正文当成员</text>
+  <rect x="700" y="180" width="200" height="16" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="700" y="214" font-size="10" fill="#991b1b">462.7 ~ 463.7 字节/条　比值 5.3 倍</text>
+  <text x="700" y="240" font-size="10" fill="#334155">500 条合计：指针 43,608 ~ 43,920</text>
+  <text x="700" y="258" font-size="10" fill="#334155">　　　　　　本体 231,360 ~ 231,840</text>
+  <text x="700" y="284" font-size="10" fill="#334155">放进 5 个人的 inbox：</text>
+  <text x="700" y="302" font-size="10" fill="#334155">指针 220,016 · 本体 1,159,136 字节</text>
+  <text x="700" y="322" font-size="10" fill="#64748b">份数由粉丝数决定，单份再乘 5.3</text>
+
+  <rect x="690" y="348" width="286" height="150" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-dasharray="6 4"/>
+  <text x="700" y="368" font-size="11" font-weight="bold" fill="#334155">读数怎么读（5.2 四条）</text>
+  <text x="700" y="388" font-size="10" fill="#64748b">A 的代价是扫描量，比要重建的</text>
+  <text x="700" y="404" font-size="10" fill="#64748b">条目数多两个数量级</text>
+  <text x="700" y="424" font-size="10" fill="#64748b">B 单条 0.1 ms 量级、整批 81.3 ~</text>
+  <text x="700" y="440" font-size="10" fill="#64748b">94.3 ms：差在串行往返</text>
+  <text x="700" y="460" font-size="10" fill="#64748b">写回是零头；首轮最慢是缓冲池</text>
+  <text x="700" y="476" font-size="10" fill="#64748b">变热，不是路径本身在波动</text>
+
+  <line x1="174" y1="332" x2="250" y2="384" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <line x1="510" y1="332" x2="410" y2="384" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrR)"/>
+
+  <rect x="180" y="384" width="300" height="56" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="330" y="404" font-size="11" font-weight="bold" fill="#1e3a8a" text-anchor="middle">应用侧归并 + 按内容 ID 去重</text>
+  <text x="330" y="424" font-size="10" fill="#1e3a8a" text-anchor="middle">截断到最近 500 条，再交给写回</text>
+
+  <line x1="330" y1="440" x2="330" y2="472" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrR)"/>
+
+  <rect x="180" y="472" width="300" height="56" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="330" y="492" font-size="11" font-weight="bold" fill="#78350f" text-anchor="middle">逐条 ZADD 写回有序集合</text>
+  <text x="330" y="512" font-size="10" fill="#78350f" text-anchor="middle">calls=500 · 每次 7.95 ~ 32.77 微秒</text>
+
+  <line x1="330" y1="528" x2="330" y2="560" stroke="#64748b" stroke-width="1.6" marker-end="url(#arrR)"/>
+
+  <rect x="180" y="560" width="300" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="330" y="580" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">该用户时间线恢复可读</text>
+  <text x="330" y="600" font-size="10" fill="#64748b" text-anchor="middle">重建期间读不到更新，属可恢复降级</text>
+
+  <text x="24" y="636" font-size="11" fill="#475569">结论：重建代价跟「关注的人发过多少历史」挂钩，不跟「要恢复多少条」挂钩；真实系统取 B 支，并把 200 次查询并发或 pipeline 发起。</text>
+</svg>

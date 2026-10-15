@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 710" width="1000" height="710" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="kqA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="kqB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="710" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Kafka 引擎表到目标表的消费时序：过手的引擎表不存数据</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">26.3.29.7 对 apache/kafka 3.9.0 单节点实测（topic w5c1_events · 1 分区 · 消费组 w5c1_g1）· 行号对应 4.4 节读数</text>
+
+  <rect x="7" y="76" width="150" height="52" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="82" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">查询端</text>
+  <text x="82" y="116" text-anchor="middle" font-size="10" fill="#64748b">SELECT 与 DDL</text>
+  <rect x="175" y="76" width="150" height="52" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="250" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">生产端</text>
+  <text x="250" y="116" text-anchor="middle" font-size="9.5" fill="#64748b">kafka-console-producer</text>
+  <rect x="343" y="76" width="150" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="418" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Kafka broker</text>
+  <text x="418" y="116" text-anchor="middle" font-size="9.5" fill="#1e3a8a">topic 分区 0</text>
+  <rect x="511" y="76" width="150" height="52" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="586" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">Kafka 引擎表</text>
+  <text x="586" y="116" text-anchor="middle" font-size="9.5" fill="#9a3412">kafka_q · 不存数据</text>
+  <rect x="679" y="76" width="150" height="52" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="754" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#78350f">物化视图</text>
+  <text x="754" y="116" text-anchor="middle" font-size="9.5" fill="#78350f">events_w5_mv TO</text>
+  <rect x="843" y="76" width="150" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="918" y="98" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">目标表</text>
+  <text x="918" y="116" text-anchor="middle" font-size="9.5" fill="#166534">events_w5 MergeTree</text>
+
+  <line x1="82" y1="128" x2="82" y2="514" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="250" y1="128" x2="250" y2="514" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="418" y1="128" x2="418" y2="514" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="586" y1="128" x2="586" y2="514" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="754" y1="128" x2="754" y2="514" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="918" y1="128" x2="918" y2="514" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+
+  <line x1="250" y1="152" x2="418" y2="152" stroke="#64748b" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="334" y="144" text-anchor="middle" font-size="11" fill="#0f172a">① 生产 3 条 JSONEachRow（uid 21/22/23）</text>
+
+  <line x1="586" y1="184" x2="418" y2="184" stroke="#64748b" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="502" y="176" text-anchor="middle" font-size="11" fill="#0f172a">② 按组 w5c1_g1 轮询分区 0</text>
+
+  <line x1="82" y1="216" x2="586" y2="216" stroke="#dc2626" stroke-width="1.4" marker-end="url(#kqB)"/>
+  <text x="334" y="208" text-anchor="middle" font-size="11" fill="#b91c1c">③ 直接 SELECT 被拒：Code 620 Direct select is not allowed</text>
+
+  <line x1="82" y1="248" x2="586" y2="248" stroke="#64748b" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="334" y="240" text-anchor="middle" font-size="11" fill="#0f172a">④ 开 stream_like_engine_allow_direct_select 后再直读</text>
+
+  <line x1="586" y1="280" x2="82" y2="280" stroke="#dc2626" stroke-width="1.4" marker-end="url(#kqB)"/>
+  <text x="334" y="272" text-anchor="middle" font-size="11" fill="#b91c1c">⑤ 返回 0 行 · read_rows=0 · 位移仍为 -1001</text>
+
+  <line x1="82" y1="316" x2="754" y2="316" stroke="#64748b" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="418" y="308" text-anchor="middle" font-size="11" fill="#0f172a">⑥ CREATE MATERIALIZED VIEW events_w5_mv TO events_w5</text>
+
+  <line x1="250" y1="348" x2="418" y2="348" stroke="#64748b" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="334" y="340" text-anchor="middle" font-size="11" fill="#0f172a">⑦ 再生产 3 条（uid 31/32/33）</text>
+
+  <line x1="418" y1="380" x2="586" y2="380" stroke="#ea580c" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="502" y="372" text-anchor="middle" font-size="11" fill="#7c2d12">⑧ 新块 + 补投未提交位移的旧 3 条</text>
+
+  <line x1="586" y1="412" x2="754" y2="412" stroke="#64748b" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="670" y="404" text-anchor="middle" font-size="11" fill="#0f172a">⑨ 视图按新块触发</text>
+
+  <line x1="754" y1="444" x2="918" y2="444" stroke="#16a34a" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="670" y="436" text-anchor="middle" font-size="11" fill="#14532d">⑩ 目标表落 6 行 [31,32,33,21,22,23]</text>
+
+  <line x1="918" y1="492" x2="82" y2="492" stroke="#16a34a" stroke-width="1.4" marker-end="url(#kqA)"/>
+  <text x="500" y="484" text-anchor="middle" font-size="11" fill="#14532d">⑪ 再投 2 条后回读：8 行 · 位移 [8] · 提交 3 次</text>
+
+  <rect x="50" y="528" width="900" height="130" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="66" y="550" font-size="11" fill="#0f172a">实测读数：三次直读客户端都是 0 行、query_log 里 read_rows=0；消费端 num_messages_read 由 0 涨到 9、num_commits=0、current_offset=[-1001]。</text>
+  <text x="66" y="572" font-size="11" fill="#0f172a">挂上视图后第一次读到 6 行 [31,32,33,21,22,23]：21/22/23 正是直读时拉走却没提交位移的那一批，这就是「至少一次」的实测证据。</text>
+  <text x="66" y="594" font-size="11" fill="#0f172a">再生产 2 条后目标表 8 行、current_offset=[8] 恰等于 topic 消息总数（3+3+2），num_commits=3、num_messages_read=20（大于 8，说明有重复拉取）。</text>
+  <text x="66" y="616" font-size="11" fill="#b91c1c">注意：kafka_offset_reset 在 26.3 不是 Kafka 表设置（Code 115）；kafka_max_wait_ms 默认 5000；生产者必须用 docker exec -i 送 stdin。</text>
+  <text x="66" y="638" font-size="11" fill="#64748b">时序类读数只断言趋势：本批用 sleep 12 等转发完成，未测端到端延迟分布；行数与位移是确定性读数，可精确比较。</text>
+
+  <text x="50" y="676" font-size="11" fill="#64748b">实测口径：容器 w5c1-ch（clickhouse/clickhouse-server:26.3-alpine，26.3.29.7，宿主 24910）与 w5c1-kafka2（apache/kafka:3.9.0，宿主 24913）。</text>
+  <text x="50" y="696" font-size="11" fill="#64748b">本图所有数字均取自本篇 4.4 节的原始输出；此前该节标注的「未实测：Kafka 引擎」已由本批补测替换。</text>
+</svg>

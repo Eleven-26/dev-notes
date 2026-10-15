@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620">
+<rect width="1000" height="620" fill="#ffffff"/>
+<defs>
+<marker id="arw" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+<path d="M0,0L10,4L0,8z" fill="#64748b"/>
+</marker>
+</defs>
+<text x="500" y="32" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" font-weight="bold" fill="#1e293b">富媒体消息的处理链路为什么不能挡在发送路径上</text>
+<text x="500" y="54" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#64748b">上＝发送路径只搬指针；中＝后台异步产出派生对象；下＝客户端按需选档、CDN 就近返回</text>
+
+<rect x="24" y="72" width="952" height="124" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="40" y="94" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#2563eb">① 发送路径：消息不等处理，先落地（4.1 / 4.2）</text>
+
+<rect x="40" y="106" width="270" height="76" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+<text x="175" y="132" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">① 上传成功，拿到 URL</text>
+<text x="175" y="154" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">先上传成功、再发消息（4.1）</text>
+<text x="175" y="174" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">反了：对端点开 404、永远取不到</text>
+
+<rect x="340" y="106" width="270" height="76" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+<text x="475" y="132" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">② 组装消息体：引用 + 元数据</text>
+<text x="475" y="154" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">URL · 类型 · 大小 · 宽高 / 时长</text>
+<text x="475" y="174" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">内容哈希 · 缩略图 URL（4.2）</text>
+
+<rect x="640" y="106" width="300" height="76" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+<text x="790" y="132" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">③ 投递走正常消息通道</text>
+<text x="790" y="154" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">消息本体和文本消息一样小</text>
+<text x="790" y="174" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">消息不能等转码完成（1.3）</text>
+
+<line x1="310" y1="144" x2="340" y2="144" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<line x1="610" y1="144" x2="640" y2="144" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+
+<rect x="24" y="210" width="952" height="124" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="40" y="232" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#ea580c">② 异步处理链路：结果是事后补上的（5.1 / 5.2 / 5.3）</text>
+
+<rect x="40" y="244" width="270" height="76" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+<text x="175" y="270" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">原文件已落对象存储</text>
+<text x="175" y="292" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">上传完成触发后台处理</text>
+<text x="175" y="312" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">发送不阻塞在转码上（5.2）</text>
+
+<rect x="340" y="244" width="270" height="76" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+<text x="475" y="270" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">生成缩略图（5.1）</text>
+<text x="475" y="292" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">转成客户端能播的编码与封装</text>
+<text x="475" y="312" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">按分辨率 / 码率转出多档（5.3）</text>
+
+<rect x="640" y="244" width="300" height="76" rx="10" fill="#fef3c7" stroke="#b45309"/>
+<text x="790" y="270" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">一份内容、多个派生对象</text>
+<text x="790" y="292" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">每个派生对象有自己的 URL</text>
+<text x="790" y="312" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">派生关系由服务端维护（5.3）</text>
+
+<line x1="310" y1="282" x2="340" y2="282" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<line x1="610" y1="282" x2="640" y2="282" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+
+<rect x="24" y="348" width="952" height="124" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="40" y="370" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" font-weight="bold" fill="#16a34a">③ 读取与分发：一次上传、无数次下载（5.1 / 5.3 / 5.4）</text>
+
+<rect x="40" y="382" width="270" height="76" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="175" y="408" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">会话列表先加载缩略图</text>
+<text x="175" y="430" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">点开再加载原图（5.1）</text>
+<text x="175" y="450" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">首屏用小图，省一次大下载</text>
+
+<rect x="340" y="382" width="270" height="76" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="475" y="408" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">播放器按网络与屏幕选档</text>
+<text x="475" y="430" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">按「有没有可播放版本」判断</text>
+<text x="475" y="450" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">转码完成后补这条标记（5.2）</text>
+
+<rect x="640" y="382" width="300" height="76" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="790" y="408" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">CDN 边缘节点就近返回</text>
+<text x="790" y="430" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#1e293b">回源只发生在未命中时（5.4）</text>
+<text x="790" y="450" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7f1d1d">按人裁剪的直链要另签时效</text>
+
+<line x1="310" y1="420" x2="340" y2="420" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<line x1="610" y1="420" x2="640" y2="420" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+
+<line x1="175" y1="182" x2="175" y2="244" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<line x1="475" y1="320" x2="475" y2="382" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+<line x1="790" y1="320" x2="790" y2="382" stroke="#64748b" stroke-width="2" marker-end="url(#arw)"/>
+
+<text x="500" y="498" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#1e293b">★ 判据（5.4）：「这份内容是不是人人看到的一样」——是就可以缓存、走 CDN；需要按人裁剪的内容要额外签时效</text>
+<text x="500" y="522" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">若让消息等转码，两种坏结果（5.2）：发送方要一直挂着、进度不确定；转码失败时「消息该不该发出去」语义别扭</text>
+<text x="500" y="544" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">体验不跳的关键（4.2）：宽高 / 时长这类元数据必须在发消息时就带上，字节还没下完就能按正确比例占位</text>
+<text x="500" y="566" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">配色：蓝＝发送路径的小消息，橙＝异步处理，黄＝派生对象，绿＝分发与展示</text>
+<text x="500" y="592" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">注意：本篇未做实测，本图为结构示意，不含分片大小、转码档位、CDN 命中率或任何耗时数字</text>
+</svg>

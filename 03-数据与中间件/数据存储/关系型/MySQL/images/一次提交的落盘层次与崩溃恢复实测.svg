@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 726" width="1000" height="726" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="726" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次提交的落盘层次：redo 先落、数据页后落、崩了就按这两条线找回</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">MySQL 8.0.46 实测（容器 w5m1-mysql，宿主 127.0.0.1:24801）；三层止步点见本文第七节，恢复三步与读数见本文第五节</text>
+
+  <rect x="24" y="76" width="476" height="112" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="100" font-size="13" font-weight="bold" fill="#0f172a">① InnoDB 进程内（用户态内存）</text>
+  <text x="40" y="124" font-size="11" fill="#334155">redo log buffer：改页之前先把这页的改动写进来（WAL）</text>
+  <text x="40" y="146" font-size="11" fill="#334155">Buffer Pool：数据页在这里被改脏并打脏页标记</text>
+  <text x="40" y="170" font-size="11" fill="#991b1b">取值 0 提交时停在这里 —— 进程一没就没了</text>
+
+  <rect x="24" y="204" width="476" height="92" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="40" y="228" font-size="13" font-weight="bold" fill="#1e40af">② OS page cache（内核态）</text>
+  <text x="40" y="252" font-size="11" fill="#1e40af">write() 只把数据送到这一层就返回</text>
+  <text x="40" y="274" font-size="11" fill="#1e40af">实测：mysqld 被 SIGKILL，这一层仍存活 —— 取值 2 与 0 也不丢</text>
+
+  <rect x="24" y="312" width="476" height="92" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="40" y="336" font-size="13" font-weight="bold" fill="#14532d">③ 磁盘介质</text>
+  <text x="40" y="360" font-size="11" fill="#14532d">fsync() 返回才算真落盘；只有 OS 崩溃或掉电才丢这一层</text>
+  <text x="40" y="382" font-size="11" fill="#14532d">O_DIRECT 让数据页绕过 ②，避免与 Buffer Pool 双缓冲</text>
+
+  <line x1="262" y1="188" x2="262" y2="204" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <text x="272" y="200" font-size="10" fill="#1e40af">write()</text>
+  <line x1="262" y1="296" x2="262" y2="312" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+  <text x="272" y="308" font-size="10" fill="#14532d">fsync()</text>
+
+  <rect x="524" y="76" width="452" height="328" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="540" y="100" font-size="13" font-weight="bold" fill="#0f172a">innodb_flush_log_at_trx_commit 三档停在哪一层</text>
+
+  <rect x="540" y="116" width="420" height="72" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="554" y="138" font-size="12" font-weight="bold" fill="#14532d">1（默认，实测 SHOW VARIABLES=1）</text>
+  <text x="554" y="158" font-size="10.5" fill="#14532d">每次提交都 write + fsync，redo 停在 ③</text>
+  <text x="554" y="178" font-size="10.5" fill="#14532d">已提交事务不丢 —— 唯一不丢的取值</text>
+
+  <rect x="540" y="196" width="420" height="72" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="554" y="218" font-size="12" font-weight="bold" fill="#92400e">2</text>
+  <text x="554" y="238" font-size="10.5" fill="#92400e">提交时只 write，每秒补一次 fsync，停在 ②</text>
+  <text x="554" y="258" font-size="10.5" fill="#92400e">MySQL 进程崩溃不丢（实测）；OS 崩溃会丢</text>
+
+  <rect x="540" y="276" width="420" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="554" y="298" font-size="12" font-weight="bold" fill="#9a3412">0</text>
+  <text x="554" y="318" font-size="10.5" fill="#9a3412">提交时什么都不做，每秒 write + fsync</text>
+  <text x="554" y="338" font-size="10.5" fill="#9a3412">丢最近约 1 秒 —— 只有掉电能证，本机未实测</text>
+
+  <text x="540" y="372" font-size="11" fill="#334155">binlog 那一侧由 sync_binlog 独立控制（实测默认=1）：</text>
+  <text x="540" y="392" font-size="11" font-weight="bold" fill="#0f172a">两个都为 1 才是「双 1」，两阶段提交才真的持久化</text>
+
+  <rect x="24" y="420" width="476" height="256" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="40" y="444" font-size="13" font-weight="bold" fill="#0f172a">磁盘上的实测落位（ls /var/lib/mysql）</text>
+  <text x="40" y="470" font-size="11" fill="#334155">redo：#innodb_redo/ 下 32 个 #ib_redoN，每个 3276800 B</text>
+  <text x="40" y="492" font-size="11" fill="#334155">合计 104857600 B = innodb_redo_log_capacity，循环写</text>
+  <text x="40" y="518" font-size="11" fill="#334155">undo：undo_001 与 undo_002，各 16777216 B</text>
+  <text x="40" y="544" font-size="11" fill="#334155">双写：#ib_16384_0.dblwr（196608 B）</text>
+  <text x="40" y="566" font-size="11" fill="#334155">与 #ib_16384_1.dblwr（8585216 B）</text>
+  <text x="40" y="592" font-size="11" fill="#334155">文件名里的 16384 就是 innodb_page_size 的实测值</text>
+  <text x="40" y="618" font-size="11" fill="#334155">启动日志各打一行：Using './#ib_16384_0.dblwr' for doublewrite</text>
+  <text x="40" y="644" font-size="10.5" fill="#64748b">要点：双写区是两个交替使用的副本槽，不是一个文件里的一份备份</text>
+
+  <rect x="524" y="420" width="452" height="256" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="540" y="444" font-size="13" font-weight="bold" fill="#0f172a">提交瞬间与崩溃后的实测读数</text>
+  <text x="540" y="468" font-size="10.5" fill="#334155">SHOW ENGINE INNODB STATUS 的 LOG 段（7 轮，灌 1 万行后立刻读）：</text>
+  <text x="540" y="490" font-size="10.5" fill="#1e40af">Log sequence number 比 Last checkpoint 大 2536771~2564569 B</text>
+  <text x="540" y="510" font-size="10.5" fill="#1e40af">同一时刻 Modified db pages = 161~179 个（脏页 16384 B/页）</text>
+  <text x="540" y="530" font-size="10.5" fill="#334155">含义：redo 已刷盘、事务已提交，但数据页还差着两兆多没落盘</text>
+  <text x="540" y="556" font-size="10.5" fill="#334155">把容器连同 mysqld 一起 KILL 掉再拉起（10 轮恢复日志）：</text>
+  <text x="540" y="576" font-size="10.5" fill="#14532d">Database was not shutdown normally / Starting crash recovery</text>
+  <text x="540" y="596" font-size="10.5" fill="#14532d">Doing recovery: scanned up to log sequence number 45557310</text>
+  <text x="540" y="616" font-size="10.5" fill="#14532d">Applying a batch of 13 redo log records（10 轮为 0~52 条，前滚）</text>
+  <text x="540" y="636" font-size="10.5" fill="#991b1b">Rolling back trx with id 6161, 1 rows to undo（未提交的那笔）</text>
+  <text x="540" y="658" font-size="10.5" font-weight="bold" fill="#0f172a">核对：已提交行 11 轮全可见、未提交行 10 轮全查不到；真掉电未实测</text>
+</svg>

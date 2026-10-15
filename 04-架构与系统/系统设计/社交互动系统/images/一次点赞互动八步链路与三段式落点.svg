@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">
+<rect width="1000" height="700" fill="#ffffff"/>
+
+<defs>
+<marker id="arw" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+<path d="M0,0L10,4L0,8z" fill="#64748b"/>
+</marker>
+</defs>
+
+<text x="30" y="34" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="20" font-weight="bold" fill="#1e293b">一次点赞走的八步，各自落在「判形态 / 选手段 / 定代价」的哪一段</text>
+<text x="30" y="56" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#64748b">左列按顺序走一遍链路，每步标出用什么手段；色即段位：蓝＝判数据形态（决定结构），绿＝选原子手段（决定不会错），橙＝定代价落点（决定划不划算）</text>
+
+<rect x="40" y="88" width="480" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="54" y="108" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a">① 用户点赞 —— 请求带 uid + 评论 id</text>
+<text x="54" y="128" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#1e3a8a">先问：这份数据被多少人同时读、同时改？归哪一类形态</text>
+
+<rect x="40" y="154" width="480" height="52" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="54" y="174" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#14532d">② 判重（去重）—— SADD 原子判「一人一赞」</text>
+<text x="54" y="194" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#14532d">竞争边界就在一条命令内；DB 唯一索引 (post_id, uid) 兜底</text>
+
+<rect x="40" y="220" width="480" height="52" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="54" y="240" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#1e3a8a">③ 计数 +1 —— INCR 原子加一</text>
+<text x="54" y="260" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#1e3a8a">把「点赞数」从「点赞记录」里分出来：能压成一个数字就别每次去数</text>
+
+<rect x="40" y="286" width="480" height="52" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="54" y="306" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#14532d">④ 热度榜改分 —— ZINCRBY，O(log N)</text>
+<text x="54" y="326" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#14532d">改完立刻可按新分数读名次，不需要额外排序或重建</text>
+
+<rect x="40" y="352" width="480" height="52" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="54" y="372" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#7c2d12">⑤ 异步落库 —— 攒批把 N 次提交摊成 1 次</text>
+<text x="54" y="392" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#7c2d12">实测 2000 条 13.7s → 136ms；代价是窗口内崩溃整批丢失</text>
+
+<rect x="40" y="418" width="480" height="52" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="54" y="438" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#14532d">⑥ 敏感断言走 Lua —— 判重 + 计数一起原子</text>
+<text x="54" y="458" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#14532d">多条命令要一起原子时用一段脚本覆盖，中间不留往返</text>
+
+<rect x="40" y="484" width="480" height="52" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="54" y="504" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#7c2d12">⑦ 关注 / 粉丝 —— 关系双索引</text>
+<text x="54" y="524" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#7c2d12">分片键只优化一个方向，另一个方向必须广播</text>
+
+<rect x="40" y="550" width="480" height="52" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="54" y="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" font-weight="bold" fill="#7c2d12">⑧ feed 分发 —— 按两个乘积选推还是拉</text>
+<text x="54" y="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11" fill="#7c2d12">比「粉丝数 × 发帖频次」与「关注数 × 读频次」，两侧谁大压谁</text>
+
+<line x1="280" y1="140" x2="280" y2="152" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="280" y1="206" x2="280" y2="218" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="280" y1="272" x2="280" y2="284" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="280" y1="338" x2="280" y2="350" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="280" y1="404" x2="280" y2="416" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="280" y1="470" x2="280" y2="482" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+<line x1="280" y1="536" x2="280" y2="548" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+
+<rect x="560" y="88" width="420" height="136" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="576" y="112" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#334155">三段式是一条依赖链，不是并列模块</text>
+<text x="576" y="136" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">判数据形态 → 选原子手段 → 定代价落点</text>
+<text x="576" y="156" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">决定结构　　　决定不会错　　　决定划不划算</text>
+<text x="576" y="180" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">落地顺序五步：列形态 → 说痛点 →</text>
+<text x="576" y="200" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#475569">给手段并说清原子边界 → 说代价落点 → 补兜底</text>
+
+<rect x="560" y="240" width="420" height="156" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+<text x="576" y="264" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#14532d">原子手段只有三档，按竞争边界取</text>
+<text x="576" y="288" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">快：Redis 单命令 INCR / SADD / ZINCRBY</text>
+<text x="576" y="306" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">中：Redis Lua —— 多条命令要一起原子</text>
+<text x="576" y="324" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">慢：DB 条件更新 / 唯一索引 —— 落库侧防线</text>
+<text x="576" y="348" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">纪律：单命令能覆盖就别上 Lua，</text>
+<text x="576" y="368" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#14532d">Lua 能覆盖的就别落到 DB；别提了原子却留竞态窗口</text>
+
+<rect x="560" y="412" width="420" height="190" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+<text x="576" y="436" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" font-weight="bold" fill="#7c2d12">代价落点三选一，比的是两个乘积</text>
+<text x="576" y="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7c2d12">异步：把 fsync 摊薄，2000 条 13.7s → 136ms</text>
+<text x="576" y="478" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7c2d12">代价是攒批窗口内的丢失窗口</text>
+<text x="576" y="502" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7c2d12">推拉：写放大 vs 读放大，谁大压谁</text>
+<text x="576" y="526" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7c2d12">分片：单分片快 vs 广播慢，</text>
+<text x="576" y="546" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7c2d12">分片键只优化一个方向</text>
+<text x="576" y="570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7c2d12">反例实测：单实例把热 key 拆成 8 份</text>
+<text x="576" y="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="11.5" fill="#7c2d12">173ms vs 174ms —— 拆 key 本身零收益</text>
+
+<rect x="40" y="616" width="940" height="64" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="56" y="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#334155">兜底三件：对账（补异步窗口，用明细重算计数）／ 监控热 key ／ 降级（DB 条件更新兜住原子性）</text>
+<text x="56" y="662" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#64748b">出处：步骤与命令取自本篇第四节表格；13.7s → 136ms 与 173ms vs 174ms 两处读数见 2.3 节，各步细节落在零件篇</text>
+</svg>

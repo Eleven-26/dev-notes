@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760">
+  <rect width="1000" height="760" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="23" fill="#0f172a">反向代理重新分帧后的块形状对照</text>
+  <text x="500" y="58" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#64748b">同一份 chunked 载荷，直连与经反代的块边界与到达时刻（方块宽度按字节等比，3 像素 = 1 字节）</text>
+
+  <rect x="28" y="76" width="944" height="248" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="100" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#2563eb">请求方向：客户端 → 反代 → 裸上游（体 46 字节 = 客户端发 3 块 [16 16 14]）</text>
+
+  <text x="44" y="139" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">A 直连 · 单块</text>
+  <rect x="300" y="122" width="69" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="334" y="139" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#16a34a">23</text>
+  <text x="450" y="139" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#16a34a">上游 1 块 [23]</text>
+
+  <text x="44" y="183" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">B 经反代 · 一次写完</text>
+  <rect x="300" y="166" width="138" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="369" y="183" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#2563eb">46</text>
+  <text x="450" y="183" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#2563eb">上游 1 块 [46]（5 次中 4 次）</text>
+
+  <text x="44" y="227" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">B 同一组 · 换一轮跑</text>
+  <rect x="300" y="210" width="48" height="26" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="324" y="227" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#b45309">16</text>
+  <rect x="348" y="210" width="90" height="26" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="393" y="227" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#b45309">30</text>
+  <text x="450" y="227" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#b45309">上游 2 块 [16 30]（5 次中 1 次）</text>
+
+  <text x="44" y="271" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">B2 经反代 · 睡 30ms</text>
+  <rect x="300" y="254" width="48" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="324" y="271" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#2563eb">16</text>
+  <rect x="348" y="254" width="48" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="372" y="271" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#2563eb">16</text>
+  <rect x="396" y="254" width="42" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="417" y="271" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#2563eb">14</text>
+  <text x="456" y="271" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#2563eb">上游 3 块 [16 16 14]（5 次全同）</text>
+
+  <text x="44" y="304" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#64748b">对照：B0 直连 · 块间睡 30ms 同为 3 块 [16 16 14]；⭐ 只有「经反代 + 一次写完」会合并，且合并不保证</text>
+
+  <rect x="28" y="336" width="944" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="44" y="360" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="15" fill="#2563eb">响应方向：裸上游手写 5 块 × 18 字节（共 90 字节）→ 客户端边收边解析</text>
+
+  <text x="44" y="399" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">F 直连 · 分 5 次写</text>
+  <rect x="300" y="382" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="354" y="382" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="408" y="382" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="462" y="382" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="516" y="382" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="582" y="399" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#16a34a">5 块 [18 18 18 18 18]｜到达 0/20~21/41/61~62/81~82ms</text>
+
+  <text x="44" y="443" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">G 经反代 -1 · 分 5 次写</text>
+  <rect x="300" y="426" width="54" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="354" y="426" width="54" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="408" y="426" width="54" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="462" y="426" width="54" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="516" y="426" width="54" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="582" y="443" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#2563eb">5 块 [18 18 18 18 18]｜到达 0~1/21/41~42/62~69/82~92ms</text>
+
+  <text x="44" y="487" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">I 直连 · 一次写完</text>
+  <rect x="300" y="470" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="354" y="470" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="408" y="470" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="462" y="470" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="516" y="470" width="54" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="582" y="487" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#16a34a">5 块 [18 18 18 18 18]｜到达 0/0/0/0/0ms</text>
+
+  <text x="44" y="531" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="13" fill="#64748b">J 经反代 0 · 一次写完</text>
+  <rect x="300" y="514" width="270" height="26" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="435" y="531" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#ea580c">90</text>
+  <text x="582" y="531" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12" fill="#ea580c">⭐ 1 块 [90]｜5 次全部如此｜到达 0~1ms</text>
+
+  <text x="44" y="566" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#64748b">I 与 J 是同一份上游字节流，只差「经不经反代」；⭐ F→G 能保住边界是撞上读取节奏，不是被保证</text>
+
+  <rect x="28" y="598" width="944" height="150" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="44" y="622" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="14" fill="#ea580c">两端都看得见的那条头线（与上面同一批读数）</text>
+  <text x="44" y="646" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#7c2d12">请求方向：B 组上游收到的头里有 Transfer-Encoding: chunked，可 Director 的 Header map 里没有它</text>
+  <text x="44" y="666" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#7c2d12">它被服务端解析摘进了 r.TransferEncoding，r.ContentLength = -1；出站那条由 Transport 自己加</text>
+  <text x="44" y="686" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#7c2d12">响应方向：J 组客户端的响应头多出 Date 与 Connection: close，上游根本没写这两条 → 头块整个被重写</text>
+  <text x="44" y="706" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#7c2d12">出处：.workbuddy/tmp/round495/w4t1r_te_run1..5.txt（正文 2.2 节，golang:1.26-alpine / go1.26.8）</text>
+  <text x="44" y="726" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif" font-size="12.5" fill="#7c2d12">未覆盖：FlushInterval = -1 配「一次写完」的块形状、以及真实 TLS 链路下的表现，本图没有画</text>
+</svg>

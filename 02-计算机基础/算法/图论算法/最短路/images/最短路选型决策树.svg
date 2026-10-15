@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 706" width="1000" height="706" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="706" fill="#ffffff"/>
+<text x="40" y="42" font-size="24" font-weight="bold" fill="#1f2937">最短路选型决策树：先问有权无权，再问源点范围，最后问稠密还是稀疏</text>
+<text x="40" y="72" font-size="15" fill="#475569">分支与判据取自本篇 5.3 的选型表与 1.1 的三种全源解法；叶子上的 ms 区间取自 5.1 的多轮实测（连跑 5 次，只断言趋势）</text>
+
+<rect x="390" y="96" width="220" height="54" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="500" y="128" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="middle">第一问：边有权吗？</text>
+
+<rect x="20" y="176" width="225" height="88" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+<text x="32" y="200" font-size="14" font-weight="bold" fill="#334155">无权 / 等权</text>
+<text x="32" y="222" font-size="12" fill="#334155">BFS：O(V+E)，常数最小（5.3）</text>
+<text x="32" y="242" font-size="11" fill="#64748b">扩散形态见「图的遍历」篇</text>
+
+<rect x="390" y="176" width="220" height="88" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="500" y="206" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="middle">第二问：要算的范围</text>
+<text x="500" y="228" font-size="14" fill="#334155" text-anchor="middle">一个源点，还是整个矩阵？</text>
+
+<rect x="150" y="300" width="210" height="54" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="255" y="332" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="middle">第三问：有负权吗？</text>
+
+<rect x="640" y="300" width="210" height="72" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+<text x="745" y="326" font-size="15" font-weight="bold" fill="#1f2937" text-anchor="middle">第四问：稠密还是稀疏</text>
+<text x="745" y="348" font-size="13" fill="#334155" text-anchor="middle">E 与 V² 是否同量级</text>
+
+<rect x="20" y="430" width="225" height="100" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="32" y="454" font-size="14" font-weight="bold" fill="#1e40af">单源 + 非负权</text>
+<text x="32" y="476" font-size="12" fill="#1e3a8a">Dijkstra：O((V+E) log V)</text>
+<text x="32" y="496" font-size="11" fill="#1e3a8a">取极值 + 定稿标记的调度</text>
+<text x="32" y="514" font-size="11" fill="#475569">见 Dijkstra.md 第三、四节</text>
+
+<rect x="265" y="430" width="225" height="100" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+<text x="277" y="454" font-size="14" font-weight="bold" fill="#9a3412">单源 + 负权 / 要定位负环</text>
+<text x="277" y="476" font-size="12" fill="#7c2d12">Bellman-Ford（SPFA 是队列调度）</text>
+<text x="277" y="496" font-size="11" fill="#7c2d12">只有它给得出环上的顶点序列（5.3）</text>
+<text x="277" y="514" font-size="11" fill="#475569">见 Bellman-Ford.md 第二、五节</text>
+
+<rect x="510" y="430" width="225" height="100" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="522" y="454" font-size="13" font-weight="bold" fill="#14532d">全源 + 稠密图 → Floyd（本篇）</text>
+<text x="522" y="476" font-size="12" fill="#14532d">O(V³)，与边数无关（1.1 / 1.4）</text>
+<text x="522" y="496" font-size="11" fill="#14532d">300 点 E=22819：25.0~27.6 ms</text>
+<text x="522" y="514" font-size="11" fill="#14532d">对 39.9~44.5 ms：Floyd 快 1.5~1.8×</text>
+
+<rect x="755" y="430" width="225" height="100" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="767" y="454" font-size="14" font-weight="bold" fill="#1e40af">全源 + 稀疏图 + 非负权</text>
+<text x="767" y="476" font-size="12" fill="#1e3a8a">跑 V 次 Dijkstra（1.1）</text>
+<text x="767" y="496" font-size="11" fill="#1e3a8a">300 点 E=1200：11.7~12.2 ms</text>
+<text x="767" y="514" font-size="11" fill="#1e3a8a">Floyd 18.1~26.7 ms：快 1.5~2.2×</text>
+
+<path d="M 500 150 L 500 163 L 132 163 L 132 176" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 500 150 L 500 176" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 500 264 L 500 282 L 255 282 L 255 300" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 500 264 L 500 282 L 745 282 L 745 300" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 255 354 L 255 392 L 132 392 L 132 430" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 255 354 L 255 392 L 377 392 L 377 430" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 745 372 L 745 430" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+<path d="M 745 372 L 745 392 L 867 392 L 867 430" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+
+<g font-size="12" fill="#475569">
+<text x="270" y="158">无权 / 等权</text>
+<text x="512" y="200">有权</text>
+<text x="360" y="276">单源：一个起点到所有点</text>
+<text x="610" y="276">全源：任意两点都要（矩阵）</text>
+<text x="140" y="386">非负权</text>
+<text x="300" y="386">有负权</text>
+<text x="640" y="386">稠密（E ≈ V²）</text>
+<text x="780" y="386">稀疏 + 非负权</text>
+</g>
+
+<text x="40" y="564" font-size="12" fill="#334155">⚠️ 全源 + 负权这一支没有第二条路：跑 V 次 Dijkstra 要求非负权（1.1），而 Floyd 与 Bellman-Ford 在同一张负权图上实测同为 [0 1 5 2]（3.1）。</text>
+<text x="40" y="586" font-size="12" fill="#334155">⭐ 判负环两见：Floyd 看对角线 d[i][i] &lt; 0（3.2 实测对角线 [0 -9 -18]）；要给出环上的顶点序列只能用 Bellman-Ford（5.3）。</text>
+<text x="40" y="608" font-size="12" fill="#334155">⭐ 稀疏图上 Floyd 吃亏，是 V³ = 2.7×10⁷ 次尝试里绝大多数在做「∞ + ∞」这种无意义更新（1.4 / 5.1）。</text>
+<text x="40" y="630" font-size="12" fill="#334155">⚠️ 不加内层可达性判断时，INF 的取法会引出跨语言差异：1&lt;&lt;30 在 Go 的 64 位 int 下安全，在 Java 的 32 位 int 下回绕成 -2147483648（5.2）。</text>
+
+<rect x="40" y="644" width="920" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="56" y="666" font-size="12" fill="#1f2937">出处：五个叶子的「选谁」逐条对应 5.3 的选型表；两组 ms 区间对应 5.1 的多轮实测范围；复杂度口径对应 1.1 与 1.4。</text>
+<text x="56" y="686" font-size="12" fill="#475569">用法一句话（5.1 / 5.3）：性能不是选 Floyd 的理由，「需要负权」与「需要全源」这两条同时成立时它几乎没有对手。</text>
+</svg>

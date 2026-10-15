@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 664" width="1000" height="664" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+    <marker id="arwO" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#ea580c"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="664" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">事务边界状态机：你的 COMMIT 可能不是你自己按下的那一个</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">MySQL 8.0.46 实测（容器 w5m1-mysql，本机 127.0.0.1:24801）；状态与迁移边均出自本文第五节</text>
+
+  <rect x="24" y="100" width="196" height="80" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="36" y="126" font-size="13" font-weight="bold" fill="#1e40af">无事务（默认态）</text>
+  <text x="36" y="148" font-size="10.5" fill="#1e40af">实测 autocommit=1</text>
+  <text x="36" y="168" font-size="10.5" fill="#1e40af">每条语句自成一个事务</text>
+
+  <rect x="284" y="100" width="250" height="80" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="296" y="126" font-size="13" font-weight="bold" fill="#14532d">显式事务 ACTIVE</text>
+  <text x="296" y="148" font-size="10.5" fill="#14532d">innodb_trx 里 trx_state=RUNNING</text>
+  <text x="296" y="168" font-size="10.5" fill="#14532d">行锁与 undo 从这条语句开始累积</text>
+
+  <rect x="684" y="100" width="292" height="76" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="696" y="126" font-size="13" font-weight="bold" fill="#334155">COMMITTED 已提交</text>
+  <text x="696" y="148" font-size="10.5" fill="#334155">锁全部释放，undo 交给 purge 线程回收</text>
+  <text x="696" y="166" font-size="10.5" fill="#334155">redo 已刷盘，数据页仍可能没落盘</text>
+
+  <rect x="684" y="212" width="292" height="80" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="696" y="238" font-size="13" font-weight="bold" fill="#991b1b">ROLLED BACK 已回滚</text>
+  <text x="696" y="260" font-size="10.5" fill="#991b1b">1213 死锁：整笔回滚，不是只回滚失败那条</text>
+  <text x="696" y="280" font-size="10.5" fill="#991b1b">重试必须从第一条语句重放</text>
+
+  <rect x="284" y="230" width="250" height="88" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="296" y="256" font-size="13" font-weight="bold" fill="#92400e">保存点段 SAVEPOINT sp</text>
+  <text x="296" y="278" font-size="10.5" fill="#92400e">ROLLBACK TO SAVEPOINT 只撤数据改动</text>
+  <text x="296" y="298" font-size="10.5" fill="#92400e">要点：段内拿到的行锁不释放</text>
+
+  <rect x="24" y="230" width="196" height="88" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="36" y="256" font-size="13" font-weight="bold" fill="#9a3412">隐式提交出口</text>
+  <text x="36" y="278" font-size="10.5" fill="#9a3412">DDL / GRANT / LOCK TABLES</text>
+  <text x="36" y="296" font-size="10.5" fill="#9a3412">BEGIN / ANALYZE / FLUSH</text>
+
+  <line x1="220" y1="140" x2="284" y2="140" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <text x="224" y="132" font-size="9.5" fill="#2563eb">显式开启</text>
+
+  <line x1="534" y1="126" x2="684" y2="126" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+  <text x="560" y="118" font-size="10" fill="#16a34a">COMMIT</text>
+
+  <line x1="534" y1="160" x2="684" y2="240" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arwR)"/>
+  <text x="556" y="212" font-size="10" fill="#dc2626">ROLLBACK</text>
+  <text x="556" y="228" font-size="9.5" fill="#991b1b">或 1213 被动回滚</text>
+
+  <line x1="340" y1="180" x2="340" y2="230" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwO)"/>
+  <text x="348" y="212" font-size="9.5" fill="#92400e">设保存点</text>
+
+  <line x1="480" y1="230" x2="480" y2="180" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwO)"/>
+  <text x="488" y="212" font-size="9.5" fill="#92400e">回到 ACTIVE</text>
+
+  <path d="M284,170 L250,170 L250,272 L220,272" fill="none" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arwO)"/>
+  <text x="252" y="204" font-size="9.5" fill="#9a3412">夹一条 DDL</text>
+
+  <line x1="120" y1="230" x2="120" y2="180" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <text x="128" y="212" font-size="9.5" fill="#1e40af">回到自动提交</text>
+
+  <rect x="24" y="348" width="952" height="60" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="372" font-size="11" font-weight="bold" fill="#0f172a">实测一（3 轮结果完全一致）：START TRANSACTION 后插入 id=10，夹一句 ALTER TABLE，再插入 id=20，最后 ROLLBACK</text>
+  <text x="40" y="394" font-size="11" fill="#334155">表里 10 与 20 两行都在。DDL 前的半程已被提交，DDL 之后的语句已落在自动提交态里，那句 ROLLBACK 什么都没撤销。</text>
+
+  <rect x="24" y="424" width="952" height="60" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="448" font-size="11" font-weight="bold" fill="#0f172a">实测二（3 轮一致）：UPDATE id=1，设保存点，UPDATE id=2，再 ROLLBACK TO SAVEPOINT</text>
+  <text x="40" y="470" font-size="11" fill="#334155">id=2 的改动被撤销（trx_rows_modified 回到 1），但 data_locks 里 id=2 的 X,REC_NOT_GAP 仍是 GRANTED，第三方改它 3 秒后报 1205。</text>
+
+  <rect x="24" y="500" width="952" height="76" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="524" font-size="11" font-weight="bold" fill="#0f172a">1213 与 1205 走的是两条不同的边，别混</text>
+  <text x="40" y="546" font-size="11" fill="#334155">1213：整笔事务回滚。实测被回滚的那个会话，先前已经执行成功的 UPDATE id=2 也一起消失，表里只剩对手事务的两行。</text>
+  <text x="40" y="566" font-size="11" fill="#334155">1205：innodb_rollback_on_timeout=OFF（实测默认值），只撤销超时那条语句；事务仍在 innodb_trx 里 RUNNING，先前拿的锁仍持有。</text>
+
+  <text x="500" y="610" text-anchor="middle" font-size="11" fill="#64748b">要点：能改变事务边界的动作有六类，其中只有 COMMIT 和 ROLLBACK 是你自己按下的</text>
+  <text x="500" y="634" text-anchor="middle" font-size="10.5" fill="#64748b">未实测：把 ROLLBACK TO SAVEPOINT 与并行 DDL 组合的边界行为；本文只覆盖单会话保存点与第三方等锁两种现场</text>
+</svg>
