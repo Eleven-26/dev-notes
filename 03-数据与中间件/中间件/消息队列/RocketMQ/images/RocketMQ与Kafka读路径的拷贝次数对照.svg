@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="20" y="30" font-size="19" font-weight="bold" fill="#0f172a">同一条消息在 Broker 出口的两条路线：RocketMQ 回用户态加工 vs Kafka 不进用户态</text>
+  <text x="20" y="54" font-size="13" fill="#475569">口径取自 4.6 节字节码实测（apache/rocketmq:5.3.1，两个 jar 共 569 个 class）· 只统计 CPU 参与的数据拷贝，DMA 不计</text>
+
+  <text x="20" y="86" font-size="15" font-weight="bold" fill="#b91c1c">路线一 · RocketMQ：mmap + write（数据必须回用户态）</text>
+
+  <rect x="15" y="100" width="175" height="72" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.5"/>
+  <text x="102" y="128" font-size="13" font-weight="bold" text-anchor="middle" fill="#7f1d1d">磁盘 CommitLog</text>
+  <text x="102" y="150" font-size="12" text-anchor="middle" fill="#7f1d1d">单文件 1 GiB</text>
+
+  <rect x="215" y="100" width="175" height="72" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.5"/>
+  <text x="302" y="128" font-size="13" font-weight="bold" text-anchor="middle" fill="#7f1d1d">内核 PageCache</text>
+  <text x="302" y="150" font-size="12" text-anchor="middle" fill="#7f1d1d">写到这里即返回</text>
+
+  <rect x="415" y="100" width="175" height="72" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+  <text x="502" y="122" font-size="13" font-weight="bold" text-anchor="middle" fill="#7f1d1d">用户态 ByteBuffer</text>
+  <text x="502" y="142" font-size="12" text-anchor="middle" fill="#7f1d1d">FileChannel.map</text>
+  <text x="502" y="162" font-size="12" text-anchor="middle" fill="#7f1c1d">共享映射·省 1 次</text>
+
+  <rect x="615" y="100" width="175" height="72" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+  <text x="702" y="122" font-size="13" font-weight="bold" text-anchor="middle" fill="#7f1d1d">socket 缓冲区</text>
+  <text x="702" y="142" font-size="12" text-anchor="middle" fill="#7f1d1d">过滤 + 套帧后</text>
+  <text x="702" y="162" font-size="12" text-anchor="middle" fill="#7f1d1d">CPU 拷进来</text>
+
+  <rect x="815" y="100" width="170" height="72" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.5"/>
+  <text x="900" y="128" font-size="13" font-weight="bold" text-anchor="middle" fill="#7f1d1d">网卡</text>
+  <text x="900" y="150" font-size="12" text-anchor="middle" fill="#7f1d1d">DMA 发出</text>
+
+  <line x1="190" y1="136" x2="215" y2="136" stroke="#b91c1c" stroke-width="1.6"/>
+  <polygon points="215,136 207,132 207,140" fill="#b91c1c"/>
+  <line x1="390" y1="136" x2="415" y2="136" stroke="#b91c1c" stroke-width="1.6"/>
+  <polygon points="415,136 407,132 407,140" fill="#b91c1c"/>
+  <line x1="590" y1="136" x2="615" y2="136" stroke="#b91c1c" stroke-width="2"/>
+  <polygon points="615,136 607,132 607,140" fill="#b91c1c"/>
+  <line x1="790" y1="136" x2="815" y2="136" stroke="#b91c1c" stroke-width="1.6"/>
+  <polygon points="815,136 807,132 807,140" fill="#b91c1c"/>
+
+  <rect x="15" y="184" width="175" height="30" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+  <text x="102" y="204" font-size="12" text-anchor="middle" fill="#7c2d12">DMA · 不算 CPU 拷贝</text>
+  <rect x="215" y="184" width="175" height="30" rx="6" fill="#dcfce7" stroke="#15803d" stroke-width="1.4"/>
+  <text x="302" y="204" font-size="12" text-anchor="middle" fill="#14532d">mmap 映射·CPU 0 次</text>
+  <rect x="415" y="184" width="175" height="30" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.4"/>
+  <text x="502" y="204" font-size="12" text-anchor="middle" fill="#7f1d1d">write·CPU 1 次</text>
+  <rect x="615" y="184" width="175" height="30" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+  <text x="702" y="204" font-size="12" text-anchor="middle" fill="#7c2d12">DMA · 不算 CPU 拷贝</text>
+  <rect x="815" y="184" width="170" height="30" rx="6" fill="#f1f5f9" stroke="#475569" stroke-width="1.2"/>
+  <text x="900" y="204" font-size="12" text-anchor="middle" fill="#334155">调用 2 / 切换 4</text>
+
+  <text x="20" y="240" font-size="14" font-weight="bold" fill="#1d4ed8">路线二 · Kafka：sendfile（数据全程不进用户态）</text>
+
+  <rect x="15" y="254" width="220" height="72" rx="8" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="125" y="282" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">磁盘分区日志段</text>
+  <text x="125" y="304" font-size="12" text-anchor="middle" fill="#1e3a8a">Topic 级独立文件</text>
+
+  <rect x="265" y="254" width="220" height="72" rx="8" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="375" y="282" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">内核 PageCache</text>
+  <text x="375" y="304" font-size="12" text-anchor="middle" fill="#1e3a8a">transferTo 的目标</text>
+
+  <rect x="515" y="254" width="220" height="72" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="625" y="276" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">socket 侧</text>
+  <text x="625" y="296" font-size="12" text-anchor="middle" fill="#1e3a8a">普通网卡：CPU 1 次</text>
+  <text x="625" y="316" font-size="12" text-anchor="middle" fill="#1e3a8a">SG-DMA：只放描述符</text>
+
+  <rect x="765" y="254" width="220" height="72" rx="8" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.5"/>
+  <text x="875" y="282" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">网卡</text>
+  <text x="875" y="304" font-size="12" text-anchor="middle" fill="#1e3a8a">DMA 发出</text>
+
+  <line x1="235" y1="290" x2="265" y2="290" stroke="#1d4ed8" stroke-width="1.6"/>
+  <polygon points="265,290 257,286 257,294" fill="#1d4ed8"/>
+  <line x1="485" y1="290" x2="515" y2="290" stroke="#1d4ed8" stroke-width="1.6"/>
+  <polygon points="515,290 507,286 507,294" fill="#1d4ed8"/>
+  <line x1="735" y1="290" x2="765" y2="290" stroke="#1d4ed8" stroke-width="1.6"/>
+  <polygon points="765,290 757,286 757,294" fill="#1d4ed8"/>
+
+  <rect x="15" y="338" width="220" height="30" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="1.2"/>
+  <text x="125" y="358" font-size="12" text-anchor="middle" fill="#7c2d12">DMA · 不算 CPU 拷贝</text>
+  <rect x="265" y="338" width="220" height="30" rx="6" fill="#dcfce7" stroke="#15803d" stroke-width="1.4"/>
+  <text x="375" y="358" font-size="12" text-anchor="middle" fill="#14532d">一次系统调用直达</text>
+  <rect x="515" y="338" width="220" height="30" rx="6" fill="#dcfce7" stroke="#15803d" stroke-width="1.4"/>
+  <text x="625" y="358" font-size="12" text-anchor="middle" fill="#14532d">CPU 1 次 / 网卡省成 0</text>
+  <rect x="765" y="338" width="220" height="30" rx="6" fill="#f1f5f9" stroke="#475569" stroke-width="1.2"/>
+  <text x="875" y="358" font-size="12" text-anchor="middle" fill="#334155">调用 1 / 切换 2</text>
+
+  <rect x="15" y="392" width="475" height="150" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.4"/>
+  <text x="30" y="418" font-size="14" font-weight="bold" fill="#0f172a">字节码实测三行（4.6 节，同一容器一次跑完）</text>
+  <text x="30" y="444" font-size="13" fill="#1e293b">FileChannel.map 命中 7 处，集中在 DefaultMappedFile</text>
+  <text x="30" y="466" font-size="13" fill="#1e293b">FileChannel.transferTo 命中 0 处 —— 全仓不走 sendfile</text>
+  <text x="30" y="488" font-size="13" fill="#1e293b">FileRegion 只在 FileRegionEncoder 与 TlsModeHandler</text>
+  <text x="30" y="512" font-size="12" fill="#475569">兜底编码器轮不到：读路径交出去的是 ByteBuffer 切片</text>
+
+  <rect x="510" y="392" width="475" height="150" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.4"/>
+  <text x="525" y="418" font-size="14" font-weight="bold" fill="#0f172a">RocketMQ 必须回用户态的三件事</text>
+  <text x="525" y="444" font-size="13" fill="#1e293b">① 按 tagHash 过滤：条目带哈希，命中才给消费者</text>
+  <text x="525" y="466" font-size="13" fill="#1e293b">② 套 RemotingCommand 帧：响应头与 opaque 请求号</text>
+  <text x="525" y="488" font-size="13" fill="#1e293b">③ 可选 body 压缩 / 加密：Broker 侧要改内容</text>
+  <text x="525" y="512" font-size="12" fill="#475569">同因：过了 TLS 或 gzip，零拷贝必然失效</text>
+
+  <rect x="15" y="556" width="970" height="120" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.4"/>
+  <text x="30" y="582" font-size="14" font-weight="bold" fill="#7c2d12">读法与边界</text>
+  <text x="30" y="608" font-size="13" fill="#78350f">一句话：RocketMQ 拿 1 次 CPU 拷贝换过滤与协议的灵活性，Kafka 的「分区内原样转发」才守得住零拷贝。</text>
+  <text x="30" y="630" font-size="13" fill="#783509">次数列是按 syscall 语义推得的结构计数（口径同 go/运行时/零拷贝.md 第三节总览表），未用 strace 逐调用统计。</text>
+  <text x="30" y="652" font-size="13" fill="#783509">镜像与本机均无 strace、装包需外网，故该列标注未实测；API 命中数与 1 GiB 单文件为容器内实测。</text>
+</svg>

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b45309"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="30" y="34" font-size="20" font-weight="bold" fill="#0f172a">限流计数放在哪：单机、共享存储、本机预分配额度</text>
+  <text x="30" y="56" font-size="12.5" fill="#475569">同一条判定链（收到消息 → 查计数 → 扣减）在三种存放方式下的对照；三栏的每句话都取自正文 2.2 与 5.1</text>
+
+  <rect x="30" y="76" width="300" height="44" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="350" y="76" width="300" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <rect x="670" y="76" width="300" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="180" y="104" font-size="13" fill="#7f1d1d" text-anchor="middle">① 计数放单机内存（错法）</text>
+  <text x="500" y="104" font-size="13" fill="#14532d" text-anchor="middle">② 计数落共享存储（准确）</text>
+  <text x="820" y="104" font-size="13" fill="#92400e" text-anchor="middle">③ 本机预分配额度（便宜）</text>
+
+  <rect x="40" y="136" width="88" height="48" rx="6" fill="#ffffff" stroke="#dc2626"/>
+  <rect x="140" y="136" width="88" height="48" rx="6" fill="#ffffff" stroke="#dc2626"/>
+  <rect x="240" y="136" width="88" height="48" rx="6" fill="#ffffff" stroke="#dc2626"/>
+  <text x="84" y="156" font-size="10.5" fill="#7f1d1d" text-anchor="middle">网关 1</text>
+  <text x="84" y="174" font-size="10.5" fill="#7f1d1d" text-anchor="middle">本机桶</text>
+  <text x="184" y="156" font-size="10.5" fill="#7f1d1d" text-anchor="middle">网关 2</text>
+  <text x="184" y="174" font-size="10.5" fill="#7f1d1d" text-anchor="middle">本机桶</text>
+  <text x="284" y="156" font-size="10.5" fill="#7f1d1d" text-anchor="middle">网关 3</text>
+  <text x="284" y="174" font-size="10.5" fill="#7f1d1d" text-anchor="middle">本机桶</text>
+
+  <rect x="360" y="136" width="88" height="48" rx="6" fill="#ffffff" stroke="#16a34a"/>
+  <rect x="460" y="136" width="88" height="48" rx="6" fill="#ffffff" stroke="#16a34a"/>
+  <rect x="560" y="136" width="88" height="48" rx="6" fill="#ffffff" stroke="#16a34a"/>
+  <text x="404" y="156" font-size="10.5" fill="#14532d" text-anchor="middle">网关 1</text>
+  <text x="404" y="174" font-size="10.5" fill="#14532d" text-anchor="middle">只做判定</text>
+  <text x="504" y="156" font-size="10.5" fill="#14532d" text-anchor="middle">网关 2</text>
+  <text x="504" y="174" font-size="10.5" fill="#14532d" text-anchor="middle">只做判定</text>
+  <text x="604" y="156" font-size="10.5" fill="#14532d" text-anchor="middle">网关 3</text>
+  <text x="604" y="174" font-size="10.5" fill="#14532d" text-anchor="middle">只做判定</text>
+
+  <rect x="430" y="214" width="140" height="48" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="500" y="234" font-size="11" fill="#14532d" text-anchor="middle">共享存储计数</text>
+  <text x="500" y="252" font-size="11" fill="#14532d" text-anchor="middle">INCR + 过期时间</text>
+
+  <line x1="404" y1="184" x2="446" y2="212" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="504" y1="184" x2="502" y2="212" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="604" y1="184" x2="556" y2="212" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="760" y="136" width="180" height="48" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="850" y="156" font-size="11" fill="#92400e" text-anchor="middle">中心：一次发一批额度</text>
+  <text x="850" y="174" font-size="11" fill="#92400e" text-anchor="middle">机器用完再领</text>
+
+  <rect x="680" y="214" width="88" height="48" rx="6" fill="#ffffff" stroke="#b45309"/>
+  <rect x="780" y="214" width="88" height="48" rx="6" fill="#ffffff" stroke="#b45309"/>
+  <rect x="880" y="214" width="88" height="48" rx="6" fill="#ffffff" stroke="#b45309"/>
+  <text x="724" y="234" font-size="10.5" fill="#92400e" text-anchor="middle">网关 1</text>
+  <text x="724" y="252" font-size="10.5" fill="#92400e" text-anchor="middle">领到的额度</text>
+  <text x="824" y="234" font-size="10.5" fill="#92400e" text-anchor="middle">网关 2</text>
+  <text x="824" y="252" font-size="10.5" fill="#92400e" text-anchor="middle">领到的额度</text>
+  <text x="924" y="234" font-size="10.5" fill="#92400e" text-anchor="middle">网关 3</text>
+  <text x="924" y="252" font-size="10.5" fill="#92400e" text-anchor="middle">领到的额度</text>
+
+  <line x1="800" y1="184" x2="730" y2="212" stroke="#b45309" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="850" y1="184" x2="826" y2="212" stroke="#b45309" stroke-width="1.5" marker-end="url(#arr2)"/>
+  <line x1="900" y1="184" x2="918" y2="212" stroke="#b45309" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+  <text x="180" y="306" font-size="11.5" fill="#7f1d1d" text-anchor="middle">· 每台网关各限一份自己的桶</text>
+  <text x="180" y="328" font-size="11.5" fill="#7f1d1d" text-anchor="middle">· 实际配额 = 单机配额 × 节点数</text>
+  <text x="180" y="350" font-size="11.5" fill="#7f1d1d" text-anchor="middle">· 重连换网关 → 计数清零</text>
+  <text x="180" y="372" font-size="11.5" fill="#7f1d1d" text-anchor="middle">· 结论：限流形同虚设（2.2）</text>
+
+  <text x="500" y="306" font-size="11.5" fill="#14532d" text-anchor="middle">· 全局只有一份配额</text>
+  <text x="500" y="328" font-size="11.5" fill="#14532d" text-anchor="middle">· 重连换网关不影响计数</text>
+  <text x="500" y="350" font-size="11.5" fill="#14532d" text-anchor="middle">· 每次判定都要出网关查一次</text>
+  <text x="500" y="372" font-size="11.5" fill="#14532d" text-anchor="middle">· 两级查询里「准确」那一档（5.1）</text>
+
+  <text x="820" y="306" font-size="11.5" fill="#92400e" text-anchor="middle">· 判定留在本机，纯本地扣减</text>
+  <text x="820" y="328" font-size="11.5" fill="#92400e" text-anchor="middle">· 额度用尽时再向中心领</text>
+  <text x="820" y="350" font-size="11.5" fill="#92400e" text-anchor="middle">· 先本机（便宜）→ 不够查中心（准确）</text>
+  <text x="820" y="372" font-size="11.5" fill="#92400e" text-anchor="middle">· 与 并发限制器.md 同源（2.2）</text>
+
+  <rect x="30" y="400" width="940" height="76" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="500" y="424" font-size="11.5" fill="#334155" text-anchor="middle">共同前提（5.1）：计数是派生数据，过期即可，不必追求强一致；键的基数随用户数增长，热点键按 uid 哈希分片，避免大 V 的键打爆单个分片。</text>
+  <text x="500" y="446" font-size="11.5" fill="#334155" text-anchor="middle">判据：②和③都是对的，区别只是把「准确」放在中心每次都查，还是把「便宜」放在本机、额度用尽时再领。</text>
+  <text x="500" y="466" font-size="11.5" fill="#334155" text-anchor="middle">① 不是「不够好」，而是「形同虚设」：配额随节点数翻倍，重连换机器还会把计数清零。</text>
+
+  <text x="30" y="506" font-size="11.5" fill="#475569">本篇未做实测：本图只对照三种存放方式的结构与后果，不给任何阈值、命中数或每秒条数；「单机各限一份」的两个后果（配额翻倍、重连清零）逐字取自正文 2.2。</text>
+</svg>

@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="pB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="pG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="pS" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">去重判据流程图：一个候选 i 在本层到底会不会被展开</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">照抄正文 4.2 的两处 continue；三个出口的名字与下方实测取自 4.1、4.3</text>
+
+  <rect x="150" y="84" width="320" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="310" y="101" text-anchor="middle" font-size="12.5" fill="#334155">前提：进入前必须先 sort.Ints(a)</text>
+  <text x="310" y="120" text-anchor="middle" font-size="12.5" fill="#334155">只有排序后「相同值相邻」，判据才成立</text>
+
+  <rect x="150" y="140" width="320" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="310" y="167" text-anchor="middle" font-size="13" fill="#1e3a8a">本层 for 循环取到候选下标 i</text>
+
+  <rect x="150" y="204" width="320" height="44" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="158" y="230" font-size="11.5" fill="#b45309">判 1</text>
+  <text x="320" y="230" text-anchor="middle" font-size="13" fill="#78350f">used[i] ？</text>
+
+  <rect x="150" y="268" width="320" height="44" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="158" y="294" font-size="11.5" fill="#b45309">判 2</text>
+  <text x="325" y="294" text-anchor="middle" font-size="13" fill="#78350f">i &gt; 0 且 a[i] == a[i-1] ？</text>
+
+  <rect x="150" y="332" width="320" height="44" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>
+  <text x="158" y="358" font-size="11.5" fill="#b45309">判 3</text>
+  <text x="325" y="358" text-anchor="middle" font-size="13" fill="#78350f">!used[i-1] ？（前一个相同值不在路径上）</text>
+
+  <rect x="150" y="396" width="320" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="310" y="423" text-anchor="middle" font-size="13" fill="#14532d">展开：used[i] = true，path 追加 a[i]</text>
+
+  <rect x="150" y="452" width="320" height="34" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="310" y="474" text-anchor="middle" font-size="12.5" fill="#1e3a8a">递归进入下一层</text>
+
+  <rect x="150" y="498" width="320" height="44" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="310" y="525" text-anchor="middle" font-size="13" fill="#14532d">撤销：path 退一条，used[i] = false</text>
+
+  <rect x="530" y="204" width="300" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="680" y="221" text-anchor="middle" font-size="12.5" fill="#7f1d1d">跳过：这个下标在当前路径上</text>
+  <text x="680" y="240" text-anchor="middle" font-size="11.5" fill="#7f1d1d">就是 2.1 里的「剪枝」那一处</text>
+
+  <rect x="530" y="268" width="300" height="44" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="680" y="285" text-anchor="middle" font-size="12.5" fill="#334155">与判重无关：两者值不同</text>
+  <text x="680" y="304" text-anchor="middle" font-size="11.5" fill="#334155">直接落到下面的「展开」</text>
+
+  <rect x="530" y="332" width="300" height="44" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="680" y="349" text-anchor="middle" font-size="12.5" fill="#7c2d12">跳过：同一层的相同值已展开过</text>
+  <text x="680" y="368" text-anchor="middle" font-size="11.5" fill="#7c2d12">只让「第一个还没用掉的」出手</text>
+
+  <path d="M310,128 L310,138" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <path d="M310,184 L310,202" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <path d="M470,226 L528,226" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <text x="498" y="219" text-anchor="middle" font-size="11" fill="#64748b">是</text>
+  <path d="M310,248 L310,266" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <text x="318" y="262" font-size="11" fill="#64748b">否</text>
+  <path d="M470,290 L528,290" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <text x="498" y="283" text-anchor="middle" font-size="11" fill="#64748b">否</text>
+  <path d="M310,312 L310,330" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <text x="318" y="326" font-size="11" fill="#64748b">是</text>
+  <path d="M470,354 L528,354" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <text x="498" y="347" text-anchor="middle" font-size="11" fill="#64748b">是</text>
+  <path d="M310,376 L310,394" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#pG)"/>
+  <text x="318" y="390" font-size="11" fill="#16a34a">否：i-1 正在当前路径上</text>
+  <path d="M310,440 L310,450" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <path d="M310,486 L310,496" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#pS)"/>
+  <path d="M150,520 L104,520 L104,162 L148,162" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#pB)"/>
+  <text x="20" y="344" font-size="11" fill="#2563eb">本层下一个 i</text>
+
+  <rect x="40" y="562" width="920" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="60" y="586" font-size="13" font-weight="bold" fill="#0f172a">同一处判据带来的规模变化（正文 4.1 的实测块 [1.3] 逐字抄录）</text>
+  <text x="150" y="612" font-size="12" fill="#64748b">输入</text>
+  <text x="360" y="612" font-size="12" fill="#64748b">朴素解数</text>
+  <text x="500" y="612" font-size="12" fill="#64748b">去重解数</text>
+  <text x="660" y="612" font-size="12" fill="#64748b">朴素节点</text>
+  <text x="830" y="612" font-size="12" fill="#64748b">去重节点</text>
+  <text x="150" y="636" font-size="12.5" fill="#334155">[1 1 2]</text>
+  <text x="360" y="636" font-size="12.5" fill="#334155">6</text>
+  <text x="500" y="636" font-size="12.5" fill="#16a34a">3</text>
+  <text x="660" y="636" font-size="12.5" fill="#334155">16</text>
+  <text x="830" y="636" font-size="12.5" fill="#16a34a">9</text>
+  <text x="150" y="660" font-size="12.5" fill="#334155">[1 1 2 2]</text>
+  <text x="360" y="660" font-size="12.5" fill="#334155">24</text>
+  <text x="500" y="660" font-size="12.5" fill="#16a34a">6</text>
+  <text x="660" y="660" font-size="12.5" fill="#334155">65</text>
+  <text x="830" y="660" font-size="12.5" fill="#16a34a">19</text>
+  <text x="150" y="684" font-size="12.5" fill="#334155">[1 1 2 2 3]</text>
+  <text x="360" y="684" font-size="12.5" fill="#334155">120</text>
+  <text x="500" y="684" font-size="12.5" fill="#16a34a">30</text>
+  <text x="660" y="684" font-size="12.5" fill="#334155">326</text>
+  <text x="830" y="684" font-size="12.5" fill="#16a34a">90</text>
+  <text x="150" y="706" font-size="12.5" fill="#334155">[1 1 1 2 2 3]</text>
+  <text x="360" y="706" font-size="12.5" fill="#334155">720</text>
+  <text x="500" y="706" font-size="12.5" fill="#16a34a">60</text>
+  <text x="660" y="706" font-size="12.5" fill="#334155">1957</text>
+  <text x="830" y="706" font-size="12.5" fill="#16a34a">189</text>
+
+  <text x="40" y="738" font-size="12.5" fill="#334155">朴素解数恒为 n!（只认下标不认值）；去重解数 = n! / Π(每种值的个数!) —— 3!/2! = 3、4!/(2!2!) = 6、5!/(2!2!) = 30、6!/(3!2!) = 60</text>
+  <text x="40" y="762" font-size="12.5" fill="#dc2626">注意：判据写反成 &amp;&amp; used[i-1] 会误杀合法解 —— [1, 1, 2] → [1, 1, 2] 这种正常的解就不见了，! 不能丢（4.3）</text>
+</svg>

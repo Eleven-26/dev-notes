@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640">
+  <defs>
+    <marker id="slArw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="640" fill="#ffffff"/>
+  <text x="40" y="44" font-family="system-ui, sans-serif" font-size="21" font-weight="700" fill="#0f172a">扫描线的线段树：三个基本段撑起五个节点</text>
+  <text x="40" y="72" font-family="system-ui, sans-serif" font-size="14" fill="#64748b">样例 R1 = [1,1]-[4,3]、R2 = [2,2]-[5,4]；节点与读数全部抄 2.1 节的实测输出（Go 1.26.8）</text>
+
+  <rect x="40" y="92" width="920" height="240" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="116" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#0f172a">A. 树形态：画的是「x=2 的入边处理完」那一刻，根.covered = 3</text>
+
+  <rect x="400" y="130" width="200" height="46" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="412" y="150" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1e40af">根  y[1,4) span=3</text>
+  <text x="412" y="168" font-family="system-ui, sans-serif" font-size="12" fill="#1e40af">cnt=0　covered=3</text>
+
+  <rect x="200" y="200" width="200" height="46" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="212" y="220" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#14532d">根L  y[1,3) span=2</text>
+  <text x="212" y="238" font-family="system-ui, sans-serif" font-size="12" fill="#14532d">cnt=1　covered=2</text>
+
+  <rect x="620" y="200" width="180" height="46" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="632" y="220" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#14532d">根R  y[3,4) span=1</text>
+  <text x="632" y="238" font-family="system-ui, sans-serif" font-size="12" fill="#14532d">cnt=1　covered=1</text>
+
+  <rect x="90" y="270" width="170" height="46" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="102" y="290" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#334155">根LL  y[1,2) span=1</text>
+  <text x="102" y="308" font-family="system-ui, sans-serif" font-size="12" fill="#334155">cnt=0　covered=0</text>
+
+  <rect x="300" y="270" width="170" height="46" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="312" y="290" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#14532d">根LR  y[2,3) span=1</text>
+  <text x="312" y="308" font-family="system-ui, sans-serif" font-size="12" fill="#14532d">cnt=1　covered=1</text>
+
+  <line x1="460" y1="176" x2="304" y2="198" stroke="#94a3b8" stroke-width="2" marker-end="url(#slArw)"/>
+  <line x1="540" y1="176" x2="696" y2="198" stroke="#94a3b8" stroke-width="2" marker-end="url(#slArw)"/>
+  <line x1="260" y1="246" x2="176" y2="268" stroke="#94a3b8" stroke-width="2" marker-end="url(#slArw)"/>
+  <line x1="340" y1="246" x2="376" y2="268" stroke="#94a3b8" stroke-width="2" marker-end="url(#slArw)"/>
+
+  <text x="560" y="250" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">基本段：[1,2)　[2,3)　[3,4)</text>
+  <text x="560" y="272" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">去重后 4 个坐标 → 3 个基本段</text>
+  <text x="560" y="294" font-family="system-ui, sans-serif" font-size="12.5" fill="#64748b">树 = 根 + 左子树（2 段）+ 右叶子（1 段）</text>
+  <text x="60" y="322" font-family="system-ui, sans-serif" font-size="12.5" fill="#0f172a">绿框 = cnt &gt; 0（这一层被整段盖住）；灰框 = cnt = 0 且叶子。根的 cnt 一直是 0，它的 covered 靠两个孩子相加</text>
+
+  <rect x="40" y="350" width="920" height="250" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="374" font-family="system-ui, sans-serif" font-size="15" font-weight="700" fill="#0f172a">B. 四次事件之后的 (cnt, covered) 快照，每格写「cnt / covered」</text>
+
+  <text x="60" y="404" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#334155">节点</text>
+  <text x="340" y="404" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#334155" text-anchor="middle">x=1 入边后</text>
+  <text x="500" y="404" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#334155" text-anchor="middle">x=2 入边后</text>
+  <text x="660" y="404" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#334155" text-anchor="middle">x=4 出边后</text>
+  <text x="820" y="404" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#334155" text-anchor="middle">x=5 出边后</text>
+
+  <text x="60" y="430" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">根</text>
+  <text x="340" y="430" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 2</text>
+  <text x="500" y="430" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 3</text>
+  <text x="660" y="430" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 2</text>
+  <text x="820" y="430" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+
+  <text x="60" y="454" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">根L</text>
+  <text x="340" y="454" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">1 / 2</text>
+  <text x="500" y="454" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">1 / 2</text>
+  <text x="660" y="454" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 1</text>
+  <text x="820" y="454" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+
+  <text x="60" y="478" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">根LL</text>
+  <text x="340" y="478" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+  <text x="500" y="478" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+  <text x="660" y="478" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+  <text x="820" y="478" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+
+  <text x="60" y="502" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">根LR</text>
+  <text x="340" y="502" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+  <text x="500" y="502" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">1 / 1</text>
+  <text x="660" y="502" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">1 / 1</text>
+  <text x="820" y="502" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+
+  <text x="60" y="526" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155">根R</text>
+  <text x="340" y="526" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+  <text x="500" y="526" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">1 / 1</text>
+  <text x="660" y="526" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">1 / 1</text>
+  <text x="820" y="526" font-family="system-ui, sans-serif" font-size="12.5" fill="#334155" text-anchor="middle">0 / 0</text>
+
+  <text x="60" y="556" font-family="system-ui, sans-serif" font-size="12.5" fill="#0f172a">结算发生在下一个事件到来时：段 [1,2) 读 x=1 后的 2 → 2×1=2；段 [2,4) 读 x=2 后的 3 → 3×2=6；段 [4,5) 读 x=4 后的 2 → 2×1=2</text>
+  <text x="60" y="578" font-family="system-ui, sans-serif" font-size="12.5" fill="#0f172a">累计面积 2 → 8 → 10；x=5 的出边处理完全树归零，撤销是干净的</text>
+
+  <text x="40" y="628" font-family="system-ui, sans-serif" font-size="13" fill="#64748b">实测：golang:1.26-alpine（Go 1.26.8 linux/amd64）容器内 go run，连跑两遍逐字相同；暴力逐格对照 = 10，与容斥 6 + 6 − 2 = 10 一致</text>
+</svg>

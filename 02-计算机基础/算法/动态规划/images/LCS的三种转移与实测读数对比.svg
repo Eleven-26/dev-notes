@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">LCS 对比图：同一个格子的三种取法，与三张实测读数</text>
+  <text x="500" y="52" text-anchor="middle" font-size="11.5" fill="#64748b">骨架抄自 1.3 / 4.3 / 5.1，数字逐字抄自实验四与实验六；填表与回溯的过程图见 LCS的填表与回溯.svg</text>
+
+  <!-- P1 骨架对照 -->
+  <rect x="20" y="66" width="470" height="192" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="36" y="88" font-size="13" font-weight="bold" fill="#0f172a">同一个 dp[i][j]，三种取法</text>
+  <rect x="36" y="100" width="438" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="48" y="118" font-size="11" font-weight="bold" fill="#1e40af">公共子序列 LCS（1.3）</text>
+  <text x="48" y="136" font-size="10" fill="#1e293b">相等 → dp[i-1][j-1]+1；不等 → max(dp[i-1][j], dp[i][j-1])</text>
+  <rect x="36" y="150" width="438" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="48" y="168" font-size="11" font-weight="bold" fill="#334155">公共子串 substring（5.1）</text>
+  <text x="48" y="186" font-size="10" fill="#1e293b">相等 → dp[i-1][j-1]+1；不等 → 直接清零（断了重新数）</text>
+  <rect x="36" y="200" width="438" height="48" rx="6" fill="#dcfce7" stroke="#15803d"/>
+  <text x="48" y="218" font-size="11" font-weight="bold" fill="#166534">Levenshtein 编辑距离（4.3）</text>
+  <text x="48" y="236" font-size="10" fill="#1e293b">min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+(相等 0 / 不等 1))</text>
+
+  <!-- P2 实验六 -->
+  <rect x="510" y="66" width="470" height="192" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="526" y="88" font-size="13" font-weight="bold" fill="#0f172a">同一对输入：子序列 vs 子串（实验六）</text>
+  <text x="526" y="112" font-size="10.5" fill="#64748b">中文只差一个字，转移只差一个分支</text>
+  <text x="526" y="140" font-size="11" fill="#0f172a">s=ABCBDAB  t=BDCABA</text>
+  <text x="700" y="140" font-size="11" fill="#1e40af">子序列 4</text>
+  <text x="820" y="140" font-size="11" fill="#334155">子串 2（"AB"）</text>
+  <text x="526" y="168" font-size="11" fill="#0f172a">s=kitten    t=sitting</text>
+  <text x="700" y="168" font-size="11" fill="#1e40af">子序列 4</text>
+  <text x="820" y="168" font-size="11" fill="#334155">子串 3（"itt"）</text>
+  <text x="526" y="196" font-size="11" fill="#0f172a">s=abc       t=abc</text>
+  <text x="700" y="196" font-size="11" fill="#1e40af">子序列 3</text>
+  <text x="820" y="196" font-size="11" fill="#166534">子串 3（"abc"）</text>
+  <text x="526" y="226" font-size="10.5" fill="#92400e">⭐ 只有两串完全相同时才相等（第三行）</text>
+  <text x="526" y="246" font-size="10.5" fill="#92400e">第一行差整整一倍：4 对 2</text>
+
+  <!-- P3 实验四 -->
+  <rect x="20" y="270" width="470" height="192" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="36" y="292" font-size="13" font-weight="bold" fill="#0f172a">增删距离与替换版距离（实验四）</text>
+  <text x="36" y="314" font-size="11" fill="#1e40af">只允许插删：距离 = |s| + |t| - 2 × LCS</text>
+  <text x="36" y="338" font-size="10.5" fill="#64748b">串          LCS   增删距离   替换版</text>
+  <text x="36" y="360" font-size="10.5" fill="#0f172a">kitten/sitting   4      5          3</text>
+  <text x="36" y="380" font-size="10.5" fill="#0f172a">ABCBDAB/BDCABA   4      5          5</text>
+  <text x="36" y="400" font-size="10.5" fill="#0f172a">flaw/lawn          3      2          2</text>
+  <text x="36" y="420" font-size="10.5" fill="#0f172a">abc/abc · ""/abc   3,0    0,3        0,3</text>
+  <text x="36" y="446" font-size="10.5" fill="#92400e">⭐ 一次替换 = 一次删除 + 一次插入 → 替换版 ≤ 增删距离 恒成立</text>
+
+  <!-- P4 两个坑 -->
+  <rect x="510" y="270" width="470" height="192" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="526" y="292" font-size="13" font-weight="bold" fill="#0f172a">两个「不报错但结果不同」的坑</text>
+  <rect x="526" y="302" width="438" height="66" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="538" y="320" font-size="11" font-weight="bold" fill="#92400e">① tiebreak 是约定，不是自由（2.4）</text>
+  <text x="538" y="338" font-size="10" fill="#92400e">相等时向上 → BCBA；相等时向左 → BDAB（都是长度 4）</text>
+  <text x="538" y="356" font-size="10" fill="#92400e">后果：两套实现做 diff，约定不一致就像数据不一致</text>
+  <rect x="526" y="378" width="438" height="66" rx="6" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="538" y="396" font-size="11" font-weight="bold" fill="#991b1b">② 滚动一行的方向不能反（3.4）</text>
+  <text x="538" y="414" font-size="10" fill="#991b1b">LCS 要正序（dp[i][j] 用本行左边的 dp[i][j-1]）</text>
+  <text x="538" y="432" font-size="10" fill="#991b1b">背包要逆序；写反不报错：4 → 3，或 10 → 12</text>
+
+  <rect x="20" y="478" width="960" height="62" rx="10" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="38" y="502" font-size="11.5" font-weight="bold" fill="#1e40af">⭐ 三张卡是同一副骨架：两个维度都是「前缀长度」，只是「不等」那一支分别写成 max、写成 0、写成 min + 1。</text>
+  <text x="38" y="524" font-size="11" fill="#1e40af">⚠️ 别把 LCS 认成「回看一格的 dp[i-1]+1」：那是爬楼梯 / 打家劫舍；LIS 回看一格但带值比较；背包的第二维是限制而不是阶段。</text>
+</svg>

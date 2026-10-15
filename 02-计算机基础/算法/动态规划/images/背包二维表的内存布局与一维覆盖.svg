@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 550" width="1000" height="550" role="img" aria-label="背包二维表的行主序内存布局与一维原地覆盖">
+  <style>
+    text { font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+  </style>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="550" fill="#ffffff"/>
+  <text x="500" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">dp[201][2001] 是一条连续的带子：行主序、行宽 16008 字节</text>
+  <text x="500" y="48" text-anchor="middle" font-size="12.5" fill="#64748b">6.5 实测：golang:1.26-alpine / go1.26.8 linux/amd64，unsafe 取行首地址做差，连跑 3 遍</text>
+
+  <text x="40" y="76" font-size="13" font-weight="bold" fill="#1d4ed8">① make([][2001]int, 201) —— 定长行，偏移三遍逐字节相同</text>
+  <rect x="40" y="84" width="840" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <line x1="180" y1="84" x2="180" y2="140" stroke="#2563eb" stroke-width="1"/>
+  <line x1="320" y1="84" x2="320" y2="140" stroke="#2563eb" stroke-width="1"/>
+  <line x1="460" y1="84" x2="460" y2="140" stroke="#2563eb" stroke-width="1"/>
+  <line x1="600" y1="84" x2="600" y2="140" stroke="#2563eb" stroke-width="1"/>
+  <line x1="740" y1="84" x2="740" y2="140" stroke="#2563eb" stroke-width="1"/>
+  <text x="110" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">dp[0]</text>
+  <text x="110" y="126" text-anchor="middle" class="mono" font-size="10.5" fill="#475569">2001 格</text>
+  <text x="250" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">dp[1]</text>
+  <text x="250" y="126" text-anchor="middle" class="mono" font-size="10.5" fill="#475569">16008 字节</text>
+  <text x="390" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">dp[2]</text>
+  <text x="390" y="126" text-anchor="middle" class="mono" font-size="10.5" fill="#475569">32016</text>
+  <text x="530" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">dp[100]</text>
+  <text x="530" y="126" text-anchor="middle" class="mono" font-size="10.5" fill="#475569">1600800</text>
+  <text x="670" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">……</text>
+  <text x="810" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">dp[200]</text>
+  <text x="810" y="126" text-anchor="middle" class="mono" font-size="10.5" fill="#475569">3201600</text>
+  <text x="902" y="116" font-size="12.5" fill="#1d4ed8">共 201 行</text>
+
+  <line x1="44.2" y1="140" x2="44.2" y2="153" stroke="#64748b" stroke-width="1"/>
+  <line x1="48.4" y1="140" x2="48.4" y2="153" stroke="#64748b" stroke-width="1"/>
+  <line x1="460" y1="140" x2="460" y2="153" stroke="#64748b" stroke-width="1"/>
+  <line x1="880" y1="140" x2="880" y2="153" stroke="#64748b" stroke-width="1"/>
+  <text x="40" y="167" font-size="11.5" class="mono" fill="#475569">0</text>
+  <text x="52" y="167" font-size="11.5" class="mono" fill="#475569">16008</text>
+  <text x="76" y="167" font-size="11.5" class="mono" fill="#475569">32016</text>
+  <text x="430" y="167" font-size="11.5" class="mono" fill="#475569">100×16008=1600800</text>
+  <text x="812" y="167" font-size="11.5" class="mono" fill="#475569">200×16008=3201600</text>
+  <text x="460" y="188" text-anchor="middle" font-size="12.5" fill="#1d4ed8">带子总长 402201 单元 × 8 字节 = 3217608 字节 = 201 × 16008（中间没有空洞）</text>
+
+  <path d="M500,210 L500,230" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+
+  <text x="40" y="236" font-size="13" font-weight="bold" fill="#9333ea">② make([][]int, 201) + 每行单独 make —— 同样是这张表，行间距却不保证</text>
+  <rect x="40" y="244" width="840" height="52" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-width="1.5"/>
+  <text x="120" y="274" text-anchor="middle" font-size="11.5" class="mono" fill="#475569">dp[0]</text>
+  <text x="205" y="274" text-anchor="middle" font-size="11.5" class="mono" fill="#475569">dp[1]</text>
+  <text x="290" y="274" text-anchor="middle" font-size="11.5" class="mono" fill="#475569">dp[2]</text>
+  <text x="430" y="274" text-anchor="middle" font-size="11.5" fill="#9333ea">行被单独分配</text>
+  <text x="640" y="274" text-anchor="middle" font-size="11.5" fill="#9333ea">行序与逻辑序无关</text>
+  <text x="820" y="274" text-anchor="middle" font-size="11.5" fill="#9333ea">…</text>
+  <line x1="44.2" y1="296" x2="44.2" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <line x1="48.4" y1="296" x2="48.4" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <line x1="76" y1="296" x2="76" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <line x1="104" y1="296" x2="104" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <line x1="205.5" y1="296" x2="205.5" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <line x1="141" y1="296" x2="141" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <text x="40" y="321" font-size="11.5" class="mono" fill="#475569">第 1 行 16384 · 第 2 行 32768（间距 16384，不是 16008）</text>
+  <line x1="635.4" y1="296" x2="635.4" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <line x1="579.5" y1="296" x2="579.5" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <line x1="564.4" y1="296" x2="564.4" y2="307" stroke="#9333ea" stroke-width="1"/>
+  <text x="40" y="338" font-size="11.5" class="mono" fill="#9333ea">第 100 行三遍：run1 630784 ｜ run2 385024 ｜ run3 4939776（按本带比例越出右界，不画刻度）</text>
+  <text x="40" y="355" font-size="11.5" class="mono" fill="#9333ea">第 200 行三遍：run1 2269184 ｜ run2 2056192 ｜ run3 1998848（run3 反而排在第 100 行之前）</text>
+
+  <path d="M920,360 L920,390" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+  <text x="928" y="380" font-size="11" fill="#334155">压成一行</text>
+
+  <text x="40" y="392" font-size="13" font-weight="bold" fill="#b91c1c">③ 一维 dp[2001] —— 同一段内存被 201 轮原地覆盖</text>
+  <rect x="40" y="400" width="140" height="52" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="110" y="422" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">dp[0..2000]</text>
+  <text x="110" y="440" text-anchor="middle" class="mono" font-size="11" fill="#475569">16008 字节</text>
+  <path d="M192,426 L300,426" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="6 4" fill="none" marker-end="url(#ar)"/>
+  <text x="308" y="422" font-size="11.5" fill="#b91c1c">写第 i 轮，读第 i-1 轮</text>
+  <text x="308" y="440" font-size="11.5" fill="#b91c1c">同一格被原地覆盖</text>
+
+  <rect x="470" y="392" width="400" height="64" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="486" y="416" font-size="12" fill="#0f172a">二维：读上一行 + 写本行，分处两段内存</text>
+  <text x="486" y="438" font-size="12" fill="#b91c1c">一维：两段合成一段 → 旧行擦掉，回溯问不回</text>
+
+  <text x="40" y="482" font-size="12.5" fill="#b91c1c">⚠️ 只有逆序才能保证读到的是旧值 —— 方向判据见第三节 3.3，已有图：一维滚动数组的遍历方向.svg</text>
+  <text x="40" y="506" font-size="13" fill="#0f172a">⭐ 地址公式：第 i 行第 w 格 = i × 16008 + w × 8；比值 3217608 / 16008 = 201.0，与 6.1 的单元数比值同源</text>
+  <text x="40" y="530" font-size="12.5" fill="#475569">口径：本节只测地址、不测时间；基址每遍都不同，可比的只有偏移。</text>
+</svg>

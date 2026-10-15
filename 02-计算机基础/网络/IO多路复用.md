@@ -2,7 +2,7 @@
 
 > 从系统调用原理到 Go/Java 实践，讲清五种 I/O 模型、select/poll/epoll、LT/ET、Reactor、`io_uring` 的提交—完成模型与常见问题。
 >
-> 内容整理自个人学习笔记。Go 侧的网络模型与调度见 [GMP调度.md](../../01-编程语言/go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../../01-编程语言/go/运行时/零拷贝.md)。
+> 内容整理自个人学习笔记。Go 侧的网络模型与调度见 [GMP调度.md](../../01-编程语言/go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../linux/零拷贝.md)。
 
 ---
 
@@ -547,7 +547,7 @@ lsof -p "$PID" -a -iTCP
 - [TCP滑动窗口.md](tcp/TCP滑动窗口.md) — 半开连接与事件循环
 - [UDP与数据报传输.md](UDP与数据报传输.md) — UDP 服务端常见的 `SO_REUSEPORT` 多 socket 分摊
 - [channel原理与底层实现.md](../../01-编程语言/go/并发编程/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
-- [零拷贝.md](../../01-编程语言/go/运行时/零拷贝.md) — 数据搬运的另一半成本（`io_uring` 也不消除拷贝）
+- [零拷贝.md](../linux/零拷贝.md) — 数据搬运的另一半成本（`io_uring` 也不消除拷贝）
 - [性能排查.md](../linux/性能排查.md) — 连接状态分布与 fd 上限的排查
 
 > 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)、[TCP四次挥手.md](tcp/TCP四次挥手.md)、[TCP报文结构.md](tcp/TCP报文结构.md)、[网络通信链路详解.md](网络通信链路详解.md)、[通信选型.md](通信选型.md)、[网络与存储.md](../../06-工程实践/部署/docker/网络与存储.md)

@@ -92,7 +92,7 @@
 | [内存逃逸.md](运行时/内存逃逸.md) | 定义与原因、`-gcflags=-m` 分析、五类场景、三条判定规则与代价 |
 | [垃圾回收机制.md](运行时/垃圾回收机制.md) | 并发三色标记 + 混合写屏障、目标堆公式、`gctrace` 逐字段、GOGC / GOMEMLIMIT |
 | [程序启动流程.md](运行时/程序启动流程.md) | `_rt0` 入口、栈 / 分配器 / 调度器初始化、启动全景图 |
-| [零拷贝.md](运行时/零拷贝.md) | 四次拷贝两次系统调用、mmap / sendfile / splice、Go 里的自动优化 |
+| [零拷贝.md](运行时/零拷贝.md) | Go 侧：`io.Copy` 的自动分发与静默失效、`net/http` 静态服务、`copy_file_range`、`string ↔ []byte` 视图 |
 | [反射与unsafe.md](运行时/反射与unsafe.md) | 三条反射法则与 `CanSet`、tag 遍历、json 背后的反射、`unsafe` 分界、反射慢多少的实测区间 |
 | [pprof性能分析.md](运行时/pprof性能分析.md) | 五种 profile 各测什么、三种采集入口、⭐ 无头环境（没有浏览器）下怎么读、`heap` 的 `alloc_space` 与 `inuse_space` 两种口径、`block` / `mutex` 要先开采样开关、一套能落地的优化闭环 |
 | [runtime调试与trace.md](运行时/runtime调试与trace.md) | `GODEBUG` 旋钮体系、`schedtrace` / `gctrace` 逐字段、`runtime/trace` 的无头解析、MemStats 与 debug 包 |

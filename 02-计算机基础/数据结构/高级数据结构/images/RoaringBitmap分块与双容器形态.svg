@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RoaringBitmap 形态：32 位整数按高 16 位分块，按密度换容器</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">容器保存在动态数组里做一级索引；块内整数少于 4096 个用数组容器，超过就用位图容器</text>
+
+  <rect x="40" y="84" width="280" height="168" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="180" y="112" text-anchor="middle" font-size="14" font-weight="bold" fill="#dc2626">朴素位图的浪费（缺点②）</text>
+  <text x="180" y="140" text-anchor="middle" font-size="12" fill="#7f1d1d">只存三个数：</text>
+  <text x="180" y="162" text-anchor="middle" font-size="12" fill="#7f1d1d">10、8887983、93452134</text>
+  <text x="180" y="184" text-anchor="middle" font-size="12" fill="#7f1d1d">就得建长度 99999999 的位图</text>
+  <text x="180" y="206" text-anchor="middle" font-size="12" fill="#7f1d1d">绝大部分位是浪费的</text>
+  <text x="180" y="234" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">→ 解法：分块 + 按密度换容器</text>
+
+  <text x="360" y="104" font-size="13" fill="#334155">一个 32 位整数这样切开：</text>
+  <rect x="360" y="116" width="290" height="44" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="505" y="144" text-anchor="middle" font-size="13" fill="#334155">高 16 位 —— 定位到哪个块</text>
+  <rect x="650" y="116" width="290" height="44" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="795" y="144" text-anchor="middle" font-size="13" fill="#334155">低 16 位 —— 块内的值</text>
+
+  <line x1="505" y1="160" x2="505" y2="208" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="420" y="208" width="520" height="44" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="560" y1="208" x2="560" y2="252" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="700" y1="208" x2="700" y2="252" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="840" y1="208" x2="840" y2="252" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="680" y="236" text-anchor="middle" font-size="13" fill="#334155">容器动态数组（一级索引）· 共 2¹⁶ 个块</text>
+
+  <line x1="540" y1="252" x2="540" y2="300" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="820" y1="252" x2="820" y2="300" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="420" y="300" width="240" height="120" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="540" y="326" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">数组容器（存稀疏）</text>
+  <text x="540" y="350" text-anchor="middle" font-size="12" fill="#334155">块内整数少于 4096 个用它</text>
+  <text x="540" y="372" text-anchor="middle" font-size="12" fill="#334155">低 16 位逐个存下来</text>
+  <text x="540" y="394" text-anchor="middle" font-size="12" fill="#64748b">避免撑一整张宽位图</text>
+
+  <rect x="700" y="300" width="240" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="820" y="326" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">位图容器（存稠密）</text>
+  <text x="820" y="350" text-anchor="middle" font-size="12" fill="#334155">块内整数超过 4096 个用它</text>
+  <text x="820" y="372" text-anchor="middle" font-size="12" fill="#334155">一位记一个数：0 不存在 / 1 存在</text>
+  <text x="820" y="394" text-anchor="middle" font-size="12" fill="#64748b">「超常规的压缩 BitMap」</text>
+
+  <rect x="40" y="460" width="920" height="132" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="488" font-size="14" font-weight="bold" fill="#0f172a">为什么又快又省、落在哪些系统</text>
+  <text x="60" y="514" font-size="13" fill="#334155">每块选最适合自己的表示；位运算（AND / OR / XOR）对两种容器的组合有专门的高效算法，</text>
+  <text x="60" y="538" font-size="13" fill="#334155">原文称速度比未压缩的 BitMap 快上百倍。落点：Lucene / Elasticsearch 倒排位图、ClickHouse bitmap 聚合、Druid 预聚合。</text>
+  <text x="60" y="566" font-size="13" fill="#b45309">⚠️ 数据稠密且连续时，朴素位图反而更简单更快 —— 分块与容器本身也有元数据开销。</text>
+
+  <text x="40" y="634" font-size="12" fill="#94a3b8">（图中 2¹⁶、高/低 16 位、4096、99999999 等数字均出自本篇第三节与 1.1 缺点②）</text>
+</svg>

@@ -9,14 +9,6 @@
 > ⚠️ **Java 代码未在本机编译校验**（依赖 Spring Cloud Alibaba，需要私服 / 联网拉包）；
 > API 名称按 `spring-cloud-starter-alibaba-nacos-discovery` + `spring-cloud-starter-loadbalancer` 的公开接口书写，落地前请以你所用版本的源码为准。
 
-> 一提到服务发现，**Java 背景的人默认你说的是 Spring Cloud**，
-> Go 背景的默认是 etcd/K8s。所以这节的重点是**把两套词汇对上**：
-> Nacos 的 `lease` ≈ etcd 的租约，`@LoadBalanced` ≈ 使用一的 `DiscoveryTransport`。
->
-> ⚠️ **Java 代码未在本机编译校验**（依赖 Spring Cloud Alibaba，需要私服/联网拉包）。
-> API 名称按 `spring-cloud-starter-alibaba-nacos-discovery` + `spring-cloud-starter-loadbalancer`
-> 的公开接口书写，落地前请以你所用版本的源码为准。
-
 ## 一、注册参数：`lease` 就是 etcd 的"租约 + KeepAlive"
 
 ```yaml
@@ -358,9 +350,33 @@ MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w/.workbuddy/tmp/r
 > 比如 Consul/Nacos 会把不健康实例**标记**而不是删除，恢复后立刻回流；
 > etcd/ZK 是**删除**，恢复要靠服务重新注册。
 
----
+## 七、具体使用：最小落地清单
 
----
+**本节要点**：本节不引入任何新代码，只把 §一~§四 的片段收拢成「依赖 → 配置 → 模板与调用 → 换策略 → 选型边界 → 健康检查语义」的六步清单，每步回指原节；抄走清单前先看 §八 的校验口径。
+
+1. **依赖**：两个 starter——`spring-cloud-starter-alibaba-nacos-discovery`（注册与发现）+ `spring-cloud-starter-loadbalancer`（`@LoadBalanced` 的执行体）；走 §四 手写版另需 `nacos-client`。**本篇没有给出任何 Maven 坐标与版本号**，落地时按你所用版本的源码与 BOM 确定，starter 名称按篇首声明书写。
+2. **`application.yml` 四项关键**（§一）：`spring.application.name` 就是服务名；`server-addr` 指注册中心；心跳对 `lease-renewal-interval-in-seconds` / `lease-expiration-duration-in-seconds` 必须保持 3 倍余量（默认 5 / 15，压到 1 倍一次抖动就误摘）；本地调试设 `register-enabled: false` 不把自己注册上去。
+3. **模板与调用**（§二）：`@Bean` + `@LoadBalanced` 产出**进程级单例**模板，工厂上挂建连 / 读超时（示例 200ms / 2s，注意 `@LoadBalanced` 会替换 factory，超时要落到每次挑中的实例）；调用方 URL 直接写 `http://<服务名>/...`。反面写法是每个请求 `new RestTemplate()`——连接池重建、轮询游标与缓存被重置（§二、延伸追问 2）。
+4. **换策略时改哪里**（§三）：扩展点不是挑选算法，而是**实例列表供给器** `ServiceInstanceListSupplier`——`@LoadBalancerClient(name = …, configuration = …)` 注册进"每个服务名一个"的子容器，`.withDiscoveryClient().withCaching()` 开启本地缓存 + 定时刷新；默认 `spring.cloud.loadbalancer.cache.ttl` 35 秒对秒级摘除太慢，要改小或换带 watch 的 supplier；预热摘除、按 zone 优先、过滤不健康实例都写在这一层。
+5. **出框架（K8s）与弃框架（手写）**（§五 / §四）：集群内调用可以交给 K8s Service 的 L4 转发，但 gRPC / 连接池这类长连接要换 Headless Service + 客户端 LB 或定期重建连接；手写 `Resolver` 守四条：**`NamingService` 进程级单例注入、不可变快照整体替换、空列表告警不换表、拉取失败保留旧列表**，取模用 `Math.floorMod`（溢出实测见 §4.1）。
+6. **知道"坏的实例谁在摘"**（§六）：etcd 靠租约 TTL 到期、ZooKeeper 靠 session 超时、Consul 主动探测、Nacos 临时实例被动心跳（15s 标不健康 / 30s+ 摘除、默认只停转发不删除）——换注册中心先对照这张语义表再动配置。
+
+## 八、校验与排查
+
+**本节要点**：先划清本篇的校验口径（Spring 集成链路未在本机编译），再按「症状 → 先查什么」排障；症状表每一条都是前六节已写内容的汇总，不引入新事实。
+
+校验口径：§4.1、§4.2 已在 `eclipse-temurin:8-jdk` 容器实测（读数见各节）；§二、§三 的 Spring 集成、§五 的 K8s 各组件、§六 的服务端 15s / 30s 阈值**均未经本机编译或连服务端实测**（依赖 Spring Cloud Alibaba，需要私服 / 联网拉包，篇首已声明）；注解名与配置键落地前以你所用版本的源码为准。
+
+| 症状 | 先查什么 | 出处 |
+|---|---|---|
+| 用服务名调用解析不到主机名，或 URL 里仍写着 IP | 模板是否加了 `@LoadBalanced`；URL host 是否为 `spring.application.name` | §二、§一 |
+| 轮询像"永远从第一个实例开始"、本地缓存永不生效、TIME_WAIT 打满 | 每请求新建非单例模板：游标、缓存、订阅、连接池全被重置 | §二、延伸追问 2 |
+| 一次网络抖动就"全服务无实例" | `lease-expiration` 被压到等于心跳周期，没留 3 倍余量 | §一 |
+| 新实例上线第一波流量就超时 | 没做预热摘除（§三），或 K8s 里 Readiness 探针没配、容器一起来接满流量 | §三、§五 |
+| gRPC / 长连接一直打到同一 Pod，新 Pod 分不到流量 | K8s Service 是连接级 LB；换 Headless + 客户端 LB，或客户端定期重建连接 | §五 |
+| 摘掉一个坏实例要等接近一分钟 | LB 缓存默认 TTL 35s 未调小，再叠加 Nacos 侧 15s 标不健康 / 30s+ 摘除 | §三、§六 |
+| 注册中心抖动期间调用全挂 | `Resolver` 在拉取失败或解析到空列表时直接把快照换掉了——应告警并保留旧表 | §四、§4.2 |
+| 长时间运行后偶发负数下标越界 | `AtomicInteger` 溢出后裸 `%` 返回负数，换 `Math.floorMod` | §四、§4.1 |
 
 ---
 

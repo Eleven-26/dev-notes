@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">散列表闸门③：渐进式 rehash 的状态流转</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">新旧两张表并存，每次操作顺手搬几个桶，直到旧表清空 —— 把一次性搬迁摊到每次操作与后台任务里</text>
+
+  <rect x="40" y="84" width="260" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="170" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#1d4ed8">① 正常（只有一张表）</text>
+  <text x="170" y="136" text-anchor="middle" font-size="12" fill="#334155">读写都只面对当前表</text>
+  <text x="170" y="158" text-anchor="middle" font-size="12" fill="#64748b">Redis dict：此时只有 ht[0]</text>
+
+  <rect x="380" y="84" width="240" height="92" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#15803d">② 双表并存 · 搬迁中</text>
+  <text x="500" y="136" text-anchor="middle" font-size="12" fill="#334155">ht[0]（旧）+ ht[1]（新）</text>
+  <text x="500" y="158" text-anchor="middle" font-size="12" fill="#64748b">查找查两表 · 写入只写新表</text>
+
+  <rect x="700" y="84" width="260" height="92" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="830" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#475569">③ 旧表清空 · 恢复单表</text>
+  <text x="830" y="136" text-anchor="middle" font-size="12" fill="#334155">旧表整张释放</text>
+  <text x="830" y="158" text-anchor="middle" font-size="12" fill="#64748b">回到状态 ①</text>
+
+  <line x1="300" y1="130" x2="380" y2="130" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="340" y="112" text-anchor="middle" font-size="11" fill="#64748b">负载因子超阈值</text>
+  <text x="340" y="150" text-anchor="middle" font-size="11" fill="#64748b">建 ht[1]</text>
+
+  <line x1="620" y1="130" x2="700" y2="130" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="660" y="112" text-anchor="middle" font-size="11" fill="#64748b">顺手搬几个桶</text>
+  <text x="660" y="150" text-anchor="middle" font-size="11" fill="#64748b">直到旧表清空</text>
+
+  <path d="M 830 176 L 830 216 L 170 216 L 170 176" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+  <text x="500" y="236" text-anchor="middle" font-size="11" fill="#64748b">恢复单表，读写回归正常</text>
+
+  <rect x="40" y="268" width="920" height="150" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="294" font-size="14" font-weight="bold" fill="#0f172a">搬迁期间的四条规矩（只在「双表并存」状态成立）</text>
+  <text x="60" y="322" font-size="13" fill="#334155">查找：两张表都要查 —— 桶数变了，同一个键的新桶位置就变了（取模基数变了）</text>
+  <text x="60" y="348" font-size="13" fill="#334155">写入：只写新表（ht[1]），旧表不再接收新元素</text>
+  <text x="60" y="374" font-size="13" fill="#334155">推进：每次操作顺手搬几个桶，读写命令各推进一小步</text>
+  <text x="60" y="400" font-size="13" fill="#334155">补做：后台定时任务补做，直到旧表清空</text>
+
+  <rect x="40" y="438" width="920" height="128" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="60" y="464" font-size="14" font-weight="bold" fill="#ea580c">为什么要把搬迁摊开：闸门② 与闸门③ 的分工</text>
+  <text x="60" y="492" font-size="13" fill="#7c2d12">一次性扩容 + 再哈希（闸门②）：所有元素重新哈希搬迁 —— 单次 O(n)、瞬时内存接近翻倍。</text>
+  <text x="60" y="516" font-size="13" fill="#7c2d12">渐进式 rehash（闸门③）：把这笔账摊进每次操作与后台任务，避免「一次 rehash 卡住主线程」；</text>
+  <text x="60" y="540" font-size="13" fill="#7c2d12">代价是期间查找要查两张表。阈值与每轮搬迁量以官方文档 / 源码为准。</text>
+
+  <text x="40" y="610" font-size="12" fill="#94a3b8">（图中规则逐条摘自本篇第二节闸门③与其后的 Redis dict 落地例子）</text>
+</svg>

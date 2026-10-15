@@ -928,7 +928,7 @@ fmt.Printf("  reflect.Value.UnsafePointer 拿字段地址再解引用 → u.Age=
 
 ### 6.3 内存视图三件套：`unsafe.String` / `StringData` / `Slice` / `SliceData`
 
-这块内容原先写在 [零拷贝.md](零拷贝.md) 第四节 ⑤「`unsafe` 类型双关」，此处完整搬入并按 Go 1.20+ 口径整理。
+这块内容原先写在 [零拷贝.md](零拷贝.md) 3.4 节「语言层的零拷贝」，此处完整搬入并按 Go 1.20+ 口径整理。
 
 老写法是**改写类型标签**（把 slice header 当 string header 用），新写法是自研 API：
 

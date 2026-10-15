@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">冲突解决路线选择决策树：先按删除频繁度与内存预算选路线</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">三个问题各答各的（不必顺序问完）；叶子里的探测数字来自容器实测（Go 1.26.8、桶数 4096、α=0.90）</text>
+
+  <rect x="50" y="82" width="370" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="235" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">Q1 删除频繁、要随时恢复空间？</text>
+  <text x="235" y="132" text-anchor="middle" font-size="12" fill="#334155">墓碑会把删除的收益原封加回探测</text>
+
+  <line x1="420" y1="114" x2="490" y2="114" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="455" y="104" text-anchor="middle" font-size="12" fill="#16a34a">是</text>
+
+  <rect x="490" y="82" width="460" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="720" y="106" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">链地址（工程里最常见）</text>
+  <text x="720" y="130" text-anchor="middle" font-size="12" fill="#334155">删除随时回收空间；链长超阈值可逐桶树化，把最坏 O(m) 拉回 O(log m)</text>
+
+  <rect x="50" y="188" width="370" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="235" y="214" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">Q2 以查找为主、内存紧、要缓存友好？</text>
+  <text x="235" y="238" text-anchor="middle" font-size="12" fill="#334155">单数组不放指针 —— 按最坏探测与不成功开销分岔</text>
+
+  <line x1="420" y1="220" x2="490" y2="200" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="420" y1="220" x2="490" y2="266" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="420" y1="220" x2="490" y2="332" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="442" y="196" text-anchor="middle" font-size="12" fill="#16a34a">是</text>
+
+  <rect x="490" y="172" width="460" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="720" y="194" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">线性探测：删除少、表可重建</text>
+  <text x="720" y="216" text-anchor="middle" font-size="12" fill="#334155">阈值压在 0.5~0.75，别等快满再扩容</text>
+
+  <rect x="490" y="238" width="460" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="720" y="260" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">罗宾汉：要最坏可控</text>
+  <text x="720" y="282" text-anchor="middle" font-size="12" fill="#334155">失败最坏 28（线性探测 308）、标准差 4.4；代价是写入变贵</text>
+
+  <rect x="490" y="304" width="460" height="56" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="720" y="326" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">Cuckoo：要不成功查找也 O(1)</text>
+  <text x="720" y="348" text-anchor="middle" font-size="12" fill="#334155">固定看两个桶；负载上限约 0.5，必须提前扩容</text>
+
+  <rect x="50" y="392" width="370" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="235" y="418" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">Q3 表非常大、想省指针？</text>
+  <text x="235" y="442" text-anchor="middle" font-size="12" fill="#334155">紧凑优先，但监控必须先行</text>
+
+  <line x1="420" y1="424" x2="490" y2="424" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="455" y="414" text-anchor="middle" font-size="12" fill="#16a34a">是</text>
+
+  <rect x="490" y="392" width="460" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="720" y="416" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">开放寻址 + 三项监控</text>
+  <text x="720" y="440" text-anchor="middle" font-size="12" fill="#334155">必须把「墓碑比例 + 最大探测长度」纳入监控，否则表会「虚满」</text>
+
+  <rect x="50" y="492" width="900" height="112" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="70" y="518" font-size="14" font-weight="bold" fill="#b45309">无论走哪条路线，三个必须设的监控 / 阈值</text>
+  <text x="70" y="544" font-size="12" fill="#78350f">装填因子上限 ｜ 最大探测长度 / 最大链长（平均值骗人：线性探测实测平均 39.9、最坏 308） ｜ 墓碑比例（不释放槽位）</text>
+  <text x="70" y="570" font-size="12" fill="#78350f">⚠️ 哈希函数还要防「敌意构造」：攻击者灌入大量同哈希值的键，把 O(1) 打成 O(n)；防御 = 随机种子 / 扰动，机制以各语言实现为准</text>
+
+  <text x="50" y="636" font-size="12" fill="#94a3b8">（判据与数字逐条摘自本篇第七节清单、第三节实测表与第 3.2 节最坏值）</text>
+</svg>

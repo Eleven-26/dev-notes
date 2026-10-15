@@ -98,8 +98,6 @@ docker run -d --network=mynet6 --name nginx6 nginx
 
 ---
 
----
-
 ## 二、Dockerfile 构建镜像时如何修改基础镜像的镜像源地址？
 
 **本节要点**：这属于**踩过坑才知道**的内容。要点有两个：
@@ -193,7 +191,7 @@ RUN mkdir -p /etc/apt \
 
 ---
 
-## 使用：把镜像加速、IPv6 与自定义网络一次配好并验证
+## 具体使用：把镜像加速、IPv6 与自定义网络一次配好并验证
 
 ```json
 // /etc/docker/daemon.json —— 三类配置放同一个文件，改完必须 restart docker 才生效
