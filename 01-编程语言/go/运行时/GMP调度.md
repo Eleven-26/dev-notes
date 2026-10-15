@@ -379,7 +379,7 @@ GC 要做 STW 时，需要**所有 goroutine 都到达"安全点"**。老版本�
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — 协程堆积的现场
 - [goroutine.md](../并发编程/goroutine.md) — goroutine 本身有多轻、栈怎么长、怎么排查泄漏
 - [垃圾回收机制.md](垃圾回收机制.md) — 抢占式调度为什么是 STW 能稳定在亚毫秒的前提
-- [进程与线程.md](../../../02-计算机基础/linux/进程与线程.md) — 线程与协程的创建成本对照
+- [协程与线程成本.md](../并发编程/协程与线程成本.md) — 线程与协程的创建成本对照
 - [runtime调试与trace.md](runtime调试与trace.md) — 第四节 `schedtrace` 的逐字段读法、`scheddetail` / `gctrace` / `runtime/trace` 全套自省旋钮（本篇只留结论）
 
-> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[sync.Map.md](../并发编程/sync.Map.md)、[并发同步原语.md](../并发编程/并发同步原语.md)、[反射与unsafe.md](反射与unsafe.md)
+> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[sync.Map.md](../并发编程/sync.Map.md)、[并发同步原语.md](../并发编程/并发同步原语.md)、[pprof性能分析.md](pprof性能分析.md)、[反射与unsafe.md](反射与unsafe.md)、[进程与线程.md](../../../02-计算机基础/linux/进程与线程.md)

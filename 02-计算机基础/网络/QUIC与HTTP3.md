@@ -305,4 +305,4 @@ curl -sSI https://<域名>/ | grep -i '^alt-svc'
 - [抓包实战.md](抓包实战.md) — QUIC 走 UDP 443，怎么在抓包里认出来
 - [TCP拥塞控制算法.md](TCP拥塞控制算法.md) — QUIC 可插拔的拥塞控制（CUBIC / BBR 在用户态）
 - [11-HTTP3与QUIC支持.md](../linux/深入理解Nginx/11-HTTP3与QUIC支持.md) — **Nginx 侧怎么用这个协议**：`--with-http_v3_module`、9 条 QUIC 指令、0-RTT 的 OpenSSL 3.5.1 门槛、`Alt-Svc`（本篇讲协议本身，那篇讲实现与配置）
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)、[霍夫曼树.md](../数据结构/树/霍夫曼树.md)、[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)

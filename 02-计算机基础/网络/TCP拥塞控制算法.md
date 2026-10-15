@@ -289,4 +289,4 @@ BBR（Google，2016）换了个思路——**直接测两个量**：
 - [限流算法.md](../../04-架构与系统/分布式/服务治理/限流算法.md) — 自适应限流借鉴了 BBR 的反馈思路（8.4 节）
 - [素材清单.md](../../素材清单.md) — 本篇参考资料登记
 - [并发限制器.md](../../04-架构与系统/分布式/服务治理/并发限制器.md) — **AIMD 的服务端版本**：把「拥塞窗口」换成「在途数上限」，用 RTT 代替丢包做信号（外加 Vegas / Gradient2）
-> 反向引用（本篇被下列文档引到）：[HTTP与gRPC.md](HTTP与gRPC.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)
+> 反向引用（本篇被下列文档引到）：[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)

@@ -435,4 +435,4 @@ synchronized void join(Sub s) { /* 造新列表 → snap.set(...) */ }
 - [并发同步原语.md](../../go/并发编程/并发同步原语.md) — 同主题的 Go 侧：`Mutex` 的饥饿模式与 `sync.Map`，与本文的公平锁 / `ConcurrentHashMap` 正好对照
 - [Java实现.md](../../../04-架构与系统/系统设计/弹幕系统/Java实现.md) — 「使用」一节的代码出处：`AtomicReference<List<Sub>>` 快照 + `synchronized` 写侧
 - [服务发现的Java实现.md](../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md) — 同一手法的另一处落地：不可变快照 + `ConcurrentHashMap` + `AtomicInteger` 轮询
-> 反向引用（本篇被下列文档引到）：[Spring-boot核心.md](../Spring-boot核心.md)
+> 反向引用（本篇被下列文档引到）：[Spring-boot核心.md](../Spring-boot核心.md)、[写冲突控制的Java落地.md](../写冲突控制的Java落地.md)、[线程与进程开销.md](线程与进程开销.md)

@@ -258,6 +258,6 @@ goroutine 1 [chan send]:
 - [channel原理与底层实现.md](channel原理与底层实现.md) — CSP 路线在本项目里的实现载体
 - [channel使用陷阱.md](channel使用陷阱.md) — 使用 channel 的代价与常见反模式
 - [并发同步原语.md](并发同步原语.md) — 共享内存路线的原语（Mutex / atomic / sync.Map）
-- [进程与线程.md](../../../02-计算机基础/linux/进程与线程.md) — 协程轻量化的量化对照
+- [协程与线程成本.md](协程与线程成本.md) — 协程轻量化的量化对照
 - [goroutine.md](goroutine.md) — 被调度的实体本身：栈、创建成本与生命周期
 > 反向引用（本篇被下列文档引到）：[Go内存模型.md](Go内存模型.md)、[JMM与内存屏障.md](../../java/并发/JMM与内存屏障.md)

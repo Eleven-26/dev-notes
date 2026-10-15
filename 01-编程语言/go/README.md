@@ -24,17 +24,17 @@
 | ④ | [切片.md](类型与语法/切片.md) + [map.md](类型与语法/map.md) + [struct与tag.md](类型与语法/struct与tag.md) | 三种核心数据结构 |
 | ⑤ | [指针与引用.md](类型与语法/指针与引用.md) + [函数调用与栈.md](类型与语法/函数调用与栈.md) | 内存模型基础 |
 | ⑥ | [defer.md](类型与语法/defer.md) + [for-range.md](类型与语法/for-range.md) + [错误处理.md](类型与语法/错误处理.md) | 语法陷阱与错误语义 |
-| ⑦ | [goroutine.md](并发编程/goroutine.md) + [channel原理与底层实现.md](并发编程/channel原理与底层实现.md) | 并发基石 |
+| ⑦ | [goroutine.md](并发编程/goroutine.md) + [channel原理与底层实现.md](并发编程/channel原理与底层实现.md) + [协程与线程成本.md](并发编程/协程与线程成本.md) | 并发基石与成本 |
 | ⑧ | [并发同步原语.md](并发编程/并发同步原语.md) + [并发控制实战.md](并发编程/并发控制实战.md) | 同步机制 |
 | ⑨ | [sync.Map.md](并发编程/sync.Map.md) + [atomic操作.md](并发编程/atomic操作.md) + [sync.Pool.md](并发编程/sync.Pool.md) | 三个「要不要用」的原语 |
 | ⑩ | [goroutine实战模式.md](并发编程/goroutine实战模式.md) + [channel实战模式.md](并发编程/channel实战模式.md) + [errgroup与pipeline.md](并发编程/errgroup与pipeline.md) | 并发怎么写 |
 | ⑪ | [channel使用陷阱.md](并发编程/channel使用陷阱.md) + [共享内存与CSP.md](并发编程/共享内存与CSP.md) + [线程安全.md](并发编程/线程安全.md) + [Go内存模型.md](并发编程/Go内存模型.md) | 并发哲学与边界 |
 | ⑫ | [协程泄漏与死锁.md](并发编程/协程泄漏与死锁.md) + [限流器.md](并发编程/限流器.md) | 生产问题 |
-| ⑬ | [GMP调度.md](运行时/GMP调度.md) + [内存分配器.md](运行时/内存分配器.md) | 调度与内存 |
+| ⑬ | [GMP调度.md](运行时/GMP调度.md) + [内存分配器.md](运行时/内存分配器.md) + [内存指标与文件映射.md](运行时/内存指标与文件映射.md) | 调度与内存 |
 | ⑭ | [垃圾回收机制.md](运行时/垃圾回收机制.md) + [内存逃逸.md](运行时/内存逃逸.md) | GC |
 | ⑮ | [程序启动流程.md](运行时/程序启动流程.md) + [零拷贝.md](运行时/零拷贝.md) + [反射与unsafe.md](运行时/反射与unsafe.md) + [runtime调试与trace.md](运行时/runtime调试与trace.md) | 底层机制与观测 |
 | ⑯ | [context.md](工程实践/context.md) + [依赖注入.md](工程实践/依赖注入.md) + [项目结构.md](工程实践/项目结构.md) | 工程基础 |
-| ⑰ | [日志与错误规范.md](工程实践/日志与错误规范.md) + [测试与Mock.md](工程实践/测试与Mock.md) | 工程规范 |
+| ⑰ | [日志与错误规范.md](工程实践/日志与错误规范.md) + [测试与Mock.md](工程实践/测试与Mock.md) + [子进程与外部命令.md](工程实践/子进程与外部命令.md) | 工程规范与系统交互 |
 | ⑱ | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) + [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) + [HTTP服务端与优雅关停.md](网络编程/HTTP服务端与优雅关停.md) + [网关路由匹配.md](网络编程/网关路由匹配.md) + [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) + [从零实现网关.md](网络编程/从零实现网关.md) | 网络与综合实战 |
 | ⑲ | [接入Jaeger.md](可观测性/接入Jaeger.md) + [接入Skywalking.md](可观测性/接入Skywalking.md) + [手写Prometheus导出器.md](可观测性/手写Prometheus导出器.md) | 链路追踪与指标 |
 
@@ -62,11 +62,12 @@
 | [错误处理.md](类型与语法/错误处理.md) | 错误是值不是异常、`%w` 包装链、`Is` / `As` / `Join` 判定、panic 与 recover 的闸门 |
 | [函数调用与栈.md](类型与语法/函数调用与栈.md) | 调用过程、栈帧里有什么、栈扩容时旧指针怎么调整 |
 
-### 2.2 并发编程/（16 篇）
+### 2.2 并发编程/（17 篇）
 
 | 篇 | 讲什么 |
 |---|---|
 | [goroutine.md](并发编程/goroutine.md) | 与线程的五维对照、`g` 结构与六态、`gopark` / `goready`、初始栈与增长、循环变量语义 |
+| [协程与线程成本.md](并发编程/协程与线程成本.md) | 把「进程 / 线程 / 协程的创建成本」量出来：`BusyN` + `LockOSThread` 超订扫描、乒乓切换单次成本、阻塞协程栈内存、`GOMAXPROCS` 与并发 / 并行；⭐ 三条只有量过才讲得准的话（6000 : 25 : 1、核数处到顶、2KB 是初始栈而非内存账） |
 | [goroutine实战模式.md](并发编程/goroutine实战模式.md) | 七个典型案例、项目里四种用法、端到端实例与对照实测 |
 | [channel原理与底层实现.md](并发编程/channel原理与底层实现.md) | `hchan` 字段、收发流程、缓冲区的「总是新鲜的」、select 三轮检查 |
 | [channel使用陷阱.md](并发编程/channel使用陷阱.md) | 能不能先判断阻塞再写、四个必踩点、死锁什么时候才报 |
@@ -83,13 +84,14 @@
 | [协程泄漏与死锁.md](并发编程/协程泄漏与死锁.md) | 泄漏四类成因与复现代码、pprof 排查、死锁四条件 |
 | [限流器.md](并发编程/限流器.md) | `x/time/rate` 的三种接入骨架、把读数量出来的实测、三个必踩的坑 |
 
-### 2.3 运行时/（8 篇）
+### 2.3 运行时/（10 篇）
 
 | 篇 | 讲什么 |
 |---|---|
 | [GMP调度.md](运行时/GMP调度.md) | GMP 三元组、work stealing、切换时机、`GOMAXPROCS`、P 内部队列、异步抢占 |
 | [内存分配器.md](运行时/内存分配器.md) | `mspan`、67 级 size class、mcache / mcentral / mheap 三级分配 |
 | [内存逃逸.md](运行时/内存逃逸.md) | 定义与原因、`-gcflags=-m` 分析、五类场景、三条判定规则与代价 |
+| [内存指标与文件映射.md](运行时/内存指标与文件映射.md) | `runtime.MemStats` 与内核视角的 RSS 为什么对不上（RSS 偏大的四种原因）、缓冲写 `Flush` 与 `Sync()` 的落盘边界、`syscall.Mmap` 把文件当 `[]byte` 用 |
 | [垃圾回收机制.md](运行时/垃圾回收机制.md) | 并发三色标记 + 混合写屏障、目标堆公式、`gctrace` 逐字段、GOGC / GOMEMLIMIT |
 | [程序启动流程.md](运行时/程序启动流程.md) | `_rt0` 入口、栈 / 分配器 / 调度器初始化、启动全景图 |
 | [零拷贝.md](运行时/零拷贝.md) | Go 侧：`io.Copy` 的自动分发与静默失效、`net/http` 静态服务、`copy_file_range`、`string ↔ []byte` 视图 |
@@ -97,7 +99,7 @@
 | [pprof性能分析.md](运行时/pprof性能分析.md) | 五种 profile 各测什么、三种采集入口、⭐ 无头环境（没有浏览器）下怎么读、`heap` 的 `alloc_space` 与 `inuse_space` 两种口径、`block` / `mutex` 要先开采样开关、一套能落地的优化闭环 |
 | [runtime调试与trace.md](运行时/runtime调试与trace.md) | `GODEBUG` 旋钮体系、`schedtrace` / `gctrace` 逐字段、`runtime/trace` 的无头解析、MemStats 与 debug 包 |
 
-### 2.4 工程实践/（13 篇直属 + 框架 2 篇 + 定时任务 4 篇）
+### 2.4 工程实践/（16 篇直属 + 框架 2 篇 + 定时任务 4 篇）
 
 | 篇 | 讲什么 |
 |---|---|
@@ -116,6 +118,7 @@
 | [接入Kafka.md](工程实践/接入Kafka.md) | Go 侧**接入手册**（12 节体例）：`kafka-go` / `sarama` / `confluent-kafka-go` 三选一、前提（⚠️ Topic 不预建报 `Unknown Topic Or Partition`）、⭐ **单例边界**（Writer 进程级 / Reader 非单例）、⭐ **初始化顺序**（判据「谁捕获了全局单例」）、`sync.OnceValue` 封装、`Balancer`（默认不哈希）与 `RequiredAcks`（默认不等确认）陷阱、⭐ **record headers Inject/Extract 跨进程传播**（实测完整往返）、优雅退出、校验口径；⭐ gofmt / vet / build 全过，三节点 KRaft 实测 |
 | [接入RocketMQ.md](工程实践/接入RocketMQ.md) | Go 侧**接入手册**（12 节体例）：客户端二选一（`rocketmq-client-go/v2` / `rocketmq-clients/golang/v5`）、前提（⚠️ NameServer 必须是 **IP**，写主机名报 `new Namesrv failed.: IP addr error`；Topic 未建报 `No route info of this topic`）、⭐ **单例边界**（Producer 进程级 / Consumer 非单例）、⭐ **初始化顺序**（`Subscribe` 先于 `Start`；判据「谁捕获了全局单例」）、`sync.Once` 封装、各场景调用（普通 / 延迟 / 顺序 / Tag 过滤 / 定时任务）、⭐ **消息属性 Inject-Extract 跨进程传播**（实测完整往返）、⭐ **优雅退出**（Shutdown 顺序 / 位点无残留）、验证与故障速查；⭐ gofmt / vet / build 全过。组件本体在 [消息队列/RocketMQ/](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) |
 | [写冲突控制的Go落地.md](工程实践/写冲突控制的Go落地.md) | 同一份数据被并发写的四种写法：版本号乐观锁（`RowsAffected` 判冲突 + 退避抖动）、⭐ **条件更新**（`UPDATE ... WHERE stock >= ?`，含 `LAST_INSERT_ID(expr)` 的连接级坑）、悲观锁的 `FOR UPDATE` 三条硬规矩与 `SKIP LOCKED`、⭐ **唯一索引兜底**（`INSERT IGNORE` / `ON DUPLICATE KEY UPDATE` 的两个坑）；⚠️ 未做运行时验证（概念侧在 `03-数据与中间件/数据存储/并发控制/`）|
+| [子进程与外部命令.md](工程实践/子进程与外部命令.md) | 执行外部命令的安全形态：⭐ **注入对照实测**、超时与进程树（300ms → 5.08s → 加 `WaitDelay` 800ms）、退出码三层判读、纯 Go 复刻 `grep\|sort\|uniq` 管道并与 shell 对拍（⭐ 拍出 `\|` 左起优先 vs 最长匹配）、端口探测 / `MkdirAll` / 流式读为什么不该起进程 |
 | [Kratos框架.md](工程实践/框架/微服务/Kratos框架.md) | 集成 ent / validate、注册发现与容器化、服务间鉴权与元数据传递 |
 | [Eino框架.md](工程实践/框架/LLM应用/Eino框架.md) | 字节 Eino 大模型应用框架 |
 | [定时任务/](工程实践/定时任务/README.md) 四篇 | 进程内与中心化调度四条路线：[标准库实现.md](工程实践/定时任务/标准库实现.md)、[go-cron实现.md](工程实践/定时任务/go-cron实现.md)、[go-job实现.md](工程实践/定时任务/go-job实现.md)、[xxl-job接入.md](工程实践/定时任务/xxl-job接入.md)，导读见 [README.md](工程实践/定时任务/README.md) |

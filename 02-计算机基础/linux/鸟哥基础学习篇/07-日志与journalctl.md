@@ -151,4 +151,4 @@ last -x | head
 - [性能排查.md](../性能排查.md) — OOM Killer 与内核日志的排查套路
 - [内存管理.md](../内存管理.md) — OOM 判定与 Page Cache 的原理
 - [README.md](README.md) — 本目录导读：版本坐标与阅读顺序
-> 反向引用（本篇被下列文档引到）：[06-网络配置与nmcli.md](06-网络配置与nmcli.md)
+> 反向引用（本篇被下列文档引到）：[常用命令.md](../常用命令.md)、[06-网络配置与nmcli.md](06-网络配置与nmcli.md)
