@@ -1,12 +1,16 @@
 # I/O 多路复用
 
-> 从系统调用原理到 Go/Java 实践，讲清五种 I/O 模型、select/poll/epoll、LT/ET、Reactor、`io_uring` 的提交—完成模型与常见问题。
+> 覆盖：五种 I/O 模型、select / poll / epoll 三代演进、LT 与 ET、Reactor、Go 的 netpoller 与 Java NIO 实践、`io_uring` 的提交—完成模型与常见问题。
 >
-> 内容整理自个人学习笔记。Go 侧的网络模型与调度见 [GMP调度.md](../../01-编程语言/go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../linux/零拷贝.md)。
+> 不覆盖：Go 的网络模型与运行时调度见 [GMP调度.md](../../01-编程语言/go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../linux/零拷贝.md)；连接关闭侧的状态见 [tcp/TCP四次挥手.md](tcp/TCP四次挥手.md)。
+>
+> 内容整理自个人学习笔记，素材见 [素材清单](../../素材清单.md)。
+>
+> ✅ 实测口径：第七、八节的 Go / Java 代码可编译（Go 侧本机 `gofmt` / `go vet` 通过，Java 侧未编译）；⚠️ **未实测** `io_uring`（本机为 Windows，且容器沙箱常禁用该系统调用）。
 
 ---
 
-## 一、一句话定位：它解决什么
+## 一、I/O 多路复用解决什么问题？
 
 **I/O 多路复用让一个进程或线程同时监视多个 I/O 通道，只在通道就绪时处理它。**
 网络服务的大量连接通常都在等待数据；若采用“每连接一线程”，连接数上升后会遇到 C10K 问题。
@@ -22,7 +26,7 @@
 
 ---
 
-## 二、五种 I/O 模型 ⭐
+## 二、五种 I/O 模型分别是什么？⭐
 
 一次输入分两段：① **等待数据就绪**，数据进入内核 socket 缓冲区；② **数据拷贝**，内核将数据复制到用户空间。
 
@@ -35,6 +39,8 @@
 | 异步 I/O（AIO） | 提交后立即返回 | 内核完成拷贝后通知 | 通知到达时数据已在用户缓冲区 |
 
 ![五种 I/O 模型的两阶段对照：等待数据与拷贝数据分别由谁推进，只有异步 I/O 的两阶段都由内核完成](images/五种IO模型的等待与拷贝两阶段对比.svg)
+
+图注：五种 I/O 模型的两阶段对照：等待数据与拷贝数据分别由谁推进，只有异步 I/O 的两阶段都由内核完成。
 
 ### 2.1 各模型一句话展开
 
@@ -70,7 +76,7 @@ if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 
 ---
 
-## 三、select / poll / epoll 三代演进 ⭐
+## 三、select / poll / epoll 三代是怎么演进的？⭐
 
 设监视 fd 总数为 `n`，本轮就绪数为 `k`。
 
@@ -85,6 +91,8 @@ if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
 | 修改关注集合 | 重建/修改位图 | 修改数组 | `epoll_ctl` 增删改 |
 
 ![select → poll → epoll 三代接口逐项对照：数据结构、数量上限、每轮是否复制全量、返回后扫描范围、复杂度、触发方式与改关注集合的代价](images/select与poll与epoll三代演进.svg)
+
+图注：select → poll → epoll 三代接口逐项对照：数据结构、数量上限、每轮是否复制全量、返回后扫描范围、复杂度、触发方式与改关注集合的代价。
 
 ### 3.1 select 的三个缺点
 
@@ -124,9 +132,11 @@ int n = epoll_wait(epfd, events, maxevents, -1);  // 返回就绪事件
 
 ![epoll 实例的两块结构：兴趣列表红黑树与就绪链表，以及驱动回调、epoll_ctl 与 epoll_wait 各自接触哪一块](images/epoll红黑树与就绪链表.svg)
 
+图注：epoll 实例的两块结构：兴趣列表红黑树与就绪链表，以及驱动回调、epoll_ctl 与 epoll_wait 各自接触哪一块。
+
 ---
 
-## 四、epoll 的两种触发模式 ⭐
+## 四、epoll 的两种触发模式怎么选？⭐
 
 | 维度 | LT（水平触发，默认） | ET（边缘触发） |
 |---|---|---|
@@ -162,7 +172,7 @@ for (;;) {
 
 ---
 
-## 五、典型问题：惊群与 Reactor
+## 五、惊群与 Reactor 是什么关系？
 
 ### 5.1 惊群（thundering herd）
 
@@ -192,9 +202,11 @@ Nginx 更准确地说是“多个 worker 进程各自运行单线程 Reactor”�
 
 ![主从 Reactor 线程模型：主 Reactor（bossGroup）只 accept，新连接注册给从 Reactor（EventLoop），阻塞业务再移出到业务线程池](images/主从Reactor与Netty线程模型.svg)
 
+图注：主从 Reactor 线程模型：主 Reactor（bossGroup）只 accept，新连接注册给从 Reactor（EventLoop），阻塞业务再移出到业务线程池。
+
 ---
 
-## 六、Go 的实现：netpoller 与 goroutine
+## 六、Go 的 netpoller 与 goroutine 是怎么实现的？
 
 Go runtime 的 netpoller 在 Linux 上使用 epoll：网络 I/O 暂不可完成时挂起 goroutine，
 对应 M 不必等待；fd 就绪后 runtime 再把 goroutine 置为可运行。
@@ -206,9 +218,27 @@ G、M、P 的配合与调度细节见 [Go GMP 调度模型](../../01-编程语�
 
 ---
 
-## 七、使用一：Go ⭐
+## 七、应用场景
 
-### 7.1 日常优先使用 net 包
+**本节要点**：I/O 多路复用是所有高并发网络服务的底座 —— 它决定「一个线程能盯住多少连接」。
+
+| 场景 | 涉及哪一块 | 为什么值得注意 |
+|---|---|---|
+| 高并发网关 / 代理 | epoll + Reactor | 事件循环与上游连接管理，详见 [反向代理原理与实现.md](反向代理原理与实现.md) |
+| Go 服务 | netpoller + goroutine | 运行时把阻塞包装成协程挂起，详见 本篇第六节 |
+| Java 服务 | NIO `Selector` / Netty | 主从 Reactor 的线程模型，详见 本篇 8.3 |
+| Nginx / Redis | 单线程事件循环 | 用 epoll 换掉「每连接一线程」，详见 [03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md) |
+| fd 上限 / 连接数告警 | `ulimit -n` 与 `somaxconn` | 事件循环的性能之外还有资源上限，详见 [性能排查.md](../linux/性能排查.md) |
+| 连接泄漏 | 半开连接与心跳 | `CLOSE_WAIT` 堆积多半是应用没关，详见 [tcp/TCP四次挥手.md](tcp/TCP四次挥手.md) |
+| 高吞吐本地文件 I/O | `io_uring` | 从「就绪通知」到「提交—完成」，详见 本篇第十节 |
+
+## 八、具体使用
+
+**本节要点**：Go 侧日常用 `net` 包即可（运行时替你做了事件循环），Java 侧先掌握 NIO 三件套再上 Netty。
+
+### 8.1 Go
+
+#### 日常优先使用 net 包
 
 ```go
 ln, err := net.Listen("tcp", ":8080")
@@ -222,7 +252,7 @@ for {
 
 `net` 已封装非阻塞 fd、netpoller、deadline 和资源管理；直接操作 epoll 主要用于理解原理或底层库。
 
-### 7.2 直接调用 epoll：最小 ET TCP 读取服务
+#### 直接调用 epoll：最小 ET TCP 读取服务
 
 仅适用于 Linux。监听 fd 与 `Accept4` 返回的 fd 均设置非阻塞；ET 下 accept/read 都循环到 `EAGAIN`。
 
@@ -316,16 +346,15 @@ go get golang.org/x/sys/unix
 go run .
 ```
 
-### 7.3 为什么优先使用 SetDeadline
+#### 为什么优先使用 SetDeadline
 
 `SetDeadline/SetReadDeadline/SetWriteDeadline` 与 runtime 定时器、netpoller 集成，超时会让阻塞式调用返回错误；
 它比自行维护 epoll 超时堆更方便、更跨平台。⚠️ deadline 是绝对时间，空闲超时通常要在成功读写后刷新。
 
 ---
+### 8.2 Java
 
-## 八、使用二：Java ⭐
-
-### 8.1 NIO 三件套
+#### NIO 三件套
 
 | 组件 | 作用 | 关系 |
 |---|---|---|
@@ -335,7 +364,7 @@ go run .
 
 写入 Buffer 后用 `flip()` 切到读模式，消费完用 `clear()` 或 `compact()` 回到写模式。
 
-### 8.2 完整可运行的 Selector Echo 服务
+#### 完整可运行的 Selector Echo 服务
 
 ```java
 import java.io.IOException;
@@ -419,7 +448,7 @@ java NioEchoServer 8080
 示例用 `OP_WRITE` 处理部分写，并在输出完成前暂停读取，形成简单背压。
 ⚠️ 必须移除已处理的 selected key；真实协议还要处理半包、粘包、解码状态和发送队列上限。
 
-### 8.3 Netty：主从 Reactor
+#### Netty：主从 Reactor
 
 | 概念 | 职责 |
 |---|---|
@@ -434,7 +463,7 @@ Netty 采用成熟的 Reactor/NIO，也可用 Linux native epoll transport，而
 
 ---
 
-## 九、生产实践与坑
+## 九、生产实践中有哪些坑？
 
 ### 9.1 fd 与连接上限
 
@@ -476,7 +505,7 @@ lsof -p "$PID" -a -iTCP
 
 ---
 
-## 十、`io_uring`：从「就绪通知」到「提交—完成」
+## 十、`io_uring` 的「提交—完成」模型是什么？
 
 **本节要点**：epoll 是**就绪通知**模型——「这个 fd 可读了，你自己去读」；`io_uring` 是**提交—完成**模型——「我把要做的操作交给你，你做完后把结果写回来」。它省掉的是**系统调用与上下文切换**，而不是数据拷贝。
 
@@ -492,6 +521,8 @@ lsof -p "$PID" -a -iTCP
 ⭐ **批量是它省系统调用的关键**：一次 `io_uring_enter` 可以**同时提交 N 个请求并收割 M 个完成**；更进一步还有 **SQPOLL** 模式——由内核线程轮询 SQ，应用**提交时一次系统调用都不用做**（代价是一个常驻内核线程）。
 
 ![io_uring 的 SQ 与 CQ 双环：应用写 SQE、内核读并执行、内核写 CQE、应用收割，两环都是内核与用户态共享内存](images/io_uring的SQ与CQ双环.svg)
+
+图注：io_uring 的 SQ 与 CQ 双环：应用写 SQE、内核读并执行、内核写 CQE、应用收割，两环都是内核与用户态共享内存。
 
 ### 10.2 与 epoll 的本质差异
 
@@ -525,7 +556,7 @@ lsof -p "$PID" -a -iTCP
 
 ---
 
-## 延伸追问 ⭐
+## 延伸追问
 
 - **select、poll、epoll 的区别？** select 有位图/1024 限制，poll 去掉数量限制但仍复制和遍历；epoll 持久注册且只返回就绪项。
 - **epoll 为什么高效？** 红黑树管理兴趣集合、就绪链表收集活跃项；等待处理 `k` 而非扫描 `n`，但并非所有操作都是 `O(1)`。
@@ -544,10 +575,13 @@ lsof -p "$PID" -a -iTCP
 
 ## 关联
 
-- [TCP滑动窗口.md](tcp/TCP滑动窗口.md) — 半开连接与事件循环
-- [UDP与数据报传输.md](UDP与数据报传输.md) — UDP 服务端常见的 `SO_REUSEPORT` 多 socket 分摊
-- [channel原理与底层实现.md](../../01-编程语言/go/并发编程/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
-- [零拷贝.md](../linux/零拷贝.md) — 数据搬运的另一半成本（`io_uring` 也不消除拷贝）
-- [性能排查.md](../linux/性能排查.md) — 连接状态分布与 fd 上限的排查
+- **上游/总纲**：[网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 传输层在五层模型里的位置
+- **对照/互补**：[通信选型.md](通信选型.md) — 支撑高并发长连接的底层机制在这套选型里的位置
+- **对照/互补**：[反向代理原理与实现.md](反向代理原理与实现.md) — 事件循环之上的代理实现
+- **对照/互补**：[tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) — 半开连接与事件循环
+- **对照/互补**：[UDP与数据报传输.md](UDP与数据报传输.md) — UDP 服务端常见的 `SO_REUSEPORT` 多 socket 分摊
+- **下游机制**：[channel原理与底层实现.md](../../01-编程语言/go/并发编程/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
+- **下游机制**：[零拷贝.md](../linux/零拷贝.md) — 数据搬运的另一半成本（`io_uring` 也不消除拷贝）
+- **运维/配置**：[性能排查.md](../linux/性能排查.md) — 连接状态分布与 fd 上限的排查
 
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)、[TCP四次挥手.md](tcp/TCP四次挥手.md)、[TCP报文结构.md](tcp/TCP报文结构.md)、[网络通信链路详解.md](网络通信链路详解.md)、[通信选型.md](通信选型.md)、[网络与存储.md](../../06-工程实践/部署/docker/网络与存储.md)
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)、[TCP四次挥手.md](tcp/TCP四次挥手.md)、[网络通信链路详解.md](网络通信链路详解.md)、[网络与存储.md](../../06-工程实践/部署/docker/网络与存储.md)

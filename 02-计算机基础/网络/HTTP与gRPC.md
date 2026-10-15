@@ -1,10 +1,12 @@
 # HTTP 与 gRPC
 
-> gRPC 与 HTTP 的本质差别（默认编码 Protobuf）、连接池与 `httptrace` 复用观测、多路复用实测，以及 WebSocket / SSE 的选型对照。
+> 覆盖：gRPC 与 HTTP 的本质差别（默认编码 Protobuf）、连接池与 `httptrace` 复用观测、多路复用实测，以及 WebSocket / SSE 的选型对照。
 >
-> 内容整理自个人学习笔记，参考资料与原始素材见 [素材清单](../../素材清单.md)。
+> 不覆盖：HTTP/1.1 与 HTTP/2 的差异机制见 [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)（本仓该主题的唯一详解源）；HTTP/2 的字节级机制见 [HTTP2机制.md](../../03-数据与中间件/中间件/RPC框架/gRPC/HTTP2机制.md)；TLS 与 ALPN 见 [HTTPS与TLS.md](HTTPS与TLS.md)。
 >
-> ⚠️ **HTTP/1.1 与 HTTP/2 的差异机制不在本篇**——那部分已收归 [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)（本仓该主题的唯一详解源），本篇只在 1.2 保留一张结论表；HTTP/2 的字节级机制见 [HTTP2机制.md](../../03-数据与中间件/中间件/RPC框架/gRPC/HTTP2机制.md)。
+> 内容整理自个人学习笔记，素材见 [素材清单](../../素材清单.md)。
+>
+> ✅ 实测口径：第五节（具体使用）的 Go 代码只用标准库，`go build` + `go vet` + `gofmt` 通过，60 请求多路复用实验**在本机真实跑过**；⚠️ **未实测**抓包一层（本机无 `tcpdump` / `tshark`），Java 侧只编译未运行。
 
 ---
 
@@ -38,7 +40,7 @@
 | **④** | **服务端推送** | 协议里有 `PUSH_PROMISE`，但**主流浏览器已移除**（Chrome 106 起）；不宜再当核心优势讲——新篇 6.1 |
 | **⑤** | **流的优先级** | 原来的依赖树 + 权重**已被弃用**（RFC 9113 标记），改由 **RFC 9218** 的紧急度 + 增量承接——新篇 6.2 |
 
-📎 多路复用的量化：同一连接上 60 个并发请求，HTTP/1.1 恒为 6.05s（60 × 100ms，纯排队），HTTP/2 降到 110ms（真并发）——见本篇「使用一」第 3 节的完整表与复现程序。
+📎 多路复用的量化：同一连接上 60 个并发请求，HTTP/1.1 恒为 6.05s（60 × 100ms，纯排队），HTTP/2 降到 110ms（真并发）——见本篇 5.1 的完整表与复现程序。
 
 ⚠️ 常见错误说法「HTTP/1.1 需要额外配 TLS、HTTP/2 天然支持 TLS」**混淆了层次**：HTTP 与 TLS 是两层，两者都能跑在 TLS 之上、也都可以不跑。浏览器 HTTPS 之所以"看起来是 h2"，是握手时用 **ALPN** 协商出了 `h2`（实测见 [QUIC与HTTP3.md](QUIC与HTTP3.md) 3.3）；HTTP/2 另有明文版本 **`h2c`**，gRPC 的明文连接就是它。
 
@@ -75,7 +77,7 @@
 | 「HTTP/2 比 HTTP/1.1 多了流控」 | 要说得更准：多的是「**应用层多流之间的配额分配**」，**不取代** TCP 的流控，与拥塞控制（`cwnd`）也是三件不同的事 |
 | 「HTTP/1.1 不支持连接复用」 | ❌ 支持——1.1 起**持久连接是默认行为**，只是**不能在同一条连接上并行多个响应** |
 
-⭐ 一条落在工程上的结论：**「响应体不读完就关连接」会污染连接池**——剩下的字节会被当成下一条响应的开头。这也是为什么客户端必须把 body 读干再 `Close`（见「使用一」第 1、3 节）。
+⭐ 一条落在工程上的结论：**「响应体不读完就关连接」会污染连接池**——剩下的字节会被当成下一条响应的开头。这也是为什么客户端必须把 body 读干再 `Close`（见 5.1）。
 
 ---
 
@@ -113,14 +115,33 @@
 
 ![WebSocket、SSE 与 gRPC 流式三条推送链路的逐项对照：方向、协议底座、数据格式、浏览器支持、自动重连、穿透性与各自的坑，底部给出三条落点判据与一句话取舍](images/WebSocket与SSE与gRPC流的链路对照.svg)
 
+图注：WebSocket、SSE 与 gRPC 流式三条推送链路的逐项对照：方向、协议底座、数据格式、浏览器支持、自动重连、穿透性与各自的坑，底部给出三条落点判据与一句话取舍。
+
 ---
 
-## 使用一：Go（HTTP 客户端与「租约」这两件事）⭐
+## 四、应用场景
 
-> 校验说明：本节 Go 代码只用标准库，`go build` + `go vet` + `gofmt` 通过；第 3 节的实验**在本机真实跑过**（数据见文中表）。
+**本节要点**：gRPC 与 HTTP 的取舍落在「服务间调用」与「浏览器/第三方对接」两类场景上。
+
+| 场景 | 涉及哪一块 | 为什么值得注意 |
+|---|---|---|
+| 服务间 RPC | 默认 Protobuf + HTTP/2 | 强类型、体积小、可双向流，详见 本篇第一节 |
+| 浏览器 / 第三方对接 | REST + JSON | 无需代码生成、可读性好，详见 [数据序列化.md](数据序列化.md) |
+| 长连接被复用 | 连接池与 `httptrace` | 池子大小要看单连接可承载并发，详见 本篇 5.1 |
+| 服务端推送 | WebSocket / SSE / gRPC 流 | 三者适用面不同，详见 本篇第三节 |
+| 网关上的协议转换 | HTTP ↔ gRPC 转码 | 一条连接上跑两种语义，详见 [从零实现网关.md](../../01-编程语言/go/网络编程/从零实现网关.md) |
+| 连接池被污染 | body 不读完就关 | 残留字节会被当下一条响应，详见 本篇 5.1 |
+
+## 五、具体使用
+
+**本节要点**：连接池在 `Transport` 里而不在 `Client` 里，`httptrace` 把「是否复用」变成可观测数据 —— 这是本篇三条实测的抓手。
+
+### 5.1 Go（HTTP 客户端与「租约」这两件事）
+
+> 校验说明：本节 Go 代码只用标准库，`go build` + `go vet` + `gofmt` 通过；5.1 的实验**在本机真实跑过**（数据见文中表）。
 > 前三个块属包 `httpdemo`，第四个块属包 `leasedemo`。
 
-### 1. `http.Client`：池在 `Transport` 里，不在 `Client` 里
+#### `http.Client`：池在 `Transport` 里，不在 `Client` 里
 
 正文说 HTTP/1.1 的连接是"持久连接"——那么在 Go 里**谁在维护这些持久连接**？答案是 `http.Transport`。
 于是本仓库那条「中间件实例必须单例」在这里的具体形态是：
@@ -158,7 +179,7 @@ var Transport = sync.OnceValue(func() *http.Transport {
 		MaxIdleConns:        200, // 全局空闲连接上限（默认不限）
 		MaxIdleConnsPerHost: 64,  // ⚠️ 默认只有 2！超过 2 的空闲连接会被直接关闭 → QPS 一高就疯狂重建连接
 		IdleConnTimeout:     90 * time.Second,
-		// 想"一条连接扛全部并发"（真·多路复用）就把 MaxConnsPerHost 设成 1，见第 3 节实验
+		// 想"一条连接扛全部并发"（真·多路复用）就把 MaxConnsPerHost 设成 1，见 5.1 实验
 
 		// 超时要分档：Client.Timeout 覆盖"拨号→读完响应体"整个过程，
 		// 只设它会让"下游慢响应"整段吃掉预算，也无法区分"连不上"和"响应慢"
@@ -191,9 +212,9 @@ var Client = sync.OnceValue(func() *http.Client {
 > ⚠️ `Client.Timeout` 包含**读取响应体的时间**：正文「服务端推送」「流式响应」这类长连接场景，
 > 用 `Timeout` 会必然超时，只能改用 `ResponseHeaderTimeout` + `ctx` 取消。
 
-### 2. `httptrace`：把「连接是否复用」变成可观测数据
+#### `httptrace`：把「连接是否复用」变成可观测数据
 
-正文「多路复用」和「队头阻塞」是机制层面的说法，落到线上你要能回答：
+正文「多路复用」和「队头阻塞」是机制层面的说法，落到线上要回答的是：
 **这次请求到底有没有新建连接？握手花了多久？首字节多久回来？**
 
 ```go
@@ -272,7 +293,7 @@ func GetWithTrace(ctx context.Context, url string) (*http.Response, Timing, erro
 
 > 📌 客户端 `httptrace`、命令行 `curl` / `openssl`、抓包 `tshark` 这三层怎么串起来回答同一个问题，见「使用三」开头的观测路径图。
 
-### 3. 一条连接 vs 多条连接：正文「多路复用」的实测
+#### 一条连接 vs 多条连接：正文「多路复用」的实测
 
 这段是**在本机（Windows + Go，`httptest` 起 TLS 服务，每个请求固定 sleep 100ms，共 60 个请求）真实跑出来的**：
 
@@ -303,6 +324,8 @@ func GetWithTrace(ctx context.Context, url string) (*http.Response, Timing, erro
    （索引表是按连接维护的，正文第 ③ 点）。
 
 ![60 个请求打满一条连接的实测耗时比例：HTTP/1.1 无论并发 1、6 还是 60 都钉在 6.05s，HTTP/2 单连接随并发数一路降到 110ms；不限连接数时两者落到同一量级，但都要 60 次 TCP 拨号](images/单连接60个请求的串行与多路复用耗时对比.svg)
+
+图注：60 个请求打满一条连接时，HTTP/1.1 无论并发 1、6 还是 60 都钉在 6.05s；HTTP/2 单连接随并发数一路降到 110ms —— 省下来的正是 59 次 TCP + TLS 握手。
 
 复现程序（单文件，`go mod init x && go run main.go`）：
 
@@ -420,7 +443,7 @@ func main() {
 > （见 [TCP滑动窗口.md](tcp/TCP滑动窗口.md) 的「使用三」）——**HTTP/2 在丢包链路上的优势会缩水**，
 > 因为它的队头阻塞从"应用层"下移到了"TCP 层"，这正是 HTTP/3/QUIC 要解决的问题。
 
-### 4. gRPC：机制与 HTTP/2 完全一致，代码只多一层生成
+#### gRPC：机制与 HTTP/2 完全一致，代码只多一层生成
 
 正文的澄清是「区别在机制，不在传什么」。所以工程上接入 gRPC 只有两件事：
 **① `.proto` 与服务生成（见 [Protobuf.md](../../03-数据与中间件/中间件/RPC框架/gRPC/Protobuf.md)），② 客户端保持长连接**（因为它是一条 HTTP/2 连接上跑多流）。
@@ -442,12 +465,11 @@ package httpdemo
 //  3. 重试要幂等：grpc 的 retry policy 会在 TRANSIENT_FAILURE 上重放，
 //     非幂等接口（扣款）必须关掉自动重试，改由业务侧带幂等键。
 ```
-
-## 使用二：Java（HttpClient / OkHttp 的连接池）
+### 5.2 Java（HttpClient / OkHttp 的连接池）
 
 > ⚠️ 本节 Java 代码按 JDK 17 + OkHttp 4.12 书写，**未编译校验**。三条结论与 Go 侧一一对应。
 
-### 1. JDK `HttpClient`：单例 + HTTP/2 优先
+#### JDK `HttpClient`：单例 + HTTP/2 优先
 
 ```java
 package notes.appproto;
@@ -493,7 +515,7 @@ public class JdkHttp {
 > 系统属性 `jdk.httpclient.connectionPoolSize`、`jdk.httpclient.keepalive.timeout`）。
 > 需要精确控制池时，工程上通常换 OkHttp 或直接上 gRPC/Netty。
 
-### 2. OkHttp：池参数与 Go 侧的对照表
+#### OkHttp：池参数与 Go 侧的对照表
 
 ```java
 package notes.appproto;
@@ -562,11 +584,15 @@ public class OkHttpSingleton {
 
 ![三套 HTTP 客户端的归属与参数对照：业务调用只碰 Client 这个壳，池在 Transport / ConnectionPool 里；单例、空闲连接数、空闲存活、整体超时、只等响应头、阶段观测、强制退回 1.1 七件事逐项对齐，底部给出每次新建 Transport 的三个代价与超时分档](images/Go与Java三套HTTP客户端的连接池对照.svg)
 
-## 使用三：抓包与命令实操
+图注：三套 HTTP 客户端的归属与参数对照：业务调用只碰 Client 这个壳，池在 Transport / ConnectionPool 里；单例、空闲连接数、空闲存活、整体超时、只等响应头、阶段观测、强制退回 1.1 七件事逐项对齐，底部给出每次新建 Transport 的三个代价与超时分档。
+
+### 5.3 抓包与命令实操
 
 ![连接是否复用这条链路的三层观测路径：客户端侧 httptrace 的新建与复用两分支读数、命令行侧 curl 的关键三行与 -j 并发下 h2 一条连接对 1.1 四条连接的对照、抓包侧 tshark 按帧字段验证五项机制，底部是症状到结论的四条判据](images/连接是否复用的三层观测路径.svg)
 
-### 1. 一眼看清协议版本、ALPN 与帧
+图注：连接是否复用这条链路的三层观测路径：客户端侧 httptrace 的新建与复用两分支读数、命令行侧 curl 的关键三行与 -j 并发下 h2 一条连接对 1.1 四条连接的对照、抓包侧 tshark 按帧字段验证五项机制，底部是症状到结论的四条判据。
+
+#### 一眼看清协议版本、ALPN 与帧
 
 ```bash
 # 关键看三行：Connected to / ALPN 协商结果 / 是否 "Using HTTP2, server supports multiplexing"
@@ -597,17 +623,17 @@ echo | openssl s_client -connect example.com:443 -alpn h2 2>/dev/null | openssl 
 
 - **同一个地址、同一场 TLS 握手，加不加 `--http1.1` 就换掉应用层版本**：改成 `--http1.1` 后是 `ALPN: server accepted http/1.1` 配 `< HTTP/1.1 200 OK`——版本是**协商**出来的，不是「升级」出来的，也再次印证 HTTP 与 TLS 是两层（1.2 那条常见错误说法）。
 - **头部字段名在 h2 上是小写**：同一个自定义头，1.1 响应回 `X-Served-Proto: HTTP/1.1`，h2 响应回 `x-served-proto: HTTP/2.0`（HPACK 要求字段名小写），过网关时按大小写取头就会踩坑。
-- **复用能亲眼看到**：一次 `curl` 传两个 URL，第二条前面是 `Re-using existing connection with host w2ra2d-h2srv`，两条都是 `< HTTP/2 200`——对应「使用一」第 2 节里 `GotConn` 的 `Reused=true`。
+- **复用能亲眼看到**：一次 `curl` 传两个 URL，第二条前面是 `Re-using existing connection with host w2ra2d-h2srv`，两条都是 `< HTTP/2 200`——对应 5.1 里 `GotConn` 的 `Reused=true`。
 - ⚠️ **`Using HTTP2, server supports multiplexing` 这行在新版 curl 里已经没有了**：上面这台 `curl 8.12.1` 的 `-v` 输出搜不到它，判据改成看 `ALPN: server accepted h2` 与 `< HTTP/2 200` 两行。
 - **明文 h2c 走不通**：`curl --http2-prior-knowledge http://同一地址:8443/` 直接回 `curl: (16) Error in the HTTP2 framing layer`（退出码 16），因为 Go 标准库的 HTTP/2 只在 TLS 之上靠 ALPN 开启。
 - **并发下「省的是连接数」也能在命令行上量出来**：`curl -j --parallel --parallel-max 4` 一次传 4 个会让服务端睡 1.5s 的 URL（`?slow=x`），分两批各跑 3 轮、共 6 轮，趋势一致——
   - `--http2`：`Connected to` 只出现 **1 次**、`Re-using existing connection` **3 次**、`ALPN: curl offers` **1 次**，四条各自的 `time_total` 全落在 **1.508s ~ 1.516s**（四条同时在同一条连接上跑完）；
   - `--http1.1`：`Connected to` **4 次**、`Re-using` **0 次**，四条各自 **1.511s ~ 1.555s**，且 `ALPN: curl offers http/1.1` 也重复了 **4 次**——4 场 TLS 握手；
-  - ⚠️ **两者墙钟时间在这个场景看不出差别**：`-j` 会给 1.1 另开 4 条连接去并行，所以省下来的是**连接数与握手次数**，不是请求耗时。要把墙钟的差别压出来，必须把并发压到**同一条连接**上，见「使用一」第 3 节那组 60 个请求的实测。
+  - ⚠️ **两者墙钟时间在这个场景看不出差别**：`-j` 会给 1.1 另开 4 条连接去并行，所以省下来的是**连接数与握手次数**，不是请求耗时。要把墙钟的差别压出来，必须把并发压到**同一条连接**上，见 5.1 那组 60 个请求的实测。
 
   > 📌 这台服务端把 `?slow=` 的睡眠固定在 1.5s（`time.Sleep`），所以「单条请求 1.5s」是**服务端下限**，读数只用来比连接数与并发形态，不用来比真实性能。
 
-### 2. 直接看 HTTP/2 的帧与 HPACK
+#### 直接看 HTTP/2 的帧与 HPACK
 
 ```bash
 # tshark：解开 TLS 才能看帧（用 SSLKEYLOGFILE，方法见 HTTPS与TLS.md）
@@ -627,7 +653,7 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 | 「服务端推送」 | 出现 `PUSH_PROMISE` 帧（Go 标准库**不支持**推送，要用 h2_bundle 或换语言） |
 | 「流的优先级」 | `HEADERS` 帧里的 `PRIORITY` 段；h2 `dependency`/`weight` |
 
-> 📌 环境口径：本节 1 小节的命令行读数与「使用一」第 2 节的 `httptrace` 读数都在容器里实跑过；**抓包这一层未实测**——本机与本机镜像里都没有 `tcpdump` / `tshark`，这张表给的是命令、字段名和判据。帧与 HPACK 的字节级细节见 [HTTP2机制.md](../../03-数据与中间件/中间件/RPC框架/gRPC/HTTP2机制.md)。
+> 📌 环境口径：本节 1 小节的命令行读数与 5.1 的 `httptrace` 读数都在容器里实跑过；**抓包这一层未实测**——本机与本机镜像里都没有 `tcpdump` / `tshark`，这张表给的是命令、字段名和判据。帧与 HPACK 的字节级细节见 [HTTP2机制.md](../../03-数据与中间件/中间件/RPC框架/gRPC/HTTP2机制.md)。
 
 ---
 
@@ -637,29 +663,20 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 
 - **HTTP/1.1 与 HTTP/2 到底差在哪？** → 见 [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)——并发模型、消息定界、头部压缩、两级流控、优先级与服务端推送的现状、队头阻塞的边界都在那一篇；本篇只保留与 gRPC 有关的结论（1.2 表）。
 - **gRPC 一定比 HTTP+JSON 快吗？** → 主要快在**序列化体积**（默认 Protobuf）与多路复用，不是协议本身；载荷小、调用少的场景差异很小，还要付出可读性与网关兼容性的代价。⚠️ 「gRPC 也能传 JSON」说的是**可以换 codec**，但**默认就是 Protobuf**，换成 JSON 会同时丢掉体积、速度与编译期类型检查三项收益。
-- **连接池该配多大？** → 看「并发请求数 ÷ 单连接可承载并发」。HTTP/2 一条连接能跑多流，池子该**小**；HTTP/1.1 才需要按并发数放大（见本文「使用一」的实测）。
+- **连接池该配多大？** → 看「并发请求数 ÷ 单连接可承载并发」。HTTP/2 一条连接能跑多流，池子该**小**；HTTP/1.1 才需要按并发数放大（见本文 5.1 的实测）。
 - **长连接有哪些坑？** → 空闲连接被中间设备静默断开（要 keepalive + 重试）、`MaxConnsPerHost` 配太小导致排队、以及服务端 LB 下连接分布不均。
 - **怎么确认连接到底复用了没？** → 用 `httptrace` 的 `GotConn` 看 `Reused` 字段，比在代码里打日志可靠；⚠️ `Transport` 才是池的主人，`Client` 只是壳。
 - **代理会破坏 HTTP/2 吗？** → 会：非 h2-aware 的代理要么把连接降级成 1.1、要么逐条转发丢掉多路复用；上线前用 ALPN 协商结果确认。
 
 ## 关联
 
-- [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) — **本篇的上游**：HTTP/1.1 与 HTTP/2 的完整差异机制（本篇 1.2 的结论表就是它的摘要）
-- [HTTP2机制.md](../../03-数据与中间件/中间件/RPC框架/gRPC/HTTP2机制.md) — HTTP/2 的字节级机制：帧头逐字段、HPACK 编码、流状态机、两层限额
-- [QUIC与HTTP3.md](QUIC与HTTP3.md) — 传输层队头阻塞的根治方案，以及 ALPN / Alt-Svc 的发现路径
-- [TCP拥塞控制算法.md](TCP拥塞控制算法.md) — `rwnd`（流控）与 `cwnd`（拥塞控制）的分工
-- [tcp/TCP报文结构.md](tcp/TCP报文结构.md) — 字节流为什么没有边界、应用层如何自己划界
-- [UDP与数据报传输.md](UDP与数据报传输.md) — 与「保留消息边界」的数据报模型对照
-- [DHCP.md](DHCP.md) — T1/T2 的租约形状与续租流程
-- [HTTPS与TLS.md](HTTPS与TLS.md) — h2 的事实前提：TLS 与 ALPN 协商
-- [数据序列化.md](数据序列化.md) — gRPC 默认的 Protobuf 载荷
-- [context.md](../../01-编程语言/go/工程实践/context.md) — 请求取消与超时在客户端侧的落点
-- [通信选型.md](通信选型.md) — 应用层协议与序列化格式的完整选型（含 WebSocket / SSE / MQTT / HTTP3）
+- **上游/总纲**：[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) — 本篇的上游：HTTP/1.1 与 HTTP/2 的完整差异机制
+- **对照/互补**：[QUIC与HTTP3.md](QUIC与HTTP3.md) — 传输层队头阻塞的根治方案，以及 ALPN / Alt-Svc 的发现路径
+- **对照/互补**：[HTTPS与TLS.md](HTTPS与TLS.md) — `h2` 的事实前提：TLS 与 ALPN 协商
+- **对照/互补**：[tcp/TCP报文结构.md](tcp/TCP报文结构.md) — 字节流为什么没有边界、应用层如何自己划界
+- **对照/互补**：[tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) — `rwnd`（流控）与 `cwnd`（拥塞控制）的分工
+- **对照/互补**：[UDP与数据报传输.md](UDP与数据报传输.md) — 与「保留消息边界」的数据报模型对照
+- **下游机制**：[HTTP2机制.md](../../03-数据与中间件/中间件/RPC框架/gRPC/HTTP2机制.md) — HTTP/2 的字节级机制：帧头、HPACK、流状态机、两层限额
+- **下游机制**：[数据序列化.md](数据序列化.md) — gRPC 默认载荷 Protobuf 的编码形态
 
-- [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 应用层数据如何被逐层封装
-- [不使用protoc的gRPC.md](../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) — 反过来的一问：有 HTTP/2 与 gRPC 帧、但没有 protoc 和生成代码时，怎么把 RPC 调通
-- [基础概念.md](../../03-数据与中间件/中间件/RPC框架/gRPC/基础概念.md) — 同主题的**纵向深入**：三层关系、一次一元调用的 wire 时序、连接复用与默认限额
-- [四种通信模式.md](../../03-数据与中间件/中间件/RPC框架/gRPC/四种通信模式.md) — 本文没展开的四种模式：一元 / 服务端流 / 客户端流 / 双向流的写法与结束语义
-- [生态与网关.md](../../03-数据与中间件/中间件/RPC框架/gRPC/生态与网关.md) — 过网关时 gRPC 的坑：`grpc_pass` 与 `proxy_pass` 的实测对照
-
-> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../../01-编程语言/go/可观测性/接入Jaeger.md)、[HTTP客户端与连接池.md](../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[从零实现网关.md](../../01-编程语言/go/网络编程/从零实现网关.md)、[网关路由匹配.md](../../01-编程语言/go/网络编程/网关路由匹配.md)、[接入gRPC.md](../../01-编程语言/java/工程实践/接入gRPC.md)、[08-WWW服务器.md](../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[DNS解析.md](DNS解析.md)、[反向代理原理与实现.md](反向代理原理与实现.md)、[RPC框架选型对比.md](../../03-数据与中间件/中间件/RPC框架/RPC框架选型对比.md)、[Protobuf.md](../../03-数据与中间件/中间件/RPC框架/gRPC/Protobuf.md)、[Jaeger.md](../../03-数据与中间件/中间件/可观测性/Jaeger.md)、[Skywalking.md](../../03-数据与中间件/中间件/可观测性/Skywalking.md)、[可观测性选型对比.md](../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md)
+> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../../01-编程语言/go/可观测性/接入Jaeger.md)、[context.md](../../01-编程语言/go/工程实践/context.md)、[HTTP客户端与连接池.md](../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[不使用protoc的gRPC.md](../../01-编程语言/go/网络编程/不使用protoc的gRPC.md)、[从零实现网关.md](../../01-编程语言/go/网络编程/从零实现网关.md)、[网关路由匹配.md](../../01-编程语言/go/网络编程/网关路由匹配.md)、[接入gRPC.md](../../01-编程语言/java/工程实践/接入gRPC.md)、[08-WWW服务器.md](../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[DHCP.md](DHCP.md)、[DNS解析.md](DNS解析.md)、[反向代理原理与实现.md](反向代理原理与实现.md)、[网络分层与数据包旅程.md](网络分层与数据包旅程.md)、[通信选型.md](通信选型.md)、[RPC框架选型对比.md](../../03-数据与中间件/中间件/RPC框架/RPC框架选型对比.md)、[Protobuf.md](../../03-数据与中间件/中间件/RPC框架/gRPC/Protobuf.md)、[四种通信模式.md](../../03-数据与中间件/中间件/RPC框架/gRPC/四种通信模式.md)、[基础概念.md](../../03-数据与中间件/中间件/RPC框架/gRPC/基础概念.md)、[生态与网关.md](../../03-数据与中间件/中间件/RPC框架/gRPC/生态与网关.md)、[Jaeger.md](../../03-数据与中间件/中间件/可观测性/Jaeger.md)、[Skywalking.md](../../03-数据与中间件/中间件/可观测性/Skywalking.md)、[可观测性选型对比.md](../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md)

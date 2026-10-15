@@ -1,10 +1,17 @@
 # HTTPS 与 TLS
 
-> 一句话说明：本篇讲清 **TLS 握手怎么走**（1.2 全流程 / 1.3 变化 / 会话复用）、证书在握手现场怎么用、如何抓包排障，以及 **Go 与 Java 的落地**（含 mTLS 双向认证）。
+> 覆盖：TLS 握手怎么走（TLS 1.2 全流程 / 1.3 的变化 / 会话复用）、证书在握手现场怎么用、怎么抓包排障，以及 Go 与 Java 的落地（含 mTLS 双向认证）。
 >
-> 内容整理自个人学习笔记。加密算法与数字证书的基础概念见 [数字证书与PKI.md](../../06-工程实践/安全/数字证书与PKI.md)、[加密算法.md](../../06-工程实践/安全/加密算法.md)。
+> 不覆盖：证书与信任链的基础概念见 [数字证书与PKI.md](../../06-工程实践/安全/数字证书与PKI.md)；握手协商的密码套件见 [加密算法.md](../../06-工程实践/安全/加密算法.md)；ALPN 与 QUIC 内嵌 TLS 1.3 见 [QUIC与HTTP3.md](QUIC与HTTP3.md)；TCP 三次握手的开销见 [tcp/TCP三次握手.md](tcp/TCP三次握手.md)。
+>
+> 内容整理自个人学习笔记，素材见 [素材清单](../../素材清单.md)。
+>
+> ⚠️ 实测口径：第九节的 Go / Java 代码可编译（Go 侧本机 `gofmt` / `go vet` 通过，Java 侧未编译）；`openssl` / `curl` 与 `SSLKEYLOGFILE` 解密为命令口径，**未实测**。
 
-## 一、一句话定位：HTTPS 解决什么
+---
+
+## 一、HTTPS 解决什么问题？
+
 HTTP 全程明文，链路上任何一台设备都能看到并改写内容。TLS 解决的是**三大风险**：
 
 | 风险 | 含义 | TLS 的对策 |
@@ -19,9 +26,10 @@ HTTP 全程明文，链路上任何一台设备都能看到并改写内容。TLS
 
 ![HTTPS 的分层封装：HTTP 报文交给 TLS 记录层，再依次交给 TCP、IP 与链路层帧，TLS 就是夹在中间的那一层](images/HTTPS的分层封装结构.svg)
 
-握手的前提是 **TCP 三次握手已完成**（见 [TCP三次握手.md](tcp/TCP三次握手.md)）——TLS 的 RTT 是**叠加在 TCP 之上**的额外开销，这也是后面为什么要压缩握手往返。另外，HTTPS 默认**只认证服务器**（单向认证），要认证客户端必须上 **mTLS**（第八、九节）。
+握手的前提是 **TCP 三次握手已完成**（见 [TCP三次握手.md](tcp/TCP三次握手.md)）——TLS 的 RTT 是**叠加在 TCP 之上**的额外开销，这也是后面为什么要压缩握手往返。另外，HTTPS 默认**只认证服务器**（单向认证），要认证客户端必须上 **mTLS**（第九节）。
 
-## 二、TLS 与 SSL 的关系
+## 二、TLS 与 SSL 是什么关系？
+
 SSL 由 Netscape 发明，**SSL 3.0（1996）是最后一版**，之后改名交给 IETF 标准化，这条线就是 TLS：
 
 | 版本 | 状态 | 说明 |
@@ -35,7 +43,9 @@ SSL 由 Netscape 发明，**SSL 3.0（1996）是最后一版**，之后改名交
 
 ![SSL 到 TLS 的版本演进时间轴：1996 最后一版 SSL、1999/2006/2008/2018 四个 TLS 版本与 2020 年浏览器禁用事件](images/SSL与TLS版本演进时间轴.svg)
 
-## 三、TLS 1.2 完整握手 ⭐
+图注：SSL 到 TLS 的版本演进时间轴：1996 最后一版 SSL、1999/2006/2008/2018 四个 TLS 版本与 2020 年浏览器禁用事件。
+
+## 三、TLS 1.2 的完整握手是怎么走的？⭐
 
 ### 3.1 前提与目标
 - 前提：**TCP 三次握手已完成**，双方在 TCP 之上开始 TLS 握手。目标：① 协商一套密码参数；② **安全地**协商出一个只有双方知道的对称会话密钥。
@@ -125,7 +135,9 @@ Session Keys: client_write_key / server_write_key
 
 ![TLS 1.2 会话密钥的三级推导：PMS 经两次 PRF 得到 Master Secret 与密钥块，再切成收发方向各自的六项](images/会话密钥三级推导的数据流转.svg)
 
-## 四、TLS 1.3 的变化 ⭐
+图注：TLS 1.2 会话密钥的三级推导：PMS 经两次 PRF 得到 Master Secret 与密钥块，再切成收发方向各自的六项。
+
+## 四、TLS 1.3 改了哪些地方？⭐
 
 ### 4.1 1-RTT 握手：客户端先「赌」密钥交换参数
 省掉一个 RTT 的核心手段是 **客户端在 ClientHello 里直接带上 `key_share`（自己的临时公钥）**，把原本第二轮才做的事提前：
@@ -183,6 +195,8 @@ Client                                                Server
 
 ![TLS 1.2 与 TLS 1.3 握手并排对比：2-RTT 对 1-RTT，以及前向安全、证书可见性与套件/密钥推导的差别](images/TLS1.2与1.3握手对比.svg)
 
+图注：TLS 1.2 与 TLS 1.3 握手并排对比：2-RTT 对 1-RTT，以及前向安全、证书可见性与套件/密钥推导的差别。
+
 ### 4.5 扩展阅读：ECH 与 `HTTPS` / `SVCB` 记录的关系
 
 TLS 1.3 把**证书**加密了（4.1 的步骤 ④），但 **`ClientHello` 里的 SNI 仍然是明文**——中间设备照样能看到你在访问哪个域名。**ECH（Encrypted Client Hello）** 要解决的正是这一处泄露。
@@ -204,7 +218,8 @@ ECH 恰好**同时需要**这两件事才能成立。
 > ⚠️ 本节只作**扩展阅读**，不代表当前部署现状：ECH 的浏览器与服务端支持仍在演进；
 > 而且它保护的只是「客户端到服务端这一段的域名可见性」，不影响证书验证与后续的应用层行为。
 
-## 五、会话复用
+## 五、会话是怎么复用的？
+
 每次完整握手都要做非对称运算（尤其 RSA 私钥解密极耗 CPU），连接量大时开销可观。思路是**协商一次、多次使用**。
 
 ### 5.1 Session ID vs Session Ticket
@@ -220,6 +235,8 @@ Session Ticket 因为无状态、利于横向扩容，是主流 CDN / 负载均�
 
 ![会话复用的两条路线：Session ID 把状态放服务端（须命中同一节点），Session Ticket 把加密后的状态放客户端（任意节点可解票）](images/会话复用的两条路线对比.svg)
 
+图注：会话复用的两条路线：Session ID 把状态放服务端（须命中同一节点），Session Ticket 把加密后的状态放客户端（任意节点可解票）。
+
 ### 5.2 TLS 1.3 的 PSK / 0-RTT
 1.3 把上面两者统一成 **PSK**：**外部 PSK**（预置共享密钥，IoT / 内部服务）与**恢复 PSK**（由上次握手的 `resumption_master_secret` 推导，即新一代 Session Ticket）。客户端在 ClientHello 带 `pre_shared_key` + `early_data` 扩展，服务端接受后，**Finished 之前的 application data 就是 early data**。
 
@@ -230,7 +247,7 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 
 正确做法：集群**共享同一份** ticket key（Nginx `ssl_session_ticket_key`，可配多份平滑轮转）、**定期轮换（建议 ≤ 24h）**；追求更强前向安全可直接 `ssl_session_tickets off`。
 
-## 六、证书：握手视角下的要点
+## 六、握手现场是怎么用证书的？
 
 ### 6.1 X.509 结构速览
 
@@ -246,7 +263,7 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 
 ### 6.2 信任链、自签与 Let's Encrypt
 - **信任链** = leaf（站点证书）→ intermediate（中间 CA）→ root（根 CA，预置在信任库）。服务端必须在 Certificate 消息里发出**除根以外的完整链**。
-- **自签名证书**：不在任何信任库里 → 客户端必须显式配置信任（见第八、九节的 `RootCAs` / TrustStore），否则报错；仅用于内网与开发环境。
+- **自签名证书**：不在任何信任库里 → 客户端必须显式配置信任（见第九节的 `RootCAs` / TrustStore），否则报错；仅用于内网与开发环境。
 - **Let's Encrypt + ACME**：**HTTP-01**（放 token 到 `/.well-known/acme-challenge/`，需 80 端口可达）、**DNS-01**（写 `_acme-challenge` TXT 记录，**支持通配符证书**，无公网 80 时首选）、TLS-ALPN-01。**有效期 90 天，必须自动续期**（certbot / acme.sh / cert-manager）。
 - **证书固定（Certificate Pinning）**：把服务器的公钥 / 证书哈希硬编码进 App（Android `network-security-config`、iOS Trust Evaluation、OkHttp `CertificatePinner`、Go `VerifyPeerCertificate`），只接受这一个。优点是抗「恶意 / 被攻破的 CA 签发了假证书」；⚠️ 风险是**证书轮换或到期而 App 未更新 ⇒ 大面积不可用**，且用户无法自助修复。现代实践更推荐依赖 **CT（证书透明度）** + 受控 CA 列表，或至少配置**备用 pin**。
 
@@ -261,7 +278,7 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 | 拿到的证书不是自己的 | **SNI 未匹配**：同 IP 多域名，客户端没带 SNI 或服务端默认虚拟主机配错 |
 | 只在部分网络下握手失败 | 中间透明代理 / 老 WAF / 负载均衡固件不支持 TLS 1.3（见第十节） |
 
-## 七、抓包与排障
+## 七、怎么抓包与排障？
 
 ### 7.1 Wireshark 看握手
 
@@ -304,9 +321,26 @@ echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/
 ```
 （-servername 一定要带上，否则多域名站点会取到默认虚拟主机的证书，现象就是「域名不匹配」。）
 
-## 八、使用一：Go ⭐
+## 八、应用场景
 
-### 8.1 起一个 HTTPS 服务
+**本节要点**：TLS 的落点是「加密与身份」这一层，链路里凡是需要终止或透传加密的设备都会碰到它。
+
+| 场景 | 涉及哪一块 | 为什么值得注意 |
+|---|---|---|
+| 反向代理 / 网关的 TLS 卸载 | 证书与 SNI | 卸载点在哪一跳，决定上游看到的是什么，详见 [反向代理原理与实现.md](反向代理原理与实现.md) 第四节 |
+| 全站 HTTPS 与 HSTS | 重定向与首访 | 首访明文跳一次是常见漏洞点，详见 本篇 10.1 |
+| 客户端连接失败 | 证书链与校验 | 「只在部分网络下失败」多半是中间设备，详见 本篇 6.3 |
+| 抓包看不到明文 | TLS 记录层 | `SSLKEYLOGFILE` 才能解密，详见 本篇 7.2 |
+| 服务间 mTLS | 双向认证 | 内网零信任的基础，详见 本篇 9.1 |
+| 握手耗时优化 | 会话复用与 0-RTT | 缩短或省掉一趟往返，详见 本篇第五节 |
+
+## 九、具体使用
+
+**本节要点**：Go 侧用标准库 `crypto/tls` 拼出服务端与客户端，Java 侧先用 `keytool` 备好 KeyStore 与 TrustStore，再初始化 `SSLContext`。
+
+### 9.1 Go
+
+#### 起一个 HTTPS 服务
 最简写法是 `http.ListenAndServeTLS(":443", "fullchain.pem", "server.key", nil)`；生产要自己控 TLS 参数就用 `http.Server` + `TLSConfig`：
 
 ```go
@@ -331,7 +365,7 @@ log.Fatal(srv.ListenAndServeTLS("fullchain.pem", "server.key"))
 
 > ⚠️ 证书文件必须是 **fullchain**（服务器证书在前、中间证书在后），否则就是 6.3 里的「链不完整」。Go 1.18 起 `PreferServerCipherSuites` 已失效并标记废弃（服务端始终按自身偏好选择），不要再依赖它。
 
-### 8.2 mTLS 双向认证 ⭐
+#### mTLS 双向认证 ⭐
 **服务端**要求并校验客户端证书：
 
 ```go
@@ -377,7 +411,7 @@ resp, err := client.Post("https://api.internal:8443/pay", "application/json", bo
 > ⚠️ `ClientAuth` 取值别搞混：`NoClientCert`（默认不要求）、`RequestClientCert`（要但不校验，**几乎没有安全意义**）、`RequireAnyClientCert`（要且必须有，但不校验签发者）、⭐ **`RequireAndVerifyClientCert`（要求并用 ClientCAs 完整校验，生产用这个）**、`VerifyClientCertIfGiven`。
 > ⚠️ **`RequireAndVerifyClientCert` 不会查 CRL / OCSP**，要吊销客户端得自己在 `VerifyPeerCertificate` 里比对序列号黑名单，或改用短期证书 + 自动轮换。
 
-### 8.3 客户端自定义 tls.Config（含自签 CA）
+#### 客户端自定义 tls.Config（含自签 CA）
 
 ```go
 caPEM, _ := os.ReadFile("ca.crt")              // 自签 / 内部 CA 根证书
@@ -397,7 +431,7 @@ client := &http.Client{Transport: &http.Transport{TLSClientConfig: cfg}}
 
 > ⚠️ **`InsecureSkipVerify: true` 同时跳过证书校验与域名校验，等于放任中间人冒充**。自签证书的正确做法是上面的 `RootCAs`，而不是跳过校验——安全扫描工具会直接把前者判为高危。
 
-### 8.4 `tls.Config` 常用字段
+#### `tls.Config` 常用字段
 
 | 字段 | 作用 |
 |---|---|
@@ -406,10 +440,9 @@ client := &http.Client{Transport: &http.Transport{TLSClientConfig: cfg}}
 | `RootCAs` / `ClientCAs` | 客户端 / 服务端使用的信任根池 |
 | `Certificates` / `GetCertificate` | 本端密钥对；多域名站点用后者按 SNI 动态返回 |
 | `InsecureSkipVerify` | ⚠️ **生产禁用**（会同时跳过证书与域名校验） |
+### 9.2 Java
 
-## 九、使用二：Java ⭐
-
-### 9.1 先分清 KeyStore 与 TrustStore ⭐
+#### 先分清 KeyStore 与 TrustStore ⭐
 
 | 名称 | 装什么 | 谁用 |
 |---|---|---|
@@ -420,7 +453,7 @@ JSSE 四个核心类：`SSLContext`（配置入口，由它产出 `SSLSocketFact
 
 > JVM 默认 TrustStore 是 `$JAVA_HOME/lib/security/cacerts`（密码 `changeit`）。⚠️ 老 JDK 的 cacerts 缺新根（如 Let's Encrypt 的 ISRG Root X1），会报 `PKIX path building failed`，需升级 JDK 或用 `-Djavax.net.ssl.trustStore` 指定。
 
-### 9.2 初始化 SSLContext
+#### 初始化 SSLContext
 
 ```java
 public static SSLContext create(Path keyStore, char[] ksPass,
@@ -443,7 +476,7 @@ public static SSLContext create(Path keyStore, char[] ksPass,
 }
 ```
 
-### 9.3 客户端怎么用 ⭐
+#### 客户端怎么用 ⭐
 **① JDK 原生 `HttpsURLConnection`**
 
 ```java
@@ -484,7 +517,7 @@ CloseableHttpClient httpclient = HttpClients.custom()
 
 > ⚠️ **绝不要在生产使用「信任所有证书」的 TrustManager**（网上流传的 `checkServerTrusted(...) {}` 空实现）——它让 HTTPS 退化成「只加密不认证」，中间人拿自签证书就能解密全部流量，Android / iOS 与合规扫描也会直接判定不通过；自签场景的正确做法是把内部 CA 加进 TrustStore。另外用 IP 访问 HTTPS 会因主机名校验失败，应使用证书里的 SAN 名作为 hostname，而**不是**把 `HostnameVerifier` 覆盖成总是通过。
 
-### 9.4 Spring Boot 开启 HTTPS
+#### Spring Boot 开启 HTTPS
 
 ```yaml
 server:
@@ -519,7 +552,7 @@ keytool -list -v -keystore server.p12 -storepass changeit
 ```
 （`-ext "SAN=..."` 必须写：现代 JDK 与浏览器**只认 SAN**，`CN` 匹配已废弃，少了它就报 `No subject alternative names present`。）
 
-## 十、生产实践与坑
+## 十、生产实践中有哪些坑？
 
 ### 10.1 全站 HTTPS 与 HSTS
 全站 HTTPS + HTTP 301 跳转，再加 **HSTS**：`Strict-Transport-Security: max-age=31536000; includeSubDomains`。⭐ 浏览器会**记住**该域名只走 HTTPS，省掉一次跳转 RTT，还能挡 SSL Stripping 降级攻击。⚠️ `preload`（提交进浏览器内置列表）基本**不可回退**：一旦上线，某个子域名暂时没 HTTPS 就彻底打不开，务必确认全站（含所有子域）就绪再加。
@@ -550,7 +583,8 @@ resolver 8.8.8.8 valid=300s;
 - ⚠️ **中间设备导致握手失败**：企业出口代理、老 WAF、部分负载均衡固件**解析不了 TLS 1.3 的新记录格式与扩展**，只有部分网络用户受影响；排查用 `openssl s_client -tls1_2` 与 `-tls1_3` 对比，短期可针对该来源降级。带 SNI 拦截的透明代理会签发自己的证书，只能靠客户端信任库 / 证书固定发现。
 - ⚠️ HTTP/3 over QUIC 走 **UDP 443**，不少防火墙直接丢 UDP，表现为「网站时而打不开」；MTU / 分片问题（DF 位 + ICMP 被禁的 PMTUD 黑洞）会让 TLS 记录变大后偶发连接挂起。
 
-## 十一、延伸追问
+## 延伸追问
+
 - **HTTPS 握手过程？和 TCP 握手什么关系？** → TCP 三次握手先建立连接；TLS 在 TCP 之上再走：ClientHello → ServerHello → Certificate →（ECDHE 时）ServerKeyExchange → ServerHelloDone → ClientKeyExchange → 双方 ChangeCipherSpec + Finished，之后对称加密传数据。**TLS 的 RTT 是叠加在 TCP 之上的额外开销**。
 - **HTTPS 是不是一个新协议？** → ⚠️ **不是**。它在 TCP 与 HTTP 之间插了一层 TLS，HTTP 报文原封不动交给 TLS 加密后再交 TCP，即 HTTP over TLS（同理还有 gRPC over TLS）。
 - **TLS 1.2 与 1.3 最大的区别？** → ① 2-RTT → **1-RTT**（客户端提前在 ClientHello 带 `key_share`）；② **删除 RSA / 静态 DH，强制前向安全**；③ 套件精简到 5 个、只留 AEAD、交换与认证分离；④ **Hello 之后立刻加密，服务器证书也被加密**（1.2 里是明文）；⑤ PRF → **HKDF**。
@@ -568,11 +602,12 @@ resolver 8.8.8.8 valid=300s;
 
 ## 关联
 
-- [数字证书与PKI.md](../../06-工程实践/安全/数字证书与PKI.md) — 证书与信任链的基础概念（单一来源）
-- [加密算法.md](../../06-工程实践/安全/加密算法.md) — 握手协商的套件从哪来
-- [DNS解析.md](DNS解析.md) — SNI 与 ECH 依赖的 `HTTPS`/`SVCB` 记录、DoH 与 DNSSEC 的分工
-- [QUIC与HTTP3.md](QUIC与HTTP3.md) — ALPN 协商与内嵌 TLS 1.3
-- [HTTP与gRPC.md](HTTP与gRPC.md) — h2 的事实前提是 TLS 与 ALPN
-- [TCP三次握手.md](tcp/TCP三次握手.md) — TLS 握手的 RTT 叠加在 TCP 之上
+- **上游/总纲**：[网络分层与数据包旅程.md](网络分层与数据包旅程.md) — HTTPS 的封装顺序：HTTP → TLS → TCP
+- **对照/互补**：[QUIC与HTTP3.md](QUIC与HTTP3.md) — ALPN 协商与内嵌 TLS 1.3
+- **对照/互补**：[HTTP与gRPC.md](HTTP与gRPC.md) — `h2` 的事实前提是 TLS 与 ALPN
+- **对照/互补**：[tcp/TCP三次握手.md](tcp/TCP三次握手.md) — TLS 握手的 RTT 叠加在 TCP 之上
+- **对照/互补**：[DNS解析.md](DNS解析.md) — SNI 与 ECH 依赖的 `HTTPS` / `SVCB` 记录、DoH 与 DNSSEC 的分工
+- **下游机制**：[数字证书与PKI.md](../../06-工程实践/安全/数字证书与PKI.md) — 证书与信任链的基础概念（单一来源）
+- **下游机制**：[加密算法.md](../../06-工程实践/安全/加密算法.md) — 握手协商的套件从哪来
 
-> 反向引用（本篇被下列文档引到）：[HTTP客户端与连接池.md](../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[08-WWW服务器.md](../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[抓包实战.md](抓包实战.md)、[网络分层与数据包旅程.md](网络分层与数据包旅程.md)、[网络通信链路详解.md](网络通信链路详解.md)、[OpenResty.md](../../03-数据与中间件/中间件/网关与代理/OpenResty.md)、[文件存储与上传架构.md](../../04-架构与系统/系统设计/文件存储与上传架构.md)、[Web攻击与防御.md](../../06-工程实践/安全/Web攻击与防御.md)、[密码与敏感信息存储.md](../../06-工程实践/安全/密码与敏感信息存储.md)、[摘要与数字签名.md](../../06-工程实践/安全/摘要与数字签名.md)
+> 反向引用（本篇被下列文档引到）：[HTTP客户端与连接池.md](../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[08-WWW服务器.md](../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)、[抓包实战.md](抓包实战.md)、[网络通信链路详解.md](网络通信链路详解.md)、[OpenResty.md](../../03-数据与中间件/中间件/网关与代理/OpenResty.md)、[文件存储与上传架构.md](../../04-架构与系统/系统设计/文件存储与上传架构.md)、[Web攻击与防御.md](../../06-工程实践/安全/Web攻击与防御.md)、[密码与敏感信息存储.md](../../06-工程实践/安全/密码与敏感信息存储.md)、[摘要与数字签名.md](../../06-工程实践/安全/摘要与数字签名.md)

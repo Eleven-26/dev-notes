@@ -1,12 +1,12 @@
 # QUIC 与 HTTP/3
 
-> HTTP/3 为什么把 TCP 换掉、QUIC 在 UDP 之上重建了哪些东西、0-RTT 与连接迁移怎么工作，
-> 以及浏览器**怎么知道**该不该走 HTTP/3（DNS 宣告与 `Alt-Svc` 两条路径，以及失败如何回退）。
+> 覆盖：HTTP/3 为什么把 TCP 换掉、QUIC 在 UDP 之上重建了哪些能力、0-RTT 与连接迁移怎么工作，以及浏览器怎么知道该不该走 HTTP/3（DNS 宣告与 `Alt-Svc` 两条路径，以及失败如何回退）。
 >
-> 内容整理自个人学习笔记；**第三节的 SVCB 与 ALPN 是本机实测**（Windows 11，2026-09-30）。
-> TCP 侧细节见 [tcp/](tcp/) 五篇，TLS 见 [HTTPS与TLS.md](HTTPS与TLS.md)，
-> UDP 的基础语义见 [UDP与数据报传输.md](UDP与数据报传输.md)，
-> 协议选型见 [通信选型.md](通信选型.md)，链路与逐跳见 [网络通信链路详解.md](网络通信链路详解.md)。
+> 不覆盖：TCP 的握手、挥手与窗口见 [tcp/](tcp/) 五篇；TLS 握手与 ALPN 见 [HTTPS与TLS.md](HTTPS与TLS.md)；UDP 的基础语义见 [UDP与数据报传输.md](UDP与数据报传输.md)；协议选型见 [通信选型.md](通信选型.md)；链路与逐跳见 [网络通信链路详解.md](网络通信链路详解.md)。
+>
+> 内容整理自个人学习笔记，素材见 [素材清单](../../素材清单.md)。
+>
+> ✅ 实测口径：第三节的 SVCB 与 ALPN 查询为**本机实测**（Windows 11，2026-09-30）；⚠️ **未实测**真实站点走 HTTP/3 的完整链路（本机 curl 不支持 HTTP/3）。
 
 ---
 
@@ -225,7 +225,7 @@ Protocols: dict file ftp ftps http https imap imaps ipfs ipns mqtt pop3 pop3s sm
 （需要 ngtcp2 / quiche 之类的 QUIC 后端）。所以**本文没有做"端到端 HTTP/3 往返"的实测**，
 只做到"宣告（SVCB）+ 协商（ALPN）"这两步可实测的部分。
 
-## 四、QUIC 的代价与现状
+## 四、QUIC 的代价与现状如何？
 
 **本节要点**：QUIC 不是"更快的 TCP"，它把问题从"协议先进不先进"换成了**"UDP 在你的网络里好不好使"**。
 
@@ -246,7 +246,22 @@ Protocols: dict file ftp ftps http https imap imaps ipfs ipns mqtt pop3 pop3s sm
 
 ---
 
-## 使用：怎么确认一个站点支不支持 HTTP/3
+## 五、应用场景
+
+**本节要点**：HTTP/3 的落点是「弱网与移动网络下的首屏」，它是应用层多路复用被传输层连坐逼出来的解法。
+
+| 场景 | 涉及哪一块 | 为什么值得注意 |
+|---|---|---|
+| 弱网 / 高丢包链路 | 流级重传 | 一个流丢包不再阻塞其他流，详见 本篇 1.2 |
+| 移动端网络切换 | 连接迁移（Connection ID） | 从 Wi-Fi 切 4G 不断连，详见 本篇 2.4 |
+| CDN / 边缘节点 | 两条发现路径 | DNS `HTTPS` / `SVCB` 与 `Alt-Svc`，详见 本篇第三节 |
+| 首访省一趟往返 | 0-RTT（early data） | ⚠️ 有重放风险，详见 本篇 2.3 |
+| 网关与中间设备 | UDP 放行 / 回退 | UDP 被拦要能回退到 h2，详见 本篇 3.4 |
+| 协议选型 | h2 与 h3 的取舍 | 详见 [通信选型.md](通信选型.md) |
+
+## 六、具体使用
+
+**本节要点**：确认一个站点支不支持 HTTP/3，有 DNS 与命令行两条路径。
 
 ```bash
 # ① 看 DNS 有没有宣告 h3（路径一）—— 需要能查 type 65 的工具
@@ -293,16 +308,13 @@ curl -sSI https://<域名>/ | grep -i '^alt-svc'
 
 ## 关联
 
-- [UDP与数据报传输.md](UDP与数据报传输.md) — QUIC 的载体：UDP 的数据报语义与「应用层要补什么」
-- [TCP三次握手.md](tcp/TCP三次握手.md) — QUIC 把这里的三次握手压成了 1-RTT（甚至 0-RTT）的对照
-- [TCP四次挥手.md](tcp/TCP四次挥手.md) — QUIC 没有 `TIME_WAIT`：包号不复用，退出更干净
-- [TCP滑动窗口.md](tcp/TCP滑动窗口.md) — QUIC 的流控是「流级 + 连接级」两层，这里是单层
-- [HTTPS与TLS.md](HTTPS与TLS.md) — QUIC 内嵌 TLS 1.3，ALPN 与证书都来自这里
-- [HTTP与gRPC.md](HTTP与gRPC.md) — 应用层多路复用在 h2 与 h3 下的差别
-- [DNS解析.md](DNS解析.md) — `HTTPS` / `SVCB` 记录属于资源记录类型，HTTP/3 的第一条入口在这里
-- [IP与路由基础.md](IP与路由基础.md) — QUIC 的初始数据报为什么限制在 1200 字节附近
-- [通信选型.md](通信选型.md) — 什么时候该上 HTTP/3（以及什么时候不该）
-- [抓包实战.md](抓包实战.md) — QUIC 走 UDP 443，怎么在抓包里认出来
-- [TCP拥塞控制算法.md](TCP拥塞控制算法.md) — QUIC 可插拔的拥塞控制（CUBIC / BBR 在用户态）
-- [11-HTTP3与QUIC支持.md](../linux/深入理解Nginx/11-HTTP3与QUIC支持.md) — **Nginx 侧怎么用这个协议**：`--with-http_v3_module`、9 条 QUIC 指令、0-RTT 的 OpenSSL 3.5.1 门槛、`Alt-Svc`（本篇讲协议本身，那篇讲实现与配置）
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)、[霍夫曼树.md](../数据结构/树/霍夫曼树.md)、[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)
+- **上游/总纲**：[网络分层与数据包旅程.md](网络分层与数据包旅程.md) — HTTP/3 的封装顺序：HTTP/3 → QUIC → UDP → IP
+- **对照/互补**：[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) — 应用层多路复用与队头阻塞的起点
+- **对照/互补**：[HTTPS与TLS.md](HTTPS与TLS.md) — QUIC 内嵌 TLS 1.3，ALPN 与证书都来自这里
+- **对照/互补**：[UDP与数据报传输.md](UDP与数据报传输.md) — QUIC 的载体：UDP 的数据报语义
+- **对照/互补**：[tcp/TCP三次握手.md](tcp/TCP三次握手.md) — QUIC 把三次握手压成 1-RTT（甚至 0-RTT）的对照
+- **对照/互补**：[tcp/TCP四次挥手.md](tcp/TCP四次挥手.md) — QUIC 没有 `TIME_WAIT`：包号不复用，退出更干净
+- **对照/互补**：[tcp/TCP滑动窗口.md](tcp/TCP滑动窗口.md) — QUIC 的流控是「流级 + 连接级」两层
+- **下游机制**：[DNS解析.md](DNS解析.md) — `HTTPS` / `SVCB` 记录属于资源记录类型，HTTP/3 的第一条入口在这里
+
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)、[11-HTTP3与QUIC支持.md](../linux/深入理解Nginx/11-HTTP3与QUIC支持.md)、[霍夫曼树.md](../数据结构/树/霍夫曼树.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[抓包实战.md](抓包实战.md)、[通信选型.md](通信选型.md)

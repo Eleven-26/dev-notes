@@ -1,13 +1,12 @@
 # IP 与路由基础
 
-> 网络层怎么寻址、怎么选下一跳：IP 地址与 CIDR、路由表与最长前缀匹配、ARP/NDP、ICMP、TTL/Hop Limit，以及 MTU 与分片（含排障）。
+> 覆盖：网络层怎么寻址、怎么选下一跳 —— IP 地址与 CIDR、路由表与最长前缀匹配、ARP/NDP、ICMP、TTL/Hop Limit，以及 MTU 与分片（含排障）。
 >
-> 内容整理自个人学习笔记；机制口径依据 RFC 791 / RFC 8200 / RFC 1191 / RFC 8201 / RFC 4861，参考标准见文末。
+> 不覆盖：「一个包在本机怎么被逐层造出来」的分层概览见 [网络分层与数据包旅程.md](网络分层与数据包旅程.md)；NAT / conntrack、运营商 AS/BGP、CDN、负载均衡与回程路径等端到端链路问题见 [网络通信链路详解.md](网络通信链路详解.md)；TCP 的重传与拥塞控制见 [tcp/](tcp/)；UDP 的数据报语义见 [UDP与数据报传输.md](UDP与数据报传输.md)。
 >
-> ⭐ **分工**：本篇讲**网络层的机制**——地址怎么分段、同网段怎么判断、包怎么被选到下一跳、地址怎么解析成 MAC、MTU 不够时发生什么。
-> 「一个包在本机怎么被逐层造出来」的分层概览见 [网络分层与数据包旅程.md](网络分层与数据包旅程.md)；
-> **NAT / conntrack、运营商 AS/BGP、CDN、负载均衡、回程路径**这些端到端链路问题见 [网络通信链路详解.md](网络通信链路详解.md)（本篇不重复）；
-> TCP 层的重传与拥塞控制见 [tcp/](tcp/)，UDP 的数据报语义见 [UDP与数据报传输.md](UDP与数据报传输.md)。
+> 内容整理自个人学习笔记，机制口径依据 RFC 791 / RFC 8200 / RFC 1191 / RFC 8201 / RFC 4861，素材见 [素材清单](../../素材清单.md)。
+>
+> ⚠️ 实测口径：本篇以机制说明与命令口径为主，「具体使用」一节的命令为 Linux 侧，**本机为 Windows，未实测**。
 
 ---
 
@@ -184,7 +183,7 @@ IP 提供的是**无连接、尽力而为**（best-effort）的投递：
 
 ---
 
-## 六、ARP 与 NDP：IP 怎么变成 MAC？
+## 六、ARP 与 NDP：IP 是怎么变成 MAC 的？
 
 **本节要点**：两者的职责完全相同——**「这个 IP 对应哪个 MAC」**；差别在**广播 vs 组播、RFC 定义的位置、以及有没有内建的安全机制**（都没有）。
 
@@ -308,9 +307,26 @@ NDP 是 ICMPv6 的一组消息，**一对多地替代了 ARP 的职责**：
 
 ---
 
-## 使用：网络层排查的固定套路
+## 九、应用场景
 
-### 1. 先看本机地址、路由与邻居表
+**本节要点**：网络层的每个知识点，都对应一条排障动线或一处系统配置。
+
+| 场景 | 用到网络层的哪一块 | 为什么值得注意 |
+|---|---|---|
+| 容器网络（veth / bridge / DNAT） | 地址分配 + 路由 + NAT | 容器地址与路由由宿主侧代管，详见 [网络与存储.md](../../06-工程实践/部署/docker/网络与存储.md) |
+| 网关 / 负载均衡 | 最长前缀匹配 + DNAT | 选中哪条路由、DNAT 改了什么，详见 [网络通信链路详解.md](网络通信链路详解.md) 第三节 |
+| 「小包正常、大包卡住」 | MTU / 分片 / PMTUD | 典型 PMTUD 黑洞，详见 本篇第八节与 [抓包实战.md](抓包实战.md) 3.3 |
+| 云主机绑定不上 / 偶发丢地址 | ARP / NDP 与链路层可达性 | 邻居表 `INCOMPLETE` / `FAILED` 就是地址解析没成，详见 本篇第六节 |
+| 防火墙放行规则 | 五元组（IP + 端口 + 协议） | 规则匹配的正是网络层与传输层字段，详见 [04-防火墙与NAT.md](../linux/鸟哥服务器架设篇/04-防火墙与NAT.md) |
+| 双栈环境访问异常 | IPv4 / IPv6 地址选择 | 解析出 AAAA 却无 IPv6 路由会先卡住，详见 本篇 5.3 |
+
+## 十、具体使用
+
+**本节要点**：网络层排查的顺序是「先看本机地址与路由 → 再验证连通性与路径 → 最后抓包看 ICMP」，三步能定位大部分「不通」与「半通」。
+
+### 10.1 网络层排查的固定套路
+
+#### 先看本机地址、路由与邻居表
 
 ```bash
 # ① 地址与掩码：确认「我在哪个网段」
@@ -333,7 +349,7 @@ netsh interface ipv6 show neighbors
 
 ⭐ **三张表要连起来读**：先看地址判断同网段/跨网段 → 再看路由表确认下一跳 → 最后看邻居表确认 MAC 有没有解析出来。**邻居表里那条是 `INCOMPLETE`/`FAILED`，就卡在第六节说的地址解析上。**
 
-### 2. 再验证连通性与路径
+#### 再验证连通性与路径
 
 ```bash
 # 分层确认：哪一族通
@@ -352,7 +368,7 @@ ping -M do -s 1452 2001:db8::80   # IPv6：1452 + 40 + 8 = 1500
 ping -f -l 1472 192.0.2.80
 ```
 
-### 3. 抓包看 ICMP（先定位再抓包）
+#### 抓包看 ICMP（先定位再抓包）
 
 ```bash
 # 只看 ICMP / ICMPv6：确认「有没有人告诉我包太大了」
@@ -363,7 +379,7 @@ tcpdump -ni any icmp6
 tcpdump -ni any 'ip[6] & 0x20 != 0'
 ```
 
-### 4. 三条常见故障的判据
+#### 三条常见故障的判据
 
 | 症状 | 第一步查什么 | 结论 |
 |---|---|---|
@@ -389,21 +405,12 @@ tcpdump -ni any 'ip[6] & 0x20 != 0'
 
 ## 关联
 
-- [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — **上游**：分层模型与一次封装的完整示意（本篇负责它收窄掉的网络层细节）
-- [UDP与数据报传输.md](UDP与数据报传输.md) — **下游**：UDP 大包与 IP 分片的实际关系
-- [网络通信链路详解.md](网络通信链路详解.md) — NAT / conntrack、AS/BGP、CDN / LB 与端到端排查（本篇不重复）
-- [tcp/TCP报文结构.md](tcp/TCP报文结构.md) — MSS 是 TCP 选项，与本文的 MTU 直接相关
-- [tcp/TCP三次握手.md](tcp/TCP三次握手.md) — 握手建立在对端地址可达的前提上
-- [DHCP.md](DHCP.md) — 四个网络参数（IP / 掩码 / 网关 / DNS）从哪来
-- [抓包实战.md](抓包实战.md) — ICMP 与分片在抓包里长什么样
-- [Docker网络与镜像源.md](../../06-工程实践/部署/docker/Docker网络与镜像源.md) — 容器网络里的 veth / bridge / DNAT 是同一套机制
-- [K8s部署流程.md](../../06-工程实践/部署/k8s/K8s部署流程.md) — Service / CNI 与 Pod MTU 的由来
+- **上游/总纲**：[网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 五层模型与本机封装过程
+- **对照/互补**：[网络通信链路详解.md](网络通信链路详解.md) — NAT / AS / BGP / CDN 与回程路径
+- **对照/互补**：[UDP与数据报传输.md](UDP与数据报传输.md) — 传输层的数据报语义
+- **下游机制**：[抓包实战.md](抓包实战.md) — 在报文里看 ICMP 与分片
+- **下游机制**：[网络与存储.md](../../06-工程实践/部署/docker/网络与存储.md) — 容器网络里的地址与 NAT
+- **对照/互补**：[04-防火墙与NAT.md](../linux/鸟哥服务器架设篇/04-防火墙与NAT.md) — NAT 与过滤规则
+- **对照/互补**：[03-网络基础与规划.md](../linux/鸟哥服务器架设篇/03-网络基础与规划.md) — 网段划分与地址规划
 
-> 参考标准与官方文档：
->
-> - IPv4：[RFC 791](https://www.rfc-editor.org/rfc/rfc791.html)；IPv4 分片与 PMTUD：[RFC 1191](https://www.rfc-editor.org/rfc/rfc1191.html)
-> - IPv6：[RFC 8200](https://www.rfc-editor.org/rfc/rfc8200.html)；IPv6 PMTUD：[RFC 8201](https://www.rfc-editor.org/rfc/rfc8201.html)；PLPMTUD：[RFC 8899](https://www.rfc-editor.org/rfc/rfc8899.html)
-> - NDP / SLAAC：[RFC 4861](https://www.rfc-editor.org/rfc/rfc4861.html)、[RFC 4862](https://www.rfc-editor.org/rfc/rfc4862.html)
-> - 文档专用地址：[RFC 5737](https://www.rfc-editor.org/rfc/rfc5737.html)（IPv4）、[RFC 3849](https://www.rfc-editor.org/rfc/rfc3849.html)（IPv6）
-> - 地址选择：[RFC 6724](https://www.rfc-editor.org/rfc/rfc6724.html)；Happy Eyeballs：[RFC 8305](https://www.rfc-editor.org/rfc/rfc8305.html)
-> 反向引用（本篇被下列文档引到）：[DNS解析.md](DNS解析.md)、[QUIC与HTTP3.md](QUIC与HTTP3.md)、[TCP滑动窗口.md](tcp/TCP滑动窗口.md)
+> 反向引用（本篇被下列文档引到）：[DHCP.md](DHCP.md)、[DNS解析.md](DNS解析.md)、[TCP滑动窗口.md](tcp/TCP滑动窗口.md)

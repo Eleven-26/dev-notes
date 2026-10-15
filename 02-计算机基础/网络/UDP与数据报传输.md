@@ -1,13 +1,12 @@
 # UDP 与数据报传输
 
-> UDP 的数据报语义、8 字节首部与校验和规则、它**明确不提供**哪些保证、应用层该补什么、MTU 与分片的代价，以及 Go / Java 的最小收发写法与抓包诊断。
+> 覆盖：UDP 的数据报语义、8 字节首部与校验和规则、它**明确不提供**哪些保证、应用层该补什么、MTU 与分片的代价，以及 Go / Java 的最小收发写法与抓包诊断。
 >
-> 内容整理自个人学习笔记；UDP 基本规范依据 [RFC 768](https://www.rfc-editor.org/rfc/rfc768.html)，校验和与 IPv6 规则另见 [RFC 8200](https://www.rfc-editor.org/rfc/rfc8200.html)。
+> 不覆盖：QUIC 在上层重建的可靠传输与拥塞控制见 [QUIC与HTTP3.md](QUIC与HTTP3.md)；DNS 为什么用 UDP、什么时候回落 TCP / DoQ 见 [DNS解析.md](DNS解析.md)；UDP 与 TCP 的横向选型见 [通信选型.md](通信选型.md)；IP 分片与 MTU 的机制见 [IP与路由基础.md](IP与路由基础.md)。
 >
-> ⭐ **分工**：本篇专讲 **UDP 这一层**。QUIC 在上层重建的可靠传输与拥塞控制见 [QUIC与HTTP3.md](QUIC与HTTP3.md)；
-> DNS 为什么用 UDP、什么时候回落 TCP / DoQ 见 [DNS解析.md](DNS解析.md)；
-> UDP 与 TCP、消息队列的横向选型见 [通信选型.md](通信选型.md)；
-> IP 分片与 MTU 的机制细节见 [IP与路由基础.md](IP与路由基础.md)。
+> 内容整理自个人学习笔记，UDP 基本规范依据 [RFC 768](https://www.rfc-editor.org/rfc/rfc768.html)，校验和与 IPv6 规则另见 [RFC 8200](https://www.rfc-editor.org/rfc/rfc8200.html)，素材见 [素材清单](../../素材清单.md)。
+>
+> ⚠️ 实测口径：本篇代码只用标准库，**未在本机做运行时验证**（可编译，`go vet` / `gofmt` 通过），行为描述以 `net` 包文档与抓包口径为准。
 
 ---
 
@@ -183,11 +182,28 @@ IPv6 伪首部：源 IP(16) + 目的 IP(16) + 上层包长度(4) + 全 0(3) + �
 
 ---
 
-## 使用一：Go（最小收发：边界、超时与队列观测）
+## 八、应用场景
+
+**本节要点**：UDP 的价值在「少一层保证换低延迟与广播能力」，落点集中在实时通信与请求极小的场景。
+
+| 场景 | 为什么用 UDP | 为什么值得注意 |
+|---|---|---|
+| DNS 查询 | 一问一答、请求小，省掉握手 | 响应过大或被截断时回落 TCP，详见 [DNS解析.md](DNS解析.md) 第三节 |
+| DHCP | 客户端还没有 IP，只能广播 | DORA 依赖二层广播与 UDP 68→67，详见 [DHCP.md](DHCP.md) |
+| 音视频 / 游戏 | 丢一帧比等重传更好 | 抖动缓冲与丢包隐藏由应用层补，详见 [通信选型.md](通信选型.md) |
+| QUIC / HTTP/3 | 在 UDP 上重建可靠 + 加密 + 多路复用 | 用来避掉 TCP 层队头阻塞，详见 [QUIC与HTTP3.md](QUIC与HTTP3.md) |
+| 容器 / 网关的健康探测 | 无连接、开销小 | 心跳与超时全靠应用层自管 |
+| 埋点 / 日志上报 | 允许少量丢失、要低开销 | 幂等键与去重要在下游做，详见 本篇 4.2 |
+
+## 九、具体使用
+
+**本节要点**：UDP 的代码只有「发」与「收」两个动作，真正的工程量在**超时重试、幂等去重与丢包观测**这三件应用层补丁上。
+
+### 9.1 Go（最小收发：边界、超时与队列观测）
 
 > ⚠️ 本节代码只用标准库；**未在本机做运行时验证**（Windows 侧可编译，`go vet` / `gofmt` 通过），行为描述以 `net` 包文档为准。
 
-### 1. 服务端：一次读一个数据报
+#### 服务端：一次读一个数据报
 
 ```go
 package udpdemo
@@ -255,7 +271,7 @@ func mustResolve(addr string) *net.UDPAddr {
 }
 ```
 
-### 2. 客户端：超时重试与幂等键
+#### 客户端：超时重试与幂等键
 
 ```go
 package udpdemo
@@ -326,7 +342,7 @@ func QueryRetry(ctx context.Context, addr string, reqID uint32, payload []byte) 
 }
 ```
 
-### 3. 观测丢包：先看内核计数，再谈重试
+#### 观测丢包：先看内核计数，再谈重试
 
 ```bash
 # ① 本机 UDP 的收包/错误总览（Linux）
@@ -346,12 +362,11 @@ sudo tcpdump -ni any 'udp port <端口>' -c 20
 ⭐ 判据顺序：**抓包证明包到了本机 → 内核计数证明队列溢出 → 才轮到怀疑应用读取速度**。反过来先怀疑网络丢包，通常会白忙一场。
 
 ---
-
-## 使用二：Java（DatagramSocket / DatagramChannel）
+### 9.2 Java（DatagramSocket / DatagramChannel）
 
 > ⚠️ 本节 Java 代码按 JDK 17 书写，**未编译校验**；三条结论与 Go 侧一致。
 
-### 1. 阻塞式 `DatagramSocket`
+#### 阻塞式 `DatagramSocket`
 
 ```java
 package notes.net;
@@ -398,8 +413,7 @@ public class UdpEchoServer {
 > ⚠️ 两个 Java 侧的常见坑：① `DatagramSocket` **默认没有超时**——`receive()` 会永久阻塞，必须 `setSoTimeout(ms)`，否则一个线程就卡死了；② 想收广播必须 `setBroadcast(true)`，否则 `send` 到广播地址会抛异常。
 
 ---
-
-## 使用三：抓包与诊断
+### 9.3 抓包与诊断
 
 ```bash
 # ① 看某个 UDP 服务的流量（含端口与长度）
@@ -444,19 +458,13 @@ sudo tcpdump -ni any 'icmp[icmptype] == icmp-unreach'
 
 ## 关联
 
-- [IP与路由基础.md](IP与路由基础.md) — **上游**：MTU、IP 分片与 PMTUD 的机制（本篇第五节的前提）
-- [网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 传输层在分层模型里的位置与端口概念
-- [网络通信链路详解.md](网络通信链路详解.md) — UDP 也会受 NAT 会话超时影响（时效通常比 TCP 更短）
-- [tcp/TCP报文结构.md](tcp/TCP报文结构.md) — 对照 TCP 首部与「字节流没有边界」为什么需要长度前缀
-- [tcp/TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md) — TCP 侧的小包合并机制（UDP 没有对应物）
-- [QUIC与HTTP3.md](QUIC与HTTP3.md) — 在 UDP 之上重建可靠传输与拥塞控制的完整案例
-- [DNS解析.md](DNS解析.md) — 为什么 DNS 默认走 UDP 53、什么时候回落 TCP / DoQ
-- [通信选型.md](通信选型.md) — UDP 与 TCP、RPC、消息队列的横向选型
-- [抓包实战.md](抓包实战.md) — 抓包点选择与三类假象
+- **上游/总纲**：[网络分层与数据包旅程.md](网络分层与数据包旅程.md) — 传输层在五层模型里的位置
+- **对照/互补**：[tcp/TCP报文结构.md](tcp/TCP报文结构.md) — TCP 首部与 UDP 8 字节首部的对照
+- **对照/互补**：[通信选型.md](通信选型.md) — UDP 与 TCP、消息队列的横向选型
+- **下游机制**：[QUIC与HTTP3.md](QUIC与HTTP3.md) — 在 UDP 之上重建可靠传输
+- **下游机制**：[DNS解析.md](DNS解析.md) — 为什么 DNS 主用 UDP
+- **下游机制**：[DHCP.md](DHCP.md) — 广播式的一问一答
+- **对照/互补**：[IP与路由基础.md](IP与路由基础.md) — 分片与 MTU 的机制
+- **对照/互补**：[抓包实战.md](抓包实战.md) — UDP 报文的抓取与判读
 
-> 参考标准与官方文档：
->
-> - UDP 基本规范：[RFC 768](https://www.rfc-editor.org/rfc/rfc768.html)
-> - IPv4 / IPv6 首部与校验和规则：[RFC 791](https://www.rfc-editor.org/rfc/rfc791.html)、[RFC 8200](https://www.rfc-editor.org/rfc/rfc8200.html)
-> - IPv6 PMTUD 与最小 MTU：[RFC 8201](https://www.rfc-editor.org/rfc/rfc8201.html)、[RFC 8899](https://www.rfc-editor.org/rfc/rfc8899.html)
-> 反向引用（本篇被下列文档引到）：[HTTP与gRPC.md](HTTP与gRPC.md)、[IO多路复用.md](IO多路复用.md)
+> 反向引用（本篇被下列文档引到）：[HTTP与gRPC.md](HTTP与gRPC.md)、[IO多路复用.md](IO多路复用.md)、[网络通信链路详解.md](网络通信链路详解.md)
