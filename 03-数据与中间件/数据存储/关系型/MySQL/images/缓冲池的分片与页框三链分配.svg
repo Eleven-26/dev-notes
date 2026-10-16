@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1090 748" width="1090" height="748" font-family="DejaVu Sans, Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1090" height="748" fill="#ffffff"/>
+  <text x="24" y="30" font-size="19" font-weight="bold" fill="#12314f">buffer pool 的三层嵌套与 8192 个页框的去向（实测口径）</text>
+
+  <text x="24" y="58" font-size="13" fill="#5a6b7c">A. 池子 = instances × chunks × 页框，chunk 是在线扩缩的唯一单位</text>
+  <rect x="24" y="68" width="452" height="236" fill="#eef4fb" stroke="#3d6fa5" stroke-width="1.6"/>
+  <text x="40" y="88" font-size="13.5" font-weight="bold" fill="#12314f">innodb_buffer_pool_size = 134217728（128 MB）</text>
+  <rect x="42" y="100" width="416" height="186" fill="#ffffff" stroke="#5d8bb8" stroke-width="1.3"/>
+  <text x="58" y="120" font-size="13" fill="#12314f">instances = 1（不足 1 GB 被夹到 1）</text>
+  <rect x="60" y="132" width="380" height="136" fill="#f6fbf4" stroke="#4a8f57" stroke-width="1.3"/>
+  <text x="76" y="152" font-size="13" fill="#1d4d27">chunk 0 = 134217728（chunk_size，只读）</text>
+  <text x="76" y="170" font-size="12" fill="#1d4d27">chunks = size ÷ chunk_size = 1</text>
+  <rect x="78" y="180" width="344" height="76" fill="#fff6e8" stroke="#b07d2a" stroke-width="1.3"/>
+  <text x="94" y="200" font-size="13" fill="#6b4708">页框 = 134217728 ÷ 16384 = 8192 个</text>
+  <text x="94" y="218" font-size="12" fill="#6b4708">每个页框 16384 字节 = 1 页（page_size）</text>
+  <text x="94" y="236" font-size="12" fill="#6b4708">页框才是被三条链表挂住的单位</text>
+  <text x="42" y="298" font-size="11.5" fill="#5a6b7c">三层里只有 size 与 instances 之外的那两层是只读的</text>
+
+  <text x="24" y="336" font-size="13" fill="#5a6b7c">B. 这 8192 个页框挂在三条链表上（同一实例三次采样）</text>
+  <rect x="24" y="346" width="212" height="58" fill="#e8f0f8" stroke="#3d6fa5" stroke-width="1.4"/>
+  <text x="36" y="366" font-size="13" font-weight="bold" fill="#12314f">free 链</text>
+  <text x="36" y="384" font-size="12" fill="#12314f">FREE_BUFFERS 7195~7199</text>
+  <text x="36" y="399" font-size="11" fill="#5a6b7c">拿来就能用，不需要刷</text>
+  <rect x="24" y="414" width="212" height="58" fill="#fbeaea" stroke="#a84040" stroke-width="1.4"/>
+  <text x="36" y="434" font-size="13" font-weight="bold" fill="#6d1f1f">flush 链</text>
+  <text x="36" y="452" font-size="12" fill="#6d1f1f">MODIFIED_DATABASE_PAGES 0</text>
+  <text x="36" y="467" font-size="11" fill="#5a6b7c">空载时确实是 0</text>
+
+  <rect x="254" y="346" width="222" height="196" fill="#f2edfa" stroke="#6b4b9a" stroke-width="1.5"/>
+  <text x="268" y="366" font-size="13" font-weight="bold" fill="#3a2560">LRU 链（DATABASE_PAGES 993）</text>
+  <rect x="270" y="378" width="190" height="66" fill="#ffffff" stroke="#6b4b9a" stroke-width="1.1"/>
+  <text x="282" y="396" font-size="12" font-weight="bold" fill="#3a2560">new 子链</text>
+  <text x="282" y="413" font-size="11" fill="#3a2560">热点页，被反复命中</text>
+  <text x="282" y="430" font-size="11" fill="#3a2560">每轮只扫 lru_scan_depth 1024</text>
+  <path d="M 365 444 L 365 456" stroke="#6b4b9a" stroke-width="1.6"/>
+  <path d="M 360 452 L 365 458 L 370 452" fill="none" stroke="#6b4b9a" stroke-width="1.6"/>
+  <rect x="270" y="458" width="190" height="72" fill="#ffffff" stroke="#6b4b9a" stroke-width="1.1"/>
+  <text x="282" y="476" font-size="12" font-weight="bold" fill="#3a2560">old 子链</text>
+  <text x="282" y="493" font-size="11" fill="#3a2560">OLD_DATABASE_PAGES 386</text>
+  <text x="282" y="509" font-size="11" fill="#3a2560">上限 = 8192 × 37 ÷ 100 = 3031</text>
+  <text x="282" y="524" font-size="11" fill="#3a2560">待满 old_blocks_time 1000 毫秒才晋升</text>
+  <path d="M 236 375 L 254 375" stroke="#3d6fa5" stroke-width="1.5"/>
+  <path d="M 248 370 L 256 375 L 248 380" fill="none" stroke="#3d6fa5" stroke-width="1.5"/>
+  <text x="24" y="566" font-size="11.5" fill="#5a6b7c">新读入的先进 old 尾，凑不满 3031 就冲刷不到 new —— 全表扫只吃掉 old 段</text>
+
+  <text x="516" y="58" font-size="13" fill="#5a6b7c">C. 在线改容量：SET GLOBAL 按 chunk 追加，数据页一个不动</text>
+  <rect x="516" y="68" width="552" height="88" fill="#eef4fb" stroke="#3d6fa5" stroke-width="1.4"/>
+  <text x="530" y="88" font-size="13" font-weight="bold" fill="#12314f">134217728（128 MB）→ 1 个 chunk → POOL_SIZE 8192</text>
+  <text x="530" y="108" font-size="12" fill="#12314f">FREE_BUFFERS 7195~7199　DATABASE_PAGES 993　OLD_DATABASE_PAGES 386</text>
+  <text x="530" y="128" font-size="12" fill="#5a6b7c">默认值，三次重启与多次采样都落在同一组数上</text>
+  <text x="530" y="146" font-size="12" fill="#5a6b7c">134217728 ÷ 16384 = 8192</text>
+
+  <path d="M 792 156 L 792 170" stroke="#4a8f57" stroke-width="1.8"/>
+  <path d="M 786 164 L 792 172 L 798 164" fill="none" stroke="#4a8f57" stroke-width="1.8"/>
+
+  <rect x="516" y="172" width="552" height="88" fill="#f6fbf4" stroke="#4a8f57" stroke-width="1.4"/>
+  <text x="530" y="192" font-size="13" font-weight="bold" fill="#1d4d27">268435456（256 MB）→ 268435456 ÷ 134217728 = 2 个 chunk → POOL_SIZE 16384</text>
+  <text x="530" y="212" font-size="12" fill="#1d4d27">FREE_BUFFERS 15391　DATABASE_PAGES 993　OLD_DATABASE_PAGES 386</text>
+  <text x="530" y="232" font-size="12" font-weight="bold" fill="#a84040">新增的 8192 页全进 free 链，数据页 993 / 386 一个没变</text>
+  <text x="530" y="250" font-size="12" fill="#1d4d27">268435456 ÷ 16384 = 16384</text>
+
+  <path d="M 792 260 L 792 274" stroke="#4a8f57" stroke-width="1.8"/>
+  <path d="M 786 268 L 792 276 L 798 268" fill="none" stroke="#4a8f57" stroke-width="1.8"/>
+
+  <rect x="516" y="276" width="552" height="84" fill="#fff6e8" stroke="#b07d2a" stroke-width="1.4"/>
+  <text x="530" y="296" font-size="13" font-weight="bold" fill="#6b4708">402653184（384 MB）→ 402653184 ÷ 134217728 = 3 个 chunk</text>
+  <text x="530" y="316" font-size="12" fill="#6b4708">理论页数 402653184 ÷ 16384 = 24576</text>
+  <text x="530" y="336" font-size="12" font-weight="bold" fill="#a84040">追加未完时读到 POOL_SIZE 24575，差 1 页</text>
+  <text x="530" y="352" font-size="11.5" fill="#6b4708">扩容后立即断言"页数 = size ÷ page_size"的脚本会误报</text>
+
+  <rect x="516" y="376" width="552" height="84" fill="#fbeaea" stroke="#a84040" stroke-width="1.4"/>
+  <text x="530" y="396" font-size="13" font-weight="bold" fill="#6d1f1f">请求 209715200（200 MB）→ 向上补齐成 268435456（256 MB）</text>
+  <text x="530" y="416" font-size="12" fill="#6d1f1f">@@innodb_buffer_pool_size 实测落回 268435456，POOL_SIZE 16384</text>
+  <text x="530" y="436" font-size="12" fill="#6d1f1f">200 MB 装满 1 个 chunk 又凑不满第 2 个，InnoDB 直接补成 2 个</text>
+  <text x="530" y="452" font-size="11.5" font-weight="bold" fill="#6d1f1f">按请求值估内存账会少算 25%</text>
+
+  <rect x="516" y="476" width="552" height="66" fill="#f0f2f5" stroke="#5a6b7c" stroke-width="1.2"/>
+  <text x="530" y="496" font-size="12.5" font-weight="bold" fill="#12314f">两条换算式（换实例先自己算一遍，别抄文档）</text>
+  <text x="530" y="516" font-size="12" fill="#12314f">chunk 数 = size ÷ chunk_size　　页框数 = size ÷ page_size</text>
+  <text x="530" y="534" font-size="11.5" fill="#5a6b7c">size 只能取 chunk_size 的整数倍，实例数不足 1 GB 恒为 1</text>
+
+  <text x="24" y="592" font-size="13" fill="#5a6b7c">D. 三条判据</text>
+  <rect x="24" y="600" width="1044" height="132" fill="#f0f2f5" stroke="#3d6fa5" stroke-width="1.3"/>
+  <path d="M 40 622 L 1052 622" stroke="#c8d3de" stroke-width="1"/>
+  <text x="40" y="616" font-size="12.5" font-weight="bold" fill="#12314f">① 扩容只往 free 链加页框，不触发刷盘；缩池必须先把脏页从 flush 链腾走 —— 两个方向代价不对称，别来回调 buffer pool</text>
+  <text x="40" y="644" font-size="12.5" font-weight="bold" fill="#12314f">② 请求值按 chunk_size 向上取整：给 209715200 实际拿到 268435456；按请求值算容量与命中率区间都会算错</text>
+  <text x="40" y="670" font-size="12.5" font-weight="bold" fill="#12314f">③ old 子链容量 = POOL_SIZE × 37 ÷ 100（默认 8192 页时是 3031），配合 old_blocks_time 1000 与 lru_scan_depth 1024 决定命中率</text>
+  <text x="40" y="708" font-size="12" fill="#5a6b7c">page_cleaners 在本实例被夹到 1，与实例数取齐；它和 instances 都是只读量，运行时改会报 read only variable</text>
+
+  <text x="24" y="736" font-size="11.5" fill="#8a99a8">本页所有数字取自同一条默认配置的实例（buffer pool 默认 134217728、page_size 16384、chunk_size 134217728）</text>
+</svg>

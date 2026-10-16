@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="28" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">到「能发出第一个请求」要几次往返：3 / 2 / 1 / 0</text>
+  <text x="500" y="50" text-anchor="middle" font-size="12" fill="#64748b">口径固定在「发送应用数据之前」，条的右端点就是第一个请求可以发出的时刻；拿到响应还要再加一次请求—响应往返</text>
+
+  <line x1="120" y1="70" x2="120" y2="430" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="380" y1="70" x2="380" y2="430" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="640" y1="70" x2="640" y2="430" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="900" y1="70" x2="900" y2="430" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="120" y="66" text-anchor="middle" font-size="11" fill="#94a3b8">0 次</text>
+  <text x="380" y="66" text-anchor="middle" font-size="11" fill="#94a3b8">1 次</text>
+  <text x="640" y="66" text-anchor="middle" font-size="11" fill="#94a3b8">2 次</text>
+  <text x="900" y="66" text-anchor="middle" font-size="11" fill="#94a3b8">3 次</text>
+
+  <text x="16" y="106" font-size="12" font-weight="bold" fill="#334155">TCP + TLS 1.2</text>
+  <rect x="120" y="84" width="260" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <rect x="380" y="84" width="260" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <rect x="640" y="84" width="260" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="250" y="101" text-anchor="middle" font-size="10.5" fill="#1e3a8a">TCP 三次握手</text>
+  <text x="250" y="117" text-anchor="middle" font-size="10.5" fill="#1e3a8a">1 个往返</text>
+  <text x="510" y="101" text-anchor="middle" font-size="10.5" fill="#92400e">TLS 1.2 第 1 趟</text>
+  <text x="510" y="117" text-anchor="middle" font-size="10.5" fill="#92400e">ClientHello / Certificate</text>
+  <text x="770" y="101" text-anchor="middle" font-size="10.5" fill="#92400e">TLS 1.2 第 2 趟</text>
+  <text x="770" y="117" text-anchor="middle" font-size="10.5" fill="#92400e">Finished 之后才可发数据</text>
+  <text x="985" y="110" text-anchor="end" font-size="11" font-weight="bold" fill="#7f1d1d">合计 3</text>
+
+  <text x="16" y="176" font-size="12" font-weight="bold" fill="#334155">TCP + TLS 1.3</text>
+  <rect x="120" y="154" width="260" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <rect x="380" y="154" width="260" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="250" y="171" text-anchor="middle" font-size="10.5" fill="#1e3a8a">TCP 三次握手</text>
+  <text x="250" y="187" text-anchor="middle" font-size="10.5" fill="#1e3a8a">这 1 次省不掉</text>
+  <text x="510" y="171" text-anchor="middle" font-size="10.5" fill="#92400e">TLS 1.3 一个往返</text>
+  <text x="510" y="187" text-anchor="middle" font-size="10.5" fill="#92400e">握手与密钥协商合并</text>
+  <text x="985" y="180" text-anchor="end" font-size="11" font-weight="bold" fill="#92400e">合计 2</text>
+
+  <text x="16" y="246" font-size="12" font-weight="bold" fill="#334155">QUIC 首次连接</text>
+  <rect x="120" y="224" width="260" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="250" y="241" text-anchor="middle" font-size="10.5" fill="#14532d">Initial 带 ClientHello</text>
+  <text x="250" y="257" text-anchor="middle" font-size="10.5" fill="#14532d">服务端回 Handshake</text>
+  <text x="985" y="250" text-anchor="end" font-size="11" font-weight="bold" fill="#14532d">合计 1：握手即传输</text>
+
+  <text x="16" y="316" font-size="12" font-weight="bold" fill="#334155">QUIC 复用会话</text>
+  <rect x="120" y="294" width="200" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="220" y="311" text-anchor="middle" font-size="10.5" fill="#14532d">第一个包就携带数据</text>
+  <text x="220" y="327" text-anchor="middle" font-size="10.5" fill="#14532d">带上次的 ticket</text>
+  <text x="985" y="320" text-anchor="end" font-size="11" font-weight="bold" fill="#14532d">合计 0：但数据可被重放</text>
+
+  <rect x="16" y="356" width="964" height="34" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.2"/>
+  <text x="30" y="378" font-size="11.5" fill="#9a3412">关键对照：TLS 1.3 的「1」只省掉 TLS 那一趟，TCP 的 1 个往返仍在（合计 2）；QUIC 是把 TCP 与 TLS 两件事合并进同一个往返，才做到首次 1、复用 0</text>
+
+  <text x="16" y="416" font-size="12" font-weight="bold" fill="#0f172a">省下来的是什么</text>
+  <text x="16" y="440" font-size="11.5" fill="#475569">省的是握手占掉的往返，不是数据传输本身：往返数从 3 降到 1，在弱网与移动网络上直接体现在首屏时间上</text>
+  <text x="16" y="462" font-size="11.5" fill="#475569">首次连接不可能 0 次；0 次只在复用上次会话时成立，而它换来的重放风险要求只用于幂等请求</text>
+  <text x="16" y="484" font-size="11.5" fill="#475569">QUIC 没有 TCP 那次握手，也没有 TIME_WAIT 那类退出代价，退出与迁移都走自己的状态机</text>
+  <text x="16" y="514" font-size="11" fill="#94a3b8">报文级细节不在本图：TLS 1.2 / 1.3 握手逐条报文见 HTTPS 与 TLS 篇的对比图，TCP 三包对应关系见 TCP 三次握手篇</text>
+</svg>

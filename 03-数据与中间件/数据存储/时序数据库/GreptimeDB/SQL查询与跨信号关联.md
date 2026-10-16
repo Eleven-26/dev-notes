@@ -3,6 +3,8 @@
 > GreptimeDB 用一套 SQL 同时查询指标、日志与链路：本篇讲清它的时序扩展（`TIME INDEX` / `RANGE` / `ALIGN` / `FILL` / `date_bin`），以及三类信号放进同一套表模型后，怎么用 `JOIN` 把「指标异常」和「对应时段的日志 / Trace」关联起来。
 >
 > 内容整理自个人学习笔记，并参考官方文档与 Release Notes；素材见 [素材清单](../../../../素材清单.md)。
+>
+> ⚠️ 实测口径：第 2.4、2.5、4.5 节的窗口边界、行数、报错原文在 GreptimeDB 1.2.1 standalone 容器实测（宿主 25001 → 容器 4000，库 `w7g2`）；第一至第四节其余语法仍是官方文档口径，未逐条实测。
 
 ---
 
@@ -124,6 +126,46 @@ GROUP BY time_window;
 
 ⭐ **`RANGE` 与 `date_bin` 的选择**：要「每个时刻回看一段窗口」（如滚动 5 分钟 P95）→ `RANGE`；只要「把时间切成互不重叠的桶再聚合」→ `date_bin` + `GROUP BY`。InfluxQL 的 `GROUP BY time(10m)` 迁移过来时，官方建议两种写法都可，`RANGE` 风格更接近原语义。
 
+### 2.4 实测：同一批数据，RANGE 切出 14 行、date_bin 切出 6 行
+
+实测数据：库 `w7g2` 的表 `cpu_temp`（InfluxDB 行协议自动建表），`node-a` / `node-b` 各 10 点、间隔 60 秒，首点 `1792121598840000000`（即 2026-10-16T03:33:18.840Z）、末点 `1792122138840000000`（03:42:18.840Z），全表 20 行。
+
+```sql
+-- 滑动窗口：窗口长 5m，每 2m 推进一次，网格锚在 03:30:00
+SELECT greptime_timestamp AS ts, host,
+       count(usage) RANGE '5m' AS n,
+       round(avg(usage) RANGE '5m', 3) AS avg_usage
+FROM cpu_temp
+ALIGN '2m' TO '2026-10-16T03:30:00Z' BY (host)
+ORDER BY ts, host;
+```
+
+实读 **14 行**（7 个窗口起点 × 2 台主机），每台主机的窗口行数依次是 **2 / 4 / 5 / 5 / 5 / 3 / 1**，对应起点 `03:30 / 03:32 / 03:34 / 03:36 / 03:38 / 03:40 / 03:42`。相邻窗口共享 3 分钟的样本，行数相加 2+4+5+5+5+3+1 = 25，远大于每条时间线的 10 个点——**「窗口可重叠」在行数上就是这么体现的**。窗口边界左闭右开也实测到了：起点 `03:42` 的窗口 `[1792122120, 1792122420)` 只装下末点 `1792122138.840`，行数 1。
+
+```sql
+-- 离散分桶：5 分钟一个桶，桶与桶互不重叠
+SELECT date_bin('5 minutes', greptime_timestamp) AS bucket, host,
+       count(usage) AS n, round(avg(usage), 3) AS avg_usage
+FROM cpu_temp
+GROUP BY bucket, host
+ORDER BY bucket, host;
+```
+
+实读 **6 行**（3 个桶 × 2 台主机），桶起点 `03:30 / 03:35 / 03:40`，每主机行数 **2 / 5 / 3**，相加正好 10——每个样本只落进一个桶。另外两个实测细节：不写第三个参数时桶边界确实锚在 UTC 纪元上（起点都是 300 秒的整数倍）；返回的 `bucket` 列类型跟着输入列走，这里是 `TimestampNanosecond`。
+
+![RANGE 滑动窗口与 date_bin 离散分桶的时间轴对照](images/RANGE滑动窗口与date_bin分桶对照.svg)
+
+### 2.5 实测：不写 FILL，空窗口是「整行不出现」
+
+另建一张有断档的表 `cpu_gap`（`node-a` 三点：03:33:18.840 / 03:34:18.840 / 03:38:00.840，`node-b` 只有 03:33:18.840 一点），跑同一条 `RANGE '5m' ALIGN '2m' TO '2026-10-16T03:30:00Z'`：
+
+| 写法 | 实读行数 | 空窗口的表现 |
+| --- | --- | --- |
+| 不写 `FILL` | 8 行 | 起点 `03:36`（`1792121760000000000`）那一窗**整行不出现** |
+| `FILL PREV` | 9 行 | 补出该行，`count` 为 0、`avg` 沿用前一窗的 0.5 |
+
+⚠️ 2.2 说的「不写 `FILL` 就是空值」，实测形态更狠一些：**不是补一个 NULL，而是这一行的时间戳根本不出现**。下游若按行对齐两张表，缺行会直接变成错位。顺带实测到行序也不稳定：同一条查询两次分别以 `node-b`、`node-a` 开头，2.1 那条「顺序不做保证」在多序列结果上照样成立，排序键要写全（`ORDER BY ts, host`）。
+
 ---
 
 ## 三、时间过滤、精度与取最新点怎么写？
@@ -235,6 +277,21 @@ ORDER BY metrics.ts;
 - **时间范围先缩再 JOIN**：`WHERE` 里的时间过滤要写在**子查询里**，让扫描先被时间索引裁掉，再参与关联。
 - **两类信号的表要分开**：官方参考架构明确「按信号分表」，**统一发生在引擎 / 存储 / 查询层，不要求三信号共用一张表或一套 schema**——指标用主键列存 label 并走 PromQL，日志用 append-only 表加索引，链路保留 trace / span 标识。
 
+### 4.5 实测：省略 `BY` 让 `LEFT JOIN` 多出一行
+
+按 4.3 的形态在本机跑通了一遍：左表是 `cpu_temp` 的 5 分钟窗口 P95，右表是新建的 append-only 日志表 `app_logs`（4 行，`trace_id` 为 `t-1` / `t-2` / `t-3`，主键 `(host, trace_id)`），两侧都用 `ALIGN '5m'` 把粒度统一到 5 分钟，再按 `host` 与窗口起点做 `LEFT JOIN`。建表与查询里有四处实测才看得到的东西：
+
+| 现象 | 实测读数 / 报错原文 |
+| --- | --- |
+| 右表省略 `BY (host)` | 聚合结果 4 行，`(03:30, node-a)` 这个键出现 **2 次**（两条不同 `trace_id` 各算 1）——默认聚合键是主键 `(host, trace_id)`，见 2.1 |
+| `LEFT JOIN` 放大 | 左表 6 行 → 结果 **7 行**，多出的正是那个重复键；连跑 5 次都是 7 行，耗时 62 ~ 85 ms（首次冷跑 214 ms） |
+| 右表补上 `BY (host)` | 聚合结果 3 行、`(03:30, node-a)` 的 `count` 变成 2；`LEFT JOIN` 回到 **6 行**、无重复键；连跑 5 次 66 ~ 112 ms |
+| `error` 直接当列名 | `Invalid SQL syntax: sql parser error: Cannot use keyword 'error' as column name. Hint: add quotes to the name.`——本篇「使用」一节的 `error STRING` 要写成 `"error" STRING` 才能建表 |
+| `BY` 写在 `FILL` 后面 | `Invalid SQL syntax: sql parser error: Expected: ), found: BY at Line: 6, Column: 26`——子句顺序是 `RANGE` → `ALIGN` → `TO` → `BY` → `FILL` |
+| 自动建表的时间列名 | `SELECT ts` 报 `Failed to plan SQL: No field named ts. Valid fields are cpu_temp.host, cpu_temp.region, cpu_temp.usage, cpu_temp.usage_idle, cpu_temp.greptime_timestamp.` |
+
+⭐ 最值得记住的是第三行那条放大：**指标侧窗口聚合的键是 `host`，日志侧默认按主键分序列**，两边的「同一条时间线」根本不是一回事。粒度统一了、时间也缩了，`JOIN` 照样能多出行来。跨信号关联上线前，先分别把两侧子查询单独跑一遍看行数和键值有没有重复，再拼 `JOIN`。
+
 ---
 
 ## 使用：时间窗口聚合与跨信号排障查询
@@ -308,6 +365,9 @@ ORDER BY m.ts DESC;
 - **`DISTINCT ON` 和 `row_number()` 该选谁？** → 两者都能表达「每个分组取最新一点」。从 InfluxQL 的 `ORDER BY time DESC LIMIT 1` 迁过来时，官方建议改成显式的 `row_number() OVER (...)` 或 `DISTINCT ON`——把「按谁分组、按什么排序、取几条」写明白，别依赖隐式行为。
 - **自动建表会不会把时间列建错？** → 会。自动建表只覆盖非 SQL / Flink / Spark 的写入协议，schema 由写入数据推断；**要精确控制时间索引列与 Tag 列，就显式 `CREATE TABLE`**，别指望推断出的时间列精度和主键正好合适。
 - **跨信号关联为什么非要提前在埋点里带标识？** → 因为 `JOIN` 的键只能来自数据本身。日志不带 `trace_id`、指标不带 `service_name`，关联就无从谈起——统一存储降低了「跨库搬数据」的成本，但**关联键必须在采集端就写进去**。
+- **`RANGE` 和 `date_bin` 的行数差别有多大？** → 同一批每主机 10 点、间隔 60 秒的数据：`RANGE '5m' ALIGN '2m'` 出 7 个窗口、每主机行数 2 / 4 / 5 / 5 / 5 / 3 / 1（合计 25，样本被反复计入重叠窗口）；`date_bin('5 minutes')` 出 3 个桶、行数 2 / 5 / 3（合计 10，每个样本只算一次）。见 2.4。
+- **窗口里没数据时到底返回什么？** → 不写 `FILL` 时**那一行整个不出现**（实测 8 行），不是返回一个 NULL 占位；写 `FILL PREV` 才有 9 行、`count` 为 0 且值沿用前窗。按行对齐两张表时，缺行会直接错位，见 2.5。
+- **两侧都做了 5 分钟窗口，`JOIN` 还会放大吗？** → 会。右表若省略 `BY (host)`，聚合键退回主键，同一个 `(ts, host)` 可能出现多行，`LEFT JOIN` 把左表 6 行放大成 7 行；补 `BY (host)` 后回到 6 行。见 4.5。
 
 ---
 

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 664" width="1000" height="664" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w7g3bArw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="664" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条指标样本落库后变成什么：写入侧 → 逻辑表 → 物理表 → 查询出口</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">列名、主键与行数全部取自落库后的建表语句原文与行数查询输出，非示意值</text>
+
+  <rect x="60" y="76" width="880" height="76" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="80" y="100" font-size="13" font-weight="bold" fill="#92400e">写入侧：一条样本携带指标名、时间戳、数值与标签集</text>
+  <text x="80" y="122" font-size="12" fill="#78350f">指标名 go_goroutines ｜ 时间戳 1792132242374 ｜ 数值 39.0 ｜ 标签 instance、job</text>
+  <text x="80" y="142" font-size="12" fill="#78350f">规则：指标名变成表名，标签变成列，数值统一进值列</text>
+
+  <path d="M 265 152 L 265 178" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3bArw)"/>
+  <path d="M 735 152 L 735 178" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3bArw)"/>
+
+  <rect x="60" y="180" width="420" height="196" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.6"/>
+  <text x="270" y="204" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#075985">逻辑表 go_goroutines</text>
+  <text x="270" y="228" text-anchor="middle" font-size="12" fill="#0c4a6e">ENGINE=metric</text>
+  <text x="270" y="250" text-anchor="middle" font-size="12" fill="#0c4a6e">greptime_timestamp 作时间索引</text>
+  <text x="270" y="272" text-anchor="middle" font-size="12" fill="#0c4a6e">greptime_value 收所有样本值</text>
+  <text x="270" y="294" text-anchor="middle" font-size="12" fill="#0c4a6e">标签列 instance、job 进主键</text>
+  <text x="270" y="316" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">本指标当前行数 4412</text>
+  <text x="270" y="342" text-anchor="middle" font-size="11.5" fill="#1d4ed8">WITH 段回指物理表名，并标注来源与信号类型</text>
+  <text x="270" y="362" text-anchor="middle" font-size="11.5" fill="#1d4ed8">一个指标一张表，面板要的指标名就是表名</text>
+
+  <rect x="520" y="180" width="420" height="196" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="730" y="204" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">物理表（同库唯一一张）</text>
+  <text x="730" y="228" text-anchor="middle" font-size="12" fill="#166534">标签列取并集：实测 30 个字符串列</text>
+  <text x="730" y="250" text-anchor="middle" font-size="12" fill="#166534">这 30 列全部进 PRIMARY KEY</text>
+  <text x="730" y="272" text-anchor="middle" font-size="12" fill="#166534">值列仍是同一个值列</text>
+  <text x="730" y="294" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">物理表当前行数 3256008</text>
+  <text x="730" y="318" text-anchor="middle" font-size="11.5" fill="#15803d">逻辑表只是视图，真实行列在物理表里</text>
+  <text x="730" y="340" text-anchor="middle" font-size="11.5" fill="#15803d">多一个标签名：多一列并加进全部主键</text>
+  <text x="730" y="362" text-anchor="middle" font-size="11.5" fill="#15803d">多一个标签值：只多一条时间线</text>
+
+  <path d="M 480 278 L 520 278" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3bArw)"/>
+  <text x="500" y="270" text-anchor="middle" font-size="11" fill="#475569">指向</text>
+
+  <rect x="60" y="392" width="880" height="76" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="80" y="416" font-size="13" font-weight="bold" fill="#4c1d95">查询出口：指标查询返回的仍是「指标名 + 标签」的形状</text>
+  <text x="80" y="438" font-size="12" fill="#5b21b6">表名还原成指标名，主键列还原成标签，值列还原成样本值</text>
+  <text x="80" y="458" font-size="12" fill="#5b21b6">这就是既有面板与告警可以不改写的机制；SQL 侧同样能查这张逻辑表</text>
+
+  <rect x="60" y="484" width="880" height="150" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.4"/>
+  <text x="80" y="508" font-size="13" font-weight="bold" fill="#0f172a">这条链路的代价与边界（实测口径）</text>
+  <text x="80" y="532" font-size="12" fill="#1e293b">该库当前表数 369 张：指标名越多、表越多，标签名越多、物理表主键越长</text>
+  <text x="80" y="554" font-size="12" fill="#1e293b">同一份指标不要长期双写：两条通道并存会让同一条时间线的类型对不上</text>
+  <text x="80" y="576" font-size="12" fill="#1e293b">采集端与告警不在这次替换范围内，落库只证明「存储 + 查询后端」被接管</text>
+  <text x="80" y="600" font-size="11.5" fill="#64748b">未实测：界面侧数据源联动、链路侧与日志侧的端到端落库形态</text>
+  <text x="80" y="622" font-size="11.5" fill="#64748b">行数为停止写入后的静态读数，写入继续则会增长</text>
+</svg>

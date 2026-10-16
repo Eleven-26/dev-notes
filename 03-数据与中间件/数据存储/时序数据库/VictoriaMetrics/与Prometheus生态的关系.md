@@ -114,6 +114,79 @@ VM 对 Prometheus 协议的支持，落在几个端点上（单机与集群版�
 ⭐ 换句话说：**VM 把一个「Prometheus 兼容的写入端点 + Prometheus 兼容的查询 API」都提供了**
 ——这正是它能「既当后端、又当替代」的技术底座。
 
+### 2.4 实测：一帧 remote write 的字节布局与协商行为
+
+上面说的「Content-Type 内容协商」「415 回退」都是**协议侧的规则**，落到 VM 这个具体接收端上
+到底是什么行为，得发真帧才知道。本轮用 Python 标准库**手工编了一条 1.0 载荷**
+（不依赖任何客户端库），再用 6 种请求头组合打同一个端点。
+
+**实测口径**：镜像 `quay.io/victoriametrics/victoria-metrics:stable`（Docker Hub 的
+`victoriametrics/victoria-metrics:latest` 在本机经镜像仓库拉取失败，改用同一官方镜像在 quay.io 的
+`stable` 标签），容器 `w6v1-vm2`（宿主端口 25102），`app_version` 为
+`victoria-metrics-20250523-133235-tags-v1.118.0-0-gaa3171cf4b`、`/api/v1/status/buildinfo` 为 `2.24.0`。
+**每个实验连跑 3 轮，除 TCP 源端口外逐字相同。**
+
+载荷内容：1 条时间序列（`__name__="rw_probe_round"`、`job="w6v1"`）+ 1 个样本（值 `42`，
+时间戳 `1792119756000` 毫秒）。1.0 的消息布局与本轮实测字节数：
+
+| 层 | 字段 / 编号 | 编码方式 | 本轮取到的值 |
+| --- | --- | --- | --- |
+| `WriteRequest` | field 1，`repeated TimeSeries` | wire type 2（长度前缀） | 1 条 |
+| `TimeSeries` | field 1 `repeated Label`、field 2 `repeated Sample` | wire type 2 | 2 个 Label、1 个 Sample |
+| `Label` | field 1 `name`、field 2 `value` | string | `__name__=rw_probe_round`、`job=w6v1` |
+| `Sample` | field 1 `value`、field 2 `timestamp` | `double`（8 字节小端）／`varint` 毫秒 | 42／1792119756000 |
+| Snappy 块 | varint 解压后长度 + literal 段 | 纯 literal（本轮不做匹配压缩） | protobuf 61 字节 → snappy 64 字节 |
+
+⚠️ 字段编号按 1.0 的 `prompb.WriteRequest` 定义手工编码，**VM 接受并正确解出**（204 后用
+`/api/v1/query?time=1792119876` 回读得到 `{"__name__":"rw_probe_round","job":"w6v1"}` 值 42），
+所以这套编号在本轮是**被服务端验证过**的；2.0 的 `io.prometheus.write.v2.Request` 字段布局
+本轮**没有逐字段核对（未实测）**。
+
+协商行为（同一份载荷只换请求头，`/api/v1/write`）：
+
+| 请求头组合 | 状态码 | 实测细节 |
+| --- | --- | --- |
+| `Content-Type: application/x-protobuf` + `X-Prometheus-Remote-Write-Version: 0.1.0` | 204 | 基线 |
+| 同上但版本头换成 `2.0.0`、Content-Type 带 `proto=io.prometheus.write.v2.Request` | 204 | **没有回 415** |
+| 完全不带版本头 | 204 | |
+| 未知版本头 `9.9.9` | 204 | 版本号没被校验 |
+| `Content-Type: application/json` + snappy 体 | 204 | 头被忽略，仍按 snappy+1.0 解 |
+| `Content-Type: text/plain` + snappy 体 | 204 | 同上 |
+| 空体 + 1.0 头 | 204 | 空帧也算成功 |
+| `application/json` 头 + JSON 明文体 | 400 | `cannot decompress snappy-encoded request with length 17: snappy: corrupt input` |
+| snappy 头 + 未压缩 protobuf 体 | 400 | 同上一句，`length 61` |
+| 非 1.0 结构的 snappy 体，分别用 1.0 头 / 2.0 头 | 400 / 400 | 两边错误文本**逐字相同**：`cannot unmarshal prompb.WriteRequest with size 16 bytes: cannot read the next field: cannot read i64 for field #2` |
+| `GET /api/v1/read` | 400 | `unsupported path requested: "/api/v1/read"` |
+
+⭐ 三条结论，都能在上面的读数里对上：
+
+1. **VM 单机版不按 Content-Type 分派解码器**：同一份 1.0 载荷换 6 种头都返回 204，
+   坏载荷在 1.0 头与 2.0 头下的报错文本一字不差（都写着 `prompb.WriteRequest`，即 1.0 的消息名）；
+2. 正文 2.1 说的「接收方不支持会返回 415、发送方需回退到 1.0」**在 VM 上不可复现**（本轮 0 次 415）。
+   风险正好反过来：**接收端回 204 不代表它按 2.0 解**，所以发送端真上 2.0 载荷之前必须先确认接收端支持；
+3. 2.0 承诺的 `X-Prometheus-Remote-Write-*-Written` 响应头，**上面每个用例的响应里都没有出现**
+   （3 轮重复都打印过响应头；204 只有 `Connection`、`Date`、`Vary`、`X-Server-Hostname`）——
+   想在 VM 上靠响应头发现「部分写入」，至少 v1.118.0 这条路取不到。
+
+写入侧计数与「204 之后多久能查」：
+
+| 观测项 | 实测 |
+| --- | --- |
+| `vm_rows_inserted_total{type="promremotewrite"}` | 逐轮 +1，本轮记录到 48 → 51；相对 POST 返回有数秒滞后 |
+| `vm_rows_inserted_total{type="prometheus"}` | 恒为 30（`/api/v1/import/prometheus` 走的是这个 `type`，不与 remote write 混计数） |
+| `vm_active_time_series` | **单机版 `/metrics` 里没有这个指标**；活跃序列数看 `/api/v1/status/tsdb` 的 `totalSeries`（本轮 15） |
+| 新序列首次可查时刻（轮询步长 0.5 秒，3 轮） | POST 返回 204 后 4.01 秒、10.53 秒、10.51 秒；POST 调用本身 0.004 秒返回 |
+| 「固定求值点」vs「每轮换求值点」两条曲线 | 3 轮都在**同一个轮询点**同时变可见 → 延迟来自新序列的索引注册，不是查询结果缓存 |
+
+⚠️ 所以 `204` 的准确读法是「**已接收**」而不是「已可查」：排查「刚写完查不到」时，
+先看这几秒的索引注册窗口，再怀疑写入链路。
+
+未实测项（登记）：2.0 载荷的真实字节数与压缩率对比（需要 2.0 编码器，本轮未实现）、
+Thanos / Mimir 对 2.0 的支持情况（未部署）、`-search.maxQueryDuration` 超时行为（未压测）、
+`/flags` 参数清单（页面返回 200 但内容为空，取不到）。
+
+![remote write 请求帧的三层布局与 VM 端协商实测矩阵](images/remoteWrite请求帧布局与协商实测.svg)
+
 ---
 
 ## 三、VM 是「长期存储后端」还是「整体替代」？

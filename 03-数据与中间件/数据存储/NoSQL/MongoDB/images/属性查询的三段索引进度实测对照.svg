@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ap2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一条属性查询在三段索引进度下的扫描量与体积账</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一集合 100000 条文档 · avgObjSize=66 · 数据本体 size=6688890 字节 · 读数取 explain 的 executionStats 与 collStats</text>
+
+  <rect x="30" y="84" width="940" height="216" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="46" y="104" font-size="13" font-weight="bold" fill="#0f172a">扫描量账：条长按扫描文档数等比绘制（不足 4 像素按 4 像素示意）</text>
+
+  <text x="50" y="140" font-size="12" fill="#334155">① 无索引</text>
+  <rect x="262" y="128" width="300" height="16" fill="#fca5a5"/>
+  <text x="580" y="140" font-size="12" fill="#334155">COLLSCAN · docsExamined=100000 · 命中 70%</text>
+  <text x="50" y="176" font-size="12" fill="#334155">② 补 level 索引</text>
+  <rect x="262" y="164" width="210" height="16" fill="#fbbf24"/>
+  <text x="580" y="176" font-size="12" fill="#334155">IXSCAN · docsExamined=70000 · keysExamined=70000</text>
+  <text x="50" y="212" font-size="12" fill="#334155">③ 等值 + 只投影</text>
+  <rect x="262" y="200" width="4" height="16" fill="#86efac"/>
+  <text x="580" y="212" font-size="12" fill="#334155">覆盖 · docsExamined=0 · keysExamined=10000 · nReturned=10000</text>
+
+  <text x="50" y="258" font-size="12" fill="#334155">④ 只有 level 索引</text>
+  <rect x="262" y="246" width="300" height="16" fill="#fca5a5"/>
+  <text x="580" y="258" font-size="12" fill="#334155">COLLSCAN · docsExamined=100000 · nReturned=50000 · 命中 50%</text>
+  <text x="50" y="290" font-size="12" fill="#334155">⑤ 再补 city 索引</text>
+  <rect x="262" y="278" width="150" height="16" fill="#fbbf24"/>
+  <text x="580" y="290" font-size="12" fill="#334155">IXSCAN · docsExamined=50000 · keysExamined=50000</text>
+
+  <path d="M248 136 L256 136 L256 172 L248 172" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap2)"/>
+  <path d="M248 172 L256 172 L256 208 L248 208" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap2)"/>
+  <path d="M248 254 L256 254 L256 286 L248 286" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap2)"/>
+
+  <rect x="30" y="316" width="940" height="156" rx="9" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="46" y="336" font-size="13" font-weight="bold" fill="#0f172a">体积账：条长按字节数等比绘制（数据本体与索引同尺度，不足 4 像素按 4 像素示意）</text>
+
+  <text x="50" y="374" font-size="12" fill="#334155">数据本体</text>
+  <rect x="300" y="362" width="300" height="16" fill="#93c5fd"/>
+  <text x="620" y="374" font-size="12" fill="#334155">size=6688890 字节</text>
+  <text x="50" y="406" font-size="12" fill="#334155">只有主键</text>
+  <rect x="300" y="394" width="4" height="16" fill="#cbd5e1"/>
+  <text x="620" y="406" font-size="12" fill="#334155">totalIndexSize=4096 字节</text>
+  <text x="50" y="438" font-size="12" fill="#334155">加了 level</text>
+  <rect x="300" y="426" width="21" height="16" fill="#60a5fa"/>
+  <text x="620" y="438" font-size="12" fill="#334155">该索引 462848 · 合计 466944 字节</text>
+  <text x="50" y="466" font-size="12" fill="#334155">加了 city</text>
+  <rect x="300" y="454" width="44" height="16" fill="#60a5fa"/>
+  <text x="620" y="466" font-size="12" fill="#334155">该索引 507904 · 合计 974848 字节</text>
+
+  <path d="M288 402 L294 402 L294 434 L288 434" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap2)"/>
+  <path d="M288 434 L294 434 L294 462 L288 462" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap2)"/>
+
+  <rect x="30" y="490" width="940" height="180" rx="9" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="46" y="516" font-size="13" font-weight="bold" fill="#0f172a">三条判据</text>
+  <text x="46" y="544" font-size="12.5" fill="#334155">⭐ 范围查询的索引收益取决于命中率：命中 70% 时只把扫描量从 100000 降到 70000（省 30%）。</text>
+  <text x="46" y="574" font-size="12.5" fill="#334155">⭐ 只有覆盖投影能把 docsExamined 压到 0：此时 keysExamined=10000、nReturned=10000，一个文档都不回表。</text>
+  <text x="46" y="604" font-size="12.5" fill="#334155">⚠️ 每多一个查询维度就多付一条索引：totalIndexSize 从 4096 → 466944 → 974848 字节。</text>
+  <text x="46" y="634" font-size="12.5" fill="#334155">🔗 排序侧的同型账见本篇 6.4：有降序索引时 docsExamined=0、keysExamined=3，无索引时 100000。</text>
+  <text x="46" y="660" font-size="12.5" fill="#334155">⚠️ 字段名在每份文档里重复存：数据本体 6688890 字节里就含着每份文档的 attrs.level 这类键名。</text>
+</svg>

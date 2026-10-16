@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 574" width="1080" height="574" font-family="DejaVu Sans, Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1080" height="574" fill="#ffffff"/>
+  <text x="24" y="30" font-size="19" font-weight="bold" fill="#12314f">服务端预编译语句对象的三段生命周期与三处计数器</text>
+  <text x="24" y="54" font-size="12.5" fill="#5a6b7c">PREPARE 1 次 → EXECUTE 3 次 → DEALLOCATE 1 次；三次独立运行的增量完全一致（确定性计数，非时序量）</text>
+
+  <rect x="36" y="86" width="238" height="152" rx="10" fill="#eef4fb" stroke="#3d6fa5" stroke-width="1.6"/>
+  <text x="52" y="110" font-size="14" font-weight="bold" fill="#12314f">① 尚未预编译</text>
+  <text x="52" y="134" font-size="12" fill="#12314f">对象表行数 0</text>
+  <text x="52" y="155" font-size="12" fill="#12314f">Prepared_stmt_count 0</text>
+  <text x="52" y="176" font-size="12" fill="#12314f">Com_stmt_prepare 0</text>
+  <text x="52" y="197" font-size="12" fill="#12314f">Com_stmt_execute 0</text>
+  <text x="52" y="218" font-size="12" fill="#12314f">Com_stmt_close 0</text>
+
+  <rect x="392" y="86" width="286" height="152" rx="10" fill="#f6fbf4" stroke="#4a8f57" stroke-width="1.6"/>
+  <text x="408" y="110" font-size="14" font-weight="bold" fill="#1d4d27">② 对象已存在，被反复执行</text>
+  <text x="408" y="134" font-size="12" fill="#1d4d27">对象表行数 1，COUNT_EXECUTE 3</text>
+  <text x="408" y="155" font-size="11" fill="#1d4d27">SQL_TEXT = SELECT id,v FROM t WHERE id=?</text>
+  <text x="408" y="176" font-size="12" fill="#1d4d27">Com_stmt_prepare 1</text>
+  <text x="408" y="197" font-size="12" fill="#1d4d27">Com_stmt_execute 3</text>
+  <text x="408" y="218" font-size="12" fill="#a84040">参数换了 3 次，行数还是 1</text>
+
+  <rect x="806" y="86" width="248" height="152" rx="10" fill="#fbeaea" stroke="#a84040" stroke-width="1.6"/>
+  <text x="822" y="110" font-size="14" font-weight="bold" fill="#6d1f1f">③ 对象被释放</text>
+  <text x="822" y="134" font-size="12" fill="#6d1f1f">对象表行数 0</text>
+  <text x="822" y="155" font-size="12" fill="#6d1f1f">Prepared_stmt_count 0</text>
+  <text x="822" y="176" font-size="12" fill="#6d1f1f">Com_stmt_close 1</text>
+  <text x="822" y="197" font-size="11.5" fill="#6d1f1f">同一条 SQL 文本再来一次</text>
+  <text x="822" y="216" font-size="11.5" fill="#6d1f1f">要重新付一遍解析</text>
+
+  <path d="M 274 162 L 388 162" stroke="#3d6fa5" stroke-width="2"/>
+  <path d="M 376 156 L 390 162 L 376 168" fill="none" stroke="#3d6fa5" stroke-width="2"/>
+  <text x="284" y="150" font-size="12" font-weight="bold" fill="#12314f">PREPARE 1 次</text>
+
+  <path d="M 678 162 L 802 162" stroke="#a84040" stroke-width="2"/>
+  <path d="M 790 156 L 804 162 L 790 168" fill="none" stroke="#a84040" stroke-width="2"/>
+  <text x="686" y="150" font-size="12" font-weight="bold" fill="#6d1f1f">DEALLOCATE 1 次</text>
+
+  <path d="M 470 86 L 470 62 L 610 62 L 610 86" fill="none" stroke="#4a8f57" stroke-width="2"/>
+  <path d="M 604 74 L 610 88 L 616 74" fill="none" stroke="#4a8f57" stroke-width="2"/>
+  <text x="452" y="54" font-size="12" font-weight="bold" fill="#1d4d27">EXECUTE 3 次：只累加计数，不新建对象</text>
+
+  <text x="24" y="272" font-size="13" fill="#5a6b7c">读数落在三个不同的地方，别只盯一个</text>
+  <rect x="24" y="282" width="1032" height="70" fill="#f0f2f5" stroke="#5a6b7c" stroke-width="1.2"/>
+  <text x="40" y="304" font-size="12.5" fill="#12314f">对象级：prepared_statements_instances 的行数与 COUNT_EXECUTE —— 回答"这一个语句对象在不在、被执行了几次"</text>
+  <text x="40" y="326" font-size="12.5" fill="#12314f">全局级：Com_stmt_prepare / Com_stmt_execute / Com_stmt_close —— 回答"服务端一共收到几次预编译协议命令"，是累计量</text>
+  <text x="40" y="346" font-size="12.5" fill="#12314f">存活量：Prepared_stmt_count —— 回答"此刻还活着几个对象"，可加可减，DEALLOCATE 后回 0</text>
+
+  <rect x="24" y="372" width="500" height="150" fill="#f6fbf4" stroke="#4a8f57" stroke-width="1.4"/>
+  <text x="40" y="396" font-size="13.5" font-weight="bold" fill="#1d4d27">预编译真的省了什么</text>
+  <text x="40" y="420" font-size="12" fill="#1d4d27">解析只付 1 次：Com_stmt_prepare 从 0 只加到 1</text>
+  <text x="40" y="442" font-size="12" fill="#1d4d27">执行计划按对象缓存，3 次 EXECUTE 共用同一个</text>
+  <text x="40" y="464" font-size="12" fill="#1d4d27">SQL_TEXT 存的是带占位符的模板，不是拼好值的语句</text>
+  <text x="40" y="486" font-size="12" fill="#1d4d27">参数与语句分离 → 拼接写法会摊成 N 条指纹，这里永远是 1 条</text>
+
+  <rect x="556" y="372" width="500" height="150" fill="#fff6e8" stroke="#b07d2a" stroke-width="1.4"/>
+  <text x="572" y="396" font-size="13.5" font-weight="bold" fill="#6b4708">预编译没省什么（常见误判）</text>
+  <text x="572" y="420" font-size="12" fill="#6b4708">网络往返一次没少：EXECUTE 3 次就是 3 个来回</text>
+  <text x="572" y="442" font-size="12" fill="#6b4708">要少往返得靠客户端把参数拼进模板，那是另一条路</text>
+  <text x="572" y="464" font-size="12" fill="#6b4708">应用里 Prepared_stmt_count 通常不归零 —— 驱动按连接缓存语句</text>
+  <text x="572" y="486" font-size="12" fill="#6b4708">它不为 0 不等于泄漏，要和对象表行数一起看</text>
+
+  <text x="24" y="548" font-size="11.5" fill="#8a99a8">三段读数取自同一条模板语句：PREPARE 之前三处计数全为 0，EXECUTE 之后行数 1 / COUNT_EXECUTE 3，DEALLOCATE 之后行数与存活量回 0、Com_stmt_close 记 1</text>
+</svg>

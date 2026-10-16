@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 730" width="1000" height="730" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="730" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一帧压缩数据块与一条数据标记的字节布局</text>
+  <text x="500" y="55" text-anchor="middle" font-size="13" fill="#64748b">表 w5c2_blk 实测 · 131072 行 · index_granularity=8192 · part all_1_1_0 为 Wide / 16 个 mark</text>
+
+  <text x="60" y="86" font-size="13" font-weight="bold" fill="#0f172a">① 一帧压缩数据块的字节布局：帧总长 = 16 + 压缩后大小</text>
+
+  <rect x="60" y="100" width="180" height="54" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="150" y="122" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">校验和 16 B</text>
+  <text x="150" y="140" text-anchor="middle" font-size="10.5" fill="#64748b">偏移 0 ~ 15</text>
+
+  <rect x="244" y="100" width="100" height="54" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="294" y="122" text-anchor="middle" font-size="12" font-weight="bold" fill="#78350f">算法标志</text>
+  <text x="294" y="140" text-anchor="middle" font-size="10.5" fill="#92400e">1 B · 偏移 16</text>
+
+  <rect x="348" y="100" width="150" height="54" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="423" y="122" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">压缩后大小 4 B</text>
+  <text x="423" y="140" text-anchor="middle" font-size="10.5" fill="#1e40af">偏移 17 ~ 20</text>
+
+  <rect x="502" y="100" width="150" height="54" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="577" y="122" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">压缩前大小 4 B</text>
+  <text x="577" y="140" text-anchor="middle" font-size="10.5" fill="#166534">偏移 21 ~ 24</text>
+
+  <rect x="656" y="100" width="284" height="54" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="798" y="122" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">载荷 · 压缩后的实际数据</text>
+  <text x="798" y="140" text-anchor="middle" font-size="10.5" fill="#991b1b">u.bin 首帧载荷 65,536 B · 从偏移 25 起</text>
+
+  <text x="60" y="178" font-size="11.5" fill="#0f172a">实测闭合：a.bin 131,122 B = 2 帧 × (16 + 65,545)；u.bin 1,048,976 B = 16 帧 × (16 + 65,545)。六个 .bin 逐帧走位全部正好走到文件末尾。</text>
+  <text x="60" y="196" font-size="11.5" fill="#b91c1c">口径修正：旧版资料的「9 字节头」只数了 1 个 UInt8 + 2 个 UInt32，未计前面 16 字节校验和 → 帧净开销实测 25 字节；载荷 = 压缩后 − 9。</text>
+  <text x="60" y="214" font-size="11.5" fill="#0f172a">这 16 字节是内容校验而非序号：a.bin 两帧载荷逐字节相同（number % 256，65,536 = 256 × 256），两帧校验和也同为 48abc16c743f7f22…。</text>
+
+  <text x="60" y="248" font-size="13" font-weight="bold" fill="#0f172a">② 算法标志字节的实测取值：同一份数据换编解码，只有这一个字节和压缩后大小在变，压缩前恒为 65,536</text>
+
+  <rect x="60" y="262" width="286" height="54" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="203" y="284" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">0x02 = NONE</text>
+  <text x="203" y="302" text-anchor="middle" font-size="10.5" fill="#475569">a.bin / u.bin / s.bin · 65,545 比 65,536</text>
+
+  <rect x="357" y="262" width="286" height="54" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="284" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">0x82 = LZ4</text>
+  <text x="500" y="302" text-anchor="middle" font-size="10.5" fill="#1e40af">lz.bin 首帧 · 压缩后 32,780 / 压缩前 65,536</text>
+
+  <rect x="654" y="262" width="286" height="54" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="797" y="284" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">0x90 = ZSTD</text>
+  <text x="797" y="302" text-anchor="middle" font-size="10.5" fill="#991b1b">zs.bin 首帧 · 压缩后 8,984 / 压缩前 65,536</text>
+
+  <text x="60" y="346" font-size="13" font-weight="bold" fill="#0f172a">③ 一条数据标记（mark）的字段布局：实测解码自标记文件解压后的 UInt64 序列</text>
+
+  <rect x="60" y="360" width="200" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="160" y="379" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">&lt;列&gt;.cmrk</text>
+  <text x="160" y="396" text-anchor="middle" font-size="10.5" fill="#64748b">非自适应 · 每条 16 B</text>
+
+  <rect x="264" y="360" width="240" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="384" y="379" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">压缩流偏移 UInt64 · 8 B</text>
+  <text x="384" y="396" text-anchor="middle" font-size="10.5" fill="#1e40af">压缩块在 .bin 里的起始偏移</text>
+
+  <rect x="508" y="360" width="240" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="628" y="379" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">块内解压偏移 UInt64 · 8 B</text>
+  <text x="628" y="396" text-anchor="middle" font-size="10.5" fill="#166534">解压后在该块内的起始偏移</text>
+
+  <rect x="752" y="360" width="188" height="46" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="846" y="379" text-anchor="middle" font-size="11" fill="#0f172a">a.cmrk 解压后 256 B</text>
+  <text x="846" y="396" text-anchor="middle" font-size="11" fill="#0f172a">÷ 16 条 = 每条 16 B</text>
+
+  <rect x="60" y="414" width="200" height="46" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="160" y="433" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">&lt;列&gt;.cmrk2</text>
+  <text x="160" y="450" text-anchor="middle" font-size="10.5" fill="#64748b">自适应（默认）· 每条 24 B</text>
+
+  <rect x="264" y="414" width="190" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="359" y="433" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">压缩流偏移 8 B</text>
+  <text x="359" y="450" text-anchor="middle" font-size="10.5" fill="#1e40af">与 .cmrk 同义</text>
+
+  <rect x="458" y="414" width="190" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="553" y="433" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">块内解压偏移 8 B</text>
+  <text x="553" y="450" text-anchor="middle" font-size="10.5" fill="#166534">与 .cmrk 同义</text>
+
+  <rect x="652" y="414" width="130" height="46" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="717" y="433" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#78350f">行数 8 B</text>
+  <text x="717" y="450" text-anchor="middle" font-size="10.5" fill="#92400e">实测恒 8192</text>
+
+  <rect x="786" y="414" width="154" height="46" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="863" y="433" text-anchor="middle" font-size="11" fill="#0f172a">u.cmrk2 解压后 408 B</text>
+  <text x="863" y="450" text-anchor="middle" font-size="11" fill="#0f172a">÷ 17 条 = 每条 24 B</text>
+
+  <text x="60" y="480" font-size="11.5" fill="#0f172a">收尾标记（第 17 条 · 表 w5c2_blk2）实测末条读数：a 列 (131122, 0, 0)、u 列 (1048976, 0, 0)、z 列 (25283204, 0, 0)。</text>
+  <text x="60" y="497" font-size="11.5" fill="#0f172a">行数为 0、偏移恰等于对应 .bin 的文件长度 —— 这就是 marks = ceil(rows / 8192) + 1 里多出来的一条。</text>
+  <text x="60" y="517" font-size="11.5" fill="#64748b">标记文件自身也是压缩帧：实测其帧头算法字节是 0x90（ZSTD），而同目录 default_compression_codec.txt 的内容是 CODEC(LZ4)；本图只记读数，未验证它由哪项配置决定。</text>
+
+  <text x="60" y="552" font-size="13" font-weight="bold" fill="#0f172a">④ 标记数与帧数的三种关系：同一个 part，三列都是 16 条标记</text>
+
+  <rect x="60" y="566" width="286" height="92" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="203" y="588" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">多对一 · 8 条标记 : 1 帧</text>
+  <text x="203" y="608" text-anchor="middle" font-size="10.5" fill="#9a3412">UInt8 · 每 granule 8,192 B 小于 64 KB</text>
+  <text x="203" y="624" text-anchor="middle" font-size="10.5" fill="#9a3412">a.bin 131,122 B / 2 帧</text>
+  <text x="203" y="640" text-anchor="middle" font-size="10.5" fill="#9a3412">标记 0 ~ 7 的压缩偏移恒为 0</text>
+  <text x="203" y="654" text-anchor="middle" font-size="10.5" fill="#9a3412">解压偏移按 8192 递增</text>
+
+  <rect x="357" y="566" width="286" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="588" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">一对一 · 1 条标记 : 1 帧</text>
+  <text x="500" y="608" text-anchor="middle" font-size="10.5" fill="#1e40af">UInt64 · 每 granule 65,536 B 等于下限</text>
+  <text x="500" y="624" text-anchor="middle" font-size="10.5" fill="#1e40af">u.bin 1,048,976 B / 16 帧</text>
+  <text x="500" y="640" text-anchor="middle" font-size="10.5" fill="#1e40af">压缩偏移 0 → 65561 → 131122</text>
+  <text x="500" y="654" text-anchor="middle" font-size="10.5" fill="#1e40af">每条 +65,561 = 16 + 65,545</text>
+
+  <rect x="654" y="566" width="286" height="92" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="797" y="588" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">一对多 · 1 条标记 : 2 帧</text>
+  <text x="797" y="608" text-anchor="middle" font-size="10.5" fill="#991b1b">String · 首 granule 1,580,066 B 超过 1 MB</text>
+  <text x="797" y="624" text-anchor="middle" font-size="10.5" fill="#991b1b">s.bin 25,283,204 B / 32 帧</text>
+  <text x="797" y="640" text-anchor="middle" font-size="10.5" fill="#991b1b">压缩偏移 0 → 1580116 → 3160342</text>
+  <text x="797" y="654" text-anchor="middle" font-size="10.5" fill="#991b1b">每条 +1,580,116 = 1,048,601 + 531,515</text>
+
+  <text x="60" y="678" font-size="11.5" fill="#64748b">实测环境：容器 w5c1-ch · clickhouse/clickhouse-server:26.3-alpine · 服务端 26.3.29.7</text>
+  <text x="60" y="695" font-size="11.5" fill="#64748b">表 w5c2_blk 16 条标记、w5c2_blk2 17 条标记，各 131072 行；全部读数出处见正文 §4.4。</text>
+  <text x="60" y="715" font-size="11.5" fill="#64748b">未实测：帧内载荷的解压（缺 LZ4 / ZSTD 客户端库）、primary.cidx 的内部字段布局（本表 ORDER BY tuple() 主键为空）、Compact part 的 data.cmrk4 记录宽度。</text>
+</svg>

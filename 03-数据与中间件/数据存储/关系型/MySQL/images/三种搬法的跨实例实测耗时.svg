@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 588" width="1000" height="588" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="588" fill="#ffffff"/>
+  <text x="500" y="28" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一份数据的三种搬法（跨实例实测）</text>
+  <text x="500" y="48" text-anchor="middle" font-size="13" fill="#64748b">同一比例尺，条长 = 实测耗时；条下方的红条 = 源库被堵住的窗口；单位标在每条右侧</text>
+
+  <g transform="translate(14,60)">
+    <rect x="0" y="0" width="972" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="14" y="24" font-size="14" font-weight="bold" fill="#0f172a">端到端耗时（源库 w7m2-m1 → 目标实例）</text>
+    <line x1="296" y1="36" x2="296" y2="252" stroke="#94a3b8" stroke-width="1"/>
+    <line x1="300" y1="256" x2="960" y2="256" stroke="#94a3b8" stroke-width="1"/>
+
+    <text x="14" y="56" font-size="11.5" fill="#334155">逻辑导出 mysqldump（单表）</text>
+    <text x="14" y="72" font-size="11.5" fill="#64748b">--single-transaction</text>
+    <rect x="300" y="50" width="15" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="325" y="63" font-size="11.5" fill="#334155">2940 ms，产物 26640416 字节</text>
+
+    <text x="14" y="94" font-size="11.5" fill="#334155">逻辑导入（同一份 SQL）</text>
+    <text x="14" y="110" font-size="11.5" fill="#64748b">导入 m3，逐行重建</text>
+    <rect x="300" y="88" width="233" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+    <text x="543" y="101" font-size="11.5" fill="#334155">46571 ms</text>
+
+    <text x="14" y="132" font-size="11.5" fill="#334155">物理拷贝全流程墙钟（单表）</text>
+    <text x="14" y="148" font-size="11.5" fill="#64748b">建空表 747 ms → DISCARD 735 ms</text>
+    <rect x="300" y="126" width="322" height="18" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+    <text x="632" y="121" font-size="11.5" fill="#334155">64465 ms</text>
+    <text x="308" y="157" font-size="11.5" fill="#64748b">拷两文件 28475 ms、IMPORT 4003 ms</text>
+    <rect x="300" y="166" width="164" height="14" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="474" y="177" font-size="11.5" fill="#dc2626">源库被堵 32879 ms（MDL SHARED_NO_WRITE，写挂住、读不受影响）</text>
+
+    <text x="14" y="200" font-size="11.5" fill="#334155">Clone 插件（整实例口径）</text>
+    <text x="14" y="216" font-size="11.5" fill="#64748b">FILE COPY 48.031 s、2 线程</text>
+    <rect x="300" y="194" width="244" height="18" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+    <text x="554" y="207" font-size="11.5" fill="#334155">48.737 s，拷 427939380 字节</text>
+
+    <text x="14" y="240" font-size="11.5" fill="#334155">空实例接复制（整实例）</text>
+    <text x="14" y="252" font-size="11.5" fill="#64748b">只重放 binlog，232 个事务</text>
+    <rect x="300" y="232" width="400" height="18" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+    <text x="710" y="245" font-size="11.5" fill="#334155">80 s 内追平</text>
+
+    <text x="14" y="282" font-size="11.5" fill="#334155">要点：只有物理拷贝那一行有红条 —— 决定能不能上生产的不是速度，而是「源库被堵多久」这一列。</text>
+  </g>
+
+  <g transform="translate(14,370)">
+    <rect x="0" y="0" width="478" height="152" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="14" y="24" font-size="14" font-weight="bold" fill="#0f172a">Clone 的分阶段读数</text>
+    <text x="14" y="50" font-size="11.5" fill="#334155">FILE COPY 48.031 s，估与实拷都是 427939380 字节</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">PAGE COPY 与 FILE SYNC 都在 1 s 内，redo 只补 7680 字节</text>
+    <text x="14" y="90" font-size="11.5" fill="#334155">5 个阶段全部 Completed，目标目录 412M</text>
+    <text x="14" y="110" font-size="11.5" fill="#334155">不锁表：边拷边补 redo，所以被堵窗口是 0</text>
+    <text x="14" y="134" font-size="11.5" fill="#dc2626">坑：DATA DIRECTORY 不能在 datadir 内（ERROR 3632），</text>
+    <text x="14" y="148" font-size="11.5" fill="#dc2626">目录已存在报 1007，无权限建目录报 1006</text>
+  </g>
+
+  <g transform="translate(508,370)">
+    <rect x="0" y="0" width="478" height="152" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="14" y="24" font-size="14" font-weight="bold" fill="#0f172a">口径：搬的东西不一样大</text>
+    <text x="14" y="50" font-size="11.5" fill="#334155">逻辑与物理两行 = 一张表 user_route</text>
+    <text x="14" y="70" font-size="11.5" fill="#334155">800000 行、90.7 MB，.ibd 实测 104857600 字节</text>
+    <text x="14" y="90" font-size="11.5" fill="#334155">Clone 与复制重放两行 = 整实例，源库 datadir 593M</text>
+    <text x="14" y="110" font-size="11.5" fill="#334155">按同样多的数据折算，Clone 约 8.50 MiB/s</text>
+    <text x="14" y="130" font-size="11.5" fill="#334155">跨实例时 .cfg（1064 字节）要一起拷，别省这一步</text>
+  </g>
+
+  <text x="500" y="546" text-anchor="middle" font-size="11.5" fill="#64748b">出处：本机 Docker Desktop，mysql:8.0 = 8.0.46，容器 w7m2-m1（25301）→ w7m2-m2（25302）/ w7m2-m3（25303）/ w7m2-m4（25304），四条路都做 COUNT 与 SUM 校验</text>
+  <text x="500" y="568" text-anchor="middle" font-size="11.5" fill="#64748b">未实测：亿级大表的导出与导入耗时（本机最大 800000 行）、pt-table-checksum 与 pt-table-sync（本机未装 Percona Toolkit）</text>
+</svg>

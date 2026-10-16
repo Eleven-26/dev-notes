@@ -8,6 +8,8 @@
 > ✅ **实测口径**：本篇的锁清单、`SKIP LOCKED` / `NOWAIT` 的返回与报错原文，
 > 来自本机 Docker Desktop 的 `mysql:8.0` 隔离实例（容器 `mysql-arch-lab`、端口 13307、**8.0.46**）；
 > 夹具是 `locklab.t(id INT PRIMARY KEY, k INT NOT NULL, KEY idx_k(k))`，数据 `id = 1,2,3,5` / `k = 10,20,30,50`。
+>
+> ✅ 2.7 的 MDL 等待队列另用本机容器 `w5m1-mysql`（本机连 `127.0.0.1:24801`，同为 **8.0.46**，库 `w5m2lab`，同一副 `t` 夹具）实测 5 轮 + 3 轮对照；2.6 的两方视角沿用 `mysql-arch-lab` 的旧读数。
 > ⚠️ 主从与分布式场景下的锁见 [分布式锁.md](../../NoSQL/Redis/分布式锁.md)。
 
 ---
@@ -179,6 +181,62 @@ MDL 由 MySQL **自动加**、不用你写，作用是保护**表结构**不被�
 ![一次 FOR UPDATE 在 InnoDB 里同时挂上意向锁、间隙锁、临键锁与回表行锁：命中记录拿临键锁、记录之后的间隙单独加 GAP、回表落在主键上再加纯记录锁，没有索引时范围扩到 supremum](images/InnoDB的锁体系与加锁范围.svg)
 
 上图把本节实测的四把锁放在同一张表上：命中记录拿临键锁、记录之后的间隙单独加 `X,GAP`、回表落在主键上再加纯记录锁，而没有索引时锁定范围会一直扩到 `supremum`。
+
+### 2.7 MDL 等待队列的现场复现：一把 PENDING 的 EXCLUSIVE 连普通读也堵
+
+**本节要点**：2.6 的「长事务 + DDL」两方视角只说明 DDL 在等；把第三个会话（一条最普通的 `SELECT`）加进来，才看得见「整张表突然全卡」的队形 —— 后来的读排在 `ALTER` 之后一起变成 `PENDING`，堵住它的不是那个长事务本身。
+
+复现环境：本机 Docker Desktop 的 `mysql:8.0`（容器 `w5m1-mysql`，本机连 `127.0.0.1:24801`，**8.0.46**），库 `w5m2lab`，表与 2.1 同一副夹具（`t(id, k, v)`，数据 `id = 1,2,3,5` / `k = 10,20,30,50`）。三个会话按 A → B → C 的顺序起跑：
+
+```sql
+-- 会话 A：读一行之后不提交，t 上的 SHARED_READ 一直持到事务结束
+BEGIN; SELECT id, k FROM t WHERE id = 1; SELECT SLEEP(14) AS a_hold;
+
+-- 会话 B：在线 DDL；先给它单独设一个短的 MDL 等待上限（默认值是一年）
+SET SESSION lock_wait_timeout = 4; ALTER TABLE t ADD COLUMN c1 INT NULL;
+
+-- 会话 C：一条最普通的读，既不写也不改，只数行数
+SELECT COUNT(*) AS c_from_blocked_session FROM t;
+```
+
+C 起跑约 1 秒后抓 `performance_schema.metadata_locks`，**5 轮逐行同形**（`lock_wait_timeout` 分别设 4 / 5 / 6 / 8 / 10 秒，只有 DDL 自建临时表的名字每轮换）：
+
+| 会话 | OBJECT_NAME | LOCK_TYPE | LOCK_DURATION | LOCK_STATUS |
+|---|---|---|---|---|
+| A 长事务 | `t` | `SHARED_READ` | TRANSACTION | GRANTED |
+| B DDL | `NULL`（库级） | `INTENTION_EXCLUSIVE` | TRANSACTION | GRANTED |
+| B DDL | `t` | `SHARED_UPGRADABLE` | TRANSACTION | GRANTED |
+| B DDL | `t` | `EXCLUSIVE` | TRANSACTION | **PENDING** |
+| B DDL | `#sql-1_12`（DDL 自建临时表） | `EXCLUSIVE` | STATEMENT | GRANTED |
+| C 普通读 | `t` | `SHARED_READ` | TRANSACTION | **PENDING** |
+
+⭐ 关键在最后一行：`SHARED_READ` 之间本来**互相兼容**（两个普通读可以同时跑），但 B 的 `EXCLUSIVE` 已经排在队列里，C 就只能跟着排队 —— MDL 故意让后来的读者排在 DDL 之后，否则 DDL 会被无限饿死。同一时刻 `information_schema.processlist` 的现场（第 1 轮原样输出，`TIME` 单位是秒）：
+
+```text
++----+--------+---------------------------------+----------------------------------------------------+
+| id | time_s | state                           | info                                               |
++----+--------+---------------------------------+----------------------------------------------------+
+| 17 |      5 | User sleep                      | SELECT SLEEP(14) AS a_hold                         |
+| 18 |      3 | Waiting for table metadata lock | ALTER TABLE t ADD COLUMN c1 INT NULL               |
+| 19 |      1 | Waiting for table metadata lock | SELECT COUNT(*) AS c_from_blocked_session FROM t   |
++----+--------+---------------------------------+----------------------------------------------------+
+```
+
+5 轮的 `TIME` 读数按角色取并集：长事务 **4~5 秒**、DDL **2~4 秒**、普通读 **1 秒**。C 真正被堵多久，等于「B 还要再排多久才放弃」：`lock_wait_timeout` 设 4 / 5 / 6 / 8 / 10 秒时，C 的实测等待分别是 **3 / 3 / 5 / 6 / 9 秒**，一直到 B 报错退出，C 才拿到结果 `4`（表里 4 行）。
+
+**对照组（3 轮）**：把会话 B 去掉，只留 A 那个不提交的事务，同一条 `SELECT COUNT(*) AS c_from_blocked_session FROM t` 的耗时是 **0~1 秒**，`metadata_locks` 里也只剩 A 那一条 `SHARED_READ` / `GRANTED`。→ 堵住普通读的不是长事务，是**排在中间的那把 `EXCLUSIVE`**。
+
+B 自己放弃时的报错原文（5/5 轮一字不差）：
+
+```text
+ERROR 1205 (HY000) at line 1: Lock wait timeout exceeded; try restarting transaction
+```
+
+> ⚠️ 这个错误号与行锁等待超时**同为 1205、连文案都一模一样**，管的参数却不是同一个。实测本机默认值：`innodb_lock_wait_timeout = 50`（行锁）、`lock_wait_timeout = 31536000`（MDL，正好一年）。默认值下 `ALTER` 会一直在队列里排着，把后面所有读写一起堵到长事务结束 —— 这才是 2.6 那句「整张表突然全卡」的成因。止损动作有两个：**先处理长事务**，以及**给 DDL 单独设小的 `lock_wait_timeout`**（排查动作见 [锁等待与死锁排查.md](锁等待与死锁排查.md) 的第三节）。
+
+![MDL 等待队列的现场复现：长事务持着 SHARED_READ 不放，DDL 的 EXCLUSIVE 排在它后面变成 PENDING，再后来的普通读也只能 PENDING 排队，于是整张表连读都卡住；下方给出五轮的 TIME 与被堵秒数、DDL 放弃时的 1205 报错原文，以及行锁与 MDL 两个超时参数的默认值差异](images/MDL等待队列把普通读一起堵住.svg)
+
+上图就是这条队列：属于表 `t` 的锁按到达顺序画成三个格子，`EXCLUSIVE` 卡在中间，后面那条本可以和 `SHARED_READ` 共存的普通读被迫 `PENDING`；② 额外持有的 `SHARED_UPGRADABLE`、库级 `INTENTION_EXCLUSIVE` 与临时表锁写在队列下方一行。左下还给出对照组（没有 DDL 排队时普通读 0~1 秒返回），右下是 1205 报错原文与两个超时参数的默认值差异。
 
 ## 延伸追问
 

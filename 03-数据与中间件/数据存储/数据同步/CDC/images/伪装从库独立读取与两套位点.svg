@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">伪装从库身份的独立读取与位点分两处</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#475569">上带与中带是容器实测读数；下带是独立服务端的位点机制示意</text>
+
+  <rect x="24" y="78" width="952" height="182" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="100" font-size="15" font-weight="700" fill="#14532d">同一位点起，两个复制身份各读各的</text>
+  <rect x="120" y="110" width="760" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="130" text-anchor="middle" font-size="12" fill="#1e3a8a">同一份日志、同一起点位点 126629</text>
+  <rect x="120" y="152" width="560" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="400" y="173" text-anchor="middle" font-size="12" fill="#14532d">复制身份一：22 个事件 / 6337 字节 / 4 个事务</text>
+  <text x="700" y="173" font-size="12" fill="#334155">身份一编号 301</text>
+  <rect x="120" y="196" width="560" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="400" y="217" text-anchor="middle" font-size="12" fill="#14532d">复制身份二：22 个事件 / 6337 字节 / 4 个事务</text>
+  <text x="700" y="217" font-size="12" fill="#334155">身份二编号 302</text>
+  <text x="44" y="248" font-size="11" fill="#64748b">起点相同、读数完全相同：每个身份都独立收到全部事件，日志层不需要先经中间队列</text>
+
+  <rect x="24" y="276" width="952" height="152" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="298" font-size="15" font-weight="700" fill="#7c2d12">这 6337 字节的构成</text>
+  <rect x="50" y="310" width="170" height="46" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="135" y="330" text-anchor="middle" font-size="12" fill="#334155">事件流头部</text>
+  <text x="135" y="348" text-anchor="middle" font-size="11" fill="#334155">122 + 43 字节</text>
+  <rect x="240" y="310" width="170" height="46" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="325" y="330" text-anchor="middle" font-size="12" fill="#7c2d12">一个事务</text>
+  <text x="325" y="348" text-anchor="middle" font-size="11" fill="#7c2d12">1543 字节</text>
+  <rect x="430" y="310" width="170" height="46" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="515" y="330" text-anchor="middle" font-size="11" fill="#7c2d12">事务头 79 / 71</text>
+  <text x="515" y="348" text-anchor="middle" font-size="11" fill="#7c2d12">表映射 94</text>
+  <rect x="620" y="310" width="170" height="46" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="705" y="330" text-anchor="middle" font-size="11" fill="#7c2d12">行事件 1268</text>
+  <text x="705" y="348" text-anchor="middle" font-size="11" fill="#7c2d12">事务尾 31</text>
+  <rect x="810" y="310" width="140" height="46" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="880" y="330" text-anchor="middle" font-size="12" fill="#7f1d1d">共 4 个事务</text>
+  <text x="880" y="348" text-anchor="middle" font-size="11" fill="#7f1d1d">6337 字节</text>
+  <text x="44" y="382" font-size="12" fill="#334155">4 × 1543 + 122 + 43 = 6337，与服务端位点差逐字节吻合</text>
+  <text x="44" y="406" font-size="11" fill="#64748b">每个读到的位点都要落盘，身份停读期间的变更才不会丢</text>
+
+  <rect x="24" y="444" width="952" height="152" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="466" font-size="15" font-weight="700" fill="#4c1d95">独立服务端把读日志收成一处，位点仍分两处（机制示意，本带无读数）</text>
+  <rect x="120" y="482" width="280" height="48" rx="8" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="260" y="502" text-anchor="middle" font-size="12" fill="#4c1d95">服务端读位点</text>
+  <text x="260" y="520" text-anchor="middle" font-size="11" fill="#4c1d95">日志读到哪了</text>
+  <path d="M 400 506 L 560 495" stroke="#7c3aed" stroke-width="1.5"/>
+  <path d="M 400 506 L 560 541" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="560" y="478" width="250" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="685" y="500" text-anchor="middle" font-size="12" fill="#14532d">客户端一 ack 位点</text>
+  <rect x="560" y="524" width="250" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="685" y="546" text-anchor="middle" font-size="12" fill="#14532d">客户端二 ack 位点</text>
+  <text x="44" y="580" font-size="11" fill="#64748b">两处各自推进：客户端不 ack，服务端不推进；服务端位点也不代表下游真的写成功</text>
+</svg>

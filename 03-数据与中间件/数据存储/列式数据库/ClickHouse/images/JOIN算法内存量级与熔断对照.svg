@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 782" width="1000" height="782" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="782" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">六种 JOIN 算法的内存量级与熔断行为对照</text>
+  <text x="500" y="55" text-anchor="middle" font-size="13" fill="#64748b">表 w5c2_jbig 1,000 万行 JOIN w5c2_jsmall 1 万行 · 每种取值各 6 轮 · 区间为并集 · 条长按 MB 等比</text>
+
+  <text x="60" y="86" font-size="13" font-weight="bold" fill="#0f172a">① 峰值内存并集（由小到大）：同一条查询只换 join_algorithm，量级差 3 个档</text>
+
+  <text x="190" y="121" text-anchor="end" font-size="12" font-weight="bold" fill="#0f172a">partial_merge</text>
+  <rect x="200" y="104" width="7" height="26" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="650" y="121" font-size="10.5" fill="#166534">627,629 ~ 1,360,130 B · PartialMergeJoin</text>
+
+  <text x="190" y="161" text-anchor="end" font-size="12" font-weight="bold" fill="#0f172a">hash</text>
+  <rect x="200" y="144" width="15" height="26" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="650" y="161" font-size="10.5" fill="#1e40af">3,017,672 ~ 3,018,696 B · HashJoin</text>
+
+  <text x="190" y="201" text-anchor="end" font-size="12" font-weight="bold" fill="#0f172a">default</text>
+  <rect x="200" y="184" width="15" height="26" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="650" y="201" font-size="10.5" fill="#1e40af">3,012,112 ~ 3,024,792 B · HashJoin</text>
+
+  <text x="190" y="241" text-anchor="end" font-size="12" font-weight="bold" fill="#0f172a">grace_hash</text>
+  <rect x="200" y="224" width="26" height="26" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="650" y="241" font-size="10.5" fill="#166534">5,233,318 ~ 5,251,501 B · GraceHashJoin</text>
+
+  <text x="190" y="281" text-anchor="end" font-size="12" font-weight="bold" fill="#0f172a">parallel_hash</text>
+  <rect x="200" y="264" width="48" height="26" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="650" y="281" font-size="10.5" fill="#1e40af">8,783,800 ~ 9,554,144 B · ConcurrentHashJoin</text>
+
+  <text x="190" y="321" text-anchor="end" font-size="12" font-weight="bold" fill="#0f172a">full_sorting_merge</text>
+  <rect x="200" y="304" width="430" height="26" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="650" y="321" font-size="10.5" fill="#166534">85,499,735 ~ 86,041,247 B · FullSortingMergeJoin</text>
+
+  <text x="60" y="352" font-size="10.5" fill="#475569">口径：1 MB = 1,000,000 B，条长按并集上界绘制</text>
+
+  <rect x="60" y="374" width="14" height="14" rx="2" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="82" y="386" font-size="10.5" fill="#1e40af">右表全驻留派：受 max_bytes_in_join 硬熔断</text>
+  <rect x="400" y="374" width="14" height="14" rx="2" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="422" y="386" font-size="10.5" fill="#166534">落盘 / 分桶派：不受该上限约束</text>
+
+  <text x="60" y="420" font-size="13" font-weight="bold" fill="#0f172a">② 把上限压到 max_bytes_in_join = 102400：同一查询的两种结局</text>
+
+  <rect x="60" y="434" width="440" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="280" y="456" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">default / hash / parallel_hash → Code 191</text>
+  <text x="280" y="476" text-anchor="middle" font-size="10.5" fill="#1e40af">Limit for JOIN exceeded, max bytes: 100.00 KiB,</text>
+  <text x="280" y="492" text-anchor="middle" font-size="10.5" fill="#1e40af">current bytes: 2.00 MiB: While executing FillingRightJoinSide.</text>
+  <text x="280" y="508" text-anchor="middle" font-size="10.5" fill="#1e40af">(SET_SIZE_LIMIT_EXCEEDED)</text>
+
+  <rect x="520" y="434" width="420" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="730" y="456" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">grace_hash / partial_merge / full_sorting_merge</text>
+  <text x="730" y="476" text-anchor="middle" font-size="10.5" fill="#166534">三者在同一上限下全部正常返回 10000 行</text>
+  <text x="730" y="492" text-anchor="middle" font-size="10.5" fill="#166534">partial_merge 峰值 627,629 ~ 1,360,130 B 已超过 100 KiB</text>
+  <text x="730" y="508" text-anchor="middle" font-size="10.5" fill="#166534">→ 该上限管的是右表驻留量，不是查询总内存</text>
+
+  <text x="60" y="560" font-size="13" font-weight="bold" fill="#0f172a">③ 两条只有本批测到的差别</text>
+
+  <rect x="60" y="574" width="286" height="96" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="203" y="596" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">运行过滤器节点 = 1</text>
+  <text x="203" y="616" text-anchor="middle" font-size="10.5" fill="#475569">default · hash · parallel_hash</text>
+  <text x="203" y="632" text-anchor="middle" font-size="10.5" fill="#475569">grace_hash 也算哈希家族</text>
+  <text x="203" y="648" text-anchor="middle" font-size="10.5" fill="#475569">BuildRuntimeFilter 有 1 个</text>
+
+  <rect x="357" y="574" width="286" height="96" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="500" y="596" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#78350f">运行过滤器节点 = 0</text>
+  <text x="500" y="616" text-anchor="middle" font-size="10.5" fill="#92400e">partial_merge · full_sorting_merge</text>
+  <text x="500" y="632" text-anchor="middle" font-size="10.5" fill="#92400e">换这两派时大表侧预过滤</text>
+  <text x="500" y="648" text-anchor="middle" font-size="10.5" fill="#92400e">会一起消失，左表要全量读</text>
+
+  <rect x="654" y="574" width="286" height="96" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="797" y="596" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">只有它是 YShaped 计划</text>
+  <text x="797" y="616" text-anchor="middle" font-size="10.5" fill="#991b1b">Join (JOIN YShaped)</text>
+  <text x="797" y="632" text-anchor="middle" font-size="10.5" fill="#991b1b">Sort Left / Sort Right before JOIN</text>
+  <text x="797" y="648" text-anchor="middle" font-size="10.5" fill="#991b1b">其余五种都是 FillRightFirst</text>
+
+  <text x="60" y="700" font-size="11.5" fill="#0f172a">④ 量级来源：85,499,735 ~ 86,041,247 B 与「左表 1,000 万行 × UInt64 8 B = 80,000,000 B」同量级，</text>
+  <text x="60" y="718" font-size="11.5" fill="#0f172a">多出的部分是排序缓冲与管道开销；按并集上界相除约为 hash 的 28 倍 —— 这是推导值，不是实测倍数。</text>
+
+  <text x="60" y="740" font-size="11.5" fill="#64748b">实测环境：容器 w5c1-ch · 服务端 26.3.29.7 · 每种取值 6 轮（分两批各 3 轮），区间按逐位取并集；全部读数出处见正文 §10.6。</text>
+  <text x="60" y="762" font-size="11.5" fill="#64748b">未实测：grace_hash 的桶数与桶大小（26.3 的 system.settings 里查不到那三个设置）、direct 算法（本批右表是普通 MergeTree，走不到）。</text>
+</svg>

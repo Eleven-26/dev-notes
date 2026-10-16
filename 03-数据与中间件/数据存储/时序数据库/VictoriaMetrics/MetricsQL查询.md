@@ -287,6 +287,105 @@ histogram_quantile(
 基数越高。当上游给的桶太多，导致查询返回的序列炸开时，`buckets_limit` 可以把桶数压下来。
 官方也提供了 `histogram_quantiles`（一次算多个分位数）等扩展函数，减少重复查询。
 
+### 6.3 实测：同一批样本在两种桶形态下各返回什么
+
+「`vmrange` 是非累积、`le` 是累积」是文字口径，**各自返回几条序列、计数长什么样**只有真跑一遍才看得清。
+下面这组读数是把 10 个点灌进单机版后直接查出来的。
+
+**实测口径**：镜像 `quay.io/victoriametrics/victoria-metrics:stable`（Docker Hub 的
+`victoriametrics/victoria-metrics:latest` 在本机经镜像仓库拉取失败，故改用同一官方镜像在 quay.io 的
+`stable` 标签），容器 `w6v1-vm2`（宿主端口 25102）；`/api/v1/status/buildinfo` 返回
+`{"status":"success","data":{"version":"2.24.0"}}`，`/metrics` 里
+`app_version="victoria-metrics-20250523-133235-tags-v1.118.0-0-gaa3171cf4b"`。
+样本走 `/api/v1/import/prometheus`，共 10 个点，每 30 秒一个，值 10、13.5、17、20.5、24 各两次：
+
+```text
+temperature{city="hz"} 10.0 1792119306000
+temperature{city="hz"} 13.5 1792119336000
+temperature{city="hz"} 17.0 1792119366000
+temperature{city="hz"} 20.5 1792119396000
+temperature{city="hz"} 24.0 1792119426000
+temperature{city="hz"} 10.0 1792119456000
+temperature{city="hz"} 13.5 1792119486000
+temperature{city="hz"} 17.0 1792119516000
+temperature{city="hz"} 20.5 1792119546000
+temperature{city="hz"} 24.0 1792119576000
+```
+
+求值时刻固定取最后一个样本之后 120 秒（`&time=1792119876`），窗口写 `[30m]` 保证覆盖全部样本；
+**连跑 3 轮，下列读数逐字相同**（时间戳是实验当时的秒值，抄用时换成自己的）。
+
+表一　`histogram_over_time(temperature{city="hz"}[30m])` → VM 形态，返回 5 条序列：
+
+| `vmrange` 区间 | 计数 |
+| --- | --- |
+| `8.799e+00...1.000e+01` | 2 |
+| `1.292e+01...1.468e+01` | 2 |
+| `1.668e+01...1.896e+01` | 2 |
+| `1.896e+01...2.154e+01` | 2 |
+| `2.154e+01...2.448e+01` | 2 |
+
+表二　`prometheus_buckets(histogram_over_time(temperature{city="hz"}[30m]))` → Prometheus 形态，返回 9 条序列：
+
+| `le` 上界 | 累积计数 |
+| --- | --- |
+| `8.799e+00` | 0 |
+| `1.000e+01` | 2 |
+| `1.292e+01` | 2 |
+| `1.468e+01` | 4 |
+| `1.668e+01` | 4 |
+| `1.896e+01` | 6 |
+| `2.154e+01` | 8 |
+| `2.448e+01` | 10 |
+| `+Inf` | 10 |
+
+⭐ 两种形态的换算关系在实测里很清楚：**5 个 `vmrange` 区间拆成上下界、去重后是 8 个有限 `le` 边界**，
+再加一条 `+Inf` 正好 9 条；`vmrange` 每条都是 2（区间只数自己，5 条合计 10 个样本），
+`le` 则是 0、2、2、4、4、6、8、10、10（最后一条 `+Inf` 等于样本总数 10）。
+
+表三　`buckets_limit(3, histogram_over_time(temperature{city="hz"}[30m]))` → 压到 3 条，并顺带转成 `le`：
+
+| `le` 上界 | 累积计数 |
+| --- | --- |
+| `8.799e+00` | 0 |
+| `2.448e+01` | 10 |
+| `+Inf` | 10 |
+
+表四　分位数，以及「按哪个标签分组」的后果：
+
+| 查询 | 实测返回 |
+| --- | --- |
+| `histogram_quantile(0.5, sum(histogram_over_time(temperature{city="hz"}[30m])) by (vmrange))` | 1 条序列，值 `17.82` |
+| 同上但写成 `by (vmbucket)` | **0 条序列（空结果）** |
+
+⚠️ 由此，6.1 那段「典型组合」里写的 `by (vmbucket, country)` 在 v1.118.0 上实测**返回空**：
+`histogram_over_time` 的输出标签只有**原序列标签 + `vmrange`**（本轮只有 `city` 与 `vmrange`，
+没有 `vmbucket`、也没有 `country`），按数据里不存在的标签分组会把桶标签在聚合里丢掉，
+`histogram_quantile` 随即认不出直方图。6.1 的原例保留不动，这里登记可跑通的写法：
+
+```text
+histogram_quantile(
+  0.5,
+  sum(histogram_over_time(temperature{city="hz"}[30m])) by (vmrange)
+)
+# 实测返回 1 条序列，值 17.82（连跑 3 轮逐字相同）
+```
+
+原生 `le` 直方图是**原样存、不校验累积语义**：同一批数据里灌入
+`http_request_duration_seconds_bucket{le="0.1"} 12`、`{le="0.5"} 20`、`{le="+Inf"} 24`
+（另灌 `_count` 24、`_sum` 9.6），`max_over_time` 读回仍是 12、20、24 与 24、9.6——
+「`le` 必须单调不减」是灌入方的责任，VM 不替你把关。
+
+未复现 / 未实测（登记）：
+
+- 同一查询连跑 3 轮读数相同，但 `vm_rollup_result_cache_full_hits_total` 恒为 0、
+  `vm_rollup_result_cache_miss_total` 恒为 2、`vm_rollup_result_cache_partial_hits_total` 恒为 0，
+  `vm_cache_entries{type="promql/rollupResult"}` 恒为 0——**本轮没能让 rollup 结果缓存的命中数动起来**，
+  原因未定位；`/flags` 页面返回 200 但内容为空，缓存相关参数的实际取值也没取到。
+- 多标签（`country` 这类）真实直方图上的分位数表现未实测：本轮样本只有 `city="hz"` 一条标签。
+
+![直方图两种桶形态：vmrange 区间桶与 le 累积桶的字段布局与转换](images/直方图两种桶形态与转换.svg)
+
 ---
 
 ## 使用：可以直接抄的查询示例

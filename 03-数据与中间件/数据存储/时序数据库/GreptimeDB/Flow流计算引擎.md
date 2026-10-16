@@ -4,6 +4,9 @@
 > 源表写入后自动把结果物化到 sink 表 —— 回答「**为什么可以不外挂 Flink 就能做实时降采样与预聚合**」。
 >
 > 内容整理自个人学习笔记，并参考 GreptimeDB 官方文档与 Release Notes；素材见 [素材清单](../../../../素材清单.md)。
+>
+> 实测口径：第 4.6 节的路由判定、报错原文与延迟读数在 Docker Desktop 上 GreptimeDB 1.2.1 standalone 实测取得；
+> 分布式形态（metasrv + 多 datanode + Remote WAL）下的 Flownode 行为、TTL 回收与 `EXPIRE AFTER` 的长周期效果**未实测**。
 
 ---
 
@@ -231,6 +234,58 @@ ADMIN FLUSH_FLOW('<flow-name>')
 | `SELECT * FROM information_schema.flow_statistics;` | Flow 运行时统计 |
 
 ⚠️ 官方提示：运行时字段**初始可能是 `NULL`**，且在分布式部署下数值**可能落后于最新状态**。
+
+### 4.6 实测：一条 Flow 会被路由成哪种执行模式？
+
+**判定手段**：路由结果不用猜。`information_schema.flows.options` 是一列 JSON，里面的 `flow_type`
+就是引擎给出的执行模式，取值 `batching` / `streaming` 与 4.1 那张表逐条对得上。
+
+**实测环境**：Docker Desktop（Engine 29.7.2）拉起 `greptime/greptimedb:latest`，
+`/status` 读数 `version=1.2.1`、`commit=179ff8e5099d35e217a5ffeb6e4096405824dd6c`；
+`standalone start` 单进程，宿主端口 `25001` 映射容器 `4000`，SQL 全部走 `POST /v1/sql?db=public`。
+
+| 实测 Flow | `AS` 后面的 SQL 形状 | 附加子句 | 实测 `options` |
+|---|---|---|---|
+| `temp_monitoring` | `max()` + `date_bin('10 seconds')` + `GROUP BY` + `HAVING` | 无 | `{"flow_type":"batching"}` |
+| `f_plain_proj` | 纯投影 `SELECT sensor_id, loc, temperature` | 无 | `{"flow_type":"streaming"}` |
+| `f_goodorder` | 同 `temp_monitoring`，去掉 `HAVING` | `EXPIRE AFTER '3 day' EVAL INTERVAL '1m'` | `{"flow_type":"batching"}`，`expire_after` 读数 `259200` |
+| `f_tql` | 一个 `TQL EVAL` 的 CTE + `SELECT * FROM rate_data` | `EVAL INTERVAL '1m'` | `{"flow_type":"batching"}` |
+| `f_pending` | `count(*)`，建它时源表还不存在 | `WITH (defer_on_missing_source='true')` | `{"flow_type":"batching","defer_on_missing_source":"true"}`，`source_table_names` 是空字符串 |
+
+**负向证据：判据不满足时创建就失败，不会静默降级。** 下表是逐条试出来的返回原文。
+
+| 试的操作 | 实测返回原文 |
+|---|---|
+| 批处理聚合、无时间窗口表达式、又不给 `EVAL INTERVAL` | `Invalid query: SQL batching flow without a time-window expression must specify EVAL INTERVAL to run as an explicit full-query flow` |
+| TQL 形态不给 `EVAL INTERVAL` | `Invalid query: TQL query requires EVAL INTERVAL to be set` |
+| TQL CTE 外层再写投影与过滤，或者写第二个 CTE | `Invalid flow query: WITH is only supported for the simplest TQL CTE in CREATE FLOW` |
+| 把 `EVAL INTERVAL` 写在 `EXPIRE AFTER` 前面 | `Invalid SQL syntax: sql parser error: Expected: AS, found: EXPIRE at Line: 1, Column: 63` |
+| `OR REPLACE` 与 `IF NOT EXISTS` 同时用 | ``Unsupported operation Create flow with both `IF NOT EXISTS` and `OR REPLACE` `` |
+| 源表不存在且不加 `defer_on_missing_source` | `Invalid SQL, error: missing source tables for flow 'f_pending'; use WITH (defer_on_missing_source = true) to create a pending flow` |
+
+**子句顺序与单位的回显**：`SHOW CREATE FLOW f_goodorder` 把写法归一化后打印成
+`EXPIRE AFTER '259200 s'` 与 `EVAL INTERVAL '60 s'` —— `3 day` 与 `1m` 都被换算成秒，顺序也按 2.2 的硬要求排。
+
+**窗口聚合真的算对了**：向源表写入 3 行（`temperature` 分别 90、120、150，同处一个 10 秒窗口）后，
+sink 表 `temp_alerts` 出现 2 行：`sensor_id=1, loc=sh, max_temp=120.0` 与 `sensor_id=2, loc=bj, max_temp=150.0`，
+`time_window` 都是同一个窗口起点，`update_at` 由引擎自动填。90 那行被 `max()` 吃掉，
+`HAVING max_temp > 100` 让两个传感器都留下 —— 与 2.3 的「左闭右开窗口 + 增量维护」一致。
+
+**增量评估的落地延迟（连跑 3 轮 × 每轮 5 次 = 15 个样本）**：写入一个新 `sensor_id` 后轮询 sink 表，
+延迟实测 **3027 ~ 10002 ms**，其中 12 个样本落在 9487 ~ 10002 ms。只能断言趋势：
+**秒级、多数贴近 10 秒**，4.4 说的「数秒内」成立，但别按亚秒去规划告警时效。
+急用时 `ADMIN FLUSH_FLOW('temp_monitoring')` 实测返回受影响行数 `4`。
+
+**运行时字段确实会是 NULL**：`information_schema.flow_statistics` 共六列
+（`flow_id / flow_name / start_time / last_execution_time / uptime_seconds / state_size`）。
+实测 `temp_monitoring` 已有 `start_time=1792119520384`、`last_execution_time=1792119608674`、`uptime_seconds=88`，
+`state_size` 仍是 `null`；`f_pending` 与 `f_tql` 的四个运行时字段全为 `null` —— 印证 4.5 的提示。
+
+**pending 不会因为源表后来建好就自动激活**：`f_pending` 建好后补建源表 `not_yet_table` 并写入 1 行，
+3 秒后回查 `source_table_names` 仍是空字符串，`SHOW FLOWS` 里它仍在列但从未执行 ——
+所以延伸追问里那条「不会自动激活、得 `DROP` 后重建」的结论是实测成立的。
+
+![Flow 执行路由决策树：一条 CREATE FLOW 会被判成批处理、遗留流处理还是直接报错](images/Flow执行路由决策树.svg)
 
 ---
 

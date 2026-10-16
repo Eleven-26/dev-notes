@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 840" width="1000" height="840" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwD1" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="840" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">死锁日志的字段布局：两段事务、每段两截锁、最后一行判谁被回滚</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">MySQL 8.0.46 实测（容器 w5m1-mysql，本机 127.0.0.1:24801）；原文与数值均出自本篇 2.1 节，连跑 5 轮同形</text>
+
+  <rect x="24" y="80" width="536" height="54" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="36" y="102" font-size="11.5" fill="#334155">------------------------</text>
+  <text x="36" y="122" font-size="11.5" font-weight="bold" fill="#334155">LATEST DETECTED DEADLOCK ／ 2026-10-16 02:57:12</text>
+
+  <rect x="580" y="80" width="396" height="54" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="592" y="102" font-size="11" fill="#334155">这一段只有最近一次；时间戳和告警时间对不上，</text>
+  <text x="592" y="119" font-size="11" fill="#334155">就说明它已被更晚的一次死锁覆盖</text>
+
+  <line x1="560" y1="107" x2="576" y2="107" stroke="#64748b" stroke-width="1.4" marker-end="url(#arwD1)"/>
+
+  <rect x="24" y="146" width="536" height="104" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="36" y="168" font-size="11.5" font-weight="bold" fill="#1e40af">*** (1) TRANSACTION:</text>
+  <text x="36" y="186" font-size="11.5" fill="#1e40af">TRANSACTION 8737, ACTIVE 3 sec starting index read</text>
+  <text x="36" y="204" font-size="11.5" fill="#1e40af">LOCK WAIT 3 lock struct(s), heap size 1128,</text>
+  <text x="36" y="222" font-size="11.5" fill="#1e40af">2 row lock(s), undo log entries 1</text>
+  <text x="36" y="240" font-size="11.5" fill="#1e40af">MySQL thread id 40, query id 201 localhost root updating</text>
+
+  <rect x="580" y="146" width="396" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="592" y="168" font-size="11" fill="#334155">段号 (1) (2) 不代表谁先起事务，也不代表谁被杀</text>
+  <text x="592" y="185" font-size="11" fill="#334155">ACTIVE 3 sec = 事务已跑 3 秒，不是等了 3 秒</text>
+  <text x="592" y="202" font-size="11" fill="#334155">undo log entries = 回滚代价，5 轮两边都是 1</text>
+  <text x="592" y="219" font-size="11" fill="#334155">MySQL thread id 40 = PROCESSLIST 的 ID</text>
+  <text x="592" y="236" font-size="11" fill="#334155">段里那条裸 SQL 就是卡住的语句本身</text>
+
+  <line x1="560" y1="198" x2="576" y2="198" stroke="#64748b" stroke-width="1.4" marker-end="url(#arwD1)"/>
+
+  <rect x="24" y="262" width="536" height="124" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="36" y="284" font-size="11.5" font-weight="bold" fill="#1e40af">*** (1) HOLDS THE LOCK(S):</text>
+  <text x="36" y="302" font-size="11.5" fill="#1e40af">RECORD LOCKS space id 7 page no 4 n bits 72</text>
+  <text x="36" y="320" font-size="11.5" fill="#1e40af">index PRIMARY of table w5m2lab.t trx id 8737</text>
+  <text x="36" y="338" font-size="11.5" fill="#1e40af">lock_mode X locks rec but not gap ／ heap no 2, n_fields 5</text>
+  <text x="36" y="356" font-size="11.5" font-weight="bold" fill="#1e40af">*** (1) WAITING FOR THIS LOCK TO BE GRANTED:</text>
+  <text x="36" y="374" font-size="11.5" fill="#1e40af">同一把锁行尾多一个 waiting ／ heap no 3, n_fields 5</text>
+
+  <rect x="580" y="262" width="396" height="124" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="592" y="284" font-size="11" fill="#334155">HOLDS = 已经拿到手的锁，WAITING = 想拿的那把</text>
+  <text x="592" y="301" font-size="11" fill="#334155">index PRIMARY + locks rec but not gap = 纯记录锁</text>
+  <text x="592" y="318" font-size="11" fill="#334155">换成 index idx_k 或行尾出现 gap：间隙锁在打架</text>
+  <text x="592" y="335" font-size="11" fill="#334155">heap no 2 是 id=1 那行，heap no 3 是 id=2 那行</text>
+  <text x="592" y="352" font-size="11" fill="#334155">n_fields 5 = id、k、v + 两个隐藏列</text>
+  <text x="592" y="369" font-size="11" fill="#334155">len 6 = DB_TRX_ID，len 7 = DB_ROLL_PTR</text>
+
+  <line x1="560" y1="324" x2="576" y2="324" stroke="#64748b" stroke-width="1.4" marker-end="url(#arwD1)"/>
+
+  <rect x="24" y="398" width="536" height="104" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="36" y="420" font-size="11.5" font-weight="bold" fill="#14532d">*** (2) TRANSACTION:</text>
+  <text x="36" y="438" font-size="11.5" fill="#14532d">TRANSACTION 8738, ACTIVE 2 sec starting index read</text>
+  <text x="36" y="456" font-size="11.5" fill="#14532d">LOCK WAIT 3 lock struct(s), heap size 1128,</text>
+  <text x="36" y="474" font-size="11.5" fill="#14532d">2 row lock(s), undo log entries 1</text>
+  <text x="36" y="492" font-size="11.5" fill="#14532d">MySQL thread id 41, query id 202 localhost root updating</text>
+
+  <rect x="580" y="398" width="396" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="592" y="420" font-size="11" fill="#334155">(2) 是后起跑的那一方（晚 1 秒起事务）</text>
+  <text x="592" y="437" font-size="11" fill="#334155">两边 SQL 一条要 id=2、一条要 id=1：</text>
+  <text x="592" y="454" font-size="11" fill="#334155">加锁顺序反了 → 处置是统一顺序</text>
+  <text x="592" y="471" font-size="11" fill="#334155">thread id 拿来接 INNODB_TRX 与 PROCESSLIST</text>
+
+  <line x1="560" y1="450" x2="576" y2="450" stroke="#64748b" stroke-width="1.4" marker-end="url(#arwD1)"/>
+
+  <rect x="24" y="514" width="536" height="104" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="36" y="536" font-size="11.5" font-weight="bold" fill="#14532d">*** (2) HOLDS THE LOCK(S):</text>
+  <text x="36" y="554" font-size="11.5" fill="#14532d">index PRIMARY of table w5m2lab.t trx id 8738</text>
+  <text x="36" y="572" font-size="11.5" fill="#14532d">lock_mode X locks rec but not gap ／ heap no 3</text>
+  <text x="36" y="590" font-size="11.5" font-weight="bold" fill="#14532d">*** (2) WAITING FOR THIS LOCK TO BE GRANTED:</text>
+  <text x="36" y="608" font-size="11.5" fill="#14532d">lock_mode X locks rec but not gap waiting ／ heap no 2</text>
+
+  <rect x="580" y="514" width="396" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="592" y="536" font-size="11" fill="#334155">环的闭合就看两组 heap no：</text>
+  <text x="592" y="553" font-size="11" fill="#334155">(1) 持 heap no 2、等 heap no 3</text>
+  <text x="592" y="570" font-size="11" fill="#334155">(2) 持 heap no 3、等 heap no 2</text>
+  <text x="592" y="587" font-size="11" fill="#334155">两边各持一行、各等对方那一行 → 死锁成立</text>
+
+  <line x1="560" y1="566" x2="576" y2="566" stroke="#64748b" stroke-width="1.4" marker-end="url(#arwD1)"/>
+
+  <rect x="24" y="630" width="536" height="44" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="36" y="657" font-size="11.5" font-weight="bold" fill="#991b1b">*** WE ROLL BACK TRANSACTION (2)</text>
+
+  <rect x="580" y="630" width="396" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="592" y="650" font-size="11" fill="#334155">5/5 轮都是 (2) 被回滚，客户端报 1213</text>
+  <text x="592" y="666" font-size="11" fill="#334155">应用侧必须把它当可重试错误</text>
+
+  <line x1="560" y1="652" x2="576" y2="652" stroke="#64748b" stroke-width="1.4" marker-end="url(#arwD1)"/>
+
+  <rect x="24" y="696" width="470" height="104" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="36" y="718" font-size="12.5" font-weight="bold" fill="#334155">innodb_print_all_deadlocks 默认 OFF</text>
+  <text x="36" y="740" font-size="11" fill="#334155">实测 @@innodb_print_all_deadlocks = 0</text>
+  <text x="36" y="758" font-size="11" fill="#334155">上面 5 轮死锁之后，错误日志里</text>
+  <text x="36" y="776" font-size="11" fill="#334155">docker logs w5m1-mysql 检索 deadlock = 0 条</text>
+  <text x="36" y="794" font-size="11" fill="#334155">只有 SHOW ENGINE INNODB STATUS 里那一份</text>
+
+  <rect x="510" y="696" width="466" height="104" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="522" y="718" font-size="12.5" font-weight="bold" fill="#78350f">SET GLOBAL innodb_print_all_deadlocks = ON 之后</text>
+  <text x="522" y="740" font-size="11" fill="#78350f">再跑 2 轮，每轮都在错误日志里留下全量 dump：</text>
+  <text x="522" y="758" font-size="11" fill="#78350f">[Note] [MY-012468] [InnoDB] Transactions deadlock</text>
+  <text x="522" y="776" font-size="11" fill="#78350f">detected, dumping detailed information.</text>
+  <text x="522" y="794" font-size="11" fill="#78350f">后续每行前缀 [MY-012469]（本机实验结束已关回 OFF）</text>
+
+  <text x="500" y="828" text-anchor="middle" font-size="11.5" fill="#64748b">出处：左列日志逐字取自本篇 2.1 节的第 1 轮实测段，右列读法与开关对比取自同节 5 轮死锁与 2 轮日志对照输出</text>
+</svg>

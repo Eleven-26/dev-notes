@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rwA" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">remote write 一帧的三层布局，与 VM 接收端的协商实测</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12.5" fill="#64748b">字段按 1.0 的 prompb.WriteRequest 编码并被服务端解出；状态码与错误文本是 v1.118.0 单机版实测（本篇 2.4，3 轮逐字相同）</text>
+
+  <rect x="40" y="76" width="420" height="146" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="250" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">第 1 层：HTTP 请求头</text>
+  <text x="56" y="120" font-size="11.5" fill="#334155">POST /api/v1/write</text>
+  <text x="56" y="138" font-size="11.5" fill="#334155">Content-Encoding: snappy</text>
+  <text x="56" y="156" font-size="11.5" fill="#334155">Content-Type: application/x-protobuf</text>
+  <text x="56" y="174" font-size="11.5" fill="#334155">X-Prometheus-Remote-Write-Version: 0.1.0</text>
+  <text x="56" y="192" font-size="11.5" fill="#334155">2.0 时版本头写 2.0.0，Content-Type 带 proto=…v2.Request</text>
+  <text x="56" y="210" font-size="11.5" font-weight="bold" fill="#991b1b">本轮换 6 种头组合，VM 一律照收</text>
+
+  <line x1="250" y1="222" x2="250" y2="240" stroke="#334155" stroke-width="1.4" marker-end="url(#rwA)"/>
+
+  <rect x="40" y="240" width="420" height="96" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="250" y="262" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">第 2 层：Snappy 块</text>
+  <text x="56" y="284" font-size="11.5" fill="#334155">[varint：解压后字节数][literal 段标签][原文字节]</text>
+  <text x="56" y="302" font-size="11.5" fill="#334155">本轮只用 literal，不做匹配压缩</text>
+  <text x="56" y="320" font-size="11.5" font-weight="bold" fill="#0f172a">protobuf 61 字节 → snappy 64 字节</text>
+
+  <line x1="250" y1="336" x2="250" y2="354" stroke="#334155" stroke-width="1.4" marker-end="url(#rwA)"/>
+
+  <rect x="40" y="354" width="420" height="176" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="250" y="376" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">第 3 层：protobuf WriteRequest</text>
+  <text x="56" y="398" font-size="11.5" fill="#0f172a">field 1 = repeated TimeSeries（wire type 2，长度前缀）</text>
+  <text x="70" y="416" font-size="11.5" fill="#0f172a">TimeSeries：field 1 = Label、field 2 = Sample</text>
+  <text x="70" y="434" font-size="11.5" fill="#0f172a">Label：field 1 = name、field 2 = value（string）</text>
+  <text x="70" y="452" font-size="11.5" fill="#0f172a">Sample：field 1 = value（double，8 字节小端）</text>
+  <text x="84" y="470" font-size="11.5" fill="#0f172a">field 2 = timestamp（varint，毫秒）</text>
+  <text x="56" y="494" font-size="11.5" fill="#1d4ed8">本轮载荷：1 条序列 = 2 个 Label + 1 个 Sample（值 42）</text>
+  <text x="56" y="516" font-size="11.5" fill="#1d4ed8">2.0 的 io.prometheus.write.v2.Request 字段布局未逐字段核对</text>
+
+  <rect x="40" y="548" width="420" height="124" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="250" y="570" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">204 是「已接收」，不是「已可查」</text>
+  <text x="56" y="592" font-size="11.5" fill="#7c2d12">POST 调用本身 0.004 秒返回；</text>
+  <text x="56" y="612" font-size="11.5" fill="#7c2d12">新序列首次可查（轮询步长 0.5 秒，3 轮）：</text>
+  <text x="56" y="632" font-size="11.5" font-weight="bold" fill="#7c2d12">4.01 秒、10.53 秒、10.51 秒</text>
+  <text x="56" y="654" font-size="11.5" fill="#7c2d12">固定求值点与换求值点两条曲线同刻可见 → 索引注册延迟</text>
+
+  <rect x="500" y="76" width="460" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="730" y="98" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">同一份载荷只换请求头（3 轮读数一致）</text>
+  <line x1="514" y1="106" x2="946" y2="106" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="514" y="124" font-size="11.5" fill="#334155">1.0 头 0.1.0 + snappy 体</text>
+  <text x="946" y="124" text-anchor="end" font-size="11.5" font-weight="bold" fill="#166534">204</text>
+  <text x="514" y="144" font-size="11.5" fill="#334155">2.0 头 2.0.0 + proto=io.prometheus.write.v2.Request</text>
+  <text x="946" y="144" text-anchor="end" font-size="11.5" font-weight="bold" fill="#166534">204</text>
+  <text x="514" y="164" font-size="11.5" fill="#334155">完全不带版本头</text>
+  <text x="946" y="164" text-anchor="end" font-size="11.5" font-weight="bold" fill="#166534">204</text>
+  <text x="514" y="184" font-size="11.5" fill="#334155">未知版本头 9.9.9</text>
+  <text x="946" y="184" text-anchor="end" font-size="11.5" font-weight="bold" fill="#166534">204</text>
+  <text x="514" y="204" font-size="11.5" fill="#334155">Content-Type: application/json + snappy 体</text>
+  <text x="946" y="204" text-anchor="end" font-size="11.5" font-weight="bold" fill="#166534">204</text>
+  <text x="514" y="224" font-size="11.5" fill="#334155">Content-Type: text/plain + snappy 体</text>
+  <text x="946" y="224" text-anchor="end" font-size="11.5" font-weight="bold" fill="#166534">204</text>
+  <text x="514" y="244" font-size="11.5" fill="#334155">空体 + 1.0 头</text>
+  <text x="946" y="244" text-anchor="end" font-size="11.5" font-weight="bold" fill="#166534">204</text>
+  <text x="514" y="264" font-size="11.5" fill="#334155">application/json 头 + JSON 明文体</text>
+  <text x="946" y="264" text-anchor="end" font-size="11.5" font-weight="bold" fill="#991b1b">400，length 17</text>
+  <text x="514" y="284" font-size="11.5" fill="#334155">snappy 头 + 未压缩 protobuf 体</text>
+  <text x="946" y="284" text-anchor="end" font-size="11.5" font-weight="bold" fill="#991b1b">400，length 61</text>
+  <text x="514" y="304" font-size="11.5" fill="#334155">非 1.0 结构体：分别用 1.0 头 / 2.0 头</text>
+  <text x="946" y="304" text-anchor="end" font-size="11.5" font-weight="bold" fill="#991b1b">400 / 400，文本相同</text>
+  <text x="514" y="324" font-size="11.5" fill="#334155">GET /api/v1/read</text>
+  <text x="946" y="324" text-anchor="end" font-size="11.5" font-weight="bold" fill="#991b1b">400，不支持该路径</text>
+  <text x="514" y="348" font-size="11.5" font-weight="bold" fill="#7c2d12">注意：全程 0 次 415；X-…-Written 响应头一次也没出现</text>
+  <text x="514" y="366" font-size="11.5" fill="#475569">204 的响应头只有 Connection、Date、Vary、X-Server-Hostname</text>
+
+  <rect x="500" y="394" width="460" height="136" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="730" y="416" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">结论：VM 不按 Content-Type 分派解码器</text>
+  <text x="514" y="440" font-size="11.5" fill="#7f1d1d">6 种头都接受，都按 snappy + 1.0 消息解；</text>
+  <text x="514" y="460" font-size="11.5" fill="#7f1d1d">1.0 头与 2.0 头下的报错逐字相同：</text>
+  <text x="514" y="480" font-size="11.5" fill="#7f1d1d">cannot unmarshal prompb.WriteRequest with size 16</text>
+  <text x="514" y="500" font-size="11.5" fill="#7f1d1d">bytes: cannot read the next field: cannot read i64 for field #2</text>
+  <text x="514" y="520" font-size="11.5" font-weight="bold" fill="#7f1d1d">所以发送端真上 2.0 前，必须先确认接收端支持</text>
+
+  <rect x="500" y="548" width="460" height="124" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="730" y="570" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">写入侧计数器（本轮记录值）</text>
+  <text x="514" y="592" font-size="11.5" fill="#1e3a8a">type="promremotewrite"：48 → 51，每轮 +1 但有数秒滞后</text>
+  <text x="514" y="612" font-size="11.5" fill="#1e3a8a">type="prometheus"：恒 30，import 端点走这个 type</text>
+  <text x="514" y="632" font-size="11.5" fill="#1e3a8a">vm_active_time_series：单机版 /metrics 里没有这个指标</text>
+  <text x="514" y="652" font-size="11.5" fill="#1e3a8a">活跃序列数改看 /api/v1/status/tsdb 的 totalSeries=15</text>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">命中率为什么「一直很好」：累计口径与窗口口径在同一段流量上分叉</text>
+  <text x="500" y="57" text-anchor="middle" font-size="13" fill="#64748b">阶段 1 灌 9900 次命中 + 100 次未命中，阶段 2 灌 100 次命中 + 100 次未命中（Redis 7.4.11 容器，5 轮复跑逐字一致）</text>
+
+  <rect x="30" y="76" width="940" height="250" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="46" y="98" font-size="13" font-weight="bold" fill="#0f172a">① 采样时间轴：两次采样之间真实发生的腰斩，被累计值一路抹平</text>
+  <text x="46" y="120" font-size="10.5" fill="#334155">横轴是采样时刻，纵轴是命中率；T1 时两种口径同值，T2 才分叉 —— 分叉幅度就是告警该响的幅度</text>
+
+  <line x1="150" y1="160" x2="150" y2="300" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="150" y1="300" x2="580" y2="300" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="150" y1="277" x2="580" y2="277" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="142" y="164" text-anchor="end" font-size="9.5" fill="#64748b">100%</text>
+  <text x="142" y="281" text-anchor="end" font-size="9.5" fill="#64748b">50%</text>
+
+  <line x1="150" y1="162" x2="560" y2="165" stroke="#2563eb" stroke-width="2.2"/>
+  <line x1="150" y1="162" x2="560" y2="277" stroke="#dc2626" stroke-width="2.2"/>
+  <circle cx="150" cy="162" r="4" fill="#0f172a"/>
+  <circle cx="560" cy="165" r="4" fill="#2563eb"/>
+  <circle cx="560" cy="277" r="4" fill="#dc2626"/>
+  <text x="164" y="152" font-size="9.5" fill="#0f172a">T1 = 99.00%（两种口径同值）</text>
+  <text x="592" y="160" font-size="10" font-weight="bold" fill="#1e40af">累计口径：99.00% → 98.04%</text>
+  <text x="592" y="178" font-size="9.5" fill="#1d4ed8">只掉 0.96 个点 → 累计告警保持沉默</text>
+  <text x="592" y="272" font-size="10" font-weight="bold" fill="#991b1b">窗口口径：99.00% → 50.0%</text>
+  <text x="592" y="290" font-size="9.5" fill="#b91c1c">窗口内真实命中率已经腰斩</text>
+  <text x="150" y="318" text-anchor="middle" font-size="10.5" fill="#334155">T1 · 阶段 1 结束</text>
+  <text x="560" y="318" text-anchor="middle" font-size="10.5" fill="#334155">T2 · 阶段 2 结束</text>
+
+  <rect x="30" y="336" width="940" height="98" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.4"/>
+  <text x="46" y="356" font-size="12" font-weight="bold" fill="#1e3a8a">② 原始读数：INFO stats 逐字抄录（累计计数器 + 窗口差分）</text>
+  <text x="46" y="378" font-size="10.5" fill="#1e40af">T1：keyspace_hits = 9900　　keyspace_misses = 100　→ 累计命中率 99.00%</text>
+  <text x="46" y="398" font-size="10.5" fill="#1e40af">T2：keyspace_hits = 10000　keyspace_misses = 200　→ 累计命中率 98.04%</text>
+  <text x="46" y="418" font-size="10.5" fill="#1e40af">T1 → T2 差分：+100 命中、+100 未命中　→ 窗口命中率 50.0%；evicted_keys = 0</text>
+
+  <rect x="30" y="444" width="940" height="92" rx="10" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.4"/>
+  <text x="46" y="464" font-size="12" font-weight="bold" fill="#b91c1c">③ 告警口径：用差值算窗口，用 evicted_keys 分「在淘汰」还是「本来没缓存」</text>
+  <text x="46" y="486" font-size="10.5" fill="#991b1b">⭐ 规则必须是「本次采样 − 上次采样」再算比值；采样间隔按告警灵敏度定（常见 1~5 分钟）</text>
+  <text x="46" y="506" font-size="10.5" fill="#991b1b">⚠️ 累计值形式的告警会在劣化时保持沉默：窗口已腰斩，累计口径只掉 0.96 个点</text>
+  <text x="46" y="526" font-size="10" fill="#7f1d1d">实测环境：redis:7-alpine（7.4.11）· maxmemory 256mb · 500 个键的键池 · redis-cli --pipe 灌流量 · 读数出处见 2.1 节</text>
+</svg>

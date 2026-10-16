@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwM1" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">MDL 等待队列：一把 PENDING 的 EXCLUSIVE 把普通读也堵死</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">MySQL 8.0.46 实测（容器 w5m1-mysql，本机 127.0.0.1:24801，库 w5m2lab）；队列与读数均出自本篇 2.7 节</text>
+
+  <rect x="24" y="88" width="300" height="110" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="36" y="112" font-size="13" font-weight="bold" fill="#1e40af">① 长事务：读一行之后不提交</text>
+  <text x="36" y="136" font-size="11" fill="#1e40af">BEGIN; SELECT id, k FROM t WHERE id = 1;</text>
+  <text x="36" y="156" font-size="11" fill="#1e40af">SELECT SLEEP(14) AS a_hold;   -- 不 COMMIT</text>
+  <text x="36" y="180" font-size="11.5" fill="#1e40af">t 上的 SHARED_READ 持到事务结束，GRANTED</text>
+
+  <rect x="350" y="88" width="300" height="110" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="362" y="112" font-size="13" font-weight="bold" fill="#9a3412">② DDL：ALTER 来抢排他锁</text>
+  <text x="362" y="136" font-size="11" fill="#9a3412">SET lock_wait_timeout = 4;</text>
+  <text x="362" y="156" font-size="11" fill="#9a3412">ALTER TABLE t ADD COLUMN c1 INT NULL;</text>
+  <text x="362" y="180" font-size="11.5" fill="#9a3412">先给 DDL 设一个短的 MDL 等待上限</text>
+
+  <rect x="676" y="88" width="300" height="110" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="688" y="112" font-size="13" font-weight="bold" fill="#14532d">③ 普通读：不写也不改</text>
+  <text x="688" y="136" font-size="11" fill="#14532d">SELECT COUNT(*) AS c_from_blocked_session</text>
+  <text x="688" y="156" font-size="11" fill="#14532d">FROM t;</text>
+  <text x="688" y="180" font-size="11.5" fill="#14532d">起跑约 1 秒后快照：它已经在排队</text>
+
+  <text x="24" y="226" font-size="13" fill="#334155">同一时刻 metadata_locks 里对象 t 的等待队列（按到达顺序，5 轮逐行同形）</text>
+
+  <rect x="24" y="240" width="300" height="80" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="36" y="264" font-size="13" font-weight="bold" fill="#334155">SHARED_READ</text>
+  <text x="36" y="286" font-size="12" fill="#334155">GRANTED（队首，已拿到）</text>
+  <text x="36" y="308" font-size="11.5" fill="#334155">请求者：① 长事务</text>
+
+  <line x1="324" y1="280" x2="346" y2="280" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arwM1)"/>
+
+  <rect x="350" y="240" width="300" height="80" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="362" y="264" font-size="13" font-weight="bold" fill="#991b1b">EXCLUSIVE</text>
+  <text x="362" y="286" font-size="12" fill="#991b1b">PENDING（排在队首后面）</text>
+  <text x="362" y="308" font-size="11.5" fill="#991b1b">请求者：② DDL，一直等不到</text>
+
+  <line x1="650" y1="280" x2="672" y2="280" stroke="#dc2626" stroke-width="1.6" marker-end="url(#arwM1)"/>
+
+  <rect x="676" y="240" width="300" height="80" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="688" y="264" font-size="13" font-weight="bold" fill="#991b1b">SHARED_READ</text>
+  <text x="688" y="286" font-size="12" fill="#991b1b">PENDING（本可兼容却被堵）</text>
+  <text x="688" y="308" font-size="11.5" fill="#991b1b">请求者：③ 普通读</text>
+
+  <text x="36" y="342" font-size="10.5" fill="#64748b">② 同时还持：t 上 SHARED_UPGRADABLE（GRANTED）、库级 INTENTION_EXCLUSIVE（GRANTED）</text>
+  <text x="36" y="358" font-size="10.5" fill="#64748b">② 另持临时表 #sql-1_12 的 EXCLUSIVE（STATEMENT / GRANTED，名称每轮不同）</text>
+
+  <rect x="24" y="368" width="460" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="392" font-size="14" font-weight="bold" fill="#0f172a">实测读数（连跑 5 轮）</text>
+  <text x="36" y="414" font-size="11.5" fill="#334155">② 的 lock_wait_timeout 分别设 4 / 5 / 6 / 8 / 10 秒</text>
+  <text x="36" y="434" font-size="11.5" fill="#334155">processlist 的 TIME：长事务 4~5 秒</text>
+  <text x="36" y="454" font-size="11.5" fill="#334155">DDL 2~4 秒、普通读 1 秒（STATE 都是 waiting）</text>
+  <text x="36" y="474" font-size="11.5" fill="#334155">普通读实际被堵：3 / 3 / 5 / 6 / 9 秒</text>
+  <text x="36" y="494" font-size="11.5" fill="#334155">② 报错退出后 ③ 才拿到结果 4（表里 4 行）</text>
+  <text x="36" y="522" font-size="11.5" font-weight="bold" fill="#b45309">对照组 3 轮（去掉 ②）：③ 只用 0~1 秒返回</text>
+
+  <rect x="504" y="368" width="472" height="176" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="516" y="392" font-size="14" font-weight="bold" fill="#0f172a">报错原文与两个超时默认值</text>
+  <text x="516" y="414" font-size="11.5" fill="#334155">② 放弃时报错（5/5 轮一字不差）：</text>
+  <text x="516" y="434" font-size="11.5" fill="#991b1b">ERROR 1205 (HY000) at line 1:</text>
+  <text x="516" y="452" font-size="11.5" fill="#991b1b">Lock wait timeout exceeded; try restarting</text>
+  <text x="516" y="470" font-size="11.5" fill="#991b1b">transaction</text>
+  <text x="516" y="496" font-size="11.5" fill="#334155">行锁：innodb_lock_wait_timeout = 50</text>
+  <text x="516" y="516" font-size="11.5" fill="#334155">MDL：lock_wait_timeout = 31536000（一年）</text>
+  <text x="516" y="536" font-size="11.5" fill="#334155">同一个 1205、同一句文案，管的参数不同</text>
+
+  <rect x="24" y="556" width="952" height="92" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="36" y="582" font-size="13" fill="#78350f">要点：SHARED_READ 之间本来兼容（两个普通读可以同时跑），是队列里那把 PENDING 的 EXCLUSIVE 让后来的读也必须排队。</text>
+  <text x="36" y="608" font-size="13" fill="#78350f">注意：默认值 lock_wait_timeout = 31536000 秒，ALTER 会一直排到长事务结束或自己超时。</text>
+  <text x="36" y="634" font-size="13" fill="#78350f">止损：先处理长事务，再给 DDL 单独设小的 lock_wait_timeout，别让它在队列里堵住后面所有读写。</text>
+
+  <text x="500" y="672" text-anchor="middle" font-size="12" fill="#64748b">出处：队列形状、TIME 与被堵秒数、报错原文、两个默认值均取自本篇 2.7 节的 5 轮实测与 3 轮对照输出</text>
+</svg>

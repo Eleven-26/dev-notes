@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 830" width="1000" height="830" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="830" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">在线 DDL 怎么写：ALGORITHM 与 LOCK 的选型决策树</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">口径：本机 mysql:8.0 容器（8.0.46，端口 127.0.0.1:24801）实测；耗时为 SHOW PROFILES 服务端计时的多轮并集区间，数字全部出自正文 8.1</text>
+
+  <rect x="330" y="72" width="340" height="44" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="500" y="99" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">要做什么变更？（先判操作，再配算法）</text>
+
+  <line x1="500" y1="116" x2="500" y2="136" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="170" y1="136" x2="830" y2="136" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="170" y1="136" x2="170" y2="156" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="500" y1="136" x2="500" y2="156" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="830" y1="136" x2="830" y2="156" stroke="#64748b" stroke-width="1.5"/>
+  <text x="150" y="150" text-anchor="end" font-size="11" fill="#64748b">左：元数据级</text>
+  <text x="480" y="150" text-anchor="end" font-size="11" fill="#64748b">中：在线重建</text>
+  <text x="810" y="150" text-anchor="end" font-size="11" fill="#64748b">右：无在线路线</text>
+
+  <rect x="40" y="156" width="260" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="170" y="181" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">加列 / 删列（末尾追加）</text>
+  <line x1="170" y1="196" x2="170" y2="216" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="40" y="216" width="260" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="170" y="241" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">INSTANT 可用：只改字典元数据</text>
+  <line x1="170" y1="256" x2="170" y2="276" stroke="#16a34a" stroke-width="1.5"/>
+  <rect x="40" y="276" width="260" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="170" y="299" text-anchor="middle" font-size="12" fill="#14532d">加列实测 0.031~0.068 秒</text>
+  <text x="170" y="321" text-anchor="middle" font-size="12" fill="#14532d">删列实测 0.021~0.326 秒</text>
+  <line x1="170" y1="342" x2="170" y2="362" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="40" y="362" width="260" height="88" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="170" y="384" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">不要附加 LOCK 条款</text>
+  <text x="170" y="406" text-anchor="middle" font-size="12" fill="#991b1b">INSTANT + LOCK=NONE</text>
+  <text x="170" y="428" text-anchor="middle" font-size="12" fill="#991b1b">报 ERROR 1221（语法级拒绝）</text>
+
+  <rect x="370" y="156" width="260" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="500" y="181" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">加索引 / 删索引</text>
+  <line x1="500" y1="196" x2="500" y2="216" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="370" y="216" width="260" height="40" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="241" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">INPLACE + LOCK=NONE 可用</text>
+  <line x1="500" y1="256" x2="500" y2="276" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="370" y="276" width="260" height="88" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="500" y="297" text-anchor="middle" font-size="12" fill="#1e40af">加索引实测 1.12~2.74 秒</text>
+  <text x="500" y="317" text-anchor="middle" font-size="12" fill="#1e40af">删索引实测 0.045~0.182 秒</text>
+  <text x="500" y="339" text-anchor="middle" font-size="12" fill="#1e40af">期间 INSERT 0.015~0.024 秒放行</text>
+  <line x1="500" y1="364" x2="500" y2="384" stroke="#dc2626" stroke-width="1.5"/>
+  <rect x="370" y="384" width="260" height="66" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="500" y="407" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">写 INSTANT → ERROR 1845</text>
+  <text x="500" y="429" text-anchor="middle" font-size="12" fill="#991b1b">加删索引没有元数据级路线</text>
+
+  <rect x="700" y="156" width="260" height="40" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="830" y="181" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">改列类型（INT 换 BIGINT）</text>
+  <line x1="830" y1="196" x2="830" y2="216" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="700" y="216" width="260" height="66" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="830" y="239" text-anchor="middle" font-size="12" fill="#991b1b">INSTANT 报 ERROR 1846</text>
+  <text x="830" y="259" text-anchor="middle" font-size="12" fill="#991b1b">INPLACE 也报 ERROR 1846</text>
+  <line x1="830" y1="282" x2="830" y2="302" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="700" y="302" width="260" height="40" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="830" y="327" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#9a3412">只剩 COPY + LOCK=SHARED</text>
+  <line x1="830" y1="342" x2="830" y2="362" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="700" y="362" width="260" height="88" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="830" y="384" text-anchor="middle" font-size="12" fill="#9a3412">重建表实测 2.68~5.10 秒</text>
+  <text x="830" y="406" text-anchor="middle" font-size="12" fill="#9a3412">写入被堵 2.20~5.43 秒</text>
+  <text x="830" y="428" text-anchor="middle" font-size="12" fill="#9a3412">超大表改走 gh-ost 影子表路线</text>
+
+  <text x="500" y="500" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">报错原文（逐条实测捕获，建议语不可全信）</text>
+  <rect x="40" y="514" width="460" height="116" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="538" font-size="11.5" fill="#334155">1845：ALGORITHM=INSTANT is not supported for this</text>
+  <text x="56" y="556" font-size="11.5" fill="#334155">operation. Try ALGORITHM=COPY/INPLACE.</text>
+  <text x="56" y="580" font-size="11.5" fill="#334155">1846：Cannot change column type INPLACE. Try COPY</text>
+  <text x="56" y="602" font-size="11.5" fill="#dc2626">注意：1846 的建议语写着 Try COPY/INPLACE，</text>
+  <text x="56" y="620" font-size="11.5" fill="#dc2626">而 INPLACE 对改列类型同样是 1846</text>
+
+  <rect x="520" y="514" width="440" height="116" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="536" y="538" font-size="11.5" fill="#334155">1846：LOCK=NONE is not supported. Reason: COPY</text>
+  <text x="536" y="556" font-size="11.5" fill="#334155">algorithm requires a lock. Try LOCK=SHARED.</text>
+  <text x="536" y="580" font-size="11.5" fill="#334155">1221：Incorrect usage of ALGORITHM=INSTANT and</text>
+  <text x="536" y="598" font-size="11.5" fill="#334155">LOCK=NONE/SHARED/EXCLUSIVE</text>
+  <text x="536" y="622" font-size="11.5" fill="#334155">INPLACE + LOCK=EXCLUSIVE：合法，但等于主动锁表</text>
+
+  <rect x="40" y="652" width="920" height="60" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="500" y="678" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#92400e">不写 ALGORITHM 会静默降级：同一条改列类型实测 6.29~6.44 秒无警告跑完——MySQL 自己选了 COPY</text>
+  <text x="500" y="700" text-anchor="middle" font-size="12" fill="#92400e">这就是显式声明的价值：满足不了时宁可直接报错，也不要悄悄锁表重建</text>
+
+  <rect x="40" y="730" width="920" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="756" font-size="12.5" font-weight="bold" fill="#0f172a">决策顺序：① 加/删列→INSTANT 且不附 LOCK；② 加/删索引→INPLACE, LOCK=NONE；</text>
+  <text x="56" y="778" font-size="12.5" fill="#0f172a">③ 改列类型→只有 COPY，评估锁写窗口或外部工具；④ 每种报错（1845/1846/1221）成因不同，别互相套。</text>
+</svg>

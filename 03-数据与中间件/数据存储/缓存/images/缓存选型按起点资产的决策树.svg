@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="c1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">缓存这一层怎么决策：先过准入判据，再按起点资产分派</text>
+  <text x="500" y="57" text-anchor="middle" font-size="13" fill="#64748b">选型不从空白开始，而从「手里已经有什么」开始 —— 三条决策线都出自第七节的表格</text>
+
+  <rect x="30" y="76" width="940" height="84" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="46" y="99" font-size="13" font-weight="bold" fill="#0f172a">门：三条准入判据要同时成立（1.2），缺一条就别上缓存（8.1）</text>
+  <text x="46" y="122" font-size="11" fill="#1e40af">① 数据可丢 / 可重建　　② 读是瓶颈，且同一条数据被反复读　　③ 能接受最终一致</text>
+  <text x="46" y="146" font-size="11" font-weight="bold" fill="#991b1b">任一条不成立 → 数据留在权威库、先查索引与 SQL：别用缓存兜正确性</text>
+
+  <path d="M500,160 L500,172 L183,172 L183,186" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M500,160 L500,172 L500,186" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M500,160 L500,172 L817,172 L817,186" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#c1)"/>
+
+  <rect x="30" y="176" width="306" height="362" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <rect x="347" y="176" width="306" height="362" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <rect x="664" y="176" width="306" height="362" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="4 3"/>
+
+  <rect x="42" y="188" width="282" height="44" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="183" y="207" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">决策线 A · 已有权威库（MySQL 等）</text>
+  <text x="183" y="225" text-anchor="middle" font-size="10.5" fill="#1d4ed8">起点：只是读得慢（7.1）</text>
+
+  <rect x="52" y="242" width="262" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="62" y="261" font-size="10" font-weight="bold" fill="#1e3a8a">只是个别查询慢</text>
+  <text x="62" y="279" font-size="9.5" fill="#1d4ed8">→ 先在库侧解决：索引与 SQL 重写</text>
+  <text x="62" y="296" font-size="9.5" fill="#1d4ed8">见 查询优化.md，别先加缓存</text>
+
+  <rect x="52" y="316" width="262" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="62" y="335" font-size="10" font-weight="bold" fill="#1e3a8a">读远多于写、热点集中</text>
+  <text x="62" y="353" font-size="9.5" fill="#1d4ed8">→ 加中心化缓存</text>
+  <text x="62" y="370" font-size="9.5" fill="#1d4ed8">按 2.1 的五个数定容量</text>
+
+  <rect x="52" y="390" width="262" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="62" y="409" font-size="10" font-weight="bold" fill="#1e3a8a">会话 / 登录态要跨节点</text>
+  <text x="62" y="427" font-size="9.5" font-weight="bold" fill="#1e3a8a">⭐ 必须中心化（Session 中心）</text>
+  <text x="62" y="444" font-size="9.5" fill="#1d4ed8">本地缓存解决不了（见 3.3）</text>
+
+  <rect x="52" y="464" width="262" height="66" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="62" y="483" font-size="10" font-weight="bold" fill="#991b1b">读放大很低：只读一两次</text>
+  <text x="62" y="501" font-size="9.5" fill="#991b1b">⚠️ 不值得上缓存</text>
+  <text x="62" y="518" font-size="9.5" fill="#991b1b">命中率赚不回来，只多失效逻辑</text>
+
+  <rect x="359" y="188" width="282" height="44" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="207" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">决策线 B · 已经在用 Redis</text>
+  <text x="500" y="225" text-anchor="middle" font-size="10.5" fill="#166534">先看它是不是被当权威源（7.2）</text>
+
+  <rect x="369" y="242" width="262" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="379" y="261" font-size="10" font-weight="bold" fill="#14532d">延迟要再压一档、数据几乎不变</text>
+  <text x="379" y="279" font-size="9.5" fill="#166534">→ 加 L1 本地缓存</text>
+  <text x="379" y="296" font-size="9.5" fill="#166534">⚠️ 只在能接受秒级不一致上做</text>
+
+  <rect x="369" y="316" width="262" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="379" y="335" font-size="10" font-weight="bold" fill="#14532d">内存逼近上限、开始出现淘汰</text>
+  <text x="379" y="353" font-size="9.5" fill="#166534">→ 先做数据体检，再谈扩容</text>
+  <text x="379" y="370" font-size="9.5" fill="#166534">别直奔「换哪个淘汰策略」</text>
+
+  <rect x="369" y="390" width="262" height="66" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="379" y="409" font-size="10" font-weight="bold" fill="#991b1b">持久化开始承担业务正确性</text>
+  <text x="379" y="427" font-size="9.5" fill="#991b1b">⭐ 危险信号：它在被当权威源用</text>
+  <text x="379" y="444" font-size="9.5" fill="#991b1b">→ 挪回有完整事务与备份的存储</text>
+
+  <rect x="369" y="464" width="262" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="379" y="483" font-size="10" font-weight="bold" fill="#14532d">只是热点读太集中</text>
+  <text x="379" y="501" font-size="9.5" fill="#166534">→ 先按容量与 TTL 分级治理</text>
+  <text x="379" y="518" font-size="9.5" fill="#166534">别直接上集群</text>
+
+  <rect x="676" y="188" width="282" height="44" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="817" y="207" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">决策线 C · 从零开始</text>
+  <text x="817" y="225" text-anchor="middle" font-size="10.5" fill="#9a3412">按三问依次筛（7.3）</text>
+
+  <rect x="686" y="242" width="262" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="696" y="261" font-size="10" font-weight="bold" fill="#7c2d12">第一问：数据可丢吗？</text>
+  <text x="696" y="279" font-size="9.5" fill="#9a3412">不可丢 → 留在权威库</text>
+  <text x="696" y="296" font-size="9.5" fill="#9a3412">⚠️ 别用缓存兜正确性</text>
+
+  <rect x="686" y="316" width="262" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="696" y="335" font-size="10" font-weight="bold" fill="#7c2d12">第二问：读是瓶颈吗？</text>
+  <text x="696" y="353" font-size="9.5" fill="#9a3412">不是 → 先查索引与 SQL</text>
+  <text x="696" y="370" font-size="9.5" fill="#9a3412">读放大低 → 上了也不值得</text>
+
+  <rect x="686" y="390" width="262" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="696" y="409" font-size="10" font-weight="bold" fill="#7c2d12">第三问：要跨节点共享吗？</text>
+  <text x="696" y="427" font-size="9.5" fill="#9a3412">要 → 中心化族（Redis 一类）</text>
+  <text x="696" y="444" font-size="9.5" fill="#9a3412">只是本机极热 → 本地缓存族</text>
+
+  <rect x="686" y="464" width="262" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="696" y="483" font-size="10" font-weight="bold" fill="#7c2d12">族内落点（5.1 / 5.2）</text>
+  <text x="696" y="501" font-size="9.5" fill="#9a3412">per-key TTL、任意类型 → go-cache</text>
+  <text x="696" y="518" font-size="9.5" fill="#9a3412">极热大流量、可预估容量 → bigcache</text>
+
+  <rect x="30" y="548" width="940" height="78" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="46" y="566" font-size="11" font-weight="bold" fill="#0f172a">判据速查（7.4）：场景 → 首选 / 通常不该选</text>
+  <text x="46" y="586" font-size="10.5" fill="#334155">会话 / 登录态 / 分布式锁、计数 / 榜单 / 集合运算 → 中心化缓存；本地缓存在这类上多实例天然不一致</text>
+  <text x="46" y="606" font-size="10.5" fill="#334155">配置、字典、几乎不变的小数据 → 本地缓存；商品 / 详情的极热读 → L1 + L2 多级，⚠️ 别用无容量上限的 L1</text>
+
+  <rect x="30" y="634" width="940" height="46" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="46" y="653" font-size="11" fill="#334155">⭐ 多数情形的正解是「给现有库加一层」，不是引入新组件；性能这一列不能横向比（4.3），要用自己的负载验证</text>
+  <text x="46" y="672" font-size="11" fill="#991b1b">⚠️ 三项全弱（数据不可重建 + 无降级开关 + 无观测）等于没有退路（8.2），这类缓存是新的单点</text>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">一条日志里的事务事件流与镜像体积</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#475569">位点差即事件字节数：上带看事件序列，中带看切批，下带看行镜像档位</text>
+
+  <rect x="24" y="78" width="952" height="176" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="104" font-size="15" font-weight="700" fill="#14532d">一条 100 行的 INSERT = 一串事件</text>
+  <rect x="50" y="126" width="120" height="44" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="110" y="145" text-anchor="middle" font-size="12" fill="#1e3a8a">Gtid</text>
+  <text x="110" y="163" text-anchor="middle" font-size="11" fill="#1e3a8a">80 字节</text>
+  <path d="M 170 148 L 196 148" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="196" y="126" width="130" height="44" rx="6" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="261" y="145" text-anchor="middle" font-size="12" fill="#4c1d95">Query BEGIN</text>
+  <text x="261" y="163" text-anchor="middle" font-size="11" fill="#4c1d95">71 字节</text>
+  <path d="M 326 148 L 352 148" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="352" y="126" width="130" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="417" y="145" text-anchor="middle" font-size="12" fill="#14532d">Table_map</text>
+  <text x="417" y="163" text-anchor="middle" font-size="11" fill="#14532d">94 字节</text>
+  <path d="M 482 148 L 508 148" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="508" y="126" width="330" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="673" y="145" text-anchor="middle" font-size="12" fill="#7c2d12">Write_rows 共 17 个</text>
+  <text x="673" y="163" text-anchor="middle" font-size="11" fill="#7c2d12">7428 × 16 + 4964 字节</text>
+  <path d="M 838 148 L 864 148" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="864" y="126" width="100" height="44" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="914" y="145" text-anchor="middle" font-size="12" fill="#7f1d1d">Xid</text>
+  <text x="914" y="163" text-anchor="middle" font-size="11" fill="#7f1d1d">31 字节</text>
+  <text x="44" y="200" font-size="12" fill="#334155">位点 998 起，事务结束在 125086：本事务共 124088 字节，事务号从 1-8 推进到 1-9</text>
+  <text x="44" y="226" font-size="12" fill="#334155">消费端按同一区间复核：25 个事件 / 124403 字节，其中 17 个 Write_rows 共 123812 字节</text>
+  <text x="44" y="246" font-size="11" fill="#64748b">事务边界由 Gtid 与 Xid 两个事件夹住；中间的行事件才是 CDC 要的原料</text>
+
+  <rect x="24" y="270" width="952" height="150" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="296" font-size="15" font-weight="700" fill="#7c2d12">一个语句为什么要切成 17 个行事件</text>
+  <rect x="50" y="312" width="200" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="150" y="331" text-anchor="middle" font-size="12" fill="#7c2d12">满批 7428 字节</text>
+  <text x="150" y="349" text-anchor="middle" font-size="11" fill="#7c2d12">装 6 行</text>
+  <rect x="262" y="312" width="200" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="362" y="331" text-anchor="middle" font-size="12" fill="#7c2d12">满批 7428 字节</text>
+  <text x="362" y="349" text-anchor="middle" font-size="11" fill="#7c2d12">装 6 行</text>
+  <rect x="474" y="312" width="200" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="574" y="331" text-anchor="middle" font-size="12" fill="#334155">同样满批</text>
+  <text x="574" y="349" text-anchor="middle" font-size="11" fill="#334155">累计 16 个</text>
+  <rect x="686" y="312" width="200" height="44" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-dasharray="5 3"/>
+  <text x="786" y="331" text-anchor="middle" font-size="12" fill="#7c2d12">末批 4964 字节</text>
+  <text x="786" y="349" text-anchor="middle" font-size="11" fill="#7c2d12">装 4 行</text>
+  <text x="44" y="382" font-size="12" fill="#334155">单个整行镜像 1238 字节；6 行 7428 字节已贴近 8192 的批大小上限，余下 4 行落到末批</text>
+  <text x="44" y="406" font-size="11" fill="#64748b">结论：一个语句不等于一个事件，100 行变更要以事件为单位累计，位点也要按事件推进</text>
+
+  <rect x="24" y="436" width="952" height="176" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="462" font-size="15" font-weight="700" fill="#1e3a8a">同一张 12 列宽表改 1 行 1 列：一次 UPDATE 的三档体积</text>
+  <rect x="200" y="480" width="558" height="26" rx="4" fill="#bfdbfe" stroke="#2563eb"/>
+  <text x="212" y="498" font-size="12" fill="#1e3a8a">行镜像 FULL</text>
+  <text x="766" y="498" font-size="12" fill="#1e3a8a">共 2793 字节，其中行事件 2502 字节</text>
+  <rect x="200" y="520" width="108" height="26" rx="4" fill="#bbf7d0" stroke="#16a34a"/>
+  <text x="316" y="538" font-size="12" fill="#14532d">行镜像 MINIMAL：共 541 字节，行事件只剩 250 字节</text>
+  <rect x="200" y="560" width="70" height="26" rx="4" fill="#fecaca" stroke="#dc2626"/>
+  <text x="288" y="578" font-size="12" fill="#7f1d1d">语句格式：共 349 字节，只有 142 字节的语句事件</text>
+  <text x="44" y="604" font-size="11" fill="#64748b">三轮重复读数一致；最后一档没有表映射与行事件，拿不到「哪一行的前后值」</text>
+</svg>

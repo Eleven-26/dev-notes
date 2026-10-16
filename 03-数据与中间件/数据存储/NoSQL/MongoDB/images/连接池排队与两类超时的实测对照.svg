@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="1000" height="790" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="790" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">连接池打满与实例不可达：两段等待的分界与实测时长</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">单机实例 · 业务集合 1000000 条文档 · 一次慢操作 = 全表分组 · 区间按 3~4 次运行逐位取并集</text>
+
+  <rect x="50" y="90" width="210" height="44" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="155" y="117" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">应用发起一次操作</text>
+  <path d="M155 134 L155 164" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arw)"/>
+
+  <rect x="50" y="164" width="210" height="58" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="155" y="188" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">① 服务器选择阶段</text>
+  <text x="155" y="208" text-anchor="middle" font-size="11.5" fill="#92400e">连接池还没借出任何连接</text>
+  <path d="M155 222 L155 272" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arw)"/>
+
+  <rect x="50" y="272" width="210" height="58" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="155" y="296" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">② 从池里借连接</text>
+  <text x="155" y="316" text-anchor="middle" font-size="11.5" fill="#92400e">没有空闲连接就排队等待</text>
+  <path d="M155 330 L155 380" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#arw)"/>
+
+  <rect x="50" y="380" width="210" height="44" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="155" y="407" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">操作开始执行</text>
+
+  <path d="M260 193 L300 193 L300 214 L338 214" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#arw)"/>
+  <path d="M260 301 L300 301 L300 330 L338 330" stroke="#334155" stroke-width="1.5" fill="none" marker-end="url(#arw)"/>
+
+  <rect x="340" y="110" width="620" height="126" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="356" y="132" font-size="13" font-weight="bold" fill="#0f172a">选不到服务器：等待基本等于配置值（1 像素 = 10 毫秒）</text>
+  <text x="356" y="162" font-size="12" fill="#334155">配置 250 ms</text>
+  <rect x="470" y="150" width="25" height="16" fill="#fca5a5"/>
+  <text x="505" y="162" font-size="12" fill="#334155">实测 250~257 ms</text>
+  <text x="356" y="192" font-size="12" fill="#334155">配置 2000 ms</text>
+  <rect x="470" y="180" width="201" height="16" fill="#fca5a5"/>
+  <text x="681" y="192" font-size="12" fill="#334155">实测 2000~2013 ms</text>
+  <text x="356" y="222" font-size="11.5" fill="#b91c1c">server selection timeout · Type: Unknown · connection refused</text>
+
+  <rect x="340" y="252" width="620" height="200" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="356" y="274" font-size="13" font-weight="bold" fill="#0f172a">借不到连接：等待由池上限与截止期决定（1 像素 = 100 毫秒，不足按 4 像素示意）</text>
+  <text x="356" y="304" font-size="12" fill="#334155">池 2 · 截止 100 ms</text>
+  <rect x="500" y="292" width="4" height="16" fill="#86efac"/>
+  <text x="516" y="304" font-size="12" fill="#334155">等待 2~23 ms ✅ 成功</text>
+  <text x="356" y="334" font-size="12" fill="#334155">池 1 · 截止 100 ms</text>
+  <rect x="500" y="322" width="5" height="16" fill="#fca5a5"/>
+  <text x="516" y="334" font-size="12" fill="#334155">等待 100.2~104.0 ms ❌ 失败</text>
+  <text x="356" y="364" font-size="12" fill="#334155">池 1 · 截止 60 s</text>
+  <rect x="500" y="352" width="58" height="16" fill="#86efac"/>
+  <rect x="558" y="352" width="236" height="16" fill="#bbf7d0"/>
+  <text x="356" y="392" font-size="12" fill="#334155">等待 5.8~29.4 秒 ✅ 成功（等到上一个慢操作跑完）</text>
+  <text x="356" y="422" font-size="11.5" fill="#b91c1c">timed out while checking out a connection from connection pool</text>
+  <text x="356" y="442" font-size="11.5" fill="#b91c1c">total connections: 1, maxPoolSize: 1, idle connections: 0</text>
+
+  <rect x="40" y="474" width="920" height="176" rx="9" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="56" y="498" font-size="13" font-weight="bold" fill="#0f172a">同一批并发慢操作只改池上限：排队没有消失，只是从客户端挪到服务端（1 像素 = 1000 毫秒）</text>
+  <text x="56" y="528" font-size="12" fill="#334155">池 2 · 12 并发</text>
+  <rect x="230" y="516" width="127" height="16" fill="#93c5fd"/>
+  <text x="367" y="528" font-size="12" fill="#334155">墙钟 126825 ms · 服务端连接峰值 10 · 同时在跑的操作 3</text>
+  <text x="56" y="558" font-size="12" fill="#334155">池 4 · 8 并发</text>
+  <rect x="230" y="546" width="34" height="16" fill="#93c5fd"/>
+  <rect x="264" y="546" width="119" height="16" fill="#bfdbfe"/>
+  <text x="393" y="558" font-size="12" fill="#334155">墙钟 34141~153098 ms · 连接峰值 9 · 操作 5（聚合 4 + 探测 1）</text>
+  <text x="56" y="588" font-size="12" fill="#334155">池 10 · 12 并发</text>
+  <rect x="230" y="576" width="190" height="16" fill="#93c5fd"/>
+  <text x="430" y="588" font-size="12" fill="#334155">墙钟 189922 ms · 连接峰值 18 · 操作 11</text>
+  <text x="56" y="616" font-size="12" fill="#1e3a8a">⭐ 池从 2 放大到 10：墙钟 126825 → 189922 ms，服务端连接峰值 10 → 18，活跃操作 3 → 11</text>
+  <text x="56" y="640" font-size="12" fill="#1e3a8a">⚠️ 三档连接峰值（10 / 9 / 18）都大于池上限：多出的是拓扑探测连接与另一路监控客户端</text>
+
+  <rect x="40" y="666" width="920" height="86" rx="9" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="56" y="692" font-size="12.5" font-weight="bold" fill="#0f172a">一眼分流的判据</text>
+  <text x="56" y="716" font-size="12" fill="#334155">报错含 checking out a connection → 池容量不足：连接计数已给出上限与空闲数，先查上游截止期与慢操作。</text>
+  <text x="56" y="738" font-size="12" fill="#334155">报错含 server selection → 实例不可达或选不出节点：与池无关，先查地址、进程与拓扑；两条路径互斥。</text>
+</svg>

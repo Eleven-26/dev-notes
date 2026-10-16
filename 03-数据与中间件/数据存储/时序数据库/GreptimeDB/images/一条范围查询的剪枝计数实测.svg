@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w7g3aArw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次范围查询被剪掉多少：同一 region 的实测计数</text>
+  <text x="500" y="55" text-anchor="middle" font-size="12.5" fill="#64748b">读数取自执行计划原文；左右两条轨道是同一张表的同一条 cpu 谓词，差别只在有没有带时间范围</text>
+
+  <text x="500" y="78" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">表内共 3 个数据文件（每个 rows=3000）</text>
+
+  <rect x="110" y="88" width="250" height="82" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="235" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#075985">文件 A</text>
+  <text x="235" y="130" text-anchor="middle" font-size="12" fill="#0c4a6e">rows=3000  size=6813</text>
+  <text x="235" y="148" text-anchor="middle" font-size="11.5" fill="#0c4a6e">时间 1780048800000</text>
+  <text x="235" y="164" text-anchor="middle" font-size="11.5" fill="#0c4a6e">到 1780051799000</text>
+
+  <rect x="375" y="88" width="250" height="82" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="500" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#475569">文件 B</text>
+  <text x="500" y="130" text-anchor="middle" font-size="12" fill="#475569">rows=3000  size=6813</text>
+  <text x="500" y="148" text-anchor="middle" font-size="11.5" fill="#475569">时间 1780052400000</text>
+  <text x="500" y="164" text-anchor="middle" font-size="11.5" fill="#475569">到 1780055399000</text>
+
+  <rect x="640" y="88" width="250" height="82" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="765" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#475569">文件 C</text>
+  <text x="765" y="130" text-anchor="middle" font-size="12" fill="#475569">rows=3000  size=6814</text>
+  <text x="765" y="148" text-anchor="middle" font-size="11.5" fill="#475569">时间 1780056000000</text>
+  <text x="765" y="164" text-anchor="middle" font-size="11.5" fill="#475569">到 1780058999000</text>
+
+  <path d="M 180 170 L 180 196" stroke="#dc2626" stroke-width="2" fill="none"/>
+  <path d="M 500 170 L 500 196" stroke="#16a34a" stroke-width="2" fill="none" marker-end="url(#w7g3aArw)"/>
+  <path d="M 820 170 L 820 196" stroke="#16a34a" stroke-width="2" fill="none" marker-end="url(#w7g3aArw)"/>
+  <text x="150" y="190" text-anchor="end" font-size="11.5" fill="#dc2626">剪掉</text>
+  <text x="870" y="190" text-anchor="start" font-size="11.5" fill="#16a34a">留下</text>
+
+  <rect x="55" y="200" width="420" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="265" y="220" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">轨道 A：带 2 个时间谓词 + cpu 谓词</text>
+  <rect x="525" y="200" width="420" height="30" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="735" y="220" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">轨道 B：只带 cpu 谓词，无时间范围</text>
+
+  <rect x="55" y="242" width="420" height="46" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="265" y="262" text-anchor="middle" font-size="12" fill="#0f172a">① 打开的文件：files=1，file_ranges=1</text>
+  <text x="265" y="280" text-anchor="middle" font-size="11.5" fill="#475569">另外 2 个文件的时间范围与查询不相交</text>
+  <rect x="525" y="242" width="420" height="46" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="735" y="262" text-anchor="middle" font-size="12" fill="#0f172a">① 打开的文件：files=3，file_ranges=3</text>
+  <text x="735" y="280" text-anchor="middle" font-size="11.5" fill="#475569">3 个文件全进候选集，代价 3 倍</text>
+  <path d="M 265 288 L 265 302" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+  <path d="M 735 288 L 735 302" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+
+  <rect x="55" y="304" width="420" height="46" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="265" y="324" text-anchor="middle" font-size="12" fill="#0f172a">② 候选 row group：rg_total=1</text>
+  <text x="265" y="342" text-anchor="middle" font-size="11.5" fill="#475569">本机每文件 1 块，min-max 无第二块可剪</text>
+  <rect x="525" y="304" width="420" height="46" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="735" y="324" text-anchor="middle" font-size="12" fill="#0f172a">② 候选 row group：rg_total=3</text>
+  <text x="735" y="342" text-anchor="middle" font-size="11.5" fill="#475569">3 块各带 cpu 的 min-max 统计</text>
+  <path d="M 265 350 L 265 364" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+  <path d="M 735 350 L 735 364" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+
+  <rect x="55" y="366" width="420" height="42" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="265" y="392" text-anchor="middle" font-size="12" fill="#0f172a">候选行 rows_before_filter=3000</text>
+  <rect x="525" y="366" width="420" height="42" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.2"/>
+  <text x="735" y="392" text-anchor="middle" font-size="12" fill="#0f172a">候选行 rows_before_filter=9000</text>
+  <path d="M 265 408 L 265 422" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+  <path d="M 735 408 L 735 422" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+
+  <rect x="55" y="424" width="420" height="42" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.2"/>
+  <text x="265" y="450" text-anchor="middle" font-size="12" fill="#713f12">预过滤剪掉 prefilter_filtered_rows=2373</text>
+  <rect x="525" y="424" width="420" height="42" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.2"/>
+  <text x="735" y="450" text-anchor="middle" font-size="12" fill="#713f12">预过滤剪掉 prefilter_filtered_rows=7119</text>
+  <path d="M 265 466 L 265 480" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+  <path d="M 735 466 L 735 480" stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#w7g3aArw)"/>
+
+  <rect x="55" y="482" width="420" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="265" y="502" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">输出 627 行（3000 - 2373 = 627）</text>
+  <text x="265" y="520" text-anchor="middle" font-size="11.5" fill="#166534">投影只留 2 列，未解码第 3 列</text>
+  <rect x="525" y="482" width="420" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="735" y="502" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">输出 1881 行（627 + 627 + 627）</text>
+  <text x="735" y="520" text-anchor="middle" font-size="11.5" fill="#166534">9000 - 7119 = 1881，与轨道 A 同一条数</text>
+
+  <rect x="55" y="548" width="890" height="150" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.4"/>
+  <text x="75" y="572" font-size="13" font-weight="bold" fill="#0f172a">③ 索引这一档：只有声明了索引的表才会多出索引字节</text>
+  <text x="75" y="598" font-size="12" fill="#1e293b">未声明索引的表：数据 size=6813，索引 index_size=0，目录里没有索引文件</text>
+  <text x="75" y="620" font-size="12" fill="#1e293b">声明跳数 + 全文索引的表：数据 size=6877，索引 index_size=651</text>
+  <text x="75" y="642" font-size="12" fill="#1e293b">同一份数据（rows=3000）多出的 64 字节数据、651 字节索引就是索引的代价</text>
+  <text x="75" y="664" font-size="12" fill="#475569">索引文件与数据文件同名同目录成对出现，跟着数据文件一起被跳过或一起被打开</text>
+  <text x="75" y="686" font-size="11.5" fill="#64748b">缓存效应：第 1 次跑统计缓存记 miss=1，第 2、3 次同一文件记 hit=1，计数读数三次一致</text>
+</svg>

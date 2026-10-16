@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ftArw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Flow 执行路由决策树：一条 CREATE FLOW 会被判成哪一种</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判据取自 4.1 与 2.2 两张表；叶子上的 options 读数与报错原文均为 1.2.1 standalone 实测</text>
+
+  <rect x="60" y="88" width="300" height="62" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="76" y="112" font-size="13.5" font-weight="bold" fill="#1e3a8a">CREATE FLOW 提交</text>
+  <text x="76" y="136" font-size="11.5" fill="#1e3a8a">AS 后面的 SQL 先过 planner</text>
+
+  <rect x="460" y="88" width="460" height="62" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="476" y="112" font-size="13.5" font-weight="bold" fill="#7f1d1d">规划不出来 → 创建时直接报错</text>
+  <text x="476" y="136" font-size="11.5" fill="#7f1d1d">不会静默降级成另一种模式（3.1 口径）</text>
+  <line x1="360" y1="119" x2="454" y2="119" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="382" y="112" font-size="11.5" fill="#334155">否</text>
+
+  <rect x="60" y="196" width="300" height="58" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="76" y="220" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 带 EVAL INTERVAL？</text>
+  <text x="76" y="242" font-size="11.5" fill="#1e3a8a">按固定间隔调度一次评估</text>
+  <line x1="210" y1="150" x2="210" y2="190" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="220" y="174" font-size="11.5" fill="#334155">能规划</text>
+
+  <rect x="460" y="196" width="460" height="58" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="476" y="220" font-size="13.5" font-weight="bold" fill="#14532d">批处理 batching（强制，与 SQL 形状无关）</text>
+  <text x="476" y="242" font-size="11.5" fill="#14532d">实测 f_tql：options = {"flow_type":"batching"}</text>
+  <line x1="360" y1="225" x2="454" y2="225" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="382" y="218" font-size="11.5" fill="#334155">是</text>
+
+  <rect x="60" y="300" width="300" height="58" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="76" y="324" font-size="13.5" font-weight="bold" fill="#1e3a8a">② 计划含 Aggregate / Distinct？</text>
+  <text x="76" y="346" font-size="11.5" fill="#1e3a8a">聚合或去重 → 只能走批处理</text>
+  <line x1="210" y1="254" x2="210" y2="294" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="220" y="278" font-size="11.5" fill="#334155">否</text>
+
+  <rect x="460" y="300" width="460" height="76" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="476" y="324" font-size="13.5" font-weight="bold" fill="#14532d">批处理 batching · 再分两种窗口情况</text>
+  <text x="476" y="346" font-size="11.5" fill="#14532d">有 date_bin 窗口 → 增量评估（temp_monitoring 实测）</text>
+  <text x="476" y="366" font-size="11.5" fill="#14532d">无窗口 → 不给 EVAL INTERVAL 就创建失败，给了跑全量快照</text>
+  <line x1="360" y1="329" x2="454" y2="329" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="382" y="322" font-size="11.5" fill="#334155">是</text>
+
+  <rect x="60" y="422" width="300" height="58" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="76" y="446" font-size="13.5" font-weight="bold" fill="#1e3a8a">③ 普通投影 / 非聚合 join？</text>
+  <text x="76" y="468" font-size="11.5" fill="#1e3a8a">没有聚合，也没有窗口</text>
+  <line x1="210" y1="358" x2="210" y2="416" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="220" y="390" font-size="11.5" fill="#334155">否</text>
+
+  <rect x="460" y="422" width="460" height="58" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="476" y="446" font-size="13.5" font-weight="bold" fill="#7c2d12">遗留 streaming（新负载不推荐）</text>
+  <text x="476" y="468" font-size="11.5" fill="#7c2d12">实测 f_plain_proj：options = {"flow_type":"streaming"}</text>
+  <line x1="360" y1="451" x2="454" y2="451" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="382" y="444" font-size="11.5" fill="#334155">是</text>
+
+  <rect x="60" y="526" width="300" height="58" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="76" y="550" font-size="13.5" font-weight="bold" fill="#78350f">④ SQL 换成 TQL 形态？</text>
+  <text x="76" y="572" font-size="11.5" fill="#78350f">窄通道，限制更硬</text>
+  <line x1="210" y1="480" x2="210" y2="520" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="220" y="504" font-size="11.5" fill="#334155">否</text>
+
+  <rect x="460" y="526" width="460" height="76" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="476" y="550" font-size="13.5" font-weight="bold" fill="#78350f">必须带 EVAL INTERVAL，且只允许一个 CTE</text>
+  <text x="476" y="572" font-size="11.5" fill="#78350f">外层必须恰好 SELECT * FROM &lt;cte&gt;，不能再投影或过滤</text>
+  <text x="476" y="592" font-size="11.5" fill="#78350f">不给间隔 → TQL query requires EVAL INTERVAL to be set</text>
+  <line x1="360" y1="555" x2="454" y2="555" stroke="#64748b" stroke-width="1.6" marker-end="url(#ftArw)"/>
+  <text x="382" y="548" font-size="11.5" fill="#334155">是</text>
+
+  <rect x="60" y="630" width="860" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="76" y="654" font-size="13" font-weight="bold" fill="#0f172a">实测读数（1.2.1 standalone，宿主 25001 → 容器 4000）</text>
+  <text x="76" y="676" font-size="11.5" fill="#334155">窗口聚合 3 行入 2 行出：max_temp 落在 120.0 与 150.0，90 那行被 max() 吃掉</text>
+  <text x="76" y="696" font-size="11.5" fill="#334155">增量评估落地延迟 15 个样本 3027 ~ 10002 ms，其中 12 个在 9487 ~ 10002 ms</text>
+  <text x="76" y="716" font-size="11.5" fill="#334155">顺序写反 → Expected: AS, found: EXPIRE at Line: 1, Column: 63；'3 day' 回显 259200 s、'1m' 回显 60 s</text>
+  <text x="76" y="736" font-size="11.5" fill="#334155">加 defer_on_missing_source 存成 pending：补建源表后 source_table_names 仍为空，不会自动激活</text>
+
+  <text x="60" y="784" font-size="12" fill="#64748b">要点：决策树只回答「走哪条引擎路径」；EXPIRE AFTER 管的参与计算范围与执行模式正交，它不删数据，删数据用建表时的 TTL。</text>
+</svg>

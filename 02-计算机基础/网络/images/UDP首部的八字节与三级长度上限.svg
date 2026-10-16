@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">UDP 首部的 8 字节与三级长度上限：65535 → 65507 → 1472</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">上半是首部字段布局；中段是长度上限的推导链；下半是 MTU 1500 链路上实测出来的分片阶梯</text>
+
+  <rect x="40" y="68" width="150" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="115" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">源端口</text>
+  <text x="115" y="109" text-anchor="middle" font-size="11" fill="#1e3a8a">2 字节</text>
+  <rect x="190" y="68" width="150" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="265" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">目的端口</text>
+  <text x="265" y="109" text-anchor="middle" font-size="11" fill="#1e3a8a">2 字节</text>
+  <rect x="340" y="68" width="150" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="415" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">长度</text>
+  <text x="415" y="109" text-anchor="middle" font-size="11" fill="#14532d">2 字节 · 16 位</text>
+  <rect x="490" y="68" width="150" height="52" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="565" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#92400e">校验和</text>
+  <text x="565" y="109" text-anchor="middle" font-size="11" fill="#92400e">2 字节</text>
+  <rect x="640" y="68" width="310" height="52" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="795" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">载荷（数据）</text>
+  <text x="795" y="109" text-anchor="middle" font-size="11" fill="#475569">长度字段 = 首部 + 载荷，最小值 8</text>
+
+  <path d="M 40 128 L 40 140" stroke="#2563eb" stroke-width="1.2" fill="none"/>
+  <path d="M 640 128 L 640 140" stroke="#2563eb" stroke-width="1.2" fill="none"/>
+  <path d="M 40 140 L 640 140" stroke="#2563eb" stroke-width="1.2" fill="none"/>
+  <path d="M 340 140 L 340 152" stroke="#2563eb" stroke-width="1.2" fill="none"/>
+  <text x="340" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">UDP 首部固定 8 字节，四个字段之外没有一处余量</text>
+  <text x="500" y="190" text-anchor="middle" font-size="11.5" fill="#475569">校验和覆盖范围 = 伪首部（源 IP + 目的 IP + 协议号 17 + UDP 长度，不在报文里传输）+ UDP 首部 + 载荷</text>
+
+  <rect x="40" y="206" width="230" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="155" y="228" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">65535</text>
+  <text x="155" y="247" text-anchor="middle" font-size="11" fill="#64748b">长度字段 16 位的容量</text>
+  <path d="M 270 232 L 306 232" stroke="#94a3b8" stroke-width="1.4" fill="none"/>
+  <path d="M 306 232 L 298 228 M 306 232 L 298 236" stroke="#94a3b8" stroke-width="1.4" fill="none"/>
+  <rect x="310" y="206" width="230" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="425" y="228" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">65527</text>
+  <text x="425" y="247" text-anchor="middle" font-size="11" fill="#64748b">= 65535 − 8，仅字段推导</text>
+  <path d="M 540 232 L 576 232" stroke="#94a3b8" stroke-width="1.4" fill="none"/>
+  <path d="M 576 232 L 568 228 M 576 232 L 568 236" stroke="#94a3b8" stroke-width="1.4" fill="none"/>
+  <rect x="580" y="206" width="230" height="52" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="695" y="228" text-anchor="middle" font-size="15" font-weight="bold" fill="#7f1d1d">65507</text>
+  <text x="695" y="247" text-anchor="middle" font-size="11" fill="#7f1d1d">= 65535 − 20 − 8，内核拦截处</text>
+
+  <rect x="40" y="270" width="440" height="46" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.2"/>
+  <text x="56" y="289" font-size="11.5" fill="#7f1d1d">实测 65507：发出成功，对端一次读出 65507 字节</text>
+  <text x="56" y="307" font-size="11.5" font-weight="bold" fill="#7f1d1d">实测 65508：write: message too long，报文没出网卡</text>
+  <rect x="510" y="270" width="440" height="46" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="526" y="289" font-size="11.5" fill="#334155">IPv6 同理：65535 − 40 − 8 = 65487</text>
+  <text x="526" y="307" font-size="11.5" fill="#64748b">扣的是 IPv6 固定首部 40 字节，UDP 长度字段本身不变</text>
+
+  <rect x="40" y="330" width="910" height="46" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="56" y="349" font-size="12" font-weight="bold" fill="#14532d">第三级上限不在 UDP 头上，而在链路：MTU 1500 → 不分片的最大载荷 = 1500 − 20 − 8 = 1472</text>
+  <text x="56" y="367" font-size="11.5" fill="#14532d">实测 1472 不分片（FragCreates 增量为 0），1480 起切成 2 片 —— 工程保守取值按 IPv6 最小 MTU 1280 反推 1280 − 40 − 8 = 1232</text>
+
+  <text x="40" y="398" font-size="13" font-weight="bold" fill="#0f172a">越过 1472 之后的分片阶梯（链路 MTU 1500，一个格子 = 一个 IP 包）</text>
+
+  <text x="40" y="424" font-size="11.5" fill="#334155">载荷 1472</text>
+  <rect x="190" y="412" width="14" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="214" y="424" font-size="11" fill="#14532d">1 个 IP 包，不分片</text>
+
+  <text x="40" y="452" font-size="11.5" fill="#334155">载荷 1480</text>
+  <rect x="190" y="440" width="14" height="16" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <rect x="207" y="440" width="14" height="16" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="231" y="452" font-size="11" fill="#92400e">2 片</text>
+
+  <text x="40" y="480" font-size="11.5" fill="#334155">载荷 4000</text>
+  <rect x="190" y="468" width="14" height="16" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <rect x="207" y="468" width="14" height="16" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <rect x="224" y="468" width="14" height="16" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="248" y="480" font-size="11" fill="#92400e">3 片</text>
+
+  <text x="40" y="508" font-size="11.5" fill="#334155">载荷 8000</text>
+  <rect x="190" y="496" width="14" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <rect x="207" y="496" width="14" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <rect x="224" y="496" width="14" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <rect x="241" y="496" width="14" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <rect x="258" y="496" width="14" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <rect x="275" y="496" width="14" height="16" fill="#fed7aa" stroke="#ea580c" stroke-width="1"/>
+  <text x="299" y="508" font-size="11" fill="#9a3412">6 片</text>
+
+  <text x="40" y="536" font-size="11.5" fill="#334155">载荷 65507</text>
+  <rect x="190" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="207" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="224" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="241" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="258" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="275" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="292" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="309" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="326" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="343" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="360" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="377" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="394" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="411" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="428" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="445" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="462" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="479" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="496" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="513" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="530" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="547" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="564" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="581" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="598" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="615" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="632" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="649" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="666" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="683" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="700" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="717" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="734" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="751" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="768" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="785" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="802" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="819" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="836" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="853" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="870" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="887" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="904" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <rect x="921" y="524" width="14" height="16" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <text x="945" y="536" font-size="11" font-weight="bold" fill="#7f1d1d">45 片</text>
+
+  <text x="40" y="566" font-size="11.5" fill="#475569">片数 = (载荷 + 8) 除以 1480 向上取整，1480 = MTU 1500 − IP 首部 20</text>
+  <text x="40" y="584" font-size="11.5" fill="#475569">接收端同批计数：ReasmReqds 增 58、ReasmOKs 增 5、ReasmFails 0、InReceives 增 60、UdpInDatagrams 增 7</text>
+  <text x="40" y="602" font-size="11.5" font-weight="bold" fill="#7f1d1d">任一片被丢，整个数据报作废：45 片的重传代价不是一个包，而是 45 个包</text>
+
+  <rect x="40" y="622" width="910" height="52" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="56" y="644" font-size="11.5" fill="#1e3a8a">分片由 IP 层完成，UDP 本身不感知：载荷多大就发多大，内核不会像 TCP 那样按 MSS 预先切段</text>
+  <text x="56" y="664" font-size="11.5" fill="#1e3a8a">所以「长度字段还装得下」不等于「链路发得出去」：65507 合法，但要 45 个 IP 包才走完</text>
+</svg>

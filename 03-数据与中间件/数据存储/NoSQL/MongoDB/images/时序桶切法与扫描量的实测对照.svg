@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 786" width="1000" height="786" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ap3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#475569"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="786" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">granularity 与元数据基数怎么改写桶数与扫描量</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一批 1440 条点：每 1 分钟 1 个、覆盖 24 小时 · 扫桶数与命中桶数取自 explain 的 docsExamined 与 nReturned</text>
+
+  <rect x="30" y="82" width="940" height="214" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="46" y="102" font-size="13" font-weight="bold" fill="#0f172a">三档取值下的桶切法（测量总数都是 1440 条）</text>
+
+  <rect x="44" y="115" width="160" height="30" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="124" y="134" text-anchor="middle" font-size="12" fill="#1e3a8a">seconds</text>
+  <rect x="222" y="115" width="150" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="297" y="134" text-anchor="middle" font-size="12" fill="#334155">桶 24 · 每桶 60</text>
+  <rect x="380" y="115" width="210" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="485" y="134" text-anchor="middle" font-size="12" fill="#334155">1 小时：扫 2 / 命中 1</text>
+  <rect x="598" y="115" width="320" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="758" y="134" text-anchor="middle" font-size="12" fill="#334155">24 小时：扫 24 / 命中 24 · size=10235</text>
+
+  <rect x="44" y="161" width="160" height="30" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="124" y="180" text-anchor="middle" font-size="12" fill="#1e3a8a">minutes</text>
+  <rect x="222" y="161" width="150" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="297" y="180" text-anchor="middle" font-size="12" fill="#334155">桶 2 · 每桶 1000</text>
+  <rect x="380" y="161" width="210" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="485" y="180" text-anchor="middle" font-size="12" fill="#334155">1 小时：扫 2 / 命中 1</text>
+  <rect x="598" y="161" width="320" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="758" y="180" text-anchor="middle" font-size="12" fill="#334155">24 小时：扫 2 / 命中 2 · size=17500</text>
+
+  <rect x="44" y="207" width="160" height="30" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="124" y="226" text-anchor="middle" font-size="12" fill="#1e3a8a">hours</text>
+  <rect x="222" y="207" width="150" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="297" y="226" text-anchor="middle" font-size="12" fill="#334155">桶 2 · 每桶 1000</text>
+  <rect x="380" y="207" width="210" height="30" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="485" y="226" text-anchor="middle" font-size="12" fill="#92400e">1 小时：扫 2 / 命中 2</text>
+  <rect x="598" y="207" width="320" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="758" y="226" text-anchor="middle" font-size="12" fill="#334155">24 小时：扫 2 / 命中 2 · size=17476</text>
+
+  <text x="44" y="266" font-size="12" fill="#475569">⚠️ 粗档位被「每桶 1000 条」封顶：1440 条点只能切成 2 桶，1 小时窗口照样要读回整桶（6 小时窗口在 minutes 档是扫 2 / 命中 1）。</text>
+  <text x="44" y="288" font-size="12" fill="#475569">展开后的测量条数三档都一样：1 小时 60 条 · 6 小时 360 条 · 24 小时 1440 条，多读的是桶不是点。</text>
+
+  <path d="M204 130 L213 130 L213 176 L204 176" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap3)"/>
+  <path d="M204 176 L213 176 L213 222 L204 222" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap3)"/>
+
+  <rect x="30" y="312" width="940" height="160" rx="9" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="46" y="332" font-size="13" font-weight="bold" fill="#0f172a">元数据基数是桶数的乘数</text>
+
+  <rect x="44" y="341" width="160" height="30" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="124" y="360" text-anchor="middle" font-size="12" fill="#1e3a8a">3 个元数据值</text>
+  <rect x="222" y="341" width="150" height="30" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="297" y="360" text-anchor="middle" font-size="12" fill="#92400e">桶 72 · 每桶 60</text>
+  <rect x="380" y="341" width="210" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="485" y="360" text-anchor="middle" font-size="12" fill="#334155">带等值：扫 72 / 命中 24</text>
+  <rect x="598" y="341" width="320" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="758" y="360" text-anchor="middle" font-size="12" fill="#334155">不带等值：命中 72 桶 · 4320 条 · size=30697</text>
+
+  <rect x="44" y="385" width="160" height="30" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="124" y="404" text-anchor="middle" font-size="12" fill="#1e3a8a">900 条点</text>
+  <rect x="222" y="385" width="150" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="297" y="404" text-anchor="middle" font-size="12" fill="#334155">桶 1 · 每桶 900</text>
+  <rect x="380" y="385" width="210" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="485" y="404" text-anchor="middle" font-size="12" fill="#334155">24 小时：扫 1 / 命中 1</text>
+  <rect x="598" y="385" width="320" height="30" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="758" y="404" text-anchor="middle" font-size="12" fill="#334155">展开 900 条 · size=34969</text>
+
+  <text x="44" y="436" font-size="12" fill="#475569">对照：不填元数据维度时 1 小时扫 2 / 命中 1、24 小时扫 24 / 命中 24，与单值完全同形。</text>
+  <text x="44" y="458" font-size="12" fill="#475569">⚠️ 1 小时窗口带等值是扫 4 / 命中 1：基数越大，区间相交顺带圈进的相邻桶越多。</text>
+
+  <path d="M204 356 L213 356 L213 400 L204 400" stroke="#475569" stroke-width="1.4" fill="none" marker-end="url(#ap3)"/>
+
+  <rect x="30" y="488" width="940" height="126" rx="9" fill="#f0fdf4" stroke="#86efac" stroke-width="1.2"/>
+  <text x="46" y="508" font-size="13" font-weight="bold" fill="#0f172a">同一批点的体积账</text>
+  <rect x="44" y="521" width="890" height="26" rx="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="490" y="539" text-anchor="middle" font-size="12" fill="#334155">普通集合：1440 个文档 · size=83520 字节 · avgObjSize=58</text>
+  <rect x="44" y="553" width="890" height="26" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="490" y="571" text-anchor="middle" font-size="12" fill="#15803d">时序桶（细档位）：24 个文档 · size=10235 字节 —— 约 8 倍</text>
+  <text x="44" y="600" font-size="12" fill="#475569">⚠️ 三档的 storageSize=4096、totalSize=8192 完全相同：这个量级还看不出磁盘占用差异。</text>
+
+  <rect x="30" y="630" width="940" height="140" rx="9" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="46" y="654" font-size="13" font-weight="bold" fill="#0f172a">四条判据</text>
+  <text x="46" y="678" font-size="12.5" fill="#334155">⭐ 取值不改点数，只改桶的切法：粗档被每桶 1000 条封顶，两档粗配置在这份数据上完全同形。</text>
+  <text x="46" y="702" font-size="12.5" fill="#334155">⭐ 剪枝粒度等于桶的时间跨度：1 小时窗口在 hours 档要命中 2 桶，读回的是整桶而不是整窗。</text>
+  <text x="46" y="726" font-size="12.5" fill="#334155">⚠️ 元数据基数是乘数：3 个值把 24 桶变成 72 桶，扫 72 桶只拿回 24 桶（放大 3 倍）。</text>
+  <text x="46" y="750" font-size="12.5" fill="#334155">⚠️ 扫桶数随窗口位置浮动（同型查询另有扫 4 / 扫 9 的一组读数），容量估算按上界算。</text>
+</svg>
