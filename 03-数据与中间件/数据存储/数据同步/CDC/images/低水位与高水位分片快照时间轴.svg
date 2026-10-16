@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">低水位与高水位：分片快照的日志位点时间轴</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#475569">每片读之前记低水位 L、读之后记高水位 H，读完只把这段时间窗内的变更补进副本</text>
+
+  <text x="70" y="132" font-size="12" fill="#334155">日志位点 seq（右为更晚）</text>
+  <rect x="90" y="140" width="810" height="20" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="495" y="154" text-anchor="middle" font-size="11" fill="#334155">写入方持续提交变更（seq 严格递增）</text>
+
+  <path d="M 70 170 L 930 170" stroke="#334155" stroke-width="2" fill="none"/>
+  <polygon points="930,165 944,170 930,175" fill="#334155"/>
+
+  <path d="M 100 178 L 100 372" stroke="#16a34a" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
+  <text x="100" y="388" text-anchor="middle" font-size="11" fill="#14532d">P 在所有分片之前</text>
+
+  <rect x="110" y="210" width="180" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <path d="M 110 200 L 110 210" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <path d="M 290 200 L 290 210" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <text x="110" y="196" text-anchor="middle" font-size="10" fill="#1e3a8a">L</text>
+  <text x="290" y="196" text-anchor="middle" font-size="10" fill="#1e3a8a">H</text>
+  <text x="200" y="232" text-anchor="middle" font-size="11" fill="#1e3a8a">分片 1：L → H</text>
+
+  <rect x="300" y="250" width="180" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <path d="M 300 240 L 300 250" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <path d="M 480 240 L 480 250" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <text x="300" y="236" text-anchor="middle" font-size="10" fill="#1e3a8a">L</text>
+  <text x="480" y="236" text-anchor="middle" font-size="10" fill="#1e3a8a">H</text>
+  <text x="390" y="272" text-anchor="middle" font-size="11" fill="#1e3a8a">分片 2：L → H</text>
+
+  <rect x="490" y="290" width="180" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <path d="M 490 280 L 490 290" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <path d="M 670 280 L 670 290" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <text x="490" y="276" text-anchor="middle" font-size="10" fill="#1e3a8a">L</text>
+  <text x="670" y="276" text-anchor="middle" font-size="10" fill="#1e3a8a">H</text>
+  <text x="580" y="312" text-anchor="middle" font-size="11" fill="#1e3a8a">分片 3：L → H</text>
+
+  <rect x="680" y="330" width="180" height="34" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <path d="M 680 320 L 680 330" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <path d="M 860 320 L 860 330" stroke="#2563eb" stroke-width="1.5" fill="none"/>
+  <text x="680" y="316" text-anchor="middle" font-size="10" fill="#1e3a8a">L</text>
+  <text x="860" y="316" text-anchor="middle" font-size="10" fill="#1e3a8a">H</text>
+  <text x="770" y="352" text-anchor="middle" font-size="11" fill="#1e3a8a">分片 4：L → H</text>
+
+  <text x="500" y="400" text-anchor="middle" font-size="12" fill="#7c2d12">每片只补 (L, H] 内、落在本片主键区间的变更 → 合并量 merge = 11..18（K = 4）</text>
+  <text x="500" y="424" text-anchor="middle" font-size="12" fill="#334155">快照读完即切纯增量，catchup = 1062..1145；三种正规做法 lost 全为 0</text>
+
+  <rect x="40" y="444" width="920" height="100" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="500" y="470" text-anchor="middle" font-size="12" fill="#334155">正规三法（A / B / C）lost = 0；错法（D）lost = 1059..1168</text>
+  <text x="500" y="494" text-anchor="middle" font-size="12" fill="#334155">A 表级读锁 ops_read = 0，block 109.6..563.4（≈ 读耗时）；B / C 不挡写入 ops_read = 43..63</text>
+  <text x="500" y="518" text-anchor="middle" font-size="12" fill="#334155">分片越细：单片读 284.2..706.2 → 6.0..17.2，merge 37..73 → 1..2（K = 1 / 4 / 16 / 64）</text>
+
+  <text x="500" y="558" text-anchor="middle" font-size="10" fill="#94a3b8">本图为此极简模型的实测读数；真实 binlog 位点衔接与 Flink CDC 作业未实测</text>
+</svg>

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">Flink CDC 接入：配置项 → 阶段 → 失败表现</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#475569">先按指标定位阶段，再回到该阶段的配置项；默认值取 Flink CDC 3.5.0 官方文档</text>
+
+  <text x="165" y="96" text-anchor="middle" font-size="14" fill="#1e3a8a">配置项（默认值）</text>
+  <text x="500" y="96" text-anchor="middle" font-size="14" fill="#1e3a8a">阶段与指标</text>
+  <text x="835" y="96" text-anchor="middle" font-size="14" fill="#7c2d12">配错的表现</text>
+
+  <rect x="40" y="116" width="250" height="76" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="165" y="140" text-anchor="middle" font-size="12" fill="#1e3a8a">chunk.size = 8096</text>
+  <text x="165" y="161" text-anchor="middle" font-size="12" fill="#1e3a8a">fetch.size = 1024</text>
+  <text x="165" y="182" text-anchor="middle" font-size="12" fill="#1e3a8a">scan.startup.mode = initial</text>
+
+  <rect x="375" y="116" width="250" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">① 快照分片</text>
+  <text x="500" y="161" text-anchor="middle" font-size="11" fill="#334155">isSnapshotting</text>
+  <text x="500" y="182" text-anchor="middle" font-size="11" fill="#334155">numSnapshotSplitsRemaining</text>
+
+  <rect x="710" y="116" width="250" height="76" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="835" y="140" text-anchor="middle" font-size="12" fill="#7c2d12">分片过大 → 长读</text>
+  <text x="835" y="161" text-anchor="middle" font-size="12" fill="#7c2d12">剩余分片迟迟不降</text>
+
+  <path d="M 290 154 L 368 154" stroke="#2563eb" stroke-width="2" fill="none"/>
+  <polygon points="368,149 380,154 368,159" fill="#2563eb"/>
+  <path d="M 625 154 L 703 154" stroke="#ea580c" stroke-width="2" fill="none"/>
+  <polygon points="703,149 715,154 703,159" fill="#ea580c"/>
+
+  <rect x="40" y="236" width="250" height="76" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="165" y="260" text-anchor="middle" font-size="12" fill="#1e3a8a">server-id = 5400–6400</text>
+  <text x="165" y="281" text-anchor="middle" font-size="12" fill="#1e3a8a">connect.timeout = 30s</text>
+  <text x="165" y="302" text-anchor="middle" font-size="12" fill="#1e3a8a">connect.max-retries = 3</text>
+
+  <rect x="375" y="236" width="250" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="260" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">② 切换：快照 → 增量</text>
+  <text x="500" y="281" text-anchor="middle" font-size="11" fill="#334155">snapshotEndTime</text>
+  <text x="500" y="302" text-anchor="middle" font-size="11" fill="#334155">isStreamReading</text>
+
+  <rect x="710" y="236" width="250" height="76" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="835" y="260" text-anchor="middle" font-size="12" fill="#7c2d12">撞号 → 建链失败</text>
+  <text x="835" y="281" text-anchor="middle" font-size="12" fill="#7c2d12">超时小 → 反复重启</text>
+
+  <path d="M 290 274 L 368 274" stroke="#2563eb" stroke-width="2" fill="none"/>
+  <polygon points="368,269 380,274 368,279" fill="#2563eb"/>
+  <path d="M 625 274 L 703 274" stroke="#ea580c" stroke-width="2" fill="none"/>
+  <polygon points="703,269 715,274 703,279" fill="#ea580c"/>
+
+  <rect x="40" y="356" width="250" height="76" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="165" y="380" text-anchor="middle" font-size="12" fill="#1e3a8a">connection.pool.size = 20</text>
+  <text x="165" y="401" text-anchor="middle" font-size="12" fill="#1e3a8a">heartbeat.interval = 30s</text>
+  <text x="165" y="422" text-anchor="middle" font-size="12" fill="#1e3a8a">scan.incremental.snapshot.enabled</text>
+
+  <rect x="375" y="356" width="250" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="500" y="380" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">③ 纯增量消费</text>
+  <text x="500" y="401" text-anchor="middle" font-size="11" fill="#334155">isStreamReading</text>
+  <text x="500" y="422" text-anchor="middle" font-size="11" fill="#334155">位点随 checkpoint</text>
+
+  <rect x="710" y="356" width="250" height="76" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="835" y="380" text-anchor="middle" font-size="12" fill="#7c2d12">连接池不足 → 取连接卡住</text>
+  <text x="835" y="401" text-anchor="middle" font-size="12" fill="#7c2d12">心跳过大 → 链路掐断</text>
+
+  <path d="M 290 394 L 368 394" stroke="#2563eb" stroke-width="2" fill="none"/>
+  <polygon points="368,389 380,394 368,399" fill="#2563eb"/>
+  <path d="M 625 394 L 703 394" stroke="#ea580c" stroke-width="2" fill="none"/>
+  <polygon points="703,389 715,394 703,399" fill="#ea580c"/>
+
+  <text x="500" y="470" text-anchor="middle" font-size="12" fill="#334155">依赖：mysql:mysql-connector-java:8.0.27 由作业侧提供（GPLv2，Flink CDC 不随发行包附带）</text>
+  <text x="500" y="500" text-anchor="middle" font-size="12" fill="#ea580c">判据：先定位阶段，再对配置项；每次换版本都要重新核对字段名与默认值</text>
+  <text x="500" y="544" text-anchor="middle" font-size="11" fill="#94a3b8">默认值取自 Flink CDC 3.5.0 官方文档；Flink 运行时未实测（无 Flink / Debezium 镜像），本图仅结构速查</text>
+</svg>

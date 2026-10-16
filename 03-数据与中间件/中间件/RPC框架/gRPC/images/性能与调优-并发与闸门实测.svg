@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">性能与调优：并发、闸门与消息大小的实测区间</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">容器 w8grpc-lab（go1.26.8 + grpc-go v1.84.0，4 核）本机环回；时序类各跑 3 次，条为最小~最大区间</text>
+  <rect x="40" y="76" width="440" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="260" y="98" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">一、并发 → 吞吐（RPS，区间）</text>
+  <path d="M 100 116 L 100 366" fill="none" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="94" y="133.4" text-anchor="end" font-size="10.5" fill="#334155">1</text>
+  <path d="M 125.4 129.9 L 133.1 129.9" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="141.1" y="133.4" font-size="10.5" fill="#1e293b">1422~1989</text>
+  <text x="94" y="161.2" text-anchor="end" font-size="10.5" fill="#334155">2</text>
+  <path d="M 132.5 157.7 L 148.7 157.7" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="156.7" y="161.2" font-size="10.5" fill="#1e293b">1942~3129</text>
+  <text x="94" y="188.9" text-anchor="end" font-size="10.5" fill="#334155">4</text>
+  <path d="M 150.3 185.4 L 167.1 185.4" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="175.1" y="188.9" font-size="10.5" fill="#1e293b">3245~4475</text>
+  <text x="94" y="216.7" text-anchor="end" font-size="10.5" fill="#334155">8</text>
+  <path d="M 166.5 213.2 L 227.6 213.2" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="235.6" y="216.7" font-size="10.5" fill="#1e293b">4433~8913</text>
+  <text x="94" y="244.5" text-anchor="end" font-size="10.5" fill="#334155">16</text>
+  <path d="M 194.4 241 L 291.3 241" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="299.3" y="244.5" font-size="10.5" fill="#1e293b">6477~13577</text>
+  <text x="94" y="272.3" text-anchor="end" font-size="10.5" fill="#334155">32</text>
+  <path d="M 166.1 268.8 L 333.8 268.8" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="341.8" y="272.3" font-size="10.5" fill="#1e293b">4404~16691</text>
+  <text x="94" y="300.1" text-anchor="end" font-size="10.5" fill="#334155">64</text>
+  <path d="M 156 296.6 L 259.7 296.6" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="267.7" y="300.1" font-size="10.5" fill="#1e293b">3667~11259</text>
+  <text x="94" y="327.8" text-anchor="end" font-size="10.5" fill="#334155">128</text>
+  <path d="M 183.7 324.3 L 204 324.3" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="212" y="327.8" font-size="10.5" fill="#1e293b">5692~7178</text>
+  <text x="94" y="355.6" text-anchor="end" font-size="10.5" fill="#334155">256</text>
+  <path d="M 187.1 352.1 L 190.4 352.1" fill="none" stroke="#2563eb" stroke-width="9" stroke-linecap="round"/>
+  <text x="198.4" y="355.6" font-size="10.5" fill="#1e293b">5942~6187</text>
+  <rect x="520" y="76" width="440" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="740" y="98" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#6d28d9">二、并发 → 延时 P99（ms，区间）</text>
+  <path d="M 580 116 L 580 366" fill="none" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="574" y="133.4" text-anchor="end" font-size="10.5" fill="#334155">1</text>
+  <path d="M 588.6 129.9 L 591.2 129.9" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="599.2" y="133.4" font-size="10.5" fill="#1e293b">2.2~4.5</text>
+  <text x="574" y="161.2" text-anchor="end" font-size="10.5" fill="#334155">2</text>
+  <path d="M 590.9 157.7 L 595.5 157.7" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="603.5" y="161.2" font-size="10.5" fill="#1e293b">4.2~8.2</text>
+  <text x="574" y="188.9" text-anchor="end" font-size="10.5" fill="#334155">4</text>
+  <path d="M 589.9 185.4 L 593.7 185.4" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="601.7" y="188.9" font-size="10.5" fill="#1e293b">3.4~6.6</text>
+  <text x="574" y="216.7" text-anchor="end" font-size="10.5" fill="#334155">8</text>
+  <path d="M 589.1 213.2 L 597.1 213.2" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="605.1" y="216.7" font-size="10.5" fill="#1e293b">2.7~9.6</text>
+  <text x="574" y="244.5" text-anchor="end" font-size="10.5" fill="#334155">16</text>
+  <path d="M 590.9 241 L 598.1 241" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="606.1" y="244.5" font-size="10.5" fill="#1e293b">4.2~10.4</text>
+  <text x="574" y="272.3" text-anchor="end" font-size="10.5" fill="#334155">32</text>
+  <path d="M 595.3 268.8 L 619.2 268.8" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="627.2" y="272.3" font-size="10.5" fill="#1e293b">8.0~28.6</text>
+  <text x="574" y="300.1" text-anchor="end" font-size="10.5" fill="#334155">64</text>
+  <path d="M 620.3 296.6 L 654.2 296.6" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="662.2" y="300.1" font-size="10.5" fill="#1e293b">29.6~58.8</text>
+  <text x="574" y="327.8" text-anchor="end" font-size="10.5" fill="#334155">128</text>
+  <path d="M 670.1 324.3 L 691.8 324.3" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="699.8" y="327.8" font-size="10.5" fill="#1e293b">72.5~91.2</text>
+  <text x="574" y="355.6" text-anchor="end" font-size="10.5" fill="#334155">256</text>
+  <path d="M 777.3 352.1 L 807.6 352.1" fill="none" stroke="#7c3aed" stroke-width="9" stroke-linecap="round"/>
+  <text x="815.6" y="355.6" font-size="10.5" fill="#1e293b">164.9~191.0</text>
+  <rect x="40" y="392" width="440" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="260" y="414" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b91c1c">三、闸门 MaxConcurrentStreams → 吞吐（RPS，区间）</text>
+  <path d="M 100 432 L 100 622" fill="none" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="94" y="465.5" text-anchor="end" font-size="10.5" fill="#334155">1</text>
+  <path d="M 119.8 462 L 123.5 462" fill="none" stroke="#dc2626" stroke-width="9" stroke-linecap="round"/>
+  <text x="131.5" y="465.5" font-size="10.5" fill="#1e293b">382~487</text>
+  <text x="470" y="465.5" text-anchor="end" font-size="10" fill="#b91c1c">P50 367.2~462.6 ms</text>
+  <text x="94" y="525.5" text-anchor="end" font-size="10.5" fill="#334155">10</text>
+  <path d="M 152.3 522 L 188.2 522" fill="none" stroke="#dc2626" stroke-width="9" stroke-linecap="round"/>
+  <text x="196.2" y="525.5" font-size="10.5" fill="#1e293b">1287~2283</text>
+  <text x="470" y="525.5" text-anchor="end" font-size="10" fill="#b91c1c">P50 60.8~108.2 ms</text>
+  <text x="94" y="585.5" text-anchor="end" font-size="10.5" fill="#334155">100</text>
+  <path d="M 229.4 582 L 280.7 582" fill="none" stroke="#dc2626" stroke-width="9" stroke-linecap="round"/>
+  <text x="288.7" y="585.5" font-size="10.5" fill="#1e293b">3427~4853</text>
+  <text x="470" y="585.5" text-anchor="end" font-size="10" fill="#b91c1c">P50 31.1~48.8 ms</text>
+  <text x="48" y="640" font-size="10.5" fill="#64748b">conc = 200；errs 全 0、dialCalls 全 1</text>
+  <rect x="520" y="392" width="440" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="740" y="414" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f766e">四、消息大小 → 延时 P50（ms，区间）</text>
+  <path d="M 580 432 L 580 642" fill="none" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="574" y="454.5" text-anchor="end" font-size="10.5" fill="#334155">32 B</text>
+  <path d="M 610.2 451 L 615.6 451" fill="none" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+  <text x="623.6" y="454.5" font-size="10.5" fill="#1e293b">559.0us~643.6us</text>
+  <text x="574" y="484.5" text-anchor="end" font-size="10.5" fill="#334155">1 KiB</text>
+  <path d="M 594.7 481 L 631.4 481" fill="none" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+  <text x="639.4" y="484.5" font-size="10.5" fill="#1e293b">375.7us~965.2us</text>
+  <text x="574" y="514.5" text-anchor="end" font-size="10.5" fill="#334155">16 KiB</text>
+  <path d="M 594.9 511 L 632.8 511" fill="none" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+  <text x="640.8" y="514.5" font-size="10.5" fill="#1e293b">377.4us~1.0ms</text>
+  <text x="574" y="544.5" text-anchor="end" font-size="10.5" fill="#334155">64 KiB</text>
+  <path d="M 639.8 541 L 669.9 541" fill="none" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+  <text x="677.9" y="544.5" font-size="10.5" fill="#1e293b">1.2ms~2.6ms</text>
+  <text x="574" y="574.5" text-anchor="end" font-size="10.5" fill="#334155">256 KiB</text>
+  <path d="M 697.5 571 L 713.5 571" fill="none" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+  <text x="721.5" y="574.5" font-size="10.5" fill="#1e293b">5.3ms~8.0ms</text>
+  <text x="574" y="604.5" text-anchor="end" font-size="10.5" fill="#334155">1 MiB</text>
+  <path d="M 733.5 601 L 735.5 601" fill="none" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+  <text x="742.4" y="604.5" font-size="10.5" fill="#1e293b">13.4ms~13.7ms</text>
+  <text x="574" y="634.5" text-anchor="end" font-size="10.5" fill="#334155">3 MiB</text>
+  <path d="M 761.6 631 L 770.3 631" fill="none" stroke="#0d9488" stroke-width="9" stroke-linecap="round"/>
+  <text x="778.3" y="634.5" font-size="10.5" fill="#1e293b">27.6ms~34.5ms</text>
+  <text x="528" y="650" font-size="10.5" fill="#64748b">横轴对数刻度</text>
+  <rect x="40" y="676" width="920" height="104" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="56" y="702" font-size="12" font-weight="bold" fill="#0f172a">纪律：先量基线（吞吐 / 并发 / 连接数 / P50·P99 / 错误率），再改一个旋钮、再复测。</text>
+  <text x="56" y="726" font-size="10.5" fill="#334155">本图只报「最小~最大」区间；时序类各跑 3 次，括号里的「轮N」标明该边界出自哪一轮。</text>
+  <text x="56" y="748" font-size="10.5" fill="#1d4ed8">第一条趋势：吞吐在 16~64 见顶后回落，P99 一路抬到 164.9~191.0 ms，而 P50 只到 30.6~31.3 ms。</text>
+  <text x="56" y="770" font-size="10.5" fill="#b91c1c">第二条趋势：闸门是唯一区间不重叠的一组——mcs 1→100 时 RPS 从 382~487 抬到 3427~4853。</text>
+</svg>

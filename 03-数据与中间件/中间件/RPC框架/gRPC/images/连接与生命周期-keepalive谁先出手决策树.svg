@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 860" width="1000" height="860" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="dtArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="dtArrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="860" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">keepalive 谁先出手：客户端 Time 与服务端阈值的判定链</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">阈值与判据来自 grpc-go v1.84.0 源码和第 3.2~3.4 节读数；第一个 ping 不记违规，要 3 次违规才 GOAWAY</text>
+
+  <rect x="340" y="76" width="320" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="107" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1d4ed8">客户端配了 keepalive（Time &gt; 0）？</text>
+
+  <path d="M 340 102 L 200 102 L 200 148" fill="none" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dtArrowGray)"/>
+  <path d="M 500 128 L 500 148" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+
+  <rect x="60" y="148" width="300" height="52" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="210" y="172" text-anchor="middle" font-size="12.5" fill="#334155">否：不发 ping</text>
+  <text x="210" y="190" text-anchor="middle" font-size="10.5" fill="#64748b">默认 Time = 无穷 → 谁都不出手</text>
+
+  <rect x="340" y="148" width="320" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="172" text-anchor="middle" font-size="12.5" fill="#1d4ed8">是：Time 写小于 10 秒会被夹到 10 秒</text>
+  <text x="500" y="190" text-anchor="middle" font-size="10.5" fill="#1d4ed8">生效值 = max(配置值, 10 秒)</text>
+
+  <path d="M 500 200 L 500 224" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+
+  <rect x="330" y="224" width="340" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="246" text-anchor="middle" font-size="12.5" fill="#1d4ed8">客户端此刻有活跃流，</text>
+  <text x="500" y="264" text-anchor="middle" font-size="12.5" fill="#1d4ed8">或 PermitWithoutStream = true ？</text>
+
+  <path d="M 330 250 L 200 250 L 200 300" fill="none" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#dtArrowGray)"/>
+  <path d="M 500 276 L 500 300" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+
+  <rect x="60" y="300" width="300" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="210" y="324" text-anchor="middle" font-size="12.5" fill="#334155">否：客户端进入休眠</text>
+  <text x="210" y="342" text-anchor="middle" font-size="10.5" fill="#64748b">无活跃流时不发 ping → 谁都不出手</text>
+
+  <rect x="340" y="300" width="320" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="324" text-anchor="middle" font-size="12.5" fill="#1d4ed8">是：看服务端这一刻用哪条阈值</text>
+  <text x="500" y="342" text-anchor="middle" font-size="10.5" fill="#1d4ed8">下面两条分支互斥</text>
+
+  <path d="M 400 356 L 400 380 L 275 380 L 275 404" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+  <path d="M 600 356 L 600 380 L 725 380 L 725 404" fill="none" stroke="#2563eb" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+
+  <rect x="60" y="404" width="430" height="72" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="275" y="428" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">有活跃流，或服务端 PermitWithoutStream = true</text>
+  <text x="275" y="448" text-anchor="middle" font-size="10.5" fill="#92400e">→ 阈值 = EnforcementPolicy.MinTime（默认 5 分钟）</text>
+  <text x="275" y="466" text-anchor="middle" font-size="10.5" fill="#92400e">此时 MinTime 才参与判定</text>
+
+  <rect x="510" y="404" width="430" height="72" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+  <text x="725" y="428" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">无活跃流，且服务端 PermitWithoutStream = false</text>
+  <text x="725" y="448" text-anchor="middle" font-size="10.5" fill="#92400e">→ 阈值 = defaultPingTimeout = 2 小时（写死）</text>
+  <text x="725" y="466" text-anchor="middle" font-size="10.5" fill="#92400e">与 MinTime 无关（第 3.3 节 A 组）</text>
+
+  <path d="M 275 476 L 275 500 L 430 500 L 430 524" fill="none" stroke="#6366f1" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+  <path d="M 725 476 L 725 500 L 570 500 L 570 524" fill="none" stroke="#6366f1" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+
+  <rect x="300" y="524" width="400" height="66" rx="8" fill="#eef2ff" stroke="#6366f1" stroke-width="1.6"/>
+  <text x="500" y="548" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#312e81">比一比：客户端的 Time 与上面那条阈值</text>
+  <text x="500" y="568" text-anchor="middle" font-size="10.5" fill="#312e81">第一个 ping 不记违规；每次违规才 +1，超过 2 就 GOAWAY</text>
+
+  <path d="M 430 590 L 430 596 L 275 596 L 275 614" fill="none" stroke="#dc2626" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+  <path d="M 570 590 L 570 596 L 725 596 L 725 614" fill="none" stroke="#16a34a" stroke-width="1.6" marker-end="url(#dtArrow)"/>
+
+  <rect x="60" y="614" width="430" height="88" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="275" y="638" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">Time &lt; 阈值 → 服务端先出手</text>
+  <text x="275" y="658" text-anchor="middle" font-size="10.5" fill="#b91c1c">每个 ping 都违规，第 3 次违规触发</text>
+  <text x="275" y="676" text-anchor="middle" font-size="10.5" fill="#b91c1c">GOAWAY(ENHANCE_YOUR_CALM, too_many_pings)</text>
+  <text x="275" y="694" text-anchor="middle" font-size="10.5" fill="#b91c1c">时间点约 3 × Time：Time = 10 秒 → 约 40 秒后断</text>
+
+  <rect x="510" y="614" width="430" height="88" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="725" y="638" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#15803d">Time ≥ 阈值 → 客户端先出手</text>
+  <text x="725" y="658" text-anchor="middle" font-size="10.5" fill="#166534">不违规，服务端不吭声；客户端自己</text>
+  <text x="725" y="676" text-anchor="middle" font-size="10.5" fill="#166534">按 Timeout（默认 20 秒）等不到回包就重连</text>
+  <text x="725" y="694" text-anchor="middle" font-size="10.5" fill="#166534">阈值 = 2 小时时，只有 Time ≥ 2 小时才走这条</text>
+
+  <rect x="40" y="728" width="920" height="100" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="56" y="752" font-size="12" font-weight="bold" fill="#0f172a">两条源码补充（grpc-go v1.84.0）</text>
+  <text x="56" y="774" font-size="10.5" fill="#334155">① 客户端不配 Time 时默认值是无穷（internal/transport/defaults.go:32 defaultClientKeepaliveTime = infinity）→ 默认根本不发 ping</text>
+  <text x="56" y="794" font-size="10.5" fill="#334155">② 被 GOAWAY(too_many_pings) 断过之后，客户端把 Time × 2（clientconn.go:1311-1319 adjustParams）→ 下一条连接 ping 变稀，自适应收敛</text>
+  <text x="56" y="814" font-size="10.5" fill="#b91c1c">一句话判据：Time 小于阈值 → 服务端先出手（约 3 × Time）；Time 大于等于阈值 → 客户端按 20 秒超时先出手</text>
+</svg>

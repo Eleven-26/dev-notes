@@ -76,7 +76,7 @@
 | 「service mesh 里还要不要开客户端 LB」 | [生态与网关.md](生态与网关.md) 第三节 3.5 |
 | 「链路追踪 / 指标怎么埋」 | [可观测性.md](可观测性.md) 第二、三节 |
 | 「压测该怎么量、报哪些数」 | [性能与调优.md](性能与调优.md) 第二节 |
-| 「加并发吞吐不涨」 | [性能与调优.md](性能与调优.md) 第三节 3.3 |
+| 「加并发吞吐不涨」 | [性能与调优.md](性能与调优.md) 第三节 3.4（`MaxConcurrentStreams` 闸门；并发扫描见 3.2） |
 | 「浏览器能直接调吗」 | [gRPC-Web与Connect.md](gRPC-Web与Connect.md) 第一、五节 |
 | 「Java / Go 的接入代码」 | 语言分册 —— 见第五节边界表最后两行 |
 
@@ -115,7 +115,7 @@
 | [安全与认证.md](安全与认证.md) | TLS / mTLS 接法、握手失败的三类报错、客户端证书被静默过滤、`peer` 能拿到什么、token 与授权 | 证书体系的运维（→ 各有专篇）、网关侧 TLS 终止（→ 生态与网关） |
 | [生态与网关.md](生态与网关.md) | resolver / balancer / 网格、`grpc_pass` 对照、DNS TXT 8 秒、nginx 与 K8s 清单 | 调用内部的机制（→ 基础概念 / 拦截器与元数据） |
 | [可观测性.md](可观测性.md) | 三件套各自落在哪、埋什么属性/指标、基数陷阱、健康检查/反射/channelz | 后端选型与部署（→ 可观测性选型）、具体语言 SDK 的完整配置 |
-| [性能与调优.md](性能与调优.md) | 收益从哪来、该怎么量（四个数）、并发模型与闸门、压缩与批量、调优清单 | **任何压测读数（本目录没做过压测）**；其他框架的对比（→ RPC框架选型对比） |
+| [性能与调优.md](性能与调优.md) | 收益从哪来、该怎么量（四个数）、本机六组区间读数（并发 / 连接数 / 闸门 / 四种模式 / 消息大小 / 压缩）、并发模型与闸门、压缩与批量、调优清单 | `ghz`、REST 基线与跨机房端到端时延；其他框架的对比（→ RPC框架选型对比） |
 | [实战示例.md](实战示例.md) | 该不该上的判据、工程布局、`.proto` 与生成物审查、上线十条、语言分册索引 | 各机制的原理（→ 前面各篇） |
 | [故障排查与调试.md](故障排查与调试.md) | 「症状 → 判据 → 处置」的五层定位、静默失效三连、工具箱与排查顺序 | 各问题背后的机制（逐条指向对应篇目）、后端侧的运维 |
 | [gRPC-Web与Connect.md](gRPC-Web与Connect.md) | 浏览器为什么说不了 gRPC、gRPC-Web 的边界、三条接法、Connect、选型判据 | 前端工程化与框架集成；**本篇没有任何实测** |
@@ -147,8 +147,9 @@
 
 ## 七、实测坐标（每个数字的来历）
 
-本目录 13 篇里的读数**全部来自本机 Docker Desktop 里的 `grpclab` 实测台**（`.workbuddy/tmp/exp/grpclab/`），
-不是抄文档。原始输出在 `out/*.txt`（可复跑，两遍 `diff` 逐行相同才算可复现）。
+本目录 13 篇里的读数来自本机 Docker Desktop 里的**两个实测台**：早前的 `grpclab`（`.workbuddy/tmp/exp/grpclab/`）
+与本轮的性能实测台 `w8grpc-lab`（`.workbuddy/tmp/round495/w8grpc_*.txt`），不是抄文档。
+原始输出可复跑（`grpclab` 的输出两遍 `diff` 逐行相同才算可复现）。
 
 | 项 | 值 |
 |---|---|
@@ -160,6 +161,7 @@
 | 网络 | Docker 自定义桥，容器间按**容器名**寻址；内嵌 DNS `127.0.0.11:53` |
 | 服务 | 不用 protoc：JSON codec（`encoding.RegisterCodec`）+ 手写 `grpc.ServiceDesc` 的 echo 服务 |
 | 输出清单 | `wire.txt` / `limits.txt` / `hpack.txt` / `modes.txt` / `base.txt` / `reuse.txt` / `probe-*.txt` / `nginx-lab.txt` / `tls.txt` / `lifecycle.txt` / `status.txt` / `java-modes.txt` / `java-base.txt` |
+| 本轮实验台（性能篇） | 容器 `w8grpc-lab`（镜像 `golang:1.26-alpine`），容器内 `go version go1.26.8 linux/amd64` + `google.golang.org/grpc v1.84.0`（`golang.org/x/net v0.57.0`、`google.golang.org/protobuf v1.36.11`）；4 核、本机环回；存证 `.workbuddy/tmp/round495/w8grpc_*.txt` |
 
 ⭐ **三个最容易记错的口径**：
 
@@ -202,7 +204,7 @@
 | `buf` | `lint` / `breaking` / `generate` 三件套，把 schema 变更变成 CI 门禁 | ✅ [Protobuf.md](Protobuf.md) 八组实测（buf 1.73.0） |
 | `grpcurl` | 命令行调 gRPC，配合反射可**不用 `.proto`** | ⚠️ 本仓**没跑过**；只讲「它靠反射工作」的判据（[生态与网关.md](生态与网关.md) 1.3） |
 | `grpcui` | 给 gRPC 服务套一个浏览器调试界面（同样依赖反射） | ⚠️ 没跑过 |
-| `ghz` | gRPC 压测 / 负载测试 | ⚠️ **没跑过**——[性能与调优.md](性能与调优.md) 只写参数口径，没有任何吞吐读数 |
+| `ghz` | gRPC 压测 / 负载测试 | ⚠️ **没跑过**——压测用的是自写 bench；[性能与调优.md](性能与调优.md) 的 `ghz` 一节仍只是参数口径，但该篇第三节已有六组吞吐 / 延迟区间读数 |
 | Wireshark | 抓包看 HTTP/2 帧 | ⚠️ 没跑过（本机没有 `tcpdump` / `tshark`；本仓的帧表是**自写 TCP 代理**解出来的） |
 | 健康探针 `grpc_health_probe` | K8s 侧用 gRPC 健康协议探活 | ⚠️ 没跑过，只给清单（[生态与网关.md](生态与网关.md) 使用节） |
 | `channelz` | 看连接与流的运行期计数 | ⚠️ 没跑过，只在 [可观测性.md](可观测性.md) 里点到 |
@@ -236,7 +238,7 @@
 | **连接状态机 / keepalive / 优雅退出** | 原本只有探针里的一小段 | ✅ **已补**：[连接与生命周期.md](连接与生命周期.md)（含裸 HTTP/2 客户端验证 ping 判据） |
 | **拦截器与状态码** | 原本散在「生态与实战」里 | ✅ **已补**：[拦截器与元数据.md](拦截器与元数据.md)（含 `errdetails` 往返实测） |
 | **帧 / HPACK 的字节级证据** | 原本只到「93 → 15」这个现象 | ✅ **已补**：`hpack.txt`（70 → 7 → 25、逐条首次编码） |
-| **性能压测** | 只有 200 次一元的复用计数 | ❌ **仍未做**：[性能与调优.md](性能与调优.md) 明确声明「没有任何压测读数」 |
+| **性能压测** | 早前只有 200 次一元的复用计数 | ✅ **已补两批**：[性能与调优.md](性能与调优.md) 第三节六组区间读数（并发 / 连接数 / `MaxConcurrentStreams` 闸门 / 四种模式 / 消息大小 / 压缩，各 3 次的 `最小~最大`）；⚠️ **仍未测**：`ghz`、REST 基线、跨机房端到端时延 |
 | **gRPC-Web / `grpc-gateway` / Connect** | 只写了判据 | ❌ **仍未实测**：[gRPC-Web与Connect.md](gRPC-Web与Connect.md) 四项全未跑（浏览器与转码层都没搭） |
 | **负载均衡策略实测** | 只验证了「连接被复用」 | ❌ 未做：`round_robin` / `pick_first` 的行为差异没有实测 |
 | **健康检查与反射** | 只提到它们在生态里的位置 | ❌ 未做：没有实跑（含 `grpc_health_probe` / `grpcurl`） |
