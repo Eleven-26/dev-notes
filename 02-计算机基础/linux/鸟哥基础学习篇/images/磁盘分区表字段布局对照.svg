@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 770" width="1000" height="770" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="pg1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="770" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">磁盘分区表的两种字段布局：MBR 的 512 字节 vs GPT 的 LBA + CRC 校验</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">MBR 用「固定偏移 + 32 位 LBA」把上限锁在 4 个主分区 / 2TB；GPT 换成「LBA 编号 + 分区项数组 + 校验 + 备份」</text>
+
+  <text x="50" y="96" font-size="15" font-weight="bold" fill="#1e40af">A. MBR：磁盘第一个扇区（512 字节）</text>
+
+  <rect x="50" y="110" width="560" height="72" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="330" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">引导代码</text>
+  <text x="330" y="164" text-anchor="middle" font-size="12" fill="#1e40af">446 字节（其中最后 4 字节是磁盘签名）</text>
+
+  <rect x="610" y="110" width="250" height="72" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="735" y="138" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">分区表 64 字节</text>
+  <text x="735" y="160" text-anchor="middle" font-size="12" fill="#14532d">固定 4 项 × 每项 16 字节</text>
+
+  <rect x="860" y="110" width="90" height="72" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="905" y="142" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">55AA</text>
+  <text x="905" y="164" text-anchor="middle" font-size="12" fill="#b91c1c">2 字节</text>
+
+  <text x="500" y="204" text-anchor="middle" font-size="12" fill="#0f172a">三个区域首尾相接：446 + 64 + 2 = 512 字节，位置和长度都是写死在固定偏移上的</text>
+
+  <rect x="200" y="230" width="140" height="56" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="270" y="254" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">分区 1</text>
+  <text x="270" y="272" text-anchor="middle" font-size="12" fill="#14532d">16 字节</text>
+
+  <rect x="350" y="230" width="140" height="56" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="420" y="254" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">分区 2</text>
+  <text x="420" y="272" text-anchor="middle" font-size="12" fill="#14532d">16 字节</text>
+
+  <rect x="500" y="230" width="140" height="56" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="570" y="254" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">分区 3</text>
+  <text x="570" y="272" text-anchor="middle" font-size="12" fill="#14532d">16 字节</text>
+
+  <rect x="650" y="230" width="140" height="56" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="720" y="254" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">分区 4</text>
+  <text x="720" y="272" text-anchor="middle" font-size="12" fill="#14532d">16 字节</text>
+
+  <path d="M 735 182 L 735 210 L 420 210 L 420 224" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#pg1)"/>
+
+  <rect x="50" y="306" width="900" height="92" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="70" y="330" font-size="12.5" font-weight="bold" fill="#b45309">64 字节 ÷ 16 字节/项 = 最多 4 个主分区；想更多就牺牲一个主分区做扩展分区，里面再切逻辑分区</text>
+  <text x="70" y="354" font-size="12.5" fill="#334155">分区项用 32 位 CHS / LBA 记录起始扇区 → 单分区上限 2TB；起始位置按柱面对齐，1MiB 对齐要自己保证</text>
+  <text x="70" y="378" font-size="12.5" fill="#b91c1c">⚠️ 分区表只有这么一份、且没有校验：头部一坏整个分区表就废了（dd 写错磁盘最怕的地方）</text>
+
+  <text x="50" y="436" font-size="15" font-weight="bold" fill="#14532d">B. GPT：把同一件事用 LBA 编号 + 校验 + 备份重写一遍</text>
+
+  <rect x="50" y="452" width="900" height="40" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="70" y="477" font-size="12.5" fill="#0f172a">LBA0：保护性 MBR —— 让不认识 GPT 的老工具把它当成「已占用」，不去覆盖</text>
+
+  <rect x="50" y="500" width="900" height="40" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="70" y="525" font-size="12.5" fill="#14532d">LBA1：GPT 头 —— 分区项数组的位置与大小，外加整表的 CRC32 校验</text>
+
+  <rect x="50" y="548" width="900" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="70" y="573" font-size="12.5" fill="#1e40af">LBA2 起：分区项数组 —— 默认 128 项，每项 128 字节，用 128 位 GUID 标识类型与唯一 ID</text>
+
+  <rect x="50" y="596" width="900" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="70" y="621" font-size="12.5" fill="#334155">中间：数据区 —— 文件系统真正落盘的地方（首分区从 1MiB 起，给 GPT 头与对齐留空间）</text>
+
+  <rect x="50" y="644" width="900" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="70" y="669" font-size="12.5" fill="#b91c1c">磁盘末尾：GPT 备份 —— 头部损坏时可从尾部恢复（MBR 没有这一份）</text>
+
+  <rect x="50" y="700" width="900" height="56" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="70" y="723" font-size="12.5" font-weight="bold" fill="#1e40af">⭐ 三处结构差异决定了 GPT 更稳</text>
+  <text x="70" y="745" font-size="12" fill="#334155">分区项 4 项 → 128 项；寻址从 CHS 换成 LBA 编号（单分区上限从 2TB 抬到以 ZB 计）；头有 CRC32、盘尾还有备份</text>
+</svg>

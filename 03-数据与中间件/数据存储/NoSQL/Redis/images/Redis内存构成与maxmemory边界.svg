@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Redis 进程内存构成：maxmemory 压住的是 used_memory，不是整块 RSS</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">实测：maxmemory 3.00M 下 used_memory 稳在 2.99M，而进程 used_memory_rss 到 10.69M ~ 10.83M（约 3.6 倍）</text>
+
+  <text x="70" y="100" font-size="13.5" font-weight="bold" fill="#0f172a">进程 RSS（used_memory_rss）10.69M ~ 10.83M</text>
+
+  <rect x="70" y="110" width="430" height="430" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="7 5"/>
+
+  <text x="285" y="140" text-anchor="middle" font-size="11.5" fill="#64748b">RSS 里不被 maxmemory 统计的部分</text>
+
+  <rect x="90" y="170" width="390" height="126" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="285" y="200" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">客户端 / 复制 / AOF 缓冲区</text>
+  <text x="285" y="226" text-anchor="middle" font-size="11.5" fill="#334155">fork 的 COW 页（RDB / AOF 重写期间）</text>
+  <text x="285" y="252" text-anchor="middle" font-size="11.5" fill="#334155">这段都不计入 maxmemory</text>
+  <text x="285" y="278" text-anchor="middle" font-size="11" fill="#b45309">要点：RSS 一定大于 used_memory</text>
+
+  <rect x="90" y="310" width="390" height="96" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="285" y="344" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#dc2626">分配器碎片 284808</text>
+  <text x="285" y="368" text-anchor="middle" font-size="11.5" fill="#334155">allocator_frag_bytes</text>
+  <text x="285" y="390" text-anchor="middle" font-size="11" fill="#64748b">（allocator 保留但未被 used_memory 计入）</text>
+
+  <rect x="90" y="420" width="390" height="100" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="285" y="452" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">used_memory 2.99M</text>
+  <text x="285" y="476" text-anchor="middle" font-size="11.5" fill="#334155">被 maxmemory 管住的部分</text>
+  <text x="285" y="496" text-anchor="middle" font-size="11.5" fill="#1d4ed8">maxmemory = 3.00M（边界在这一线）</text>
+
+  <path d="M90 420 L480 420" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4" fill="none"/>
+
+  <rect x="560" y="110" width="380" height="430" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+  <text x="576" y="140" font-size="14" font-weight="bold" fill="#b45309">单条命令能冲多高</text>
+
+  <text x="576" y="182" font-size="12" fill="#334155">maxmemory = 3.00M</text>
+  <rect x="576" y="194" width="330" height="28" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="576" y="194" width="330" height="28" fill="#dc2626"/>
+  <text x="741" y="213" text-anchor="middle" font-size="12.5" fill="#ffffff">used_memory_peak 34.98M</text>
+  <rect x="576" y="228" width="28" height="18" fill="#2563eb"/>
+  <text x="612" y="242" font-size="11.5" fill="#1d4ed8">3.00M 的边界只占这里</text>
+
+  <text x="576" y="278" font-size="12" fill="#334155">一条 30MB 的 SET 写进来：</text>
+  <text x="576" y="300" font-size="12" fill="#334155">→ used_memory_peak = 34.98M</text>
+  <text x="576" y="322" font-size="12" fill="#dc2626">= maxmemory 的 11.7 倍</text>
+  <text x="576" y="348" font-size="11.5" fill="#334155">命令本身不会被淘汰（淘汰只在命令</text>
+  <text x="576" y="366" font-size="11.5" fill="#334155">执行前判断），所以它直接报 OOM，</text>
+  <text x="576" y="384" font-size="11.5" fill="#334155">键也没写进去（STRLEN 返回 0）。</text>
+  <text x="576" y="412" font-size="11.5" fill="#b45309">注意：RSS 是 10.83M，被峰值顶到 34.98M</text>
+  <text x="576" y="430" font-size="11.5" fill="#b45309">的瞬间已经越过了整块进程内存。</text>
+
+  <text x="80" y="580" font-size="13" fill="#334155">要点：used_memory 被 maxmemory 压住，但 used_memory_rss 与单命令峰值都落在它之外。</text>
+  <text x="80" y="602" font-size="12.5" fill="#64748b">容器 limit 要按 maxmemory + 30%~50% 留余量，否则典型故障是 evicted_keys 为 0 却被 OOMKill。</text>
+</svg>

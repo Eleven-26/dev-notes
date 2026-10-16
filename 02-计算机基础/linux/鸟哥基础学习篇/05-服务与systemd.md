@@ -1,10 +1,12 @@
 # 服务与systemd
 
-> systemd 与 SysVinit 的差异、systemctl 常用命令、Unit 文件三段的写法、
-> cgroups 资源限制、与 journalctl 的日志联动。
+> 覆盖：systemd 作为 1 号进程与 SysVinit 的差异、`systemctl` 的「本次运行 / 开机自启」两组状态、service unit 的三段写法（`[Unit]` / `[Service]` / `[Install]`）、用 cgroups 给服务做资源限制、与 journald 的日志联动；以及把自研程序做成「开机自启 + 崩溃重拉 + 有日志」的服务的完整闭环。
 >
-> 内容整理自个人学习笔记。**基础框架**参考《鸟哥的 Linux 私房菜：基础学习篇（第四版）》
-> 相关章节（进程管理与 SELinux 初探、认识系统服务）的读后整理；cgroups v2 与 systemd 250+ 的差异基于官方文档独立整理。
+> 不覆盖：日志体系与轮转的完整拼图见 [07-日志与journalctl.md](07-日志与journalctl.md)；包安装的服务如何被 systemd 接管见 [08-软件包管理.md](08-软件包管理.md)；进程状态、信号与 `kill -HUP` 的原理见 [进程与线程.md](../进程与线程.md)；容器为什么一般不以 systemd 为 1 号进程见 [11-容器化衔接.md](../鸟哥服务器架设篇/11-容器化衔接.md) 与 [容器原理.md](../../../06-工程实践/部署/docker/容器原理.md)。
+>
+> 内容整理自个人学习笔记。**基础框架**参考《鸟哥的 Linux 私房菜：基础学习篇（第四版）》相关章节（进程管理与 SELinux 初探、认识系统服务）的读后整理；cgroups v2 与 systemd 250+ 的差异基于官方文档独立整理。素材见 [素材清单](../../../素材清单.md)。
+>
+> 📎 **实测口径**：本篇**全篇未做容器实测**——书里讲的服务管理发生在宿主机，而容器里的 **1 号进程不是 systemd**：实测（容器 `w9b-shell`）`/proc/1/comm` 是 `sleep`、`/run/systemd/system` 不存在、`systemctl` / `journalctl` / `systemd-cgtop` / `systemd-cgls` 全部 `not found`，原文见 `.workbuddy/tmp/round495/w9b_systemd_check.txt`。因此所有 unit 文件与命令都是「**落地写法骨架，未单独编译 / 未执行**」；指令含义与默认值以 `systemd.unit(5)` / `systemd.service(5)`（systemd 250+）官方手册为准，命令块里的数值（`RestartSec=5`、`MemoryMax=512M`、`CPUQuota=150%` 等）是示例配置，**不是本机读数**。
 
 ---
 
@@ -99,6 +101,8 @@ sudo systemctl enable --now app
 
 ⚠️ **`ExecStart` 必须是前台进程**：程序若自己 daemon 化（fork 到后台），要配 `Type=forking` 并给 `PIDFile=`，否则 systemd 会以为它退出了。
 
+![systemd 的 unit 依赖层级：default.target 指向 multi-user.target，三个服务的 [Install] WantedBy=multi-user.target 把它们挂进这个 target（enable 就是在 multi-user.target.wants 下建软链）；app.service 的 [Unit] 用 After= 与 Wants= 声明对 network-online.target 的顺序与拉起关系；另有 .socket 的套接字激活与 .timer 的定时触发两类按需 unit](images/systemd的unit依赖层级.svg)
+
 ---
 
 ## 四、cgroups 与服务资源限制
@@ -138,9 +142,48 @@ journalctl -b -u nginx            # 本次开机以来的
 
 ---
 
-## 使用：把自研程序做成 systemd 服务
+## 六、应用场景
 
-**本节要点**：从二进制到「开机自启 + 崩溃重拉 + 有日志」的完整闭环。
+**本节要点**：服务管理是「把它管住」的那一层——线上一半的「服务起不来 / 重启后没了 / 吃满整机」都落在这一篇；下面按「谁在什么场景下用到本篇哪一节」列出来。
+
+| 落地场景 | 这里的哪一节在起作用 | 本仓相关篇目 |
+|---|---|---|
+| 把自研二进制变成常驻服务 | unit 三段 + `enable --now` + `Restart=`（三、七） | 本篇第三、七节 |
+| 「重启后没起来」 | `active` 与 `enabled` 是两组正交状态，要分开看（二） | 本篇第二节 |
+| 「起不来但 journalctl 里没有服务日志」 | stdout / stderr 进 journald；先看 `status` 的提示行（五） | [07-日志与journalctl.md](07-日志与journalctl.md) |
+| 一个服务吃满整机 | `CPUQuota` / `MemoryMax` 直接落到 cgroup（四） | [资源限制与运维.md](../../../06-工程实践/部署/docker/资源限制与运维.md) |
+| K8s 的 requests / limits | 同一套 cgroup 语义，只是改由 kubelet 与容器运行时写入（四） | [K8s部署流程.md](../../../06-工程实践/部署/k8s/K8s部署流程.md) |
+| 容器里的 1 号进程 | 容器一般不以 systemd 为 1 号进程，信号与前台进程的规矩不同（篇首口径、延伸追问） | [容器原理.md](../../../06-工程实践/部署/docker/容器原理.md)、[11-容器化衔接.md](../鸟哥服务器架设篇/11-容器化衔接.md) |
+| 包安装的服务被谁接管 | `dnf` / `rpm` 装完自动 enable 的服务落在哪个 target（一、三） | [08-软件包管理.md](08-软件包管理.md) |
+| 定时任务从 cron 迁到 timer | `.timer` + 同名 `.service`（一、延伸追问） | [10-系统管理综合.md](10-系统管理综合.md) |
+| `kill -HUP` 重载配置 | 信号语义来自进程模型，`ExecReload` 只是把它固化进 unit（三） | [进程与线程.md](../进程与线程.md) |
+
+⭐ **三条工程判据**：
+
+1. **`active` 与 `enabled` 是两组正交状态**：一个管本次运行、一个管开机自启；「重启后没起来」永远先看 `enabled`（二）。
+2. **改 unit 必须 `daemon-reload`**：systemd 缓存了 unit 的解析结果，只 `restart` 不会重读文件（三）。
+3. **限制要看落成什么值，不要凭感觉**：`CPUQuota` / `MemoryMax` 最终落到 cgroup 上，`systemctl show -p MemoryMax` 可以直接读回来；容器与 K8s 用的是同一套底层机制（四）。
+
+## 七、具体使用
+
+**本节要点**：从二进制到「开机自启 + 崩溃重拉 + 有日志」的完整闭环；下面先给一条「只读体检」的排查序列，再给完整落地骨架。
+
+> ⚠️ 本节命令全部是**落地写法骨架，未单独编译 / 未执行**——容器里没有 systemd，`systemctl` 用不了（实测与原因见篇首 📎 口径行）。
+
+### 7.1 先体检再动手（只读）
+
+```bash
+systemctl status app                 # 三行关键信息：loaded / active / enabled
+systemctl is-enabled app; systemctl is-active app    # 脚本里判断用
+systemctl cat app                    # unit 文件全文（含被 drop-in 覆盖的部分）
+systemctl list-dependencies multi-user.target        # 谁被拉进这个 target
+systemctl show app -p MemoryMax -p IOWeight          # 限制到底落成了什么值
+journalctl -u app -n 50 --no-pager   # 该服务最近 50 行日志
+```
+
+⚠️ `systemctl cat` 会把 `/etc/systemd/system/app.service.d/*.conf` 这类 drop-in 覆盖也打出来——「我明明改了文件却没生效」十有八九是 drop-in 或忘了 `daemon-reload`。
+
+### 7.2 把自研程序做成 systemd 服务
 
 ```bash
 # ① 写 unit 文件（见上一节的模板）
@@ -191,9 +234,12 @@ sudo systemctl kill -s KILL app && sleep 5 && systemctl is-active app
 
 ## 关联
 
-- [07-日志与journalctl.md](07-日志与journalctl.md) — 服务日志的完整体系与轮转
-- [08-软件包管理.md](08-软件包管理.md) — 包安装的服务如何被 systemd 接管
-- [04-Shell与脚本.md](04-Shell与脚本.md) — 脚本作为 `ExecStart` 时的注意点（前台进程）
-- [进程与线程.md](../进程与线程.md) — 进程状态、信号与 `kill -HUP` 的原理
-- [README.md](README.md) — 本目录导读：版本坐标与阅读顺序
+- **上游/总纲**：[README.md](README.md) — 本目录导读：版本坐标与阅读顺序
+- **上游/总纲**：[进程与线程.md](../进程与线程.md) — 进程状态、信号与 `kill -HUP` 的原理
+- **上游/总纲**：[04-Shell与脚本.md](04-Shell与脚本.md) — 脚本作为 `ExecStart` 时的注意点（前台进程）
+- **对照/互补**：[08-软件包管理.md](08-软件包管理.md) — 包安装的服务如何被 systemd 接管
+- **下游机制**：[07-日志与journalctl.md](07-日志与journalctl.md) — 服务日志的完整体系与轮转
+- **运维/配置**：[资源限制与运维.md](../../../06-工程实践/部署/docker/资源限制与运维.md) — 容器侧用同一套 cgroup 做资源限制
+- **运维/配置**：[K8s部署流程.md](../../../06-工程实践/部署/k8s/K8s部署流程.md) — requests / limits 落到同一套 cgroup 语义
+- **运维/配置**：[11-容器化衔接.md](../鸟哥服务器架设篇/11-容器化衔接.md) — 容器为什么一般不以 systemd 为 1 号进程
 > 反向引用（本篇被下列文档引到）：[03-用户与权限.md](03-用户与权限.md)、[10-系统管理综合.md](10-系统管理综合.md)、[11-容器化衔接.md](../鸟哥服务器架设篇/11-容器化衔接.md)

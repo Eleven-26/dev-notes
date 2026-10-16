@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 830" width="1000" height="830" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ps1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="ps2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="830" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条命令的执行流程与重定向的 fd 数据流</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">引号之所以要紧，是因为「展开」发生在「执行」之前；重定向之所以容易写错，是因为 &amp;1 取的是「此刻」的位置</text>
+
+  <text x="30" y="100" font-size="15" font-weight="bold" fill="#1e40af">A. 从敲下回车到进程真正跑起来：四个阶段</text>
+
+  <rect x="30" y="118" width="210" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="135" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">① 分词</text>
+  <text x="135" y="170" text-anchor="middle" font-size="12" fill="#1e40af">按 IFS 把这一行切成词</text>
+  <text x="135" y="192" text-anchor="middle" font-size="12" fill="#1e40af">空行 / 注释到此为止</text>
+
+  <rect x="280" y="118" width="210" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="385" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">② 解析</text>
+  <text x="385" y="170" text-anchor="middle" font-size="12" fill="#14532d">认出命令、管道、重定向</text>
+  <text x="385" y="192" text-anchor="middle" font-size="12" fill="#14532d">此时还不认识变量</text>
+
+  <rect x="530" y="118" width="210" height="96" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="635" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#b45309">③ 展开</text>
+  <text x="635" y="170" text-anchor="middle" font-size="12" fill="#b45309">变量 / 命令替换 / 通配</text>
+  <text x="635" y="192" text-anchor="middle" font-size="12" fill="#b45309">加不加引号在这一步分岔</text>
+
+  <rect x="780" y="118" width="210" height="96" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+  <text x="885" y="146" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">④ 执行</text>
+  <text x="885" y="170" text-anchor="middle" font-size="12" fill="#0f172a">每段管道 fork 子壳再 exec</text>
+  <text x="885" y="192" text-anchor="middle" font-size="12" fill="#0f172a">退出码记进 $?</text>
+
+  <path d="M 240 166 L 274 166" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#ps1)"/>
+  <path d="M 490 166 L 524 166" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#ps1)"/>
+  <path d="M 740 166 L 774 166" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#ps1)"/>
+
+  <rect x="30" y="234" width="960" height="72" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="50" y="258" font-size="12.5" font-weight="bold" fill="#1e40af">展开的顺序是固定的：大括号 → 波浪号 → 参数与变量 → 命令替换 → 算术 → 分词 → 通配 → 去引号</text>
+  <text x="50" y="284" font-size="12.5" fill="#334155">双引号挡掉的正是「分词」与「通配」两步 —— 所以 $var 会裂开，而 "$var" 不会；单引号更进一步，连变量替换也挡掉</text>
+
+  <text x="30" y="348" font-size="15" font-weight="bold" fill="#14532d">B. 重定向改的是哪个 fd：stdin = 0 / stdout = 1 / stderr = 2</text>
+
+  <rect x="360" y="366" width="280" height="210" rx="10" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="500" y="396" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">命令进程</text>
+  <text x="500" y="440" text-anchor="middle" font-size="13" fill="#1e40af">0　stdin</text>
+  <text x="500" y="496" text-anchor="middle" font-size="13" fill="#14532d">1　stdout</text>
+  <text x="500" y="552" text-anchor="middle" font-size="13" fill="#b91c1c">2　stderr</text>
+
+  <rect x="40" y="418" width="240" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="160" y="445" text-anchor="middle" font-size="12.5" fill="#1e40af">键盘　或　&lt; file</text>
+
+  <rect x="40" y="474" width="240" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="160" y="501" text-anchor="middle" font-size="12.5" fill="#14532d">&gt; file　或　管道下一段</text>
+
+  <rect x="40" y="530" width="240" height="44" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="160" y="557" text-anchor="middle" font-size="12.5" fill="#b91c1c">2&gt; file　或　2&gt;&amp;1</text>
+
+  <path d="M 284 440 L 354 440" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#ps1)"/>
+  <path d="M 284 496 L 354 496" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#ps2)"/>
+  <path d="M 284 552 L 354 552" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#ps1)"/>
+
+  <rect x="700" y="474" width="260" height="44" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="830" y="501" text-anchor="middle" font-size="12.5" fill="#0f172a">终端　/　文件　/　下一段管道</text>
+  <path d="M 644 496 L 694 496" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#ps2)"/>
+
+  <rect x="30" y="596" width="960" height="96" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="50" y="620" font-size="12.5" font-weight="bold" fill="#b45309">同样的两个动作，顺序不同结果就不同（&amp;1 取的是「此刻」的位置）</text>
+  <text x="50" y="646" font-size="12.5" fill="#334155">&gt; f 2&gt;&amp;1 —— 先让 1 指向 f，再让 2 指向 1 当前位置（也是 f）：stdout 与 stderr 都进文件</text>
+  <text x="50" y="672" font-size="12.5" fill="#b91c1c">2&gt;&amp;1 &gt; f —— 先让 2 指向 1 当前位置（终端），再把 1 改成 f：stderr 仍上屏，只有 stdout 进文件</text>
+
+  <rect x="30" y="712" width="960" height="86" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="50" y="736" font-size="12.5" font-weight="bold" fill="#14532d">⭐ 实测印证（容器 w9b-shell，GNU bash 5.3.9，Ubuntu 26.04.1）</text>
+  <text x="50" y="760" font-size="12" fill="#334155">ls -l /proc/$$/fd 里能看到 0 / 1 / 2 三条描述符；上述两种重定向顺序各跑一次，输出与本节所列一致</text>
+  <text x="50" y="782" font-size="12" fill="#334155">原文：.workbuddy/tmp/round495/w9b_shell_run1.txt（重定向与描述符那一组）</text>
+</svg>

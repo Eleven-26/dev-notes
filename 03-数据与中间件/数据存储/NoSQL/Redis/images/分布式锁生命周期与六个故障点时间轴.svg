@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">六个故障点在锁生命周期上的位置（上）与实测冲突窗口（下）</text>
+  <text x="500" y="60" text-anchor="middle" font-size="13" fill="#64748b">六个问题不是一个平铺清单，各自只在锁生命周期的一个时段里暴露；下半是「使用三」实测出来的危险窗口</text>
+
+  <text x="60" y="104" font-size="15" font-weight="bold" fill="#0f172a">一、四阶段各自只暴露特定故障点</text>
+
+  <path d="M60 210 L940 210" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arw)"/>
+
+  <rect x="60" y="162" width="200" height="48" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="160" y="182" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">抢锁</text>
+  <text x="160" y="200" text-anchor="middle" font-size="11.5" fill="#334155">SET NX PX 一条命令</text>
+
+  <rect x="280" y="162" width="200" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="380" y="182" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#047857">持锁</text>
+  <text x="380" y="200" text-anchor="middle" font-size="11.5" fill="#334155">GET 回来仍是自己的 uid</text>
+
+  <rect x="500" y="162" width="200" height="48" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="600" y="182" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b45309">续期</text>
+  <text x="600" y="200" text-anchor="middle" font-size="11.5" fill="#334155">PEXPIRE 前先比对 uid</text>
+
+  <rect x="720" y="162" width="200" height="48" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="820" y="182" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ea580c">释放</text>
+  <text x="820" y="200" text-anchor="middle" font-size="11.5" fill="#334155">比对 uid 之后才 DEL</text>
+
+  <path d="M160 210 L160 226" stroke="#94a3b8" stroke-width="1.2" fill="none"/>
+  <path d="M380 210 L380 226" stroke="#94a3b8" stroke-width="1.2" fill="none"/>
+  <path d="M600 210 L600 226" stroke="#94a3b8" stroke-width="1.2" fill="none"/>
+  <path d="M820 210 L820 226" stroke="#94a3b8" stroke-width="1.2" fill="none"/>
+
+  <rect x="60" y="226" width="200" height="96" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="74" y="248" font-size="12" font-weight="bold" fill="#dc2626">问题 ①②（抢锁段）</text>
+  <text x="74" y="272" font-size="11" fill="#334155">① 无间隔重试 → 打爆 Redis</text>
+  <text x="74" y="292" font-size="11" fill="#334155">② 分两条命令 → 锁与 TTL</text>
+  <text x="74" y="312" font-size="11" fill="#334155">   不同步，加上了锁没设过期</text>
+
+  <rect x="280" y="226" width="200" height="96" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="294" y="248" font-size="12" font-weight="bold" fill="#dc2626">问题 ③（持锁段）</text>
+  <text x="294" y="272" font-size="11" fill="#334155">TTL 短于业务耗时</text>
+  <text x="294" y="292" font-size="11" fill="#334155">→ 锁先到期，临界区被</text>
+  <text x="294" y="312" font-size="11" fill="#334155">   另一个节点并进</text>
+
+  <rect x="500" y="226" width="200" height="96" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="514" y="248" font-size="12" font-weight="bold" fill="#dc2626">问题 ④（续期段）</text>
+  <text x="514" y="272" font-size="11" fill="#334155">业务卡死 → 无限续期</text>
+  <text x="514" y="292" font-size="11" fill="#334155">锁永远不释放，只能等</text>
+  <text x="514" y="312" font-size="11" fill="#334155">   进程退出</text>
+
+  <rect x="720" y="226" width="200" height="96" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="734" y="248" font-size="12" font-weight="bold" fill="#dc2626">问题 ⑤（释放段）</text>
+  <text x="734" y="272" font-size="11" fill="#334155">裸 DEL 删掉别人的锁</text>
+  <text x="734" y="292" font-size="11" fill="#334155">→ 先比对 uid 再删，</text>
+  <text x="734" y="312" font-size="11" fill="#334155">   GET 与 DEL 要原子</text>
+
+  <rect x="60" y="340" width="880" height="56" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="76" y="364" font-size="12.5" fill="#334155">问题 ⑥（不落在任何一段）：SET NX 写入主节点即算成功，主节点在同步到从库前宕机 → 锁凭空消失</text>
+  <text x="76" y="384" font-size="11.5" fill="#b45309">前面四段写得再对也挡不住它，只能换拓扑：多独立节点多数派（即 RedLock）</text>
+
+  <text x="60" y="436" font-size="15" font-weight="bold" fill="#0f172a">二、危险窗口实测：TTL 0.300s 短于业务耗时 0.609s</text>
+
+  <rect x="120" y="500" width="326" height="36" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="283" y="524" text-anchor="middle" font-size="12" fill="#1d4ed8">A 持有锁（TTL = 0.300s）</text>
+
+  <rect x="502" y="500" width="398" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="701" y="524" text-anchor="middle" font-size="12" fill="#047857">B 持有锁（自己的 TTL 内）</text>
+
+  <path d="M446 452 L446 560" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>
+  <path d="M502 452 L502 560" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>
+  <path d="M781 452 L781 560" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>
+
+  <path d="M120 560 L900 560" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arw)"/>
+
+  <text x="446" y="582" text-anchor="middle" font-size="11.5" fill="#dc2626">锁到期</text>
+  <text x="502" y="582" text-anchor="middle" font-size="11.5" fill="#047857">B 抢到</text>
+  <text x="781" y="582" text-anchor="middle" font-size="11.5" fill="#dc2626">A 写完</text>
+  <text x="120" y="582" text-anchor="middle" font-size="11.5" fill="#334155">A 抢锁</text>
+
+  <text x="446" y="600" text-anchor="middle" font-size="11" fill="#64748b">0.300s</text>
+  <text x="502" y="600" text-anchor="middle" font-size="11" fill="#64748b">0.352s</text>
+  <text x="781" y="600" text-anchor="middle" font-size="11" fill="#64748b">0.609s</text>
+  <text x="120" y="600" text-anchor="middle" font-size="11" fill="#64748b">t = 0</text>
+
+  <rect x="446" y="612" width="335" height="44" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="613" y="639" text-anchor="middle" font-size="12" fill="#dc2626">危险窗口：0.309s 内锁归 B，而 A 毫不知情</text>
+
+  <text x="80" y="690" font-size="12" fill="#334155">要点：窗口宽度由 TTL 与业务耗时的差决定，不由「A 睡了多久」决定；护栏是看门狗续期与锁内重新判条件。</text>
+  <text x="80" y="712" font-size="12" fill="#64748b">A 的锁在 0.300s 到期、B 在 0.352s 拿到（晚 52ms）、A 到 0.609s 才写完 → 两个持有者都进了临界区。</text>
+</svg>

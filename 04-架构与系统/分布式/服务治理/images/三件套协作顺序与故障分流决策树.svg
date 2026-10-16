@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="760" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">稳定性三件套的协作顺序：按故障类型分流</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">判据与落点出自本篇第一节与第四节；三者在同一条链上依次是限流 → 熔断 → 降级</text>
+
+  <!-- 入口 -->
+  <rect x="330" y="84" width="340" height="64" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+  <text x="500" y="112" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">一次业务请求 / 一次依赖调用</text>
+  <text x="500" y="134" text-anchor="middle" font-size="11.5" fill="#475569">三件套都在回答「有策略地放弃」</text>
+
+  <!-- Q 三个判据 -->
+  <rect x="30" y="176" width="300" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="180" y="202" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">Q1 入口速率超容量？</text>
+  <text x="180" y="224" text-anchor="middle" font-size="11.5" fill="#334155">保护自己：控制「进来多少」</text>
+
+  <rect x="350" y="176" width="300" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="500" y="202" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">Q2 上游错误率 / 慢调用比例超阈值？</text>
+  <text x="500" y="224" text-anchor="middle" font-size="11.5" fill="#334155">保护下游：控制「出去多少」</text>
+
+  <rect x="670" y="176" width="300" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="820" y="202" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">Q3 人工开关 / 大促预案？</text>
+  <text x="820" y="224" text-anchor="middle" font-size="11.5" fill="#334155">业务取舍：决定「放弃什么」</text>
+
+  <!-- 三种手段 -->
+  <rect x="30" y="268" width="300" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="180" y="294" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">限流：流量防护</text>
+  <text x="180" y="316" text-anchor="middle" font-size="11.5" fill="#334155">超出即拒绝 / 排队 → 429 + Retry-After</text>
+
+  <rect x="350" y="268" width="300" height="64" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="500" y="294" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">熔断：依赖防护</text>
+  <text x="500" y="316" text-anchor="middle" font-size="11.5" fill="#334155">Open 期快速失败 → 503 circuit_open</text>
+
+  <rect x="670" y="268" width="300" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="820" y="294" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">降级：业务取舍</text>
+  <text x="820" y="316" text-anchor="middle" font-size="11.5" fill="#334155">开关 / 熔断 / 限流任一触发</text>
+
+  <!-- 三种出口 -->
+  <rect x="30" y="360" width="300" height="64" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="180" y="386" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">出口：拒绝 / 排队</text>
+  <text x="180" y="408" text-anchor="middle" font-size="11.5" fill="#475569">等下一个窗口，会自己恢复</text>
+
+  <rect x="350" y="360" width="300" height="64" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="500" y="386" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">出口：快速失败</text>
+  <text x="500" y="408" text-anchor="middle" font-size="11.5" fill="#475569">冷却 + 半开探测，要上游真好了</text>
+
+  <rect x="670" y="360" width="300" height="64" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="820" y="386" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">出口：兜底值</text>
+  <text x="820" y="408" text-anchor="middle" font-size="11.5" fill="#475569">默认值 / 兜底缓存 / 排队页</text>
+
+  <!-- 汇合 -->
+  <rect x="60" y="460" width="880" height="64" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="500" y="486" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">三套动作最后都落到「降级」：限流与熔断是触发手段，降级是被触发后的业务表现</text>
+  <text x="500" y="508" text-anchor="middle" font-size="11.5" fill="#475569">没有降级逻辑的熔断，只是把「慢」变成「错」</text>
+
+  <!-- 降级按副作用分流 -->
+  <rect x="60" y="560" width="420" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="270" y="586" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">读降级：直接丢弃</text>
+  <text x="270" y="608" text-anchor="middle" font-size="11.5" fill="#334155">返回默认值 / 兜底缓存 / 关闭非核心功能</text>
+
+  <rect x="520" y="560" width="420" height="64" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="730" y="586" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2410c">写降级：必须补偿</text>
+  <text x="730" y="608" text-anchor="middle" font-size="11.5" fill="#334155">落本地消息表 / MQ，恢复后补做对账</text>
+
+  <!-- 判据带 -->
+  <rect x="40" y="660" width="920" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="686" font-size="11.5" fill="#475569">判据：限流看入口速率、熔断看调用结果、降级看业务代价 —— 先问「这次放弃有没有副作用」：</text>
+  <text x="60" y="708" font-size="11.5" fill="#475569">有副作用就必须补偿（写降级），没有就可以直接丢弃（读降级）；三者的分层展开见同目录 限流算法.md、熔断器.md、负载保护.md。</text>
+
+  <!-- 连线 -->
+  <path d="M 420 148 L 420 158 L 180 158 L 180 172" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+  <path d="M 500 148 L 500 172" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+  <path d="M 580 148 L 580 158 L 820 158 L 820 172" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+
+  <path d="M 180 240 L 180 264" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+  <path d="M 500 240 L 500 264" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+  <path d="M 820 240 L 820 264" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+
+  <path d="M 180 332 L 180 356" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+  <path d="M 500 332 L 500 356" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+  <path d="M 820 332 L 820 356" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+
+  <path d="M 180 424 L 180 442 L 500 442 L 500 456" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arG)"/>
+  <path d="M 500 424 L 500 456" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arG)"/>
+  <path d="M 820 424 L 820 442 L 500 442 L 500 456" fill="none" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arG)"/>
+
+  <path d="M 270 524 L 270 556" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+  <path d="M 730 524 L 730 556" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arS)"/>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+</svg>
