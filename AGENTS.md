@@ -274,7 +274,7 @@ python .workbuddy/tmp/audit_full.py
 ## 九、Git、安全与环境
 
 - AI 不得自动执行 `git add`、`commit` 或 `push`；改动留在工作区供用户审查。
-- 不得把 `git rm` 与 `rm` / `rmdir` 放在同一条命令中。清理未跟踪孤儿稿时，移动到 `.workbuddy/tmp/orphan-backup/` 备份，不直接删除。子代理指令中禁止删除或移动类 shell 命令；已有文件只允许追加式编辑。
+- 不得把 `git rm` 与 `rm` / `rmdir` 放在同一条命令中。清理未跟踪孤儿稿时，移动到 `.workbuddy/tmp/orphan-backup/` 备份，不直接删除。子代理指令中禁止删除或移动类 shell 命令；既有文件**默认只允许追加式编辑**，任务书明确要求按骨架重排时**可改 H2 标题与顺序、拆并小节、重写引语与关联、新增缺失节、补写内容**，底线是**信息不得丢失**、**逐篇行数不得减少**，交付时须给出「旧行去向清单」。
 - PowerShell 工具不可用；Docker Desktop 是运行实测的首选环境。可用工具包括 SQLite（`modernc.org/sqlite`）、Windows `pktmon`、`gitlab-ci-local` 和 phpstudy 自带 nginx。不可用项包括 `pip`、`protoc`、`tcpdump`、`tshark`、OpenResty、Lua、LuaJIT；无法栅格化 SVG。
 - 新 nginx 实验优先使用容器；停止 phpstudy nginx 时不要用 `taskkill //IM nginx.exe //F`，应使用 `nginx.exe -p <prefix> -c <conf> -s stop` 或按 PID 结束指定进程。
 - 环境探测结果应写在篇首，明确哪些已实测、哪些未实测。
@@ -285,5 +285,7 @@ python .workbuddy/tmp/audit_full.py
 - 批量替换按具体到泛化排序；删除空行或短行的规则必须确认本行确实被修改，避免误删分段空行。
 - 全局改名时区分篇名与概念名；修改代码块后检查下方提示和注释；拆分或重排后检查块内引用、分隔线和连续空行；相对路径按当前目录层级计算。
 - 默认单 Agent，不主动启用团队协作；只有用户明确要求时才使用子代理。长任务先盘点，再提供分档方案、推荐、判据和不做事项，待用户选择后执行。
+- 子代理并发**一轮只开 1 片**：2026-10-16 实测本机（8 逻辑核 / 16 GB 内存）同时跑 3 片时可用内存只剩 0.4 GB、CPU 负载 80%，三个子代理互相拖慢并相互干扰读数。**含容器实测或 Go 编译的片独占一轮**；纯文档改动（只改 md + 手写 svg）且只有一两篇时，与用户确认后可并 2 片。
+- 容器轮**起容器前**才启动 Docker Desktop，该轮核验完就关掉（`vmmemWSL` 常驻约占 2~3 GB）；跑批期间建议用户关掉 IDE 等大内存程序。
 - 重构级迁移先提供方案供用户选择；破坏性或不可逆动作先询问。不要虚构场景，应基于项目真实接口逐环节拆解。
 - 交付时如实说明改动文件、校验结果、未实测项及发现的问题。
