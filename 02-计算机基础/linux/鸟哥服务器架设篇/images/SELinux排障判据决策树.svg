@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w15f3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w15f4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="760" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SELinux 排障判据：从「服务起不来」到「补标签 / 布尔值 / 端口」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先分清是 DAC（属主与 rwx）还是 MAC（进程域 × 文件类型）—— 顺序反过来会白折腾</text>
+
+  <rect x="300" y="84" width="400" height="46" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+  <text x="500" y="113" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">症状：服务起不来 / 一访问就被拒 / 能连不能写</text>
+  <line x1="500" y1="130" x2="500" y2="156" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f3)"/>
+
+  <rect x="300" y="158" width="400" height="46" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="500" y="187" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">① getenforce：现在是 Enforcing 吗？</text>
+  <line x1="290" y1="181" x2="278" y2="181" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f4)"/>
+  <line x1="500" y1="204" x2="500" y2="234" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f3)"/>
+
+  <rect x="300" y="236" width="400" height="46" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="500" y="265" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">② ausearch -m avc -ts recent：有 AVC 吗？</text>
+  <line x1="710" y1="259" x2="722" y2="259" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f4)"/>
+  <line x1="500" y1="282" x2="500" y2="312" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f3)"/>
+
+  <rect x="300" y="314" width="400" height="46" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="500" y="343" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">③ setenforce 0 临时验证：问题消失吗？</text>
+  <line x1="290" y1="337" x2="278" y2="337" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f4)"/>
+  <line x1="500" y1="360" x2="500" y2="390" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f3)"/>
+
+  <rect x="300" y="392" width="400" height="46" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+  <text x="500" y="421" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">✅ 确诊：就是 SELinux 策略拦的</text>
+  <line x1="500" y1="438" x2="500" y2="468" stroke="#16a34a" stroke-width="2" marker-end="url(#w15f3)"/>
+
+  <rect x="300" y="470" width="400" height="104" rx="8" fill="#f8fafc" stroke="#16a34a" stroke-width="2"/>
+  <text x="318" y="494" font-size="12.5" font-weight="bold" fill="#14532d">④ 按症状补三类，然后切回 Enforcing</text>
+  <text x="318" y="518" font-size="11" fill="#334155">文件标签 → semanage fcontext -a -t httpd_sys_content_t</text>
+  <text x="318" y="538" font-size="11" fill="#334155">　　　　　+ restorecon -Rv（不重启服务只重打标签）</text>
+  <text x="318" y="558" font-size="11" fill="#334155">服务开关 → setsebool -P xxx_can_network_connect on</text>
+  <line x1="710" y1="520" x2="722" y2="520" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f4)"/>
+
+  <rect x="24" y="130" width="250" height="100" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="42" y="154" font-size="12" font-weight="bold" fill="#b45309">不是 Enforcing</text>
+  <text x="42" y="178" font-size="10.5" fill="#b45309">permissive / disabled 时这一层没在拦，</text>
+  <text x="42" y="198" font-size="10.5" fill="#b45309">直接去查 DAC：ls -ln 看属主数字，</text>
+  <text x="42" y="218" font-size="10.5" fill="#b45309">看 rwx 位，而不是继续 setenforce</text>
+
+  <rect x="726" y="204" width="250" height="100" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="744" y="228" font-size="12" font-weight="bold" fill="#0f172a">没有 AVC 记录</text>
+  <text x="744" y="252" font-size="10.5" fill="#334155">说明不是 SELinux：去查监听端口与</text>
+  <text x="744" y="272" font-size="10.5" fill="#334155">本机防火墙（139 / 445 / 2049 /</text>
+  <text x="744" y="292" font-size="10.5" fill="#334155">111 / 3128 这些端口放没放行）</text>
+
+  <rect x="24" y="314" width="250" height="100" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="42" y="338" font-size="12" font-weight="bold" fill="#b91c1c">问题依旧 → 排除 SELinux</text>
+  <text x="42" y="362" font-size="10.5" fill="#b91c1c">回到属主 / 权限 / 端口。⚠️ 顺序别</text>
+  <text x="42" y="382" font-size="10.5" fill="#b91c1c">反过来——SELinux 关着也会「能连</text>
+  <text x="42" y="402" font-size="10.5" fill="#b91c1c">不能写」，放宽 DAC 解决不了 MAC</text>
+
+  <rect x="726" y="470" width="250" height="124" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="744" y="494" font-size="12" font-weight="bold" fill="#0f172a">症状 → 该补哪一类</text>
+  <text x="744" y="518" font-size="10.5" fill="#334155">能起、一访问就 403 → 目录标签</text>
+  <text x="744" y="538" font-size="10.5" fill="#334155">进程连不出去 → 布尔值没开</text>
+  <text x="744" y="558" font-size="10.5" fill="#334155">共享目录能连不能写 → 共享类布尔值</text>
+  <text x="744" y="578" font-size="10.5" fill="#334155">换端口被拒（如 8080）→ 端口未允许</text>
+
+  <rect x="24" y="596" width="952" height="164" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="620" font-size="12.5" font-weight="bold" fill="#0f172a">📎 本环境的实测与未实测</text>
+  <text x="42" y="644" font-size="11" fill="#334155">实测（SELinux 关着、症状却一模一样）：SMB 客户端认证通过后写仍被拒（NT_STATUS_ACCESS_DENIED），原因是目录属主是 root；</text>
+  <text x="42" y="666" font-size="11" fill="#334155">chown -R alice:alice 之后同一个 put 立刻成功，服务端 ls -ln 的属主从 0 0 变成 1000 1000。</text>
+  <text x="42" y="690" font-size="11" fill="#b45309">实测证据：/proc/filesystems 里有 selinuxfs 这一行，但 mount 里计数是 0，且没有 /etc/selinux、没有 getenforce。</text>
+  <text x="42" y="712" font-size="11" fill="#b45309">判据：内核支持 / 已挂载 / 有配置 / 启动参数没关，四者缺一不可——「内核支持」不等于「系统在用」。</text>
+  <text x="42" y="734" font-size="11" fill="#b91c1c">未实测：模式切换与拦截、上下文与布尔值的生效、ausearch 的 AVC 记录、lastb 的暴力破解痕迹。</text>
+  <text x="42" y="754" font-size="11" fill="#334155">依据与原文：.workbuddy/tmp/round495/w15_a01_minimize.txt、w15_a02_selinux_unavail.txt、w15_c04_samba_perms.txt</text>
+</svg>

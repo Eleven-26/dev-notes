@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w15f1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w15f2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">虚拟化类型与虚拟机网络模式</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">隔离级别决定「能不能换内核」，网络模式决定「外面能不能直连虚拟机」</text>
+
+  <rect x="24" y="88" width="460" height="132" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="42" y="114" font-size="13" font-weight="bold" fill="#0f172a">母机（宿主机）：硬件 + VMM 三层</text>
+  <text x="42" y="140" font-size="11.5" fill="#334155">CPU 侧：flags 里有 vmx（Intel(R) Core(TM) i7-6700HQ @ 2.60GHz）</text>
+  <text x="42" y="164" font-size="11.5" fill="#334155">VMM：KVM（内核模块，加载后出现 /dev/kvm）→ QEMU（设备模拟）→ libvirt（libvirtd）</text>
+  <text x="42" y="188" font-size="11.5" fill="#334155">存储池：qcow2 精简置备；virt-install --memory 2048 --vcpus 2 --disk size=20</text>
+
+  <rect x="506" y="88" width="470" height="132" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="524" y="114" font-size="13" font-weight="bold" fill="#1e40af">机器级隔离 vs 进程级隔离</text>
+  <text x="524" y="140" font-size="11.5" fill="#334155">虚拟机：各自内核，每台的 uname -r 都不相同</text>
+  <text x="524" y="164" font-size="11.5" fill="#334155">容器：共享宿主内核，三个不同镜像都取到 6.18.54.1-microsoft-standard-WSL2</text>
+  <text x="524" y="188" font-size="11.5" fill="#b45309">⭐ 判据：要不要换内核、要不要加载模块</text>
+
+  <line x1="254" y1="220" x2="254" y2="236" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="168" y1="236" x2="832" y2="236" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="168" y1="236" x2="168" y2="250" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f2)"/>
+  <line x1="500" y1="236" x2="500" y2="250" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f2)"/>
+  <line x1="832" y1="236" x2="832" y2="250" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f2)"/>
+
+  <rect x="24" y="254" width="288" height="112" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="168" y="280" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">NAT（libvirt 默认网络 default）</text>
+  <text x="168" y="306" text-anchor="middle" font-size="11.5" fill="#334155">网桥 virbr0，私网 192.168.122.0/24</text>
+  <text x="168" y="330" text-anchor="middle" font-size="11.5" fill="#334155">虚拟机 ✅ 能出网</text>
+  <text x="168" y="354" text-anchor="middle" font-size="11.5" fill="#b45309">外部 ❌ 直连，须在母机做端口转发</text>
+
+  <rect x="356" y="254" width="288" height="112" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="500" y="280" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">桥接 bridge（br0）</text>
+  <text x="500" y="306" text-anchor="middle" font-size="11.5" fill="#14532d">物理网卡挂进 br0，与母机同网段</text>
+  <text x="500" y="330" text-anchor="middle" font-size="11.5" fill="#14532d">外部 ✅ 可直连，最接近真实机房</text>
+  <text x="500" y="354" text-anchor="middle" font-size="11.5" fill="#b91c1c">⚠️ 母机 IP 要挪到 br0，改错就失联</text>
+
+  <rect x="688" y="254" width="288" height="112" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="832" y="280" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">仅主机 isolated</text>
+  <text x="832" y="306" text-anchor="middle" font-size="11.5" fill="#b45309">只通母机与虚拟机之间</text>
+  <text x="832" y="330" text-anchor="middle" font-size="11.5" fill="#b45309">不出网、不入网</text>
+  <text x="832" y="354" text-anchor="middle" font-size="11.5" fill="#b45309">适合自建 DNS 这类纯内网实验</text>
+
+  <rect x="24" y="392" width="952" height="126" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="418" font-size="12.5" font-weight="bold" fill="#0f172a">从零铺一个三节点实验环境（虚拟化的日常用法）</text>
+  <rect x="44" y="430" width="276" height="72" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="182" y="454" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">① 装模板机 tmpl</text>
+  <text x="182" y="478" text-anchor="middle" font-size="11" fill="#334155">系统更新、时区与 NTP、SSH 全做完</text>
+  <text x="182" y="496" text-anchor="middle" font-size="11" fill="#334155">先改完再克隆，克隆只需改身份</text>
+  <line x1="320" y1="466" x2="350" y2="466" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f1)"/>
+  <rect x="350" y="430" width="276" height="72" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="488" y="454" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">② virt-clone 克隆</text>
+  <text x="488" y="478" text-anchor="middle" font-size="11" fill="#334155">关机后克隆出 node01 / node02</text>
+  <text x="488" y="496" text-anchor="middle" font-size="11" fill="#334155">整份磁盘镜像独立，与源机无关</text>
+  <line x1="626" y1="466" x2="656" y2="466" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f1)"/>
+  <rect x="656" y="430" width="300" height="72" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="806" y="454" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">③ 改身份</text>
+  <text x="806" y="478" text-anchor="middle" font-size="11" fill="#334155">hostname / machine-id / ssh host key</text>
+  <text x="806" y="496" text-anchor="middle" font-size="11" fill="#334155">静态 IP；不然会撞身份、报 host key 冲突</text>
+
+  <rect x="24" y="536" width="952" height="180" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="562" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：容器 w15kvm（alpine:3.21 + --privileged），母机为 Docker Desktop 的 WSL2 虚拟机</text>
+  <text x="42" y="588" font-size="11.5" fill="#334155">CPU：Intel(R) Core(TM) i7-6700HQ @ 2.60GHz，4 个 processor，flags 里能取到 vmx</text>
+  <text x="42" y="612" font-size="11.5" fill="#b91c1c">/dev/kvm：No such file or directory —— 本环境不能用 KVM，本篇 KVM / libvirt 命令均为命令口径</text>
+  <text x="42" y="636" font-size="11.5" fill="#334155">内核：6.18.54.1-microsoft-standard-WSL2（alpine:3.21 / nginx:1.26-alpine / python:3-alpine 三者完全一致）</text>
+  <text x="42" y="660" font-size="11.5" fill="#334155">依据与原文：.workbuddy/tmp/round495/w15_a03_kvm_unavail.txt、w15_e04_kernel_and_limits.txt</text>
+  <text x="42" y="684" font-size="11.5" fill="#b45309">未实测：KVM / QEMU / libvirt 本体、桥接 br0 与 VLAN、qcow2 内部快照与回滚、克隆后的身份改写</text>
+  <text x="42" y="708" font-size="11.5" fill="#334155">判据：CPU 支持虚拟化 ≠ 当前环境能用虚拟化，取决于 /dev/kvm 有没有被暴露出来</text>
+</svg>

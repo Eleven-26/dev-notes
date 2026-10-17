@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w15f5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w15f6" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="760" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">文件共享选型与 NFS 挂载链路</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先问「给谁用、文件还是磁盘、并发还是独占」，再看一次挂载要过哪几道 RPC</text>
+
+  <rect x="280" y="80" width="440" height="44" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="500" y="107" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e40af">选型的三个问题：给谁用 ｜ 共享文件还是磁盘 ｜ 并发还是独占</text>
+  <line x1="368" y1="124" x2="135" y2="148" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f6)"/>
+  <line x1="452" y1="124" x2="379" y2="148" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f6)"/>
+  <line x1="548" y1="124" x2="623" y2="148" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f6)"/>
+  <line x1="632" y1="124" x2="867" y2="148" stroke="#94a3b8" stroke-width="2" marker-end="url(#w15f6)"/>
+
+  <rect x="24" y="150" width="222" height="142" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="135" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">NFS｜文件级</text>
+  <text x="135" y="200" text-anchor="middle" font-size="10.5" fill="#14532d">客户端全是 Linux</text>
+  <text x="135" y="220" text-anchor="middle" font-size="10.5" fill="#14532d">exports + squash</text>
+  <text x="135" y="244" text-anchor="middle" font-size="10.5" fill="#b45309">难点：动态端口难放行</text>
+  <text x="135" y="264" text-anchor="middle" font-size="10.5" fill="#14532d">适合共享目录、家目录</text>
+  <text x="135" y="284" text-anchor="middle" font-size="10.5" fill="#14532d">（本图下半段的主角）</text>
+
+  <rect x="268" y="150" width="222" height="142" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="379" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">SAMBA｜文件级</text>
+  <text x="379" y="200" text-anchor="middle" font-size="10.5" fill="#334155">客户端里有 Windows</text>
+  <text x="379" y="220" text-anchor="middle" font-size="10.5" fill="#334155">smb.conf + smbpasswd</text>
+  <text x="379" y="244" text-anchor="middle" font-size="10.5" fill="#334155">端口 139 / 445</text>
+  <text x="379" y="264" text-anchor="middle" font-size="10.5" fill="#b91c1c">⚠️ 认证通过 ≠ 能写</text>
+  <text x="379" y="284" text-anchor="middle" font-size="10.5" fill="#334155">目录属主是第一道坎</text>
+
+  <rect x="512" y="150" width="222" height="142" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="623" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">iSCSI｜块级</text>
+  <text x="623" y="200" text-anchor="middle" font-size="10.5" fill="#b45309">给数据库 / 虚拟机一块盘</text>
+  <text x="623" y="220" text-anchor="middle" font-size="10.5" fill="#b45309">target / initiator / LUN</text>
+  <text x="623" y="244" text-anchor="middle" font-size="10.5" fill="#b45309">客户端看到裸盘 /dev/sdX</text>
+  <text x="623" y="264" text-anchor="middle" font-size="10.5" fill="#b91c1c">⚠️ 并发写会毁文件系统</text>
+  <text x="623" y="284" text-anchor="middle" font-size="10.5" fill="#b45309">（本环境未实测）</text>
+
+  <rect x="756" y="150" width="222" height="142" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="867" y="176" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">Squid｜正向代理</text>
+  <text x="867" y="200" text-anchor="middle" font-size="10.5" fill="#334155">内网统一出网 / 缓存 / 审计</text>
+  <text x="867" y="220" text-anchor="middle" font-size="10.5" fill="#334155">acl 限定来源网段</text>
+  <text x="867" y="244" text-anchor="middle" font-size="10.5" fill="#334155">端口 3128</text>
+  <text x="867" y="264" text-anchor="middle" font-size="10.5" fill="#b91c1c">⚠️ 别配成开放代理</text>
+  <text x="867" y="284" text-anchor="middle" font-size="10.5" fill="#334155">方向与反向代理相反</text>
+
+  <text x="24" y="324" font-size="12.5" font-weight="bold" fill="#1e40af">NFSv3 一次挂载要过的几道门：客户端 → rpcbind → mountd → nfsd → 服务端目录</text>
+  <rect x="24" y="338" width="176" height="86" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="112" y="362" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">客户端</text>
+  <text x="112" y="384" text-anchor="middle" font-size="9.5" fill="#334155">mount -t nfs</text>
+  <text x="112" y="402" text-anchor="middle" font-size="9.5" fill="#334155">10.77.16.31:/srv/share</text>
+  <text x="112" y="418" text-anchor="middle" font-size="9.5" fill="#334155">/mnt/share</text>
+  <line x1="200" y1="381" x2="216" y2="381" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f5)"/>
+
+  <rect x="218" y="338" width="142" height="86" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="289" y="360" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">rpcbind 111</text>
+  <text x="289" y="382" text-anchor="middle" font-size="9.5" fill="#334155">RPC 的「黄页」</text>
+  <text x="289" y="400" text-anchor="middle" font-size="9.5" fill="#334155">告诉客户端各服务</text>
+  <text x="289" y="416" text-anchor="middle" font-size="9.5" fill="#334155">挂在哪个端口</text>
+  <line x1="360" y1="381" x2="376" y2="381" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f5)"/>
+
+  <rect x="378" y="338" width="152" height="86" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="454" y="360" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">rpc.mountd</text>
+  <text x="454" y="382" text-anchor="middle" font-size="9.5" fill="#334155">挂在动态端口上</text>
+  <text x="454" y="400" text-anchor="middle" font-size="9.5" fill="#334155">按 /etc/exports</text>
+  <text x="454" y="416" text-anchor="middle" font-size="9.5" fill="#334155">决定放不放行</text>
+  <line x1="530" y1="381" x2="546" y2="381" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f5)"/>
+
+  <rect x="548" y="338" width="142" height="86" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="619" y="360" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">rpc.nfsd 2049</text>
+  <text x="619" y="382" text-anchor="middle" font-size="9.5" fill="#334155">真正的文件访问</text>
+  <text x="619" y="400" text-anchor="middle" font-size="9.5" fill="#334155">固定端口，但光开</text>
+  <text x="619" y="416" text-anchor="middle" font-size="9.5" fill="#334155">它还挂不上（见下）</text>
+  <line x1="690" y1="381" x2="706" y2="381" stroke="#2563eb" stroke-width="2" marker-end="url(#w15f5)"/>
+
+  <rect x="708" y="338" width="268" height="86" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="842" y="360" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">服务端 /srv/share</text>
+  <text x="842" y="382" text-anchor="middle" font-size="9.5" fill="#14532d">导出项：rw,sync,no_root_squash</text>
+  <text x="842" y="400" text-anchor="middle" font-size="9.5" fill="#14532d">客户端 root 默认被 squash 成匿名</text>
+  <text x="842" y="416" text-anchor="middle" font-size="9.5" fill="#14532d">并发写的锁由 statd 负责（NFSv3）</text>
+
+  <text x="24" y="452" font-size="11" fill="#b91c1c">⚠️ 只放行 2049 挂不上：mountd 挂在动态端口（实测 32885 / 35469 / 55059 / 58993 等），要么按 rpcinfo -p 逐个放行，要么改用只走 2049 的 NFSv4。</text>
+  <text x="24" y="474" font-size="11" fill="#334155">📎 nfsstat -m 实测：vers=3,rsize=1048576,wsize=1048576,hard,nolock,sec=sys；服务端 /proc/fs/nfsd/threads = 8，versions = +3 +4 +4.1 +4.2。</text>
+
+  <rect x="24" y="500" width="460" height="118" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+  <text x="42" y="524" font-size="12" font-weight="bold" fill="#0f172a">squash 决定客户端 root 在服务端是谁</text>
+  <text x="42" y="548" font-size="10.5" fill="#334155">root_squash（默认）：客户端 root → 匿名，写目录被拒</text>
+  <text x="42" y="568" font-size="10.5" fill="#334155">no_root_squash：客户端 root → 服务端属主 0 0</text>
+  <text x="42" y="588" font-size="10.5" fill="#b45309">⭐ 判据：看服务端 ls -ln 的属主数字，而不是看客户端</text>
+  <text x="42" y="608" font-size="10.5" fill="#334155">all_squash：所有用户都成匿名，适合只读公开共享</text>
+
+  <rect x="516" y="500" width="460" height="118" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="534" y="524" font-size="12" font-weight="bold" fill="#b91c1c">NFS 实测撞到的两个坑</text>
+  <text x="534" y="548" font-size="10.5" fill="#b91c1c">① 底层文件系统不支持导出：exportfs: /srv/share does</text>
+  <text x="534" y="566" font-size="10.5" fill="#b91c1c">not support NFS export（overlayfs）→ 换 ext4 卷后成功。</text>
+  <text x="534" y="588" font-size="10.5" fill="#b91c1c">② NFSv4 要伪根：按 v3 路径挂 v4 报 No such file or</text>
+  <text x="534" y="606" font-size="10.5" fill="#b91c1c">directory；加 fsid=0 后挂上，vers=4.0。</text>
+
+  <rect x="24" y="634" width="952" height="126" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="660" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：w15nfs2（alpine:3.21 + nfs-utils 2.6.4，导出目录挂 docker 卷）+ w15cli，同处 10.77.16.0/24</text>
+  <text x="42" y="684" font-size="11" fill="#334155">正向代理侧：Squid 6.12 的 access.log 三段 —— TCP_MISS/200（回源）→ TCP_MEM_HIT/200 且 Age: 0（命中内存缓存）→ ACL 外来源 TCP_DENIED/403</text>
+  <text x="42" y="706" font-size="11" fill="#334155">依据与原文：.workbuddy/tmp/round495/w15_b05 ~ w15_b10、w15_c01 ~ w15_c04、w15_d01 ~ w15_d03</text>
+  <text x="42" y="728" font-size="11" fill="#b45309">未实测：iSCSI 的 target / initiator 全流程（容器内核没有 target 与 iscsi 模块）、autofs 按需挂载、多路径与集群文件系统并发写</text>
+  <text x="42" y="750" font-size="11" fill="#b45309">未实测：SAMBA 跨 Windows 客户端的实际互访与域认证（本篇只跑通了 Linux 侧的 smbclient / mount -t cifs）</text>
+</svg>
