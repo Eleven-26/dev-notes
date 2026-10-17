@@ -58,7 +58,7 @@
 | churn（序列替换率） | 每天新增的、此前未出现过的序列数，决定索引增长 |
 | mergeset | 按 TSID + 时间排序存放**样本值**的存储结构 |
 | IndexDB（倒排索引） | 维护"标签=值 → 一组 TSID"的映射，负责**定位序列** |
-| part | 一次刷盘形成的不可变数据块，命名形如 `rows_blocks_minTS_maxTS` |
+| part | 一次刷盘形成的不可变数据块，**落盘是一个 16 位十六进制目录名**（如 `18DEFF65802516E9`）；行数 / 块数 / 时间范围记在 `metadata.json` 里（书中 `rows_blocks_minTS_maxTS` 是旧口径） |
 | block | part 内的数据块，最多约 8K 样本且同属一条序列 |
 | 分区（partition） | 按月划分的目录 `YYYY_MM`，超出保留期才删除 |
 | compaction（合并） | 后台把多个小 part 合并成更大 part 的过程 |
