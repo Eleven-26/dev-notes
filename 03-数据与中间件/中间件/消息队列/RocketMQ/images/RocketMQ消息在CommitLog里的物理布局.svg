@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 800" width="1120" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="cm-arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1120" height="800" fill="#ffffff"/>
+  <text x="560" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RocketMQ 单条消息在 CommitLog 里的物理布局</text>
+  <text x="560" y="58" text-anchor="middle" font-size="13" fill="#64748b">IPv4 下 88 B 定长头 + 变长三段；字节偏移取自 rocketmq-common 5.3.1 的 MessageDecoder 常量与读取序</text>
+
+  <rect x="60" y="86" width="1000" height="66" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="76" y="106" font-size="13.5" font-weight="bold" fill="#0f172a">① 文件级：全 Topic 混写、按到达顺序追加，单文件 1 GiB（mappedFileSizeCommitLog）</text>
+  <rect x="80" y="114" width="170" height="28" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="165" y="133" text-anchor="middle" font-size="11.5" fill="#14532d">msg1 @0（223 B）</text>
+  <rect x="250" y="114" width="150" height="28" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="325" y="133" text-anchor="middle" font-size="11.5" fill="#14532d">msg2 @223</text>
+  <rect x="400" y="114" width="150" height="28" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="475" y="133" text-anchor="middle" font-size="11.5" fill="#14532d">msg3 @892</text>
+  <rect x="550" y="114" width="150" height="28" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="625" y="133" text-anchor="middle" font-size="11.5" fill="#14532d">msg4 @1784</text>
+  <text x="722" y="133" font-size="14" fill="#64748b">…</text>
+  <rect x="750" y="114" width="290" height="28" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 4"/>
+  <text x="895" y="133" text-anchor="middle" font-size="11.5" fill="#475569">BLANK magic 填满剩余空间 → 换下一个文件</text>
+
+  <line x1="165" y1="154" x2="165" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#cm-arrow)"/>
+  <text x="176" y="180" font-size="11.5" fill="#475569">放大一条记录（偏移 0 起算）</text>
+
+  <rect x="60" y="200" width="1000" height="330" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="92" y="264" text-anchor="end" font-size="11.5" fill="#64748b">0</text>
+  <rect x="100" y="230" width="96" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="148" y="253" text-anchor="middle" font-size="11.5" fill="#1e3a8a">totalLen</text>
+  <text x="148" y="273" text-anchor="middle" font-size="10.5" fill="#1d4ed8">4 B</text>
+  <rect x="196" y="230" width="96" height="58" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.8"/>
+  <text x="244" y="251" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#9a3412">magic</text>
+  <text x="244" y="271" text-anchor="middle" font-size="10.5" fill="#c2410c">4 B ⭐</text>
+  <rect x="292" y="230" width="96" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="340" y="253" text-anchor="middle" font-size="11.5" fill="#1e3a8a">bodyCRC</text>
+  <text x="340" y="273" text-anchor="middle" font-size="10.5" fill="#1d4ed8">4 B</text>
+  <rect x="388" y="230" width="96" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="436" y="253" text-anchor="middle" font-size="11.5" fill="#1e3a8a">queueId</text>
+  <text x="436" y="273" text-anchor="middle" font-size="10.5" fill="#1d4ed8">4 B</text>
+  <rect x="484" y="230" width="96" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="532" y="253" text-anchor="middle" font-size="11.5" fill="#1e3a8a">flag</text>
+  <text x="532" y="273" text-anchor="middle" font-size="10.5" fill="#1d4ed8">4 B</text>
+  <rect x="580" y="230" width="192" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="676" y="253" text-anchor="middle" font-size="11.5" fill="#1e3a8a">queueOffset</text>
+  <text x="676" y="273" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8 B（队列内位点）</text>
+  <rect x="772" y="230" width="192" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="868" y="253" text-anchor="middle" font-size="11.5" fill="#1e3a8a">physicalOffset</text>
+  <text x="868" y="273" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8 B（本文件内偏移）</text>
+
+  <text x="92" y="332" text-anchor="end" font-size="11.5" fill="#64748b">36</text>
+  <rect x="100" y="298" width="96" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="148" y="321" text-anchor="middle" font-size="11.5" fill="#1e3a8a">sysFlag</text>
+  <text x="148" y="341" text-anchor="middle" font-size="10.5" fill="#1d4ed8">4 B</text>
+  <rect x="196" y="298" width="192" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="292" y="321" text-anchor="middle" font-size="11.5" fill="#1e3a8a">bornTimestamp</text>
+  <text x="292" y="341" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8 B（生产端时间）</text>
+  <rect x="388" y="298" width="192" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="484" y="321" text-anchor="middle" font-size="11.5" fill="#1e3a8a">bornHost</text>
+  <text x="484" y="341" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8 B（IPv4 4B + 端口 4B）</text>
+  <rect x="580" y="298" width="192" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="676" y="321" text-anchor="middle" font-size="11.5" fill="#1e3a8a">storeTimestamp</text>
+  <text x="676" y="341" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8 B（Broker 落盘时间）</text>
+  <rect x="772" y="298" width="192" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="868" y="321" text-anchor="middle" font-size="11.5" fill="#1e3a8a">storeHost</text>
+  <text x="868" y="341" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8 B（IPv4 4B + 端口 4B）</text>
+
+  <text x="92" y="400" text-anchor="end" font-size="11.5" fill="#64748b">72</text>
+  <rect x="100" y="366" width="96" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="148" y="389" text-anchor="middle" font-size="11.5" fill="#1e3a8a">reconsume</text>
+  <text x="148" y="409" text-anchor="middle" font-size="10.5" fill="#1d4ed8">Times 4 B</text>
+  <rect x="196" y="366" width="192" height="58" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="292" y="389" text-anchor="middle" font-size="11.5" fill="#1e3a8a">preparedTxOffset</text>
+  <text x="292" y="409" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8 B（事务消息用）</text>
+  <rect x="388" y="366" width="96" height="58" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.8"/>
+  <text x="436" y="387" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#9a3412">bodyLength</text>
+  <text x="436" y="407" text-anchor="middle" font-size="10.5" fill="#c2410c">4 B ⭐</text>
+  <text x="500" y="389" font-size="12" font-weight="bold" fill="#334155">定长头合计 88 B</text>
+  <text x="500" y="409" font-size="11.5" fill="#64748b">偏移 84 处就是 bodyLength，解码器据此读 body</text>
+
+  <text x="92" y="470" text-anchor="end" font-size="11.5" fill="#64748b">88</text>
+  <rect x="100" y="434" width="300" height="62" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="250" y="459" text-anchor="middle" font-size="12" fill="#14532d">body</text>
+  <text x="250" y="479" text-anchor="middle" font-size="10.5" fill="#166534">bodyLength B（压缩时是压缩后字节）</text>
+  <rect x="400" y="434" width="300" height="62" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="550" y="459" text-anchor="middle" font-size="12" fill="#14532d">topic</text>
+  <text x="550" y="479" text-anchor="middle" font-size="10.5" fill="#166534">1 B 长度 + N B topic 名</text>
+  <rect x="700" y="434" width="300" height="62" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="850" y="459" text-anchor="middle" font-size="12" fill="#14532d">properties</text>
+  <text x="850" y="479" text-anchor="middle" font-size="10.5" fill="#166534">2 B 长度 + K B（key\1value\2 拼接）</text>
+
+  <rect x="60" y="546" width="1000" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="76" y="572" font-size="13.5" font-weight="bold" fill="#0f172a">② 三个可解析性来源</text>
+  <text x="76" y="598" font-size="12" fill="#334155">• totalLen 在最前：读长度 → 跳过整条，顺序向前解析，永远不需要回溯定位。</text>
+  <text x="76" y="622" font-size="12" fill="#334155">• magic 两个取值：正常记录 = MESSAGE_MAGIC_CODE(-626843481)；文件尾填充 = BLANK_MAGIC_CODE(-875286124)，恢复时靠它识别「半条消息」并丢弃尾部。</text>
+  <text x="76" y="646" font-size="12" fill="#334155">• 变长三段各自带长度：body 用 4 B 的 bodyLength、topic 用 1 B、properties 用 2 B；解码顺序固定为 body → topic → properties。</text>
+  <text x="76" y="670" font-size="12" fill="#334155">• 定长头 88 B 是 IPv4 口径；IPv6 时 bornHost / storeHost 各 20 B（16 B 地址 + 4 B 端口），定长头变 112 B，其余字段顺序不变。</text>
+  <text x="76" y="694" font-size="12" fill="#334155">• append-only：改一条消息 = 在日志尾部追加新版本（事务状态、reconsumeTimes 都靠追加表达），老版本等文件过期整体删除。</text>
+  <text x="76" y="718" font-size="11.5" fill="#64748b">偏移校验（MessageDecoder 常量）：MESSAGE_MAGIC_CODE_POSITION=4、MESSAGE_FLAG_POSITION=16、QUEUE_OFFSET_POSITION=20、</text>
+  <text x="76" y="740" font-size="11.5" fill="#64748b">PHY_POS_POSITION=28、SYSFLAG_POSITION=36、STORE_TIMESTAMP_POSITION=56；与 decode 的读取序一致。</text>
+  <text x="76" y="762" font-size="11.5" fill="#64748b">实测环境：apache/rocketmq:5.3.1 镜像内 javap 反编译 rocketmq-common-5.3.1.jar（常量与 decode 读取序），未起 Broker。</text>
+</svg>

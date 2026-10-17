@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 760" width="1160" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rq3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="rq4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1160" height="760" fill="#ffffff"/>
+  <text x="580" y="36" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RocketMQ 按 Topic 消费：走 ConsumeQueue 索引，不扫 CommitLog</text>
+  <text x="580" y="60" text-anchor="middle" font-size="13" fill="#64748b">订阅 orders → 取路由 → rebalance 分队列 → 按位点读第 N 条索引 → 只回 CommitLog 读这一段正文</text>
+
+  <text x="185" y="98" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">① 订阅与路由</text>
+  <text x="530" y="98" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">② ConsumeQueue：队列内逻辑顺序</text>
+  <text x="935" y="98" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">③ CommitLog：物理上混写</text>
+
+  <rect x="50" y="122" width="270" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="185" y="154" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">消费者订阅 Topic orders</text>
+  <line x1="185" y1="174" x2="185" y2="194" stroke="#334155" stroke-width="1.4" marker-end="url(#rq3)"/>
+
+  <rect x="50" y="198" width="270" height="64" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="185" y="224" text-anchor="middle" font-size="13" fill="#1e3a8a">NameServer 返回队列列表</text>
+  <text x="185" y="246" text-anchor="middle" font-size="12" fill="#475569">orders：queue 0 / 1 / 2</text>
+  <line x1="185" y1="262" x2="185" y2="282" stroke="#334155" stroke-width="1.4" marker-end="url(#rq3)"/>
+
+  <rect x="50" y="286" width="270" height="64" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="185" y="312" text-anchor="middle" font-size="13" fill="#1e3a8a">rebalance 分给组内实例</text>
+  <text x="185" y="334" text-anchor="middle" font-size="12" fill="#475569">本实例拿到 queue 2</text>
+  <line x1="185" y1="350" x2="185" y2="370" stroke="#334155" stroke-width="1.4" marker-end="url(#rq3)"/>
+
+  <rect x="50" y="374" width="270" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="185" y="400" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">按位点读第 N 条</text>
+  <text x="185" y="422" text-anchor="middle" font-size="12" fill="#166534">N = 下一条待拉位置</text>
+
+  <text x="60" y="474" font-size="12" fill="#64748b">实例只面对「队列 + 位点」，</text>
+  <text x="60" y="496" font-size="12" fill="#64748b">不感知 CommitLog 的位置。</text>
+
+  <rect x="380" y="122" width="300" height="320" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+  <text x="530" y="150" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">consumequeue/orders/2</text>
+  <text x="530" y="170" text-anchor="middle" font-size="11" fill="#9a3412">第 N 条地址 = N × 20 B</text>
+
+  <rect x="395" y="186" width="270" height="54" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="208" text-anchor="middle" font-size="12" fill="#7c2d12">第 0 条 · offset=0 · len=223</text>
+  <text x="530" y="228" text-anchor="middle" font-size="11" fill="#9a3412">tagHash=0 · 8B + 4B + 8B</text>
+
+  <rect x="395" y="248" width="270" height="54" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="270" text-anchor="middle" font-size="12" fill="#7c2d12">第 1 条 · offset=223 · len=223</text>
+  <text x="530" y="290" text-anchor="middle" font-size="11" fill="#9a3412">tagHash=0 · 8B + 4B + 8B</text>
+
+  <rect x="395" y="310" width="270" height="54" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="332" text-anchor="middle" font-size="12" fill="#7c2d12">第 2 条 · offset=892 · len=223</text>
+  <text x="530" y="352" text-anchor="middle" font-size="11" fill="#9a3412">tagHash=0 · 8B + 4B + 8B</text>
+
+  <rect x="395" y="372" width="270" height="54" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="394" text-anchor="middle" font-size="12" fill="#7c2d12">第 3 条 · offset=1784 · len=223</text>
+  <text x="530" y="414" text-anchor="middle" font-size="11" fill="#9a3412">tagHash=0 · 8B + 4B + 8B</text>
+
+  <rect x="380" y="456" width="300" height="42" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="482" text-anchor="middle" font-size="12" fill="#7c2d12">定长 20 B 连续存放，寻址是纯算术</text>
+  <text x="385" y="530" font-size="12" fill="#64748b">索引只存「位置 + 长度 + tagHash」，</text>
+  <text x="385" y="552" font-size="12" fill="#64748b">正文一份都不存。</text>
+
+  <line x1="326" y1="402" x2="372" y2="402" stroke="#334155" stroke-width="1.5" marker-end="url(#rq3)"/>
+  <text x="349" y="392" text-anchor="middle" font-size="11" fill="#334155">读索引</text>
+
+  <rect x="750" y="122" width="370" height="410" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="935" y="150" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">CommitLog · 单文件 1 GiB</text>
+
+  <text x="782" y="181" text-anchor="end" font-size="10" fill="#64748b">0</text>
+  <rect x="790" y="158" width="310" height="28" rx="5" fill="#fdba74" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="945" y="177" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c2d12">orders/2 · 223 B</text>
+
+  <text x="782" y="215" text-anchor="end" font-size="10" fill="#64748b">223</text>
+  <rect x="790" y="192" width="310" height="28" rx="5" fill="#fdba74" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="945" y="211" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c2d12">orders/2 · 223 B</text>
+
+  <text x="782" y="249" text-anchor="end" font-size="10" fill="#64748b">446</text>
+  <rect x="790" y="226" width="310" height="28" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="945" y="245" text-anchor="middle" font-size="11" fill="#1e3a8a">pay/0 · 223 B</text>
+
+  <text x="782" y="283" text-anchor="end" font-size="10" fill="#64748b">669</text>
+  <rect x="790" y="260" width="310" height="28" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="945" y="279" text-anchor="middle" font-size="11" fill="#7c2d12">orders/0 · 223 B</text>
+
+  <text x="782" y="317" text-anchor="end" font-size="10" fill="#64748b">892</text>
+  <rect x="790" y="294" width="310" height="28" rx="5" fill="#fdba74" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="945" y="313" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c2d12">orders/2 · 223 B</text>
+
+  <text x="782" y="351" text-anchor="end" font-size="10" fill="#64748b">1115</text>
+  <rect x="790" y="328" width="310" height="28" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="945" y="347" text-anchor="middle" font-size="11" fill="#1e3a8a">pay/1 · 223 B</text>
+
+  <text x="782" y="385" text-anchor="end" font-size="10" fill="#64748b">1338</text>
+  <rect x="790" y="362" width="310" height="28" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="945" y="381" text-anchor="middle" font-size="11" fill="#7c2d12">orders/1 · 223 B</text>
+
+  <text x="782" y="419" text-anchor="end" font-size="10" fill="#64748b">1561</text>
+  <rect x="790" y="396" width="310" height="28" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="945" y="415" text-anchor="middle" font-size="11" fill="#1e3a8a">pay/0 · 223 B</text>
+
+  <text x="782" y="453" text-anchor="end" font-size="10" fill="#64748b">1784</text>
+  <rect x="790" y="430" width="310" height="28" rx="5" fill="#fdba74" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="945" y="449" text-anchor="middle" font-size="11" font-weight="bold" fill="#7c2d12">orders/2 · 223 B</text>
+
+  <text x="782" y="487" text-anchor="end" font-size="10" fill="#64748b">2007</text>
+  <rect x="790" y="464" width="310" height="28" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="945" y="483" text-anchor="middle" font-size="11" fill="#1e3a8a">pay/1 · 223 B</text>
+
+  <text x="935" y="516" text-anchor="middle" font-size="11" fill="#475569">别的 Topic 的记录夹在中间，物理上并不连续</text>
+
+  <line x1="684" y1="402" x2="746" y2="402" stroke="#ea580c" stroke-width="1.8" marker-end="url(#rq4)"/>
+  <text x="715" y="392" text-anchor="middle" font-size="11" fill="#c2410c">取正文</text>
+
+  <line x1="40" y1="566" x2="1120" y2="566" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="594" font-size="13" fill="#0f172a">⭐ Topic 隔离靠索引路径：消费者只读 consumequeue/orders/{queueId}，CommitLog 里别的 Topic 的消息对它不可见——不需要扫全量日志。</text>
+  <text x="40" y="622" font-size="13" fill="#0f172a">⚠️ 写入 ≠ 立即可见：CommitLog 先追加，后台分发线程再异步建索引；索引没建好之前，消息已落盘但按位点读不到。</text>
+  <text x="40" y="650" font-size="13" fill="#0f172a">⭐ 每个消费组各读各的位点：同一条物理消息、同一份 ConsumeQueue，组之间互不影响，订阅者数量不放大存储。</text>
+  <text x="40" y="678" font-size="13" fill="#0f172a">⚠️ Tag 过滤也在索引层完成（比对 8B tagHash），不匹配就不读正文；SQL92 过滤要读消息体，读放大回不来。</text>
+  <text x="40" y="712" font-size="12" fill="#64748b">图中四条物理偏移 0 / 223 / 892 / 1784 取自本机 apache/rocketmq:5.3.1 实测（lab-topic/2，均长 223 B）。</text>
+</svg>
