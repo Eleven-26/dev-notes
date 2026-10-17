@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">写入量级：每采样点字节与每序列索引成本</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左侧为写 60000 行后 storage 口径的增量（对数刻度）；右侧为每新增 1 条序列的固定成本</text>
+
+  <text x="40" y="100" font-size="14" font-weight="bold" fill="#1e3a8a">① 每采样点字节数</text>
+  <text x="960" y="100" text-anchor="end" font-size="11.5" fill="#94a3b8">单位：字节 / 采样点</text>
+
+  <path d="M 200 120 L 200 300 L 900 300" fill="none" stroke="#cbd5e1" stroke-width="1.2"/>
+  <path d="M 550 120 L 550 300" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+  <path d="M 900 120 L 900 300" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+  <path d="M 200 300 L 200 306" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+  <path d="M 550 300 L 550 306" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+  <path d="M 900 300 L 900 306" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="200" y="322" text-anchor="middle" font-size="12" fill="#475569">1</text>
+  <text x="550" y="322" text-anchor="middle" font-size="12" fill="#475569">10</text>
+  <text x="900" y="322" text-anchor="middle" font-size="12" fill="#475569">100</text>
+
+  <rect x="200" y="132" width="622.9" height="24" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1"/>
+  <text x="832" y="149" font-size="12" fill="#1e3a8a">60.2</text>
+  <text x="190" y="149" text-anchor="end" font-size="12" fill="#334155">原始行协议</text>
+
+  <rect x="200" y="166" width="211.8" height="24" rx="3" fill="#fdba74" stroke="#ea580c" stroke-width="1"/>
+  <text x="420" y="183" font-size="12" fill="#7c2d12">4.0277</text>
+  <text x="190" y="183" text-anchor="end" font-size="12" fill="#334155">落盘 storage 轮 1</text>
+
+  <rect x="200" y="200" width="123.5" height="24" rx="3" fill="#fdba74" stroke="#ea580c" stroke-width="1"/>
+  <text x="332" y="217" font-size="12" fill="#7c2d12">2.2528</text>
+  <text x="190" y="217" text-anchor="end" font-size="12" fill="#334155">落盘 storage 轮 2/3</text>
+
+  <rect x="200" y="234" width="64.8" height="24" rx="3" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+  <text x="272" y="251" font-size="12" fill="#14532d">1.5317</text>
+  <text x="190" y="251" text-anchor="end" font-size="12" fill="#334155">月度目录 轮 2</text>
+
+  <rect x="200" y="268" width="161.3" height="24" rx="3" fill="#86efac" stroke="#16a34a" stroke-width="1"/>
+  <text x="369" y="285" font-size="12" fill="#14532d">2.8907</text>
+  <text x="190" y="285" text-anchor="end" font-size="12" fill="#334155">月度目录 轮 3</text>
+
+  <text x="40" y="366" font-size="14" font-weight="bold" fill="#14532d">② 每新增 1 条序列的固定成本</text>
+
+  <rect x="40" y="380" width="290" height="96" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4"/>
+  <text x="185" y="408" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">索引条目</text>
+  <text x="185" y="436" text-anchor="middle" font-size="18" font-weight="bold" fill="#15803d">14 条</text>
+  <text x="185" y="460" text-anchor="middle" font-size="11.5" fill="#166534">1 → 10000 条序列恒定</text>
+
+  <rect x="355" y="380" width="290" height="96" rx="10" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.4"/>
+  <text x="500" y="408" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">索引字节</text>
+  <text x="500" y="436" text-anchor="middle" font-size="18" font-weight="bold" fill="#b45309">435 ~ 452.3</text>
+  <text x="500" y="460" text-anchor="middle" font-size="11.5" fill="#92400e">规模越大略高</text>
+
+  <rect x="670" y="380" width="290" height="96" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="815" y="408" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">样本落盘粒度</text>
+  <text x="815" y="436" text-anchor="middle" font-size="18" font-weight="bold" fill="#1d4ed8">20480 字节块</text>
+  <text x="815" y="460" text-anchor="middle" font-size="11.5" fill="#1e40af">1000 条序列时 +20480</text>
+
+  <text x="40" y="530" font-size="12" fill="#0f172a">⭐ 索引成本按序列条数记一笔固定开销（14 条条目、约 435 ~ 452 字节），与序列上有多少样本无关——想压成本先减少序列数。</text>
+  <text x="40" y="556" font-size="12" fill="#0f172a">⚠️ 压缩比 15:1 ~ 39:1 是量级结论；轮 1 的 storage 增量含更早留在内存里的数据落盘，未按每采样点均摊。</text>
+</svg>

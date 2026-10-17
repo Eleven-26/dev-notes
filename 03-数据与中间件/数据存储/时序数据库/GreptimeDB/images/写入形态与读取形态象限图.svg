@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">写入形态 × 读取形态：GreptimeDB 落在哪个象限</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">横轴＝写入形态（左追加 / 右更新删除），纵轴＝读取形态（上范围聚合 / 下单点随机读）；全部判据与读数取自本篇正文</text>
+
+  <text x="110" y="86" font-size="13" font-weight="bold" fill="#334155">读取形态 · 上：按范围扫描聚合</text>
+
+  <rect x="120" y="106" width="396" height="192" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="318" y="136" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">① 追加写入 × 范围扫描：主场</text>
+  <text x="318" y="164" text-anchor="middle" font-size="12" fill="#166534">可观测性三信号：指标 / 日志 / 链路</text>
+  <text x="318" y="186" text-anchor="middle" font-size="12" fill="#166534">IoT 与车联网：设备为时间线、时间为序号</text>
+  <text x="318" y="208" text-anchor="middle" font-size="12" fill="#166534">需要 SQL 聚合与跨信号关联的时序数据</text>
+  <text x="318" y="234" text-anchor="middle" font-size="11" fill="#475569">判据：写多读少 + 按范围查 + 时间线稳定 + 分析型读取</text>
+  <text x="318" y="262" text-anchor="middle" font-size="11" fill="#475569">单机已具备：SQL + PromQL、TTL、compaction</text>
+
+  <rect x="544" y="106" width="396" height="192" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="742" y="136" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7f1d1d">③ 行级更新 × 范围扫描：别扭</text>
+  <text x="742" y="164" text-anchor="middle" font-size="12" fill="#991b1b">强事务 OLTP 之上的分析查询</text>
+  <text x="742" y="186" text-anchor="middle" font-size="12" fill="#991b1b">实测：UPDATE / BEGIN / COMMIT 报 1001 不支持</text>
+  <text x="742" y="208" text-anchor="middle" font-size="12" fill="#991b1b">列级 UNIQUE 静默失效：建表语句里没有该约束</text>
+  <text x="742" y="234" text-anchor="middle" font-size="11" fill="#475569">判据：需要多行 ACID 事务、外键约束与行级锁语义</text>
+  <text x="742" y="262" text-anchor="middle" font-size="11" fill="#475569">订单 / 账务这类核心业务库应交给面向事务的系统</text>
+
+  <rect x="120" y="318" width="396" height="192" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="318" y="348" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7f1d1d">② 追加写入 × 单点随机读：别扭</text>
+  <text x="318" y="376" text-anchor="middle" font-size="12" fill="#991b1b">超低延迟点查 / 高并发 KV 式访问</text>
+  <text x="318" y="398" text-anchor="middle" font-size="12" fill="#991b1b">实测：1,000,000 条时间线，单键等值点查 3.1 ms</text>
+  <text x="318" y="420" text-anchor="middle" font-size="12" fill="#991b1b">但 5 个值的 IN 查询退化为全表扫描：421 ms</text>
+  <text x="318" y="446" text-anchor="middle" font-size="11" fill="#475569">列式布局按范围扫描优化，随机读收益不稳定</text>
+  <text x="318" y="474" text-anchor="middle" font-size="11" fill="#475569">判据：每次只取少量且分布随机的行 → 另选 KV / 关系型</text>
+
+  <rect x="544" y="318" width="396" height="192" rx="10" fill="#e2e8f0" stroke="#64748b" stroke-width="1.6"/>
+  <text x="742" y="348" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e293b">④ 行级更新 × 单点随机读：更该另选</text>
+  <text x="742" y="376" text-anchor="middle" font-size="12" fill="#334155">订单 / 账务类核心业务库</text>
+  <text x="742" y="398" text-anchor="middle" font-size="12" fill="#334155">频繁行级更新与删除是主路径</text>
+  <text x="742" y="420" text-anchor="middle" font-size="12" fill="#334155">以实体关系为中心的建模</text>
+  <text x="742" y="446" text-anchor="middle" font-size="11" fill="#475569">更契合：面向事务的关系型数据库、KV 存储</text>
+  <text x="742" y="474" text-anchor="middle" font-size="11" fill="#475569">判据：需要多行事务一致性读与行级锁</text>
+
+  <path d="M 110 520 L 950 520" fill="none" stroke="#334155" stroke-width="1.6"/>
+  <path d="M 110 520 L 110 106" fill="none" stroke="#334155" stroke-width="1.6"/>
+  <path d="M 110 308 L 516 308" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+  <path d="M 544 308 L 950 308" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+  <path d="M 530 106 L 530 298" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+  <path d="M 530 318 L 530 510" fill="none" stroke="#94a3b8" stroke-width="1.2"/>
+
+  <text x="110" y="546" font-size="13" font-weight="bold" fill="#334155">写入形态 · 左：追加写入为主　右：行级更新与删除为主</text>
+  <text x="110" y="574" font-size="11.5" fill="#475569">象限归类只做形态判断：两轴上的具体判据与实测出处见本篇第 3.5 节与第 4.4 节；横向对比另见 选型对比与落地案例 篇。</text>
+</svg>

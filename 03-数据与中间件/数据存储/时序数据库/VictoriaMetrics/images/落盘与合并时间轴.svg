@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">落盘与合并时间轴（实测 v1.118.0）</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">force_flush 与连续灌数之后，part 数与合并计数的走向；data/big 在本轮始终为空</text>
+
+  <path d="M 120 118 L 120 566" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+  <path d="M 114 560 L 120 572 L 126 560" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+
+  <circle cx="120" cy="150" r="7" fill="#93c5fd" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="120" y="154" text-anchor="middle" font-size="10" fill="#1e3a8a">1</text>
+  <rect x="160" y="124" width="800" height="52" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="178" y="156" font-size="12.5" fill="#1e3a8a">写入一批 60000 行（2 条序列 × 30000 个样本）→ HTTP 204，数据先进内存 part</text>
+
+  <circle cx="120" cy="228" r="7" fill="#fdba74" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="120" y="232" text-anchor="middle" font-size="10" fill="#7c2d12">2</text>
+  <rect x="160" y="202" width="800" height="52" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+  <text x="178" y="234" font-size="12.5" fill="#7c2d12">POST /internal/force_flush → HTTP 200，内存 part 开始刷成磁盘 part</text>
+
+  <circle cx="120" cy="306" r="7" fill="#fdba74" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="120" y="310" text-anchor="middle" font-size="10" fill="#7c2d12">3</text>
+  <rect x="160" y="280" width="800" height="52" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+  <text x="178" y="312" font-size="12.5" fill="#7c2d12">t=3.7s：small 13 → 14、inmemory 1 → 0、目录 part 数 13 → 14</text>
+
+  <circle cx="120" cy="384" r="7" fill="#93c5fd" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="120" y="388" text-anchor="middle" font-size="10" fill="#1e3a8a">4</text>
+  <rect x="160" y="358" width="800" height="52" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="178" y="390" font-size="12.5" fill="#1e3a8a">连灌 4 批 × 50000 行（HTTP 204），随后 90 秒高频采样</text>
+
+  <circle cx="120" cy="462" r="7" fill="#86efac" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="120" y="466" text-anchor="middle" font-size="10" fill="#14532d">5</text>
+  <rect x="160" y="436" width="800" height="52" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4"/>
+  <text x="178" y="468" font-size="12.5" fill="#14532d">t=5.6s 起：storage/inmemory 合并计数 0 → 200000</text>
+
+  <circle cx="120" cy="540" r="7" fill="#86efac" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="120" y="544" text-anchor="middle" font-size="10" fill="#14532d">6</text>
+  <rect x="160" y="514" width="800" height="52" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4"/>
+  <text x="178" y="546" font-size="12.5" fill="#14532d">采样结束时：small part 17 → 18、目录 part 数 15 → 16，storage/big 仍是 0</text>
+
+  <text x="40" y="600" font-size="12" fill="#0f172a">⚠️ 采样窗口内 vm_active_merges 全程为 0、storage/small 恒 140006、storage/big 恒 0，data/big 始终为空——合并是突发式的，本轮未达 small → big 阈值。</text>
+</svg>
