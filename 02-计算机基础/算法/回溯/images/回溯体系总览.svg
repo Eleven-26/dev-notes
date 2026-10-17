@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">回溯体系总览：在解空间树上做 DFS + 撤销选择</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">它不是新算法，而是 DFS 的一种用法 —— 「撤销选择」是灵魂：只往下走不撤销，那是遍历，不是回溯</text>
+
+  <text x="20" y="90" font-size="13" font-weight="bold" fill="#2563eb">一、四个要素，一句话本质</text>
+
+  <rect x="20" y="100" width="310" height="80" rx="10" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="34" y="126" font-size="13.5" font-weight="bold" fill="#7c2d12">解空间树</text>
+  <text x="34" y="150" font-size="11.5" fill="#7c2d12">根是空解，每往下一层做一次选择</text>
+  <text x="34" y="170" font-size="11.5" fill="#7c2d12">叶子是完整解或一条死路</text>
+
+  <rect x="345" y="100" width="310" height="80" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="359" y="126" font-size="13.5" font-weight="bold" fill="#334155">逐步构建解</text>
+  <text x="359" y="150" font-size="11.5" fill="#334155">每层只决定一件事（放哪个数 / 哪列）</text>
+  <text x="359" y="170" font-size="11.5" fill="#334155">不提前决定后面</text>
+
+  <rect x="670" y="100" width="310" height="80" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="684" y="126" font-size="13.5" font-weight="bold" fill="#1e3a8a">撤销选择（灵魂）</text>
+  <text x="684" y="150" font-size="11.5" fill="#1e3a8a">不合法就退回来，抹掉刚才的选择</text>
+  <text x="684" y="170" font-size="11.5" fill="#1e3a8a">「选择 → 递归 → 撤销」三步走</text>
+
+  <text x="20" y="206" font-size="13" font-weight="bold" fill="#2563eb">二、本目录四篇：母篇 / 母模板 / 约束满足 / 找第一个解</text>
+
+  <rect x="20" y="216" width="232" height="150" rx="10" fill="#eef2ff" stroke="#6366f1"/>
+  <text x="34" y="242" font-size="13" font-weight="bold" fill="#3730a3">模板与剪枝（母篇）</text>
+  <text x="34" y="266" font-size="11.5" fill="#3730a3">选择 → 递归 → 撤销</text>
+  <text x="34" y="286" font-size="11.5" fill="#3730a3">三类剪枝：可行性 /</text>
+  <text x="34" y="306" font-size="11.5" fill="#3730a3">最优性 / 对称性</text>
+  <text x="34" y="328" font-size="11" fill="#475569">⭐ 先看这一篇再进其他三篇</text>
+
+  <rect x="260" y="216" width="232" height="150" rx="10" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="274" y="242" font-size="13" font-weight="bold" fill="#14532d">全排列（母模板）</text>
+  <text x="274" y="266" font-size="11.5" fill="#14532d">每层挑一个还没用过的数</text>
+  <text x="274" y="286" font-size="11.5" fill="#14532d">visited 数组 + 撤销</text>
+  <text x="274" y="310" font-size="11.5" fill="#14532d">组合 / 子集类题都从它变来</text>
+  <text x="274" y="328" font-size="11" fill="#475569">⭐ 最干净的骨架</text>
+
+  <rect x="500" y="216" width="232" height="150" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="514" y="242" font-size="13" font-weight="bold" fill="#78350f">八皇后（约束满足）</text>
+  <text x="514" y="266" font-size="11.5" fill="#78350f">按行放，逐行检查列与两条对角线</text>
+  <text x="514" y="286" font-size="11.5" fill="#78350f">剪枝把 8^8 压到可行</text>
+  <text x="514" y="310" font-size="11.5" fill="#78350f">对称性剪枝：首行只放一半</text>
+
+  <rect x="740" y="216" width="232" height="150" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="754" y="242" font-size="13" font-weight="bold" fill="#334155">数独（找第一个解）</text>
+  <text x="754" y="266" font-size="11.5" fill="#334155">找到一个解即可返回（不必枚举完）</text>
+  <text x="754" y="286" font-size="11.5" fill="#334155">MRV：先填候选最少的格子</text>
+  <text x="754" y="310" font-size="11" fill="#475569">⭐ 启发式 = 换搜索顺序</text>
+  <text x="754" y="328" font-size="11" fill="#475569">位掩码记候选集</text>
+
+  <text x="20" y="384" font-size="13" font-weight="bold" fill="#2563eb">三、适用条件、失效出口与规模警戒线</text>
+
+  <rect x="20" y="394" width="960" height="150" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="34" y="420" font-size="13.5" font-weight="bold" fill="#0f172a">适合「枚举所有解」与「约束满足」，代价是指数级</text>
+  <text x="34" y="444" font-size="12.5" fill="#334155">· 什么时候用：求所有解 / 组合 / 排列 / 子集（没有多项式算法，只能枚举）、约束满足（八皇后 / 数独 / 着色）、找第一个可行解</text>
+  <text x="34" y="466" font-size="12.5" fill="#334155">· 什么时候不用：只求最优值 → 换 DP；有可证明的贪心性质 → 换贪心；规模太大 → 加剪枝 / 换启发式</text>
+  <text x="34" y="488" font-size="12.5" fill="#334155">· ⭐ 规模警戒线：n = 8 的全排列是 40320，n = 12 就是 4.79 亿 —— 所以必须配合剪枝才实用</text>
+  <text x="34" y="510" font-size="12.5" fill="#334155">· 与 DFS 的分界只有一处：「撤销」—— 不撤销会把上一个分支的状态留给下一个分支（污染现场，结果静默出错）</text>
+  <text x="34" y="532" font-size="12" fill="#64748b">⭐ 与 DP 的分界：DP 只保留「每个状态的最优值」，回溯要枚举「每个解」——求最优值就别用回溯</text>
+</svg>
