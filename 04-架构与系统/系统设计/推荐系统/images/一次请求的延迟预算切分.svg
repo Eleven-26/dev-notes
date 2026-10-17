@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <defs>
+    <marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="dn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="30" y="38" font-size="20" font-weight="bold" fill="#0f172a">一次请求的延迟预算怎么切：串行段之和就是端到端</text>
+  <text x="30" y="64" font-size="13" fill="#64748b">横轴按毫秒等比划分；一段一色、段宽与预算成正比 —— 越贵的一段在轴上越长。</text>
+
+  <rect x="113" y="96" width="176" height="30" rx="6" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.2"/>
+  <text x="201" y="116" font-size="12" fill="#5b21b6" text-anchor="middle">这一段是并行的：取最慢一路</text>
+  <path d="M 201 126 L 201 136" fill="none" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#dn)"/>
+
+  <rect x="60" y="140" width="53" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="86" y="163" font-size="11" fill="#1e3a8a" text-anchor="middle">网关+鉴权</text>
+  <text x="86" y="185" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">3 ms</text>
+
+  <rect x="113" y="140" width="176" height="56" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="201" y="163" font-size="11" fill="#5b21b6" text-anchor="middle">多路召回</text>
+  <text x="201" y="185" font-size="12" font-weight="bold" fill="#5b21b6" text-anchor="middle">10 ms</text>
+
+  <rect x="289" y="140" width="88" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="333" y="163" font-size="11" fill="#14532d" text-anchor="middle">粗排</text>
+  <text x="333" y="185" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">5 ms</text>
+
+  <rect x="377" y="140" width="440" height="56" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="597" y="163" font-size="11" fill="#7c2d12" text-anchor="middle">精排（逐条打分，最贵）</text>
+  <text x="597" y="185" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">25 ms</text>
+
+  <rect x="817" y="140" width="53" height="56" fill="#e2e8f0" stroke="#64748b" stroke-width="1.5"/>
+  <text x="843" y="163" font-size="11" fill="#334155" text-anchor="middle">重排</text>
+  <text x="843" y="185" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle">3 ms</text>
+
+  <rect x="870" y="140" width="70" height="56" fill="#cffafe" stroke="#0891b2" stroke-width="1.5"/>
+  <text x="905" y="163" font-size="11" fill="#164e63" text-anchor="middle">序列化+网络</text>
+  <text x="905" y="185" font-size="12" font-weight="bold" fill="#164e63" text-anchor="middle">4 ms</text>
+
+  <path d="M 940 168 L 964 168" fill="none" stroke="#64748b" stroke-width="1.6" marker-end="url(#ax)"/>
+  <text x="60" y="216" font-size="11.5" fill="#64748b">0 ms（请求进入）</text>
+  <text x="940" y="216" font-size="11.5" fill="#64748b" text-anchor="end">50 ms（端到端设计目标）</text>
+
+  <rect x="40" y="240" width="920" height="110" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="64" y="266" font-size="13" font-weight="bold" fill="#0f172a">切分依据</text>
+  <text x="64" y="290" font-size="12" fill="#334155">50 ms = 3（网关 + 鉴权）+ 10（多路召回）+ 5（粗排）+ 25（精排）+ 3（重排）+ 4（序列化 + 网络）</text>
+  <text x="64" y="314" font-size="12" fill="#334155">召回的 10 ms 是"总耗时取最慢一路"，不是几路相加；精排的 25 ms 是唯一对每条候选逐条打分的一段，也是最大的一块</text>
+  <text x="64" y="338" font-size="12" fill="#334155">与 召回与排序.md 6.2 是同一套示例数：3 + 5 + 4 = 12 ms 正好是那边的"剩余 ~12ms"；那边不单列粗排</text>
+
+  <rect x="40" y="376" width="920" height="110" rx="10" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="64" y="402" font-size="13" font-weight="bold" fill="#78350f">预算超了先动哪一段：只砍"能整层旁路"的</text>
+  <text x="64" y="426" font-size="12" fill="#78350f">粗排可整层跳过（直接进精排）；重排可退成纯规则（不调模型）；精排只能砍候选条数（数百 → 一百）</text>
+  <text x="64" y="450" font-size="12" fill="#78350f">网关 + 鉴权 + 路由不能省（安全与频控在前置）；真超时的出口是"不依赖模型"的兜底，不是把预算挪给后几段</text>
+
+  <text x="30" y="530" font-size="11" fill="#94a3b8">说明：本图画的是延迟预算的切分结构（串行段与并行段），不重画调用链与降级退路；线上真实预算以监控为准。</text>
+</svg>

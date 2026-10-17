@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" width="1200" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1200" height="660" fill="#ffffff"/>
+
+  <text x="600" y="38" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">可行性判定的三个数量级：索引、冷热、数据与日志</text>
+  <text x="600" y="62" text-anchor="middle" font-size="13" fill="#64748b">同一套实测（100000 User / 300000 FOLLOWS，起点 id=0）—— 横条长度按对数映射，读数看两端标注</text>
+
+  <text x="30" y="140" font-size="15" font-weight="bold" fill="#0f172a">① 索引：同一条 1 跳查询的 DB 访问次数</text>
+  <rect x="328" y="152" width="686" height="28" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="320" y="172" text-anchor="end" font-size="15" font-weight="bold" fill="#0f172a">6</text>
+  <text x="1022" y="172" font-size="15" font-weight="bold" fill="#0f172a">200005</text>
+  <text x="671" y="172" text-anchor="middle" font-size="14" font-weight="bold" fill="#b91c1c">×33334</text>
+  <text x="30" y="200" font-size="12.5" fill="#334155">判：不建索引量到的 200005 是「全表扫描有多慢」，不是图库的真实水平 —— 先建索引再测是硬纪律。</text>
+
+  <text x="30" y="250" font-size="15" font-weight="bold" fill="#0f172a">② 冷热：同一条 6 跳查询的耗时（ms）</text>
+  <rect x="374" y="262" width="268" height="28" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="366" y="282" text-anchor="end" font-size="15" font-weight="bold" fill="#0f172a">12</text>
+  <text x="650" y="282" font-size="15" font-weight="bold" fill="#0f172a">708</text>
+  <text x="508" y="282" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">×59</text>
+  <text x="30" y="310" font-size="12.5" fill="#334155">判：两次的 DB 访问次数都是 2879，差的全在页缓存与 JIT —— 内存（页缓存）预算比 CPU 重要。</text>
+
+  <text x="30" y="360" font-size="15" font-weight="bold" fill="#0f172a">③ 存储：数据目录与事务日志（MB）</text>
+  <rect x="404" y="372" width="172" height="28" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="396" y="392" text-anchor="end" font-size="15" font-weight="bold" fill="#0f172a">19</text>
+  <text x="584" y="392" font-size="15" font-weight="bold" fill="#0f172a">258</text>
+  <text x="490" y="392" text-anchor="middle" font-size="14" font-weight="bold" fill="#15803d">×13.6</text>
+  <text x="30" y="420" font-size="12.5" fill="#334155">判：磁盘预算要按「数据 + 日志」算，默认 db.tx_log.rotation.retention_policy=2 days 2G 才回收日志。</text>
+
+  <path d="M 30 452 L 1170 452" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="30" y="482" font-size="13" fill="#0f172a">三个倍数都由两端读数相除得出：200005 ÷ 6 ≈ 33334、708 ÷ 12 = 59、258 ÷ 19 ≈ 13.6。</text>
+  <text x="30" y="510" font-size="12" fill="#64748b">数字与口径见正文「使用」一节：索引前后对照、冷热复跑、资源画像与事务日志三处，均为容器 w17neo4j 真跑所得。</text>
+  <text x="30" y="536" font-size="12" fill="#94a3b8">本图与既有「图库选型决策流程」不同型：那张图回答「选型往哪去」，本图只回答「验证时量到什么数量级」。</text>
+</svg>

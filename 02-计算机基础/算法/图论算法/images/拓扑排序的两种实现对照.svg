@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="36" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">同一个 DAG，两套实现给出的两个序列都合法</text>
+  <text x="40" y="64" font-size="13" fill="#64748b">判环口径不同：Kahn 数收到的点数，DFS 后序反转必须用三色；两套的时间 / 空间都是 O(V+E)，差别在「附带拿到什么」</text>
+
+  <rect x="40" y="88" width="440" height="380" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5"/>
+  <text x="260" y="118" text-anchor="middle" font-size="16" font-weight="bold" fill="#0369a1">Kahn（BFS 入度版）</text>
+  <text x="60" y="150" font-size="13" fill="#334155">机制：反复取出入度为 0 的点，删掉它的出边</text>
+  <text x="60" y="176" font-size="13" fill="#334155">判环：顺带 —— len(order) &lt; n 即有环</text>
+  <text x="60" y="202" font-size="13" fill="#334155">天然分层：是（每轮取出一整批）</text>
+  <text x="60" y="228" font-size="13" fill="#334155">顺带给到：并行边界（每层宽度）</text>
+  <text x="60" y="254" font-size="13" fill="#334155">适合：只要顺序 + 判环，要做并行编排</text>
+
+  <text x="60" y="288" font-size="13" fill="#1d4ed8">本机实测的拓扑序（3.1）</text>
+  <rect x="60" y="300" width="56" height="44" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="88" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a8a">4</text>
+  <path d="M 117 322 L 123 322" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="124" y="300" width="56" height="44" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="152" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a8a">5</text>
+  <path d="M 181 322 L 187 322" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="188" y="300" width="56" height="44" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="216" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a8a">2</text>
+  <path d="M 245 322 L 251 322" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="252" y="300" width="56" height="44" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="280" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a8a">0</text>
+  <path d="M 309 322 L 315 322" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="316" y="300" width="56" height="44" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="344" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a8a">3</text>
+  <path d="M 373 322 L 379 322" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="380" y="300" width="56" height="44" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="408" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a8a">1</text>
+  <text x="60" y="380" font-size="12.5" fill="#64748b">FIFO 队列版：先入队的先出队；⚠️ 只取队首就丢掉了「同层可并发」这层含义</text>
+  <text x="60" y="408" font-size="12.5" fill="#64748b">分层读数：并行层 [4 5] → [2 0] → [3] → [1]，每层宽度 = [2 2 1 1]</text>
+
+  <rect x="520" y="88" width="440" height="380" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
+  <text x="740" y="118" text-anchor="middle" font-size="16" font-weight="bold" fill="#6d28d9">DFS + 后序反转</text>
+  <text x="540" y="150" font-size="13" fill="#334155">机制：后继全完成后自己入列，整体反转</text>
+  <text x="540" y="176" font-size="13" fill="#334155">判环：必须三色（二色会把菱形依赖误判成环）</text>
+  <text x="540" y="202" font-size="13" fill="#334155">天然分层：否（要另算）</text>
+  <text x="540" y="228" font-size="13" fill="#334155">顺带给到：强连通分量、关键路径</text>
+  <text x="540" y="254" font-size="13" fill="#334155">适合：已经在做 DFS，要顺带拿更强信息</text>
+
+  <text x="540" y="288" font-size="13" fill="#6d28d9">DFS 篇第七节实测的拓扑序</text>
+  <rect x="540" y="300" width="56" height="44" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="568" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#4c1d95">5</text>
+  <path d="M 597 322 L 603 322" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="604" y="300" width="56" height="44" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="632" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#4c1d95">4</text>
+  <path d="M 661 322 L 667 322" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="668" y="300" width="56" height="44" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="696" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#4c1d95">2</text>
+  <path d="M 725 322 L 731 322" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="732" y="300" width="56" height="44" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="760" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#4c1d95">3</text>
+  <path d="M 789 322 L 795 322" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="796" y="300" width="56" height="44" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="824" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#4c1d95">1</text>
+  <path d="M 853 322 L 859 322" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+  <rect x="860" y="300" width="56" height="44" rx="4" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="888" y="328" text-anchor="middle" font-size="16" font-weight="bold" fill="#4c1d95">0</text>
+  <text x="540" y="380" font-size="12.5" fill="#64748b">记录时机在后序：所有后继都完成才入列，反转后才满足「前驱在前」</text>
+  <text x="540" y="408" font-size="12.5" fill="#64748b">⚠️ 顺序反着来（先序）不是拓扑序 —— 那是另一回事</text>
+
+  <rect x="40" y="488" width="920" height="92" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="516" font-size="13.5" fill="#0f172a">逐条边校验：两个序列都满足 pos[u] &lt; pos[v]（同一张 6 点 DAG：5→{2,0}　4→{0,1}　2→{3}　3→{1}）</text>
+  <text x="60" y="542" font-size="13.5" fill="#334155">⚠️ 序列不同 ≠ 有人写错：唯一的判据只有「每条边都满足 pos[u] &lt; pos[v]」这一条</text>
+  <text x="60" y="568" font-size="13.5" fill="#334155">Kahn 换小顶堆后是字典序最小版（4.2）：同一张图给 [4 5 0 2 3 1]，仍然合法</text>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="20" font-weight="bold" fill="#0f172a">路径 6 → 8 的跳链过程：跨两条重链、落成两段连续区间</text>
+  <text x="40" y="62" font-size="13" fill="#64748b">示例树沿用第二节的图（8 个节点，根为 1）；下面只跟踪这一段路径上 while 循环怎么走</text>
+
+  <rect x="40" y="88" width="920" height="104" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5"/>
+  <text x="500" y="118" text-anchor="middle" font-size="15" font-weight="bold" fill="#0369a1">步骤 1　进循环前：两条链的链顶不同</text>
+  <text x="64" y="148" font-size="12.5" fill="#334155">u = 6，v = 8；top[6] = 1，top[8] = 3 → 不同，进入 while</text>
+  <text x="64" y="174" font-size="12.5" fill="#334155">比链顶深度：top[8] 更深 → 这一轮先跳 8 所在的那条链</text>
+
+  <path d="M 500 192 L 500 210" fill="none" stroke="#0369a1" stroke-width="2"/>
+  <path d="M 494 206 L 506 206 L 500 214 z" fill="#0369a1"/>
+
+  <rect x="40" y="216" width="920" height="104" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5"/>
+  <text x="500" y="246" text-anchor="middle" font-size="15" font-weight="bold" fill="#4338ca">步骤 2　第一次跳链：查 8 所在链的一段，跳到链顶的父</text>
+  <text x="64" y="276" font-size="12.5" fill="#334155">区间查询 [dfn[top[8]], dfn[8]] = [dfn[3], dfn[8]] = [7, 8]</text>
+  <text x="64" y="302" font-size="12.5" fill="#334155">u ← parent[top[8]] = parent[3] = 1（回到上一条链）</text>
+  <rect x="790" y="254" width="150" height="42" rx="6" fill="#e0e7ff" stroke="#818cf8"/>
+  <text x="865" y="281" text-anchor="middle" font-size="13" font-weight="bold" fill="#3730a3">区间 [7, 8]</text>
+
+  <path d="M 500 320 L 500 338" fill="none" stroke="#4338ca" stroke-width="2"/>
+  <path d="M 494 334 L 506 334 L 500 342 z" fill="#4338ca"/>
+
+  <rect x="40" y="344" width="920" height="104" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5"/>
+  <text x="500" y="374" text-anchor="middle" font-size="15" font-weight="bold" fill="#6d28d9">步骤 3　两链相同，退出 while：收尾的一段</text>
+  <text x="64" y="404" font-size="12.5" fill="#334155">top[1] = 1 = top[6] → 同一条链；取 dfn 区间 [dfn[1], dfn[6]] = [1, 4]</text>
+  <text x="64" y="430" font-size="12.5" fill="#334155">较浅的 1 到较深的 6：这一段就是路径的最后一块，跳出循环后收尾</text>
+  <rect x="790" y="382" width="150" height="42" rx="6" fill="#ede9fe" stroke="#a78bfa"/>
+  <text x="865" y="409" text-anchor="middle" font-size="13" font-weight="bold" fill="#5b21b6">区间 [1, 4]</text>
+
+  <path d="M 500 448 L 500 462" fill="none" stroke="#6d28d9" stroke-width="2"/>
+  <path d="M 494 458 L 506 458 L 500 466 z" fill="#6d28d9"/>
+
+  <rect x="40" y="468" width="920" height="88" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="64" y="498" font-size="13" font-weight="bold" fill="#0f172a">结果：2 段连续区间 [7, 8]、[1, 4] 拼起来覆盖整条路径</text>
+  <text x="64" y="522" font-size="12.5" fill="#334155">路径 6 → 4 → 2 → 1 → 3 → 8 共 6 个节点；跨两条重链（重链 1-2-4-6 与重链 3-8）</text>
+  <text x="64" y="546" font-size="12.5" fill="#64748b">⚠️ 段数只与链数（轻边数）有关，与路径长度无关 —— 这是 O(log n) 段的来处</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1200" height="720" fill="#ffffff"/>
+
+  <text x="600" y="38" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">三个经典坑的判据决策树：先看症状，再验判据</text>
+  <text x="600" y="62" text-anchor="middle" font-size="13" fill="#64748b">三个坑的症状互不重叠 —— 卡住 / 差一格 / 负数下标，任一条都能一步定位</text>
+
+  <rect x="450" y="90" width="300" height="64" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="600" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">二分写完，按症状分流</text>
+
+  <path d="M 600 154 L 600 168 L 25 168 L 25 560" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <path d="M 25 222 L 60 222" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="60" y="190" width="260" height="64" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="190" y="228" text-anchor="middle" font-size="14" fill="#7f1d1d">症状：程序卡住 / 超时</text>
+  <path d="M 320 222 L 380 222" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="380" y="190" width="250" height="64" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <text x="505" y="228" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">死循环（6.1）</text>
+  <text x="660" y="214" font-size="13" fill="#334155">判据：每轮 hi - lo 必须严格变小</text>
+  <text x="660" y="236" font-size="13" fill="#334155">实测：撞上限 1001 步仍未收敛，返回 -1</text>
+  <text x="660" y="258" font-size="13" fill="#b91c1c">修法：写了 lo = mid 就必须配向上取整</text>
+
+  <path d="M 25 352 L 60 352" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="60" y="320" width="260" height="64" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="190" y="358" text-anchor="middle" font-size="14" fill="#7f1d1d">症状：答案差 1 / 越界</text>
+  <path d="M 320 352 L 380 352" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="380" y="320" width="250" height="64" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <text x="505" y="358" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">边界漏一个（6.2）</text>
+  <text x="660" y="344" font-size="13" fill="#334155">判据：半开区间的右界只能收到 hi = mid</text>
+  <text x="660" y="366" font-size="13" fill="#334155">实测：arr = [1 3 5 7] 找 5，写错返回 1</text>
+  <text x="660" y="388" font-size="13" fill="#b91c1c">修法：mid - 1 只出现在闭区间的分支里</text>
+
+  <path d="M 25 482 L 60 482" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="60" y="450" width="260" height="64" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="190" y="488" text-anchor="middle" font-size="14" fill="#7f1d1d">症状：出现负数下标</text>
+  <path d="M 320 482 L 380 482" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="380" y="450" width="250" height="64" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+  <text x="505" y="488" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">mid 溢出（2.1）</text>
+  <text x="660" y="474" font-size="13" fill="#334155">判据：一律写 lo + (hi-lo)/2，别写 (lo+hi)/2</text>
+  <text x="660" y="496" font-size="13" fill="#334155">实测：lo = hi = 2000000000 时 (lo+hi)/2 = -147483648</text>
+  <text x="660" y="518" font-size="13" fill="#b91c1c">修法：跨语言一律写减法版，不依赖 int 位宽</text>
+
+  <text x="30" y="612" font-size="13" fill="#0f172a">三条判据的共同出身：先说清循环不变式，再看「这一轮区间有没有严格变小」——不变式自洽，三个坑一个都不会踩。</text>
+  <text x="30" y="640" font-size="12" fill="#64748b">阴影外的数字全部取自正文：1001 与返回 -1 见 6.1，[1 3 5 7] 与返回 1 见 6.2，2000000000 与 -147483648 见 2.1。</text>
+  <text x="30" y="662" font-size="12" fill="#94a3b8">本图是第六节的倒置用法（症状 → 判据 → 修法）；与「二分区间不变式」「二分左右边界」两张既有图不同型，不重复。</text>
+</svg>
