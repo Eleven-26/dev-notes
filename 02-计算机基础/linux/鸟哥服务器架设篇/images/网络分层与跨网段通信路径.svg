@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w13n1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w13n2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">TCP/IP 四层与一次跨网段通信</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左边是「每层认什么地址、用哪条命令看」，右边是一趟跨网段的包在路径上被改了什么</text>
+
+  <rect x="24" y="110" width="320" height="76" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="184" y="142" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">应用层：HTTP / DNS / SSH</text>
+  <text x="184" y="166" text-anchor="middle" font-size="11.5" fill="#1e40af">认域名与端口 · curl -sv 看报文</text>
+
+  <line x1="60" y1="186" x2="60" y2="202" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#w13n1)"/>
+  <rect x="24" y="202" width="320" height="76" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="184" y="234" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">传输层：TCP / UDP</text>
+  <text x="184" y="258" text-anchor="middle" font-size="11.5" fill="#1e40af">认端口 · ss -tlnp 看谁在监听</text>
+
+  <line x1="60" y1="278" x2="60" y2="294" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#w13n1)"/>
+  <rect x="24" y="294" width="320" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="184" y="326" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">网络层：IP / ICMP / ARP</text>
+  <text x="184" y="350" text-anchor="middle" font-size="11.5" fill="#1e40af">认 IP · ip route get 看走哪条路</text>
+
+  <line x1="60" y1="370" x2="60" y2="386" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#w13n1)"/>
+  <rect x="24" y="386" width="320" height="76" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="184" y="418" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">网络接口层：以太网 / Wi-Fi</text>
+  <text x="184" y="442" text-anchor="middle" font-size="11.5" fill="#1e40af">认 MAC · ip neigh 看邻居表</text>
+
+  <line x1="366" y1="100" x2="366" y2="470" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4"/>
+
+  <rect x="396" y="120" width="170" height="76" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="481" y="150" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">主机 B hostb</text>
+  <text x="481" y="174" text-anchor="middle" font-size="11.5" fill="#334155">10.77.14.10/24</text>
+
+  <line x1="566" y1="158" x2="616" y2="158" stroke="#2563eb" stroke-width="2" marker-end="url(#w13n1)"/>
+  <text x="591" y="149" text-anchor="middle" font-size="11" fill="#2563eb">跨网段</text>
+
+  <rect x="616" y="113" width="170" height="90" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="701" y="139" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">网关 w13gw</text>
+  <text x="701" y="161" text-anchor="middle" font-size="11.5" fill="#b45309">10.77.14.254</text>
+  <text x="701" y="183" text-anchor="middle" font-size="11.5" fill="#b45309">10.77.13.254</text>
+
+  <line x1="786" y1="158" x2="836" y2="158" stroke="#16a34a" stroke-width="2" marker-end="url(#w13n2)"/>
+  <text x="811" y="149" text-anchor="middle" font-size="11" fill="#16a34a">逐跳转发</text>
+
+  <rect x="836" y="120" width="140" height="76" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="906" y="150" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">主机 A hosta</text>
+  <text x="906" y="174" text-anchor="middle" font-size="11.5" fill="#334155">10.77.13.10/24</text>
+
+  <rect x="396" y="225" width="580" height="230" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="414" y="252" font-size="11.5" fill="#334155">① 同一网段（w13a 打 w13c）：ttl=64，ARP 直达，邻居表 REACHABLE</text>
+  <text x="414" y="278" font-size="11.5" fill="#334155">② 同网段里打不存在的主机：ARP 没人应答，邻居表 INCOMPLETE</text>
+  <text x="414" y="304" font-size="11.5" fill="#b91c1c">③ 只按默认网关发（w13b 打 w13a）：100% 丢包，网桥间被隔离规则丢掉</text>
+  <text x="414" y="330" font-size="11.5" fill="#14532d">④ 加明细路由 via 10.77.14.254 之后：通了，ttl=63</text>
+  <text x="414" y="356" font-size="11.5" fill="#14532d">⑤ traceroute 两跳到头：10.77.14.254 → 10.77.13.10</text>
+  <text x="414" y="382" font-size="11.5" fill="#1e40af">⭐ 每跳只改 MAC，IP 端到端不变；TTL 每过一台路由器减 1</text>
+  <text x="414" y="408" font-size="11.5" fill="#b45309">⚠️ 跨网段要三样齐：去程路由 → 转发开关 → 回程路径</text>
+  <text x="414" y="434" font-size="11.5" fill="#334155">判据：ip route get 带 via 就是跨网段，不带 via 才是同网段直达</text>
+
+  <rect x="24" y="490" width="952" height="150" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="513" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：三台 Alpine 3.21.8（w13a / w13b / w13gw）与一台 Alpine 3.24.2（w13c）</text>
+  <text x="42" y="537" font-size="11.5" fill="#334155">网关 w13gw 双网卡：10.77.13.254 与 10.77.14.254；w13a 10.77.13.10 与 w13c 10.77.13.20 同处 10.77.13.0/24</text>
+  <text x="42" y="561" font-size="11.5" fill="#334155">w13b 10.77.14.10 在另一段 10.77.14.0/24，容器内 ip_forward = 1</text>
+  <text x="42" y="585" font-size="11.5" fill="#334155">依据与原文：.workbuddy/tmp/round495/w13_a01_addr_hosta.txt、w13_a05_same_subnet_neigh.txt、w13_a07_cross_route.txt</text>
+  <text x="42" y="609" font-size="11.5" fill="#b45309">未实测：真实交换机 / VLAN / 链路聚合、生产网段的广播风暴与环路、公网 MTU 与 PMTU 探测</text>
+  <text x="42" y="633" font-size="11.5" fill="#334155">容器网络由运行时按 --subnet 分配地址，不走 DHCP 的 DISCOVER / OFFER 流程</text>
+</svg>

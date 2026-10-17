@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 860" width="1000" height="860" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w13s1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w13s2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="860" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SSH 认证与三种端口转发</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先过认证把加密通道建起来，再在通道里开三种门：本地、远程、动态</text>
+
+  <rect x="24" y="110" width="250" height="150" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="149" y="140" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">客户端 w13c</text>
+  <text x="149" y="164" text-anchor="middle" font-size="11.5" fill="#1e40af">10.77.13.20</text>
+  <text x="42" y="190" font-size="11" fill="#1e40af">本地监听：127.0.0.1:18080（-L）</text>
+  <text x="42" y="214" font-size="11" fill="#1e40af">SOCKS 代理：127.0.0.1:1080（-D）</text>
+  <text x="42" y="238" font-size="11" fill="#1e40af">被挂出去的服务：127.0.0.1:7000</text>
+
+  <line x1="274" y1="185" x2="726" y2="185" stroke="#0f172a" stroke-width="2.5" stroke-dasharray="8 5"/>
+  <text x="500" y="176" text-anchor="middle" font-size="11.5" fill="#0f172a">加密通道（公钥认证通过后建立）</text>
+
+  <rect x="726" y="110" width="250" height="150" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="851" y="140" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#b45309">服务端 w13a</text>
+  <text x="851" y="164" text-anchor="middle" font-size="11.5" fill="#b45309">10.77.13.10</text>
+  <text x="744" y="190" font-size="11" fill="#b45309">sshd 9.9_p2 监听 :22</text>
+  <text x="744" y="214" font-size="11" fill="#b45309">环回服务：127.0.0.1:8000</text>
+  <text x="744" y="238" font-size="11" fill="#b45309">远程监听：127.0.0.1:19000（-R）</text>
+
+  <rect x="24" y="290" width="952" height="200" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="42" y="318" font-size="12.5" font-weight="bold" fill="#0f172a">三种转发的数据流向：谁监听、从哪一端出去</text>
+  <text x="42" y="346" font-size="11.5" fill="#1e40af">① -L 本地转发：curl 127.0.0.1:18080 → 本地 ssh 收下 → 加密通道 → 服务端 127.0.0.1:8000</text>
+  <text x="42" y="372" font-size="11.5" fill="#b45309">② -R 远程转发：服务端 curl 127.0.0.1:19000 → sshd-session 收下 → 加密通道 → 客户端 127.0.0.1:7000</text>
+  <text x="42" y="398" font-size="11.5" fill="#14532d">③ -D 动态转发：curl --socks5-hostname 127.0.0.1:1080 → SOCKS 选目标 → 出站在服务端完成</text>
+  <text x="42" y="428" font-size="11.5" fill="#0f172a">⭐ 一句话记住：监听在哪一端，出站就在另一端</text>
+  <text x="42" y="454" font-size="11.5" fill="#334155">判据：ss -tlnp 里 -L 看到的是 ssh 进程，-R 看到的是 sshd-session 进程</text>
+  <text x="42" y="478" font-size="11.5" fill="#b91c1c">⚠️ 远程转发默认只绑 127.0.0.1（GatewayPorts no），外面连不上</text>
+
+  <rect x="24" y="510" width="952" height="140" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="42" y="538" font-size="12.5" font-weight="bold" fill="#0f172a">认证四步：先互认，再建密钥，再验人，最后开通道</text>
+  <rect x="42" y="552" width="200" height="64" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="142" y="590" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#3730a3">版本交换</text>
+  <line x1="242" y1="584" x2="282" y2="584" stroke="#2563eb" stroke-width="2" marker-end="url(#w13s1)"/>
+  <rect x="282" y="552" width="200" height="64" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="382" y="584" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#3730a3">密钥交换</text>
+  <text x="382" y="604" text-anchor="middle" font-size="10.5" fill="#3730a3">生成会话密钥</text>
+  <line x1="482" y1="584" x2="522" y2="584" stroke="#2563eb" stroke-width="2" marker-end="url(#w13s1)"/>
+  <rect x="522" y="552" width="200" height="64" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="622" y="584" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#3730a3">用户认证</text>
+  <text x="622" y="604" text-anchor="middle" font-size="10.5" fill="#3730a3">公钥挑战-响应</text>
+  <line x1="722" y1="584" x2="762" y2="584" stroke="#16a34a" stroke-width="2" marker-end="url(#w13s2)"/>
+  <rect x="762" y="552" width="200" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="862" y="584" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">加密会话</text>
+  <text x="862" y="604" text-anchor="middle" font-size="10.5" fill="#14532d">跑命令 / 开转发</text>
+
+  <rect x="24" y="670" width="952" height="170" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="696" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：服务端 w13a 10.77.13.10（openssh 9.9_p2 + OpenSSL 3.3.7），客户端 w13c 10.77.13.20</text>
+  <text x="42" y="720" font-size="11.5" fill="#334155">服务端日志原文：Accepted publickey for root from 10.77.13.20 port 50738 ssh2: ED25519</text>
+  <text x="42" y="744" font-size="11.5" fill="#334155">依据与原文：.workbuddy/tmp/round495/w13_c01_sshd_boot.txt、w13_c08_local_forward.txt、w13_c10_remote_forward.txt、w13_c11_socks.txt</text>
+  <text x="42" y="768" font-size="11.5" fill="#b45309">密码方式被拒的原文：Permission denied (publickey,keyboard-interactive)，退出码 255</text>
+  <text x="42" y="792" font-size="11.5" fill="#334155">生效配置由 sshd -T 读出：passwordauthentication no、maxauthtries 3、gatewayports no</text>
+  <text x="42" y="816" font-size="11.5" fill="#b45309">未实测：systemd 托管 sshd、fail2ban、真机改端口 22 → 2222、autossh 保活</text>
+</svg>

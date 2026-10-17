@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w14d1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w14d2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">内网里的一台服务主机：既发地址，也发时间</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左边两台终端都是「什么都没有」的状态；右边那台机器同时供给地址与时间基准</text>
+
+  <rect x="40" y="100" width="250" height="130" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="165" y="132" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">终端 w14dhcpc</text>
+  <text x="165" y="158" text-anchor="middle" font-size="11.5" fill="#1e40af">没有地址：只能广播</text>
+  <text x="165" y="182" text-anchor="middle" font-size="11.5" fill="#1e40af">MAC 02:42:ac:99:00:02</text>
+  <text x="165" y="206" text-anchor="middle" font-size="11.5" fill="#1e40af">拿到池内地址 10.77.15.127</text>
+
+  <line x1="294" y1="140" x2="574" y2="140" stroke="#2563eb" stroke-width="2" marker-end="url(#w14d1)"/>
+  <text x="434" y="132" text-anchor="middle" font-size="11" fill="#2563eb">① DISCOVER（广播）</text>
+  <line x1="576" y1="190" x2="296" y2="190" stroke="#16a34a" stroke-width="2" marker-end="url(#w14d2)"/>
+  <text x="434" y="182" text-anchor="middle" font-size="11" fill="#16a34a">② OFFER / ACK</text>
+
+  <rect x="580" y="90" width="380" height="150" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="770" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#b45309">DHCP 服务端 w14srv</text>
+  <text x="770" y="144" text-anchor="middle" font-size="11.5" fill="#b45309">10.77.15.53 · 池 10.77.15.100 ~ 199</text>
+  <text x="770" y="168" text-anchor="middle" font-size="11.5" fill="#b45309">按 MAC 保留 10.77.15.50 printer01</text>
+  <text x="770" y="192" text-anchor="middle" font-size="11.5" fill="#b45309">下发 网关 10.77.15.1 · DNS 10.77.15.53</text>
+  <text x="770" y="216" text-anchor="middle" font-size="11.5" fill="#b45309">租期 43200 秒（12 小时）</text>
+
+  <rect x="40" y="270" width="920" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="60" y="296" font-size="11.5" fill="#334155">⭐ 一次租约要走四步：DISCOVER → OFFER → REQUEST → ACK；续租不再 DISCOVER，直接 REQUEST → ACK</text>
+  <text x="60" y="320" font-size="11.5" fill="#b91c1c">⚠️ 一个广播域只放一个 DHCP 服务端（或配中继），且服务端自己必须是静态地址</text>
+  <text x="60" y="344" font-size="11.5" fill="#1e40af">⭐ stratum 每下一级加 1：服务端本地参考 8 → 客户端 9</text>
+
+  <rect x="40" y="400" width="250" height="130" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="165" y="432" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e40af">客户端 w14cli</text>
+  <text x="165" y="458" text-anchor="middle" font-size="11.5" fill="#1e40af">chronyc sources</text>
+  <text x="165" y="482" text-anchor="middle" font-size="11.5" fill="#1e40af">^* stratum 9</text>
+  <text x="165" y="506" text-anchor="middle" font-size="11.5" fill="#1e40af">偏差 0.000015 秒</text>
+
+  <line x1="294" y1="440" x2="574" y2="440" stroke="#2563eb" stroke-width="2" marker-end="url(#w14d1)"/>
+  <text x="434" y="432" text-anchor="middle" font-size="11" fill="#2563eb">③ 同步请求</text>
+  <line x1="576" y1="490" x2="296" y2="490" stroke="#16a34a" stroke-width="2" marker-end="url(#w14d2)"/>
+  <text x="434" y="482" text-anchor="middle" font-size="11" fill="#16a34a">④ 返回时间与层级</text>
+
+  <rect x="580" y="390" width="380" height="150" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="770" y="418" text-anchor="middle" font-size="14" font-weight="bold" fill="#b45309">chrony 服务端（同一台机器）</text>
+  <text x="770" y="444" text-anchor="middle" font-size="11.5" fill="#b45309">本地参考 stratum 8</text>
+  <text x="770" y="468" text-anchor="middle" font-size="11.5" fill="#b45309">allow 10.77.15.0/24</text>
+  <text x="770" y="492" text-anchor="middle" font-size="11.5" fill="#b45309">服务端统计：来自 w14cli 的 3 个 NTP 包</text>
+  <text x="770" y="516" text-anchor="middle" font-size="11.5" fill="#b45309">chrony 4.6.1 · dnsmasq 2.90</text>
+
+  <rect x="24" y="560" width="952" height="140" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="586" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：Alpine 3.21.8 上的五台容器（w14srv / w14cli / w14dhcpc / w14dns2 / w14fwd）</text>
+  <text x="42" y="610" font-size="11.5" fill="#334155">DHCP 用 dnsmasq 2.90，时间用 chrony 4.6.1，客户端的 udhcpc 来自 busybox</text>
+  <text x="42" y="634" font-size="11.5" fill="#334155">依据：.workbuddy/tmp/round495/w14_a03_dora.txt、w14_a05_release.txt、w14_a06_static_host.txt、w14_b02_ntp_client.txt</text>
+  <text x="42" y="658" font-size="11.5" fill="#b45309">未实测：真实终端与交换机上的 DORA、跨网段 DHCP 中继、时钟被实际纠正的过程</text>
+  <text x="42" y="682" font-size="11.5" fill="#334155">容器与宿主共享时钟，所以偏差只有微秒级；本片用 chronyd -x 只观测、不改时钟</text>
+</svg>

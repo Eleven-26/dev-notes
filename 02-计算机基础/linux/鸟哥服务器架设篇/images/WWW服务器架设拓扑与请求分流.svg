@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w12a1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w12a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+    <marker id="w12a3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#d97706"/>
+    </marker>
+    <marker id="w12a4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">前端 Nginx 的架设拓扑与请求分流</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">一个入口，三条出口：静态读文件、/api/ 反代后端、上游故障时给出 502 / 504</text>
+
+  <rect x="24" y="130" width="152" height="64" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="100" y="156" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">客户端</text>
+  <text x="100" y="178" text-anchor="middle" font-size="11.5" fill="#1e40af">curl / 浏览器</text>
+
+  <path d="M 176 162 L 246 162" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#w12a1)"/>
+  <text x="211" y="152" text-anchor="middle" font-size="11" fill="#2563eb">80 / 443</text>
+
+  <rect x="250" y="96" width="330" height="152" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="415" y="120" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e40af">前端 Nginx（web01）</text>
+  <text x="266" y="144" font-size="11.5" fill="#1e40af">master（PID 1）+ 4 个 worker，机器 4 核</text>
+  <text x="266" y="164" font-size="11.5" fill="#1e40af">events { worker_connections 1024; use epoll; }</text>
+  <text x="266" y="184" font-size="11.5" fill="#b45309">理论并发上限 = 4 × 1024 = 4096（连接数，不是 QPS）</text>
+  <text x="266" y="204" font-size="11.5" fill="#1e40af">listen 80 default_server；listen 443 ssl http2</text>
+  <text x="266" y="224" font-size="11.5" fill="#1e40af">server_name web01.example.com</text>
+  <text x="266" y="242" font-size="11.5" fill="#1e40af">root /srv/web/web01（本片实测是 /lab/front/site）</text>
+
+  <path d="M 580 172 L 604 172 L 604 134 L 630 134" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#w12a2)"/>
+  <path d="M 604 134 L 604 438" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M 604 244 L 630 244" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#w12a1)"/>
+  <path d="M 604 348 L 630 348" fill="none" stroke="#d97706" stroke-width="2" marker-end="url(#w12a3)"/>
+  <path d="M 604 438 L 630 438" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#w12a4)"/>
+
+  <rect x="634" y="96" width="342" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="650" y="120" font-size="12.5" font-weight="bold" fill="#14532d">location / → root，直接读文件</text>
+  <text x="650" y="142" font-size="11.5" fill="#14532d">命中 → 200（响应体 142 字节）；不存在 → 404</text>
+  <text x="650" y="162" font-size="11.5" fill="#14532d">location = /old → 301 Moved Permanently</text>
+
+  <rect x="634" y="196" width="342" height="96" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="650" y="220" font-size="12.5" font-weight="bold" fill="#1e40af">location /api/ → proxy_pass 到后端</text>
+  <text x="650" y="242" font-size="11.5" fill="#1e40af">upstream app_backend = w12www-b:8080</text>
+  <text x="650" y="262" font-size="11.5" fill="#1e40af">带 Host / X-Real-IP / X-Forwarded-For</text>
+  <text x="650" y="282" font-size="11.5" fill="#1e40af">上游回 200；后端日志打出 xff= 与 realip=</text>
+
+  <rect x="634" y="316" width="342" height="64" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+  <text x="650" y="340" font-size="12.5" font-weight="bold" fill="#b45309">location /slow/ → 读超时 1s</text>
+  <text x="650" y="362" font-size="11.5" fill="#b45309">上游 sleep 5 → 504（110 upstream timed out）</text>
+
+  <rect x="634" y="400" width="342" height="76" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="650" y="424" font-size="12.5" font-weight="bold" fill="#b91c1c">上游整个不可用 → 502 Bad Gateway</text>
+  <text x="650" y="446" font-size="11.5" fill="#b91c1c">容器停掉 → 113 Host is unreachable</text>
+  <text x="650" y="466" font-size="11.5" fill="#b91c1c">端口没人听 → 111 Connection refused</text>
+
+  <rect x="24" y="300" width="556" height="150" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="324" font-size="12.5" font-weight="bold" fill="#1e40af">日志三件套：记什么、怎么切</text>
+  <text x="42" y="348" font-size="11.5" fill="#334155">access_log main.log：$remote_addr $status $body_bytes_sent $request_time</text>
+  <text x="42" y="370" font-size="11.5" fill="#334155">access_log apilog.log（只给 /api/）：rt= 与 urt= 两个耗时</text>
+  <text x="42" y="392" font-size="11.5" fill="#334155">error_log → err.log（实测取名；默认 error.log）：502 / 504 的原文都在这里</text>
+  <text x="42" y="414" font-size="11.5" fill="#b45309">logrotate 切完要给 Nginx 发 USR1 重开文件，否则空间不释放</text>
+  <text x="42" y="436" font-size="11.5" fill="#334155">统计口径：awk 取第 1 列是来源 IP、第 9 列是状态码</text>
+
+  <rect x="24" y="470" width="556" height="150" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="42" y="494" font-size="12.5" font-weight="bold" fill="#5b21b6">443 上的 TLS 与证书</text>
+  <text x="42" y="518" font-size="11.5" fill="#334155">协商结果：TLSv1.3 + TLS_AES_256_GCM_SHA384</text>
+  <text x="42" y="540" font-size="11.5" fill="#334155">ssl_certificate fullchain.pem；ssl_certificate_key privkey.pem</text>
+  <text x="42" y="562" font-size="11.5" fill="#334155">SNI 分流：web01 与 web02 两个域名各一张证书</text>
+  <text x="42" y="584" font-size="11.5" fill="#334155">add_header Strict-Transport-Security "max-age=31536000" always</text>
+  <text x="42" y="606" font-size="11.5" fill="#b91c1c">HSTS 一旦下发，回退要先等 max-age 过期</text>
+
+  <rect x="24" y="640" width="952" height="86" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="664" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：容器 w12www-a（nginx/1.26.3）+ w12www-b（后端 :8080）+ w12www-c（慢上游），宿主端口 18080 / 18081</text>
+  <text x="42" y="686" font-size="11.5" fill="#334155">nginx -t 会 warn：the "listen ... http2" directive is deprecated → 新写法是单独一行 http2 on;</text>
+  <text x="42" y="708" font-size="11.5" fill="#334155">依据与原文：.workbuddy/tmp/round495/w12www_01_version.txt、w12www_02_static.txt、w12www_05_502_504.txt、w12www_04_https.txt</text>
+</svg>

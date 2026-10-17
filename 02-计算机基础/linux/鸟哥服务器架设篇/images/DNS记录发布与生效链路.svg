@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w14z1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w14z2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条 DNS 记录从改文件到全内网生效</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">主服务器、从服务器、转发器与客户端各处在链条的哪一环；卡在最后一环才是最常遇到的</text>
+
+  <rect x="40" y="100" width="270" height="130" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="175" y="128" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">① 改 zone 文件</text>
+  <text x="175" y="154" text-anchor="middle" font-size="11.5" fill="#1e40af">db01  IN  A  10.77.15.30</text>
+  <text x="175" y="178" text-anchor="middle" font-size="11.5" fill="#1e40af">serial 2026101701</text>
+  <text x="175" y="202" text-anchor="middle" font-size="11.5" fill="#1e40af">→ 2026101702</text>
+
+  <line x1="314" y1="150" x2="346" y2="150" stroke="#2563eb" stroke-width="2" marker-end="url(#w14z1)"/>
+  <line x1="624" y1="150" x2="656" y2="150" stroke="#2563eb" stroke-width="2" marker-end="url(#w14z1)"/>
+
+  <rect x="350" y="100" width="270" height="130" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="485" y="128" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">② 改完先校验</text>
+  <text x="485" y="154" text-anchor="middle" font-size="11.5" fill="#1e40af">named-checkzone</text>
+  <text x="485" y="178" text-anchor="middle" font-size="11.5" fill="#1e40af">loaded serial 2026101702</text>
+  <text x="485" y="202" text-anchor="middle" font-size="11.5" fill="#16a34a">OK</text>
+
+  <rect x="660" y="100" width="300" height="130" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="810" y="128" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">③ 让主服务器重载</text>
+  <text x="810" y="154" text-anchor="middle" font-size="11.5" fill="#1e40af">rndc reload</text>
+  <text x="810" y="178" text-anchor="middle" font-size="11.5" fill="#1e40af">loaded serial 2026101702</text>
+  <text x="810" y="202" text-anchor="middle" font-size="11.5" fill="#1e40af">zonestatus：serial 2026101702</text>
+
+  <line x1="810" y1="234" x2="810" y2="336" stroke="#16a34a" stroke-width="2" marker-end="url(#w14z2)"/>
+  <text x="822" y="290" font-size="11" fill="#16a34a">NOTIFY</text>
+  <text x="822" y="310" font-size="11" fill="#16a34a">从服务器立刻拉取</text>
+
+  <rect x="660" y="340" width="300" height="130" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="810" y="368" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">④ 从服务器区域传送</text>
+  <text x="810" y="394" text-anchor="middle" font-size="11.5" fill="#14532d">received notify · serial 2026101702</text>
+  <text x="810" y="418" text-anchor="middle" font-size="11.5" fill="#14532d">transfer completed</text>
+  <text x="810" y="442" text-anchor="middle" font-size="11.5" fill="#14532d">12 records · 309 bytes</text>
+
+  <line x1="656" y1="400" x2="624" y2="400" stroke="#16a34a" stroke-width="2" marker-end="url(#w14z2)"/>
+  <line x1="346" y1="400" x2="314" y2="400" stroke="#2563eb" stroke-width="2" marker-end="url(#w14z1)"/>
+
+  <rect x="350" y="340" width="270" height="130" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="485" y="368" text-anchor="middle" font-size="13" font-weight="bold" fill="#b45309">⑤ 客户端拿到旧答案</text>
+  <text x="485" y="394" text-anchor="middle" font-size="11.5" fill="#b45309">转发器缓存里的 NXDOMAIN</text>
+  <text x="485" y="418" text-anchor="middle" font-size="11.5" fill="#b45309">SOA serial 2026101701</text>
+  <text x="485" y="442" text-anchor="middle" font-size="11.5" fill="#b45309">剩余 TTL 3548</text>
+
+  <rect x="40" y="340" width="270" height="130" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="175" y="368" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">⑥ 清缓存后立刻生效</text>
+  <text x="175" y="394" text-anchor="middle" font-size="11.5" fill="#14532d">rndc flush</text>
+  <text x="175" y="418" text-anchor="middle" font-size="11.5" fill="#14532d">db01 → 10.77.15.30</text>
+  <text x="175" y="442" text-anchor="middle" font-size="11.5" fill="#14532d">TTL 3600</text>
+
+  <rect x="24" y="500" width="952" height="140" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="526" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：BIND 9.18.50 三台（主 10.77.15.53、从 10.77.15.54、转发 10.77.15.55）加客户端 w14cli</text>
+  <text x="42" y="550" font-size="11.5" fill="#334155">从服务器不是靠轮询：主服务器 serial 一变就发 NOTIFY，本次从服务器 0.001 秒内传完</text>
+  <text x="42" y="574" font-size="11.5" fill="#b45309">⚠️ 否定答案也会进缓存：窗口等于 SOA 的 minimum（本次 86400 秒），于是「主从都生效、客户端查不到」</text>
+  <text x="42" y="598" font-size="11.5" fill="#334155">依据：.workbuddy/tmp/round495/w14_d01_master_edit.txt、w14_d02_slave_transfer.txt、w14_d03_client_cache.txt、w14_d04_flush.txt</text>
+  <text x="42" y="622" font-size="11.5" fill="#334155">判据：改完先校验 → 再重载 → 依次查主、查从、查转发器，必要时 flush 转发器缓存</text>
+</svg>

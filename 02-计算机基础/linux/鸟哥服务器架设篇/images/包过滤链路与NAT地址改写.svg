@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="w13f1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="w13f2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">包过滤链路与 NAT 地址改写</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">一次端口映射走完三条链：PREROUTING 改目标、FORWARD 决定放不放行、POSTROUTING 改源</text>
+
+  <rect x="24" y="120" width="170" height="76" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+  <text x="109" y="150" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">内网主机 w13b</text>
+  <text x="109" y="174" text-anchor="middle" font-size="11.5" fill="#334155">10.77.14.10</text>
+
+  <line x1="194" y1="158" x2="300" y2="158" stroke="#2563eb" stroke-width="2" marker-end="url(#w13f1)"/>
+  <text x="247" y="182" text-anchor="middle" font-size="11" fill="#2563eb">发起访问</text>
+
+  <rect x="300" y="110" width="380" height="110" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="490" y="136" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#b45309">网关 w13gw（nat + filter 两张表）</text>
+  <text x="316" y="162" font-size="11.5" fill="#b45309">PREROUTING：DNAT 10.77.14.254:8080 → 10.77.13.20:80</text>
+  <text x="316" y="186" font-size="11.5" fill="#b45309">FORWARD：放行 / DROP / REJECT（实测三条都试过）</text>
+  <text x="316" y="210" font-size="11.5" fill="#b45309">POSTROUTING：MASQUERADE → 源显示为 10.77.13.254</text>
+
+  <line x1="680" y1="158" x2="760" y2="158" stroke="#16a34a" stroke-width="2" marker-end="url(#w13f2)"/>
+  <text x="720" y="182" text-anchor="middle" font-size="11" fill="#16a34a">改写后到达</text>
+
+  <rect x="760" y="120" width="200" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="860" y="150" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">服务机 w13c</text>
+  <text x="860" y="174" text-anchor="middle" font-size="11.5" fill="#14532d">10.77.13.20:80</text>
+
+  <rect x="24" y="250" width="470" height="210" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="42" y="278" font-size="12.5" font-weight="bold" fill="#1e40af">conntrack 里的翻译记录</text>
+  <text x="42" y="306" font-size="11" fill="#334155">src=10.77.14.10 dst=10.77.14.254 dport=8080</text>
+  <text x="42" y="330" font-size="11" fill="#334155">→ src=10.77.13.20 dst=10.77.13.254 dport=80</text>
+  <text x="42" y="358" font-size="11" fill="#334155">左半是客户端看到的世界，右半是被访问方看到的世界</text>
+  <text x="42" y="386" font-size="11" fill="#b45309">⭐ 目标被改了（DNAT），源也被改了（SNAT）</text>
+  <text x="42" y="414" font-size="11" fill="#b91c1c">⚠️ 只做 DNAT 不做 SNAT：回包容易被丢</text>
+  <text x="42" y="442" font-size="11" fill="#334155">规则只说明「打算怎么改」，记录才说明「实际怎么改」</text>
+
+  <rect x="506" y="250" width="470" height="210" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="524" y="278" font-size="12.5" font-weight="bold" fill="#b91c1c">FORWARD 上是 DROP 还是 REJECT</text>
+  <text x="524" y="306" font-size="11" fill="#334155">DROP：curl 退出码 28，等到 4002 ms 才超时</text>
+  <text x="524" y="330" font-size="11" fill="#334155">REJECT：curl 退出码 7，0 ms 秒失败</text>
+  <text x="524" y="358" font-size="11" fill="#334155">对外服务用 DROP：不给扫描器任何反馈</text>
+  <text x="524" y="386" font-size="11" fill="#334155">内网排障用 REJECT：一眼看出是被规则挡了</text>
+  <text x="524" y="414" font-size="11" fill="#b45309">⭐ 判据：卡到超时 = 丢；瞬间拒绝 = 拒</text>
+  <text x="524" y="442" font-size="11" fill="#334155">服务没起来也是「瞬间拒绝」，要配 ss -tlnp 看监听</text>
+
+  <rect x="24" y="480" width="952" height="110" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="42" y="508" font-size="12.5" font-weight="bold" fill="#1e40af">SNAT / MASQUERADE：被访问方看到的源地址换了人</text>
+  <text x="42" y="534" font-size="11.5" fill="#334155">加 MASQUERADE 之前，w13a 看到的源是 10.77.14.10（内网地址）</text>
+  <text x="42" y="558" font-size="11.5" fill="#334155">加 MASQUERADE 之后，w13a 看到的源是 10.77.13.254（网关在对面那段的地址）</text>
+  <text x="42" y="582" font-size="11.5" fill="#b45309">同一次 ping 的两种读数，就是「改源地址」的全部意义</text>
+
+  <rect x="24" y="610" width="952" height="110" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="42" y="636" font-size="12.5" font-weight="bold" fill="#0f172a">📎 实测环境：网关 w13gw（iptables v1.8.11 (nf_tables) + conntrack-tools 1.4.8），流量由 w13b 10.77.14.10 发起</text>
+  <text x="42" y="660" font-size="11.5" fill="#334155">依据与原文：.workbuddy/tmp/round495/w13_b04_snat_masquerade.txt、w13_b07_client_dnat.txt、w13_b10_client_drop.txt、w13_b12_client_reject.txt</text>
+  <text x="42" y="684" font-size="11.5" fill="#b45309">未实测：firewalld 本体、真实公网 IP 的出网 NAT、富规则里的限速与日志动作</text>
+  <text x="42" y="708" font-size="11.5" fill="#334155">前置条件：容器内 ip_forward = 1，跨段明细路由指向网关 10.77.14.254</text>
+</svg>
