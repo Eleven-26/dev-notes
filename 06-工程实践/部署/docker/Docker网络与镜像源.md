@@ -216,4 +216,4 @@ docker run --rm -it --name test <镜像名> ls -l /etc/apt/   # 换 apt 源之�
 
 - [网络与存储.md](网络与存储.md) — Docker 网络驱动的整体模型与 `-p` 的 DNAT 本质
 - [进入运行中的容器.md](进入运行中的容器.md) — 改完配置怎么进去验证
-- [DNS解析.md](../../../02-计算机基础/网络/DNS解析.md) — 拉镜像走的是 DNS 与 HTTPS
+- [DNS解析.md](../../../02-计算机基础/网络/网络层与寻址/DNS解析.md) — 拉镜像走的是 DNS 与 HTTPS

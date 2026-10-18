@@ -2,7 +2,7 @@
 
 > 覆盖：HTTP 服务的**工作原理**（报文与状态码、协议版本演进、静态与动态的分界）、Apache 与 Nginx 的配置组织与虚拟主机、Nginx 的事件驱动并发模型、FastCGI / PHP-FPM 接入、HTTPS 证书与 SNI 分流、访问日志与分析、访问控制与限流，以及 502 / 504 一类上游故障的排查。
 >
-> 不覆盖：HTTP 语义与 TLS 握手的协议细节见 [HTTP与gRPC.md](../../网络/HTTP与gRPC.md) 与 [HTTPS与TLS.md](../../网络/HTTPS与TLS.md)；1.1 与 2 的差异见 [HTTP1.1与HTTP2的区别.md](../../网络/HTTP1.1与HTTP2的区别.md)、3 的传输细节见 [QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md)；反向代理的通用原理见 [反向代理原理与实现.md](../../网络/反向代理原理与实现.md)；反代下怎么取真实 IP 见 [客户端真实IP与可信代理.md](../../网络/客户端真实IP与可信代理.md)；站点目录的 SELinux 上下文见 [02-主机安全与SELinux.md](02-主机安全与SELinux.md)。
+> 不覆盖：HTTP 语义与 TLS 握手的协议细节见 [HTTP与gRPC.md](../../网络/应用层/HTTP与gRPC.md) 与 [HTTPS与TLS.md](../../网络/应用层/HTTPS与TLS.md)；1.1 与 2 的差异见 [HTTP1.1与HTTP2的区别.md](../../网络/应用层/HTTP1.1与HTTP2的区别.md)、3 的传输细节见 [QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md)；反向代理的通用原理见 [反向代理原理与实现.md](../../网络/应用层/反向代理原理与实现.md)；反代下怎么取真实 IP 见 [客户端真实IP与可信代理.md](../../网络/应用层/客户端真实IP与可信代理.md)；站点目录的 SELinux 上下文见 [02-主机安全与SELinux.md](02-主机安全与SELinux.md)。
 >
 > 内容整理自个人学习笔记。**基础框架**参考鸟哥官网《服务器架设篇 - RockyLinux 9》与《鸟哥的 Linux 私房菜：服务器架设篇（第三版修订）》相关章节的读后整理；Nginx 与证书自动化基于官方文档独立整理。素材见 [素材清单](../../../素材清单.md)。
 >
@@ -177,7 +177,7 @@ sudo nginx -t                        # 语法检查
 sudo systemctl reload nginx
 ```
 
-⚠️ 反向代理要带上 `Host` / `X-Real-IP` / `X-Forwarded-For`，否则后端拿到的是代理的地址；怎么取真实 IP 见 [客户端真实IP与可信代理.md](../../网络/客户端真实IP与可信代理.md)。
+⚠️ 反向代理要带上 `Host` / `X-Real-IP` / `X-Forwarded-For`，否则后端拿到的是代理的地址；怎么取真实 IP 见 [客户端真实IP与可信代理.md](../../网络/应用层/客户端真实IP与可信代理.md)。
 
 ---
 
@@ -436,11 +436,11 @@ grep -n 'connect() failed'   /var/log/nginx/err.log    # 502
 
 | 落地场景 | 这里的哪一节在起作用 | 本仓相关篇目 |
 |---|---|---|
-| 前后端分离的入口层 | Nginx 做静态 + `/api/` 反代，`location` 优先级决定谁接谁（四、七） | [反向代理原理与实现.md](../../网络/反向代理原理与实现.md) |
+| 前后端分离的入口层 | Nginx 做静态 + `/api/` 反代，`location` 优先级决定谁接谁（四、七） | [反向代理原理与实现.md](../../网络/应用层/反向代理原理与实现.md) |
 | 多域名 / 多站点托管 | 基于域名的虚拟主机 + SNI 一 IP 多证书（七） | [07-DNS服务器.md](07-DNS服务器.md) |
-| HTTPS 合规 | 完整证书链 + HSTS + 关掉老 TLS（六） | [HTTPS与TLS.md](../../网络/HTTPS与TLS.md) |
-| 协议升级到 2 / 3 | ALPN 协商、QUIC 与 UDP 放行（二） | [HTTP1.1与HTTP2的区别.md](../../网络/HTTP1.1与HTTP2的区别.md)、[QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md) |
-| 反代后取真实 IP | `X-Forwarded-For` 与可信代理链（四、十） | [客户端真实IP与可信代理.md](../../网络/客户端真实IP与可信代理.md) |
+| HTTPS 合规 | 完整证书链 + HSTS + 关掉老 TLS（六） | [HTTPS与TLS.md](../../网络/应用层/HTTPS与TLS.md) |
+| 协议升级到 2 / 3 | ALPN 协商、QUIC 与 UDP 放行（二） | [HTTP1.1与HTTP2的区别.md](../../网络/应用层/HTTP1.1与HTTP2的区别.md)、[QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md) |
+| 反代后取真实 IP | `X-Forwarded-For` 与可信代理链（四、十） | [客户端真实IP与可信代理.md](../../网络/应用层/客户端真实IP与可信代理.md) |
 | 站点加固与排障 | `AllowOverride None`、目录权限与 SELinux 上下文（三、十） | [02-主机安全与SELinux.md](02-主机安全与SELinux.md) |
 | 对外只放必要端口 | `firewall-cmd --add-service=http/https`（十二） | [04-防火墙与NAT.md](04-防火墙与NAT.md) |
 | 把同一套站搬进容器 | 镜像里换掉 `root` 与 `proxy_pass` 的地址（十二） | [11-容器化衔接.md](11-容器化衔接.md) |
@@ -508,10 +508,10 @@ curl -sS -o /dev/null -w 'GET /slow/ -> %{http_code} in %{time_total}s\n' http:/
 ## 关联
 
 - **上游/总纲**：[README.md](README.md) — 本目录导读：版本坐标与阅读顺序
-- **对照/互补**：[HTTP与gRPC.md](../../网络/HTTP与gRPC.md) — HTTP 语义与 gRPC 的对照
-- **下游机制**：[HTTPS与TLS.md](../../网络/HTTPS与TLS.md) — 证书与 TLS 握手原理
-- **下游机制**：[反向代理原理与实现.md](../../网络/反向代理原理与实现.md) — 反向代理的原理
-- **运维/配置**：[客户端真实IP与可信代理.md](../../网络/客户端真实IP与可信代理.md) — 反代下取真实 IP
+- **对照/互补**：[HTTP与gRPC.md](../../网络/应用层/HTTP与gRPC.md) — HTTP 语义与 gRPC 的对照
+- **下游机制**：[HTTPS与TLS.md](../../网络/应用层/HTTPS与TLS.md) — 证书与 TLS 握手原理
+- **下游机制**：[反向代理原理与实现.md](../../网络/应用层/反向代理原理与实现.md) — 反向代理的原理
+- **运维/配置**：[客户端真实IP与可信代理.md](../../网络/应用层/客户端真实IP与可信代理.md) — 反代下取真实 IP
 - **运维/配置**：[02-主机安全与SELinux.md](02-主机安全与SELinux.md) — 站点目录的 SELinux 上下文
 - **对照/互补**：[10-邮件服务器.md](10-邮件服务器.md) — 同为「对外提供服务」的架设场景
 > 反向引用（本篇被下列文档引到）：[10-邮件服务器.md](10-邮件服务器.md)、[11-容器化衔接.md](11-容器化衔接.md)

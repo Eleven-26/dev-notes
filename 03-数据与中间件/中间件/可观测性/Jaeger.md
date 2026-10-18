@@ -231,7 +231,7 @@ Query 服务自带 UI，与查询接口同进程：`http://127.0.0.1:16686/`。�
 - [接入Jaeger.md](../../../01-编程语言/java/可观测性/接入Jaeger.md) — Java 侧 OTel Agent 与 Micrometer Tracing 两条路线
 - [Skywalking.md](Skywalking.md) — 探针式 APM 的另一条路线与分工
 - [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) — 多语言探针接入的对照
-- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md) — trace 上下文在请求头里的传播
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 采集组件的部署形态
 - [可观测性选型对比.md](可观测性选型对比.md) — 链路追踪的完整选型表（含指标、日志、存储、可视化的选型）
 > 反向引用（本篇被下列文档引到）：[SQL查询与优化.md](../../数据存储/列式数据库/ClickHouse/SQL查询与优化.md)、[定位与适用场景.md](../../数据存储/列式数据库/ClickHouse/定位与适用场景.md)、[性能调优与基准测试.md](../../数据存储/列式数据库/ClickHouse/性能调优与基准测试.md)、[架构与存储引擎.md](../../数据存储/列式数据库/ClickHouse/架构与存储引擎.md)、[可观测性集成方案.md](../../数据存储/时序数据库/GreptimeDB/可观测性集成方案.md)

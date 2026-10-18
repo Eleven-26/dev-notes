@@ -47,7 +47,7 @@ SkyWalking 是 Apache 顶级项目，一个针对分布式系统的 **APM（应�
 | 采样 | `agent.sample_n_per_3_secs`（每 3 秒 N 条） | SDK Sampler（比例 / ParentBased） | 命名与粒度不同 |
 | 组件标识 | `componentId`（`component-libraries.yml`） | `attribute` 里的组件名 | OAP 靠它识别框架 |
 
-⚠️ **混用坑**：上游注入 `traceparent`、下游只认 `sw8`，链路会断成两段互不相干的 trace。全链路头格式必须端到端统一（传播机制见 [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md)）。
+⚠️ **混用坑**：上游注入 `traceparent`、下游只认 `sw8`，链路会断成两段互不相干的 trace。全链路头格式必须端到端统一（传播机制见 [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md)）。
 
 ---
 
@@ -525,8 +525,8 @@ services:
 - [接入Skywalking.md](../../../01-编程语言/go/可观测性/接入Skywalking.md) — Go 侧编译期注入与 OTel 备选路线
 - [接入Skywalking.md](../../../01-编程语言/java/可观测性/接入Skywalking.md) — Java 侧 `-javaagent` 接入、日志关联、跨线程与优雅停机
 - [接入Skywalking.md](../../../01-编程语言/php/接入Skywalking.md) — PHP-FPM 侧探针的完整接入步骤
-- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — trace 上下文在请求头里的传播
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md) — trace 上下文在请求头里的传播
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — OAP / UI 的部署形态与生命周期
 - [可观测性 README.md](README.md) — 本目录的学习路径与版本坐标
 
-> 反向引用（本篇被下列文档引到）：[TCP三次握手.md](../../../02-计算机基础/网络/tcp/TCP三次握手.md)、[ActiveMQ.md](../消息队列/ActiveMQ.md)、[缓存运维与排查.md](../../数据存储/缓存/缓存运维与排查.md)、[缓存问题与方案.md](../../数据存储/缓存/缓存问题与方案.md)、[分布式与微服务.md](../../../04-架构与系统/分布式/分布式与微服务.md)
+> 反向引用（本篇被下列文档引到）：[TCP三次握手.md](../../../02-计算机基础/网络/传输层/tcp/TCP三次握手.md)、[ActiveMQ.md](../消息队列/ActiveMQ.md)、[缓存运维与排查.md](../../数据存储/缓存/缓存运维与排查.md)、[缓存问题与方案.md](../../数据存储/缓存/缓存问题与方案.md)、[分布式与微服务.md](../../../04-架构与系统/分布式/分布式与微服务.md)

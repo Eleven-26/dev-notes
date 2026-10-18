@@ -9,7 +9,7 @@
 >
 > ⚠️ **本篇不重复讲 epoll 本身**：`epoll_create` / `epoll_ctl` / `epoll_wait` 三个系统调用、
 > LT 与 ET 的语义差异、Reactor 模式、以及 Go / Java 侧的完整实现，全在
-> [IO多路复用.md](../../网络/IO多路复用.md)。本文只回答「**nginx 怎么把它用起来**」。
+> [IO多路复用.md](../../网络/传输层/IO多路复用.md)。本文只回答「**nginx 怎么把它用起来**」。
 
 ---
 
@@ -175,7 +175,7 @@ Reading: 0 Writing: 1 Waiting: 8
    需要在处理握手的同时把 early data 投递给上层。
 
 ⚠️ 以上为机制层面的归纳；QUIC 协议本身（流级重传、0-RTT 的代价、连接迁移）
-见 [QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md)，Nginx 侧的具体配置未在本机实测
+见 [QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md)，Nginx 侧的具体配置未在本机实测
 （镜像虽含 `--with-http_v3_module`，但 UDP 端口、证书与 QUIC 连接管理器实验
 未纳入本轮口径）。
 
@@ -228,7 +228,7 @@ accept_mutex off 之前先想清楚                  关掉它省了锁，但惊
 主动放进就绪链表，`epoll_wait` 只取就绪的那部分 —— **复杂度从 O(总 fd) 降到 O(就绪 fd)**。
 ⭐ nginx 侧的呼应：正因为 `epoll` 需要「事先注册」，才有第三节那张
 `ngx_connection_t` 表（`epoll_event.data.ptr` 必须能指回连接状态）。
-完整对比与 LT/ET 的实测见 [IO多路复用.md](../../网络/IO多路复用.md)。
+完整对比与 LT/ET 的实测见 [IO多路复用.md](../../网络/传输层/IO多路复用.md)。
 
 ### 2. ET 模式下如何保证数据读完？
 
@@ -257,9 +257,9 @@ accept_mutex off 之前先想清楚                  关掉它省了锁，但惊
 ## 关联
 
 - [README.md](README.md) — 版本坐标与实测口径
-- [IO多路复用.md](../../网络/IO多路复用.md) — `epoll` 三个系统调用、LT/ET、Reactor 与 Go/Java 实现（本篇的前置知识）
+- [IO多路复用.md](../../网络/传输层/IO多路复用.md) — `epoll` 三个系统调用、LT/ET、Reactor 与 Go/Java 实现（本篇的前置知识）
 - [02-进程模型与基础架构.md](02-进程模型与基础架构.md) — worker 进程与 master 的分工
 - [04-HTTP框架执行流程.md](04-HTTP框架执行流程.md) — 事件就绪之后，请求如何走完 11 个阶段
 - [05-内存管理与数据结构.md](05-内存管理与数据结构.md) — 定时器为什么用红黑树、连接为什么从池里取
-- [QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md) — QUIC 的协议机制
+- [QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md) — QUIC 的协议机制
 > 反向引用（本篇被下列文档引到）：[01-编译安装与配置.md](01-编译安装与配置.md)、[11-HTTP3与QUIC支持.md](11-HTTP3与QUIC支持.md)

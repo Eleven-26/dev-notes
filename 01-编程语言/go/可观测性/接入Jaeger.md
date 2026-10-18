@@ -523,7 +523,7 @@ curl -s "http://localhost:16686/api/services"
 - [接入Skywalking.md](接入Skywalking.md) — 同一套 OTel 埋点发往 SkyWalking OAP；以及编译期注入路线的对照
 - [接入Jaeger.md](../../java/可观测性/接入Jaeger.md) — Java 侧的 OTel Agent 与 Micrometer Tracing 两条路线
 - [context.md](../工程实践/context.md) — ctx 传播、超时预算与级联取消的基础
-- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md) — `traceparent` 在请求头里的传播格式
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — 优雅停机与 `terminationGracePeriodSeconds`
 - [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 链路后端与存储的选型对比
 - [日志与错误规范.md](../工程实践/日志与错误规范.md) — trace 关联日志的字段口径在彼，日志本身的结构化规矩在此

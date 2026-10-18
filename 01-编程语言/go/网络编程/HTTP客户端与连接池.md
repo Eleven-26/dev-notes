@@ -229,7 +229,7 @@ C/E 那种写法跑完 200 次请求、把 200 个 `Transport` 都留在 slice �
 
 `CloseIdleConnections` 的原文定义在 `transport.go:893-897`：「closes any connections which were previously connected from previous requests but are now sitting idle in a "keep-alive" state. It does not interrupt any connections currently in use.」——只关空闲的，正在用的不碰。
 
-关掉之后 fd 从 1252 回落到 852，TCP `inuse` 同步回落，但 `tw`（TIME_WAIT）从 0 涨到 200：本地主动关连接的一方要背 TIME_WAIT，这正是「每次新建 Transport」在真实环境里的第二种代价形态。TIME_WAIT 的机制本身见 [TCP四次挥手.md](../../../02-计算机基础/网络/tcp/TCP四次挥手.md)。
+关掉之后 fd 从 1252 回落到 852，TCP `inuse` 同步回落，但 `tw`（TIME_WAIT）从 0 涨到 200：本地主动关连接的一方要背 TIME_WAIT，这正是「每次新建 Transport」在真实环境里的第二种代价形态。TIME_WAIT 的机制本身见 [TCP四次挥手.md](../../../02-计算机基础/网络/传输层/tcp/TCP四次挥手.md)。
 
 ⚠️ 反过来也别指望「每次请求都 `CloseIdleConnections()`」来擦屁股：4.4 的实测里，那种写法照样是 100 次请求 100 次拨号 + 100 个 TIME_WAIT。
 
@@ -527,7 +527,7 @@ C/E 那种写法跑完 200 次请求、把 200 个 `Transport` 都留在 slice �
 
 即：TLS 记录头读出来是 `HTTP/` 就把错误换成 `ErrSchemeMismatch`。判定用 `errors.Is(err, http.ErrSchemeMismatch)` 而不是字符串匹配。
 
-⚠️ `InsecureSkipVerify: true` **不是**「跳过一下校验」，是整个证书链校验（含名字匹配）都不做，中间人可以任意替换内容。内网自签的正确做法是把 CA 塞进根证书池（`x509.CertPool`），或用 `tls.Config.VerifyPeerCertificate` 做固定校验；`httptest` 的 `srv.Client()` 已经帮你把自签证书加进 Transport 了（2.9 那行 err=nil 就是这么来的）。握手细节见 [HTTPS与TLS.md](../../../02-计算机基础/网络/HTTPS与TLS.md)。
+⚠️ `InsecureSkipVerify: true` **不是**「跳过一下校验」，是整个证书链校验（含名字匹配）都不做，中间人可以任意替换内容。内网自签的正确做法是把 CA 塞进根证书池（`x509.CertPool`），或用 `tls.Config.VerifyPeerCertificate` 做固定校验；`httptest` 的 `srv.Client()` 已经帮你把自签证书加进 Transport 了（2.9 那行 err=nil 就是这么来的）。握手细节见 [HTTPS与TLS.md](../../../02-计算机基础/网络/应用层/HTTPS与TLS.md)。
 
 ### 7.5 HTTP/2 与 HTTP/1.1 在同一份并发下的连接数
 
@@ -540,7 +540,7 @@ C/E 那种写法跑完 200 次请求、把 200 个 `Transport` 都留在 slice �
 
 h2 用 1 条 TCP 承载 20 个并发流，h1 需要 19 条新连接；耗时 70ms vs 190ms（同轮，回环单次读数）。
 
-Go 1.26 里控制协议的现代写法是 `Transport.Protocols`（`http.Protocols` 类型，`SetHTTP1` / `SetHTTP2` / `SetUnencryptedHTTP2`），而不是老那个把 `TLSNextProto` 设成空 map 的技巧——而且 `TLSNextProto` 的签名在 1.26 已经变成 `func(authority string, c *tls.Conn) RoundTripper`，老写法直接编译不过。协议选择的服务端侧讨论见 [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md)。
+Go 1.26 里控制协议的现代写法是 `Transport.Protocols`（`http.Protocols` 类型，`SetHTTP1` / `SetHTTP2` / `SetUnencryptedHTTP2`），而不是老那个把 `TLSNextProto` 设成空 map 的技巧——而且 `TLSNextProto` 的签名在 1.26 已经变成 `func(authority string, c *tls.Conn) RoundTripper`，老写法直接编译不过。协议选择的服务端侧讨论见 [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md)。
 
 ## 八、net/http 会替我重试吗？
 
@@ -702,7 +702,7 @@ func (r *Request) isReplayable() bool {
 
 | 错误原文里的关键字 | 出在哪一段 | 根因 | 处置 |
 | --- | --- | --- | --- |
-| `lookup ...: no such host` | 建连（DNS） | 域名不存在/DNS 不可达/CoreDNS 抖动 | 先看服务名与 DNS，别急着重试；重试要退避，见 [DNS解析.md](../../../02-计算机基础/网络/DNS解析.md) |
+| `lookup ...: no such host` | 建连（DNS） | 域名不存在/DNS 不可达/CoreDNS 抖动 | 先看服务名与 DNS，别急着重试；重试要退避，见 [DNS解析.md](../../../02-计算机基础/网络/网络层与寻址/DNS解析.md) |
 | `connect: connection refused` | 建连 | 对端没监听/端口错/进程挂了 | 不重试（是配置或部署问题），`errors.Is(err, syscall.ECONNREFUSED)` 判定 |
 | `context deadline exceeded (Client.Timeout exceeded while awaiting headers)` | 等响应头 | 下游 hang 或太慢 | 可重试（幂等前提下），并检查下游负载 |
 | `net/http: timeout awaiting response headers` | 等响应头 | `ResponseHeaderTimeout` 触发 | 同上，见 5.2 |
@@ -893,9 +893,9 @@ if err != nil {
 - [不使用protoc的gRPC.md](不使用protoc的gRPC.md) — gRPC 客户端走 HTTP/2，一条长连接多路复用，连接池概念与本篇的差别
 - [限流器.md](../并发编程/限流器.md) — `MaxConnsPerHost` 是并发维度的天然限流，与令牌桶/熔断的组合方式
 - [context.md](../工程实践/context.md) — 用 `ctx` 而不是 `Client.Timeout` 表达「整次调用的预算」，以及取消如何传到连接层
-- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — 版本协商（h1 keep-alive / h2 多路复用）与应用层协议的取舍
-- [HTTPS与TLS.md](../../../02-计算机基础/网络/HTTPS与TLS.md) — `TLSHandshakeTimeout`、证书链校验与 `InsecureSkipVerify` 的风险边界
-- [DNS解析.md](../../../02-计算机基础/网络/DNS解析.md) — `lookup ...: no such host` 背后的解析链路，以及 DNS 为什么算在超时里
-- [TCP四次挥手.md](../../../02-计算机基础/网络/tcp/TCP四次挥手.md) — 3.3/4.4 里 `tw` 计数上涨的机制
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md) — 版本协商（h1 keep-alive / h2 多路复用）与应用层协议的取舍
+- [HTTPS与TLS.md](../../../02-计算机基础/网络/应用层/HTTPS与TLS.md) — `TLSHandshakeTimeout`、证书链校验与 `InsecureSkipVerify` 的风险边界
+- [DNS解析.md](../../../02-计算机基础/网络/网络层与寻址/DNS解析.md) — `lookup ...: no such host` 背后的解析链路，以及 DNS 为什么算在超时里
+- [TCP四次挥手.md](../../../02-计算机基础/网络/传输层/tcp/TCP四次挥手.md) — 3.3/4.4 里 `tw` 计数上涨的机制
 - [素材清单.md](../../../素材清单.md) — 本篇引用的官方文档与源码出处
 > 反向引用（本篇被下列文档引到）：[HTTP服务端与优雅关停.md](HTTP服务端与优雅关停.md)

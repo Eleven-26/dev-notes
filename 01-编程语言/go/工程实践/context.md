@@ -511,7 +511,7 @@ timeoutCtx, cancel2 := context.WithTimeout(bg, time.Second)  // 带超时
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — 取消信号传不下去就会漏协程
 - [errgroup与pipeline.md](../并发编程/errgroup与pipeline.md) — 第五节的 errgroup 语义（首错传播 / `SetLimit` / 取消不泄漏 / channel 谁来 close）在彼整篇展开
 - [channel原理与底层实现.md](../并发编程/channel原理与底层实现.md) — 取消传播本质是 close 广播
-- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — 客户端侧的请求取消与超时
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md) — 客户端侧的请求取消与超时
 - [稳定性三件套.md](../../../04-架构与系统/分布式/服务治理/稳定性三件套.md) — 超时预算与熔断的关系
 - [数据导入导出设计.md](../../../04-架构与系统/系统设计/数据导入导出设计.md) — 异步任务的取消与超时：ctx 要贯穿到每一批提交的安全点
 - [错误处理.md](../类型与语法/错误处理.md) — 取消（context.Canceled / DeadlineExceeded）也是错误值，判定与包装在彼

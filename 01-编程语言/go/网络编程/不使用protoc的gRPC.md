@@ -319,7 +319,7 @@ ok  	gwlab/internal/transcode	0.718s
 | `x-user-id` | 用户身份 | 认证鉴权结果 |
 | `x-real-ip` | 真实客户端 IP | 入口 `clientip.Resolve` 的解析结果 |
 
-⚠️ 只透传**白名单**：网关把 `Cookie` / `User-Agent` 之类塞进 metadata 没有意义，还会把请求头污染进协议头；`x-real-ip` 也必须与 HTTP 出口取**同一个值**（见 [客户端真实IP与可信代理.md](../../../02-计算机基础/网络/客户端真实IP与可信代理.md)），否则同一请求经两条出口会给上游两个口径。
+⚠️ 只透传**白名单**：网关把 `Cookie` / `User-Agent` 之类塞进 metadata 没有意义，还会把请求头污染进协议头；`x-real-ip` 也必须与 HTTP 出口取**同一个值**（见 [客户端真实IP与可信代理.md](../../../02-计算机基础/网络/应用层/客户端真实IP与可信代理.md)），否则同一请求经两条出口会给上游两个口径。
 
 ---
 
@@ -432,9 +432,9 @@ go build -o "$TEMP/grpclab.exe" . && cd "$TEMP" && ./grpclab.exe   # 代码存�
 - [从零实现网关.md](从零实现网关.md) — 第七节「协议转换：HTTP 请求怎么变成 gRPC 调用」是同一命题的**简版**，本篇把 codec、`ServiceDesc`、连接池讲透
 - [Kratos框架.md](../工程实践/框架/微服务/Kratos框架.md) — 有 `protoc` 时的常规路线：生成 stub、metadata 前缀规范、proto 里的校验规则
 - [context.md](../工程实践/context.md) — `ctx` 超时预算与级联取消，正是 RPC 超时能穿透的基础
-- [HTTP与gRPC.md](../../../02-计算机基础/网络/HTTP与gRPC.md) — HTTP/1.1 vs HTTP/2 vs gRPC 的**协议语义对照**（本篇只讲不用代码生成怎么调 / 怎么写，两者分工互补）
+- [HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md) — HTTP/1.1 vs HTTP/2 vs gRPC 的**协议语义对照**（本篇只讲不用代码生成怎么调 / 怎么写，两者分工互补）
 - [数据序列化.md](../../../02-计算机基础/网络/数据序列化.md) — protobuf 与 JSON 的**格式选型**与体积 / 性能实测
-- [客户端真实IP与可信代理.md](../../../02-计算机基础/网络/客户端真实IP与可信代理.md) — `x-real-ip` 在 HTTP 出口与 gRPC metadata 两条路上的同源问题
+- [客户端真实IP与可信代理.md](../../../02-计算机基础/网络/应用层/客户端真实IP与可信代理.md) — `x-real-ip` 在 HTTP 出口与 gRPC metadata 两条路上的同源问题
 - [net包与TCP-UDP编程.md](net包与TCP-UDP编程.md) — gRPC 走 HTTP/2；TCP framing 与它怎么选、UDS 快多少在彼第十节
 - [HTTP客户端与连接池.md](HTTP客户端与连接池.md) — gRPC 复用连接的对照：HTTP 客户端的连接池与它各自的复用边界在彼
 - [基础概念.md](../../../03-数据与中间件/中间件/RPC框架/gRPC/基础概念.md) — 本篇主题的**本体篇**：第六节正面回答「不用 protoc 也能调，那 protoc 到底省了什么」，含默认限额与 wire 层实测

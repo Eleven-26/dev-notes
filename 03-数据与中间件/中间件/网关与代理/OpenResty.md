@@ -824,7 +824,7 @@ http {
 - [网络通信链路详解.md](../../../02-计算机基础/网络/网络通信链路详解.md) — 请求到达网关之前那一跳（NAT / LB / CDN）改了什么
 - [服务发现与负载均衡.md](../../../04-架构与系统/分布式/服务治理/服务发现与负载均衡.md) — 动态 upstream 的控制面（`balancer_by_lua*` 的上一层）
 - [Web攻击与防御.md](../../../06-工程实践/安全/Web攻击与防御.md) — 6.5 的 WAF 只是"降噪"，真正的注入防御在参数化查询
-- [HTTPS与TLS.md](../../../02-计算机基础/网络/HTTPS与TLS.md) — `ssl_certificate_by_lua*` 按 SNI 动态选证书的前置知识
+- [HTTPS与TLS.md](../../../02-计算机基础/网络/应用层/HTTPS与TLS.md) — `ssl_certificate_by_lua*` 按 SNI 动态选证书的前置知识
 - [容器原理.md](../../../06-工程实践/部署/docker/容器原理.md) — Nginx / OpenResty 的官方镜像与容器化部署（`nginx -g` 传参那点事）
 - [Kratos框架.md](../../../01-编程语言/go/工程实践/框架/微服务/Kratos框架.md) — 网关与微服务框架的分工边界
 - [14-OpenResty生态.md](../../../02-计算机基础/linux/深入理解Nginx/14-OpenResty生态.md) — **生态与版本增量**：`lua-resty-*` 三层地图、1.31.1.1 变更清单、LuaJIT `ffi.abi()`（本篇讲用法，那篇讲版本与生态）

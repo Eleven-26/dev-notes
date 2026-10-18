@@ -5,7 +5,7 @@
 >
 > ⚠️ **本篇只讲 Nginx 侧「怎么编译、怎么配、有什么约束」**。
 > QUIC 协议本身（流级重传、连接迁移、0-RTT 的代价、浏览器怎么发现 h3）
-> 见 [QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md)，本篇不重复。
+> 见 [QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md)，本篇不重复。
 >
 > 现代特性基于 Nginx 官方文档（`quic.html` / `ngx_http_v3_module.html`）与
 > 官方 Release Notes（1.25.0 ~ 1.31.6）独立整理。实测口径见本目录
@@ -269,7 +269,7 @@ docker run --rm -v $PWD/h3.conf:/etc/nginx/nginx.conf:ro \
 **不一定**。QUIC 的收益集中在：高丢包网络下的队头阻塞消除、连接建立轮次减少、
 网络切换不断连。⭐ 在**低丢包、有连接复用**的机房内网里，h3 的提升可能很小，
 甚至因为用户态协议栈更耗 CPU 而略慢。判据是**看你的用户网络质量**，
-不是看基准测试的分数。协议本身的取舍见 [QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md)。
+不是看基准测试的分数。协议本身的取舍见 [QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md)。
 
 ### 2. 为什么官方推荐 BoringSSL 而不是 OpenSSL？
 
@@ -309,6 +309,6 @@ eBPF 可用，且常见 CNI 会做 NAT 破坏源地址）；
 - [03-事件驱动与epoll.md](03-事件驱动与epoll.md) — QUIC 对事件模型的影响（一 fd 多连接）
 - [04-HTTP框架执行流程.md](04-HTTP框架执行流程.md) — `add_header ... always` 与状态码白名单
 - [08-upstream与子请求.md](08-upstream与子请求.md) — 下游是 QUIC、上游仍是 TCP
-- [QUIC与HTTP3.md](../../网络/QUIC与HTTP3.md) — **协议本身**（流级重传、0-RTT 代价、连接迁移）
+- [QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md) — **协议本身**（流级重传、0-RTT 代价、连接迁移）
 - [网关选型对比.md](../../../03-数据与中间件/中间件/网关与代理/网关选型对比.md) — Nginx 作网关的能力边界
 > 反向引用（本篇被下列文档引到）：[14-OpenResty生态.md](14-OpenResty生态.md)、[15-Tengine生态.md](15-Tengine生态.md)
