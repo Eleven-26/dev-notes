@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <defs>
+    <marker id="lp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一棵树，四种模型把「路径」冗余在哪</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">三个节点 1 → 12 → 123；冗余越多，查子孙越快、写越贵（相对代价示意，无新读数）</text>
+
+  <rect x="30" y="78" width="360" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="31" y="79" width="358" height="32" rx="9" fill="#e2e8f0"/>
+  <text x="46" y="101" font-size="14" font-weight="bold" fill="#0f172a">A 同一棵树：1 → 12 → 123</text>
+  <rect x="55" y="140" width="80" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="95" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">1</text>
+  <rect x="175" y="140" width="80" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="215" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">12</text>
+  <rect x="295" y="140" width="80" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="335" y="166" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">123</text>
+  <path d="M 135 162 L 175 162" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#lp)"/>
+  <path d="M 255 162 L 295 162" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#lp)"/>
+  <text x="46" y="220" font-size="12" fill="#334155">根 → 中间节点 → 叶：路径 P = 1 → 12 → 123</text>
+  <text x="46" y="248" font-size="12" fill="#334155">四种模型的差别只有一句：这条路径存几份、存在哪。</text>
+  <text x="46" y="282" font-size="12" fill="#b91c1c">层级一深，冗余的那一份会跟着变大</text>
+  <text x="46" y="330" font-size="11.5" fill="#64748b">（图内为相对代价示意，未引入实测读数）</text>
+
+  <rect x="410" y="78" width="560" height="66" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="411" y="79" width="558" height="26" rx="9" fill="#e2e8f0"/>
+  <text x="426" y="97" font-size="13" font-weight="bold" fill="#0f172a">B 邻接表：只记父亲</text>
+  <text x="426" y="120" font-size="12" fill="#334155">123 | parent_id = 12</text>
+  <text x="426" y="138" font-size="11.5" fill="#64748b">冗余 0 份：路径靠递归一层层拼；写只改一行</text>
+
+  <rect x="410" y="152" width="560" height="66" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="411" y="153" width="558" height="26" rx="9" fill="#e2e8f0"/>
+  <text x="426" y="171" font-size="13" font-weight="bold" fill="#0f172a">C 路径枚举：整条路径写进行里</text>
+  <text x="426" y="194" font-size="12" fill="#334155">123 | path = /1/12/123/</text>
+  <text x="426" y="212" font-size="11.5" fill="#64748b">冗余 1 份完整路径：前缀范围扫快；移动要重写所有子孙</text>
+
+  <rect x="410" y="226" width="560" height="66" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="411" y="227" width="558" height="26" rx="9" fill="#e2e8f0"/>
+  <text x="426" y="245" font-size="13" font-weight="bold" fill="#0f172a">D 嵌套集：把树压成左右值区间</text>
+  <text x="426" y="268" font-size="12" fill="#334155">123 | left = 3 · right = 4</text>
+  <text x="426" y="286" font-size="11.5" fill="#64748b">冗余 1 对区间：1=(1,6)、12=(2,5)、123=(3,4)</text>
+
+  <rect x="410" y="300" width="560" height="66" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="411" y="301" width="558" height="26" rx="9" fill="#e2e8f0"/>
+  <text x="426" y="319" font-size="13" font-weight="bold" fill="#0f172a">E 闭包表：每条祖先-后代关系存一行</text>
+  <text x="426" y="342" font-size="12" fill="#334155">(1,123,2) (12,123,1) (123,123,0)</text>
+  <text x="426" y="360" font-size="11.5" fill="#64748b">冗余 N 份关系：行数 ≈ 节点数 × 平均深度</text>
+
+  <rect x="30" y="396" width="940" height="190" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="424" font-size="13" font-weight="bold" fill="#1e40af">判据：冗余放在哪，就决定了哪一头贵</text>
+  <text x="46" y="454" font-size="12" fill="#1e3a8a">邻接表——0 份：写最便宜，查子孙逐层递归（深度 = 树高）</text>
+  <text x="46" y="480" font-size="12" fill="#1e3a8a">路径枚举——1 份整串：前缀范围扫，移动子树要重写所有子孙</text>
+  <text x="46" y="506" font-size="12" fill="#1e3a8a">嵌套集——1 对左右值：范围查很快，增删要挪半个表</text>
+  <text x="46" y="532" font-size="12" fill="#1e3a8a">闭包表——N 份祖先-后代关系：任意深度一次索引查，增删 O(深度²) 行</text>
+  <text x="46" y="558" font-size="12" fill="#1e3a8a">落点：先看读多还是写多，再看层级深不深；有环 / 多父 / 边带属性就不是树</text>
+</svg>

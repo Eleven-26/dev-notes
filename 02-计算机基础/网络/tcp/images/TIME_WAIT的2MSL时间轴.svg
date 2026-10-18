@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 620" width="1060" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1060" height="620" fill="#ffffff"/>
+  <defs>
+    <marker id="tw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+  <text x="530" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">TIME_WAIT 的 2MSL 在等什么：两件事各占一个 MSL</text>
+  <text x="530" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">只画时间轴与两个作用；具体时长按平台口径读，不写死一个数字</text>
+
+  <rect x="110" y="80" width="420" height="36" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="320" y="104" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e40af">第一件事：保证第 4 个 ACK 送达</text>
+  <rect x="530" y="80" width="420" height="36" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="740" y="104" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#166534">第二件事：让旧连接的延迟报文过期</text>
+
+  <path d="M 110 140 L 950 140" stroke="#334155" stroke-width="2" marker-end="url(#tw)"/>
+  <path d="M 110 132 L 110 148" stroke="#334155" stroke-width="2"/>
+  <path d="M 530 132 L 530 148" stroke="#334155" stroke-width="2"/>
+  <path d="M 950 132 L 950 148" stroke="#334155" stroke-width="2"/>
+
+  <text x="110" y="170" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e40af">进入 TIME_WAIT</text>
+  <text x="110" y="186" text-anchor="middle" font-size="10.5" fill="#64748b">主动关闭方</text>
+  <text x="530" y="170" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">1 MSL</text>
+  <text x="950" y="170" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#166534">2 MSL → CLOSED</text>
+
+  <rect x="110" y="204" width="420" height="112" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="126" y="230" font-size="12" font-weight="bold" fill="#1e40af">ACK 丢了怎么办</text>
+  <text x="126" y="256" font-size="11.5" fill="#334155">第 4 个 ACK 丢失 → 对端重传 FIN</text>
+  <text x="126" y="278" font-size="11.5" fill="#334155">本端还在 TIME_WAIT → 再回一次 ACK</text>
+  <text x="126" y="302" font-size="11.5" fill="#b91c1c">否则对端重传到超时，连接悬空</text>
+
+  <rect x="530" y="204" width="420" height="112" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="546" y="230" font-size="12" font-weight="bold" fill="#166534">旧报文为什么必须过期</text>
+  <text x="546" y="256" font-size="11.5" fill="#334155">同一四元组很快复用时，网络里可能</text>
+  <text x="546" y="278" font-size="11.5" fill="#334155">还留着旧连接的数据段</text>
+  <text x="546" y="302" font-size="11.5" fill="#334155">一个报文占用的序号直到 MSL 过去才释放</text>
+
+  <text x="46" y="360" font-size="12.5" font-weight="bold" fill="#0f172a">三个平台的时长口径（结构相同，数值不同）</text>
+
+  <rect x="60" y="378" width="300" height="112" rx="9" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="76" y="404" font-size="12" font-weight="bold" fill="#1e40af">RFC 9293</text>
+  <text x="76" y="430" font-size="11.5" fill="#334155">MSL = 2 分钟</text>
+  <text x="76" y="452" font-size="11.5" fill="#334155">2MSL = 4 分钟</text>
+  <text x="76" y="474" font-size="11" fill="#64748b">规范建议值，不是实现默认值</text>
+
+  <rect x="380" y="378" width="300" height="112" rx="9" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+  <text x="396" y="404" font-size="12" font-weight="bold" fill="#166534">Linux</text>
+  <text x="396" y="430" font-size="11.5" fill="#334155">TIME_WAIT 固定 60 秒</text>
+  <text x="396" y="452" font-size="11.5" fill="#334155">内核常量 TCP_TIMEWAIT_LEN</text>
+  <text x="396" y="474" font-size="11" fill="#b91c1c">tcp_fin_timeout 管的是 FIN_WAIT_2</text>
+
+  <rect x="700" y="378" width="300" height="112" rx="9" fill="#fefce8" stroke="#fde047" stroke-width="1"/>
+  <text x="716" y="404" font-size="12" font-weight="bold" fill="#92400e">Windows</text>
+  <text x="716" y="430" font-size="11.5" fill="#334155">注册表 TcpTimedWaitDelay</text>
+  <text x="716" y="452" font-size="11.5" fill="#334155">本机实测约 121 秒</text>
+  <text x="716" y="474" font-size="11" fill="#64748b">与默认 120 秒吻合</text>
+
+  <rect x="60" y="516" width="940" height="66" rx="9" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="76" y="542" font-size="12.5" font-weight="bold" fill="#1e40af">谁先 close 谁进 TIME_WAIT；它不是故障，而是两件事的等待窗口。</text>
+  <text x="76" y="566" font-size="12" fill="#1e3a8a">想用 RST 或调参绕开它之前，先算清省掉的是「ACK 兜底」还是「旧报文隔离」。</text>
+</svg>

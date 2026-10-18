@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <defs>
+    <marker id="sp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="sb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">倒排副本的写入流转：从内存缓冲到不可变段，再到后台合并</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">「段 + 合并」把随机更新换成追加写；代价是写入放大、索引常比原文大、分词一改要整体重索引</text>
+
+  <text x="40" y="104" font-size="11.5" fill="#64748b">写路径：一路追加，不原地改</text>
+
+  <rect x="40" y="118" width="155" height="62" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="117.5" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">写入请求</text>
+  <text x="117.5" y="164" text-anchor="middle" font-size="11" fill="#1e3a8a">新增 / 更新 / 删除</text>
+
+  <rect x="235" y="118" width="175" height="62" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="322.5" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">内存缓冲</text>
+  <text x="322.5" y="164" text-anchor="middle" font-size="11" fill="#475569">倒排小块</text>
+
+  <rect x="450" y="118" width="170" height="62" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="535" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e40af">refresh</text>
+  <text x="535" y="164" text-anchor="middle" font-size="11" fill="#1e3a8a">生成不可变段</text>
+
+  <rect x="660" y="118" width="150" height="62" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="735" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">段集合</text>
+  <text x="735" y="164" text-anchor="middle" font-size="11" fill="#475569">多个小段</text>
+
+  <rect x="845" y="118" width="125" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="907.5" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">查询可见</text>
+  <text x="907.5" y="164" text-anchor="middle" font-size="11" fill="#166534">从段里读</text>
+
+  <path d="M 195 149 L 235 149" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <path d="M 410 149 L 450 149" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <path d="M 620 149 L 660 149" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <path d="M 810 149 L 845 149" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+
+  <rect x="40" y="220" width="155" height="56" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="117.5" y="242" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#0f172a">translog</text>
+  <text x="117.5" y="261" text-anchor="middle" font-size="10.5" fill="#475569">崩溃后重放</text>
+  <path d="M 117.5 180 L 117.5 220" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <text x="205" y="243" font-size="11.5" fill="#64748b">先追加 translog，再改内存</text>
+  <text x="205" y="263" font-size="11.5" fill="#64748b">崩溃后按它重放，不依赖内存</text>
+
+  <text x="430" y="292" font-size="11.5" fill="#64748b">refresh 吐出的不可变段</text>
+  <path d="M 735 180 L 695 300" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+
+  <rect x="430" y="300" width="90" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="475" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">段 A</text>
+  <rect x="540" y="300" width="90" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="585" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">段 B</text>
+  <rect x="650" y="300" width="90" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="695" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">段 C</text>
+  <rect x="760" y="300" width="90" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="805" y="325" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e40af">段 D</text>
+
+  <path d="M 475 340 L 475 400" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <path d="M 585 340 L 585 400" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <path d="M 695 340 L 695 400" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <path d="M 805 340 L 805 400" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#sp)"/>
+  <text x="640" y="378" text-anchor="middle" font-size="11.5" fill="#64748b">后台合并</text>
+
+  <rect x="430" y="400" width="420" height="56" rx="8" fill="#e2e8f0" stroke="#475569" stroke-width="1.2"/>
+  <text x="640" y="425" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">合并后的大段</text>
+  <text x="640" y="445" text-anchor="middle" font-size="11.5" fill="#334155">段变少、查询更快，删除标记被真正清掉</text>
+
+  <text x="46" y="340" font-size="13" font-weight="bold" fill="#0f172a">为什么是「段 + 合并」，不是原地改</text>
+  <text x="46" y="368" font-size="12" fill="#334155">一个文档的每个词都要更新对应列表 → 写入放大</text>
+  <text x="46" y="396" font-size="12" fill="#334155">原地改要动大量列表，并发与崩溃一致性都难</text>
+  <text x="46" y="424" font-size="12" fill="#334155">不可变段：写入 = 追加 + 后台合并（LSM 同一思路）</text>
+
+  <rect x="30" y="500" width="940" height="150" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="46" y="528" font-size="13" font-weight="bold" fill="#1e40af">判据：倒排为「找」付的是写代价</text>
+  <text x="46" y="558" font-size="12" fill="#1e3a8a">查得快 = 词→文档列表的直接定位；代价全落在写侧</text>
+  <text x="46" y="584" font-size="12" fill="#1e3a8a">写入放大 → 用不可变段 + 后台合并消化（LSM 同一思路）</text>
+  <text x="46" y="610" font-size="12" fill="#1e3a8a">索引常比原文还大；分词器一改必须整体重索引</text>
+  <text x="46" y="636" font-size="12" fill="#1e3a8a">「刚写完搜不到」不是 bug：可见时点是 refresh（第四节）</text>
+</svg>
