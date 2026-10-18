@@ -2,7 +2,7 @@
 
 > 覆盖：网关部署在 LB / SLB / CDN 后面时怎么拿到真实客户端 IP —— `r.RemoteAddr` 为什么不可用、`X-Forwarded-For` 的链式语义、五条解析规则、五个易错点、可信列表的配置与容错，以及 `X-Real-IP` 由谁写。
 >
-> 不覆盖：网关怎么写这些头见 [反向代理原理与实现.md](反向代理原理与实现.md)；代理这一跳在整条链路上改了什么见 [网络通信链路详解.md](../网络通信链路详解.md)；按 IP 限流与负载保护见 [负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md)。
+> 不覆盖：Go 侧的完整接入（`ParseTrusted` / `Resolve` / 入口中间件 / 出口复用 / 测试）见 [客户端IP接入.md](../../../01-编程语言/go/网络编程/客户端IP接入.md)；网关怎么写这些头见 [反向代理原理.md](反向代理原理.md)；代理这一跳在整条链路上改了什么见 [网络通信链路详解.md](../网络通信链路详解.md)；按 IP 限流与负载保护见 [负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md)。
 >
 > 内容整理自个人学习笔记；实测基于自研网关项目 [gateway](https://github.com/Eleven-26/gateway)（module `gwlab`，Go 1.26.5）。
 >
@@ -78,7 +78,7 @@
 ⚠️ **关键结论：两者的安全性质完全相同——都是客户端能自己塞的普通请求头。** 所以本篇的规则对二者**一样适用**：
 **先判直接对端是否可信，再从右往左解析**。`Forwarded` 只是「表达力更全、解析更麻烦」，**不会因为用了标准头就变可信**。
 
-> 📎 也因此，两者在**入站侧通常都被列入「一律剥离」**的名单（见 [反向代理原理与实现.md](反向代理原理与实现.md) 3.3）。
+> 📎 也因此，两者在**入站侧通常都被列入「一律剥离」**的名单（见 [反向代理原理.md](反向代理原理.md) 3.3）。
 
 ### 2.2 三层容器实测：链上每一段是谁写的
 
@@ -126,31 +126,15 @@ Go 反向代理（`go1.26.8 linux/amd64`，跑在 `alpine:3.21` 里）作网关�
 
 ### 3.1 规则全景
 
-```go
-func Resolve(remoteAddr string, h http.Header, trusted []netip.Prefix) string {
-    host := hostOnly(remoteAddr)
-    peer, ok := parseIP(host)
-    if !ok { return host }
+五条规则按顺序执行：
 
-    // ① 对端不可信：转发头一律不采信。这是本包的安全底线。
-    if !trustedHas(trusted, peer) { return peer.String() }
+1. **对端不可信 → 直接返回对端**：`XFF` / `X-Real-IP` 一个字节都不看（安全底线）；
+2. **对端可信 → 从 XFF 最右侧往左扫**：第一个不在可信网段内的地址就是真实客户端；
+3. **整条链都在可信网段 → 取最左**；
+4. **没有可用的 XFF → 回落 `X-Real-IP`**；
+5. **兜底 → 对端自己**（它本身是可信代理）。
 
-    // ② 从 XFF 最右侧往左走，跳过可信跳，第一个不可信地址即真实客户端。
-    chain := parseChain(h.Values("X-Forwarded-For"))
-    for i := len(chain) - 1; i >= 0; i-- {
-        if !trustedHas(trusted, chain[i]) { return chain[i].String() }
-    }
-
-    // ③ 整条链都在可信网段内：取最左那个
-    if len(chain) > 0 { return chain[0].String() }
-
-    // ④ 没有可用的 XFF：回落 X-Real-IP
-    if ip, ok := parseIP(hostOnly(h.Get("X-Real-IP"))); ok { return ip.String() }
-
-    // ⑤ 兜底：对端自己（它本身是可信代理）
-    return peer.String()
-}
-```
+> 完整实现（`Resolve` / `parseChain` / `ParseTrusted` / 入口中间件）与十个表驱动用例见 [客户端IP接入.md](../../../01-编程语言/go/网络编程/客户端IP接入.md)。
 
 ⭐ **规则 ③ 为什么要取「最左」而不是「退回对端」**：
 
@@ -426,7 +410,7 @@ proxy_addr=1.2.3.4 proxy_port=40000 proxy_server=5.6.7.8 proxy_server_port=80 re
 **本节要点**：前六节都在讲**怎么读**转发头；但同一个头**由谁写、写的是谁**同样决定结论 ——
 这里有一个极易复发的位置：入口已经解析对了，**出口又按原始地址推了一遍**。
 
-第四节给出的上游侧口径是「取真实客户端 IP 要用 `X-Real-IP`」。那这个头是谁写的？—— **网关**（见 [反向代理原理与实现.md](反向代理原理与实现.md) 第三节）。它在 `Director` 里写。⚠️ 下面这版是**反面写法**：
+第四节给出的上游侧口径是「取真实客户端 IP 要用 `X-Real-IP`」。那这个头是谁写的？—— **网关**（见 [反向代理原理.md](反向代理原理.md) 第三节）。它在 `Director` 里写。⚠️ 下面这版是**反面写法**：
 
 ```go
 // ⚠️ 反面写法：从 RemoteAddr 推 —— 写出来的是「直连对端」，不一定是客户端
@@ -469,22 +453,10 @@ if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
 项目里的 `X-Forwarded-User` 早就是这个写法 —— 它从 `auth.FromContext` 取，而不是从入站头里读。
 真实客户端 IP 现在也走同一条路：
 
-```go
-// 入口：解析一次，并把结果挂到 ctx（internal/gateway/gateway.go）
-clientIP := clientip.Resolve(r.RemoteAddr, r.Header, snap.trustedProxies)
-r = r.WithContext(clientip.WithClient(r.Context(), clientIP))
+做法只有两句话：**入口解析一次，把结果挂进 `context`；出口优先从 `context` 取，只有没挂过时才退回 `RemoteAddr`。**
+⚠️ 那个**回落分支**不是可选的：它让「直接调用代理包 / 单测手工构造请求」仍有确定语义，同时修掉一个边界 —— 旧写法忽略 `SplitHostPort` 的错误，`RemoteAddr` 不带端口时会写出**空的 `X-Real-IP`**。
 
-// 出口：优先取 ctx 里的解析结果，只有没挂过时才退回 RemoteAddr（internal/proxy/proxy.go）
-func clientIPOf(req *http.Request) string {
-    if ip, ok := clientip.FromClient(req.Context()); ok {
-        return ip
-    }
-    if host, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
-        return host
-    }
-    return req.RemoteAddr
-}
-```
+> 入口中间件、`FromClient` / `WithClient` 与端到端测试见 [客户端IP接入.md](../../../01-编程语言/go/网络编程/客户端IP接入.md)。
 
 ⚠️ 别小看那个**回落分支**：它让「直接调用 `proxy` 包 / 单测里手工构造的请求」仍有确定语义，
 同时顺手修掉一个边界 —— 旧写法 `clientIP, _, _ := net.SplitHostPort(...)` **忽略了错误**，
@@ -539,7 +511,7 @@ realip_test.go:74: 上游看到的 X-Real-IP = "127.0.0.1"，期望 "9.9.9.9"；
 
 同一组四容器实测（客户端走 `https`，前置 nginx 按标准写法补
 `X-Real-IP $remote_addr` 与 `X-Forwarded-Proto $scheme`；完整读数见
-[反向代理原理与实现.md](反向代理原理与实现.md) 的 4.2 小节，A、B 各连跑 3 次一致）：
+[反向代理原理.md](反向代理原理.md) 的 4.2 小节，A、B 各连跑 3 次一致）：
 
 | 出口写法 | 网关看到的入站 | 上游收到的 `X-Real-IP` | 上游收到的 `X-Forwarded-Proto` |
 |---|---|---|---|
@@ -630,17 +602,8 @@ realip_test.go:74: 上游看到的 X-Real-IP = "127.0.0.1"，期望 "9.9.9.9"；
 
 #### 只解析一次，三处共用同一个值
 
-```go
-// ===== 入口：整个请求只解析这一次 =====
-clientIP := clientip.Resolve(r.RemoteAddr, r.Header, snap.trustedProxies)
-entry.ClientIP = clientIP                        // ① 审计日志的 client 字段
-
-// ===== ③ 限流：key = 路由 + 用户 + IP =====
-g.rl.Allow(ratelimit.Key(m.Route.Name, identity.Subject, clientIP), p)
-
-// ===== ④ 选节点：一致性哈希没有显式 key 时回落到它 =====
-hashKey = clientIP
-```
+三处消费者都从**同一个入口解析结果**取值：审计日志的 `client` 字段、限流桶的 key、一致性哈希没有显式 key 时的兜底。
+代码形态与 `ratelimit.Key` 的实现见 [客户端IP接入.md](../../../01-编程语言/go/网络编程/客户端IP接入.md) 第七节。
 
 ⭐ **这三处必须共用同一个值**，不能各算各的：否则同一个请求在限流里是 A、在日志里是 B、在哈希环上是 C。
 本包的 `Resolve` 是**纯函数**（不缓存、不共享状态），所以「只调用一次」是为了**口径一致**，不是为了性能。
@@ -693,7 +656,7 @@ func Key(routeName, subject, ip string) string {
 - **`Forwarded`（RFC 7239）比 XFF 更好吗？** →
   格式更规范（能带 `proto` / `host` / `for` 且带引号与 IPv6 括号规则），
   但生态支持不如 XFF 广。实践上 XFF 仍是事实标准，
-  而**因它可伪造，网关侧通常把它列入「入站一律剥离」的列表**（见 [反向代理原理与实现.md](反向代理原理与实现.md)）。
+  而**因它可伪造，网关侧通常把它列入「入站一律剥离」的列表**（见 [反向代理原理.md](反向代理原理.md)）。
 - **伪造 XFF 的攻击者能造成什么？** →
   绕过基于 IP 的限流（每次换一个假 IP）、污染审计日志、让风控把正常用户误判
   （把自己的攻击流量写成别的 IP）。**注意最后一条：伪造不只是「自己逃逸」，还能「栽赃」**。
@@ -718,11 +681,11 @@ func Key(routeName, subject, ip string) string {
 ## 关联
 
 - **上游/总纲**：[网络分层与数据包旅程.md](../网络分层与数据包旅程.md) — 客户端与网关之间的分层
-- **对照/互补**：[反向代理原理与实现.md](反向代理原理与实现.md) — 网关如何写入 `X-Real-IP` / 为什么不手写 `X-Forwarded-For`
+- **对照/互补**：[反向代理原理.md](反向代理原理.md) — 网关如何写入 `X-Real-IP` / 为什么不手写 `X-Forwarded-For`
 - **对照/互补**：[网络通信链路详解.md](../网络通信链路详解.md) — 代理这一跳在整条链路上改了什么
 - **对照/互补**：[DNS解析.md](../网络层与寻址/DNS解析.md) — 另一类「客户端看起来来自哪里」的问题（就近接入与 GSLB）
 - **下游机制**：[JWT与APIKey鉴权.md](../../../06-工程实践/安全/JWT与APIKey鉴权.md) — 「不信任客户端输入」这条原则在鉴权侧的体现
 - **下游机制**：[Web攻击与防御.md](../../../06-工程实践/安全/Web攻击与防御.md) — 伪造头、绕过限流这类攻击的整体视角
 - **对照/互补**：[负载保护.md](../../../04-架构与系统/分布式/服务治理/负载保护.md) — 并发维度上的保护（与「按 IP 限流」互补）
 
-> 反向引用（本篇被下列文档引到）：[不使用protoc的gRPC.md](../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md)、[从零实现网关.md](../../../01-编程语言/go/网络编程/从零实现网关.md)、[网关路由匹配.md](../../../01-编程语言/go/网络编程/网关路由匹配.md)、[04-防火墙与NAT.md](../../linux/鸟哥服务器架设篇/04-防火墙与NAT.md)、[08-WWW服务器.md](../../linux/鸟哥服务器架设篇/08-WWW服务器.md)
+> 反向引用（本篇被下列文档引到）：[不使用protoc的gRPC.md](../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md)、[从零实现网关.md](../../../01-编程语言/go/网络编程/从零实现网关.md)、[反向代理接入.md](../../../01-编程语言/go/网络编程/反向代理接入.md)、[客户端IP接入.md](../../../01-编程语言/go/网络编程/客户端IP接入.md)、[网关路由匹配.md](../../../01-编程语言/go/网络编程/网关路由匹配.md)、[04-防火墙与NAT.md](../../linux/鸟哥服务器架设篇/04-防火墙与NAT.md)、[08-WWW服务器.md](../../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[NAT与连接跟踪.md](../网络层与寻址/NAT与连接跟踪.md)

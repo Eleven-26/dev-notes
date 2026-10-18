@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SNAT 改写与 conntrack 回程还原</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">出方向只改源 IP:端口并把映射写进表；回方向按表项还原，因此回程必须经过同一台设备</text>
+
+  <rect x="30" y="92" width="190" height="86" rx="9" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="125" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#3730a3">内网客户端</text>
+  <text x="125" y="142" text-anchor="middle" font-size="11" fill="#4338ca" font-family="Consolas, monospace">10.0.0.5:54321</text>
+  <text x="125" y="162" text-anchor="middle" font-size="10.5" fill="#64748b">源端口由内核分配</text>
+
+  <rect x="360" y="92" width="200" height="86" rx="9" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="460" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">NAT 网关（SNAT）</text>
+  <text x="460" y="142" text-anchor="middle" font-size="10.5" fill="#92400e">改写源地址，同时维护表项</text>
+  <text x="460" y="162" text-anchor="middle" font-size="10.5" fill="#92400e">回程查不到表项就丢弃</text>
+
+  <rect x="700" y="92" width="190" height="86" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="795" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">公网服务端</text>
+  <text x="795" y="142" text-anchor="middle" font-size="11" fill="#14532d" font-family="Consolas, monospace">203.0.113.80:443</text>
+  <text x="795" y="162" text-anchor="middle" font-size="10.5" fill="#14532d">只看到出口公网 IP</text>
+
+  <line x1="220" y1="118" x2="356" y2="118" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="356,118 344,112 344,124" fill="#2563eb"/>
+  <text x="235" y="108" font-size="10.5" fill="#1e40af">src 10.0.0.5:54321</text>
+
+  <line x1="560" y1="118" x2="696" y2="118" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="696,118 684,112 684,124" fill="#2563eb"/>
+  <text x="575" y="108" font-size="10.5" fill="#1e40af">src 203.0.113.9:40001</text>
+
+  <line x1="696" y1="152" x2="560" y2="152" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="560,152 572,146 572,158" fill="#16a34a"/>
+  <text x="575" y="172" font-size="10.5" fill="#15803d">dst 203.0.113.9:40001</text>
+
+  <line x1="356" y1="152" x2="220" y2="152" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="220,152 232,146 232,158" fill="#16a34a"/>
+  <text x="235" y="172" font-size="10.5" fill="#15803d">dst 10.0.0.5:54321</text>
+
+  <rect x="180" y="238" width="640" height="140" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="200" y="264" font-size="13" font-weight="bold" fill="#334155">conntrack 表项（键：协议 + 源 IP + 源端口 + 目的 IP + 目的端口）</text>
+  <line x1="200" y1="276" x2="800" y2="276" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="206" y="298" font-size="11" fill="#64748b">方向</text>
+  <text x="320" y="298" font-size="11" fill="#64748b">源</text>
+  <text x="560" y="298" font-size="11" fill="#64748b">目的</text>
+  <text x="746" y="298" font-size="11" fill="#64748b">状态</text>
+  <text x="206" y="324" font-size="11" fill="#1e40af">原始（出）</text>
+  <text x="320" y="324" font-size="11" fill="#1e40af" font-family="Consolas, monospace">10.0.0.5:54321</text>
+  <text x="560" y="324" font-size="11" fill="#1e40af" font-family="Consolas, monospace">203.0.113.80:443</text>
+  <text x="746" y="324" font-size="11" fill="#1e40af">ESTABLISHED</text>
+  <text x="206" y="348" font-size="11" fill="#15803d">改写后（回）</text>
+  <text x="320" y="348" font-size="11" fill="#15803d" font-family="Consolas, monospace">203.0.113.9:40001</text>
+  <text x="560" y="348" font-size="11" fill="#15803d" font-family="Consolas, monospace">203.0.113.80:443</text>
+  <text x="746" y="348" font-size="11" fill="#15803d">计时器：空闲超时</text>
+
+  <text x="180" y="404" font-size="10.5" fill="#94a3b8">注：地址取自 RFC 5737 文档段，仅作示意。表项过期或被清理后，回程报文查不到映射就会被丢弃；此时两侧可能都还以为连接存在。</text>
+</svg>

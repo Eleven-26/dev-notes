@@ -2,7 +2,7 @@
 
 > 覆盖：HTTP/3 为什么把 TCP 换掉、QUIC 在 UDP 之上重建了哪些能力、0-RTT 与连接迁移怎么工作，以及浏览器怎么知道该不该走 HTTP/3（DNS 宣告与 `Alt-Svc` 两条路径，以及失败如何回退）。
 >
-> 不覆盖：TCP 的握手、挥手与窗口见 [tcp/](tcp/) 五篇；TLS 握手与 ALPN 见 [HTTPS与TLS.md](HTTPS与TLS.md)；UDP 的基础语义见 [UDP与数据报传输.md](../传输层/UDP与数据报传输.md)；协议选型见 [通信选型.md](../通信选型.md)；链路与逐跳见 [网络通信链路详解.md](../网络通信链路详解.md)。
+> 不覆盖：TCP 的握手、挥手与窗口见 [TCP三次握手.md](../传输层/tcp/TCP三次握手.md)、[TCP滑动窗口.md](../传输层/tcp/TCP滑动窗口.md) 等五篇；TLS 握手与 ALPN 见 [HTTPS与TLS.md](HTTPS与TLS.md)；UDP 的基础语义见 [UDP与数据报传输.md](../传输层/UDP与数据报传输.md)；协议选型见 [通信选型.md](../选型/通信选型.md)；链路与逐跳见 [网络通信链路详解.md](../网络通信链路详解.md)。
 >
 > 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。
 >
@@ -127,7 +127,7 @@ QUIC 的连接身份是服务端分配的 **Connection ID**，写在每个包的
 - **QUIC 的 1 不是「TLS 1.3 的 1」**：TLS 1.3 的 1-RTT 只是省掉了 TLS 那一趟，**TCP 的三次握手那 1 次往返还在**，所以 TCP+TLS1.3 合计仍是 2；QUIC 把这两件事**合并进同一次往返**，这才是它真正省下的 1 个 RTT；
 - **0 是有条件的**：只有**复用上次会话**（带上次的 ticket）才是 0-RTT，首次连接不可能 0-RTT；而且 0-RTT 携带的数据**可被重放**，只能用于幂等请求（见 2.3）。
 
-> 🔗 握手报文逐条展开（ClientHello / ServerHello / Finished 各在哪个往返里）见 [HTTPS与TLS.md](HTTPS与TLS.md) 与同目录的 [TLS1.2与1.3握手对比.svg](images/TLS1.2与1.3握手对比.svg)、[TLS1.2完整握手时序图.svg](images/TLS1.2完整握手时序图.svg)；TCP 三次握手本身的三包对应关系见 [tcp/TCP三次握手.md](../传输层/tcp/TCP三次握手.md)。本图只对齐「往返数」这一个量，不重画报文。
+> 🔗 握手报文逐条展开（ClientHello / ServerHello / Finished 各在哪个往返里）见 [HTTPS与TLS.md](HTTPS与TLS.md) 与同目录的 [TLS1.2与1.3握手对比.svg](images/TLS1.2与1.3握手对比.svg)、[TLS1.2完整握手时序图.svg](images/TLS1.2完整握手时序图.svg)；TCP 三次握手本身的三包对应关系见 [TCP三次握手.md](../传输层/tcp/TCP三次握手.md)。本图只对齐「往返数」这一个量，不重画报文。
 
 ## 三、浏览器怎么知道该不该用 HTTP/3？
 
@@ -300,7 +300,7 @@ VN reply=27 bytes hex=C0 00 00 00 00 08 C0 C1 C2 C3 C4 C5 C6 C7 08 D0 D1 D2 D3 D
 
 - **看某站支不支持**：查两条发现路径 —— `HTTPS` 记录的 `alpn`（第三节 3.2 的脚本）与响应头 `Alt-Svc`（3.3）；
 - **看浏览器实际用了哪个**：DevTools → Network → 右键列头勾选 **Protocol** 列，会显示 `h2` / `h3`；
-- **看本机是否在发 QUIC**：`UDP 443` 有持续流量就是（抓包见 [抓包实战.md](../抓包实战.md)）；
+- **看本机是否在发 QUIC**：`UDP 443` 有持续流量就是（抓包见 [抓包实战.md](../观测与排障/抓包实战.md)）；
 - ⚠️ **不要在 UDP 被封的网络里"强开 HTTP/3"**：表现为首包等超时再回落，反而更慢。
 
 ---
@@ -316,7 +316,7 @@ VN reply=27 bytes hex=C0 00 00 00 00 08 C0 C1 C2 C3 C4 C5 C6 C7 08 D0 D1 D2 D3 D
 | CDN / 边缘节点 | 两条发现路径 | DNS `HTTPS` / `SVCB` 与 `Alt-Svc`，详见 本篇第三节 |
 | 首访省一趟往返 | 0-RTT（early data） | ⚠️ 有重放风险，详见 本篇 2.3 |
 | 网关与中间设备 | UDP 放行 / 回退 | UDP 被拦要能回退到 h2，详见 本篇 3.4 |
-| 协议选型 | h2 与 h3 的取舍 | 详见 [通信选型.md](../通信选型.md) |
+| 协议选型 | h2 与 h3 的取舍 | 详见 [通信选型.md](../选型/通信选型.md) |
 
 ## 六、具体使用
 
@@ -384,9 +384,9 @@ curl -sSI https://<域名>/ | grep -i '^alt-svc'
 - **对照/互补**：[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) — 应用层多路复用与队头阻塞的起点
 - **对照/互补**：[HTTPS与TLS.md](HTTPS与TLS.md) — QUIC 内嵌 TLS 1.3，ALPN 与证书都来自这里
 - **对照/互补**：[UDP与数据报传输.md](../传输层/UDP与数据报传输.md) — QUIC 的载体：UDP 的数据报语义
-- **对照/互补**：[tcp/TCP三次握手.md](../传输层/tcp/TCP三次握手.md) — QUIC 把三次握手压成 1-RTT（甚至 0-RTT）的对照
-- **对照/互补**：[tcp/TCP四次挥手.md](../传输层/tcp/TCP四次挥手.md) — QUIC 没有 `TIME_WAIT`：包号不复用，退出更干净
-- **对照/互补**：[tcp/TCP滑动窗口.md](../传输层/tcp/TCP滑动窗口.md) — QUIC 的流控是「流级 + 连接级」两层
+- **对照/互补**：[TCP三次握手.md](../传输层/tcp/TCP三次握手.md) — QUIC 把三次握手压成 1-RTT（甚至 0-RTT）的对照
+- **对照/互补**：[TCP四次挥手.md](../传输层/tcp/TCP四次挥手.md) — QUIC 没有 `TIME_WAIT`：包号不复用，退出更干净
+- **对照/互补**：[TCP滑动窗口.md](../传输层/tcp/TCP滑动窗口.md) — QUIC 的流控是「流级 + 连接级」两层
 - **下游机制**：[DNS解析.md](../网络层与寻址/DNS解析.md) — `HTTPS` / `SVCB` 记录属于资源记录类型，HTTP/3 的第一条入口在这里
 
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../../linux/深入理解Nginx/03-事件驱动与epoll.md)、[11-HTTP3与QUIC支持.md](../../linux/深入理解Nginx/11-HTTP3与QUIC支持.md)、[霍夫曼树.md](../../数据结构/树/霍夫曼树.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[抓包实战.md](../抓包实战.md)、[通信选型.md](../通信选型.md)
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../../linux/深入理解Nginx/03-事件驱动与epoll.md)、[11-HTTP3与QUIC支持.md](../../linux/深入理解Nginx/11-HTTP3与QUIC支持.md)、[霍夫曼树.md](../../数据结构/树/霍夫曼树.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[抓包实战.md](../观测与排障/抓包实战.md)、[通信选型.md](../选型/通信选型.md)

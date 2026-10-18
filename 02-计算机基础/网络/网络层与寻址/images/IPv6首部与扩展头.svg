@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">IPv6 固定 40 字节首部与扩展头链</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">基本首部长度固定，可选项放进扩展头；Next Header 把基本首部、扩展头与上层协议串成一条链</text>
+
+  <rect x="40" y="84" width="920" height="120" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="56" y="108" font-size="13" font-weight="bold" fill="#334155">IPv6 基本首部（40 字节）</text>
+
+  <rect x="56" y="120" width="160" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="136" y="140" text-anchor="middle" font-size="10.5" fill="#1e40af">Version (4) | TC (8)</text>
+  <rect x="216" y="120" width="160" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="296" y="140" text-anchor="middle" font-size="10.5" fill="#1e40af">Flow Label (20)</text>
+  <rect x="376" y="120" width="170" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="461" y="140" text-anchor="middle" font-size="10.5" fill="#14532d">Payload Length (16)</text>
+  <rect x="546" y="120" width="110" height="30" fill="#fef3c7" stroke="#d97706" stroke-width="1.1"/>
+  <text x="601" y="140" text-anchor="middle" font-size="10.5" fill="#92400e">Next Header (8)</text>
+  <rect x="656" y="120" width="110" height="30" fill="#fef3c7" stroke="#d97706" stroke-width="1.1"/>
+  <text x="711" y="140" text-anchor="middle" font-size="10.5" fill="#92400e">Hop Limit (8)</text>
+  <rect x="766" y="120" width="178" height="30" fill="#f1f5f9" stroke="#64748b" stroke-width="1.1"/>
+  <text x="855" y="140" text-anchor="middle" font-size="10.5" fill="#334155">（首部固定到此结束）</text>
+
+  <rect x="56" y="156" width="520" height="34" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.1"/>
+  <text x="316" y="178" text-anchor="middle" font-size="11" fill="#3730a3">Source Address（128 位 = 16 字节）</text>
+  <rect x="576" y="156" width="368" height="34" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.1"/>
+  <text x="760" y="178" text-anchor="middle" font-size="11" fill="#5b21b6">Destination Address（128 位 = 16 字节）</text>
+
+  <text x="56" y="224" font-size="10.5" fill="#64748b">⚠️ 没有首部校验和：IPv4 的 TTL 每跳减 1 需要重算首部校验和，IPv6 取消了这个字段（上层 TCP / UDP 校验和覆盖伪首部）。</text>
+
+  <rect x="40" y="248" width="920" height="98" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="56" y="272" font-size="13" font-weight="bold" fill="#334155">扩展头链（示例）</text>
+  <rect x="56" y="286" width="180" height="44" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="146" y="304" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">Hop-by-Hop</text>
+  <text x="146" y="321" text-anchor="middle" font-size="10" fill="#92400e">Next Header → 下一个</text>
+  <rect x="286" y="286" width="180" height="44" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="376" y="304" text-anchor="middle" font-size="11" font-weight="bold" fill="#92400e">Fragment</text>
+  <text x="376" y="321" text-anchor="middle" font-size="10" fill="#92400e">仅源端分片时出现</text>
+  <rect x="516" y="286" width="180" height="44" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="606" y="304" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">TCP / UDP</text>
+  <text x="606" y="321" text-anchor="middle" font-size="10" fill="#14532d">上层协议载荷</text>
+
+  <line x1="236" y1="308" x2="282" y2="308" stroke="#64748b" stroke-width="1.6"/>
+  <polygon points="282,308 272,303 272,313" fill="#64748b"/>
+  <line x1="466" y1="308" x2="512" y2="308" stroke="#64748b" stroke-width="1.6"/>
+  <polygon points="512,308 502,303 502,313" fill="#64748b"/>
+
+  <line x1="601" y1="150" x2="146" y2="286" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="860" y="318" font-size="10.5" fill="#64748b">基本首部的 Next Header 指向链首，</text>
+  <text x="860" y="334" font-size="10.5" fill="#64748b">每个扩展头再用自己的 Next Header 续链。</text>
+
+  <text x="40" y="378" font-size="11" fill="#334155">以太网 MTU 1500 时：IPv4 MSS = 1500 − 20 − 20 = 1460；IPv6 MSS = 1500 − 40 − 20 = 1440。</text>
+  <text x="40" y="404" font-size="10.5" fill="#94a3b8">注：字段位宽按 RFC 8200；扩展头顺序与是否出现取决于实际报文，图中只画最常见的一段链。</text>
+</svg>

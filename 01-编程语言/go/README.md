@@ -35,7 +35,7 @@
 | ⑮ | [程序启动流程.md](运行时/程序启动流程.md) + [零拷贝.md](运行时/零拷贝.md) + [反射与unsafe.md](运行时/反射与unsafe.md) + [runtime调试与trace.md](运行时/runtime调试与trace.md) | 底层机制与观测 |
 | ⑯ | [context.md](工程实践/context.md) + [依赖注入.md](工程实践/依赖注入.md) + [项目结构.md](工程实践/项目结构.md) | 工程基础 |
 | ⑰ | [日志与错误规范.md](工程实践/日志与错误规范.md) + [测试与Mock.md](工程实践/测试与Mock.md) + [子进程与外部命令.md](工程实践/子进程与外部命令.md) | 工程规范与系统交互 |
-| ⑱ | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) + [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) + [HTTP服务端与优雅关停.md](网络编程/HTTP服务端与优雅关停.md) + [网关路由匹配.md](网络编程/网关路由匹配.md) + [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) + [从零实现网关.md](网络编程/从零实现网关.md) | 网络与综合实战 |
+| ⑱ | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) + [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) + [HTTP服务端与优雅关停.md](网络编程/HTTP服务端与优雅关停.md) + [反向代理接入.md](网络编程/反向代理接入.md) + [客户端IP接入.md](网络编程/客户端IP接入.md) + [网关路由匹配.md](网络编程/网关路由匹配.md) + [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) + [从零实现网关.md](网络编程/从零实现网关.md) | 网络与综合实战 |
 | ⑲ | [接入Jaeger.md](可观测性/接入Jaeger.md) + [接入Skywalking.md](可观测性/接入Skywalking.md) + [手写Prometheus导出器.md](可观测性/手写Prometheus导出器.md) | 链路追踪与指标 |
 
 ---
@@ -123,13 +123,15 @@
 | [Eino框架.md](工程实践/框架/LLM应用/Eino框架.md) | 字节 Eino 大模型应用框架 |
 | [定时任务/](工程实践/定时任务/README.md) 四篇 | 进程内与中心化调度四条路线：[标准库实现.md](工程实践/定时任务/标准库实现.md)、[go-cron实现.md](工程实践/定时任务/go-cron实现.md)、[go-job实现.md](工程实践/定时任务/go-job实现.md)、[xxl-job接入.md](工程实践/定时任务/xxl-job接入.md)，导读见 [README.md](工程实践/定时任务/README.md) |
 
-### 2.5 网络编程/（6 篇）
+### 2.5 网络编程/（8 篇）
 
 | 篇 | 讲什么 |
 |---|---|
 | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) | `Listener` / `Conn` / `PacketConn` 三接口、粘包与拆包三解法、deadline 报错原文、双栈与选项、UDP 边界、Unix socket |
 | [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) | Client → Transport → 连接池三层、`MaxIdleConnsPerHost` 默认 2 的坑、超时三件套、Body 两条铁律、重试与真实报错原文 |
 | [HTTP服务端与优雅关停.md](网络编程/HTTP服务端与优雅关停.md) | `http.Server` 五个超时各防什么、`Handler` 与中间件的装饰器写法、1.22 起的 `ServeMux` 路由增强、`Shutdown` 的排空语义与自己的超时 |
+| [反向代理接入.md](网络编程/反向代理接入.md) | `ReverseProxy` 接入手册：Transport 单例、Director 里先存 `req.Host`、`StripPrefix` 段边界、XFF 不手写、`ErrorHandler` 的 502/504 映射 |
+| [客户端IP接入.md](网络编程/客户端IP接入.md) | 可信代理链接入：`netip.Prefix` 校验、`atomic.Pointer` 热更新、入口解析一次经 `ctx` 复用、审计 / 限流 / 出口三处消费者、L4 PROXY protocol |
 | [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) | 没有 `protoc` 时怎么跑 gRPC：手写 pb、动态注册与实测 |
 | [网关路由匹配.md](网络编程/网关路由匹配.md) | 路由树、通配与优先级、匹配性能实测 |
 | [从零实现网关.md](网络编程/从零实现网关.md) | 综合实战：七模块流水线、一次请求的完整时序、熔断与一致性哈希 |

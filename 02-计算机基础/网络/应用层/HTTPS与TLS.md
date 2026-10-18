@@ -2,7 +2,7 @@
 
 > 覆盖：TLS 握手怎么走（TLS 1.2 全流程 / 1.3 的变化 / 会话复用）、证书在握手现场怎么用、怎么抓包排障，以及 Go 与 Java 的落地（含 mTLS 双向认证）。
 >
-> 不覆盖：证书与信任链的基础概念见 [数字证书与PKI.md](../../../06-工程实践/安全/数字证书与PKI.md)；握手协商的密码套件见 [加密算法.md](../../../06-工程实践/安全/加密算法.md)；ALPN 与 QUIC 内嵌 TLS 1.3 见 [QUIC与HTTP3.md](QUIC与HTTP3.md)；TCP 三次握手的开销见 [tcp/TCP三次握手.md](../传输层/tcp/TCP三次握手.md)。
+> 不覆盖：证书与信任链的基础概念见 [数字证书与PKI.md](../../../06-工程实践/安全/数字证书与PKI.md)；证书字段、ACME 续期、证书固定与握手失败的逐项排障见 [证书与HTTPS排障.md](证书与HTTPS排障.md)；握手协商的密码套件见 [加密算法.md](../../../06-工程实践/安全/加密算法.md)；ALPN 与 QUIC 内嵌 TLS 1.3 见 [QUIC与HTTP3.md](QUIC与HTTP3.md)；TCP 三次握手的开销见 [TCP三次握手.md](../传输层/tcp/TCP三次握手.md)。
 >
 > 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。
 >
@@ -249,77 +249,27 @@ Ticket 是用**服务端持有的 ticket key 加密**后发给客户端的，于
 
 ## 六、握手现场是怎么用证书的？
 
-### 6.1 X.509 结构速览
+**本节要点**：证书在握手里的作用是「证明公钥属于这个域名」。客户端会做五步校验：**逐级验签到信任库根证书 → 有效期 → SAN 域名 → 吊销状态 → EKU 用途**，任一步失败都中断握手。
 
-| 字段 | 作用 |
-|---|---|
-| Version / Serial Number | 通常为 v3；序列号在 CA 内唯一，吊销与 CT 定位都靠它 |
-| Issuer / Subject | 签发者 DN / 持有者 DN |
-| Validity | `notBefore` / `notAfter`，⭐ **90 天是当前主流上限** |
-| Signature Algorithm | 签发算法，如 `sha256WithRSAEncryption`、`ecdsa-with-SHA256` |
-| Subject Public Key Info | 持有者公钥 + 算法 |
-| **Extensions** | `SAN`（⭐ 域名校验**只认它**）、`Basic Constraints`（是否 CA）、`Key Usage` / `EKU`（serverAuth / clientAuth）、`CRL Distribution Points`、`AIA`（OCSP 地址）、`SCT`（证书透明度） |
-| Signature | ⭐ **上级 CA 对本证书内容的签名**，验签就是验这一项 |
+| 证书链 | 谁提供 | 说明 |
+|---|---|---|
+| **leaf（站点证书）** | 服务端发送 | 含站点公钥与 SAN |
+| **intermediate（中间 CA）** | 服务端发送 | ⚠️ **漏发是最常见的「仅部分客户端失败」原因** |
+| **root（根 CA）** | 客户端信任库预置 | 服务端不需要发送 |
 
-### 6.2 信任链、自签与 Let's Encrypt
-- **信任链** = leaf（站点证书）→ intermediate（中间 CA）→ root（根 CA，预置在信任库）。服务端必须在 Certificate 消息里发出**除根以外的完整链**。
-- **自签名证书**：不在任何信任库里 → 客户端必须显式配置信任（见第九节的 `RootCAs` / TrustStore），否则报错；仅用于内网与开发环境。
-- **Let's Encrypt + ACME**：**HTTP-01**（放 token 到 `/.well-known/acme-challenge/`，需 80 端口可达）、**DNS-01**（写 `_acme-challenge` TXT 记录，**支持通配符证书**，无公网 80 时首选）、TLS-ALPN-01。**有效期 90 天，必须自动续期**（certbot / acme.sh / cert-manager）。
-- **证书固定（Certificate Pinning）**：把服务器的公钥 / 证书哈希硬编码进 App（Android `network-security-config`、iOS Trust Evaluation、OkHttp `CertificatePinner`、Go `VerifyPeerCertificate`），只接受这一个。优点是抗「恶意 / 被攻破的 CA 签发了假证书」；⚠️ 风险是**证书轮换或到期而 App 未更新 ⇒ 大面积不可用**，且用户无法自助修复。现代实践更推荐依赖 **CT（证书透明度）** + 受控 CA 列表，或至少配置**备用 pin**。
+> X.509 字段逐项说明、信任链与自签证书、ACME 三种挑战、证书固定、六种握手错误、抓包过滤器、`SSLKEYLOGFILE` 解密、`openssl` / `keytool` 命令与到期监控，全部在 [证书与HTTPS排障.md](证书与HTTPS排障.md)。本节只保留「证书在握手里做什么」。
 
-### 6.3 ⚠️ 常见故障速查
+---
 
-| 现象 | 常见原因 |
-|---|---|
-| `unknown authority` / `unable to get local issuer certificate` | ⚠️ **服务端证书链不完整（漏了中间证书）**；或客户端信任库太老（旧 JDK cacerts 缺新根） |
-| `hostname mismatch` | 证书缺少对应 **SAN**（CN 已废弃）；或 IP / 泛域名没匹配上 |
-| `certificate is not yet valid` | ⚠️ **系统时间不对**（时钟漂移、容器没同步 NTP 最常见） |
-| `certificate has expired` | 忘了续期——生产事故 Top 1，请配自动续期 + 到期告警 |
-| 拿到的证书不是自己的 | **SNI 未匹配**：同 IP 多域名，客户端没带 SNI 或服务端默认虚拟主机配错 |
-| 只在部分网络下握手失败 | 中间透明代理 / 老 WAF / 负载均衡固件不支持 TLS 1.3（见第十节） |
+## 七、握手失败时看什么？
 
-## 七、怎么抓包与排障？
+**先看 Alert 再猜原因**：握手失败的错误通常落在 `tls.alert_message` 里（如 `40 handshake_failure`、`42 bad_certificate`），结合 ClientHello 的 SNI、ServerHello 的套件与 Certificate 消息里的链，才能定位到「链 / 有效期 / SAN / 吊销 / 用途」中的哪一步。
 
-### 7.1 Wireshark 看握手
+⚠️ 抓 TLS 1.3 时 ServerHello 之后全是 Application Data 密文，看不到 Certificate / Finished——这是正常的（见 4.1），不是抓包坏了；要解密本机流量需配置 `SSLKEYLOGFILE`。
 
-| 显示过滤器 | 看什么 |
-|---|---|
-| `tls.handshake.type == 1` | ClientHello（版本、套件列表、SNI、ALPN） |
-| `tls.handshake.type == 2` | ServerHello（最终选定的套件） |
-| `tls.handshake.type == 11` | Certificate（能看到完整链） |
-| `tls.handshake.type == 14` | ServerHelloDone（**仅 1.2 有**）；`== 4` 是 NewSessionTicket |
-| `tls.handshake.extensions_server_name` | SNI 明文域名 |
-| `tls.alert_message` | ⭐ Alert，握手失败的错误在此（如 `40 handshake_failure`、`42 bad_certificate`） |
+> Wireshark 过滤器、`SSLKEYLOGFILE` 的配置步骤、`openssl s_client` / `nmap ssl-enum-ciphers` / `curl -vI` 的完整命令与排障顺序，见 [证书与HTTPS排障.md](证书与HTTPS排障.md) 第四、五、八节。
 
-> ⚠️ 抓 TLS 1.3 时会发现 ServerHello 之后**全是 Application Data 密文**，看不到 Certificate / Finished——没有密钥，这是正常的（见 4.1），不是抓包坏了。
-
-### 7.2 用 SSLKEYLOGFILE 解密 HTTPS 流量 ⭐
-浏览器（Chrome / Firefox）以及 curl、Go、OpenSSL 等支持 NSS keylog 的程序，会把每个会话的密钥材料写进环境变量 `SSLKEYLOGFILE` 指向的文件；Wireshark 读该文件即可**解密本机流量**。
-
-```bash
-export SSLKEYLOGFILE=/tmp/sslkeys.log       # Linux/macOS，之后启动浏览器或 curl
-$env:SSLKEYLOGFILE = 'C:\tmp\sslkeys.log'   # Windows PowerShell
-curl https://example.com >/dev/null
-```
-
-然后 **Wireshark → Preferences → Protocols → TLS → (Pre)-Master-Secret log filename** 填同一路径，再过滤 `http` 就能看到明文请求。⚠️ 只有**参与握手、能导出密钥的那一端**才能解密，截获别人的流量照样解不开；该文件泄漏等于泄密，用完即删，**不要提交到 Git**。
-
-### 7.3 openssl / curl 常用命令
-
-```bash
-# 看握手全过程：证书链、协商出的协议与套件、是否走了会话复用
-openssl s_client -connect example.com:443 -servername example.com -showcerts
-openssl s_client -connect example.com:443 -tls1_2     # 指定版本探测，能连上即支持
-openssl s_client -connect example.com:443 -tls1_3
-openssl s_client -connect example.com:443 -cipher ECDHE-RSA-AES128-GCM-SHA256  # 指定套件探测
-nmap --script ssl-enum-ciphers -p 443 example.com     # 枚举支持的全部协议与套件
-curl -vI https://example.com                          # 看握手细节
-curl --tlsv1.3 -o /dev/null -sS -w '%{http_version} %{tls_version}\n' https://example.com
-# 只看有效期 / SAN（到期监控的基础命令）
-echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null \
-     | openssl x509 -noout -dates -subject -ext subjectAltName
-```
-（-servername 一定要带上，否则多域名站点会取到默认虚拟主机的证书，现象就是「域名不匹配」。）
+---
 
 ## 八、应用场景
 
@@ -327,10 +277,10 @@ echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/
 
 | 场景 | 涉及哪一块 | 为什么值得注意 |
 |---|---|---|
-| 反向代理 / 网关的 TLS 卸载 | 证书与 SNI | 卸载点在哪一跳，决定上游看到的是什么，详见 [反向代理原理与实现.md](反向代理原理与实现.md) 第四节 |
+| 反向代理 / 网关的 TLS 卸载 | 证书与 SNI | 卸载点在哪一跳，决定上游看到的是什么，详见 [反向代理原理.md](../代理与网关/反向代理原理.md) 第四节 |
 | 全站 HTTPS 与 HSTS | 重定向与首访 | 首访明文跳一次是常见漏洞点，详见 本篇 10.1 |
-| 客户端连接失败 | 证书链与校验 | 「只在部分网络下失败」多半是中间设备，详见 本篇 6.3 |
-| 抓包看不到明文 | TLS 记录层 | `SSLKEYLOGFILE` 才能解密，详见 本篇 7.2 |
+| 客户端连接失败 | 证书链与校验 | 「只在部分网络下失败」多半是中间设备，详见 [证书与HTTPS排障.md](证书与HTTPS排障.md) 第四节 |
+| 抓包看不到明文 | TLS 记录层 | `SSLKEYLOGFILE` 才能解密，详见 [证书与HTTPS排障.md](证书与HTTPS排障.md) 5.2 |
 | 服务间 mTLS | 双向认证 | 内网零信任的基础，详见 本篇 9.1 |
 | 握手耗时优化 | 会话复用与 0-RTT | 缩短或省掉一趟往返，详见 本篇第五节 |
 
@@ -577,11 +527,9 @@ ssl_trusted_certificate /path/to/chain.pem;      # 含中间证书，用于验�
 resolver 8.8.8.8 valid=300s;
 ```
 
-### 10.3 证书到期监控与 ⚠️ 中间设备
-- **到期是生产事故第一名**（Let's Encrypt 只有 90 天）：用 certbot / acme.sh 定时任务，K8s 上用 **cert-manager**。
-- 监控两手抓：① Prometheus `blackbox_exporter`（`probe_ssl_earliest_cert_expiry`）或 `ssl_exporter`；② 服务启动时自打印剩余天数并在 `/health` 暴露。告警阈值建议 **30 天 / 7 天两级**。⚠️ 别忘了整套链路：**CDN、负载均衡、Ingress、内网自签 CA** 都要管。
-- ⚠️ **中间设备导致握手失败**：企业出口代理、老 WAF、部分负载均衡固件**解析不了 TLS 1.3 的新记录格式与扩展**，只有部分网络用户受影响；排查用 `openssl s_client -tls1_2` 与 `-tls1_3` 对比，短期可针对该来源降级。带 SNI 拦截的透明代理会签发自己的证书，只能靠客户端信任库 / 证书固定发现。
-- ⚠️ HTTP/3 over QUIC 走 **UDP 443**，不少防火墙直接丢 UDP，表现为「网站时而打不开」；MTU / 分片问题（DF 位 + ICMP 被禁的 PMTUD 黑洞）会让 TLS 记录变大后偶发连接挂起。
+### 10.3 证书与中间设备
+
+> 证书到期监控（`blackbox_exporter` / `ssl_exporter` / 两级告警）、中间设备导致 TLS 1.3 握手失败、QUIC 的 UDP 443 被丢、以及证书链与 SAN 的排障，见 [证书与HTTPS排障.md](证书与HTTPS排障.md) 第四、六节。
 
 ## 延伸追问
 
@@ -605,9 +553,9 @@ resolver 8.8.8.8 valid=300s;
 - **上游/总纲**：[网络分层与数据包旅程.md](../网络分层与数据包旅程.md) — HTTPS 的封装顺序：HTTP → TLS → TCP
 - **对照/互补**：[QUIC与HTTP3.md](QUIC与HTTP3.md) — ALPN 协商与内嵌 TLS 1.3
 - **对照/互补**：[HTTP与gRPC.md](HTTP与gRPC.md) — `h2` 的事实前提是 TLS 与 ALPN
-- **对照/互补**：[tcp/TCP三次握手.md](../传输层/tcp/TCP三次握手.md) — TLS 握手的 RTT 叠加在 TCP 之上
+- **对照/互补**：[TCP三次握手.md](../传输层/tcp/TCP三次握手.md) — TLS 握手的 RTT 叠加在 TCP 之上
 - **对照/互补**：[DNS解析.md](../网络层与寻址/DNS解析.md) — SNI 与 ECH 依赖的 `HTTPS` / `SVCB` 记录、DoH 与 DNSSEC 的分工
 - **下游机制**：[数字证书与PKI.md](../../../06-工程实践/安全/数字证书与PKI.md) — 证书与信任链的基础概念（单一来源）
 - **下游机制**：[加密算法.md](../../../06-工程实践/安全/加密算法.md) — 握手协商的套件从哪来
 
-> 反向引用（本篇被下列文档引到）：[HTTP客户端与连接池.md](../../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[08-WWW服务器.md](../../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)、[抓包实战.md](../抓包实战.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md)、[文件存储与上传架构.md](../../../04-架构与系统/系统设计/文件存储与上传架构.md)、[Web攻击与防御.md](../../../06-工程实践/安全/Web攻击与防御.md)、[密码与敏感信息存储.md](../../../06-工程实践/安全/密码与敏感信息存储.md)、[摘要与数字签名.md](../../../06-工程实践/安全/摘要与数字签名.md)
+> 反向引用（本篇被下列文档引到）：[HTTP客户端与连接池.md](../../../01-编程语言/go/网络编程/HTTP客户端与连接池.md)、[08-WWW服务器.md](../../linux/鸟哥服务器架设篇/08-WWW服务器.md)、[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)、[证书与HTTPS排障.md](证书与HTTPS排障.md)、[DNS安全与加密解析.md](../网络层与寻址/DNS安全与加密解析.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[抓包实战.md](../观测与排障/抓包实战.md)、[OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md)、[文件存储与上传架构.md](../../../04-架构与系统/系统设计/文件存储与上传架构.md)、[Web攻击与防御.md](../../../06-工程实践/安全/Web攻击与防御.md)、[密码与敏感信息存储.md](../../../06-工程实践/安全/密码与敏感信息存储.md)、[摘要与数字签名.md](../../../06-工程实践/安全/摘要与数字签名.md)
