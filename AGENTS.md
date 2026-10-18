@@ -275,7 +275,7 @@ python .workbuddy/tmp/audit_full.py
 
 - AI 不得自动执行 `git add`、`commit` 或 `push`；改动留在工作区供用户审查。
 - 不得把 `git rm` 与 `rm` / `rmdir` 放在同一条命令中。清理未跟踪孤儿稿时，移动到 `.workbuddy/tmp/orphan-backup/` 备份，不直接删除。子代理指令中禁止删除或移动类 shell 命令；既有文件**默认只允许追加式编辑**，任务书明确要求按骨架重排时**可改 H2 标题与顺序、拆并小节、重写引语与关联、新增缺失节、补写内容**，底线是**信息不得丢失**、**逐篇行数不得减少**，交付时须给出「旧行去向清单」。
-- PowerShell 工具不可用；Docker Desktop 是运行实测的首选环境。可用工具包括 SQLite（`modernc.org/sqlite`）、Windows `pktmon`、`gitlab-ci-local` 和 phpstudy 自带 nginx。不可用项包括 `pip`、`protoc`、`tcpdump`、`tshark`、OpenResty、Lua、LuaJIT；无法栅格化 SVG。
+- PowerShell 工具不可用；Docker Desktop 是运行实测的首选环境。可用工具包括 SQLite（`modernc.org/sqlite`）、Windows `pktmon`、`gitlab-ci-local` 和 phpstudy 自带 nginx。不可用项包括 `pip`、`protoc`、`tcpdump`、`tshark`、OpenResty、Lua、LuaJIT。**SVG 图可直接查看**：用 `browser.preview` 在 Review 面板渲染，不需要栅格化成 PNG。
 - 新 nginx 实验优先使用容器；停止 phpstudy nginx 时不要用 `taskkill //IM nginx.exe //F`，应使用 `nginx.exe -p <prefix> -c <conf> -s stop` 或按 PID 结束指定进程。
 - 环境探测结果应写在篇首，明确哪些已实测、哪些未实测。
 

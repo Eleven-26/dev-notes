@@ -6,7 +6,7 @@
 > ⭐ 与 [runtime调试与trace.md](runtime调试与trace.md) 分工：那篇讲 **`GODEBUG` 旋钮 + `runtime/trace` + 三套内存数**；
 > 本篇只讲 **pprof 这一类「采样 → 归因」工具**。
 >
-> 内容整理自个人学习笔记，实测为容器 `golang:1.26-alpine`（go1.26.8 linux/amd64），素材见 [素材清单.md](../../../素材清单.md)。
+> 内容整理自个人学习笔记，实测为容器 `golang:1.26-alpine`（go1.26.8 linux/amd64）；3.3 的火焰图页面另在宿主机补测（go1.26.8 windows/amd64 + 浏览器引擎），素材见 [素材清单.md](../../../素材清单.md)。
 
 ---
 
@@ -152,11 +152,25 @@ go tool pprof -top -nodecount=10 cpu.pprof        # 按 flat 排（默认）
 ### 3.3 火焰图
 
 ```bash
-go tool pprof -http=:8080 cpu.pprof   # 起一个本地 http 服务出 SVG 火焰图
+go tool pprof -http=:8080 cpu.pprof                        # 起本地 http 服务，页面里选 Flame Graph / Call Graph 等视图
+go tool pprof -http=127.0.0.1:8080 -no_browser cpu.pprof    # 无头环境：不尝试拉起交互式浏览器
 ```
 
-⚠️ **本机/容器无浏览器环境，这一条未实测**（无法访问图形界面，也无法栅格化 SVG）。
-无头环境下用上面 3.1 / 3.2 的文本命令替代 —— 它们给出的信息是等价的，只是不如图形直观。
+⭐ **这一条已在宿主机补测**（`go1.26.8 windows/amd64`，页面用一个能跑 JS 的浏览器引擎渲染；帧名与端点读数是两轮一致的，毫秒数与百分比随采样波动，表里标"如"的只是当轮样例）：
+
+| 命令 / 端点 | 实测 |
+| --- | --- |
+| `-http=127.0.0.1:18099 -no_browser` | 起得来：`Serving web UI on http://127.0.0.1:18099` |
+| `/ui/top` | `HTTP 200` · 33483 字节（text/html） |
+| `/ui/source` | `HTTP 200` · 558304 字节（text/html） |
+| `/ui/flamegraph` | `HTTP 200` · 58174 字节，但只是 **text/html 壳** —— 火焰图由页面里的 JS 画，服务端并不返回 SVG |
+| 火焰图页面本身 | ✅ 渲染出整串帧：`root → runtime.main → main.main → main.hot → main.burn`，顶部读数如 `main.hot 450ms (91.8%)`；控制台无报错 |
+| `/ui/graph`（调用图） | ❌ `HTTP 501` · `Could not execute dot; may need to install graphviz.` |
+| `go tool pprof -svg cpu.pprof` | ❌ `rc=2` · `failed to execute dot. Is Graphviz installed?` |
+
+**边界**：火焰图这条**不需要 Graphviz，也不需要宿主机有交互式图形界面** —— 服务端起在无头环境（`-no_browser`），只要有一个能跑 JS 的浏览器引擎渲染页面就能看；**调用图（Call Graph）与 `-svg` / `-png` 导出仍要 Graphviz `dot`**，本机未安装，这部分仍未实测。⚠️ 页面拿到的是**起服务时读一次**的 profile 快照，换个负载打开图就变了，别把某一轮的百分比当常数。
+
+无头环境下更常用的是上面 3.1 / 3.2 的文本命令 —— 它们与图等价，只是不如图直观。
 
 ---
 
