@@ -1,7 +1,9 @@
 # AGENTS.md
 
 > dev-notes 中文开发知识笔记仓库的 AI 协作约定；每次会话自动加载。以下均为硬约束。
+> 
 > 完整项目记忆见 `.workbuddy/memory/MEMORY.md`，逐轮日志按需查阅 `.workbuddy/memory/`。
+> 
 > `.workbuddy/` 已加入 `.gitignore`，只在本机存在，不进入版本库。
 
 ## 一、仓库与会话
