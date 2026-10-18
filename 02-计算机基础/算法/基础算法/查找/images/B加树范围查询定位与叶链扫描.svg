@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1200" height="720" fill="#ffffff"/>
+
+  <text x="600" y="38" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">B+ 树范围查询：先定位起点叶子，再顺叶链扫到终点</text>
+  <text x="600" y="62" text-anchor="middle" font-size="13" fill="#64748b">定位只做一次下探；之后是连续的叶子页，可以预读、批量读 —— 这正是 B 树没有叶链时做不到的</text>
+
+  <rect x="450" y="96" width="300" height="58" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="600" y="132" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e3a8a">根页分隔键 30000 | 60000</text>
+
+  <path d="M 520 154 L 150 244" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M 600 154 L 610 244" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+  <path d="M 680 154 L 1070 244" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <rect x="50" y="244" width="200" height="64" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="150" y="282" text-anchor="middle" font-size="13" fill="#334155">… 39000</text>
+
+  <rect x="280" y="244" width="200" height="64" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="380" y="282" text-anchor="middle" font-size="13" fill="#334155">39001 … 39999</text>
+
+  <rect x="510" y="244" width="200" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5"/>
+  <text x="610" y="276" text-anchor="middle" font-size="14" font-weight="bold" fill="#166534">40000 … 40099</text>
+  <text x="610" y="296" text-anchor="middle" font-size="12" fill="#166534">起点叶子（a = 40000）</text>
+
+  <rect x="740" y="244" width="200" height="64" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="840" y="276" text-anchor="middle" font-size="14" fill="#166534">40100 … 40199</text>
+  <text x="840" y="296" text-anchor="middle" font-size="12" fill="#166534">继续扫，直到键 &gt; b</text>
+
+  <rect x="970" y="244" width="180" height="64" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="1060" y="282" text-anchor="middle" font-size="13" fill="#334155">40200 … 50000</text>
+
+  <path d="M 250 276 L 280 276" fill="none" stroke="#16a34a" stroke-width="2"/>
+  <path d="M 480 276 L 510 276" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+  <path d="M 710 276 L 740 276" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+  <path d="M 940 276 L 970 276" fill="none" stroke="#16a34a" stroke-width="2"/>
+  <text x="865" y="336" text-anchor="middle" font-size="13" fill="#166534">绿色箭头 = 叶子链表的 next 指针；定位之后只做顺序读</text>
+  <text x="610" y="362" text-anchor="middle" font-size="12" fill="#64748b">B 树没有叶链：同样的范围查询要在树里中序回溯到兄弟子树，随机读更多</text>
+
+  <rect x="40" y="418" width="520" height="250" rx="10" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="60" y="448" font-size="14" font-weight="bold" fill="#0f172a">实测：100 键区间覆盖多少叶子页</text>
+  <text x="60" y="476" font-size="13" fill="#334155">N = 100000，范围 [40000, 40100]，共 100 个键：</text>
+
+  <rect x="60" y="494" width="140" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="130" y="516" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">扇出 8</text>
+  <text x="130" y="538" text-anchor="middle" font-size="13" fill="#1e3a8a">15 个叶页</text>
+
+  <rect x="220" y="494" width="140" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="290" y="516" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">扇出 32</text>
+  <text x="290" y="538" text-anchor="middle" font-size="13" fill="#1e3a8a">4 个叶页</text>
+
+  <rect x="380" y="494" width="140" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="450" y="516" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">扇出 128</text>
+  <text x="450" y="538" text-anchor="middle" font-size="13" fill="#1e3a8a">2 个叶页</text>
+
+  <text x="60" y="582" font-size="13" fill="#334155">叶容量分别为 7 / 31 / 127 —— 同样的 100 个键，</text>
+  <text x="60" y="606" font-size="13" fill="#334155">叶容量越小，覆盖的叶子页越多。</text>
+  <text x="60" y="638" font-size="12" fill="#64748b">页数是从起点叶子沿 next 指针实际扫过的叶子数，</text>
+  <text x="60" y="660" font-size="12" fill="#64748b">不含根到叶的下探页；口径见正文第五节。</text>
+
+  <rect x="580" y="418" width="580" height="250" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="600" y="448" font-size="14" font-weight="bold" fill="#166534">为什么「定位 + 顺链」比「树里回溯」便宜</text>
+  <text x="600" y="480" font-size="13" fill="#166534">① 定位：从根到起点叶子，页访问 = 树高（一次下探）。</text>
+  <text x="600" y="508" font-size="13" fill="#166534">② 扫描：沿 next 指针读连续的叶子页，可预读、批量读。</text>
+  <text x="600" y="536" font-size="13" fill="#166534">③ B 树：范围结果散在各层，需要中序回溯兄弟子树。</text>
+  <text x="600" y="572" font-size="13" fill="#b91c1c">⚠️ 范围查询的页数不是固定值：</text>
+  <text x="600" y="596" font-size="13" fill="#b91c1c">叶容量、键长、前缀压缩都会改变覆盖的叶子数。</text>
+  <text x="600" y="632" font-size="12" fill="#64748b">上表的 15 / 4 / 2 是本次模型的实测读数；</text>
+  <text x="600" y="654" font-size="12" fill="#64748b">真实数据库还要叠加 buffer pool 命中与回表。</text>
+</svg>
