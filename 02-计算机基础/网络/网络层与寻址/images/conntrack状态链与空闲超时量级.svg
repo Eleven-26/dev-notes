@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 560" width="1080" height="560" font-family="'Microsoft YaHei','PingFang SC',sans-serif">
+  <defs>
+    <marker id="arwS" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L7 4.5 L0 9 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1080" height="560" fill="#ffffff"/>
+  <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">conntrack 的状态链，与各状态的空闲超时量级</text>
+
+  <path d="M190 128 L250 128 M430 128 L490 128 M640 128 L700 128 M850 128 L910 128" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwS)"/>
+
+  <rect x="40" y="100" width="150" height="56" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+  <text x="115" y="122" font-size="11.5" font-weight="bold" fill="#334155" text-anchor="middle">NEW</text>
+  <text x="115" y="142" font-size="10" fill="#64748b" text-anchor="middle">刚建表项，还没回程</text>
+
+  <rect x="250" y="100" width="180" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+  <text x="340" y="122" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">ESTABLISHED</text>
+  <text x="340" y="142" font-size="10" fill="#1e40af" text-anchor="middle">超时 432000 秒（5 天）</text>
+
+  <rect x="490" y="100" width="150" height="56" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+  <text x="565" y="122" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">FIN_WAIT</text>
+  <text x="565" y="142" font-size="10" fill="#1e40af" text-anchor="middle">超时 120 秒</text>
+
+  <rect x="700" y="100" width="150" height="56" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+  <text x="775" y="122" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">TIME_WAIT</text>
+  <text x="775" y="142" font-size="10" fill="#1e40af" text-anchor="middle">超时 120 秒</text>
+
+  <rect x="910" y="100" width="140" height="56" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4" rx="6"/>
+  <text x="980" y="122" font-size="11.5" font-weight="bold" fill="#475569" text-anchor="middle">表项被删</text>
+  <text x="980" y="142" font-size="10" fill="#475569" text-anchor="middle">之后再回就无映射</text>
+
+  <text x="220" y="118" font-size="9.5" fill="#2563eb" text-anchor="middle">首包 SYN</text>
+  <text x="460" y="118" font-size="9.5" fill="#2563eb" text-anchor="middle">见到回程包</text>
+  <text x="665" y="118" font-size="9.5" fill="#2563eb" text-anchor="middle">进入挥手</text>
+  <text x="880" y="118" font-size="9.5" fill="#2563eb" text-anchor="middle">挥手走完</text>
+
+  <text x="40" y="178" font-size="10.5" fill="#475569">旁路状态（不在这条链上）：RELATED＝挂在这条会话上的另一条流；INVALID＝对不上任何表项的包；UNTRACKED＝被规则明确跳过跟踪。</text>
+  <text x="40" y="200" font-size="10.5" fill="#b91c1c">⚠️ 这里的 TIME_WAIT 与协议层的 2MSL 是两套独立计时器，互不等价。</text>
+
+  <text x="40" y="234" font-size="11.5" font-weight="bold" fill="#334155">同一条链路上的空闲超时对照（横条按数量级缩放，只比量级、不是真实比例）</text>
+
+  <rect x="300" y="252" width="69" height="24" fill="#cbd5e1"/>
+  <text x="48" y="269" font-size="11" fill="#334155">UDP</text>
+  <text x="379" y="269" font-size="10.5" fill="#334155">30 秒（nf_conntrack_udp_timeout）</text>
+
+  <rect x="300" y="292" width="69" height="24" fill="#cbd5e1"/>
+  <text x="48" y="309" font-size="11" fill="#334155">ICMP</text>
+  <text x="379" y="309" font-size="10.5" fill="#334155">30 秒（视内核版本与配置而定）</text>
+
+  <rect x="300" y="332" width="112" height="24" fill="#fed7aa"/>
+  <text x="48" y="349" font-size="11" fill="#334155">七层反代空闲超时</text>
+  <text x="422" y="349" font-size="10.5" fill="#7c2d12">60~75 秒（Nginx keepalive_timeout 常见值）</text>
+
+  <rect x="300" y="372" width="141" height="24" fill="#bfdbfe"/>
+  <text x="48" y="389" font-size="11" fill="#334155">TCP FIN_WAIT</text>
+  <text x="451" y="389" font-size="10.5" fill="#1e3a8a">120 秒</text>
+
+  <rect x="300" y="412" width="141" height="24" fill="#bfdbfe"/>
+  <text x="48" y="429" font-size="11" fill="#334155">TCP TIME_WAIT</text>
+  <text x="451" y="429" font-size="10.5" fill="#1e3a8a">120 秒</text>
+
+  <rect x="300" y="452" width="568" height="24" fill="#bbf7d0"/>
+  <text x="48" y="469" font-size="11" fill="#334155">TCP ESTABLISHED</text>
+  <text x="878" y="469" font-size="10.5" fill="#14532d">432000 秒 = 5 天</text>
+
+  <rect x="300" y="492" width="141" height="24" fill="#fecaca"/>
+  <text x="48" y="509" font-size="11" fill="#334155">家用路由器 / 办公出口</text>
+  <text x="451" y="509" font-size="10.5" fill="#7f1d1d">几分钟 ~ 几十分钟</text>
+
+  <text x="40" y="544" font-size="10" fill="#64748b">读法：conntrack 的 5 天排在最下面，说明它通常不是「最先动手」的那一个；真正掐断长连接的往往是 60 秒级的七层代理。心跳要按链路上最小的那个超时来定。</text>
+</svg>

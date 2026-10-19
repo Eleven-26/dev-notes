@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 600" width="1080" height="600" font-family="'Microsoft YaHei','PingFang SC',sans-serif">
+  <defs>
+    <marker id="arwG" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L7 4.5 L0 9 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1080" height="600" fill="#ffffff"/>
+  <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">长连接断了怎么排查：先问时间形态，再看本地状态，最后问对端内核</text>
+
+  <path d="M256 271 L340 271" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwG)"/>
+  <path d="M286 123 L286 271 M286 123 L340 123 M286 197 L340 197" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <path d="M146 302 L146 384" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwG)"/>
+  <path d="M256 417 L286 417 M286 373 L286 417 M286 373 L340 373" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <path d="M146 448 L146 474" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwG)"/>
+  <path d="M256 505 L286 505 M286 447 L286 521 M286 447 L340 447 M286 521 L340 521" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+
+  <rect x="36" y="240" width="220" height="62" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4" rx="6"/>
+  <text x="146" y="264" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">断开有固定的时间形态吗？</text>
+  <text x="146" y="284" font-size="10" fill="#1e40af" text-anchor="middle">先按「空闲多久断的」判段</text>
+
+  <rect x="36" y="386" width="220" height="62" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4" rx="6"/>
+  <text x="146" y="410" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">本地状态看得出错吗？</text>
+  <text x="146" y="430" font-size="10" fill="#1e40af" text-anchor="middle">ss -tno 一屏就能分辨</text>
+
+  <rect x="36" y="474" width="220" height="62" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4" rx="6"/>
+  <text x="146" y="498" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">对端内核有响应吗？</text>
+  <text x="146" y="518" font-size="10" fill="#1e40af" text-anchor="middle">keepalive 探测有没有 ACK</text>
+
+  <text x="156" y="364" font-size="10" fill="#475569">没有固定时间形态</text>
+  <text x="156" y="466" font-size="10" fill="#475569">都还是 ESTABLISHED</text>
+
+  <rect x="340" y="92" width="704" height="62" fill="#fff7ed" stroke="#b45309" stroke-width="1" rx="6"/>
+  <text x="354" y="116" font-size="11.5" font-weight="bold" fill="#b45309">空闲 N 分钟后第一个请求失败，重连即恢复</text>
+  <text x="354" y="137" font-size="10.5" fill="#78350f">中间设备空闲回收 → 逐段对照 LB / NAT / conntrack 的空闲超时</text>
+
+  <rect x="340" y="166" width="704" height="62" fill="#fff7ed" stroke="#b45309" stroke-width="1" rx="6"/>
+  <text x="354" y="190" font-size="11.5" font-weight="bold" fill="#b45309">固定时刻大批断连</text>
+  <text x="354" y="211" font-size="10.5" fill="#78350f">心跳风暴 / 设备整点清理 → 查心跳是否加抖动、设备有无整点回收策略</text>
+
+  <rect x="340" y="240" width="704" height="62" fill="#fff7ed" stroke="#b45309" stroke-width="1" rx="6"/>
+  <text x="354" y="264" font-size="11.5" font-weight="bold" fill="#b45309">每天固定时长后断</text>
+  <text x="354" y="285" font-size="10.5" fill="#78350f">连接寿命上限 → 查客户端池的 MaxLifetime 与 LB 的连接时长限制</text>
+
+  <rect x="340" y="342" width="704" height="62" fill="#fef2f2" stroke="#b91c1c" stroke-width="1" rx="6"/>
+  <text x="354" y="366" font-size="11.5" font-weight="bold" fill="#b91c1c">大量 CLOSE_WAIT</text>
+  <text x="354" y="387" font-size="10.5" fill="#7f1d1d">应用收到 FIN 后没 close → 查 handler 阻塞、异常分支漏 Close</text>
+
+  <rect x="340" y="416" width="704" height="62" fill="#fef2f2" stroke="#b91c1c" stroke-width="1" rx="6"/>
+  <text x="354" y="440" font-size="11.5" font-weight="bold" fill="#b91c1c">一直 ESTABLISHED，但写一直重传</text>
+  <text x="354" y="461" font-size="10.5" fill="#7f1d1d">半开连接 → 查是否开 keepalive、间隔多大、tcp_retries2 还没跑完</text>
+
+  <rect x="340" y="490" width="704" height="62" fill="#f0fdf4" stroke="#166534" stroke-width="1" rx="6"/>
+  <text x="354" y="514" font-size="11.5" font-weight="bold" fill="#166534">keepalive 有 ACK，业务仍超时</text>
+  <text x="354" y="535" font-size="10.5" fill="#14532d">对端进程卡死，不是网络问题 → 查对端 CPU / GC / 死锁</text>
+
+  <text x="40" y="576" font-size="10" fill="#64748b">六个分支就是本节的六行现象；橙色看时间、红色看状态、绿色已经指向对端进程。命令见本节下文的 ss / sysctl / tcpdump。</text>
+</svg>

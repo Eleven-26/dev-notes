@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 648" width="1080" height="648" font-family="'Microsoft YaHei','PingFang SC',sans-serif">
+  <rect x="0" y="0" width="1080" height="648" fill="#ffffff"/>
+  <text x="40" y="26" font-size="15" font-weight="bold" fill="#0f172a">半开连接：中间状态先没了两边才知道</text>
+
+  <text x="40" y="54" font-size="11.5" font-weight="bold" fill="#334155">① 一条纯空闲的长连接，时间往右走</text>
+
+  <rect x="514" y="126" width="14" height="30" fill="#fecaca"/>
+  <rect x="514" y="218" width="14" height="30" fill="#fecaca"/>
+  <text x="521" y="192" font-size="12" font-weight="bold" fill="#b91c1c" text-anchor="middle">✗</text>
+
+  <rect x="40" y="64" width="164" height="62" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+  <text x="122" y="90" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle">客户端 socket</text>
+  <text x="122" y="110" font-size="10.5" fill="#64748b" text-anchor="middle">本地内核视角</text>
+
+  <rect x="216" y="64" width="824" height="62" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+  <text x="628" y="90" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">一直停在 ESTABLISHED</text>
+  <text x="628" y="110" font-size="10.5" fill="#1e40af" text-anchor="middle">它没有收到任何 RST / FIN，也没有理由改状态</text>
+
+  <rect x="40" y="156" width="164" height="62" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="6"/>
+  <text x="122" y="182" font-size="12" font-weight="bold" fill="#b45309" text-anchor="middle">NAT / LB 会话表</text>
+  <text x="122" y="202" font-size="10.5" fill="#b45309" text-anchor="middle">中间设备状态</text>
+
+  <rect x="216" y="156" width="298" height="62" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="5"/>
+  <text x="365" y="182" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">表项存在</text>
+  <text x="365" y="202" font-size="10.5" fill="#1e40af" text-anchor="middle">五元组 + 空闲计时器</text>
+
+  <rect x="528" y="156" width="512" height="62" fill="#ffffff" stroke="#b91c1c" stroke-width="1.2" stroke-dasharray="5 4" rx="5"/>
+  <text x="784" y="182" font-size="11" font-weight="bold" fill="#b91c1c" text-anchor="middle">表项被删，包没有匹配</text>
+  <text x="784" y="202" font-size="10.5" fill="#b91c1c" text-anchor="middle">第一个请求在这一跳被静默丢弃</text>
+
+  <rect x="40" y="248" width="164" height="62" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+  <text x="122" y="274" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle">服务端 socket</text>
+  <text x="122" y="294" font-size="10.5" fill="#64748b" text-anchor="middle">对端内核视角</text>
+
+  <rect x="216" y="248" width="824" height="62" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+  <text x="628" y="274" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">同样停在 ESTABLISHED</text>
+  <text x="628" y="294" font-size="10.5" fill="#1e40af" text-anchor="middle">连接「还在」只是两边的内核都还没忘掉</text>
+
+  <text x="536" y="142" font-size="10" fill="#b91c1c">空闲超时点</text>
+  <text x="536" y="234" font-size="10" fill="#b91c1c">只有中间这一格先没了</text>
+
+  <text x="40" y="340" font-size="11.5" font-weight="bold" fill="#334155">② 四种成因：谁先「忘掉」</text>
+
+  <rect x="40" y="352" width="486" height="78" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="54" y="374" font-size="11.5" font-weight="bold" fill="#0f172a">NAT / conntrack 表项过期</text>
+  <text x="54" y="396" font-size="10.5" fill="#475569">谁先忘掉：中间设备</text>
+  <text x="54" y="416" font-size="10.5" fill="#475569">空闲一段时间后第一个请求失败，重连即恢复</text>
+
+  <rect x="554" y="352" width="486" height="78" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="568" y="374" font-size="11.5" font-weight="bold" fill="#0f172a">LB / 反向代理空闲回收</text>
+  <text x="568" y="396" font-size="10.5" fill="#475569">谁先忘掉：七层代理</text>
+  <text x="568" y="416" font-size="10.5" fill="#475569">表现同上，但通常比 NAT 更早动手（60 秒级）</text>
+
+  <rect x="40" y="440" width="486" height="78" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="54" y="462" font-size="11.5" font-weight="bold" fill="#0f172a">客户端断电 / 进程被杀</text>
+  <text x="54" y="484" font-size="10.5" fill="#475569">谁先忘掉：客户端（没来得及告别）</text>
+  <text x="54" y="504" font-size="10.5" fill="#475569">服务端一直 ESTABLISHED，直到探测或写失败</text>
+
+  <rect x="554" y="440" width="486" height="78" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="568" y="462" font-size="11.5" font-weight="bold" fill="#0f172a">服务端崩溃但内核未回收</text>
+  <text x="568" y="484" font-size="10.5" fill="#475569">谁先忘掉：服务端进程，内核还留着</text>
+  <text x="568" y="504" font-size="10.5" fill="#475569">客户端写成功、读不到响应，直到收到 RST</text>
+
+  <text x="40" y="540" font-size="11.5" font-weight="bold" fill="#334155">③ 同一件事的两个观测面：写和读的表现完全不同</text>
+
+  <rect x="40" y="552" width="316" height="72" fill="#fee2e2" stroke="#b91c1c" stroke-width="1" rx="6"/>
+  <text x="54" y="574" font-size="11.5" font-weight="bold" fill="#b91c1c">写：触发重传</text>
+  <text x="54" y="594" font-size="10.5" fill="#7f1d1d">tcp_retries2 默认约 15 次</text>
+  <text x="54" y="612" font-size="10.5" fill="#7f1d1d">可能要十几分钟才报错</text>
+
+  <rect x="382" y="552" width="316" height="72" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="6"/>
+  <text x="396" y="574" font-size="11.5" font-weight="bold" fill="#b45309">读：一直阻塞</text>
+  <text x="396" y="594" font-size="10.5" fill="#78350f">除非设了读 deadline</text>
+  <text x="396" y="612" font-size="10.5" fill="#78350f">或者有心跳兜底</text>
+
+  <rect x="724" y="552" width="316" height="72" fill="#dcfce7" stroke="#166534" stroke-width="1" rx="6"/>
+  <text x="738" y="574" font-size="11.5" font-weight="bold" fill="#166534">最危险：不写不读</text>
+  <text x="738" y="594" font-size="10.5" fill="#14532d">两边都不动，谁都不报错</text>
+  <text x="738" y="612" font-size="10.5" fill="#14532d">只有 keepalive 或心跳能发现</text>
+</svg>

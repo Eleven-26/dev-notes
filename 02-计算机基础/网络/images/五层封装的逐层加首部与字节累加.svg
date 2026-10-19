@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 640" width="1080" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1080" height="640" fill="#ffffff"/>
+
+  <text x="540" y="32" font-size="19" font-weight="bold" fill="#0f172a" text-anchor="middle">一个包在本机怎么被造出来：逐层加首部与字节累加</text>
+  <text x="540" y="56" font-size="12.5" fill="#64748b" text-anchor="middle">步骤 1~7 全是本机内部的封装动作，出网卡之后才离开本机</text>
+
+  <rect x="20" y="74" width="1040" height="302" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="40" y="96" font-size="11.5" font-weight="bold" fill="#334155">封装条带：每层只在外面包一层自己的首部</text>
+  <text x="640" y="96" font-size="11.5" font-weight="bold" fill="#1e40af">字节累加（假定 HTTP 报文 480 字节）</text>
+
+  <text x="40" y="128" font-size="10.5" fill="#475569">应用层</text>
+  <text x="40" y="168" font-size="10.5" fill="#475569">安全层 TLS</text>
+  <text x="40" y="208" font-size="10.5" fill="#475569">传输层 TCP</text>
+  <text x="40" y="248" font-size="10.5" fill="#475569">网络层 IP</text>
+  <text x="40" y="288" font-size="10.5" fill="#475569">链路层 以太网</text>
+
+  <rect x="130" y="112" width="230" height="26" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="4"/>
+  <text x="245" y="129" font-size="10.5" fill="#1e40af" text-anchor="middle">HTTP 请求报文 480 字节</text>
+
+  <rect x="112" y="152" width="62" height="26" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="4"/>
+  <text x="143" y="169" font-size="9.5" fill="#92400e" text-anchor="middle">记录头</text>
+  <rect x="176" y="152" width="280" height="26" fill="#fde68a" stroke="#b45309" stroke-width="1.2" rx="4"/>
+  <text x="316" y="169" font-size="10.5" fill="#78350f" text-anchor="middle">密文：HTTP 被加密并加认证标签</text>
+  <rect x="112" y="192" width="56" height="26" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="4"/>
+  <text x="140" y="209" font-size="9.5" fill="#166534" text-anchor="middle">TCP 头</text>
+  <rect x="170" y="192" width="296" height="26" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2" rx="4"/>
+  <text x="318" y="209" font-size="10.5" fill="#166534" text-anchor="middle">TLS 记录（填双方端口：目标 443）</text>
+  <rect x="112" y="232" width="52" height="26" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.2" rx="4"/>
+  <text x="138" y="249" font-size="9.5" fill="#312e81" text-anchor="middle">IP 头</text>
+  <rect x="166" y="232" width="306" height="26" fill="#eef2ff" stroke="#4338ca" stroke-width="1.2" rx="4"/>
+  <text x="319" y="249" font-size="10.5" fill="#312e81" text-anchor="middle">TCP 段（填双方 IP、协议号 6、TTL）</text>
+  <rect x="112" y="272" width="66" height="26" fill="#cffafe" stroke="#0e7490" stroke-width="1.2" rx="4"/>
+  <text x="145" y="289" font-size="9.5" fill="#155e75" text-anchor="middle">以太网头</text>
+  <rect x="180" y="272" width="292" height="26" fill="#ecfeff" stroke="#0e7490" stroke-width="1.2" rx="4"/>
+  <text x="326" y="289" font-size="10.5" fill="#155e75" text-anchor="middle">IP 包（目的 MAC 填下一跳的网卡）</text>
+  <rect x="474" y="272" width="34" height="26" fill="#cffafe" stroke="#0e7490" stroke-width="1.2" rx="4"/>
+  <text x="491" y="289" font-size="9.5" fill="#155e75" text-anchor="middle">FCS</text>
+  <line x1="235" y1="140" x2="235" y2="150" stroke="#64748b" stroke-width="1.2" marker-end="url(#arB)"/>
+  <line x1="316" y1="180" x2="316" y2="190" stroke="#64748b" stroke-width="1.2" marker-end="url(#arB)"/>
+  <line x1="318" y1="220" x2="318" y2="230" stroke="#64748b" stroke-width="1.2" marker-end="url(#arB)"/>
+  <line x1="319" y1="260" x2="319" y2="270" stroke="#64748b" stroke-width="1.2" marker-end="url(#arB)"/>
+
+  <text x="600" y="128" font-size="10.5" fill="#0f172a">480（步骤 3 假定）</text>
+  <text x="600" y="152" font-size="10" fill="#475569">记录头 + AEAD 标签约 20~40</text>
+  <text x="600" y="172" font-size="10.5" fill="#0f172a">加完约 500~520</text>
+  <text x="600" y="196" font-size="10" fill="#475569">TCP 首部 20 字节（步骤 5）</text>
+  <text x="600" y="216" font-size="10.5" fill="#0f172a">加完约 520~540</text>
+  <text x="600" y="240" font-size="10" fill="#475569">IPv4 首部 20 字节（步骤 6）</text>
+  <text x="600" y="260" font-size="10.5" fill="#0f172a">加完约 540~560</text>
+  <text x="600" y="284" font-size="10" fill="#475569">以太网头 14 + FCS 4（步骤 7）</text>
+  <text x="600" y="304" font-size="10.5" fill="#0f172a">帧约 558~578</text>
+  <rect x="600" y="318" width="440" height="48" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+  <text x="612" y="336" font-size="10.5" font-weight="bold" fill="#166534">558~578 远小于 MTU 1500，一个帧就装得下</text>
+  <text x="612" y="356" font-size="10.5" fill="#166534">TCP 已按 MSS（约 MTU − 40 = 1460）切段，正常走不到 IP 分片</text>
+  <text x="40" y="360" font-size="10" fill="#475569">出网卡后：转成比特流（步骤 8）</text>
+  <text x="40" y="372" font-size="10" fill="#475569">到对端自下而上逐层剥首部（步骤 9）</text>
+
+  <rect x="20" y="392" width="1040" height="212" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="40" y="414" font-size="11.5" font-weight="bold" fill="#334155">两套地址的分工：IP 决定送到哪，MAC 只决定这一跳交给谁</text>
+
+  <rect x="60" y="428" width="130" height="30" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2" rx="5"/>
+  <text x="125" y="447" font-size="10.5" fill="#334155" text-anchor="middle">本机 192.0.2.10</text>
+  <line x1="192" y1="443" x2="316" y2="443" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arG)"/>
+  <rect x="320" y="428" width="130" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="5"/>
+  <text x="385" y="447" font-size="10.5" fill="#166534" text-anchor="middle">对端 192.0.2.80</text>
+  <text x="470" y="447" font-size="10.5" fill="#166534">同网段：目的 IP 192.0.2.80，目的 MAC 就是对端网卡</text>
+
+  <rect x="60" y="486" width="130" height="30" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2" rx="5"/>
+  <text x="125" y="505" font-size="10.5" fill="#334155" text-anchor="middle">本机 192.0.2.10</text>
+  <line x1="192" y1="501" x2="316" y2="501" stroke="#b45309" stroke-width="1.5" marker-end="url(#arB)"/>
+  <rect x="320" y="486" width="130" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="5"/>
+  <text x="385" y="505" font-size="10.5" fill="#92400e" text-anchor="middle">网关 192.0.2.1</text>
+  <line x1="452" y1="501" x2="576" y2="501" stroke="#b45309" stroke-width="1.5" marker-end="url(#arB)"/>
+  <rect x="580" y="486" width="130" height="30" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="5"/>
+  <text x="645" y="505" font-size="10.5" fill="#166534" text-anchor="middle">目的 192.0.2.80</text>
+  <text x="730" y="505" font-size="10.5" fill="#92400e">跨网段：目的 MAC 换成网关的，目的 IP 一字不改</text>
+  <text x="60" y="540" font-size="10.5" fill="#475569">每经过一个网关，链路层首部（MAC）被改写一次；TTL 减 1、IPv4 首部校验和逐跳重算</text>
+  <text x="60" y="562" font-size="10.5" fill="#334155">容器实测（见 10.1，网段 192.168.64.0/24）：同网段 <tspan fill="#166534">ip route get</tspan> 无 <tspan fill="#166534">via</tspan>；跨网段多一个 <tspan fill="#b45309">via 192.168.64.1</tspan></text>
+  <text x="60" y="584" font-size="10.5" fill="#334155">邻居表 <tspan fill="#166534">ip neigh show</tspan> 只有对端网卡与网关两条，外网的 203.0.113.80 根本不出现</text>
+
+  <text x="540" y="624" font-size="10.5" fill="#64748b" text-anchor="middle">条带里的 480 / 20~40 / 20 / 20 / 14+4 全部取自本节步骤表，MTU 1500 与 MSS 读数来自 10.1 的容器实测</text>
+</svg>
