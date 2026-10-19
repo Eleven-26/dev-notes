@@ -414,4 +414,4 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 - **下游机制**：[TCP报文结构.md](../传输层/tcp/TCP报文结构.md) — 「TCP 是字节流、没有消息边界」的根因
 - **下游机制**：[TCP滑动窗口.md](../传输层/tcp/TCP滑动窗口.md) — `rwnd` 与窗口缩放，HTTP/2 流控的对标对象
 - **对照/互补**：[数据序列化.md](../选型/数据序列化.md) — 「序列化解决编码，不定义消息边界」
-> 反向引用（本篇被下列文档引到）：[霍夫曼树.md](../../数据结构/树/霍夫曼树.md)、[WebSocket与SSE.md](WebSocket与SSE.md)、[通信选型.md](../选型/通信选型.md)
+> 反向引用（本篇被下列文档引到）：[霍夫曼树.md](../../数据结构/树/进阶与总结/霍夫曼树.md)、[WebSocket与SSE.md](WebSocket与SSE.md)、[通信选型.md](../选型/通信选型.md)

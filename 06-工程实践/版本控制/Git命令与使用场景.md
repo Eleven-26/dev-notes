@@ -393,4 +393,4 @@ f29d2aa feature-login@{3}: branch: Created from main
 
 - [CI-CD面试题.md](../部署/CI-CD面试题.md) — 这些命令在流水线里的自动化用法
 - [常用命令.md](../../02-计算机基础/linux/常用命令.md) — 同一台机器上的其他日常命令
-> 反向引用（本篇被下列文档引到）：[LCS.md](../../02-计算机基础/算法/动态规划/LCS.md)、[GitLab-CI-CD.md](../部署/GitLab-CI-CD.md)
+> 反向引用（本篇被下列文档引到）：[LCS.md](../../02-计算机基础/算法/动态规划/线性与序列/LCS.md)、[GitLab-CI-CD.md](../部署/GitLab-CI-CD.md)

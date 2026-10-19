@@ -389,4 +389,4 @@ curl -sSI https://<域名>/ | grep -i '^alt-svc'
 - **对照/互补**：[TCP滑动窗口.md](../传输层/tcp/TCP滑动窗口.md) — QUIC 的流控是「流级 + 连接级」两层
 - **下游机制**：[DNS解析.md](../网络层与寻址/DNS解析.md) — `HTTPS` / `SVCB` 记录属于资源记录类型，HTTP/3 的第一条入口在这里
 
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../../linux/深入理解Nginx/03-事件驱动与epoll.md)、[11-HTTP3与QUIC支持.md](../../linux/深入理解Nginx/11-HTTP3与QUIC支持.md)、[霍夫曼树.md](../../数据结构/树/霍夫曼树.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[抓包实战.md](../观测与排障/抓包实战.md)、[通信选型.md](../选型/通信选型.md)
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../../linux/深入理解Nginx/03-事件驱动与epoll.md)、[11-HTTP3与QUIC支持.md](../../linux/深入理解Nginx/11-HTTP3与QUIC支持.md)、[霍夫曼树.md](../../数据结构/树/进阶与总结/霍夫曼树.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[抓包实战.md](../观测与排障/抓包实战.md)、[通信选型.md](../选型/通信选型.md)
