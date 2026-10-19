@@ -17,7 +17,7 @@
 > 内容整理自个人学习笔记。**本文件只给阅读顺序与依赖关系**——每篇的知识点描述见
 > [全仓知识点目录](../../目录.md)，本目录**不重复描述**；跨目录的延伸见「四、与其它目录的分工」。
 >
-> ⭐ **目录实数**：根下总纲 2 篇（[分布式与微服务.md](分布式与微服务.md)、[集群基础.md](集群基础.md)）· 七个方向零件共 **27 篇**（`理论基础/` 4 · `数据分布/` 3 · `共识协议/` 4 · `分布式事务/` 4 · `分布式ID/` 2 · `服务治理/` 2 · `稳定性/` 8）；各目录另有 `README.md` 导读，不计入。
+> ⭐ **目录实数**：根下总纲 2 篇（[分布式与微服务.md](分布式与微服务.md)、[集群基础.md](集群基础.md)）· 七个方向零件共 **29 篇**（`理论基础/` 4 · `数据分布/` 3 · `共识协议/` 4 · `分布式事务/` 4 · `分布式ID/` 4 · `服务治理/` 2 · `稳定性/` 8）；各目录另有 `README.md` 导读，不计入。
 
 ---
 
@@ -54,10 +54,10 @@
 ④ Gossip协议         ← 最终一致的信息扩散：反熵 / 谣言传播 / SWIM
         ↓
 ⑤ 分布式事务         ← 跨服务写入：2PC/3PC → TCC → Saga → 最终一致方案（Outbox / 事务消息 / CDC / 通知）
-⑥ 分布式ID           ← 拆库之后自增主键没了：雪花 / 号段 / Leaf
+⑥ 分布式ID           ← 拆库之后自增主键没了：雪花 / 号段 / Leaf / UUID / ULID
 ```
 
-本线篇目（与上面 ⓪~⑥ 一一对应）：[故障模型与分布式谬误.md](理论基础/故障模型与分布式谬误.md) → [时钟与顺序.md](理论基础/时钟与顺序.md) → [一致性模型.md](理论基础/一致性模型.md) → [CAP与PACELC.md](理论基础/CAP与PACELC.md) → [Raft协议.md](共识协议/Raft协议.md) → [Paxos协议.md](共识协议/Paxos协议.md) → [ZAB协议.md](共识协议/ZAB协议.md) → [Gossip协议.md](共识协议/Gossip协议.md) → 事务（README + 4 篇正文）：[README.md](分布式事务/README.md) → [2PC与3PC.md](分布式事务/2PC与3PC.md) → [TCC.md](分布式事务/TCC.md) → [Saga.md](分布式事务/Saga.md) → [最终一致方案.md](分布式事务/最终一致方案.md)；ID（README + 2 篇正文）：[README.md](分布式ID/README.md) → [雪花算法.md](分布式ID/雪花算法.md) → [号段模式与Leaf.md](分布式ID/号段模式与Leaf.md)
+本线篇目（与上面 ⓪~⑥ 一一对应）：[故障模型与分布式谬误.md](理论基础/故障模型与分布式谬误.md) → [时钟与顺序.md](理论基础/时钟与顺序.md) → [一致性模型.md](理论基础/一致性模型.md) → [CAP与PACELC.md](理论基础/CAP与PACELC.md) → [Raft协议.md](共识协议/Raft协议.md) → [Paxos协议.md](共识协议/Paxos协议.md) → [ZAB协议.md](共识协议/ZAB协议.md) → [Gossip协议.md](共识协议/Gossip协议.md) → 事务（README + 4 篇正文）：[README.md](分布式事务/README.md) → [2PC与3PC.md](分布式事务/2PC与3PC.md) → [TCC.md](分布式事务/TCC.md) → [Saga.md](分布式事务/Saga.md) → [最终一致方案.md](分布式事务/最终一致方案.md)；ID（README + 4 篇正文）：[README.md](分布式ID/README.md) → [UUID.md](分布式ID/UUID.md) → [ULID.md](分布式ID/ULID.md) → [雪花算法.md](分布式ID/雪花算法.md) → [号段模式与Leaf.md](分布式ID/号段模式与Leaf.md)
 
 ### 2.2 服务治理与稳定性：`服务治理/` → `稳定性/`
 
@@ -120,7 +120,8 @@
 | [Saga.md](分布式事务/Saga.md) | [TCC.md](分布式事务/TCC.md) | 先懂「预留 + 确认」的隔离思路，再看 Saga 为什么放弃隔离、改用补偿 |
 | [最终一致方案.md](分布式事务/最终一致方案.md) | [README.md](分布式事务/README.md) | 先分清强一致倾向与最终一致的边界，再谈 Outbox / 事务消息 / CDC 怎么落地 |
 | [README.md](分布式ID/README.md) | — | 先看方案全景与选型，再决定深入雪花还是号段 |
-| [雪花算法.md](分布式ID/雪花算法.md) | [README.md](分布式ID/README.md) | 选了雪花再深入位结构、回拨与 workerId |
+| [UUID.md](分布式ID/UUID.md) | [README.md](分布式ID/README.md) | 想要「本地生成 + 有序」又不想管 workerId 时，先分清八个版本再选 v4 还是 v7 |
+| [ULID.md](分布式ID/ULID.md) | [UUID.md](分布式ID/UUID.md) | 同上，但需要更短的字符串形态；先看它与 v7 的位宽差在哪儿 |
 | [号段模式与Leaf.md](分布式ID/号段模式与Leaf.md) | [README.md](分布式ID/README.md) | 选了号段再深入双 buffer 与 Leaf |
 | [接入etcd.md](../../01-编程语言/go/工程实践/接入etcd.md) | [服务发现.md](服务治理/服务发现.md) | 先懂发现机制，再看客户端每个动作落在哪个 API |
 | [接入etcd.md](../../01-编程语言/java/工程实践/接入etcd.md) | [接入etcd.md](../../01-编程语言/go/工程实践/接入etcd.md) | 同一套语义的 jetcd 写法与 ZooKeeper / Curator 对照 |
