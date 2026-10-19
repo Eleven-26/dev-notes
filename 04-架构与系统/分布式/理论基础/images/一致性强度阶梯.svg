@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">一致性强度阶梯：约束越多，代价越高</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">越往上越接近「只有一份数据」的直觉；越往下越依赖业务处理旧值与冲突</text>
+
+  <!-- 强度箭头 -->
+  <line x1="52" y1="470" x2="52" y2="100" stroke="#94a3b8" stroke-width="2"/>
+  <path d="M46,108 L52,96 L58,108 Z" fill="#94a3b8"/>
+  <text x="40" y="300" font-size="12" fill="#64748b" text-anchor="middle" transform="rotate(-90 40 300)">约束更强 · 更贵</text>
+
+  <!-- 四层 -->
+  <g>
+    <rect x="80" y="86" width="560" height="92" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="98" y="112" font-size="15" font-weight="bold" fill="#1e3a8a">① 线性一致（linearizability）</text>
+    <text x="98" y="136" font-size="12" fill="#1e40af">实时 + 全局单一顺序：写返回后，随后开始的读一定看到它</text>
+    <text x="98" y="158" font-size="12" fill="#1e40af">例：etcd 默认读、Raft 提交后的读 —— 要过多数派，延迟最高</text>
+
+    <rect x="80" y="190" width="560" height="92" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="98" y="216" font-size="15" font-weight="bold" fill="#075985">② 顺序一致（sequential consistency）</text>
+    <text x="98" y="240" font-size="12" fill="#0369a1">全局单一顺序，但不要求与真实时间一致</text>
+    <text x="98" y="262" font-size="12" fill="#0369a1">例：多核 CPU 存储模型、部分分布式共享内存</text>
+
+    <rect x="80" y="294" width="560" height="92" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text x="98" y="320" font-size="15" font-weight="bold" fill="#065f46">③ 因果一致（causal consistency）</text>
+    <text x="98" y="344" font-size="12" fill="#047857">只保「有因果关系」的操作顺序；并发操作可各排各的</text>
+    <text x="98" y="366" font-size="12" fill="#047857">例：会话内消息顺序、评论必须晚于原帖</text>
+
+    <rect x="80" y="398" width="560" height="92" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+    <text x="98" y="424" font-size="15" font-weight="bold" fill="#92400e">④ 最终一致（eventual consistency）</text>
+    <text x="98" y="448" font-size="12" fill="#b45309">停止写入后最终收敛；收敛前读到什么不做保证</text>
+    <text x="98" y="470" font-size="12" fill="#b45309">例：Redis 异步复制、DNS、社交动态 —— 要冲突合并</text>
+  </g>
+
+  <!-- 右侧判据 -->
+  <rect x="672" y="86" width="290" height="404" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="690" y="114" font-size="15" font-weight="bold" fill="#0f172a">怎么选：逐级往下问</text>
+  <text x="690" y="142" font-size="12" fill="#334155">① 读到旧值会造成不可逆损失？</text>
+  <text x="704" y="162" font-size="12" fill="#64748b">是 → 线性一致 / 事务</text>
+  <text x="690" y="190" font-size="12" fill="#334155">② 需要所有节点对先后达成一致？</text>
+  <text x="704" y="210" font-size="12" fill="#64748b">是 → 顺序一致（通常直接用共识）</text>
+  <text x="690" y="238" font-size="12" fill="#334155">③ 只关心「回复晚于原帖」这类因果？</text>
+  <text x="704" y="258" font-size="12" fill="#64748b">是 → 因果一致 / 会话保证</text>
+  <text x="690" y="286" font-size="12" fill="#334155">④ 旧值可容忍，且能定义收敛窗口？</text>
+  <text x="704" y="306" font-size="12" fill="#64748b">是 → 最终一致</text>
+
+  <line x1="690" y1="328" x2="944" y2="328" stroke="#e2e8f0"/>
+  <text x="690" y="352" font-size="12" font-weight="bold" fill="#0f172a">代价落在三处</text>
+  <text x="690" y="374" font-size="12" fill="#334155">· 延迟：多等一轮多数派 / 跨区 RTT</text>
+  <text x="690" y="396" font-size="12" fill="#334155">· 可用性：少数派拒绝服务</text>
+  <text x="690" y="418" font-size="12" fill="#334155">· 复杂度：冲突合并、对账、重试</text>
+  <text x="690" y="452" font-size="11.5" fill="#b45309">强 ≠ 好；按操作选，不按产品贴标签</text>
+
+  <!-- 底部 -->
+  <rect x="40" y="516" width="920" height="96" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="60" y="542" font-size="13" fill="#334155">⭐ 「强一致 / 弱一致 / 最终一致」是口语分层，不是严格的形式化模型；看文档时要盯具体定义（是否过多数派、是否允许旧读）。</text>
+  <text x="60" y="568" font-size="13" fill="#334155">⚠️ 会话保证（读己之写、单调读）能在不升级全局模型的前提下消掉大部分「刚写完读不到」的问题，成本远低于全站强一致。</text>
+  <text x="60" y="594" font-size="13" fill="#92400e">最终一致必须给出可度量的收敛窗口（如 P99 &lt; 1s）并配监控；说不出窗口的「最终」等于「不知道」。</text>
+</svg>

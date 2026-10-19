@@ -1439,3 +1439,4 @@ func assign(fv reflect.Value, s, sep string) error {
 - [依赖注入.md](../工程实践/依赖注入.md) — dig/fx/wire 的完整写法与演化链全貌，本篇 8.3 只算反射的三笔账
 - [编译与gcflags.md](../工程实践/编译与gcflags.md) — `-gcflags=all=-l` 关内联、`-d=checkptr` 开 unsafe 检查
 - [GMP调度.md](GMP调度.md) — 微基准读数波动的来源之一（线程抢占与迁移）
+> 反向引用（本篇被下列文档引到）：[代码生成与资源嵌入.md](../工程实践/代码生成与资源嵌入.md)、[泛型.md](../类型与语法/泛型.md)

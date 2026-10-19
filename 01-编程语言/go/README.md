@@ -99,7 +99,7 @@
 | [pprof性能分析.md](运行时/pprof性能分析.md) | 五种 profile 各测什么、三种采集入口、⭐ 无头环境（没有浏览器）下怎么读、`heap` 的 `alloc_space` 与 `inuse_space` 两种口径、`block` / `mutex` 要先开采样开关、一套能落地的优化闭环 |
 | [runtime调试与trace.md](运行时/runtime调试与trace.md) | `GODEBUG` 旋钮体系、`schedtrace` / `gctrace` 逐字段、`runtime/trace` 的无头解析、MemStats 与 debug 包 |
 
-### 2.4 工程实践/（16 篇直属 + 框架 2 篇 + 定时任务 4 篇）
+### 2.4 工程实践/（19 篇直属 + 框架 2 篇 + 定时任务 4 篇）
 
 | 篇 | 讲什么 |
 |---|---|
@@ -114,11 +114,15 @@
 | [配置热重载与快照.md](工程实践/配置热重载与快照.md) | 快照式配置、校验挡在启动前、热重载的原子替换 |
 | [数据访问与连接池.md](工程实践/数据访问与连接池.md) | `sql.DB` 是池不是连接、`sql.Open` 惰性建连、四个旋钮的默认值陷阱、`rows` 生命周期与 `context` 打断、池开多大、与 GORM 的关系 |
 | [代码生成与资源嵌入.md](工程实践/代码生成与资源嵌入.md) | `go:generate` 的约定与四类常见生成器、用 `go/ast` + `go/parser` + `go/format` 手写生成器、⭐ `//go:embed` 的三种形态与路径约束、生成代码的提交策略与 CI 校验 |
-| [接入DTM.md](工程实践/接入DTM.md) | 分布式事务接入 DTM：服务端与两类表（屏障表 / 全局事务表）的准备、Saga / TCC / 二阶段消息的 Go 骨架、子事务屏障的 `CallWithDB` 写法（含 gorm / go-zero 取 `*sql.Tx`）、⭐ **容器实测**跑通的 Saga 成功与 409 回滚两条路径 |
+| [接入DTM.md](工程实践/接入DTM.md) | 分布式事务接入 DTM：服务端与两类表（屏障表 / 全局事务表）的准备、Saga / TCC / 二阶段消息 / XA 的 Go 骨架、子事务屏障的 `CallWithDB` 写法（含 gorm / go-zero 取 `*sql.Tx`）、⭐ **容器实测**跑通的 Saga 成功与 409 回滚两条路径；原理见 [分布式事务/README.md](../../04-架构与系统/分布式/分布式事务/README.md) |
 | [接入Kafka.md](工程实践/接入Kafka.md) | Go 侧**接入手册**（12 节体例）：`kafka-go` / `sarama` / `confluent-kafka-go` 三选一、前提（⚠️ Topic 不预建报 `Unknown Topic Or Partition`）、⭐ **单例边界**（Writer 进程级 / Reader 非单例）、⭐ **初始化顺序**（判据「谁捕获了全局单例」）、`sync.OnceValue` 封装、`Balancer`（默认不哈希）与 `RequiredAcks`（默认不等确认）陷阱、⭐ **record headers Inject/Extract 跨进程传播**（实测完整往返）、优雅退出、校验口径；⭐ gofmt / vet / build 全过，三节点 KRaft 实测 |
 | [接入RocketMQ.md](工程实践/接入RocketMQ.md) | Go 侧**接入手册**（12 节体例）：客户端二选一（`rocketmq-client-go/v2` / `rocketmq-clients/golang/v5`）、前提（⚠️ NameServer 必须是 **IP**，写主机名报 `new Namesrv failed.: IP addr error`；Topic 未建报 `No route info of this topic`）、⭐ **单例边界**（Producer 进程级 / Consumer 非单例）、⭐ **初始化顺序**（`Subscribe` 先于 `Start`；判据「谁捕获了全局单例」）、`sync.Once` 封装、各场景调用（普通 / 延迟 / 顺序 / Tag 过滤 / 定时任务）、⭐ **消息属性 Inject-Extract 跨进程传播**（实测完整往返）、⭐ **优雅退出**（Shutdown 顺序 / 位点无残留）、验证与故障速查；⭐ gofmt / vet / build 全过。组件本体在 [消息队列/RocketMQ/](../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) |
+| [接入etcd.md](工程实践/接入etcd.md) | Go 侧 **etcd 接入手册**（14 节体例）：客户端单例（不用 `sync.OnceValue` 的理由）、linearizable / serializable 两种读、Txn / CAS、Watch 的 `WithPrevKV` 与 revision 接缝、Election 单写者、租约注册与优雅下线；⭐ 单节点容器实测（读写 / 事务 / 选主交接 / 租约过期 / Watch 事件），三节点实验与生产排障另列 |
 | [写冲突控制的Go落地.md](工程实践/写冲突控制的Go落地.md) | 同一份数据被并发写的四种写法：版本号乐观锁（`RowsAffected` 判冲突 + 退避抖动）、⭐ **条件更新**（`UPDATE ... WHERE stock >= ?`，含 `LAST_INSERT_ID(expr)` 的连接级坑）、悲观锁的 `FOR UPDATE` 三条硬规矩与 `SKIP LOCKED`、⭐ **唯一索引兜底**（`INSERT IGNORE` / `ON DUPLICATE KEY UPDATE` 的两个坑）；⚠️ 未做运行时验证（概念侧在 `03-数据与中间件/数据存储/并发控制/`）|
 | [子进程与外部命令.md](工程实践/子进程与外部命令.md) | 执行外部命令的安全形态：⭐ **注入对照实测**、超时与进程树（300ms → 5.08s → 加 `WaitDelay` 800ms）、退出码三层判读、纯 Go 复刻 `grep\|sort\|uniq` 管道并与 shell 对拍（⭐ 拍出 `\|` 左起优先 vs 最长匹配）、端口探测 / `MkdirAll` / 流式读为什么不该起进程 |
+| [服务注册与发现的Go实现.md](工程实践/服务注册与发现的Go实现.md) | 服务注册与发现的 Go 骨架：客户端单例、租约注册 + KeepAlive + 优雅下线、全量拉取 + Watch 增量（COW）；etcd 客户端行为与实验见 [接入etcd.md](工程实践/接入etcd.md) |
+| [客户端负载均衡的Go实现.md](工程实践/客户端负载均衡的Go实现.md) | 客户端负载均衡的 Go 骨架：轮询 / 平滑加权 / 一致性哈希三策略与实测数字、重试必须区分「请求有没有发出去」 |
+| [稳定性组件的Go实现.md](工程实践/稳定性组件的Go实现.md) | 稳定性组件：Sentinel / gobreaker / Redis+Lua 限流 / `x/time/rate` / 手写令牌桶·滑动窗口·三态熔断；含注入时钟的状态迁移实测 |
 | [Kratos框架.md](工程实践/框架/微服务/Kratos框架.md) | 集成 ent / validate、注册发现与容器化、服务间鉴权与元数据传递 |
 | [Eino框架.md](工程实践/框架/LLM应用/Eino框架.md) | 字节 Eino 大模型应用框架 |
 | [定时任务/](工程实践/定时任务/README.md) 四篇 | 进程内与中心化调度四条路线：[标准库实现.md](工程实践/定时任务/标准库实现.md)、[go-cron实现.md](工程实践/定时任务/go-cron实现.md)、[go-job实现.md](工程实践/定时任务/go-job实现.md)、[xxl-job接入.md](工程实践/定时任务/xxl-job接入.md)，导读见 [README.md](工程实践/定时任务/README.md) |

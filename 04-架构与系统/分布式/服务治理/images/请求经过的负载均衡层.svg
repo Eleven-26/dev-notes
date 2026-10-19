@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#475569"/>
+    </marker>
+    <marker id="arw-d" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#b45309"/>
+    </marker>
+    <marker id="arw-g" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">一次请求经过的负载均衡层</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">L4 在建连时选一次，L7 可以每个请求重选；Headless 把选择权交回客户端</text>
+
+  <rect x="25" y="78" width="150" height="70" rx="8" fill="#f1f5f9" stroke="#475569"/>
+  <text x="100" y="105" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">外部客户端</text>
+  <text x="100" y="127" text-anchor="middle" font-size="11.5" fill="#334155">浏览器 / 第三方</text>
+
+  <line x1="175" y1="113" x2="215" y2="113" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <rect x="220" y="72" width="190" height="82" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="315" y="97" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Ingress / Gateway</text>
+  <text x="315" y="119" text-anchor="middle" font-size="11.5" fill="#0f172a">L7 · 请求级</text>
+  <text x="315" y="140" text-anchor="middle" font-size="11" fill="#2563eb">按 host / path 分流</text>
+
+  <line x1="410" y1="113" x2="450" y2="113" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <rect x="455" y="72" width="190" height="82" rx="8" fill="#fffbeb" stroke="#d97706"/>
+  <text x="550" y="97" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Service / kube-proxy</text>
+  <text x="550" y="119" text-anchor="middle" font-size="11.5" fill="#0f172a">L4 · 连接级</text>
+  <text x="550" y="140" text-anchor="middle" font-size="11" fill="#b45309">建连时选一次（conntrack）</text>
+
+  <line x1="645" y1="100" x2="693" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="645" y1="113" x2="693" y2="113" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="645" y1="126" x2="693" y2="138" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <rect x="700" y="66" width="270" height="44" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="835" y="93" text-anchor="middle" font-size="12.5" fill="#14532d">Pod A（Sidecar 可选）</text>
+  <rect x="700" y="118" width="270" height="44" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="835" y="145" text-anchor="middle" font-size="12.5" fill="#14532d">Pod B（Sidecar 可选）</text>
+  <rect x="700" y="170" width="270" height="44" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="835" y="197" text-anchor="middle" font-size="12.5" fill="#14532d">Pod C（Sidecar 可选）</text>
+
+  <text x="700" y="238" font-size="11" fill="#b45309">⚠ 一条 TCP 连接建好后固定落到同一台；</text>
+  <text x="700" y="255" font-size="11" fill="#b45309">gRPC / HTTP2 的长连接不会再被重新分配。</text>
+
+  <line x1="30" y1="290" x2="970" y2="290" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <rect x="25" y="320" width="230" height="86" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="140" y="346" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">gRPC 客户端（Headless）</text>
+  <text x="140" y="368" text-anchor="middle" font-size="11.5" fill="#0f172a">DNS 拿到全部 Pod IP</text>
+  <text x="140" y="389" text-anchor="middle" font-size="11.5" fill="#0f172a">每个 RPC 重新选（round_robin）</text>
+
+  <line x1="255" y1="345" x2="303" y2="333" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arw-g)"/>
+  <line x1="255" y1="363" x2="303" y2="363" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arw-g)"/>
+  <line x1="255" y1="381" x2="303" y2="393" stroke="#16a34a" stroke-width="1.6" marker-end="url(#arw-g)"/>
+  <text x="280" y="318" text-anchor="middle" font-size="10.5" fill="#16a34a">DNS</text>
+
+  <rect x="310" y="308" width="270" height="44" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="445" y="335" text-anchor="middle" font-size="12.5" fill="#14532d">Pod A</text>
+  <rect x="310" y="362" width="270" height="44" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="445" y="389" text-anchor="middle" font-size="12.5" fill="#14532d">Pod B</text>
+  <rect x="310" y="416" width="270" height="44" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="445" y="443" text-anchor="middle" font-size="12.5" fill="#14532d">Pod C</text>
+
+  <rect x="620" y="308" width="350" height="152" rx="9" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="638" y="333" font-size="13" font-weight="bold" fill="#334155">选择发生在哪一刻？</text>
+  <text x="638" y="358" font-size="11.5" fill="#0f172a">L7（Ingress / Envoy）：每个 HTTP 请求 / RPC</text>
+  <text x="638" y="381" font-size="11.5" fill="#0f172a">L4（Service / LVS）：每条 TCP 连接建立时</text>
+  <text x="638" y="404" font-size="11.5" fill="#0f172a">客户端 LB：每次从列表里挑实例时</text>
+  <text x="638" y="427" font-size="11.5" fill="#0f172a">Headless + 客户端 LB：把 L4 的活交给调用方</text>
+  <text x="638" y="450" font-size="11.5" fill="#16a34a">→ 连接复用越久，L4 的「一次选择」代价越大</text>
+</svg>

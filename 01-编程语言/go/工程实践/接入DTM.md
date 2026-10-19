@@ -1,6 +1,6 @@
 # 接入 DTM
 
-> Go 侧接入 DTM 分布式事务：服务端与两类表的准备、子事务屏障的写法、Saga / TCC / 二阶段消息三套骨架，以及一组在容器里真实跑通的验证。
+> Go 侧接入 DTM 分布式事务：服务端与两类表的准备、子事务屏障的写法、Saga / TCC / 二阶段消息 / XA 四套骨架，以及一组在容器里真实跑通的验证。
 > DTM 的概念、架构与模式见 [原理与架构.md](../../../03-数据与中间件/中间件/分布式事务/DTM/原理与架构.md) 与 [事务模式.md](../../../03-数据与中间件/中间件/分布式事务/DTM/事务模式.md)，本篇只讲怎么写代码。
 >
 > 内容整理自个人学习笔记；接口与代码来自 DTM 官方文档与仓库。素材见 [素材清单.md](../../../素材清单.md)。
@@ -26,6 +26,35 @@ go get github.com/go-sql-driver/mysql
 ```
 
 `github.com/dtm-labs/client` 是官方主仓 `client/` 的同步副本，依赖更少；需要 gRPC 时改用 `client/dtmgrpc`。
+
+### 1.1 服务端部署要点
+
+| 项目 | 要点 |
+| --- | --- |
+| 端口 | HTTP 默认 `36789`，gRPC 默认 `36790`；客户端地址通常为 `http://host:36789/api/dtmsvr` |
+| 存储 | 本地开发可用 BoltDB；生产使用 MySQL/Redis 等持久化存储并部署多个 DTM 实例 |
+| 可达性 | DTM 必须能回调所有分支 URL，容器内不能把业务地址误写成仅容器自身可见的 `localhost` |
+| 高可用 | DTM 实例无状态化扩展，事务状态放共享存储；入口经负载均衡或服务发现暴露 |
+| 运维 | 监控未完成事务、重试次数、补偿耗时和回调错误；配置告警 WebHook 与人工处理流程 |
+| 安全 | 分支接口只允许内网/鉴权调用，校验请求来源，敏感参数不要写入日志 |
+
+```yaml
+services:
+  dtm:
+    image: yedf/dtm:latest
+    ports:
+      - "36789:36789"
+      - "36790:36790"
+    environment:
+      STORE_DRIVER: mysql
+      STORE_HOST: mysql
+      STORE_PORT: "3306"
+      STORE_USER: dtm
+      STORE_PASSWORD: change-me
+      STORE_DB: dtm
+```
+
+生产环境应固定镜像版本、保护数据库凭据，并根据当前 DTM 版本核对环境变量；以下示例假定 DTM HTTP 地址为 `http://localhost:36789/api/dtmsvr`。完整的存储选择、两类表与环境变量映射见 [部署与运维.md](../../../03-数据与中间件/中间件/分布式事务/DTM/部署与运维.md)。
 
 ## 二、子事务屏障怎么写
 
@@ -143,14 +172,32 @@ func queryPrepared(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-## 六、实测：两条路径都跑通
+## 六、XA 骨架
+
+**本节要点**：XA 由 DTM 驱动数据库原生两阶段提交，业务分支内部调用 `XaLocalTransaction`；它不需要补偿，但持锁时间长，只适合短事务。
+
+```go
+err := dtmcli.XaGlobalTransaction(dtmServer, shortuuid.New(), func(xa *dtmcli.Xa) (*resty.Response, error) {
+    resp, err := xa.CallBranch(&TransReq{Amount: -30}, business+"/TransOutXa")
+    if err != nil {
+        return resp, err
+    }
+    return xa.CallBranch(&TransReq{Amount: 30}, business+"/TransInXa")
+})
+```
+
+每个分支接口内部还要调用 `dtmcli.XaLocalTransaction`，数据库驱动和数据库本身必须支持 XA；不要在 XA 本地事务中做慢 RPC。
+
+XA 适合短事务和同类数据库资源，吞吐、锁等待和 `in-doubt` 事务恢复必须压测与监控；协议侧的阻塞与故障分析见 [2PC与3PC.md](../../../04-架构与系统/分布式/分布式事务/2PC与3PC.md)。
+
+## 七、实测：两条路径都跑通
 
 **本节要点**：下面这组读数来自本机容器实跑——DTM v1.19.0 + MySQL 8.0 + Go 1.26.8，业务程序在 `golang`/`alpine` 容器里以 `http://app:8081` 被 DTM 回调。
 
 **✅ 实测口径**：镜像 `yedf/dtm:latest`（启动日志自报 `dtm version is: v1.19.0`）、`mysql:8.0`、`go1.26.8 linux/amd64`、客户端 `github.com/dtm-labs/client`；三个容器同处一个自定义 bridge 网络。
 **⚠️ 未实测**：TCC / XA / Workflow / 二阶段消息只做了静态核对；XA 需要数据库与驱动支持 XA；本实验的屏障是按官方机制的**手写实现**（为了展示判定过程），官方 helper 的调用签名已核对源码但未单独跑一遍。
 
-### 6.1 成功路径
+### 7.1 成功路径
 
 发起着一个 Saga（TransOut 30 → TransIn 30），分支日志：
 
@@ -164,7 +211,7 @@ func queryPrepared(w http.ResponseWriter, r *http.Request) {
 
 余额与状态：`user1 10000 → 9970`、`user2 10000 → 10030`；屏障 2 行（`01/action`、`02/action`）；`dtm.trans_global` 中该事务 `status = succeed`。
 
-### 6.2 失败回滚路径
+### 7.2 失败回滚路径
 
 让 TransIn 分支注入失败（返回 409，代表「确定的失败」不重试）：
 
@@ -185,7 +232,7 @@ func queryPrepared(w http.ResponseWriter, r *http.Request) {
 
 **图怎么读**：四条泳道都在应用与 DTM 的调用边界上——橙色是 compensate 阶段，DTM 按 **反向顺序**先调 `TransInCompensate`（屏障查不到正向键，判为空补偿跳过），再调 `TransOutCompensate` 把 `-30` 抵掉；最后 `dtm.trans_global` 落 `status = failed`。服务端自身的状态推进不在本篇，见 [原理与架构.md](../../../03-数据与中间件/中间件/分布式事务/DTM/原理与架构.md)。
 
-### 6.3 幂等验证
+### 7.3 幂等验证
 
 对同一 `(gid, branch, op)` 连发两次正向操作：
 
@@ -198,7 +245,7 @@ func queryPrepared(w http.ResponseWriter, r *http.Request) {
 
 > 对账：屏障表行数 2（成功场景）→ 6（失败场景，含补偿代插的 `02/action`）→ 7（幂等场景只新增 1 行），与上面每条日志逐条对得上。
 
-## 七、常见错误
+## 八、常见错误
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
@@ -222,6 +269,9 @@ func queryPrepared(w http.ResponseWriter, r *http.Request) {
 - [事务模式.md](../../../03-数据与中间件/中间件/分布式事务/DTM/事务模式.md) — Saga / TCC / 二阶段消息各自的边界
 - [部署与运维.md](../../../03-数据与中间件/中间件/分布式事务/DTM/部署与运维.md) — 服务端部署与两类表
 - [实践与生态.md](../../../03-数据与中间件/中间件/分布式事务/DTM/实践与生态.md) — ORM 与微服务框架集成
-- [分布式事务.md](../../../04-架构与系统/分布式/理论/分布式事务.md) — 通用原理与方案选型
+- [分布式事务/README.md](../../../04-架构与系统/分布式/分布式事务/README.md) — 方案谱系、选型与落地工程能力
+- [Saga.md](../../../04-架构与系统/分布式/分布式事务/Saga.md) — 正向/逆向恢复与屏障的通用语义
+- [2PC与3PC.md](../../../04-架构与系统/分布式/分布式事务/2PC与3PC.md) — XA 的阻塞与 in-doubt 事务
 - [数据访问与连接池.md](数据访问与连接池.md) — `sql.DB` 是池不是连接，屏障回调里的事务边界
 - [素材清单.md](../../../素材清单.md) — 素材来源登记
+> 反向引用（本篇被下列文档引到）：[接入Seata.md](../../java/工程实践/接入Seata.md)、[转账场景.md](../../../03-数据与中间件/中间件/分布式事务/DTM/转账场景.md)、[TCC.md](../../../04-架构与系统/分布式/分布式事务/TCC.md)

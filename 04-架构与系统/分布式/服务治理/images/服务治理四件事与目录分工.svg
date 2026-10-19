@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#475569"/>
+    </marker>
+    <marker id="arw-d" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="470" fill="#ffffff"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">服务治理：四件事、调用链与目录分工</text>
+  <text x="500" y="51" text-anchor="middle" font-size="12" fill="#64748b">注册 → 发现 → 负载均衡是调用链上的三个位置；健康检查决定「谁还配留在列表里」</text>
+
+  <rect x="30" y="75" width="165" height="105" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="112" y="99" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">服务端</text>
+  <text x="112" y="122" text-anchor="middle" font-size="11.5" fill="#0f172a">启动时创建租约</text>
+  <text x="112" y="142" text-anchor="middle" font-size="11.5" fill="#0f172a">写入「服务名 + 地址」</text>
+  <text x="112" y="164" text-anchor="middle" font-size="11" fill="#2563eb">注册</text>
+
+  <line x1="195" y1="127" x2="233" y2="127" stroke="#475569" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="240" y="75" width="195" height="105" rx="9" fill="#f1f5f9" stroke="#475569"/>
+  <text x="337" y="99" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">注册中心</text>
+  <text x="337" y="122" text-anchor="middle" font-size="11.5" fill="#0f172a">etcd · Nacos · Consul</text>
+  <text x="337" y="142" text-anchor="middle" font-size="11.5" fill="#0f172a">保存当前实例列表</text>
+  <text x="337" y="164" text-anchor="middle" font-size="11" fill="#64748b">唯一事实来源</text>
+
+  <line x1="435" y1="127" x2="473" y2="127" stroke="#475569" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="480" y="75" width="205" height="105" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="582" y="99" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">客户端</text>
+  <text x="582" y="122" text-anchor="middle" font-size="11.5" fill="#0f172a">首次 Get 拉全量</text>
+  <text x="582" y="142" text-anchor="middle" font-size="11.5" fill="#0f172a">之后 Watch 收增量</text>
+  <text x="582" y="164" text-anchor="middle" font-size="11" fill="#2563eb">发现 + 本地缓存</text>
+
+  <line x1="685" y1="127" x2="723" y2="127" stroke="#475569" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="730" y="75" width="130" height="105" rx="9" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="795" y="99" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">负载均衡</text>
+  <text x="795" y="122" text-anchor="middle" font-size="11.5" fill="#0f172a">轮询 / 加权 / 最少连接</text>
+  <text x="795" y="142" text-anchor="middle" font-size="11.5" fill="#0f172a">P2C / 一致性哈希</text>
+  <text x="795" y="164" text-anchor="middle" font-size="11" fill="#16a34a">挑一台</text>
+
+  <line x1="860" y1="127" x2="888" y2="127" stroke="#475569" stroke-width="1.6" marker-end="url(#arw)"/>
+  <rect x="893" y="95" width="85" height="65" rx="9" fill="#ffffff" stroke="#16a34a"/>
+  <text x="935" y="122" text-anchor="middle" font-size="12" fill="#14532d">目标实例</text>
+  <text x="935" y="142" text-anchor="middle" font-size="11" fill="#64748b">这一次调用</text>
+
+  <rect x="240" y="205" width="195" height="72" rx="9" fill="#fffbeb" stroke="#d97706" stroke-dasharray="5 3"/>
+  <text x="337" y="228" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">健康检查（被动）</text>
+  <text x="337" y="249" text-anchor="middle" font-size="11.5" fill="#0f172a">心跳停 → 租约 TTL 到期</text>
+  <text x="337" y="267" text-anchor="middle" font-size="11.5" fill="#0f172a">key 自动删除 → 客户端收到事件</text>
+  <line x1="337" y1="205" x2="337" y2="185" stroke="#b45309" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arw-d)"/>
+
+  <text x="30" y="300" font-size="14" font-weight="bold" fill="#0f172a">目录分工</text>
+
+  <rect x="30" y="312" width="300" height="82" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="46" y="334" font-size="13" font-weight="bold" fill="#1e3a8a">服务发现.md</text>
+  <text x="46" y="356" font-size="11.5" fill="#0f172a">为什么不用配置文件、注册 / 发现 / 健康检查机制</text>
+  <text x="46" y="377" font-size="11.5" fill="#0f172a">四种注册中心选型：etcd / Consul / Nacos / Eureka</text>
+
+  <rect x="350" y="312" width="280" height="82" rx="9" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="366" y="334" font-size="13" font-weight="bold" fill="#14532d">负载均衡.md</text>
+  <text x="366" y="356" font-size="11.5" fill="#0f172a">客户端 vs 服务端、L4 vs L7、云厂商 LB</text>
+  <text x="366" y="377" font-size="11.5" fill="#0f172a">策略选择、健康检查 / 会话保持 / 重试边界</text>
+
+  <rect x="650" y="312" width="320" height="82" rx="9" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="666" y="334" font-size="13" font-weight="bold" fill="#334155">接入etcd.md（Go / Java）+ 三篇语言实现</text>
+  <text x="666" y="356" font-size="11.5" fill="#0f172a">客户端单例、两种读法、Txn、选举、Watch、三节点实验</text>
+  <text x="666" y="377" font-size="11.5" fill="#0f172a">租约注册 / COW Resolver / 客户端 LB 策略与实测</text>
+
+  <rect x="30" y="410" width="940" height="46" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="46" y="430" font-size="11.5" fill="#334155">边界：本目录回答「找到谁、挑哪台」；找到之后怎么不被限流 / 熔断 / 降级 / 重试拖垮 → 稳定性/。注册中心与网关的组件细节 → 03 中间件；客户端代码 → 01 编程语言。</text>
+  <text x="46" y="448" font-size="11.5" fill="#334155">交界点：节点级被动摘除决定「它还配不配被选中」，负载均衡决定「在剩下的里面挑谁」；两者消费同一批健康信号。</text>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="30" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">负载均衡策略选型决策树</text>
+  <text x="500" y="52" text-anchor="middle" font-size="12" fill="#64748b">先判断「要不要粘住」，再判断「实例是否同构、耗时是否均匀、连接是否复用」</text>
+
+  <rect x="330" y="72" width="340" height="48" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="500" y="101" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">是否需要按 key 固定到同一台实例？</text>
+
+  <line x1="330" y1="96" x2="302" y2="96" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="316" y="88" text-anchor="middle" font-size="11" fill="#16a34a" font-weight="bold">是</text>
+  <rect x="30" y="64" width="270" height="64" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="165" y="88" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">一致性哈希（虚拟节点）</text>
+  <text x="165" y="110" text-anchor="middle" font-size="11.5" fill="#0f172a">缓存 / 分片 / 有状态连接</text>
+
+  <line x1="500" y1="120" x2="500" y2="148" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="510" y="139" font-size="11" fill="#dc2626" font-weight="bold">否</text>
+
+  <rect x="330" y="150" width="340" height="48" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="500" y="179" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">实例规格是否一致？</text>
+
+  <line x1="670" y1="174" x2="708" y2="174" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="689" y="166" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="bold">否</text>
+  <rect x="715" y="146" width="250" height="56" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="840" y="170" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">平滑加权轮询</text>
+  <text x="840" y="191" text-anchor="middle" font-size="11.5" fill="#0f172a">按容量分配，避免连续脉冲</text>
+
+  <line x1="500" y1="198" x2="500" y2="226" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="510" y="217" font-size="11" fill="#16a34a" font-weight="bold">是</text>
+
+  <rect x="330" y="228" width="340" height="48" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="500" y="257" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">请求耗时差异是否大？</text>
+
+  <line x1="670" y1="252" x2="708" y2="252" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="689" y="244" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="bold">否</text>
+  <rect x="715" y="224" width="250" height="56" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="840" y="248" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">轮询 / 随机</text>
+  <text x="840" y="269" text-anchor="middle" font-size="11.5" fill="#0f172a">同构、短请求、无状态</text>
+
+  <line x1="500" y1="276" x2="500" y2="304" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="510" y="295" font-size="11" fill="#16a34a" font-weight="bold">是</text>
+
+  <rect x="310" y="306" width="380" height="48" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="500" y="335" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">连接是否被复用（HTTP2 / 连接池）？</text>
+
+  <line x1="310" y1="330" x2="282" y2="330" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="296" y="322" text-anchor="middle" font-size="11" fill="#dc2626" font-weight="bold">否</text>
+  <rect x="30" y="302" width="250" height="56" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="155" y="326" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">最少连接</text>
+  <text x="155" y="347" text-anchor="middle" font-size="11.5" fill="#0f172a">连接数 ≈ 并发压力时</text>
+
+  <line x1="690" y1="330" x2="708" y2="330" stroke="#475569" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="699" y="322" text-anchor="middle" font-size="11" fill="#16a34a" font-weight="bold">是</text>
+  <rect x="715" y="298" width="250" height="64" rx="8" fill="#ecfdf5" stroke="#16a34a"/>
+  <text x="840" y="323" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">P2C（随机两个取小）</text>
+  <text x="840" y="345" text-anchor="middle" font-size="11.5" fill="#0f172a">按在途请求数，O(1) 状态</text>
+
+  <rect x="30" y="404" width="940" height="110" rx="9" fill="#fffbeb" stroke="#d97706"/>
+  <text x="48" y="430" font-size="13" font-weight="bold" fill="#92400e">选完策略还要核对三件事</text>
+  <text x="48" y="455" font-size="12" fill="#0f172a">① 平台能力：单一 K8s 集群内短连接 → Service（L4）；入口分流 → Ingress（L7）；服务间请求级 → Sidecar 或客户端 LB。</text>
+  <text x="48" y="478" font-size="12" fill="#0f172a">② 长连接：连接一旦建立就不再经过选择——扩展 Pod 不会自动分流，必须限制连接寿命或改用请求级 LB。</text>
+  <text x="48" y="501" font-size="12" fill="#0f172a">③ 指标复核：QPS / 在途数 / P99 仍倾斜时，先查权重是否失真、长连接是否锁死流量，而不是立刻换算法。</text>
+</svg>

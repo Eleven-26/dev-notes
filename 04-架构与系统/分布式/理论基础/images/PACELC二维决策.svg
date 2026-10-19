@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">PACELC：分区时选 A / C，平时选 L / C</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">CAP 只描述分区期间；平时即使不分区，强一致也要多付一轮协调的延迟</text>
+
+  <!-- 公式 -->
+  <rect x="300" y="76" width="400" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="104" font-size="14" font-weight="bold" fill="#0f172a" text-anchor="middle">if (Partition) then A or C</text>
+  <text x="500" y="128" font-size="14" font-weight="bold" fill="#0f172a" text-anchor="middle">else L or C</text>
+
+  <!-- 2x2 矩阵 -->
+  <line x1="330" y1="470" x2="610" y2="470" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="470" y1="190" x2="470" y2="470" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="470" y="496" font-size="12" fill="#475569" text-anchor="middle">分区时：A ←→ C</text>
+  <text x="300" y="330" font-size="12" fill="#475569" text-anchor="middle" transform="rotate(-90 300 330)">平时：L ←→ C</text>
+  <text x="400" y="510" font-size="11" fill="#94a3b8" text-anchor="middle">偏 A</text>
+  <text x="540" y="510" font-size="11" fill="#94a3b8" text-anchor="middle">偏 C</text>
+  <text x="314" y="230" font-size="11" fill="#94a3b8" text-anchor="end">偏 L</text>
+  <text x="314" y="430" font-size="11" fill="#94a3b8" text-anchor="end">偏 C</text>
+
+  <!-- 象限 -->
+  <rect x="330" y="190" width="140" height="140" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="400" y="216" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">PA / EL</text>
+  <text x="400" y="240" font-size="11" fill="#166534" text-anchor="middle">分区保可用</text>
+  <text x="400" y="258" font-size="11" fill="#166534" text-anchor="middle">平时保延迟</text>
+  <text x="400" y="286" font-size="10.5" fill="#166534" text-anchor="middle">Cassandra</text>
+  <text x="400" y="304" font-size="10.5" fill="#166534" text-anchor="middle">DynamoDB 默认</text>
+
+  <rect x="470" y="190" width="140" height="140" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="540" y="216" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">PC / EL</text>
+  <text x="540" y="240" font-size="11" fill="#1e40af" text-anchor="middle">分区保一致</text>
+  <text x="540" y="258" font-size="11" fill="#1e40af" text-anchor="middle">平时保延迟</text>
+  <text x="540" y="286" font-size="10.5" fill="#1e40af" text-anchor="middle">半同步复制</text>
+  <text x="540" y="304" font-size="10.5" fill="#1e40af" text-anchor="middle">读走本地副本</text>
+
+  <rect x="330" y="330" width="140" height="140" rx="6" fill="#fef3c7" stroke="#d97706"/>
+  <text x="400" y="356" font-size="13" font-weight="bold" fill="#92400e" text-anchor="middle">PA / EC</text>
+  <text x="400" y="380" font-size="11" fill="#b45309" text-anchor="middle">分区保可用</text>
+  <text x="400" y="398" font-size="11" fill="#b45309" text-anchor="middle">平时保一致</text>
+  <text x="400" y="426" font-size="10.5" fill="#b45309" text-anchor="middle">定制降级策略</text>
+  <text x="400" y="444" font-size="10.5" fill="#b45309" text-anchor="middle">较少见</text>
+
+  <rect x="470" y="330" width="140" height="140" rx="6" fill="#e2e8f0" stroke="#475569"/>
+  <text x="540" y="356" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">PC / EC</text>
+  <text x="540" y="380" font-size="11" fill="#334155" text-anchor="middle">两头都保一致</text>
+  <text x="540" y="398" font-size="11" fill="#334155" text-anchor="middle">两头都付代价</text>
+  <text x="540" y="426" font-size="10.5" fill="#334155" text-anchor="middle">etcd / ZooKeeper</text>
+  <text x="540" y="444" font-size="10.5" fill="#334155" text-anchor="middle">HBase</text>
+
+  <!-- 右侧说明 -->
+  <rect x="670" y="170" width="300" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="688" y="198" font-size="15" font-weight="bold" fill="#0f172a">平时的那笔延迟账</text>
+  <text x="688" y="226" font-size="12" fill="#334155">· 写等多数派：多一次跨 AZ 往返</text>
+  <text x="688" y="250" font-size="11" fill="#64748b">同城约 1–3 ms（量级示意）</text>
+  <text x="688" y="278" font-size="12" fill="#334155">· 跨地域同步：多一次广域往返</text>
+  <text x="688" y="302" font-size="11" fill="#64748b">数十毫秒到上百毫秒（量级示意）</text>
+  <text x="688" y="330" font-size="12" fill="#334155">· 线性一致读：多一轮多数派确认</text>
+  <text x="688" y="354" font-size="11" fill="#64748b">换来「读不过期」</text>
+
+  <line x1="688" y1="376" x2="952" y2="376" stroke="#e2e8f0"/>
+  <text x="688" y="400" font-size="12" font-weight="bold" fill="#0f172a">象限不是产品标签</text>
+  <text x="688" y="422" font-size="11.5" fill="#334155">改副本数、写关注、是否读主，</text>
+  <text x="688" y="442" font-size="11.5" fill="#334155">同一个产品就会换象限。</text>
+
+  <!-- 底部 -->
+  <rect x="40" y="536" width="920" height="80" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="60" y="562" font-size="13" fill="#334155">⭐ CAP 回答「分区时怎么办」，PACELC 补上「平时怎么办」：没有分区时，强一致仍然要用延迟和协调成本来换。</text>
+  <text x="60" y="588" font-size="13" fill="#92400e">⚠️ 工程上按「操作」选：支付走 PC/EC，商品详情走 PA/EL；不要给整个系统贴一个标签。</text>
+</svg>

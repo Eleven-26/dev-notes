@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arB" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arR" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arG" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arO" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#ea580c"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">稳定性注解的降级路由：Sentinel 与 Resilience4j</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">Sentinel 按异常类型分两条路；Resilience4j 把多层装饰器的失败收敛到一个 fallback</text>
+
+  <!-- 左：Sentinel -->
+  <rect x="25" y="78" width="460" height="392" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="255" y="104" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">Sentinel：blockHandler 与 fallback 各接一类</text>
+
+  <rect x="145" y="118" width="220" height="42" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="255" y="144" text-anchor="middle" font-size="13" fill="#334155">@SentinelResource("getOrder")</text>
+
+  <line x1="255" y1="162" x2="255" y2="186" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+
+  <rect x="115" y="190" width="280" height="52" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="255" y="212" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">SentinelResourceAspect</text>
+  <text x="255" y="231" text-anchor="middle" font-size="11.5" fill="#334155">没注册切面 → 注解完全不生效</text>
+
+  <rect x="45" y="270" width="190" height="58" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="140" y="292" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">FlowRule</text>
+  <text x="140" y="312" text-anchor="middle" font-size="11.5" fill="#64748b">QPS / 线程数 / 预热</text>
+
+  <rect x="275" y="270" width="190" height="58" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="370" y="292" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">DegradeRule</text>
+  <text x="370" y="312" text-anchor="middle" font-size="11.5" fill="#64748b">慢调用比例 / 错误率 / 错误数</text>
+
+  <line x1="190" y1="242" x2="140" y2="266" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arB)"/>
+  <line x1="320" y1="242" x2="370" y2="266" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arB)"/>
+
+  <path d="M140,328 L140,352 L185,352" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <path d="M370,328 L370,352 L325,352" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="255" y="347" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b91c1c">BlockException</text>
+
+  <rect x="95" y="356" width="320" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="255" y="379" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">blockHandler(…, BlockException)</text>
+  <text x="255" y="399" text-anchor="middle" font-size="11.5" fill="#334155">原参数 + BlockException，必须 public</text>
+
+  <rect x="145" y="432" width="220" height="22" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="255" y="448" text-anchor="middle" font-size="11.5" fill="#15803d">真实调用抛出的业务异常 → fallback(…, Throwable)</text>
+
+  <!-- 右：Resilience4j -->
+  <rect x="515" y="78" width="460" height="392" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="745" y="104" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">Resilience4j：装饰器叠加，一个 fallback 收口</text>
+
+  <rect x="635" y="118" width="220" height="42" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="745" y="144" text-anchor="middle" font-size="13" fill="#334155">getOrder(id)</text>
+
+  <line x1="745" y1="160" x2="745" y2="182" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+
+  <rect x="570" y="186" width="350" height="30" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+  <text x="745" y="206" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">@Retry（可选，必须配熔断）</text>
+
+  <rect x="570" y="222" width="350" height="30" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="745" y="242" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">@CircuitBreaker（熔断）</text>
+
+  <rect x="570" y="258" width="350" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="745" y="278" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">@RateLimiter（令牌桶限流）</text>
+
+  <rect x="570" y="294" width="350" height="30" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="745" y="314" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2410c">@Bulkhead（信号量并发隔离）</text>
+
+  <rect x="570" y="330" width="350" height="30" rx="6" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="745" y="350" text-anchor="middle" font-size="12" font-weight="bold" fill="#4338ca">@TimeLimiter（配合 CompletableFuture）</text>
+
+  <text x="745" y="379" text-anchor="middle" font-size="11" fill="#64748b">叠加顺序由框架切面顺序决定，非注解书写顺序；升级版本要复核</text>
+
+  <path d="M745,366 L745,390" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="812" y="384" font-size="11.5" font-weight="bold" fill="#b91c1c">任一环节拒绝 / 异常</text>
+
+  <rect x="590" y="394" width="310" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="745" y="416" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">fallbackMethod = "fb"</text>
+  <text x="745" y="435" text-anchor="middle" font-size="11.5" fill="#334155">原参数 + 末尾 Throwable，返回值一致</text>
+
+  <!-- 底部：对照 -->
+  <rect x="25" y="490" width="950" height="110" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="45" y="515" font-size="14" font-weight="bold" fill="#9a3412">两条降级路径的差别</text>
+  <text x="45" y="540" font-size="12.5" fill="#334155">Sentinel：BlockException（限流 / 熔断 / 系统规则 / 热点）走 blockHandler；真实调用抛出的业务异常走 fallback。</text>
+  <text x="45" y="562" font-size="12.5" fill="#334155">Resilience4j：所有装饰器的拒绝与异常都落到 fallbackMethod，用 Throwable 的类型自己区分「被拦」还是「调用失败」。</text>
+  <text x="45" y="584" font-size="12.5" fill="#334155">共同底线：fallback 的参数 = 原方法参数 + 末尾异常参数，返回值与原方法一致；签名不对时框架找不到方法。</text>
+</svg>

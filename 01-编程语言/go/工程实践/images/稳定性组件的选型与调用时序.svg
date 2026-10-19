@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arB" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arR" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arG" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arS" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">稳定性组件的 Go 选型与调用时序</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">左侧四问定组件；右侧是 sentinel.Entry 一次调用的三个断点，漏掉 TraceError 熔断统计恒为 0</text>
+
+  <!-- 左：选型四问 -->
+  <rect x="25" y="78" width="455" height="552" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="252" y="104" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">一、先问「需要它替你管什么」</text>
+
+  <rect x="45" y="122" width="250" height="84" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="170" y="148" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#334155">只需要熔断？</text>
+  <text x="170" y="170" text-anchor="middle" font-size="12" fill="#64748b">下游坏了就短路</text>
+  <text x="170" y="190" text-anchor="middle" font-size="12" fill="#64748b">不想引入整套治理</text>
+  <line x1="298" y1="164" x2="340" y2="164" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <rect x="344" y="132" width="118" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="403" y="158" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">sony/gobreaker</text>
+  <text x="403" y="180" text-anchor="middle" font-size="11.5" fill="#334155">三态 + 两个短路错误</text>
+
+  <rect x="45" y="222" width="250" height="84" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="170" y="248" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#334155">要限流 + 熔断 + 热点？</text>
+  <text x="170" y="270" text-anchor="middle" font-size="12" fill="#64748b">规则想动态加载</text>
+  <text x="170" y="290" text-anchor="middle" font-size="12" fill="#64748b">或与 Java 侧 Sentinel 对齐</text>
+  <line x1="298" y1="264" x2="340" y2="264" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <rect x="344" y="232" width="118" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="403" y="258" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">sentinel-golang</text>
+  <text x="403" y="280" text-anchor="middle" font-size="11.5" fill="#334155">能力全，但要手动上报</text>
+
+  <rect x="45" y="322" width="250" height="84" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="170" y="348" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#334155">只限单机速率？</text>
+  <text x="170" y="370" text-anchor="middle" font-size="12" fill="#64748b">允许突发、不想上 Redis</text>
+  <text x="170" y="390" text-anchor="middle" font-size="12" fill="#64748b">多副本时总速率会翻倍</text>
+  <line x1="298" y1="364" x2="340" y2="364" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <rect x="344" y="332" width="118" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.8"/>
+  <text x="403" y="358" text-anchor="middle" font-size="13" font-weight="bold" fill="#15803d">x/time/rate</text>
+  <text x="403" y="380" text-anchor="middle" font-size="11.5" fill="#334155">官方令牌桶</text>
+
+  <rect x="45" y="422" width="250" height="84" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="170" y="448" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#334155">要看懂状态迁移？</text>
+  <text x="170" y="470" text-anchor="middle" font-size="12" fill="#64748b">嵌自研网关 / 教学演示</text>
+  <text x="170" y="490" text-anchor="middle" font-size="12" fill="#64748b">时钟要能注入</text>
+  <line x1="298" y1="464" x2="340" y2="464" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+  <rect x="344" y="432" width="118" height="64" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.8"/>
+  <text x="403" y="458" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">手写三件套</text>
+  <text x="403" y="480" text-anchor="middle" font-size="11.5" fill="#334155">令牌桶/窗口/熔断</text>
+
+  <rect x="45" y="526" width="417" height="86" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.3"/>
+  <text x="60" y="550" font-size="12.5" font-weight="bold" fill="#b91c1c">选型底线</text>
+  <text x="60" y="572" font-size="12" fill="#334155">① 熔断实现只选一个，别把 Sentinel 和 gobreaker 串起来</text>
+  <text x="60" y="592" font-size="12" fill="#334155">② 规则与熔断器是进程级；Entry / Execute 是请求级</text>
+
+  <!-- 右：调用时序 -->
+  <rect x="500" y="78" width="475" height="360" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="737" y="104" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">二、一次 queryOrder 的调用时序</text>
+
+  <rect x="525" y="122" width="110" height="46" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="580" y="150" text-anchor="middle" font-size="12.5" fill="#334155">业务请求</text>
+
+  <rect x="665" y="122" width="130" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="730" y="143" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1d4ed8">sentinel.Entry</text>
+  <text x="730" y="160" text-anchor="middle" font-size="11" fill="#334155">按资源名判准入</text>
+
+  <line x1="637" y1="145" x2="661" y2="145" stroke="#2563eb" stroke-width="2" marker-end="url(#arB)"/>
+
+  <path d="M795,145 L850,145 L850,205 L755,205" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="820" y="138" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b91c1c">blockErr</text>
+  <text x="820" y="176" text-anchor="middle" font-size="11" fill="#b91c1c">限流 / 熔断命中</text>
+
+  <rect x="625" y="185" width="130" height="42" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+  <text x="690" y="211" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b91c1c">降级出口</text>
+
+  <line x1="730" y1="168" x2="730" y2="240" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <text x="742" y="222" font-size="11.5" fill="#15803d">nil</text>
+
+  <rect x="655" y="244" width="150" height="48" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.8"/>
+  <text x="730" y="265" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#15803d">真实调用</text>
+  <text x="730" y="283" text-anchor="middle" font-size="11" fill="#334155">callOrderService(uid)</text>
+
+  <path d="M805,268 L872,268 L872,318 L802,318" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arR)"/>
+  <text x="850" y="262" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b91c1c">err != nil</text>
+
+  <rect x="640" y="300" width="158" height="40" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.8"/>
+  <text x="719" y="325" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#92400e">TraceError 上报</text>
+
+  <line x1="730" y1="292" x2="730" y2="350" stroke="#16a34a" stroke-width="2" marker-end="url(#arG)"/>
+  <rect x="655" y="352" width="150" height="40" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="730" y="377" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4338ca">defer entry.Exit()</text>
+
+  <text x="525" y="416" font-size="11.5" fill="#64748b">★ 漏掉 TraceError → 框架只看到「请求结束」，错误率恒为 0</text>
+
+  <!-- 底部：gobreaker 短路 -->
+  <rect x="500" y="452" width="475" height="178" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="737" y="478" text-anchor="middle" font-size="15" font-weight="bold" fill="#9a3412">三、gobreaker 的两个「没发出去」错误</text>
+
+  <rect x="520" y="494" width="205" height="116" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="622" y="520" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">ErrOpenState</text>
+  <text x="622" y="544" text-anchor="middle" font-size="11.5" fill="#334155">熔断器打开，调用未发起</text>
+  <text x="622" y="566" text-anchor="middle" font-size="11.5" fill="#334155">→ 直接降级</text>
+  <text x="622" y="588" text-anchor="middle" font-size="11.5" fill="#334155">→ 不要重试</text>
+
+  <rect x="750" y="494" width="205" height="116" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="852" y="520" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">ErrTooManyRequests</text>
+  <text x="852" y="544" text-anchor="middle" font-size="11.5" fill="#334155">半开探测名额已满</text>
+  <text x="852" y="566" text-anchor="middle" font-size="11.5" fill="#334155">→ 同上，属保护而非故障</text>
+  <text x="852" y="588" text-anchor="middle" font-size="11.5" fill="#334155">→ MaxRequests=0 时仅 1 个</text>
+
+  <text x="737" y="624" text-anchor="middle" font-size="11.5" fill="#64748b">业务错误与这两个错误必须分开：前者调用已发出，是否重试看幂等性</text>
+</svg>

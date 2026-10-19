@@ -240,7 +240,7 @@ private static volatile Singleton instance;      // 加 volatile，禁止 ② �
 
 ## 使用：配置热更新为什么需要一个 `volatile` 字段
 
-本项目里**真实存在**的 Java 场景在 [服务发现的Java实现.md](../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md)（Spring Cloud + Nacos）。拿其中「注册中心推送新实例列表 → 本地缓存替换」这条链路逐环节拆：
+本项目里**真实存在**的 Java 场景在 [服务发现的Java实现.md](../工程实践/服务发现的Java实现.md)（Spring Cloud + Nacos）。拿其中「注册中心推送新实例列表 → 本地缓存替换」这条链路逐环节拆：
 
 **第一步：识别这不是「一个变量」的事。** 配置/实例列表是一个**数据结构**（列表或 map），不是单个标量。所以不能让写线程「逐个字段改」，而要用**不可变快照 + 整体替换**：
 
@@ -285,5 +285,5 @@ private final AtomicReference<List<String>> snapshot =
 - [并发同步原语.md](../../go/并发编程/并发同步原语.md) — Go `Mutex` 与 `atomic` 的语义对照，Go 内存模型的 HB 规则与 Java 高度相似
 - [atomic操作.md](../../go/并发编程/atomic操作.md) — ⚠️ 关键差异：Go 的 `sync/atomic` 全部是**顺序一致**（没有 relaxed / acquire-release 可选），
   Java 的 `VarHandle` / `AtomicXxx` 却能按 AccessMode 选内存序；类型族、64 位对齐坑与 CAS 循环写法在彼
-- [服务发现的Java实现.md](../../../04-架构与系统/分布式/服务治理/服务发现的Java实现.md) — 「使用」一节的代码出处：不可变快照 + `AtomicReference` 整体替换
+- [服务发现的Java实现.md](../工程实践/服务发现的Java实现.md) — 「使用」一节的代码出处：不可变快照 + `AtomicReference` 整体替换
 > 反向引用（本篇被下列文档引到）：[Go内存模型.md](../../go/并发编程/Go内存模型.md)、[线程与进程开销.md](线程与进程开销.md)

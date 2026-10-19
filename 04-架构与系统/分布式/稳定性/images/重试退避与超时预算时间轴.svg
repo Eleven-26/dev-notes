@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">重试退避与超时预算时间轴</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13.5" fill="#64748b">示意口径：总 deadline 2s，最多 3 次尝试；每次尝试与退避都从同一份预算里扣</text>
+
+  <!-- 时间轴刻度 -->
+  <text x="60" y="100" font-size="13" font-weight="bold" fill="#0f172a">一次业务请求的时间线（0 → 2s）</text>
+  <line x1="60" y1="130" x2="940" y2="130" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="60" y1="124" x2="60" y2="136" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="280" y1="124" x2="280" y2="136" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="500" y1="124" x2="500" y2="136" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="720" y1="124" x2="720" y2="136" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="940" y1="124" x2="940" y2="136" stroke="#94a3b8" stroke-width="2"/>
+  <text x="60" y="120" text-anchor="middle" font-size="11.5" fill="#64748b">0</text>
+  <text x="280" y="120" text-anchor="middle" font-size="11.5" fill="#64748b">500ms</text>
+  <text x="500" y="120" text-anchor="middle" font-size="11.5" fill="#64748b">1s</text>
+  <text x="720" y="120" text-anchor="middle" font-size="11.5" fill="#64748b">1.5s</text>
+  <text x="940" y="120" text-anchor="middle" font-size="11.5" fill="#64748b">2s</text>
+
+  <!-- 尝试 1 -->
+  <rect x="60" y="148" width="160" height="34" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="140" y="170" text-anchor="middle" font-size="12" fill="#b91c1c">尝试 1 · 400ms · 失败</text>
+  <!-- 退避 1 -->
+  <rect x="220" y="148" width="40" height="34" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="240" y="205" text-anchor="middle" font-size="11" fill="#92400e">退避 50ms</text>
+  <!-- 尝试 2 -->
+  <rect x="260" y="148" width="160" height="34" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="340" y="170" text-anchor="middle" font-size="12" fill="#b91c1c">尝试 2 · 400ms · 失败</text>
+  <!-- 退避 2 -->
+  <rect x="420" y="148" width="80" height="34" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="460" y="205" text-anchor="middle" font-size="11" fill="#92400e">退避 100ms</text>
+  <!-- 尝试 3 -->
+  <rect x="500" y="148" width="160" height="34" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="580" y="170" text-anchor="middle" font-size="12" fill="#15803d">尝试 3 · 400ms · 成功</text>
+  <!-- 剩余缓冲 -->
+  <rect x="660" y="148" width="280" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="800" y="170" text-anchor="middle" font-size="12" fill="#1d4ed8">剩余预算 / 缓冲 约 650ms</text>
+
+  <text x="60" y="228" font-size="12" fill="#475569">单次尝试超时必须 ≤ 剩余预算；本例把每次尝试压到 400ms，才容得下 3 次尝试与两段退避。</text>
+
+  <!-- 预算分配 -->
+  <text x="60" y="270" font-size="13" font-weight="bold" fill="#0f172a">同一份 2s 预算在链路里的分配</text>
+
+  <rect x="60" y="288" width="44" height="46" fill="#e2e8f0" stroke="#64748b" stroke-width="1"/>
+  <text x="82" y="307" text-anchor="middle" font-size="10.5" fill="#334155">入口</text>
+  <text x="82" y="324" text-anchor="middle" font-size="10.5" fill="#334155">100ms</text>
+
+  <rect x="104" y="288" width="88" height="46" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="148" y="307" text-anchor="middle" font-size="10.5" fill="#1d4ed8">业务处理</text>
+  <text x="148" y="324" text-anchor="middle" font-size="10.5" fill="#1d4ed8">200ms</text>
+
+  <rect x="192" y="288" width="220" height="46" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="302" y="307" text-anchor="middle" font-size="10.5" fill="#92400e">下游 A（含重试）</text>
+  <text x="302" y="324" text-anchor="middle" font-size="10.5" fill="#92400e">500ms</text>
+
+  <rect x="412" y="288" width="264" height="46" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="544" y="307" text-anchor="middle" font-size="10.5" fill="#c2410c">下游 B（含重试）</text>
+  <text x="544" y="324" text-anchor="middle" font-size="10.5" fill="#c2410c">600ms</text>
+
+  <rect x="676" y="288" width="264" height="46" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="808" y="307" text-anchor="middle" font-size="10.5" fill="#15803d">缓冲：网络 / 序列化 / GC</text>
+  <text x="808" y="324" text-anchor="middle" font-size="10.5" fill="#15803d">600ms</text>
+
+  <text x="60" y="360" font-size="12" fill="#475569">向下递减：下游超时 &lt; 上层剩余预算；留 10%~30% 缓冲，不要把 2s 卡满。</text>
+
+  <!-- 规则卡 -->
+  <rect x="60" y="392" width="420" height="180" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="80" y="420" font-size="14" font-weight="bold" fill="#0f172a">重试侧的四条规则</text>
+  <text x="80" y="448" font-size="12.5" fill="#334155">① 一条链路只让一层重试（优先客户端 / SDK）。</text>
+  <text x="80" y="472" font-size="12.5" fill="#334155">② 重试包在熔断内部，熔断打开时直接短路。</text>
+  <text x="80" y="496" font-size="12.5" fill="#334155">③ 指数退避 + 抖动；总重试量受预算约束（≤10%）。</text>
+  <text x="80" y="520" font-size="12.5" fill="#334155">④ 只对幂等请求重试；写操作先按幂等键查状态。</text>
+  <text x="80" y="548" font-size="12" fill="#b91c1c">⚠️ 放大按「层数取幂」：3 层 × 每层 3 次 = 27 倍。</text>
+
+  <rect x="520" y="392" width="420" height="180" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="540" y="420" font-size="14" font-weight="bold" fill="#0f172a">超时侧的四个检查</text>
+  <text x="540" y="448" font-size="12.5" fill="#334155">① 每个跨网络调用都有超时，且能取消下游。</text>
+  <text x="540" y="472" font-size="12.5" fill="#334155">② 区分连接超时、单次超时与整体 deadline。</text>
+  <text x="540" y="496" font-size="12.5" fill="#334155">③ 重试与退避都从整体 deadline 里扣。</text>
+  <text x="540" y="520" font-size="12.5" fill="#334155">④ 预算不足时直接不重试，快速失败或降级。</text>
+  <text x="540" y="548" font-size="12" fill="#b91c1c">⚠️ 没有超时，并发限制器的在途数永远不会下降。</text>
+
+  <text x="60" y="608" font-size="12.5" fill="#64748b">图中数字是预算分配示例，不是实测读数；实测部分只有「重试次数放大与熔断短路」的确定性计数，见 重试与超时.md 第六节。</text>
+  <text x="60" y="632" font-size="12.5" fill="#64748b">退避间隔、抖动分布与真实网络 P99 需跨容器部署观察，本篇标注为未实测。</text>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

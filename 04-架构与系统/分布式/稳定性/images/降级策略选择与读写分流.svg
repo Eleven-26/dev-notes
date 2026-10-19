@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">降级策略选择与读写分流</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13.5" fill="#64748b">先看触发源，再看有没有副作用：读降级可直接丢弃，写降级必须补偿</text>
+
+  <!-- 触发源 -->
+  <rect x="60" y="88" width="240" height="72" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="180" y="115" text-anchor="middle" font-size="15" font-weight="bold" fill="#1d4ed8">限流触发</text>
+  <text x="180" y="140" text-anchor="middle" font-size="12" fill="#334155">入口速率超容量 → 429 / 排队</text>
+
+  <rect x="380" y="88" width="240" height="72" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="500" y="115" text-anchor="middle" font-size="15" font-weight="bold" fill="#b91c1c">熔断触发</text>
+  <text x="500" y="140" text-anchor="middle" font-size="12" fill="#334155">下游错误率 / 慢调用超阈值</text>
+
+  <rect x="700" y="88" width="240" height="72" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="820" y="115" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">人工开关</text>
+  <text x="820" y="140" text-anchor="middle" font-size="12" fill="#334155">大促预案 / 应急降级</text>
+
+  <line x1="180" y1="160" x2="430" y2="212" stroke="#64748b" stroke-width="2.5" marker-end="url(#arS)"/>
+  <line x1="500" y1="160" x2="500" y2="208" stroke="#64748b" stroke-width="2.5" marker-end="url(#arS)"/>
+  <line x1="820" y1="160" x2="570" y2="212" stroke="#64748b" stroke-width="2.5" marker-end="url(#arS)"/>
+
+  <!-- 决策 -->
+  <rect x="320" y="212" width="360" height="72" rx="12" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+  <text x="500" y="240" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">这次放弃有没有副作用？</text>
+  <text x="500" y="264" text-anchor="middle" font-size="12" fill="#475569">「本该发生但没发生」的事，恢复后要不要补</text>
+
+  <!-- 两条分支 -->
+  <line x1="410" y1="284" x2="250" y2="330" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arG)"/>
+  <line x1="590" y1="284" x2="750" y2="330" stroke="#dc2626" stroke-width="2.5" marker-end="url(#arR)"/>
+  <text x="300" y="310" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#15803d">没有副作用</text>
+  <text x="700" y="310" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#b91c1c">有副作用</text>
+
+  <!-- 读降级 -->
+  <rect x="60" y="330" width="380" height="150" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="250" y="358" text-anchor="middle" font-size="16" font-weight="bold" fill="#15803d">读降级：直接丢弃</text>
+  <text x="250" y="384" text-anchor="middle" font-size="12.5" fill="#334155">代价低、可随时开关，返回兜底数据即可</text>
+  <text x="80" y="412" font-size="12.5" fill="#334155">① 返回默认值：空列表 / 默认配置 / 兜底文案</text>
+  <text x="80" y="434" font-size="12.5" fill="#334155">② 兜底缓存：上一次成功的快照（可短期 stale）</text>
+  <text x="80" y="456" font-size="12.5" fill="#334155">③ 排队 / 友好提示：429 + Retry-After、排队页</text>
+
+  <!-- 写降级 -->
+  <rect x="560" y="330" width="380" height="150" rx="12" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+  <text x="750" y="358" text-anchor="middle" font-size="16" font-weight="bold" fill="#b91c1c">写降级：必须补偿</text>
+  <text x="750" y="384" text-anchor="middle" font-size="12.5" fill="#334155">先记录「应做未做」，恢复后异步补做并核对</text>
+  <text x="580" y="412" font-size="12.5" fill="#334155">① 异步化：入队后立即返回「处理中」</text>
+  <text x="580" y="434" font-size="12.5" fill="#334155">② 本地消息表 / MQ：落库后再异步消费</text>
+  <text x="580" y="456" font-size="12.5" fill="#334155">③ 对账补偿：按业务单号反查并补发（必须幂等）</text>
+
+  <!-- 选择判据 -->
+  <rect x="60" y="508" width="880" height="100" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="80" y="536" font-size="14" font-weight="bold" fill="#0f172a">三条选择判据（按顺序问）</text>
+  <text x="80" y="562" font-size="12.5" fill="#334155">① 不返回真实数据会不会造成资损？会 → 不能返回默认值，只能排队 / 拒绝 / 异步补做。</text>
+  <text x="80" y="584" font-size="12.5" fill="#334155">② 旧数据能不能用？能 → 兜底缓存；不能 → 关闭功能或返回明确错误。</text>
+  <text x="80" y="606" font-size="12.5" fill="#334155">③ 用户能不能等？能等 → 排队 / 异步；不能等 → 默认值或友好失败。</text>
+
+  <defs>
+    <marker id="arS" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+</svg>

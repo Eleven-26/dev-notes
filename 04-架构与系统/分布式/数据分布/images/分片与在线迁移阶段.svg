@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw2" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">分片 × 副本，以及在线扩缩容的四个阶段</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">分片解决容量与写扩展；副本解决故障与读扩展；扩容的难点是迁移期间的一致性</text>
+
+  <!-- 左：分片 × 副本 -->
+  <rect x="30" y="80" width="410" height="420" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="235" y="108" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">3 个分片 × 每片 3 副本</text>
+  <text x="235" y="130" font-size="11" fill="#64748b" text-anchor="middle">key 先按分片规则落片，再在该片内复制</text>
+
+  <g font-size="11" text-anchor="middle">
+    <!-- 分片 1 -->
+    <text x="100" y="160" font-size="12" font-weight="bold" fill="#1e3a8a">分片 1</text>
+    <rect x="55" y="172" width="90" height="34" rx="5" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="100" y="194" fill="#1e3a8a">主</text>
+    <rect x="55" y="220" width="90" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="100" y="242" fill="#1e40af">副本</text>
+    <rect x="55" y="268" width="90" height="34" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="100" y="290" fill="#1e40af">副本</text>
+
+    <!-- 分片 2 -->
+    <text x="190" y="160" font-size="12" font-weight="bold" fill="#166534">分片 2</text>
+    <rect x="145" y="172" width="90" height="34" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="190" y="194" fill="#14532d">主</text>
+    <rect x="145" y="220" width="90" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/>
+    <text x="190" y="242" fill="#166534">副本</text>
+    <rect x="145" y="268" width="90" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/>
+    <text x="190" y="290" fill="#166534">副本</text>
+
+    <!-- 分片 3 -->
+    <text x="280" y="160" font-size="12" font-weight="bold" fill="#9a3412">分片 3</text>
+    <rect x="235" y="172" width="90" height="34" rx="5" fill="#ffedd5" stroke="#ea580c"/>
+    <text x="280" y="194" fill="#9a3412">主</text>
+    <rect x="235" y="220" width="90" height="34" rx="5" fill="#fff7ed" stroke="#fdba74"/>
+    <text x="280" y="242" fill="#9a3412">副本</text>
+    <rect x="235" y="268" width="90" height="34" rx="5" fill="#fff7ed" stroke="#fdba74"/>
+    <text x="280" y="290" fill="#9a3412">副本</text>
+  </g>
+
+  <!-- 新节点 -->
+  <rect x="330" y="220" width="90" height="82" rx="6" fill="#f3e8ff" stroke="#9333ea" stroke-dasharray="5 3"/>
+  <text x="375" y="250" font-size="11" fill="#6b21a8" text-anchor="middle">新节点</text>
+  <text x="375" y="270" font-size="10.5" fill="#7e22ce" text-anchor="middle">接管部分槽 /</text>
+  <text x="375" y="288" font-size="10.5" fill="#7e22ce" text-anchor="middle">部分 chunk</text>
+
+  <rect x="55" y="330" width="360" height="150" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="70" y="354" font-size="12" font-weight="bold" fill="#0f172a">读这条路径时先问三件事</text>
+  <text x="70" y="378" font-size="11.5" fill="#334155">① 这个 key 属于哪个分片？（分片键 / 槽 / chunk）</text>
+  <text x="70" y="400" font-size="11.5" fill="#334155">② 该分片的主在哪？副本跨了故障域吗？</text>
+  <text x="70" y="422" font-size="11.5" fill="#334155">③ 查询会不会打到所有分片？（scatter-gather）</text>
+  <text x="70" y="450" font-size="11.5" fill="#92400e">⚠️ 任一副本故障只影响该片；某片主故障只触发该片选主。</text>
+  <text x="70" y="470" font-size="11.5" fill="#92400e">其他分片不受影响 —— 这是分片带来的故障隔离。</text>
+
+  <!-- 右：迁移阶段 -->
+  <rect x="470" y="80" width="500" height="420" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="720" y="108" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">在线迁移：先双写，最后才切流</text>
+
+  <g>
+    <rect x="500" y="128" width="440" height="62" rx="7" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="516" y="150" font-size="13" font-weight="bold" fill="#1e3a8a">① 划范围</text>
+    <text x="516" y="172" font-size="11.5" fill="#1e40af">确定要迁的分片 / 槽 / chunk，设迁移速率上限</text>
+
+    <rect x="500" y="204" width="440" height="62" rx="7" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="516" y="226" font-size="13" font-weight="bold" fill="#075985">② 双写</text>
+    <text x="516" y="248" font-size="11.5" fill="#0369a1">新写入同时落旧片与新片；旧片仍是读取与正确性基准</text>
+
+    <rect x="500" y="280" width="440" height="62" rx="7" fill="#ecfdf5" stroke="#059669"/>
+    <text x="516" y="302" font-size="13" font-weight="bold" fill="#065f46">③ 全量 + 增量追平</text>
+    <text x="516" y="324" font-size="11.5" fill="#047857">先搬历史快照，再追双写期间的增量，直到位点差归零</text>
+
+    <rect x="500" y="356" width="440" height="62" rx="7" fill="#fef3c7" stroke="#d97706"/>
+    <text x="516" y="378" font-size="13" font-weight="bold" fill="#92400e">④ 校验 → 切流 → 观察</text>
+    <text x="516" y="400" font-size="11.5" fill="#b45309">比对行数 / 校验和；读切到新片；观察稳定后再删旧数据</text>
+  </g>
+
+  <g stroke="#475569" stroke-width="1.5" marker-end="url(#arw2)">
+    <line x1="720" y1="190" x2="720" y2="204"/>
+    <line x1="720" y1="266" x2="720" y2="280"/>
+    <line x1="720" y1="342" x2="720" y2="356"/>
+  </g>
+
+  <rect x="500" y="434" width="440" height="46" rx="7" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="720" y="454" font-size="11.5" font-weight="bold" fill="#991b1b" text-anchor="middle">切流前读仍走旧片；追平校验前，新片不能成为唯一写入方</text>
+  <text x="720" y="472" font-size="11" fill="#991b1b" text-anchor="middle">跳过双写或校验，就会丢写或读到半成品</text>
+
+  <!-- 底部 -->
+  <rect x="40" y="520" width="920" height="72" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="60" y="546" font-size="13" fill="#334155">⭐ 分片 + 副本 = 完整的数据分布：分片决定「数据放哪」，副本决定「坏了怎么办」。</text>
+  <text x="60" y="572" font-size="13" fill="#92400e">⚠️ 迁移不是越快越好：限速、分批、可暂停，并监控业务 P99 而不是只看迁移进度。</text>
+</svg>

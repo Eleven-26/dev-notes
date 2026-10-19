@@ -333,3 +333,4 @@ func Accumulate(ctx context.Context, db *sql.DB, day string, delta int64) error 
 - [数据访问与连接池.md](数据访问与连接池.md) — 事务期间连接被固定、长事务占用连接
 - [atomic操作.md](../并发编程/atomic操作.md) — 单机内的 CAS 与 ABA
 - [素材清单.md](../../../素材清单.md) — 素材来源登记
+> 反向引用（本篇被下列文档引到）：[最终一致方案.md](../../../04-架构与系统/分布式/分布式事务/最终一致方案.md)

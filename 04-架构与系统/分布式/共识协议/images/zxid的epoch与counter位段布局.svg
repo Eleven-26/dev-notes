@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">zxid：一个 64 位数同时表达「哪一任期」与「第几条」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">高 32 位 = epoch（换届 +1 且低位归零）· 低 32 位 = counter（任期内每提案 +1）</text>
+
+  <g>
+    <rect x="120" y="86" width="380" height="74" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <rect x="500" y="86" width="380" height="74" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="310" y="116" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e40af">epoch（高 32 位）</text>
+    <text x="310" y="140" text-anchor="middle" font-size="12" fill="#1e40af">任期号 · 每次产生新 Leader 时 +1</text>
+    <text x="690" y="116" text-anchor="middle" font-size="15" font-weight="bold" fill="#14532d">counter（低 32 位）</text>
+    <text x="690" y="140" text-anchor="middle" font-size="12" fill="#14532d">任期内提案计数 · 换届时归零</text>
+
+    <text x="120" y="180" font-size="12" fill="#64748b">63 位 ─ 32 位</text>
+    <text x="512" y="180" font-size="12" fill="#64748b">31 位 ─ 0 位</text>
+    <text x="868" y="180" font-size="12" fill="#64748b" text-anchor="end">bit 0</text>
+
+    <text x="100" y="126" text-anchor="end" font-size="12" font-weight="bold" fill="#334155">bit 63</text>
+    <text x="100" y="180" text-anchor="end" font-size="12" fill="#94a3b8">zxid</text>
+  </g>
+
+  <g transform="translate(0,206)">
+    <rect x="40" y="0" width="440" height="150" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="60" y="26" font-size="14" font-weight="bold" fill="#334155">比较规则：先比 epoch，再比 counter</text>
+    <text x="60" y="56" font-size="12.5" fill="#334155">(epoch=1, counter=4096) → 0x00000001_1000</text>
+    <text x="60" y="80" font-size="12.5" fill="#334155">(epoch=2, counter=0) → 0x00000002_0000</text>
+    <text x="60" y="112" font-size="13" font-weight="bold" fill="#9a3412">后者更大 —— 换主后的第一条写，</text>
+    <text x="60" y="132" font-size="13" font-weight="bold" fill="#9a3412">一定排在旧主任意一条写之后</text>
+
+    <rect x="520" y="0" width="440" height="150" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="540" y="26" font-size="14" font-weight="bold" fill="#334155">与 Raft 的 term + index 对照</text>
+    <text x="540" y="56" font-size="12.5" fill="#334155">Raft：index 全生命周期连续递增，不归零</text>
+    <text x="540" y="80" font-size="12.5" fill="#334155">ZAB：counter 换届归零 → 跨任期不能直接相减</text>
+    <text x="540" y="112" font-size="12.5" fill="#334155">收益：一次 64 位无符号比较定全序</text>
+    <text x="540" y="132" font-size="12.5" fill="#166534">代价：对齐日志必须先按任期分段处理</text>
+  </g>
+
+  <rect x="40" y="390" width="920" height="56" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="60" y="412" font-size="13" fill="#334155">⭐ 一个数解决「谁写的 + 第几条」，所以 ZAB 的选举与恢复都只比一个 zxid：谁的 zxid 最大，谁的日志最新。</text>
+  <text x="60" y="432" font-size="13" fill="#b45309">⚠️ 溢出实际上不用担心的是 epoch；真正要留意的是 counter —— 单任期上限约 42 亿条事务。</text>
+</svg>

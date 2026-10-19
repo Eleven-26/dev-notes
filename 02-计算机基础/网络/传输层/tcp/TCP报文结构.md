@@ -388,4 +388,4 @@ public class FrameInitializer extends ChannelInitializer<SocketChannel> {
 - **下游机制**：[../数据序列化.md](../../选型/数据序列化.md) — 长度前缀之外的边界方案（TLV、JSON 流）
 - **下游机制**：[../抓包实战.md](../../观测与排障/抓包实战.md) — 在报文里读首部字段
 
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[HTTP1.1与HTTP2的区别.md](../../应用层/HTTP1.1与HTTP2的区别.md)、[HTTP与gRPC.md](../../应用层/HTTP与gRPC.md)、[TCP的Nagle与延迟确认.md](TCP的Nagle与延迟确认.md)、[Protobuf.md](../../../../03-数据与中间件/中间件/RPC框架/gRPC/Protobuf.md)
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[TCP的Nagle与延迟确认.md](TCP的Nagle与延迟确认.md)、[HTTP1.1与HTTP2的区别.md](../../应用层/HTTP1.1与HTTP2的区别.md)、[HTTP与gRPC.md](../../应用层/HTTP与gRPC.md)、[Protobuf.md](../../../../03-数据与中间件/中间件/RPC框架/gRPC/Protobuf.md)

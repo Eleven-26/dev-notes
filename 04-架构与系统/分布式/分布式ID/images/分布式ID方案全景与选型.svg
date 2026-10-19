@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 690" width="1100" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1100" height="690" fill="#ffffff"/>
+  <text x="550" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">分布式 ID 方案全景与选型</text>
+  <text x="550" y="58" font-size="13" fill="#64748b" text-anchor="middle">上：按「状态放在哪里」分三条路线；下：拿到需求后从上往下逐条问，命中即停</text>
+
+  <g transform="translate(20,78)">
+    <rect x="0" y="0" width="340" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <rect x="0" y="0" width="340" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="10"/>
+    <rect x="0" y="20" width="340" height="20" fill="#dbeafe"/>
+    <text x="170" y="26" font-size="14" font-weight="bold" fill="#1e40af" text-anchor="middle">① 本地生成（无外部依赖）</text>
+
+    <rect x="14" y="56" width="312" height="70" fill="#ffffff" stroke="#93c5fd" stroke-width="1" rx="6"/>
+    <text x="28" y="78" font-size="12" font-weight="bold" fill="#1e3a8a">UUID v4 / v7</text>
+    <text x="28" y="98" font-size="10.5" fill="#334155">16 字节；v4 完全无序，v7 前 48 位是时间戳</text>
+    <text x="28" y="116" font-size="10.5" fill="#991b1b">⚠️ 做聚簇主键 ⇒ 页分裂、二级索引膨胀</text>
+
+    <rect x="14" y="138" width="312" height="70" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="28" y="160" font-size="12" font-weight="bold" fill="#14532d">⭐ 雪花 Snowflake</text>
+    <text x="28" y="180" font-size="10.5" fill="#14532d">64 位 Long；趋势递增；4096/ms ≈ 409 万/s</text>
+    <text x="28" y="198" font-size="10.5" fill="#991b1b">⚠️ 依赖时钟与全局唯一的 workerId</text>
+
+    <rect x="14" y="220" width="312" height="70" fill="#ffffff" stroke="#93c5fd" stroke-width="1" rx="6"/>
+    <text x="28" y="242" font-size="12" font-weight="bold" fill="#1e3a8a">sonyflake / UidGenerator</text>
+    <text x="28" y="262" font-size="10.5" fill="#334155">换位分配：更多机器位，或 RingBuffer 预生成</text>
+    <text x="28" y="280" font-size="10.5" fill="#334155">单实例吞吐可到 600 万/s，依赖仍只在本机</text>
+  </g>
+
+  <g transform="translate(380,78)">
+    <rect x="0" y="0" width="340" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <rect x="0" y="0" width="340" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="10"/>
+    <rect x="0" y="20" width="340" height="20" fill="#fef3c7"/>
+    <text x="170" y="26" font-size="14" font-weight="bold" fill="#92400e" text-anchor="middle">② 数据库分配（状态在 DB）</text>
+
+    <rect x="14" y="56" width="312" height="70" fill="#ffffff" stroke="#fcd34d" stroke-width="1" rx="6"/>
+    <text x="28" y="78" font-size="12" font-weight="bold" fill="#78350f">数据库自增 + 步长</text>
+    <text x="28" y="98" font-size="10.5" fill="#334155">各库用 increment / offset 错开，产出不重叠序列</text>
+    <text x="28" y="116" font-size="10.5" fill="#991b1b">⚠️ 扩容要停改规则并搬数据，DB 仍是单点</text>
+
+    <rect x="14" y="138" width="312" height="70" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="6"/>
+    <text x="28" y="160" font-size="12" font-weight="bold" fill="#14532d">⭐ 号段 Segment</text>
+    <text x="28" y="180" font-size="10.5" fill="#14532d">一次取一段缓存在本机，DB 压力降为 1/step</text>
+    <text x="28" y="198" font-size="10.5" fill="#92400e">耗尽会等 DB；双 buffer 提前预取；重启跳变</text>
+
+    <rect x="14" y="220" width="312" height="70" fill="#ffffff" stroke="#fcd34d" stroke-width="1" rx="6"/>
+    <text x="28" y="242" font-size="12" font-weight="bold" fill="#78350f">Leaf-segment / Tinyid</text>
+    <text x="28" y="262" font-size="10.5" fill="#334155">把号段做成独立服务：统一分配、动态 step</text>
+    <text x="28" y="280" font-size="10.5" fill="#334155">Tinyid 支持多 DB 自动切换；ID 连续递增</text>
+  </g>
+
+  <g transform="translate(740,78)">
+    <rect x="0" y="0" width="340" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <rect x="0" y="0" width="340" height="40" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2" rx="10"/>
+    <rect x="0" y="20" width="340" height="20" fill="#ede9fe"/>
+    <text x="170" y="26" font-size="14" font-weight="bold" fill="#5b21b6" text-anchor="middle">③ 集中服务（再包一层运维）</text>
+
+    <rect x="14" y="56" width="312" height="70" fill="#ffffff" stroke="#c4b5fd" stroke-width="1" rx="6"/>
+    <text x="28" y="78" font-size="12" font-weight="bold" fill="#4c1d95">美团 Leaf</text>
+    <text x="28" y="98" font-size="10.5" fill="#334155">segment + snowflake 双模式，按业务选择</text>
+    <text x="28" y="116" font-size="10.5" fill="#334155">ZK 顺序节点分配 workerId，本地文件降级</text>
+
+    <rect x="14" y="138" width="312" height="70" fill="#ffffff" stroke="#c4b5fd" stroke-width="1" rx="6"/>
+    <text x="28" y="160" font-size="12" font-weight="bold" fill="#4c1d95">滴滴 Tinyid</text>
+    <text x="28" y="180" font-size="10.5" fill="#334155">只有号段模式；HTTP 与 SDK（本地缓存）两种接入</text>
+    <text x="28" y="198" font-size="10.5" fill="#334155">适合已有 DB、想要开箱即用号段的团队</text>
+
+    <rect x="14" y="220" width="312" height="70" fill="#ffffff" stroke="#c4b5fd" stroke-width="1" rx="6"/>
+    <text x="28" y="242" font-size="12" font-weight="bold" fill="#4c1d95">百度 UidGenerator</text>
+    <text x="28" y="262" font-size="10.5" fill="#334155">雪花变体，位分配可自定义</text>
+    <text x="28" y="280" font-size="10.5" fill="#334155">RingBuffer 预生成；workerId 由 DB 表分配</text>
+  </g>
+
+  <g transform="translate(20,410)">
+    <rect x="0" y="0" width="1060" height="260" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="24" y="28" font-size="15" font-weight="bold" fill="#0f172a">选型顺序：从上往下逐条问</text>
+    <text x="24" y="48" font-size="10.5" fill="#64748b">三条硬要求先立住（全局唯一 / 趋势递增 / 高可用高性能），再按下面五问排除方案</text>
+
+    <rect x="24" y="64" width="230" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="139" y="84" font-size="11" fill="#1e40af" text-anchor="middle">① 必须全局唯一？</text>
+    <rect x="270" y="64" width="766" height="30" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="5"/>
+    <text x="282" y="84" font-size="11" fill="#334155">所有方案都满足；只排除「多库各自自增」——那是唯一性最先崩掉的做法</text>
+
+    <rect x="24" y="102" width="230" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="139" y="122" font-size="11" fill="#1e40af" text-anchor="middle">② 必须数字且趋势递增？</text>
+    <rect x="270" y="102" width="766" height="30" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="5"/>
+    <text x="282" y="122" font-size="11" fill="#334155">必须 → 雪花 / 号段；不必须 → UUIDv7（时间有序）或 UUID（完全无序）</text>
+
+    <rect x="24" y="140" width="230" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="139" y="160" font-size="11" fill="#1e40af" text-anchor="middle">③ 能否接受外部依赖？</text>
+    <rect x="270" y="140" width="766" height="30" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="5"/>
+    <text x="282" y="160" font-size="11" fill="#334155">不能 → 雪花；可以接受 DB → 号段；已有 Redis 且量小 → INCRBY（务必配好 AOF）</text>
+
+    <rect x="24" y="178" width="230" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="139" y="198" font-size="11" fill="#1e40af" text-anchor="middle">④ 团队能维护哪类故障？</text>
+    <rect x="270" y="178" width="766" height="30" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="5"/>
+    <text x="282" y="198" font-size="11" fill="#334155">能管时钟与 workerId → 雪花；更愿意管 DB 与号段 → 号段</text>
+
+    <rect x="24" y="216" width="230" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="139" y="236" font-size="11" fill="#1e40af" text-anchor="middle">⑤ 需要开箱即用的服务？</text>
+    <rect x="270" y="216" width="766" height="30" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="5"/>
+    <text x="282" y="236" font-size="11" fill="#334155">需要 → Leaf / Tinyid / UidGenerator（多一套部署与运维）；不需要 → 按上面结论自建</text>
+    <text x="24" y="262" font-size="10.5" font-weight="bold" fill="#991b1b">⚠️ 有序 ≠ 连续；本地生成 ≠ 零依赖（雪花仍依赖时钟与 workerId）</text>
+  </g>
+</svg>
