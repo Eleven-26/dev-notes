@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">RabbitMQ 的三层嵌套：Connection 承载 Channel，vhost 圈住全部资源</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">客户端一个进程通常只开 1 条 TCP 连接，所有 API 调用都落在 Channel 上</text>
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="920" height="240" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="60" y="108" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">客户端进程</text>
+  <rect x="60" y="122" width="560" height="186" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="76" y="146" font-size="13.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">Connection：1 条 TCP 长连接（端口 5672）</text>
+  <rect x="78" y="162" width="164" height="44" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="160" y="190" font-size="12.5" fill="#1d4ed8" text-anchor="middle">Channel #1</text>
+  <rect x="258" y="162" width="164" height="44" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="340" y="190" font-size="12.5" fill="#1d4ed8" text-anchor="middle">Channel #2</text>
+  <rect x="438" y="162" width="164" height="44" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="520" y="190" font-size="12.5" fill="#1d4ed8" text-anchor="middle">Channel #3</text>
+  <text x="76" y="232" font-size="11.5" fill="#1e40af" text-anchor="start">channel_max = 2047  frame_max = 131072 B（128 KiB）  heartbeat = 60 s</text>
+  <text x="76" y="256" font-size="11.5" fill="#1e40af" text-anchor="start">帧头里只有 channel id，没有请求 id —— 两个线程同时写同一 Channel 会串包</text>
+  <text x="76" y="280" font-size="11.5" fill="#b91c1c" text-anchor="start">所以：Channel 不是线程安全的，多线程要么各开一条，要么加锁</text>
+  <rect x="644" y="122" width="296" height="186" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="660" y="146" font-size="13.5" fill="#991b1b" text-anchor="start" font-weight="bold">注意：三个不能混的边界</text>
+  <text x="660" y="172" font-size="11.5" fill="#991b1b" text-anchor="start">· Connection 上限由客户端进程数决定</text>
+  <text x="660" y="198" font-size="11.5" fill="#991b1b" text-anchor="start">· Channel 上限 2047 / 连接</text>
+  <text x="660" y="224" font-size="11.5" fill="#991b1b" text-anchor="start">· Channel 不是线程安全的粒度</text>
+  <text x="660" y="250" font-size="11.5" fill="#991b1b" text-anchor="start">· basic.qos 的作用域是 Channel</text>
+  <text x="660" y="276" font-size="11.5" fill="#991b1b" text-anchor="start">· 消费者断开时 Channel 上的订阅全丢</text>
+  <line x1="330" y1="326" x2="330" y2="356" stroke="#334155" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="40" y="360" width="920" height="160" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="60" y="384" font-size="13.5" fill="#0f172a" text-anchor="start" font-weight="bold">Broker 侧：vhost /（逻辑隔离，自带一套 Exchange / Queue / Binding，跨 vhost 不能直接绑定）</text>
+  <rect x="80" y="402" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="190" y="428" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold">Exchange</text>
+  <text x="190" y="450" font-size="11.5" fill="#9a3412" text-anchor="middle">接收并按绑定表路由</text>
+  <line x1="310" y1="435" x2="392" y2="435" stroke="#334155" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="351" y="424" font-size="11" fill="#64748B" text-anchor="middle">Binding</text>
+  <rect x="400" y="402" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="510" y="428" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold">Queue</text>
+  <text x="510" y="450" font-size="11.5" fill="#9a3412" text-anchor="middle">一个队列一个 Erlang 进程</text>
+  <line x1="630" y1="435" x2="712" y2="435" stroke="#334155" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="720" y="402" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="830" y="428" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold">Consumer</text>
+  <text x="830" y="450" font-size="11.5" fill="#9a3412" text-anchor="middle">ack 之后消息即删除</text>
+  <text x="40" y="556" font-size="13" fill="#0f172a" text-anchor="start">要点：三层是嵌套关系而不是并列关系 —— vhost 圈住资源，Connection 承载 Channel，Channel 之上才能声明资源。</text>
+  <text x="40" y="584" font-size="13" fill="#0f172a" text-anchor="start">要点：vhost 写在连接串的路径段里，默认是 /，必须 URL 编码成 %2F：amqp://user:pwd@host:5672/%2Fprod</text>
+  <text x="40" y="612" font-size="13" fill="#b91c1c" text-anchor="start">注意：不要拿 Channel 当锁粒度。同一 Channel 上的多个消费者共享同一个 basic.qos 配额。</text>
+</svg>

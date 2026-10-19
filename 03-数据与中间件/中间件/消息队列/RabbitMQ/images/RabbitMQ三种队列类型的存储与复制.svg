@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三种队列类型：classic 单节点、quorum 走 Raft 复制、stream 是只追加日志</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">选型第一问「要不要多副本」，第二问「要不要按 offset 重读」</text>
+  <defs>
+    <marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="88" width="296" height="300" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="188" y="118" font-size="16" fill="#0f172a" text-anchor="middle" font-weight="bold">classic</text>
+  <line x1="56" y1="132" x2="320" y2="132" stroke="#94a3b8" stroke-width="1"/>
+  <text x="58" y="158" font-size="11.5" fill="#0f172a" text-anchor="start">· 单节点队列索引 + 消息</text>
+  <text x="58" y="202" font-size="11.5" fill="#0f172a" text-anchor="start">· 内存 / 磁盘（惰性队列优先磁盘）</text>
+  <text x="58" y="246" font-size="11.5" fill="#0f172a" text-anchor="start">· 无多副本：节点挂则队列不可用</text>
+  <text x="58" y="290" font-size="11.5" fill="#0f172a" text-anchor="start">· 支持优先级、惰性模式</text>
+  <text x="58" y="334" font-size="11.5" fill="#0f172a" text-anchor="start">· 镜像队列已在 4.0 移除</text>
+  <rect x="352" y="88" width="296" height="300" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="500" y="118" font-size="16" fill="#1e3a8a" text-anchor="middle" font-weight="bold">quorum</text>
+  <line x1="368" y1="132" x2="632" y2="132" stroke="#2563eb" stroke-width="1"/>
+  <text x="370" y="158" font-size="11.5" fill="#1e3a8a" text-anchor="start">· Raft 复制日志，多数派提交</text>
+  <text x="370" y="202" font-size="11.5" fill="#1e3a8a" text-anchor="start">· 3 节点起，按奇数递增</text>
+  <text x="370" y="246" font-size="11.5" fill="#1e3a8a" text-anchor="start">· ack 前已多数派落盘</text>
+  <text x="370" y="290" font-size="11.5" fill="#1e3a8a" text-anchor="start">· 不支持优先级 / 惰性 / exclusive</text>
+  <text x="370" y="334" font-size="11.5" fill="#1e3a8a" text-anchor="start">· 业务消息的默认选择</text>
+  <rect x="664" y="88" width="296" height="300" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="812" y="118" font-size="16" fill="#14532d" text-anchor="middle" font-weight="bold">stream</text>
+  <line x1="680" y1="132" x2="944" y2="132" stroke="#16a34a" stroke-width="1"/>
+  <text x="682" y="158" font-size="11.5" fill="#14532d" text-anchor="start">· 只追加的分段日志，消息不可变</text>
+  <text x="682" y="202" font-size="11.5" fill="#14532d" text-anchor="start">· 同 quorum 的复制机制</text>
+  <text x="682" y="246" font-size="11.5" fill="#14532d" text-anchor="start">· 非破坏性消费：按 offset 重读</text>
+  <text x="682" y="290" font-size="11.5" fill="#14532d" text-anchor="start">· 不支持逐条 ack / basic.nack 重入队</text>
+  <text x="682" y="334" font-size="11.5" fill="#14532d" text-anchor="start">· 大流量事件流 + 回溯重放</text>
+  <rect x="40" y="410" width="920" height="96" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.4"/>
+  <text x="60" y="434" font-size="13" fill="#78350f" text-anchor="start" font-weight="bold">注意：镜像队列为什么被移除</text>
+  <text x="60" y="458" font-size="11.5" fill="#92400e" text-anchor="start">它靠 Erlang 的 Mnesia 做主从镜像，写入是异步复制 —— 故障切换时可能丢掉已经 ack 的消息，脑裂时更难判定谁是新主。</text>
+  <text x="60" y="482" font-size="11.5" fill="#92400e" text-anchor="start">quorum 把「多数派写入成功」直接写进 ack 条件，代价是延迟变高、节点数必须 ≥3 且按奇数规划。</text>
+  <text x="40" y="536" font-size="13" fill="#0f172a" text-anchor="start">要点：classic 只在「需要优先级 / 惰性模式」或「能容忍节点故障时队列暂时不可用」时才用。</text>
+</svg>

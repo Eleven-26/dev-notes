@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">单机与三节点集群：四个端口与两条必备前提</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">集群靠「Erlang cookie 一致」+「hostname 可解析」两个前提，缺一个都 join 不上</text>
+  <defs>
+    <marker id="a10" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="420" height="260" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="60" y="108" font-size="13.5" fill="#0f172a" text-anchor="start" font-weight="bold">单机：一个容器</text>
+  <rect x="60" y="122" width="380" height="60" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="80" y="146" font-size="13" fill="#1e3a8a" text-anchor="start" font-weight="bold">amqp-lab</text>
+  <text x="80" y="168" font-size="10.5" fill="#1d4ed8" text-anchor="start">rabbitmq:4-management</text>
+  <text x="80" y="196" font-size="11.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">5672</text>
+  <text x="140" y="196" font-size="11" fill="#334155" text-anchor="start">amqp 业务</text>
+  <text x="80" y="224" font-size="11.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">15672</text>
+  <text x="140" y="224" font-size="11" fill="#334155" text-anchor="start">管理台 / HTTP API</text>
+  <text x="80" y="252" font-size="11.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">15692</text>
+  <text x="140" y="252" font-size="11" fill="#334155" text-anchor="start">Prometheus 指标</text>
+  <text x="80" y="280" font-size="11.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">25672</text>
+  <text x="140" y="280" font-size="11" fill="#334155" text-anchor="start">集群内部</text>
+  <text x="80" y="308" font-size="11.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">4369</text>
+  <text x="140" y="308" font-size="11" fill="#334155" text-anchor="start">epmd 节点发现</text>
+  <rect x="500" y="84" width="460" height="260" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="520" y="108" font-size="13.5" fill="#0f172a" text-anchor="start" font-weight="bold">三节点集群：join_cluster 之后</text>
+  <rect x="520" y="124" width="132" height="54" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="586" y="146" font-size="12.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold">rq1</text>
+  <text x="586" y="166" font-size="9.5" fill="#1d4ed8" text-anchor="middle">5672 / 25672</text>
+  <rect x="668" y="124" width="132" height="54" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="734" y="146" font-size="12.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold">rq2</text>
+  <text x="734" y="166" font-size="9.5" fill="#1d4ed8" text-anchor="middle">5672 / 25672</text>
+  <rect x="816" y="124" width="132" height="54" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="882" y="146" font-size="12.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold">rq3</text>
+  <text x="882" y="166" font-size="9.5" fill="#1d4ed8" text-anchor="middle">5672 / 25672</text>
+  <text x="520" y="202" font-size="11" fill="#b91c1c" text-anchor="start">cookie：RABBITMQ_ERLANG_COOKIE 三者必须一致</text>
+  <text x="520" y="226" font-size="11" fill="#b91c1c" text-anchor="start">网络：必须 user-defined（默认 bridge 无内嵌 DNS）</text>
+  <text x="520" y="250" font-size="11" fill="#334155" text-anchor="start">顺序：stop_app → join_cluster → start_app</text>
+  <text x="520" y="274" font-size="11" fill="#b91c1c" text-anchor="start">加入后只共享元数据，队列数据不搬迁</text>
+  <text x="520" y="298" font-size="11" fill="#334155" text-anchor="start">要数据冗余必须把队列声明成 x-queue-type: quorum</text>
+  <text x="520" y="322" font-size="11" fill="#334155" text-anchor="start">客户端连 LB（HAProxy / Nginx 对 5672 做 TCP 转发）</text>
+  <rect x="40" y="366" width="920" height="128" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.4"/>
+  <text x="60" y="390" font-size="13" fill="#78350f" text-anchor="start" font-weight="bold">实测默认值（rabbitmq-diagnostics environment）</text>
+  <text x="60" y="418" font-size="11" fill="#92400e" text-anchor="start">vm_memory_high_watermark</text>
+  <text x="270" y="418" font-size="11" fill="#78350f" text-anchor="start" font-weight="bold">0.6（本机算得 3.7299 GB）</text>
+  <text x="60" y="444" font-size="11" fill="#92400e" text-anchor="start">disk_free_limit</text>
+  <text x="270" y="444" font-size="11" fill="#78350f" text-anchor="start" font-weight="bold">50000000 B（50 MB）</text>
+  <text x="60" y="470" font-size="11" fill="#92400e" text-anchor="start">consumer_timeout</text>
+  <text x="270" y="470" font-size="11" fill="#78350f" text-anchor="start" font-weight="bold">1800000 ms（30 分钟）</text>
+  <text x="520" y="418" font-size="11" fill="#92400e" text-anchor="start">channel_max / frame_max</text>
+  <text x="730" y="418" font-size="11" fill="#78350f" text-anchor="start" font-weight="bold">2047 / 131072 B</text>
+  <text x="520" y="444" font-size="11" fill="#92400e" text-anchor="start">heartbeat</text>
+  <text x="730" y="444" font-size="11" fill="#78350f" text-anchor="start" font-weight="bold">60 s</text>
+  <text x="520" y="470" font-size="11" fill="#92400e" text-anchor="start">default_user / vhost</text>
+  <text x="730" y="470" font-size="11" fill="#78350f" text-anchor="start" font-weight="bold">guest（只能 localhost）/ /</text>
+  <text x="40" y="536" font-size="13" fill="#0f172a" text-anchor="start">要点：4.x 的 rabbitmq:4 裸标签不带管理台，要用 -management 标签才有 15672 与 HTTP API。</text>
+  <text x="40" y="562" font-size="12.5" fill="#b91c1c" text-anchor="start">注意：配置键写错不会「忽略」，而是启动直接失败；4.x 允许废弃特性的写法是 deprecated_features.permit.特性名 = true。</text>
+  <text x="40" y="592" font-size="12.5" fill="#0f172a" text-anchor="start">要点：滚动升级能不断服的前提是队列为 quorum 类型 —— classic 队列所在节点重启期间该队列不可用。</text>
+</svg>

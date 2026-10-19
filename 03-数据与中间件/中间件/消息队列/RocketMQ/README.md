@@ -120,7 +120,7 @@ RocketMQ 是阿里 2012 年开源、2016 年捐给 Apache（2017 年成为顶级
 - **上游/总纲**：[消息队列选型对比.md](../消息队列选型对比.md) — 六款 MQ 的横向对比与选型入口
 - **对照/互补**：[README.md](../Kafka/README.md) — 分区级日志的另一种存储路线（对照 RocketMQ 的混写 CommitLog）
 - **对照/互补**：[Pulsar.md](../Pulsar.md) — 存算分离路线：无状态 Broker + BookKeeper quorum，延迟与事务的另一种做法
-- **对照/互补**：[RabbitMQ.md](../RabbitMQ.md) — 交换机路由模型 vs RocketMQ 的 Topic/Queue/Tag
+- **对照/互补**：[README.md](../RabbitMQ/README.md) — 交换机路由模型 vs RocketMQ 的 Topic/Queue/Tag
 - **对照/互补**：[ActiveMQ.md](../ActiveMQ.md) — KahaDB 单 store 与 AMQ_SCHEDULED_* 延迟
 - **上游/总纲**：[Raft协议.md](../../../../04-架构与系统/分布式/共识协议/Raft协议.md) — DLedger 模式的主选举
 - **上游/总纲**：[最终一致方案.md](../../../../04-架构与系统/分布式/分布式事务/最终一致方案.md) — 事务消息的完整语义

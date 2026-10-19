@@ -903,4 +903,4 @@ bin/pulsar-client consume persistent://shop/default/order-events -s test-sub -t 
 - [复制与Quorum.md](../../../04-架构与系统/分布式/数据分布/复制与Quorum.md) — BookKeeper quorum 写与多数派的对应关系
 - [可观测性选型对比.md](../可观测性/可观测性选型对比.md) — 订阅积压指标的采集与告警口径
 
-> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[核心概念与架构.md](Kafka/核心概念与架构.md)、[RabbitMQ.md](RabbitMQ.md)、[消息类型与语义.md](RocketMQ/消息类型与语义.md)
+> 反向引用（本篇被下列文档引到）：[ActiveMQ.md](ActiveMQ.md)、[核心概念与架构.md](Kafka/核心概念与架构.md)、[README.md](RabbitMQ/README.md)、[核心概念与架构.md](RabbitMQ/核心概念与架构.md)、[队列类型与消息模式.md](RabbitMQ/队列类型与消息模式.md)、[消息类型与语义.md](RocketMQ/消息类型与语义.md)
