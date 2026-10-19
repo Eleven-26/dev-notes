@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">树上背包：把每个孩子的「容量表」卷进父节点</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">dp[u][j] 满足「选子必先选父」；k = 0 这一列代表不选该孩子</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="300" height="550" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">依赖关系是一棵树</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">每个节点一个 (w, v)，选子必先选父</text>
+
+    <line x1="150" y1="130" x2="92" y2="190" stroke="#94a3b8" stroke-width="1.4"/>
+    <line x1="150" y1="130" x2="208" y2="190" stroke="#94a3b8" stroke-width="1.4"/>
+
+    <rect x="91" y="96" width="118" height="40" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="150" y="109" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="#1e40af">u</text>
+    <text x="150" y="125" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#1e40af">w=2, v=5</text>
+
+    <rect x="36" y="190" width="112" height="40" rx="7" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="92" y="203" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="#334155">v1</text>
+    <text x="92" y="219" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#64748b">w=3, v=4</text>
+
+    <rect x="152" y="190" width="112" height="40" rx="7" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="208" y="203" text-anchor="middle" dominant-baseline="central" font-size="11.5" fill="#334155">v2</text>
+    <text x="208" y="219" text-anchor="middle" dominant-baseline="central" font-size="10" fill="#64748b">w=1, v=6</text>
+
+    <rect x="16" y="270" width="268" height="104" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="292" font-size="11.5" font-weight="bold" fill="#1e40af">dp[u][j] 的两种含义</text>
+    <text x="28" y="314" font-size="11" fill="#334155">j &gt; 0：u 必选，子树总重恰好为 j</text>
+    <text x="28" y="336" font-size="11" fill="#334155">j = 0：「u 不选」的哨兵</text>
+    <text x="28" y="356" font-size="11" fill="#b45309">此时子树里一个节点都不能选</text>
+
+    <rect x="16" y="392" width="268" height="126" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+    <text x="28" y="414" font-size="11.5" font-weight="bold" fill="#1e40af">每个孩子是一组互斥选项</text>
+    <text x="28" y="436" font-size="11" fill="#334155">不选它（贡献 0，重量 0）</text>
+    <text x="28" y="456" font-size="11" fill="#334155">或选它，并用掉 k 的重量</text>
+    <text x="28" y="480" font-size="11" fill="#334155">→ 与「分组背包」同形，</text>
+    <text x="28" y="500" font-size="11" fill="#334155">　 只是分组由树边决定</text>
+
+    <text x="16" y="540" font-size="11" fill="#64748b">⚠️ 父不选 → 整棵子树都不能选</text>
+  </g>
+
+  <g transform="translate(340,70)">
+    <rect x="0" y="0" width="640" height="550" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">两张孩子表 → 一张父表：容量卷积</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">示例：u(2,5)、v1(3,4)、v2(1,6)，容量 K=6（「-」表示该重量不可达）</text>
+
+    <rect x="16" y="72" width="290" height="92" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="92" font-size="11.5" font-weight="bold" fill="#334155">dp[v1]（w=3, v=4）</text>
+    <text x="38" y="116" font-size="10" fill="#64748b">k=0</text>
+    <text x="90" y="116" font-size="10" fill="#64748b">k=1</text>
+    <text x="142" y="116" font-size="10" fill="#64748b">k=2</text>
+    <text x="194" y="116" font-size="10" fill="#64748b">k=3</text>
+    <text x="246" y="116" font-size="10" fill="#64748b">k=4</text>
+    <text x="38" y="144" font-size="11" fill="#15803d">0</text>
+    <text x="90" y="144" font-size="11" fill="#94a3b8">-</text>
+    <text x="142" y="144" font-size="11" fill="#94a3b8">-</text>
+    <text x="194" y="144" font-size="11" font-weight="bold" fill="#1e40af">4</text>
+    <text x="246" y="144" font-size="11" fill="#94a3b8">-</text>
+
+    <rect x="324" y="72" width="290" height="92" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="336" y="92" font-size="11.5" font-weight="bold" fill="#334155">dp[v2]（w=1, v=6）</text>
+    <text x="346" y="116" font-size="10" fill="#64748b">k=0</text>
+    <text x="398" y="116" font-size="10" fill="#64748b">k=1</text>
+    <text x="450" y="116" font-size="10" fill="#64748b">k=2</text>
+    <text x="502" y="116" font-size="10" fill="#64748b">k=3</text>
+    <text x="554" y="116" font-size="10" fill="#64748b">k=4</text>
+    <text x="346" y="144" font-size="11" fill="#15803d">0</text>
+    <text x="398" y="144" font-size="11" font-weight="bold" fill="#1e40af">6</text>
+    <text x="450" y="144" font-size="11" fill="#94a3b8">-</text>
+    <text x="502" y="144" font-size="11" fill="#94a3b8">-</text>
+    <text x="554" y="144" font-size="11" fill="#94a3b8">-</text>
+
+    <rect x="16" y="184" width="598" height="150" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="206" font-size="11.5" font-weight="bold" fill="#334155">dp[u] 的合并过程（j = 子树总重量）</text>
+    <text x="28" y="232" font-size="10.5" fill="#64748b">j=</text>
+    <text x="112" y="232" font-size="10.5" fill="#64748b">0</text>
+    <text x="182" y="232" font-size="10.5" fill="#64748b">1</text>
+    <text x="252" y="232" font-size="10.5" fill="#64748b">2</text>
+    <text x="322" y="232" font-size="10.5" fill="#64748b">3</text>
+    <text x="392" y="232" font-size="10.5" fill="#64748b">4</text>
+    <text x="462" y="232" font-size="10.5" fill="#64748b">5</text>
+    <text x="532" y="232" font-size="10.5" fill="#64748b">6</text>
+
+    <text x="28" y="258" font-size="10.5" fill="#64748b">初始化</text>
+    <text x="112" y="258" font-size="11" fill="#15803d">0</text>
+    <text x="182" y="258" font-size="11" fill="#94a3b8">-</text>
+    <text x="252" y="258" font-size="11" font-weight="bold" fill="#1e40af">5</text>
+    <text x="322" y="258" font-size="11" fill="#94a3b8">-</text>
+    <text x="392" y="258" font-size="11" fill="#94a3b8">-</text>
+    <text x="462" y="258" font-size="11" fill="#94a3b8">-</text>
+    <text x="532" y="258" font-size="11" fill="#94a3b8">-</text>
+
+    <line x1="24" y1="270" x2="606" y2="270" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="28" y="290" font-size="10.5" fill="#64748b">卷 v1</text>
+    <text x="112" y="290" font-size="11" fill="#15803d">0</text>
+    <text x="182" y="290" font-size="11" fill="#94a3b8">-</text>
+    <text x="252" y="290" font-size="11" font-weight="bold" fill="#1e40af">5</text>
+    <text x="322" y="290" font-size="11" fill="#94a3b8">-</text>
+    <text x="392" y="290" font-size="11" fill="#94a3b8">-</text>
+    <text x="462" y="290" font-size="11" font-weight="bold" fill="#1e40af">9</text>
+    <text x="532" y="290" font-size="11" fill="#94a3b8">-</text>
+
+    <line x1="24" y1="302" x2="606" y2="302" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="28" y="322" font-size="10.5" fill="#64748b">卷 v2</text>
+    <text x="112" y="322" font-size="11" fill="#15803d">0</text>
+    <text x="182" y="322" font-size="11" fill="#94a3b8">-</text>
+    <text x="252" y="322" font-size="11" font-weight="bold" fill="#1e40af">5</text>
+    <text x="322" y="322" font-size="11" font-weight="bold" fill="#1e40af">11</text>
+    <text x="392" y="322" font-size="11" fill="#94a3b8">-</text>
+    <text x="462" y="322" font-size="11" font-weight="bold" fill="#1e40af">9</text>
+    <text x="532" y="322" font-size="11" font-weight="bold" fill="#1e40af">15</text>
+
+    <rect x="16" y="350" width="598" height="88" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+    <text x="28" y="372" font-size="12" fill="#1e40af">ndp[j+k] = max( ndp[j+k], dp[u][j] + dp[v][k] )</text>
+    <text x="28" y="394" font-size="11" fill="#334155">k = 0：不选这个孩子（贡献 0）；k &gt; 0：选它并用掉 k 的重量</text>
+    <text x="28" y="416" font-size="11" fill="#334155">j + k ≤ K；答案 = max_j dp[root][j]（示例最大值为 15）</text>
+
+    <rect x="16" y="454" width="598" height="78" rx="7" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+    <text x="28" y="476" font-size="11.5" font-weight="bold" fill="#b91c1c">⚠️ j = 0（u 不选）时只允许 k = 0</text>
+    <text x="28" y="496" font-size="11" fill="#7f1d1d">否则孩子会「脱离父节点」被选中，依赖约束失效</text>
+    <text x="28" y="516" font-size="11" fill="#334155">复杂度 O(nK²)：每个孩子做一次容量卷积</text>
+  </g>
+</svg>

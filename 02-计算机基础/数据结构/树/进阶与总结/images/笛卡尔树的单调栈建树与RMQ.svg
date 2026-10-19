@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">笛卡尔树：一个数组长出「中序有序 + 小根堆」的唯一二叉树</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：数组与树的双重身份；右：单调栈 O(n) 建树，以及 RMQ 如何归约成 LCA</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="550" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">数组 ⇄ 树：两条不变量定死形状</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">a = [3, 1, 4, 2, 5]，下标 0..4</text>
+
+    <text x="30" y="76" font-size="10.5" fill="#64748b">下标</text>
+    <text x="80" y="76" font-size="10.5" fill="#64748b">0</text>
+    <text x="130" y="76" font-size="10.5" fill="#64748b">1</text>
+    <text x="180" y="76" font-size="10.5" fill="#64748b">2</text>
+    <text x="230" y="76" font-size="10.5" fill="#64748b">3</text>
+    <text x="280" y="76" font-size="10.5" fill="#64748b">4</text>
+    <rect x="62" y="84" width="36" height="28" rx="5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+    <text x="80" y="98" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">3</text>
+    <rect x="112" y="84" width="36" height="28" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="130" y="98" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="#92400e">1</text>
+    <rect x="162" y="84" width="36" height="28" rx="5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+    <text x="180" y="98" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">4</text>
+    <rect x="212" y="84" width="36" height="28" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="230" y="98" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold" fill="#1e40af">2</text>
+    <rect x="262" y="84" width="36" height="28" rx="5" fill="#e2e8f0" stroke="#64748b" stroke-width="1.2"/>
+    <text x="280" y="98" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#334155">5</text>
+
+    <line x1="160" y1="195" x2="92" y2="238" stroke="#94a3b8" stroke-width="1.4"/>
+    <line x1="170" y1="195" x2="238" y2="238" stroke="#94a3b8" stroke-width="1.4"/>
+    <line x1="238" y1="272" x2="198" y2="315" stroke="#94a3b8" stroke-width="1.4"/>
+    <line x1="252" y1="272" x2="292" y2="315" stroke="#94a3b8" stroke-width="1.4"/>
+
+    <rect x="135" y="161" width="60" height="34" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+    <text x="165" y="174" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#92400e">1</text>
+    <text x="165" y="188" text-anchor="middle" dominant-baseline="central" font-size="9.5" fill="#92400e">下标 1 · 根</text>
+
+    <rect x="62" y="238" width="60" height="34" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="92" y="251" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">3</text>
+    <text x="92" y="265" text-anchor="middle" dominant-baseline="central" font-size="9.5" fill="#64748b">下标 0</text>
+
+    <rect x="208" y="238" width="60" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="238" y="251" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="bold" fill="#1e40af">2</text>
+    <text x="238" y="265" text-anchor="middle" dominant-baseline="central" font-size="9.5" fill="#1e40af">下标 3</text>
+
+    <rect x="168" y="315" width="60" height="34" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="198" y="328" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">4</text>
+    <text x="198" y="342" text-anchor="middle" dominant-baseline="central" font-size="9.5" fill="#64748b">下标 2</text>
+
+    <rect x="262" y="315" width="60" height="34" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.3"/>
+    <text x="292" y="328" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#334155">5</text>
+    <text x="292" y="342" text-anchor="middle" dominant-baseline="central" font-size="9.5" fill="#64748b">下标 4</text>
+
+    <rect x="16" y="372" width="428" height="74" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="392" font-size="11.5" fill="#334155">中序：3, 1, 4, 2, 5  = 原数组 ✅</text>
+    <text x="28" y="411" font-size="11.5" fill="#334155">堆序：1 ≤ 3、1 ≤ 2、2 ≤ 4、2 ≤ 5 ✅</text>
+    <text x="28" y="431" font-size="11.5" fill="#1e40af">⭐ 每棵子树 = 一段连续下标，根 = 这段的最小值</text>
+
+    <rect x="16" y="458" width="428" height="76" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+    <text x="28" y="478" font-size="11.5" fill="#1e40af">节点 下标3（值 2）的子树覆盖 [2, 4]</text>
+    <text x="28" y="497" font-size="11.5" fill="#334155">而 min(a[2..4]) = 2 —— 最值就落在子树根上</text>
+    <text x="28" y="518" font-size="11.5" fill="#b45309">⚠️ 升序数组会退化成右链，树高 = n-1（见第 4 节）</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="550" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="30" font-size="16" font-weight="bold" fill="#0f172a">单调栈建树：只改「右链」</text>
+    <text x="16" y="52" font-size="12" fill="#64748b">栈 = 当前树的右链，值自底向上非递减</text>
+
+    <text x="18" y="82" font-size="11" font-weight="bold" fill="#475569">i</text>
+    <text x="52" y="82" font-size="11" font-weight="bold" fill="#475569">a[i]</text>
+    <text x="104" y="82" font-size="11" font-weight="bold" fill="#475569">弹出</text>
+    <text x="170" y="82" font-size="11" font-weight="bold" fill="#475569">挂接动作</text>
+    <text x="356" y="82" font-size="11" font-weight="bold" fill="#475569">栈</text>
+    <line x1="16" y1="90" x2="444" y2="90" stroke="#cbd5e1" stroke-width="1"/>
+
+    <text x="24" y="110" font-size="11" fill="#334155">0</text>
+    <text x="58" y="110" font-size="11" fill="#334155">3</text>
+    <text x="104" y="110" font-size="11" fill="#94a3b8">—</text>
+    <text x="170" y="110" font-size="11" fill="#94a3b8">—</text>
+    <text x="350" y="110" font-size="11" fill="#1e40af">[0]</text>
+
+    <text x="24" y="136" font-size="11" fill="#334155">1</text>
+    <text x="58" y="136" font-size="11" fill="#334155">1</text>
+    <text x="104" y="136" font-size="11" fill="#b45309">0（3&gt;1）</text>
+    <text x="170" y="136" font-size="11" fill="#b45309">左孩子 1 ← 0</text>
+    <text x="350" y="136" font-size="11" fill="#1e40af">[1]</text>
+
+    <text x="24" y="162" font-size="11" fill="#334155">2</text>
+    <text x="58" y="162" font-size="11" fill="#334155">4</text>
+    <text x="104" y="162" font-size="11" fill="#94a3b8">—</text>
+    <text x="170" y="162" font-size="11" fill="#334155">右孩子 1 → 2</text>
+    <text x="350" y="162" font-size="11" fill="#1e40af">[1, 2]</text>
+
+    <text x="24" y="188" font-size="11" fill="#334155">3</text>
+    <text x="58" y="188" font-size="11" fill="#334155">2</text>
+    <text x="104" y="188" font-size="11" fill="#b45309">2（4&gt;2）</text>
+    <text x="170" y="188" font-size="11" fill="#b45309">右孩子 1 → 3</text>
+    <text x="170" y="202" font-size="11" fill="#b45309">左孩子 3 ← 2</text>
+    <text x="350" y="188" font-size="11" fill="#1e40af">[1, 3]</text>
+
+    <text x="24" y="228" font-size="11" fill="#334155">4</text>
+    <text x="58" y="228" font-size="11" fill="#334155">5</text>
+    <text x="104" y="228" font-size="11" fill="#94a3b8">—</text>
+    <text x="170" y="228" font-size="11" fill="#334155">右孩子 3 → 4</text>
+    <text x="350" y="228" font-size="11" fill="#1e40af">[1, 3, 4]</text>
+
+    <line x1="16" y1="248" x2="444" y2="248" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="270" font-size="11.5" fill="#334155">push = n 次；pop ≤ n 次 ⇒ 总代价 O(n)</text>
+
+    <rect x="16" y="284" width="428" height="96" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="28" y="306" font-size="14" font-weight="bold" fill="#1e40af">RMQ(l, r) = a[ LCA(l, r) ]</text>
+    <text x="28" y="328" font-size="11.5" fill="#334155">[0..4] → LCA(0,4) = 下标1 → 1 ✅</text>
+    <text x="28" y="347" font-size="11.5" fill="#334155">[2..4] → LCA(2,4) = 下标3 → 2 ✅</text>
+    <text x="28" y="366" font-size="11.5" fill="#334155">[1..3] → LCA(1,3) = 下标1 → 1 ✅</text>
+
+    <rect x="16" y="394" width="428" height="142" rx="7" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+    <text x="28" y="416" font-size="11.5" font-weight="bold" fill="#15803d">本机实测（n = 200000，10 万次随机区间）</text>
+    <text x="28" y="438" font-size="11.5" fill="#334155">与线段树的查询结果不一致 = 0 ✅</text>
+    <text x="28" y="458" font-size="11.5" fill="#334155">LCA 均 20.61 次比较 · 线段树均 15.34 次访问</text>
+    <text x="28" y="480" font-size="11.5" fill="#b45309">⚠️ 这版没有更快：价值在「归约」，不是常数</text>
+    <text x="28" y="500" font-size="11.5" fill="#334155">接离线 Tarjan 或欧拉环游 ±1 RMQ 才是终点</text>
+    <text x="28" y="522" font-size="11.5" fill="#334155">升序数组：建树仍 O(n)，但树高 199999 ⚠️</text>
+  </g>
+</svg>
