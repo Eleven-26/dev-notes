@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arwA" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">集群的逻辑架构：请求路径与状态边界</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">无状态层的难题是「选哪个副本」，有状态层的难题是「数据在哪、到哪了」</text>
+
+  <rect x="20" y="76" width="960" height="182" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <rect x="32" y="88" width="112" height="24" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+  <text x="88" y="105" font-size="11.5" font-weight="bold" fill="#1e40af" text-anchor="middle">无状态层</text>
+  <text x="160" y="105" font-size="11.5" fill="#334155">任何副本都能处理任何请求 —— 难题是「选哪个」</text>
+
+  <rect x="45" y="120" width="140" height="46" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+  <text x="115" y="140" font-size="12" font-weight="bold" fill="#334155" text-anchor="middle">客户端</text>
+  <text x="115" y="156" font-size="10" fill="#64748b" text-anchor="middle">HTTP 请求</text>
+  <line x1="187" y1="143" x2="216" y2="143" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="220" y="114" width="240" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+  <text x="340" y="136" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">负载均衡 / 服务发现</text>
+  <text x="340" y="154" font-size="10" fill="#1e40af" text-anchor="middle">健康检查 · 轮询 / 最少连接</text>
+
+  <path d="M462 130 L490 130 L490 96 L898 96" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <line x1="618" y1="96" x2="618" y2="111" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <line x1="758" y1="96" x2="758" y2="111" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <line x1="898" y1="96" x2="898" y2="111" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+  <text x="497" y="90" font-size="9.5" fill="#1e40af">按策略分发</text>
+
+  <rect x="558" y="114" width="120" height="44" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="5"/>
+  <text x="618" y="133" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">服务副本 ①</text>
+  <text x="618" y="149" font-size="9.5" fill="#1e40af" text-anchor="middle">同镜像 · 同配置</text>
+  <rect x="698" y="114" width="120" height="44" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="5"/>
+  <text x="758" y="133" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">服务副本 ②</text>
+  <text x="758" y="149" font-size="9.5" fill="#1e40af" text-anchor="middle">同镜像 · 同配置</text>
+  <rect x="838" y="114" width="120" height="44" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="5"/>
+  <text x="898" y="133" font-size="11" font-weight="bold" fill="#1e40af" text-anchor="middle">服务副本 ③</text>
+  <text x="898" y="149" font-size="9.5" fill="#1e40af" text-anchor="middle">同镜像 · 同配置</text>
+
+  <text x="45" y="196" font-size="10.5" fill="#475569">副本之间不互相调用；挂一个就摘一个，请求落到其余副本</text>
+  <text x="45" y="218" font-size="10.5" fill="#166534">扩容 = 加副本，立刻生效（没有数据要搬）</text>
+
+  <rect x="20" y="274" width="960" height="200" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <rect x="32" y="286" width="112" height="24" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+  <text x="88" y="303" font-size="11.5" font-weight="bold" fill="#92400e" text-anchor="middle">有状态层</text>
+  <text x="160" y="303" font-size="11.5" fill="#334155">请求必须落到持有那份数据的副本 —— 难题是「数据在哪、到哪了」</text>
+
+  <rect x="70" y="324" width="230" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+  <text x="185" y="346" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">主库（唯一写入口）</text>
+  <text x="185" y="365" font-size="10" fill="#1e40af" text-anchor="middle">写本地日志；读主永远最新</text>
+  <text x="185" y="383" font-size="9.5" fill="#1e40af" text-anchor="middle">回 OK 的时机见下一节</text>
+
+  <line x1="302" y1="342" x2="386" y2="336" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arwA)"/>
+  <line x1="302" y1="378" x2="386" y2="414" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arwA)"/>
+  <text x="305" y="326" font-size="9.5" fill="#92400e">复制日志</text>
+
+  <rect x="390" y="314" width="190" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="5"/>
+  <text x="485" y="337" font-size="11.5" font-weight="bold" fill="#166534" text-anchor="middle">从库 A（可接读）</text>
+  <text x="485" y="355" font-size="9.5" fill="#166534" text-anchor="middle">可能落后：复制延迟</text>
+  <rect x="390" y="386" width="190" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="5"/>
+  <text x="485" y="409" font-size="11.5" font-weight="bold" fill="#166534" text-anchor="middle">从库 B（可接读）</text>
+  <text x="485" y="427" font-size="9.5" fill="#166534" text-anchor="middle">故障时可能被选为新主</text>
+
+  <rect x="620" y="314" width="330" height="128" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="636" y="338" font-size="10.5" fill="#1e40af">写请求 → 主库（唯一能提交写的地方）</text>
+  <text x="636" y="360" font-size="10.5" fill="#166534">读请求 → 任一副本（接受旧值）</text>
+  <text x="636" y="382" font-size="10.5" fill="#92400e">刚写完要读己之写 → 强制读主 / 带位点</text>
+  <text x="636" y="404" font-size="10.5" fill="#334155">副本挂了 → 先选主，再让新主追平日志</text>
+  <text x="636" y="426" font-size="10.5" fill="#334155">扩容 → 要搬数据：双写 → 追平 → 切流</text>
+
+  <rect x="20" y="492" width="300" height="86" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="36" y="516" font-size="12" font-weight="bold" fill="#1e40af">读扩展：加从库</text>
+  <text x="36" y="538" font-size="10" fill="#1e40af">近似线性提升吞吐</text>
+  <text x="36" y="558" font-size="10" fill="#1e40af">代价：复制延迟 → 可能读到旧值</text>
+
+  <rect x="350" y="492" width="300" height="86" fill="#fef3c7" stroke="#b45309" stroke-width="1.2" rx="8"/>
+  <text x="366" y="516" font-size="12" font-weight="bold" fill="#92400e">写扩展：加从库没用</text>
+  <text x="366" y="538" font-size="10" fill="#92400e">所有写仍然打到主库</text>
+  <text x="366" y="558" font-size="10" fill="#92400e">只能分片：每片各有自己的主</text>
+
+  <rect x="680" y="492" width="300" height="86" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="696" y="516" font-size="12" font-weight="bold" fill="#166534">故障处理完全不同</text>
+  <text x="696" y="538" font-size="10" fill="#166534">无状态：健康检查失败就摘掉换新</text>
+  <text x="696" y="558" font-size="10" fill="#166534">有状态：先选主，再追平日志</text>
+
+  <text x="500" y="614" font-size="10.5" fill="#64748b" text-anchor="middle">判据一句话：这份数据丢了，能不能从别处重算出来？能，就别按有状态集群的复杂度去做</text>
+</svg>

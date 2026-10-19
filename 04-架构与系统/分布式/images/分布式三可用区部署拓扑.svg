@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwTop" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arwDb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">分布式部署拓扑：三可用区、每服务多副本、数据面跨区复制</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">可用区 = 一个故障域：同一 AZ 内多副本只防进程故障，跨 AZ 才能防机房级故障</text>
+
+  <g font-size="10" fill="#475569">
+    <line x1="760" y1="78" x2="800" y2="78" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwTop)"/>
+    <text x="808" y="81">请求流量</text>
+    <line x1="760" y1="96" x2="800" y2="96" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <text x="808" y="99">复制 / 选举</text>
+  </g>
+
+  <rect x="30" y="82" width="140" height="44" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+  <text x="100" y="100" font-size="11" font-weight="bold" fill="#334155" text-anchor="middle">客户端 / 公网流量</text>
+  <text x="100" y="116" font-size="10" fill="#64748b" text-anchor="middle">Web · App · 第三方</text>
+
+  <line x1="170" y1="104" x2="198" y2="104" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwTop)"/>
+
+  <rect x="200" y="78" width="230" height="52" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+  <text x="315" y="98" font-size="12" font-weight="bold" fill="#1e40af" text-anchor="middle">DNS / 全局负载均衡</text>
+  <text x="315" y="116" font-size="10.5" fill="#1e40af" text-anchor="middle">按地域与健康状态就近接入</text>
+
+  <line x1="315" y1="130" x2="315" y2="150" stroke="#2563eb" stroke-width="1.5"/>
+  <line x1="60" y1="150" x2="700" y2="150" stroke="#2563eb" stroke-width="1.5"/>
+  <line x1="60" y1="150" x2="60" y2="234" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwTop)"/>
+  <line x1="380" y1="150" x2="380" y2="234" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwTop)"/>
+  <line x1="700" y1="150" x2="700" y2="234" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwTop)"/>
+  <text x="745" y="166" font-size="10" fill="#64748b">流量可落到任一 AZ</text>
+
+  <g transform="translate(30,190)">
+    <rect x="0" y="0" width="300" height="390" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4" rx="10"/>
+    <text x="150" y="22" font-size="14" font-weight="bold" fill="#1e40af" text-anchor="middle">可用区 A</text>
+    <text x="150" y="40" font-size="10.5" fill="#64748b" text-anchor="middle">故障域 1 · 独立供电与网络</text>
+
+    <rect x="12" y="48" width="276" height="32" fill="#bfdbfe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="150" y="60" font-size="10.5" font-weight="bold" fill="#1e40af" text-anchor="middle">API 网关实例 ×2</text>
+    <text x="150" y="74" font-size="10" fill="#1e40af" text-anchor="middle">认证 · 路由 · 限流 · 灰度</text>
+
+    <rect x="12" y="88" width="132" height="42" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="78" y="104" font-size="10.5" font-weight="bold" fill="#1e40af" text-anchor="middle">订单服务 ×2</text>
+    <text x="78" y="119" font-size="9.5" fill="#1e40af" text-anchor="middle">无状态 · 可扩副本</text>
+    <rect x="156" y="88" width="132" height="42" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="5"/>
+    <text x="222" y="104" font-size="10.5" font-weight="bold" fill="#1e40af" text-anchor="middle">库存服务 ×2</text>
+    <text x="222" y="119" font-size="9.5" fill="#1e40af" text-anchor="middle">状态落在自己的库</text>
+
+    <rect x="12" y="138" width="276" height="30" fill="#ede9fe" stroke="#7c3aed" stroke-width="1" rx="5"/>
+    <text x="150" y="157" font-size="10" fill="#5b21b6" text-anchor="middle">注册中心节点 ×1 · 三 AZ 组成 quorum</text>
+
+    <rect x="12" y="176" width="276" height="30" fill="#ccfbf1" stroke="#0f766e" stroke-width="1" rx="5"/>
+    <text x="150" y="195" font-size="10" fill="#115e59" text-anchor="middle">Kafka Broker ×2 · 分区副本跨 AZ</text>
+
+    <rect x="12" y="214" width="136" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+    <text x="80" y="232" font-size="10.5" font-weight="bold" fill="#92400e" text-anchor="middle">MySQL 主库</text>
+    <text x="80" y="247" font-size="9.5" fill="#92400e" text-anchor="middle">写入唯一入口</text>
+    <rect x="152" y="214" width="136" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+    <text x="220" y="232" font-size="10.5" font-weight="bold" fill="#92400e" text-anchor="middle">Redis 主</text>
+    <text x="220" y="247" font-size="9.5" fill="#92400e" text-anchor="middle">缓存 · 会话</text>
+  </g>
+
+  <g transform="translate(350,190)">
+    <rect x="0" y="0" width="300" height="390" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4" rx="10"/>
+    <text x="150" y="22" font-size="14" font-weight="bold" fill="#166534" text-anchor="middle">可用区 B</text>
+    <text x="150" y="40" font-size="10.5" fill="#64748b" text-anchor="middle">故障域 2 · 与 A 隔离</text>
+
+    <rect x="12" y="48" width="276" height="32" fill="#bbf7d0" stroke="#16a34a" stroke-width="1" rx="5"/>
+    <text x="150" y="60" font-size="10.5" font-weight="bold" fill="#166534" text-anchor="middle">API 网关实例 ×2</text>
+    <text x="150" y="74" font-size="10" fill="#166534" text-anchor="middle">同镜像 · 同配置</text>
+
+    <rect x="12" y="88" width="132" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="5"/>
+    <text x="78" y="104" font-size="10.5" font-weight="bold" fill="#166534" text-anchor="middle">订单服务 ×2</text>
+    <text x="78" y="119" font-size="9.5" fill="#166534" text-anchor="middle">与 A 的副本等价</text>
+    <rect x="156" y="88" width="132" height="42" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="5"/>
+    <text x="222" y="104" font-size="10.5" font-weight="bold" fill="#166534" text-anchor="middle">库存服务 ×2</text>
+    <text x="222" y="119" font-size="9.5" fill="#166534" text-anchor="middle">与 A 的副本等价</text>
+
+    <rect x="12" y="138" width="276" height="30" fill="#ede9fe" stroke="#7c3aed" stroke-width="1" rx="5"/>
+    <text x="150" y="157" font-size="10" fill="#5b21b6" text-anchor="middle">注册中心节点 ×1 · 三 AZ 组成 quorum</text>
+
+    <rect x="12" y="176" width="276" height="30" fill="#ccfbf1" stroke="#0f766e" stroke-width="1" rx="5"/>
+    <text x="150" y="195" font-size="10" fill="#115e59" text-anchor="middle">Kafka Broker ×2 · 分区副本跨 AZ</text>
+
+    <rect x="12" y="214" width="136" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+    <text x="80" y="232" font-size="10.5" font-weight="bold" fill="#92400e" text-anchor="middle">MySQL 从库</text>
+    <text x="80" y="247" font-size="9.5" fill="#92400e" text-anchor="middle">可升主</text>
+    <rect x="152" y="214" width="136" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+    <text x="220" y="232" font-size="10.5" font-weight="bold" fill="#92400e" text-anchor="middle">Redis 从</text>
+    <text x="220" y="247" font-size="9.5" fill="#92400e" text-anchor="middle">只读副本</text>
+  </g>
+
+  <g transform="translate(670,190)">
+    <rect x="0" y="0" width="300" height="390" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4" rx="10"/>
+    <text x="150" y="22" font-size="14" font-weight="bold" fill="#5b21b6" text-anchor="middle">可用区 C</text>
+    <text x="150" y="40" font-size="10.5" fill="#64748b" text-anchor="middle">故障域 3 · 与 A / B 隔离</text>
+
+    <rect x="12" y="48" width="276" height="32" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1" rx="5"/>
+    <text x="150" y="60" font-size="10.5" font-weight="bold" fill="#5b21b6" text-anchor="middle">API 网关实例 ×2</text>
+    <text x="150" y="74" font-size="10" fill="#5b21b6" text-anchor="middle">同镜像 · 同配置</text>
+
+    <rect x="12" y="88" width="132" height="42" fill="#ede9fe" stroke="#7c3aed" stroke-width="1" rx="5"/>
+    <text x="78" y="104" font-size="10.5" font-weight="bold" fill="#5b21b6" text-anchor="middle">订单服务 ×2</text>
+    <text x="78" y="119" font-size="9.5" fill="#5b21b6" text-anchor="middle">与 A 的副本等价</text>
+    <rect x="156" y="88" width="132" height="42" fill="#ede9fe" stroke="#7c3aed" stroke-width="1" rx="5"/>
+    <text x="222" y="104" font-size="10.5" font-weight="bold" fill="#5b21b6" text-anchor="middle">库存服务 ×2</text>
+    <text x="222" y="119" font-size="9.5" fill="#5b21b6" text-anchor="middle">与 A 的副本等价</text>
+
+    <rect x="12" y="138" width="276" height="30" fill="#ede9fe" stroke="#7c3aed" stroke-width="1" rx="5"/>
+    <text x="150" y="157" font-size="10" fill="#5b21b6" text-anchor="middle">注册中心节点 ×1 · 三 AZ 组成 quorum</text>
+
+    <rect x="12" y="176" width="276" height="30" fill="#ccfbf1" stroke="#0f766e" stroke-width="1" rx="5"/>
+    <text x="150" y="195" font-size="10" fill="#115e59" text-anchor="middle">Kafka Broker ×2 · 分区副本跨 AZ</text>
+
+    <rect x="12" y="214" width="136" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+    <text x="80" y="232" font-size="10.5" font-weight="bold" fill="#92400e" text-anchor="middle">MySQL 从库</text>
+    <text x="80" y="247" font-size="9.5" fill="#92400e" text-anchor="middle">可升主</text>
+    <rect x="152" y="214" width="136" height="48" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+    <text x="220" y="232" font-size="10.5" font-weight="bold" fill="#92400e" text-anchor="middle">Redis 从</text>
+    <text x="220" y="247" font-size="9.5" fill="#92400e" text-anchor="middle">只读副本</text>
+  </g>
+
+  <line x1="318" y1="343" x2="348" y2="343" stroke="#7c3aed" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="638" y1="343" x2="668" y2="343" stroke="#7c3aed" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="318" y1="381" x2="348" y2="381" stroke="#b45309" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="638" y1="381" x2="668" y2="381" stroke="#b45309" stroke-width="1.4" stroke-dasharray="4 3"/>
+
+  <line x1="110" y1="452" x2="110" y2="482" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <line x1="110" y1="482" x2="750" y2="482" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <line x1="430" y1="482" x2="430" y2="456" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwDb)"/>
+  <line x1="750" y1="482" x2="750" y2="456" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwDb)"/>
+  <text x="430" y="500" font-size="10.5" fill="#92400e" text-anchor="middle">MySQL 主 → 从复制：同步 / 半同步 / 异步，直接决定故障切换时的 RPO</text>
+
+  <g transform="translate(30,596)">
+    <rect x="0" y="0" width="300" height="88" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="8"/>
+    <rect x="0" y="0" width="5" height="88" fill="#2563eb" rx="2"/>
+    <text x="16" y="21" font-size="12" font-weight="bold" fill="#0f172a">挂 1 个 AZ（最常见）</text>
+    <text x="16" y="41" font-size="10" fill="#334155">服务副本调度到其余 AZ，容量降到 2/3</text>
+    <text x="16" y="58" font-size="10" fill="#334155">注册中心挂 1 个仍有 quorum，可读可写</text>
+    <text x="16" y="75" font-size="10" fill="#334155">Kafka 分区 Leader 在存活副本中重新选出</text>
+  </g>
+  <g transform="translate(350,596)">
+    <rect x="0" y="0" width="300" height="88" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="8"/>
+    <rect x="0" y="0" width="5" height="88" fill="#b45309" rx="2"/>
+    <text x="16" y="21" font-size="12" font-weight="bold" fill="#0f172a">挂 2 个 AZ（区域级故障）</text>
+    <text x="16" y="41" font-size="10" fill="#334155">注册中心只剩 1 节点 → 失去多数派</text>
+    <text x="16" y="58" font-size="10" fill="#334155">注册 / 配置写不可用，强一致写失败</text>
+    <text x="16" y="75" font-size="10" fill="#334155">容量只剩 1/3：活着，但必须降级读</text>
+  </g>
+  <g transform="translate(670,596)">
+    <rect x="0" y="0" width="300" height="88" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="8"/>
+    <rect x="0" y="0" width="5" height="88" fill="#dc2626" rx="2"/>
+    <text x="16" y="21" font-size="12" font-weight="bold" fill="#0f172a">挂的正好是主库所在 AZ</text>
+    <text x="16" y="41" font-size="10" fill="#334155">从库升主前先确认原主已停写，避免双主</text>
+    <text x="16" y="58" font-size="10" fill="#334155">RPO：异步复制有丢失窗口</text>
+    <text x="16" y="75" font-size="10" fill="#334155">RTO：切主 + 重连 + 实例列表刷新</text>
+  </g>
+
+  <text x="500" y="708" font-size="10.5" fill="#64748b" text-anchor="middle">参考拓扑：AZ 数量、副本数与复制模式取决于 RPO / RTO 与成本；单 AZ 内多副本只防进程故障，不构成容灾</text>
+</svg>

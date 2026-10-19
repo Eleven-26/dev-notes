@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/></marker>
+    <marker id="arwA2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b45309"/></marker>
+    <marker id="arwG2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">主从复制拓扑：在哪里等，决定故障时丢多少</text>
+  <text x="500" y="58" font-size="13" fill="#64748b" text-anchor="middle">同步 / 半同步 / 异步的差别只有一个 —— 主库回 OK 之前，等不等从库确认</text>
+
+  <rect x="30" y="92" width="150" height="48" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="6"/>
+  <text x="105" y="112" font-size="11.5" font-weight="bold" fill="#334155" text-anchor="middle">客户端写请求</text>
+  <text x="105" y="128" font-size="10" fill="#64748b" text-anchor="middle">等待写入结果</text>
+  <line x1="182" y1="116" x2="232" y2="116" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB2)"/>
+
+  <rect x="235" y="84" width="230" height="66" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2" rx="6"/>
+  <text x="350" y="108" font-size="13" font-weight="bold" fill="#1e40af" text-anchor="middle">主库</text>
+  <text x="350" y="128" font-size="10.5" fill="#1e40af" text-anchor="middle">写本地日志 →（等或不等）→ 回 OK</text>
+  <text x="350" y="144" font-size="9.5" fill="#1e40af" text-anchor="middle">回 OK 的时机是三种模式的唯一差别</text>
+
+  <line x1="467" y1="108" x2="606" y2="102" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arwA2)"/>
+  <line x1="467" y1="128" x2="606" y2="174" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arwA2)"/>
+  <text x="500" y="146" font-size="9.5" fill="#92400e">复制日志</text>
+
+  <rect x="610" y="78" width="190" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="5"/>
+  <text x="705" y="100" font-size="11.5" font-weight="bold" fill="#166534" text-anchor="middle">从库 A</text>
+  <text x="705" y="118" font-size="9.5" fill="#166534" text-anchor="middle">可接读 · 可能旧值</text>
+  <rect x="610" y="146" width="190" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="5"/>
+  <text x="705" y="168" font-size="11.5" font-weight="bold" fill="#166534" text-anchor="middle">从库 B</text>
+  <text x="705" y="186" font-size="9.5" fill="#166534" text-anchor="middle">可接读 · 可升主</text>
+
+  <rect x="830" y="92" width="140" height="52" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="5"/>
+  <text x="900" y="112" font-size="10" fill="#334155" text-anchor="middle">读可从副本分流</text>
+  <text x="900" y="130" font-size="10" fill="#334155" text-anchor="middle">但可能读到旧值</text>
+  <rect x="830" y="152" width="140" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+  <text x="900" y="169" font-size="10" fill="#92400e" text-anchor="middle">加从库不提升写</text>
+  <text x="900" y="184" font-size="10" fill="#92400e" text-anchor="middle">写容量只能靠分片</text>
+
+  <text x="500" y="226" font-size="10.5" fill="#92400e" text-anchor="middle">RPO = 主库故障时，最多丢掉多少「已经回过 OK」的写</text>
+
+  <text x="30" y="258" font-size="10" fill="#94a3b8">模式</text>
+  <text x="190" y="258" font-size="10" fill="#94a3b8">回 OK 之前等什么</text>
+  <text x="760" y="258" font-size="10" fill="#94a3b8">主库故障时丢什么</text>
+
+  <rect x="20" y="272" width="960" height="78" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+  <text x="36" y="302" font-size="12" font-weight="bold" fill="#0f172a">同步复制</text>
+  <text x="36" y="324" font-size="9.5" fill="#64748b">等所有从确认</text>
+  <circle cx="200" cy="311" r="4" fill="#2563eb"/>
+  <rect x="204" y="303" width="352" height="16" fill="#bfdbfe" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="380" y="315" font-size="10" fill="#1e40af" text-anchor="middle">等 N 个从库全部确认（最慢）</text>
+  <rect x="560" y="303" width="80" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="4"/>
+  <text x="600" y="315" font-size="10" fill="#14532d" text-anchor="middle">回 OK</text>
+  <text x="560" y="336" font-size="10" fill="#991b1b">任一从慢或挂 → 写一直被拖住</text>
+  <rect x="760" y="290" width="208" height="42" fill="#f0fdf4" stroke="#16a34a" stroke-width="1" rx="5"/>
+  <text x="772" y="307" font-size="10.5" font-weight="bold" fill="#166534">不丢（RPO = 0）</text>
+  <text x="772" y="323" font-size="9" fill="#166534">但写延迟由最慢的从库决定</text>
+
+  <rect x="20" y="362" width="960" height="78" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+  <text x="36" y="392" font-size="12" font-weight="bold" fill="#0f172a">半同步 / Quorum</text>
+  <text x="36" y="414" font-size="9.5" fill="#64748b">等多数派确认</text>
+  <circle cx="200" cy="401" r="4" fill="#2563eb"/>
+  <rect x="204" y="393" width="284" height="16" fill="#bfdbfe" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="346" y="405" font-size="10" fill="#1e40af" text-anchor="middle">等多数派（N/2+1）确认</text>
+  <rect x="488" y="393" width="80" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="4"/>
+  <text x="528" y="405" font-size="10" fill="#14532d" text-anchor="middle">回 OK</text>
+  <text x="580" y="405" font-size="10" fill="#991b1b">多数派不可用 → 写也失败</text>
+  <rect x="760" y="380" width="208" height="42" fill="#f0fdf4" stroke="#16a34a" stroke-width="1" rx="5"/>
+  <text x="772" y="397" font-size="10.5" font-weight="bold" fill="#166534">不丢（RPO = 0）</text>
+  <text x="772" y="413" font-size="9" fill="#166534">前提：选主也走多数派</text>
+
+  <rect x="20" y="452" width="960" height="78" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+  <text x="36" y="482" font-size="12" font-weight="bold" fill="#0f172a">异步复制</text>
+  <text x="36" y="504" font-size="9.5" fill="#64748b">写完本地就回</text>
+  <circle cx="200" cy="491" r="4" fill="#2563eb"/>
+  <rect x="204" y="483" width="96" height="16" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="4"/>
+  <text x="252" y="495" font-size="10" fill="#92400e" text-anchor="middle">写本地日志</text>
+  <rect x="302" y="483" width="80" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="4"/>
+  <text x="342" y="495" font-size="10" fill="#14532d" text-anchor="middle">回 OK</text>
+  <line x1="386" y1="491" x2="700" y2="491" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arwG2)"/>
+  <text x="430" y="483" font-size="9.5" fill="#64748b">复制在后台继续，已经不阻塞写</text>
+  <rect x="760" y="470" width="208" height="42" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="5"/>
+  <text x="772" y="487" font-size="10.5" font-weight="bold" fill="#92400e">会丢（RPO &gt; 0）</text>
+  <text x="772" y="503" font-size="9" fill="#92400e">丢的是回 OK 后、尚未复制的写</text>
+
+  <text x="500" y="580" font-size="10.5" fill="#64748b" text-anchor="middle">⭐ 快、不丢、一直可用三者最多同时满足两个；半同步是折中，不是免费的不丢 —— 选主也必须走多数派才真正不丢</text>
+</svg>
