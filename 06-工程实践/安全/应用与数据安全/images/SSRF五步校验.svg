@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">SSRF 五步校验：从字符串到 TCP，每一步都要收口</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">只查域名、只查第一条 DNS、只查初始 URL，都会被绕过</text>
+
+  <g>
+    <rect x="20" y="88" width="170" height="112" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="105" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">① 协议白名单</text>
+    <text x="105" y="140" text-anchor="middle" font-size="12" fill="#334155">只允许 http / https</text>
+    <text x="105" y="163" text-anchor="middle" font-size="11.5" fill="#64748b">拒绝 file / gopher /</text>
+    <text x="105" y="182" text-anchor="middle" font-size="11.5" fill="#64748b">dict / ftp</text>
+  </g>
+
+  <g>
+    <rect x="215" y="88" width="170" height="112" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="300" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">② 解析全部记录</text>
+    <text x="300" y="140" text-anchor="middle" font-size="12" fill="#334155">A / AAAA 全部取出</text>
+    <text x="300" y="163" text-anchor="middle" font-size="11.5" fill="#64748b">IP 字面量直接进入</text>
+    <text x="300" y="182" text-anchor="middle" font-size="11.5" fill="#64748b">下一步；IPv6 先 Unmap</text>
+  </g>
+
+  <g>
+    <rect x="410" y="88" width="170" height="112" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="495" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">③ 逐 IP 判黑名单</text>
+    <text x="495" y="140" text-anchor="middle" font-size="12" fill="#334155">任一命中就拒绝</text>
+    <text x="495" y="163" text-anchor="middle" font-size="11" fill="#64748b">回环 / 私有 / 链路本地</text>
+    <text x="495" y="182" text-anchor="middle" font-size="11" fill="#64748b">CGNAT / 元数据 / ULA</text>
+  </g>
+
+  <g>
+    <rect x="605" y="88" width="170" height="112" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="690" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">④ 固定 IP 拨号</text>
+    <text x="690" y="140" text-anchor="middle" font-size="12" fill="#334155">用校验通过的 IP 连接</text>
+    <text x="690" y="163" text-anchor="middle" font-size="11.5" fill="#64748b">禁止系统再次解析</text>
+    <text x="690" y="182" text-anchor="middle" font-size="11.5" fill="#64748b">TLS 仍按原域名校验</text>
+  </g>
+
+  <g>
+    <rect x="800" y="88" width="180" height="112" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="890" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">⑤ 跳转逐跳复检</text>
+    <text x="890" y="140" text-anchor="middle" font-size="12" fill="#334155">每一跳重复 ①～④</text>
+    <text x="890" y="163" text-anchor="middle" font-size="11.5" fill="#64748b">限制跳转次数</text>
+    <text x="890" y="182" text-anchor="middle" font-size="11.5" fill="#64748b">或直接禁止跳转</text>
+  </g>
+
+  <g stroke="#475569" stroke-width="1.5">
+    <line x1="190" y1="144" x2="209" y2="144" marker-end="url(#ar)"/>
+    <line x1="385" y1="144" x2="404" y2="144" marker-end="url(#ar)"/>
+    <line x1="580" y1="144" x2="599" y2="144" marker-end="url(#ar)"/>
+    <line x1="775" y1="144" x2="794" y2="144" marker-end="url(#ar)"/>
+  </g>
+
+  <g>
+    <rect x="20" y="232" width="460" height="150" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="40" y="258" font-size="14" font-weight="bold" fill="#166534">放行样本</text>
+    <text x="40" y="286" font-size="12.5" fill="#0f172a">https://api.example.com/v1/orders</text>
+    <text x="40" y="312" font-size="12.5" fill="#334155">解析：93.184.216.34（单个公网记录）</text>
+    <text x="40" y="338" font-size="12.5" fill="#166534">→ 固定拨号 IP 93.184.216.34</text>
+    <text x="40" y="364" font-size="11.5" fill="#64748b">域名白名单 + 全部 IP 检查都通过，才允许出站</text>
+  </g>
+
+  <g>
+    <rect x="520" y="232" width="460" height="150" rx="10" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="540" y="258" font-size="14" font-weight="bold" fill="#991b1b">拒绝样本（实测）</text>
+    <text x="540" y="284" font-size="12" fill="#334155">169.254.169.254 → 链路本地（云元数据）</text>
+    <text x="540" y="308" font-size="12" fill="#334155">127.0.0.1 / ::1 → 回环</text>
+    <text x="540" y="332" font-size="12" fill="#334155">10.0.0.5 / fd00::1 → 私有地址</text>
+    <text x="540" y="356" font-size="12" fill="#334155">100.64.0.1 → CGNAT 保留网段</text>
+  </g>
+
+  <g>
+    <rect x="20" y="408" width="960" height="170" rx="10" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="40" y="434" font-size="14" font-weight="bold" fill="#334155">常见绕过分别被哪一步拦住</text>
+
+    <rect x="40" y="450" width="290" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="52" y="472" font-size="12" fill="#0f172a">userinfo：a.com@127.0.0.1</text>
+    <text x="238" y="472" font-size="11.5" fill="#2563eb">② Hostname()</text>
+
+    <rect x="350" y="450" width="290" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="362" y="472" font-size="12" fill="#0f172a">多记录 DNS：公网 + 内网</text>
+    <text x="554" y="472" font-size="11.5" fill="#2563eb">③ 全部检查</text>
+
+    <rect x="660" y="450" width="300" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="672" y="472" font-size="12" fill="#0f172a">DNS 重绑定：两次解析不同</text>
+    <text x="864" y="472" font-size="11.5" fill="#2563eb">④ 固定 IP</text>
+
+    <rect x="40" y="494" width="290" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="52" y="516" font-size="12" fill="#0f172a">302 跳转到元数据地址</text>
+    <text x="244" y="516" font-size="11.5" fill="#2563eb">⑤ 逐跳复检</text>
+
+    <rect x="350" y="494" width="290" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="362" y="516" font-size="12" fill="#0f172a">gopher / file 协议</text>
+    <text x="554" y="516" font-size="11.5" fill="#2563eb">① 协议白名单</text>
+
+    <rect x="660" y="494" width="300" height="34" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="672" y="516" font-size="12" fill="#0f172a">CGNAT / 云元数据 / ULA</text>
+    <text x="864" y="516" font-size="11.5" fill="#2563eb">③ 黑名单</text>
+
+    <text x="40" y="558" font-size="11.5" fill="#64748b">最后再加一层网络兜底：出站默认拒绝，只放行必要目标；元数据服务启用 IMDSv2 等强化配置（以云厂商文档为准）</text>
+  </g>
+</svg>

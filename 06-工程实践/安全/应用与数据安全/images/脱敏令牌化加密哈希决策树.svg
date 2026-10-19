@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">脱敏、令牌化、加密、哈希：先问两个问题</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">下游还要不要原值？需不需要跨系统关联？答案决定手段，而不是字段名</text>
+
+  <g>
+    <rect x="380" y="82" width="240" height="56" rx="10" fill="#0f172a"/>
+    <text x="500" y="106" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#ffffff">下游还要不要原值？</text>
+    <text x="500" y="126" text-anchor="middle" font-size="11" fill="#cbd5e1">业务读取、展示、计算、关联</text>
+  </g>
+
+  <g stroke="#475569" stroke-width="1.6">
+    <line x1="440" y1="138" x2="250" y2="176" marker-end="url(#ar)"/>
+    <line x1="560" y1="138" x2="750" y2="176" marker-end="url(#ar)"/>
+  </g>
+  <text x="300" y="162" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">不要</text>
+  <text x="700" y="162" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">要</text>
+
+  <g>
+    <rect x="20" y="184" width="460" height="356" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="250" y="212" text-anchor="middle" font-size="15" font-weight="bold" fill="#14532d">不需要还原原值</text>
+
+    <rect x="42" y="232" width="416" height="82" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="58" y="256" font-size="13" font-weight="bold" fill="#166534">只需要展示 → 展示脱敏</text>
+    <text x="58" y="278" font-size="11.5" fill="#334155">页面、报表、日志保留首尾，中间打码</text>
+    <text x="58" y="298" font-size="11.5" fill="#64748b">原值仍在库里，必须配合访问控制</text>
+
+    <rect x="42" y="330" width="416" height="82" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="58" y="354" font-size="13" font-weight="bold" fill="#166534">需要匹配 / 去重 → HMAC</text>
+    <text x="58" y="376" font-size="11.5" fill="#334155">同值同结果；带密钥、按租户与用途隔离</text>
+    <text x="58" y="396" font-size="11.5" fill="#b91c1c">低熵字段禁止裸 SHA256，可被穷举</text>
+
+    <rect x="42" y="428" width="416" height="82" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="58" y="452" font-size="13" font-weight="bold" fill="#166534">口令 / 只需不可逆 → 加盐慢哈希</text>
+    <text x="58" y="474" font-size="11.5" fill="#334155">bcrypt / scrypt / Argon2；每用户独立盐</text>
+    <text x="58" y="494" font-size="11.5" fill="#64748b">细节见「密码与敏感信息存储」</text>
+  </g>
+
+  <g>
+    <rect x="520" y="184" width="460" height="356" rx="10" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="750" y="212" text-anchor="middle" font-size="15" font-weight="bold" fill="#9a3412">业务需要还原原值</text>
+
+    <rect x="542" y="232" width="416" height="100" rx="8" fill="#ffffff" stroke="#ea580c"/>
+    <text x="558" y="256" font-size="13" font-weight="bold" fill="#9a3412">跨系统关联，但业务方不该持原值 → 令牌化</text>
+    <text x="558" y="278" font-size="11.5" fill="#334155">支付卡、用户标识；同一令牌保持关联</text>
+    <text x="558" y="298" font-size="11.5" fill="#334155">映射表单独托管、单独授权、单独审计</text>
+    <text x="558" y="318" font-size="11.5" fill="#b91c1c">映射表泄漏 = 原值泄漏，保护等级最高</text>
+
+    <rect x="542" y="350" width="416" height="100" rx="8" fill="#ffffff" stroke="#ea580c"/>
+    <text x="558" y="374" font-size="13" font-weight="bold" fill="#9a3412">业务确实要读原值 → 字段加密</text>
+    <text x="558" y="396" font-size="11.5" fill="#334155">信封加密：DEK 加密数据，KEK 托管在 KMS / Vault</text>
+    <text x="558" y="416" font-size="11.5" fill="#334155">按租户 / 用途拆密钥，支持轮换与 crypto-shredding</text>
+    <text x="558" y="436" font-size="11.5" fill="#64748b">细节见「密钥与机密管理」</text>
+
+    <rect x="542" y="468" width="416" height="42" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="558" y="493" font-size="11.5" fill="#991b1b">「可逆」意味着有密钥就能看：密钥权限比数据库权限更关键</text>
+  </g>
+
+  <text x="500" y="572" text-anchor="middle" font-size="12" fill="#64748b">同一条数据可以组合使用：库里存令牌，展示用脱敏，风控用 HMAC，原始值放加密保险箱</text>
+  <text x="500" y="594" text-anchor="middle" font-size="11.5" fill="#94a3b8">判断顺序：可逆性 → 关联性 → 密钥归属 → 性能与运维成本</text>
+</svg>

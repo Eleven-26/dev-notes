@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="c" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">CORS 预检与四类常见配置错误</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">CORS 只决定浏览器是否把响应交给 JS；它不阻止请求发出，也不是服务端访问控制</text>
+
+  <g>
+    <rect x="30" y="84" width="170" height="112" rx="9" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="115" y="110" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">浏览器页面</text>
+    <text x="115" y="134" text-anchor="middle" font-size="11.5" fill="#334155">Origin:</text>
+    <text x="115" y="154" text-anchor="middle" font-size="11" fill="#334155">https://app.example.com</text>
+    <text x="115" y="178" text-anchor="middle" font-size="11" fill="#64748b">页面里的 JS / fetch</text>
+  </g>
+
+  <g>
+    <rect x="300" y="84" width="220" height="112" rx="9" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="410" y="110" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">网关 / 应用</text>
+    <text x="410" y="134" text-anchor="middle" font-size="11.5" fill="#334155">精确 Origin 白名单</text>
+    <text x="410" y="154" text-anchor="middle" font-size="11.5" fill="#334155">回显 Origin + Vary</text>
+    <text x="410" y="178" text-anchor="middle" font-size="11" fill="#64748b">OPTIONS 预检在这里答</text>
+  </g>
+
+  <g>
+    <rect x="620" y="84" width="180" height="112" rx="9" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="710" y="110" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#334155">目标接口</text>
+    <text x="710" y="134" text-anchor="middle" font-size="11.5" fill="#334155">真实业务逻辑</text>
+    <text x="710" y="154" text-anchor="middle" font-size="11.5" fill="#334155">认证 / 授权</text>
+    <text x="710" y="178" text-anchor="middle" font-size="11" fill="#64748b">CORS 与它无关</text>
+  </g>
+
+  <g>
+    <rect x="830" y="84" width="140" height="112" rx="9" fill="#fef2f2" stroke="#dc2626" stroke-dasharray="5 4"/>
+    <text x="900" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">恶意站点</text>
+    <text x="900" y="134" text-anchor="middle" font-size="11" fill="#334155">evil.example.com</text>
+    <text x="900" y="154" text-anchor="middle" font-size="11" fill="#334155">能发请求</text>
+    <text x="900" y="178" text-anchor="middle" font-size="11" fill="#b91c1c">读不到响应</text>
+  </g>
+
+  <g stroke="#475569" stroke-width="1.5">
+    <line x1="200" y1="122" x2="294" y2="122" marker-end="url(#c)"/>
+    <line x1="520" y1="122" x2="614" y2="122" marker-end="url(#c)"/>
+    <line x1="614" y1="158" x2="526" y2="158" marker-end="url(#c)"/>
+    <line x1="294" y1="158" x2="206" y2="158" marker-end="url(#c)"/>
+  </g>
+  <text x="247" y="114" text-anchor="middle" font-size="10.5" fill="#475569">① OPTIONS 预检</text>
+  <text x="247" y="176" text-anchor="middle" font-size="10.5" fill="#475569">④ 通过后发真实请求</text>
+  <text x="568" y="114" text-anchor="middle" font-size="10.5" fill="#475569">② 校验 Origin</text>
+  <text x="568" y="176" text-anchor="middle" font-size="10.5" fill="#475569">③ 200 / 204 + CORS 头</text>
+
+  <g>
+    <rect x="30" y="226" width="460" height="158" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="50" y="252" font-size="14" font-weight="bold" fill="#166534">允许：精确回显</text>
+    <text x="50" y="278" font-size="11.5" fill="#0f172a">Access-Control-Allow-Origin: https://app.example.com</text>
+    <text x="50" y="300" font-size="11.5" fill="#0f172a">Access-Control-Allow-Credentials: true</text>
+    <text x="50" y="322" font-size="11.5" fill="#0f172a">Access-Control-Allow-Methods: GET, POST, PATCH, DELETE</text>
+    <text x="50" y="344" font-size="11.5" fill="#0f172a">Access-Control-Allow-Headers: Authorization, Content-Type</text>
+    <text x="50" y="366" font-size="11.5" fill="#166534">Vary: Origin（避免缓存把 A 源响应发给 B 源）</text>
+  </g>
+
+  <g>
+    <rect x="510" y="226" width="460" height="158" rx="10" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="530" y="252" font-size="14" font-weight="bold" fill="#991b1b">拒绝：不发 CORS 头</text>
+    <text x="530" y="278" font-size="11.5" fill="#0f172a">Origin: https://evil.example.com</text>
+    <text x="530" y="300" font-size="11.5" fill="#334155">→ 响应无 Access-Control-Allow-Origin</text>
+    <text x="530" y="322" font-size="11.5" fill="#334155">→ 浏览器阻止 JS 读取响应</text>
+    <text x="530" y="344" font-size="11.5" fill="#0f172a">Origin: null</text>
+    <text x="530" y="366" font-size="11.5" fill="#b91c1c">→ 同样不允许（沙箱 iframe / file:// 常见）</text>
+  </g>
+
+  <g>
+    <rect x="30" y="404" width="220" height="112" rx="9" fill="#ffffff" stroke="#dc2626"/>
+    <text x="140" y="428" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">① 反射任意 Origin</text>
+    <text x="46" y="452" font-size="11" fill="#334155">把请求 Origin 原样写回</text>
+    <text x="46" y="472" font-size="11" fill="#334155">再加 Allow-Credentials</text>
+    <text x="46" y="496" font-size="11" fill="#b91c1c">= 对全世界开放认证响应</text>
+  </g>
+
+  <g>
+    <rect x="270" y="404" width="220" height="112" rx="9" fill="#ffffff" stroke="#dc2626"/>
+    <text x="380" y="428" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">② 后缀 / 包含匹配</text>
+    <text x="286" y="452" font-size="11" fill="#334155">HasSuffix(origin,</text>
+    <text x="286" y="470" font-size="11" fill="#334155">"app.example.com")</text>
+    <text x="286" y="496" font-size="11" fill="#b91c1c">evilapp.example.com 通过</text>
+  </g>
+
+  <g>
+    <rect x="510" y="404" width="220" height="112" rx="9" fill="#ffffff" stroke="#dc2626"/>
+    <text x="620" y="428" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">③ 放行 null</text>
+    <text x="526" y="452" font-size="11" fill="#334155">沙箱 iframe、file://、</text>
+    <text x="526" y="470" font-size="11" fill="#334155">重定向后的页面</text>
+    <text x="526" y="496" font-size="11" fill="#b91c1c">Origin 可能是 null</text>
+  </g>
+
+  <g>
+    <rect x="750" y="404" width="220" height="112" rx="9" fill="#ffffff" stroke="#dc2626"/>
+    <text x="860" y="428" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">④ 以为 CORS 防 CSRF</text>
+    <text x="766" y="452" font-size="11" fill="#334155">简单请求照样发出</text>
+    <text x="766" y="470" font-size="11" fill="#334155">状态可能已被改变</text>
+    <text x="766" y="496" font-size="11" fill="#b91c1c">仍需 SameSite / Token</text>
+  </g>
+
+  <g>
+    <rect x="30" y="540" width="940" height="58" rx="8" fill="#0f172a"/>
+    <text x="50" y="564" font-size="12" font-weight="bold" fill="#ffffff">CSP 示例</text>
+    <text x="50" y="586" font-size="11" fill="#e2e8f0">default-src 'self'; script-src 'self' 'nonce-r4nd0m'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'</text>
+  </g>
+</svg>

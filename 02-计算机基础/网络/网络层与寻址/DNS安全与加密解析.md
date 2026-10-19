@@ -229,4 +229,4 @@ Resolve-DnsName example.com -Type A -Server 8.8.8.8
 - **下游机制**：[证书与HTTPS排障.md](../应用层/证书与HTTPS排障.md) — 证书链、SAN 与握手失败排查
 - **下游机制**：[IPv6与双栈.md](IPv6与双栈.md) — AAAA 查询与双栈解析
 - **运维/配置**：[06-DHCP与NTP.md](../../linux/鸟哥服务器架设篇/06-DHCP与NTP.md) — 内网 DNS 与 DHCP 的配套
-- **安全**：[Web攻击与防御.md](../../../06-工程实践/安全/Web攻击与防御.md) — 应用层攻击面
+- **安全**：[Web攻击与防御.md](../../../06-工程实践/安全/应用与数据安全/Web攻击与防御.md) — 应用层攻击面

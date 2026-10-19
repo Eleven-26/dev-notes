@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="b2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">OIDC 三种令牌的受众与校验点</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">令牌拿到之后，先问「它是给谁用的」，再去对应的校验方检查</text>
+
+  <g font-size="14" font-weight="bold" text-anchor="middle">
+    <rect x="50" y="80" width="230" height="48" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="165" y="109" fill="#1e3a8a">客户端</text>
+    <rect x="385" y="80" width="230" height="48" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="500" y="109" fill="#166534">授权服务器</text>
+    <rect x="720" y="80" width="230" height="48" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="835" y="109" fill="#9a3412">资源服务器</text>
+  </g>
+
+  <g font-size="12.5" fill="#334155" text-anchor="middle">
+    <text x="332" y="157">① 授权码 + PKCE verifier</text>
+    <line x1="280" y1="165" x2="379" y2="165" stroke="#2563eb" stroke-width="1.8" marker-end="url(#b)"/>
+
+    <text x="332" y="202">② ID token / access / refresh</text>
+    <line x1="385" y1="210" x2="286" y2="210" stroke="#16a34a" stroke-width="1.8" marker-end="url(#b2)"/>
+
+    <text x="500" y="262">③ Bearer access token</text>
+    <line x1="280" y1="270" x2="714" y2="270" stroke="#2563eb" stroke-width="1.8" marker-end="url(#b)"/>
+
+    <text x="332" y="312">④ refresh 轮换</text>
+    <line x1="280" y1="320" x2="379" y2="320" stroke="#2563eb" stroke-width="1.8" marker-end="url(#b)"/>
+  </g>
+
+  <g>
+    <rect x="40" y="362" width="300" height="150" rx="10" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="190" y="388" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#0f172a">客户端校验 ID token</text>
+    <text x="58" y="414" font-size="12" fill="#334155">· 签名：按 kid 取 JWKS 公钥</text>
+    <text x="58" y="438" font-size="12" fill="#334155">· iss / aud / azp 精确匹配</text>
+    <text x="58" y="462" font-size="12" fill="#334155">· exp / iat / auth_time</text>
+    <text x="58" y="486" font-size="12" fill="#334155">· nonce 与本次请求一致</text>
+  </g>
+
+  <g>
+    <rect x="370" y="362" width="260" height="150" rx="10" fill="#f0fdf4" stroke="#86efac"/>
+    <text x="500" y="388" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#166534">授权服务器</text>
+    <text x="388" y="414" font-size="12" fill="#166534">· 校验 code_verifier</text>
+    <text x="388" y="438" font-size="12" fill="#166534">· 一次性授权码</text>
+    <text x="388" y="462" font-size="12" fill="#166534">· refresh 轮换</text>
+    <text x="388" y="486" font-size="12" fill="#166534">· 重放即撤销令牌族</text>
+  </g>
+
+  <g>
+    <rect x="660" y="362" width="300" height="150" rx="10" fill="#fff7ed" stroke="#fdba74"/>
+    <text x="810" y="388" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#9a3412">资源服务器校验 access token</text>
+    <text x="678" y="414" font-size="12" fill="#9a3412">· 签名 + 允许的算法白名单</text>
+    <text x="678" y="438" font-size="12" fill="#9a3412">· iss / aud / exp / nbf</text>
+    <text x="678" y="462" font-size="12" fill="#9a3412">· scope / typ</text>
+    <text x="678" y="486" font-size="12" fill="#9a3412">· 不透明令牌走 introspection</text>
+  </g>
+
+  <text x="500" y="552" text-anchor="middle" font-size="12.5" fill="#64748b">ID token 的受众是客户端，access token 的受众是资源服务器——两者不能互换</text>
+</svg>

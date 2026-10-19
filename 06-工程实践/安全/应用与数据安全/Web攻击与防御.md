@@ -2,7 +2,8 @@
 
 > 素材来源：博客 [常见几种web攻击方式和防御方法](https://blog.csdn.net/weixin_43837229/article/details/90906032)（2019-08-04）—— 本篇按该文脉络整理，并给每一类防护补上**可跑的 Go 实测**（含真实 SQLite）。
 >
-> 七类最常见攻击的**原理、危害与防护**：SQL 注入 / XSS / CSRF / HTTP 头注入 / Cookie 窃取 / 上传文件攻击 / DDoS。
+> 七类最常见攻击的**原理、危害与防护**：SQL 注入 / XSS / CSRF / HTTP 头注入 / Cookie 窃取 / 上传文件攻击 / DDoS；
+> 另补浏览器侧的两道闸——**CORS 预检**与 **CSP 策略**，它们常被误当成「服务端访问控制」。
 
 ---
 
@@ -10,7 +11,7 @@
 
 网站的安全对网站的可持续发展不言而喻：**一个不安全的网站，轻则被攻击导致宕机、窃取用户隐私、被冒名发不良广告导致用户流失，重则影响公司形象甚至惹上官司**。
 
-安全要从三方面入手（对照 [加密算法.md](加密算法.md) 的第一节）：
+安全要从三方面入手（对照 [加密算法.md](../密码学与密钥/加密算法.md) 的第一节）：
 
 | 目标 | 解决什么 | 典型手段 |
 |---|---|---|
@@ -350,13 +351,134 @@ shell.php      内容类型=text/plain                   扩展名白名单=fals
 5. 限制对外提供公开服务的主机；
 6. 安装入侵检测工具，定期扫描、加密系统文件并检查其变化。
 
-⭐ **现代补充（更关键的部分）**：DDoS 的流量往往远超单机带宽，**"防"的第一步是"扛"**——用 **CDN / Anycast** 把流量分散到边缘、用**清洗中心**做特征过滤，在接入层用 **SYN Cookie / 连接数限制**防握手耗尽，应用层用**限流与降级**保住核心接口（见 [稳定性/README.md](../../04-架构与系统/分布式/稳定性/README.md)），并配合**弹性扩容**吸收脉冲流量。
+⭐ **现代补充（更关键的部分）**：DDoS 的流量往往远超单机带宽，**"防"的第一步是"扛"**——用 **CDN / Anycast** 把流量分散到边缘、用**清洗中心**做特征过滤，在接入层用 **SYN Cookie / 连接数限制**防握手耗尽，应用层用**限流与降级**保住核心接口（见 [稳定性/README.md](../../../04-架构与系统/分布式/稳定性/README.md)），并配合**弹性扩容**吸收脉冲流量。
 
 ⚠️ 一个容易答错的点：**应用层限流挡不住 L3/L4 的流量型攻击**（带宽被打满时，请求根本到不了你的限流器）。**分层防护**才是答案：流量层靠清洗、连接层靠 SYN Cookie、应用层靠限流降级。
 
 ---
 
-## 九、七类攻击速查：入口 / 得逞条件 / 那道闸
+## 九、CORS 与 CSP：浏览器侧的两道闸
+
+**本节要点**：CORS 不是服务端的访问控制，它只是浏览器**有条件地放宽同源策略**；
+CSP 也不是「防注入」，而是**限制注入成功后的脚本能做什么**。两者都是纵深防御的一层。
+
+### 9.1 CORS：放宽同源策略，而不是给 API 加锁
+
+同源指**协议、主机、端口三者完全一致**。跨源请求默认能发出去，但浏览器不让 JS 读响应；
+CORS 通过响应头告诉浏览器「这个源可以读」。⭐ 关键认知：**非浏览器客户端（curl、脚本、服务端）
+完全不看 CORS**，所以它挡不住刷接口、撞库或 SSRF。
+
+| 请求类型 | 触发条件 | 浏览器行为 |
+|---|---|---|
+| 简单请求 | `GET` / `HEAD` / `POST`，且只带安全列表头，`Content-Type` 为表单类 | 直接发出，检查响应头的 `Access-Control-Allow-Origin` |
+| 预检请求 | `PUT` / `PATCH` / `DELETE`、自定义头、`application/json` 等 | 先发 `OPTIONS`，通过后才发真实请求 |
+
+预检的关键字段：
+
+```text
+请求：
+  Origin: https://app.example.com
+  Access-Control-Request-Method: POST
+  Access-Control-Request-Headers: authorization,content-type
+
+响应：
+  Access-Control-Allow-Origin: https://app.example.com
+  Access-Control-Allow-Methods: GET, POST, PATCH, DELETE
+  Access-Control-Allow-Headers: Authorization, Content-Type, Idempotency-Key
+  Access-Control-Allow-Credentials: true
+  Access-Control-Max-Age: 600
+  Vary: Origin
+```
+
+⚠️ **带凭证时不能回 `*`**：`Access-Control-Allow-Origin: *` 与
+`Access-Control-Allow-Credentials: true` 组合会被浏览器拒绝。必须回显**精确 Origin**，
+并加 `Vary: Origin`，否则缓存会把 A 源的响应发给 B 源。
+
+### 9.2 四种常见配置错误
+
+| 错误 | 写法 | 后果 |
+|---|---|---|
+| 反射任意 Origin | 把请求的 `Origin` 原样写回 ACAO | 等于对全世界开放，带 Cookie 时可读任意站点的认证响应 |
+| 后缀 / 正则过宽 | `strings.HasSuffix(origin, "app.example.com")` | `https://evilapp.example.com` 也能通过 |
+| 放行 `null` | 允许 `Origin: null` | 沙箱 iframe、`file://` 页面可发起请求 |
+| 以为 CORS 能防 CSRF | 只配 CORS，不配 SameSite / Token | 简单请求照样发出，状态可能已被改变 |
+
+实测（完整输出见 9.3）：允许的 Origin 返回精确 ACAO；恶意 Origin 与 `null` 不带 CORS 头；
+后缀匹配会把 `https://evilapp.example.com` 误判为允许。
+
+### 9.3 实测：预检、精确匹配与后缀绕过
+
+```go
+var allowOrigins = map[string]bool{
+    "https://app.example.com": true,
+}
+
+if allowOrigins[origin] {
+    w.Header().Set("Access-Control-Allow-Origin", origin)
+    w.Header().Set("Access-Control-Allow-Credentials", "true")
+    w.Header().Add("Vary", "Origin")
+}
+```
+
+```text
+OPTIONS Origin=https://app.example.com          status=204 ACAO=https://app.example.com      credentials=true
+OPTIONS Origin=https://evil.example.com         status=204 ACAO=（无）                          credentials=（无）
+GET     Origin=https://app.example.com          status=200 ACAO=https://app.example.com      credentials=true
+GET     Origin=https://evil.example.com         status=200 ACAO=（无）                          credentials=（无）
+GET     Origin=null                             status=200 ACAO=（无）                          credentials=（无）
+
+https://app.example.com              后缀匹配=true  精确匹配=true
+https://app.example.com.evil.com     后缀匹配=false 精确匹配=false
+https://evilapp.example.com          后缀匹配=true  精确匹配=false
+https://app.example.com:8443         后缀匹配=false 精确匹配=false
+```
+
+⭐ 结论：**用精确 Origin 白名单，不要用后缀或包含匹配**；`Vary: Origin` 不能漏；
+CORS 只保护「浏览器里的读」，不保护「服务端收到的写」。
+
+### 9.4 CSP：限制脚本从哪里来、能做什么
+
+CSP 通过响应头声明资源加载白名单。它不是 XSS 的替代品，而是**输出转义失效后的最后一道闸**。
+
+| 指令 | 作用 | 建议 |
+|---|---|---|
+| `default-src` | 其余指令的兜底 | `'self'` |
+| `script-src` | 脚本来源 | `'self'` + 每次响应随机 `nonce`，或 hash |
+| `style-src` | 样式来源 | `'self'`；少用 `'unsafe-inline'` |
+| `img-src` | 图片来源 | `'self' data:`（按需） |
+| `connect-src` | XHR / fetch / WebSocket | 只列实际 API 域名 |
+| `object-src` | 插件内容 | `'none'` |
+| `base-uri` | `<base>` 标签 | `'none'`，防相对路径被劫持 |
+| `frame-ancestors` | 谁能嵌套本站 | `'none'`，替代 `X-Frame-Options` |
+| `form-action` | 表单提交目标 | `'self'` |
+| `report-uri` / `report-to` | 违规上报 | 先 Report-Only 收集，再转强制 |
+
+```text
+Content-Security-Policy:
+  default-src 'self';
+  script-src 'self' 'nonce-r4nd0m';
+  style-src 'self';
+  img-src 'self' data:;
+  connect-src 'self';
+  object-src 'none';
+  base-uri 'none';
+  frame-ancestors 'none';
+  form-action 'self';
+  report-uri /csp-report
+```
+
+⚠️ 三个常见误区：
+
+1. **加了 `'unsafe-inline'` 就等于白配**：内联脚本重新被允许，XSS 照样执行；
+2. **`nonce` 不能复用**：必须每次响应随机生成，且不能被攻击者预测；
+3. **CSP 挡不住服务端问题**：SQL 注入、命令执行、SSRF 都不在它的职责范围内。
+
+部署顺序建议：先上 `Content-Security-Policy-Report-Only` 收集违规，
+按实际资源清单收紧后，再切换到强制执行；否则容易一上线就把页面打挂。
+
+![CORS 预检与四类配置错误：精确 Origin 白名单，CORS 不等于 CSRF 防护](images/CORS预检与常见配置错误.svg)
+
+## 十、七类攻击速查：入口 / 得逞条件 / 那道闸
 
 | 攻击 | 入口 | 得逞条件 | 一道闸 |
 |---|---|---|---|
@@ -415,6 +537,8 @@ GET /demo 实际写出 HTTP 200：
 | 6 | 上传走双白名单 + 独立域 | 扩展名 + `http.DetectContentType`；存对象存储、随机名、禁执行 |
 | 7 | 错误信息不回显 | 统一错误页 / 错误码，SQL 异常只落日志 |
 | 8 | 数据库连接最小权限 | 业务账号无 `DROP`，只读账号禁写 |
+| 9 | CORS 只放行精确 Origin | 禁止反射任意 Origin；带凭证时不能用 `*`；加 `Vary: Origin` |
+| 10 | CSP 先 Report-Only 再收紧 | 禁止 `unsafe-inline`；`object-src` / `base-uri` / `frame-ancestors` 设 `none` |
 
 ---
 
@@ -429,17 +553,21 @@ GET /demo 实际写出 HTTP 200：
 - **CRLF 注入为什么在 Go 里"测不出来"？** → 因为 `net/http` 在写 header 时把换行**替换成空格**（实测：`Location` 值里的 `\r\n` 变成了两个空格），等于框架默认做了防护。自己拼裸报文（或换了不校验的组件）就会真的拆出第二个头。
 - **DDoS 用限流能解决吗？** → 只能解决**应用层**那部分。L3/L4 的流量型攻击会把带宽和连接打满，请求根本到不了限流器。要分层：流量层 CDN/清洗中心，连接层 SYN Cookie，应用层限流 + 降级。
 - **上传功能只校验扩展名行不行？** → 不行。实测：内容是 PHP 源码、名字改成 `avatar.jpg` 的文件能通过扩展名校验（只有内容嗅探才拦得住）。生产要扩展名 + 内容双白名单，并改名、存独立域、禁执行。
+- **CORS 配成 `*` 是不是就开放了？** → 对**不带凭证**的跨源读是开放；带 Cookie 时 `*` 会被浏览器拒绝，必须回显精确 Origin。更关键的是：CORS 只影响浏览器是否把响应交给 JS，**不影响请求是否发出**，所以它不能替代 CSRF 防护。
+- **为什么不能用后缀匹配校验 Origin？** → 实测 `https://evilapp.example.com` 会命中 `HasSuffix(origin, "app.example.com")`。攻击者可以注册包含目标域名的域名，或用子域拼出后缀。必须用完整 Origin 白名单。
+- **CSP 能替代输出转义吗？** → 不能。CSP 是纵深防御：它能在注入成功后限制脚本来源，但配置复杂、兼容性有差异，且 `unsafe-inline` 会让它基本失效。输出转义仍然是第一道防线。
 
 ---
 
 ## 关联
 
-- [加密算法.md](加密算法.md) — 第一节那三方面（认证/加密/完整性）的算法底座
-- [摘要与数字签名.md](摘要与数字签名.md) — 防篡改与防抵赖：CSRF Token、会话签名的常用手段
-- [数字证书与PKI.md](数字证书与PKI.md) — HTTPS 如何把上面这些防护放进一条可信链路
+- [加密算法.md](../密码学与密钥/加密算法.md) — 第一节那三方面（认证/加密/完整性）的算法底座
+- [摘要与数字签名.md](../密码学与密钥/摘要与数字签名.md) — 防篡改与防抵赖：CSRF Token、会话签名的常用手段
+- [数字证书与PKI.md](../密码学与密钥/数字证书与PKI.md) — HTTPS 如何把上面这些防护放进一条可信链路
 - [密码与敏感信息存储.md](密码与敏感信息存储.md) — SQL 注入之外的另一条"数据泄露"路径，以及慢哈希
-- [HTTPS与TLS.md](../../02-计算机基础/网络/应用层/HTTPS与TLS.md) — Secure / HSTS 起作用的协议背景
-- [稳定性/README.md](../../04-架构与系统/分布式/稳定性/README.md) — DDoS 与应用层过载的限流、降级、熔断
-- [素材清单.md](../../素材清单.md) — 本篇的博客原文登记
+- [API安全.md](API安全.md) — API 场景下的对象越权、批量赋值、SSRF 与重放；CORS 在 API 网关侧的落点
+- [HTTPS与TLS.md](../../../02-计算机基础/网络/应用层/HTTPS与TLS.md) — Secure / HSTS 起作用的协议背景
+- [稳定性/README.md](../../../04-架构与系统/分布式/稳定性/README.md) — DDoS 与应用层过载的限流、降级、熔断
+- [素材清单.md](../../../素材清单.md) — 本篇的博客原文登记
 
-> 反向引用（本篇被下列文档引到）：[错误处理.md](../../01-编程语言/go/类型与语法/错误处理.md)、[从零实现网关.md](../../01-编程语言/go/网络编程/从零实现网关.md)、[客户端真实IP与可信代理.md](../../02-计算机基础/网络/代理与网关/客户端真实IP与可信代理.md)、[DNS安全与加密解析.md](../../02-计算机基础/网络/网络层与寻址/DNS安全与加密解析.md)、[OpenResty.md](../../03-数据与中间件/中间件/网关与代理/OpenResty.md)、[网关选型对比.md](../../03-数据与中间件/中间件/网关与代理/网关选型对比.md)、[数据导入导出设计.md](../../04-架构与系统/系统设计/数据导入导出设计.md)、[支付系统设计.md](../../04-架构与系统/系统设计/秒杀系统/支付系统设计.md)、[JWT与APIKey鉴权.md](JWT与APIKey鉴权.md)
+> 反向引用（本篇被下列文档引到）：[错误处理.md](../../../01-编程语言/go/类型与语法/错误处理.md)、[从零实现网关.md](../../../01-编程语言/go/网络编程/从零实现网关.md)、[客户端真实IP与可信代理.md](../../../02-计算机基础/网络/代理与网关/客户端真实IP与可信代理.md)、[DNS安全与加密解析.md](../../../02-计算机基础/网络/网络层与寻址/DNS安全与加密解析.md)、[OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md)、[网关选型对比.md](../../../03-数据与中间件/中间件/网关与代理/网关选型对比.md)、[数据导入导出设计.md](../../../04-架构与系统/系统设计/数据导入导出设计.md)、[支付系统设计.md](../../../04-架构与系统/系统设计/秒杀系统/支付系统设计.md)、[安全开发生命周期.md](../安全工程/安全开发生命周期.md)、[审计与应急响应.md](../安全工程/审计与应急响应.md)、[敏感数据治理与合规.md](敏感数据治理与合规.md)、[JWT与APIKey鉴权.md](../身份与访问/JWT与APIKey鉴权.md)、[授权模型与越权防护.md](../身份与访问/授权模型与越权防护.md)

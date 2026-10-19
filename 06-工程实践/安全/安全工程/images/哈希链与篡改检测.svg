@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">哈希链与篡改检测：链内自洽不等于没被改</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">每条事件把上一条的哈希算进来；整段重写能骗过链，但骗不过链外的锚点</text>
+
+  <g>
+    <rect x="35" y="86" width="145" height="104" rx="7" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="107" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">seq=1 login</text>
+    <text x="107" y="134" text-anchor="middle" font-size="10.5" fill="#475569">prev=000000000000</text>
+    <text x="107" y="156" text-anchor="middle" font-size="10.5" fill="#475569">hash=1c2d4e73cdbf</text>
+    <text x="107" y="178" text-anchor="middle" font-size="10.5" fill="#166534">链头</text>
+  </g>
+  <g>
+    <rect x="192" y="86" width="145" height="104" rx="7" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="264" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">seq=2 read</text>
+    <text x="264" y="134" text-anchor="middle" font-size="10.5" fill="#475569">prev=1c2d4e73cdbf</text>
+    <text x="264" y="156" text-anchor="middle" font-size="10.5" fill="#475569">hash=9ac195c360cb</text>
+  </g>
+  <g>
+    <rect x="349" y="86" width="145" height="104" rx="7" fill="#fef2f2" stroke="#dc2626"/>
+    <text x="421" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#991b1b">seq=3 export</text>
+    <text x="421" y="134" text-anchor="middle" font-size="10.5" fill="#475569">prev=9ac195c360cb</text>
+    <text x="421" y="156" text-anchor="middle" font-size="10.5" fill="#475569">hash=223f205fb651</text>
+    <text x="421" y="178" text-anchor="middle" font-size="10.5" fill="#b91c1c">被篡改的目标</text>
+  </g>
+  <g>
+    <rect x="506" y="86" width="145" height="104" rx="7" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="578" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">seq=4 grant_role</text>
+    <text x="578" y="134" text-anchor="middle" font-size="10.5" fill="#475569">prev=223f205fb651</text>
+    <text x="578" y="156" text-anchor="middle" font-size="10.5" fill="#475569">hash=e188602e8c3c</text>
+  </g>
+  <g>
+    <rect x="663" y="86" width="145" height="104" rx="7" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="735" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">seq=5 read (deny)</text>
+    <text x="735" y="134" text-anchor="middle" font-size="10.5" fill="#475569">prev=e188602e8c3c</text>
+    <text x="735" y="156" text-anchor="middle" font-size="10.5" fill="#475569">hash=bed99d9a06c2</text>
+  </g>
+  <g>
+    <rect x="820" y="86" width="145" height="104" rx="7" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="892" y="110" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">seq=6 delete</text>
+    <text x="892" y="134" text-anchor="middle" font-size="10.5" fill="#475569">prev=bed99d9a06c2</text>
+    <text x="892" y="156" text-anchor="middle" font-size="10.5" fill="#475569">hash=249e3db65482</text>
+    <text x="892" y="178" text-anchor="middle" font-size="10.5" fill="#166534">链尾（可锚定）</text>
+  </g>
+
+  <g stroke="#94a3b8" stroke-width="2" fill="none">
+    <path d="M180 138 L190 138"/>
+    <path d="M337 138 L347 138"/>
+    <path d="M494 138 L504 138"/>
+    <path d="M651 138 L661 138"/>
+    <path d="M808 138 L818 138"/>
+  </g>
+  <g fill="#94a3b8">
+    <polygon points="190,134 196,138 190,142"/>
+    <polygon points="347,134 353,138 347,142"/>
+    <polygon points="504,134 510,138 504,142"/>
+    <polygon points="661,134 667,138 661,142"/>
+    <polygon points="818,134 824,138 818,142"/>
+  </g>
+
+  <g>
+    <rect x="20" y="220" width="465" height="86" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="38" y="244" font-size="13" font-weight="bold" fill="#9a3412">① 只改第 3 条内容，不重算哈希</text>
+    <text x="38" y="270" font-size="11.5" fill="#334155">本条 hash 立刻对不上</text>
+    <text x="38" y="292" font-size="11.5" fill="#b91c1c">结果：ok=false first_bad=2（seq=3）</text>
+  </g>
+  <g>
+    <rect x="515" y="220" width="465" height="86" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="533" y="244" font-size="13" font-weight="bold" fill="#9a3412">② 改内容后把第 3 条哈希也重算</text>
+    <text x="533" y="270" font-size="11.5" fill="#334155">第 4 条的 prev_hash 对不上</text>
+    <text x="533" y="292" font-size="11.5" fill="#b91c1c">结果：ok=false first_bad=3（seq=4）</text>
+  </g>
+  <g>
+    <rect x="20" y="318" width="465" height="86" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="38" y="342" font-size="13" font-weight="bold" fill="#9a3412">③ 从第 3 条起整段重算</text>
+    <text x="38" y="368" font-size="11.5" fill="#334155">链内自洽，校验会通过</text>
+    <text x="38" y="390" font-size="11.5" fill="#b91c1c">结果：ok=true → 必须靠外部锚点发现</text>
+  </g>
+  <g>
+    <rect x="515" y="318" width="465" height="86" rx="8" fill="#fff7ed" stroke="#ea580c"/>
+    <text x="533" y="342" font-size="13" font-weight="bold" fill="#9a3412">④ 删尾部 / 删中间 / 调换顺序</text>
+    <text x="533" y="368" font-size="11.5" fill="#334155">尾部：靠条数与锚点；中间：靠 prev；</text>
+    <text x="533" y="390" font-size="11.5" fill="#b91c1c">换序：seq 与 prev 同时对不上</text>
+  </g>
+
+  <g>
+    <rect x="20" y="424" width="960" height="86" rx="8" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="40" y="448" font-size="12.5" font-weight="bold" fill="#14532d">外部锚点：把「链内自洽」变成「可证明」</text>
+    <text x="40" y="472" font-size="11.5" fill="#334155">原始尾哈希 249e3db65482　→　整段重算后 427ef375235e；锚点里存着原始值，所以整段重写仍会被发现。</text>
+    <text x="40" y="496" font-size="11.5" fill="#166534">锚点写入独立账号的 WORM 桶 / TSA；锚点间隔 = 篡改检测窗口；写锚点与写审计的凭证必须分离。</text>
+  </g>
+
+  <g>
+    <rect x="20" y="530" width="960" height="70" rx="8" fill="#0f172a"/>
+    <text x="40" y="554" font-size="12" font-weight="bold" fill="#ffffff">哈希链挡不住什么</text>
+    <text x="40" y="578" font-size="11.5" fill="#e2e8f0">一开始就写假事件　|　读取时泄露（哈希不加密）　|　停采集 / 删库　|　同时控制链与锚点的内部人　|　时钟错误</text>
+  </g>
+</svg>

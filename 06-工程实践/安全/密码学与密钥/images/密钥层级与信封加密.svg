@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="m" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">密钥层级与静态数据的信封加密</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">越往上越少调用、越难导出；越往下数量越大、寿命越短</text>
+
+  <g>
+    <rect x="20" y="80" width="430" height="480" rx="10" fill="#eff6ff" stroke="#2563eb"/>
+    <text x="40" y="108" font-size="14" font-weight="bold" fill="#1e3a8a">密钥层级：三层封顶</text>
+
+    <rect x="55" y="126" width="360" height="58" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="235" y="150" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">根密钥 Root Key</text>
+    <text x="235" y="170" text-anchor="middle" font-size="11.5" fill="#1e40af">KMS / HSM 持有，不可导出</text>
+
+    <rect x="55" y="206" width="360" height="58" rx="8" fill="#ffffff" stroke="#2563eb"/>
+    <text x="235" y="230" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">KEK 密钥加密密钥</text>
+    <text x="235" y="250" text-anchor="middle" font-size="11.5" fill="#1e40af">只用来包裹 DEK，可整批轮换</text>
+
+    <rect x="55" y="286" width="360" height="58" rx="8" fill="#ffffff" stroke="#2563eb"/>
+    <text x="235" y="310" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">DEK 数据密钥</text>
+    <text x="235" y="330" text-anchor="middle" font-size="11.5" fill="#1e40af">每条数据 / 每个租户一把，随数据走</text>
+
+    <rect x="55" y="366" width="360" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+    <text x="235" y="390" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#334155">密文数据 + wrapped DEK</text>
+    <text x="235" y="410" text-anchor="middle" font-size="11.5" fill="#475569">落库的是密文、nonce、kid 与包裹后的 DEK</text>
+
+    <line x1="235" y1="184" x2="235" y2="200" stroke="#475569" marker-end="url(#m)"/>
+    <line x1="235" y1="264" x2="235" y2="280" stroke="#475569" marker-end="url(#m)"/>
+    <line x1="235" y1="344" x2="235" y2="360" stroke="#475569" marker-end="url(#m)"/>
+    <text x="248" y="196" font-size="10.5" fill="#64748b">保护</text>
+    <text x="248" y="276" font-size="10.5" fill="#64748b">包裹</text>
+    <text x="248" y="356" font-size="10.5" fill="#64748b">加密</text>
+
+    <text x="40" y="466" font-size="12" fill="#1e40af">根密钥只做一件事：保护 KEK / DEK，不直接碰业务数据。</text>
+    <text x="40" y="492" font-size="12" fill="#1e40af">层级每多一层，就多一个可用性依赖与故障点。</text>
+    <text x="40" y="522" font-size="12" fill="#1e40af">按租户 / 主体各给一把 DEK，删钥即可让该主体的密文失效。</text>
+  </g>
+
+  <g>
+    <rect x="470" y="80" width="510" height="480" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+    <text x="490" y="108" font-size="14" font-weight="bold" fill="#166534">写入一条数据时发生什么</text>
+
+    <rect x="490" y="126" width="470" height="56" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="505" y="149" font-size="12.5" fill="#0f172a">① GenerateDataKey：向 KMS 要一把 DEK</text>
+    <text x="505" y="169" font-size="11.5" fill="#475569">拿到「明文 DEK」+「被 KEK 包裹的 DEK」</text>
+
+    <rect x="490" y="200" width="470" height="56" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="505" y="223" font-size="12.5" fill="#0f172a">② 用明文 DEK + AES-256-GCM 加密数据</text>
+    <text x="505" y="243" font-size="11.5" fill="#475569">每条记录随机 nonce；GCM 同时给出完整性标签</text>
+
+    <rect x="490" y="274" width="470" height="56" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="505" y="297" font-size="12.5" fill="#0f172a">③ 立即清空内存里的明文 DEK</text>
+    <text x="505" y="317" font-size="11.5" fill="#475569">明文 DEK 只应存在于一次加解密调用期间</text>
+
+    <rect x="490" y="348" width="470" height="56" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="505" y="371" font-size="12.5" fill="#0f172a">④ 落库：密文 + nonce + wrapped DEK + kid</text>
+    <text x="505" y="391" font-size="11.5" fill="#475569">kid 记录用的是哪一版 KEK，解密时按它找钥</text>
+
+    <rect x="490" y="422" width="470" height="56" rx="8" fill="#ffffff" stroke="#16a34a"/>
+    <text x="505" y="445" font-size="12.5" fill="#0f172a">⑤ 读取：按 kid 找到 KEK，先解包 DEK 再解数据</text>
+    <text x="505" y="465" font-size="11.5" fill="#475569">DEK 与数据同库不同列；KEK 永远不在业务库里</text>
+
+    <line x1="725" y1="182" x2="725" y2="194" stroke="#475569" marker-end="url(#m)"/>
+    <line x1="725" y1="256" x2="725" y2="268" stroke="#475569" marker-end="url(#m)"/>
+    <line x1="725" y1="330" x2="725" y2="342" stroke="#475569" marker-end="url(#m)"/>
+    <line x1="725" y1="404" x2="725" y2="416" stroke="#475569" marker-end="url(#m)"/>
+
+    <text x="490" y="512" font-size="12" fill="#166534">换 KEK 只需重包 ④ 里的 wrapped DEK；换 DEK 才需要重跑 ②。</text>
+    <text x="490" y="536" font-size="12" fill="#166534">这也是「轮换成本」差距的来源：一个动密钥头，一个动全部数据。</text>
+  </g>
+</svg>
