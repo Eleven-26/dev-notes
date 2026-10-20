@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">AMQP 0-9-1 的字节布局：8 字节协议头只出现一次，之后全是帧</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">帧 = 7 字节头 + payload + 1 字节帧尾；size 字段记的是 payload 长度，不是帧总长</text>
+
+  <text x="40" y="96" font-size="14" font-weight="bold" fill="#0f172a">第一段：协议头（8 字节，握手时发一次，不是帧）</text>
+  <rect x="180" y="108" width="80" height="46" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="220" y="138" font-size="17" fill="#1e3a8a" text-anchor="middle" font-weight="bold">A</text>
+  <rect x="260" y="108" width="80" height="46" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="300" y="138" font-size="17" fill="#1e3a8a" text-anchor="middle" font-weight="bold">M</text>
+  <rect x="340" y="108" width="80" height="46" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="380" y="138" font-size="17" fill="#1e3a8a" text-anchor="middle" font-weight="bold">Q</text>
+  <rect x="420" y="108" width="80" height="46" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="460" y="138" font-size="17" fill="#1e3a8a" text-anchor="middle" font-weight="bold">P</text>
+  <rect x="500" y="108" width="80" height="46" rx="4" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="540" y="138" font-size="15" fill="#334155" text-anchor="middle">00</text>
+  <rect x="580" y="108" width="80" height="46" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="620" y="138" font-size="15" fill="#14532d" text-anchor="middle">00</text>
+  <rect x="660" y="108" width="80" height="46" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="700" y="138" font-size="15" fill="#14532d" text-anchor="middle">09</text>
+  <rect x="740" y="108" width="80" height="46" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="780" y="138" font-size="15" fill="#14532d" text-anchor="middle">01</text>
+  <text x="180" y="176" font-size="11.5" fill="#1e40af" text-anchor="start">字面量 "AMQP"</text>
+  <text x="500" y="176" font-size="11.5" fill="#475569" text-anchor="start">固定 0x00</text>
+  <text x="580" y="176" font-size="11.5" fill="#166534" text-anchor="start">主版本 0　次版本 9　修订 1</text>
+  <text x="40" y="176" font-size="11.5" fill="#b91c1c" text-anchor="start">注意：</text>
+  <text x="40" y="200" font-size="12" fill="#b91c1c" text-anchor="start">换协议版本就是换这 8 个字节</text>
+  <text x="40" y="220" font-size="12" fill="#b91c1c" text-anchor="start">1.0 要求先建 SASL 层（03）</text>
+
+  <text x="40" y="266" font-size="14" font-weight="bold" fill="#0f172a">第二段：帧（7 字节头 + payload + 帧尾），连接建立后每个字节都属于某个帧</text>
+  <rect x="40" y="280" width="60" height="52" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="70" y="302" font-size="12" fill="#7c2d12" text-anchor="middle" font-weight="bold">type</text>
+  <text x="70" y="320" font-size="11" fill="#9a3412" text-anchor="middle">1 B</text>
+  <rect x="100" y="280" width="120" height="52" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="160" y="302" font-size="12" fill="#7c2d12" text-anchor="middle" font-weight="bold">channel</text>
+  <text x="160" y="320" font-size="11" fill="#9a3412" text-anchor="middle">2 B</text>
+  <rect x="220" y="280" width="240" height="52" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="340" y="302" font-size="12" fill="#7c2d12" text-anchor="middle" font-weight="bold">size（payload 字节数）</text>
+  <text x="340" y="320" font-size="11" fill="#9a3412" text-anchor="middle">4 B</text>
+  <rect x="460" y="280" width="440" height="52" rx="4" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="680" y="302" font-size="12" fill="#334155" text-anchor="middle" font-weight="bold">payload（方法体 / 消息片段）</text>
+  <text x="680" y="320" font-size="11" fill="#64748B" text-anchor="middle">size 字节</text>
+  <rect x="900" y="280" width="60" height="52" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="930" y="302" font-size="12" fill="#991b1b" text-anchor="middle" font-weight="bold">0xCE</text>
+  <text x="930" y="320" font-size="11" fill="#991b1b" text-anchor="middle">1 B</text>
+  <line x1="40" y1="336" x2="300" y2="336" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="170" y="352" font-size="11.5" fill="#9a3412" text-anchor="middle">帧头 7 字节</text>
+  <text x="460" y="352" font-size="11.5" fill="#475569" text-anchor="start">实测：connection.start 的 size=519，open-ok 的 size=5</text>
+  <text x="460" y="370" font-size="11.5" fill="#b91c1c" text-anchor="start">帧尾缺一个字节，后面所有帧都会错位，直到连接被关</text>
+
+  <text x="40" y="412" font-size="14" font-weight="bold" fill="#0f172a">第三段：四种帧类型（type 字段的取值）</text>
+  <rect x="40" y="426" width="215" height="76" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="147" y="452" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold">1 = method</text>
+  <text x="147" y="474" font-size="11.5" fill="#1e40af" text-anchor="middle">前 4 字节是 class + method</text>
+  <text x="147" y="492" font-size="11.5" fill="#1e40af" text-anchor="middle">如 queue.declare = 50.10</text>
+  <rect x="265" y="426" width="215" height="76" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="372" y="452" font-size="13.5" fill="#14532d" text-anchor="middle" font-weight="bold">2 = content header</text>
+  <text x="372" y="474" font-size="11.5" fill="#166534" text-anchor="middle">带 body-size（8 字节）</text>
+  <text x="372" y="492" font-size="11.5" fill="#166534" text-anchor="middle">是重组的唯一依据</text>
+  <rect x="490" y="426" width="215" height="76" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="597" y="452" font-size="13.5" fill="#78350f" text-anchor="middle" font-weight="bold">3 = content body</text>
+  <text x="597" y="474" font-size="11.5" fill="#92400e" text-anchor="middle">每帧最多 frame_max - 8</text>
+  <text x="597" y="492" font-size="11.5" fill="#92400e" text-anchor="middle">300000 B 切成 3 帧</text>
+  <rect x="715" y="426" width="215" height="76" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="822" y="452" font-size="13.5" fill="#334155" text-anchor="middle" font-weight="bold">8 = heartbeat</text>
+  <text x="822" y="474" font-size="11.5" fill="#475569" text-anchor="middle">channel=0、size=0</text>
+  <text x="822" y="492" font-size="11.5" fill="#475569" text-anchor="middle">唯一 payload 为空的帧</text>
+
+  <text x="40" y="542" font-size="13" fill="#0f172a" text-anchor="start">要点：size 只数 payload —— 看到 size=12 的帧，它在 TCP 上实际占 7 + 12 + 1 = 20 字节。</text>
+  <text x="40" y="570" font-size="13" fill="#0f172a" text-anchor="start">要点：frame_max=131072 限的是单个帧，单个 body 帧最多装 131064 字节（减 7 字节头与 1 字节帧尾）。</text>
+  <text x="40" y="598" font-size="13" fill="#b91c1c" text-anchor="start">注意：连接建立后不存在"裸字节"，每个字节都必须落在某个帧的 payload 里，否则就是帧错误。</text>
+  <text x="40" y="626" font-size="13" fill="#b91c1c" text-anchor="start">注意：0-9-1 与 1.0 共用 "AMQP" 前缀但第 5 字节不同，1.0 必须先建 SASL 安全层。</text>
+  <text x="40" y="664" font-size="11.5" fill="#64748B" text-anchor="start">读数来源：rabbitmq:4-management 4.3.6 单机容器，Python 标准库手写帧探针，两遍 diff 逐行一致</text>
+</svg>

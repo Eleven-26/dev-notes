@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条持久消息的三条落盘路径：4096 字节是分水岭</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">小消息正文内嵌进队列段文件，大消息正文寄存在 vhost 级的内容存储，队列里只留引用</text>
+
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+
+  <rect x="400" y="86" width="200" height="40" rx="6" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="500" y="112" font-size="13" fill="#312e81" text-anchor="middle" font-weight="bold">发布一条持久消息</text>
+
+  <line x1="500" y1="126" x2="500" y2="156" stroke="#334155" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="390" y="158" width="220" height="46" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="500" y="187" font-size="13" fill="#78350f" text-anchor="middle" font-weight="bold">body &lt; 4096 字节？</text>
+
+  <line x1="390" y1="181" x2="250" y2="181" stroke="#334155" stroke-width="1.6"/>
+  <line x1="250" y1="181" x2="250" y2="248" stroke="#334155" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="318" y="173" font-size="12" fill="#166534" text-anchor="middle" font-weight="bold">小于：内嵌</text>
+
+  <line x1="610" y1="181" x2="750" y2="181" stroke="#334155" stroke-width="1.6"/>
+  <line x1="750" y1="181" x2="750" y2="248" stroke="#334155" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="682" y="173" font-size="12" fill="#b91c1c" text-anchor="middle" font-weight="bold">大于等于：外置</text>
+
+  <rect x="90" y="252" width="320" height="150" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="250" y="276" font-size="13" fill="#14532d" text-anchor="middle" font-weight="bold">queues/&lt;queue-hash&gt;/</text>
+  <rect x="108" y="288" width="284" height="44" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="250" y="306" font-size="11.5" fill="#166534" text-anchor="middle">0.qs：正文内嵌（实测约 1168 B/条）</text>
+  <text x="250" y="324" font-size="11" fill="#64748B" text-anchor="middle">200 条 1000 B → 233664 B</text>
+  <rect x="108" y="342" width="284" height="44" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="250" y="360" font-size="11.5" fill="#166534" text-anchor="middle">0.qi：索引，与消息体大小无关</text>
+  <text x="250" y="378" font-size="11" fill="#64748B" text-anchor="middle">实测 32 B/条</text>
+
+  <rect x="590" y="252" width="320" height="150" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="750" y="276" font-size="13" fill="#991b1b" text-anchor="middle" font-weight="bold">队列目录 + msg_store_persistent/</text>
+  <rect x="608" y="288" width="284" height="44" rx="5" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="750" y="306" font-size="11.5" fill="#991b1b" text-anchor="middle">0.rdq：正文寄存（实测约 5185 B/条）</text>
+  <text x="750" y="324" font-size="11" fill="#64748B" text-anchor="middle">200 条 5000 B → 增量 1037000 B</text>
+  <rect x="608" y="342" width="284" height="44" rx="5" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="750" y="360" font-size="11.5" fill="#991b1b" text-anchor="middle">0.qi：索引 + 指向正文的引用</text>
+  <text x="750" y="378" font-size="11" fill="#64748B" text-anchor="middle">0.qs 一个字节都不长</text>
+
+  <rect x="40" y="424" width="920" height="76" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="448" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">实测三组读数（同一队列逐轮累加）</text>
+  <text x="60" y="472" font-size="12" fill="#334155" text-anchor="start">只声明：只有 .queue_name 38 B　　200 条 1000 B：0.qi 6464 / 0.qs 233664 / 内容存储不变</text>
+  <text x="60" y="492" font-size="12" fill="#334155" text-anchor="start">再 200 条 5000 B：0.qi 12864（+6400 = 200 × 32）/ 0.qs 不变 / 内容存储 +1037000</text>
+
+  <text x="40" y="536" font-size="13" fill="#0f172a" text-anchor="start">要点：0.qi 的增长只与条数有关（约 32 B/条），正文大小全部体现在 0.qs 或 0.rdq 上。</text>
+  <text x="40" y="564" font-size="13" fill="#b91c1c" text-anchor="start">注意：queue_index_embed_msgs_below 改完只对新建的队列段生效，已有堆积不会被重写。</text>
+</svg>

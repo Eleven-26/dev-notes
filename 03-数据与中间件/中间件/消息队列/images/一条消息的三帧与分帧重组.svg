@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条 300000 字节的消息 = 1 个 method 帧 + 1 个 header 帧 + 3 个 body 帧</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">body 帧本身不带序号，重组只靠 content header 里的 body-size</text>
+
+  <rect x="40" y="88" width="190" height="120" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="135" y="118" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold">一条消息</text>
+  <text x="135" y="146" font-size="13" fill="#1e40af" text-anchor="middle">body = 300000 B</text>
+  <text x="135" y="172" font-size="11.5" fill="#1e40af" text-anchor="middle">channel = 1</text>
+  <text x="135" y="194" font-size="11.5" fill="#1e40af" text-anchor="middle">delivery-mode = 2</text>
+
+  <rect x="280" y="88" width="420" height="40" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="296" y="114" font-size="12" fill="#7c2d12" text-anchor="start" font-weight="bold">type=1 method</text>
+  <text x="440" y="114" font-size="11.5" fill="#9a3412" text-anchor="start">basic.publish（60.40）</text>
+  <text x="684" y="114" font-size="10.5" fill="#64748B" text-anchor="end">告诉 Broker 要去哪个交换机与路由键</text>
+
+  <rect x="280" y="138" width="420" height="40" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="296" y="164" font-size="12" fill="#14532d" text-anchor="start" font-weight="bold">type=2 header size=15</text>
+  <text x="452" y="164" font-size="11.5" fill="#166534" text-anchor="start">body_size=300000</text>
+  <text x="684" y="164" font-size="10.5" fill="#64748B" text-anchor="end">重组的唯一依据</text>
+
+  <rect x="280" y="188" width="420" height="40" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="296" y="214" font-size="12" fill="#78350f" text-anchor="start" font-weight="bold">type=3 body #1</text>
+  <text x="440" y="214" font-size="11.5" fill="#92400e" text-anchor="start">size=131064</text>
+  <text x="684" y="214" font-size="10.5" fill="#64748B" text-anchor="end">131064 + 131064 + 37872</text>
+
+  <rect x="280" y="238" width="420" height="40" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="296" y="264" font-size="12" fill="#78350f" text-anchor="start" font-weight="bold">type=3 body #2</text>
+  <text x="440" y="264" font-size="11.5" fill="#92400e" text-anchor="start">size=131064</text>
+
+  <rect x="280" y="288" width="420" height="40" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="296" y="314" font-size="12" fill="#78350f" text-anchor="start" font-weight="bold">type=3 body #3</text>
+  <text x="440" y="314" font-size="11.5" fill="#92400e" text-anchor="start">size=37872</text>
+  <text x="684" y="314" font-size="10.5" fill="#64748B" text-anchor="end">合计 300000 B</text>
+
+  <rect x="740" y="88" width="220" height="120" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="850" y="118" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold">Broker 按 body_size 拼装</text>
+  <text x="850" y="146" font-size="11.5" fill="#9a3412" text-anchor="middle">收满 300000 字节才算一条</text>
+  <text x="850" y="170" font-size="11.5" fill="#9a3412" text-anchor="middle">basic.get 读回 300000 B</text>
+  <text x="850" y="194" font-size="11.5" fill="#166534" text-anchor="middle">与发出的一致</text>
+
+  <line x1="230" y1="148" x2="278" y2="148" stroke="#334155" stroke-width="1.4"/>
+  <line x1="700" y1="148" x2="738" y2="148" stroke="#334155" stroke-width="1.4"/>
+  <line x1="700" y1="308" x2="738" y2="308" stroke="#334155" stroke-width="1.4" stroke-dasharray="4 3"/>
+
+  <rect x="40" y="348" width="920" height="66" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="374" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">换算关系（本机 frame_max = 131072）</text>
+  <text x="60" y="400" font-size="12" fill="#334155" text-anchor="start">单个 body 帧最多装 131064 B = frame_max − 7 字节帧头 − 1 字节帧尾；切帧数按向上取整算。</text>
+
+  <text x="40" y="450" font-size="13" fill="#0f172a" text-anchor="start">要点：frame_max 限的是单个帧，不是单条消息 —— 「单帧上限」与「单条消息上限」是两个不同的数字。</text>
+  <text x="40" y="478" font-size="13" fill="#0f172a" text-anchor="start">要点：body 帧不带序号，收到一半断连就只能整条丢弃，所以 frame_max 调小会让大消息更容易失败。</text>
+  <text x="40" y="506" font-size="13" fill="#b91c1c" text-anchor="start">注意：frame_max 本质是接收方的内存保护阈值，和 HTTP/2 的 SETTINGS_MAX_FRAME_SIZE 是同一类设计。</text>
+  <text x="40" y="546" font-size="11.5" fill="#64748B" text-anchor="start">读数来源：rabbitmq:4-management 4.3.6 单机容器，Python 标准库手写帧探针，两遍 diff 逐行一致</text>
+</svg>

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">队列粒度的三种切法：分类交给 routing key，并行才需要队列</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">同一批 3 条 routing key，三种切法的队列数分别是 3 / 1 / 2</text>
+
+  <defs>
+    <marker id="q1" markerWidth="8" markerHeight="8" refX="6" refY="2.6" orient="auto"><path d="M0,0 L6,2.6 L0,5.2 Z" fill="#475569"/></marker>
+  </defs>
+
+  <rect x="30" y="78" width="300" height="330" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="180" y="102" font-size="13.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold">方案 A：一个事件一条队列</text>
+  <text x="180" y="124" font-size="11.5" fill="#475569" text-anchor="middle">隔离最好，队列数最多</text>
+  <rect x="46" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="88" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">created</text>
+  <rect x="138" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="180" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">paid</text>
+  <rect x="230" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="272" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">refunded</text>
+  <text x="180" y="184" font-size="10.5" fill="#64748B" text-anchor="middle">3 条 routing key</text>
+
+  <line x1="88" y1="188" x2="88" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+  <line x1="180" y1="188" x2="180" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+  <line x1="272" y1="188" x2="272" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+
+  <rect x="46" y="210" width="84" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="88" y="236" font-size="10.5" fill="#14532d" text-anchor="middle">q.order.</text>
+  <text x="88" y="248" font-size="9.5" fill="#166534" text-anchor="middle">created.notify</text>
+  <rect x="138" y="210" width="84" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="180" y="236" font-size="10.5" fill="#14532d" text-anchor="middle">q.order.</text>
+  <text x="180" y="248" font-size="9.5" fill="#166534" text-anchor="middle">paid.notify</text>
+  <rect x="230" y="210" width="84" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="272" y="236" font-size="10.5" fill="#14532d" text-anchor="middle">q.order.</text>
+  <text x="272" y="248" font-size="9.5" fill="#166534" text-anchor="middle">refunded.notify</text>
+  <text x="180" y="270" font-size="10.5" fill="#64748B" text-anchor="middle">3 条队列（3 个 Erlang 进程）</text>
+
+  <rect x="46" y="284" width="268" height="52" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="180" y="304" font-size="11" fill="#334155" text-anchor="middle">3 个消费者进程，代码里没有分支</text>
+  <text x="180" y="324" font-size="11" fill="#166534" text-anchor="middle">prefetch / 死信 / 优先级各自独立</text>
+
+  <text x="180" y="366" font-size="11.5" fill="#b91c1c" text-anchor="middle">代价：队列数 = 事件数 × 消费方数</text>
+  <text x="180" y="388" font-size="11.5" fill="#b91c1c" text-anchor="middle">事件一多，监控视图被切碎</text>
+
+  <rect x="350" y="78" width="300" height="330" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="102" font-size="13.5" fill="#7c2d12" text-anchor="middle" font-weight="bold">方案 B：一个业务一条队列</text>
+  <text x="500" y="124" font-size="11.5" fill="#475569" text-anchor="middle">队列最省，消费端要写分支</text>
+  <rect x="366" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="408" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">created</text>
+  <rect x="458" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="500" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">paid</text>
+  <rect x="550" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="592" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">refunded</text>
+  <text x="500" y="184" font-size="10.5" fill="#64748B" text-anchor="middle">同样 3 条 routing key</text>
+
+  <line x1="408" y1="188" x2="470" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+  <line x1="500" y1="188" x2="500" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+  <line x1="592" y1="188" x2="530" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+
+  <rect x="416" y="210" width="168" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="500" y="236" font-size="11" fill="#14532d" text-anchor="middle" font-weight="bold">q.order.notify</text>
+  <text x="500" y="248" font-size="9.5" fill="#166534" text-anchor="middle">三条 binding 指向同一条队列</text>
+  <text x="500" y="270" font-size="10.5" fill="#64748B" text-anchor="middle">1 条队列（1 个 Erlang 进程）</text>
+
+  <rect x="366" y="284" width="268" height="52" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="304" font-size="11" fill="#334155" text-anchor="middle">1 个消费者进程，按 routing key 分支</text>
+  <text x="500" y="324" font-size="11" fill="#b91c1c" text-anchor="middle">prefetch 只能取一个折中值</text>
+
+  <text x="500" y="366" font-size="11.5" fill="#b91c1c" text-anchor="middle">代价：速率档差一个数量级就出事</text>
+  <text x="500" y="388" font-size="11.5" fill="#b91c1c" text-anchor="middle">慢事件会占住快事件的配额</text>
+
+  <rect x="670" y="78" width="300" height="330" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="820" y="102" font-size="13.5" fill="#78350f" text-anchor="middle" font-weight="bold">方案 C：一个消费组一条队列</text>
+  <text x="820" y="124" font-size="11.5" fill="#475569" text-anchor="middle">下游互不拖累，存储翻倍</text>
+  <rect x="686" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="728" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">created</text>
+  <rect x="778" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="820" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">paid</text>
+  <rect x="870" y="136" width="84" height="34" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="912" y="158" font-size="10.5" fill="#312e81" text-anchor="middle">refunded</text>
+  <text x="820" y="184" font-size="10.5" fill="#64748B" text-anchor="middle">fanout / topic 复制到两条队列</text>
+
+  <line x1="728" y1="188" x2="762" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+  <line x1="820" y1="188" x2="800" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+  <line x1="912" y1="188" x2="878" y2="206" stroke="#475569" stroke-width="1.2" marker-end="url(#q1)"/>
+
+  <rect x="686" y="210" width="126" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="749" y="236" font-size="10.5" fill="#14532d" text-anchor="middle">q.order.notify</text>
+  <text x="749" y="248" font-size="9.5" fill="#166534" text-anchor="middle">通知组</text>
+  <rect x="828" y="210" width="126" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="891" y="236" font-size="10.5" fill="#14532d" text-anchor="middle">q.order.audit</text>
+  <text x="891" y="248" font-size="9.5" fill="#166534" text-anchor="middle">审计组</text>
+  <text x="820" y="270" font-size="10.5" fill="#64748B" text-anchor="middle">2 条队列（2 个 Erlang 进程）</text>
+
+  <rect x="686" y="284" width="268" height="52" rx="5" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="820" y="304" font-size="11" fill="#334155" text-anchor="middle">两组消费者各自独立</text>
+  <text x="820" y="324" font-size="11" fill="#166534" text-anchor="middle">一条堵了不拖另一条</text>
+
+  <text x="820" y="366" font-size="11.5" fill="#b91c1c" text-anchor="middle">代价：一条消息复制成 2 份存储</text>
+  <text x="820" y="388" font-size="11.5" fill="#b91c1c" text-anchor="middle">与 Kafka 多消费组共享日志不同</text>
+
+  <text x="40" y="448" font-size="13" fill="#0f172a" text-anchor="start">要点：routing key 的数量几乎不花资源（只增绑定表条目），队列的数量直接换成 Erlang 进程。</text>
+  <text x="40" y="476" font-size="13" fill="#0f172a" text-anchor="start">要点：判据是「同一份代码、同一个速率档 → 合；不同代码或不同速率档 → 拆」，与事件类型多少无关。</text>
+  <text x="40" y="504" font-size="13" fill="#b91c1c" text-anchor="start">注意：为了「监控能分开看」而拆队列是反向操作 —— 监控该按 routing key / consumer tag 聚合。</text>
+  <text x="40" y="532" font-size="13" fill="#b91c1c" text-anchor="start">注意：为了「削峰」而拆队列同理，总吞吐不变，只是把同样的消费力切成几份还多了进程开销。</text>
+  <text x="40" y="562" font-size="11.5" fill="#64748B" text-anchor="start">对照：Kafka 的消费组共享一份分区日志，所以「多下游」不需要多队列；RabbitMQ 的队列是复制语义。</text>
+</svg>

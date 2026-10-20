@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条 TCP 上的 channel 多路复用：帧头的 channel 是唯一归属依据</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">AMQP 没有「请求 id」，只有 channel id；两个通道在 Broker 侧是两个独立进程</text>
+
+  <rect x="40" y="86" width="210" height="86" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="145" y="114" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold">客户端进程</text>
+  <text x="145" y="138" font-size="11.5" fill="#1e40af" text-anchor="middle">Channel #1　Channel #2</text>
+  <text x="145" y="158" font-size="11.5" fill="#1e40af" text-anchor="middle">按 channel id 分派应答</text>
+
+  <line x1="250" y1="129" x2="750" y2="129" stroke="#94a3b8" stroke-width="6"/>
+  <text x="500" y="118" font-size="12.5" fill="#334155" text-anchor="middle" font-weight="bold">1 条 TCP 连接（端口 5672）</text>
+
+  <rect x="750" y="86" width="210" height="86" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="855" y="114" font-size="14" fill="#7c2d12" text-anchor="middle" font-weight="bold">RabbitMQ Broker</text>
+  <text x="855" y="138" font-size="11.5" fill="#9a3412" text-anchor="middle">channel 1 → 通道进程 A</text>
+  <text x="855" y="158" font-size="11.5" fill="#9a3412" text-anchor="middle">channel 2 → 通道进程 B</text>
+
+  <text x="40" y="212" font-size="14" font-weight="bold" fill="#0f172a">实测序列：同一连接上两个 channel 各发一次 queue.declare</text>
+
+  <rect x="60" y="232" width="190" height="86" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="155" y="254" font-size="12" fill="#1e3a8a" text-anchor="middle" font-weight="bold">type=1 channel=1</text>
+  <text x="155" y="276" font-size="11.5" fill="#1e40af" text-anchor="middle">queue.declare</text>
+  <text x="155" y="296" font-size="11" fill="#1e40af" text-anchor="middle">size=22</text>
+  <text x="155" y="312" font-size="11" fill="#64748B" text-anchor="middle">请求</text>
+
+  <rect x="285" y="232" width="190" height="86" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="380" y="254" font-size="12" fill="#14532d" text-anchor="middle" font-weight="bold">type=1 channel=2</text>
+  <text x="380" y="276" font-size="11.5" fill="#166534" text-anchor="middle">queue.declare</text>
+  <text x="380" y="296" font-size="11" fill="#166534" text-anchor="middle">size=22</text>
+  <text x="380" y="312" font-size="11" fill="#64748B" text-anchor="middle">请求</text>
+
+  <rect x="510" y="232" width="190" height="86" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="605" y="254" font-size="12" fill="#1e3a8a" text-anchor="middle" font-weight="bold">type=1 channel=1</text>
+  <text x="605" y="276" font-size="11.5" fill="#1e40af" text-anchor="middle">queue.declare-ok</text>
+  <text x="605" y="296" font-size="11" fill="#1e40af" text-anchor="middle">size=22</text>
+  <text x="605" y="312" font-size="11" fill="#64748B" text-anchor="middle">应答</text>
+
+  <rect x="735" y="232" width="190" height="86" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="830" y="254" font-size="12" fill="#14532d" text-anchor="middle" font-weight="bold">type=1 channel=2</text>
+  <text x="830" y="276" font-size="11.5" fill="#166534" text-anchor="middle">queue.declare-ok</text>
+  <text x="830" y="296" font-size="11" fill="#166534" text-anchor="middle">size=22</text>
+  <text x="830" y="312" font-size="11" fill="#64748B" text-anchor="middle">应答</text>
+
+  <line x1="252" y1="275" x2="283" y2="275" stroke="#334155" stroke-width="1.4"/>
+  <line x1="477" y1="275" x2="508" y2="275" stroke="#334155" stroke-width="1.4"/>
+  <line x1="702" y1="275" x2="733" y2="275" stroke="#334155" stroke-width="1.4"/>
+
+  <rect x="40" y="344" width="920" height="96" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="370" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">为什么 channel id 同时决定了「多路复用」和「非线程安全」</text>
+  <text x="60" y="396" font-size="12" fill="#334155" text-anchor="start">多路复用：帧里带 channel 号，Broker 按号把应答送回对应通道，所以一条 TCP 能跑多条逻辑通道。</text>
+  <text x="60" y="420" font-size="12" fill="#b91c1c" text-anchor="start">非线程安全：帧里没有「第几次调用」的标识，两个 goroutine 写同一 Channel，Broker 无法把两段命令序列分开。</text>
+
+  <text x="40" y="478" font-size="13" fill="#0f172a" text-anchor="start">要点：实测两个应答恰好按请求顺序到达，但协议不保证跨 channel 的顺序 —— 靠 channel id 分派，不能靠「先发先回」。</text>
+  <text x="40" y="506" font-size="13" fill="#0f172a" text-anchor="start">要点：channel 级异常（如 PRECONDITION_FAILED）只关掉一条通道，同一条连接上的其他 channel 照常工作。</text>
+  <text x="40" y="534" font-size="13" fill="#0f172a" text-anchor="start">要点：channel_max=2047 限的是同时打开的通道数，每条连接各有一份配额。</text>
+  <text x="40" y="562" font-size="13" fill="#b91c1c" text-anchor="start">注意：正确做法是一个 goroutine 一个 Channel；把 Channel 当锁粒度还会撞上 basic.qos 的配额共享问题。</text>
+  <text x="40" y="606" font-size="11.5" fill="#64748B" text-anchor="start">读数来源：rabbitmq:4-management 4.3.6 单机容器，Python 标准库手写帧探针，两遍 diff 逐行一致</text>
+</svg>

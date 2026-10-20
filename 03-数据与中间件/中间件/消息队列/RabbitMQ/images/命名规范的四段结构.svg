@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">命名规范的四段结构：谁的名下、什么事件、谁在消费、兜底放哪</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">以 q.order.created.notify 为例，四段各自对应一个排查问题</text>
+
+  <rect x="60" y="88" width="150" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="135" y="120" font-size="16" fill="#1e3a8a" text-anchor="middle" font-weight="bold">q</text>
+  <rect x="220" y="88" width="150" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="295" y="120" font-size="16" fill="#14532d" text-anchor="middle" font-weight="bold">order</text>
+  <rect x="380" y="88" width="180" height="52" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.6"/>
+  <text x="470" y="120" font-size="16" fill="#78350f" text-anchor="middle" font-weight="bold">created</text>
+  <rect x="570" y="88" width="180" height="52" rx="6" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="660" y="120" font-size="16" fill="#312e81" text-anchor="middle" font-weight="bold">notify</text>
+
+  <text x="135" y="162" font-size="12" fill="#475569" text-anchor="middle">这一段在说什么</text>
+  <text x="135" y="182" font-size="11.5" fill="#1e40af" text-anchor="middle">这是队列</text>
+  <text x="295" y="162" font-size="12" fill="#475569" text-anchor="middle">业务域</text>
+  <text x="295" y="182" font-size="11.5" fill="#166534" text-anchor="middle">与 routing key 第一段对齐</text>
+  <text x="470" y="162" font-size="12" fill="#475569" text-anchor="middle">事件 / 动作</text>
+  <text x="470" y="182" font-size="11.5" fill="#92400e" text-anchor="middle">与 routing key 第二段对齐</text>
+  <text x="660" y="162" font-size="12" fill="#475569" text-anchor="middle">消费方</text>
+  <text x="660" y="182" font-size="11.5" fill="#4338ca" text-anchor="middle">谁在消费，一眼看出</text>
+
+  <rect x="60" y="206" width="880" height="76" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="80" y="230" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">同样的四段套到别的对象上</text>
+  <text x="80" y="254" font-size="12" fill="#334155" text-anchor="start">交换机：order.topic.exchange　　死信队列：q.order.created.notify.dlq　　重试队列：q.order.created.notify.retry.3</text>
+  <text x="80" y="274" font-size="11.5" fill="#64748B" text-anchor="start">routing key 单独一套三段：order.payment.created（域.实体.动作），三段正好对应 topic 的 * 通配粒度</text>
+
+  <rect x="60" y="300" width="880" height="104" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="80" y="324" font-size="12.5" fill="#991b1b" text-anchor="start" font-weight="bold">四条硬规则</text>
+  <text x="80" y="348" font-size="11.5" fill="#991b1b" text-anchor="start">① 不用 amq. 前缀 —— 那是 Broker 保留名，声明即 ACCESS_REFUSED</text>
+  <text x="80" y="370" font-size="11.5" fill="#991b1b" text-anchor="start">② 不用中文与空格 —— 名字要进 URL、监控标签与日志，非 ASCII 会变成转义串</text>
+  <text x="80" y="392" font-size="11.5" fill="#991b1b" text-anchor="start">③ 多环境共用 Broker 时用 vhost 隔离，不靠 prod_ 前缀（权限也是按 vhost 给的）</text>
+
+  <text x="40" y="440" font-size="13" fill="#0f172a" text-anchor="start">要点：命名与粒度是同一件事 —— 叫 q.order.created.notify 就意味着用了「一事件一队列」。</text>
+  <text x="40" y="468" font-size="13" fill="#b91c1c" text-anchor="start">注意：名字里不写版本号，否则灰度期会变成两套队列同时消费，切换时还得双写。</text>
+</svg>

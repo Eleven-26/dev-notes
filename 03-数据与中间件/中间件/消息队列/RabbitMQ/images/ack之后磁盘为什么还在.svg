@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ack 之后磁盘为什么还在：释放的单位是段，不是消息</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">索引段与内嵌段清空即整段删除，内容存储的段文件不截断、只能整段回收</text>
+
+  <text x="40" y="96" font-size="14" font-weight="bold" fill="#0f172a">实测：400 条消息逐条 get + ack 前后的三个文件</text>
+
+  <rect x="40" y="112" width="220" height="150" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="150" y="136" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="bold">ack 之前</text>
+  <text x="60" y="164" font-size="12" fill="#334155" text-anchor="start">0.qi</text>
+  <text x="240" y="164" font-size="12" fill="#334155" text-anchor="end">12864 B</text>
+  <text x="60" y="192" font-size="12" fill="#334155" text-anchor="start">0.qs</text>
+  <text x="240" y="192" font-size="12" fill="#334155" text-anchor="end">233664 B</text>
+  <text x="60" y="220" font-size="12" fill="#334155" text-anchor="start">0.rdq</text>
+  <text x="240" y="220" font-size="12" fill="#334155" text-anchor="end">5048579 B</text>
+  <text x="150" y="250" font-size="11" fill="#64748B" text-anchor="middle">堆积 400 条待消费</text>
+
+  <line x1="270" y1="187" x2="360" y2="187" stroke="#334155" stroke-width="1.8"/>
+  <text x="315" y="176" font-size="11.5" fill="#475569" text-anchor="middle">逐条 ack</text>
+
+  <rect x="370" y="112" width="220" height="150" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="480" y="136" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="bold">ack 之后</text>
+  <text x="390" y="164" font-size="12" fill="#b91c1c" text-anchor="start">0.qi</text>
+  <text x="570" y="164" font-size="12" fill="#b91c1c" text-anchor="end">消失</text>
+  <text x="390" y="192" font-size="12" fill="#b91c1c" text-anchor="start">0.qs</text>
+  <text x="570" y="192" font-size="12" fill="#b91c1c" text-anchor="end">消失</text>
+  <text x="390" y="220" font-size="12" fill="#166534" text-anchor="start">0.rdq</text>
+  <text x="570" y="220" font-size="12" fill="#166534" text-anchor="end">5048579 B</text>
+  <text x="480" y="250" font-size="11" fill="#64748B" text-anchor="middle">目录里只剩 .queue_name 38 B</text>
+
+  <rect x="620" y="112" width="340" height="150" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="640" y="136" font-size="12.5" fill="#7c2d12" text-anchor="start" font-weight="bold">为什么 0.rdq 一个字节都没少</text>
+  <text x="640" y="162" font-size="11.5" fill="#9a3412" text-anchor="start">· 段文件不截断，ack 只减引用计数</text>
+  <text x="640" y="186" font-size="11.5" fill="#9a3412" text-anchor="start">· 段内消息全成垃圾才整段删除</text>
+  <text x="640" y="210" font-size="11.5" fill="#9a3412" text-anchor="start">· 分段上限 msg_store_file_size_limit</text>
+  <text x="640" y="234" font-size="11.5" fill="#9a3412" text-anchor="start">　= 16777216 B（16 MiB，实测）</text>
+
+  <rect x="40" y="292" width="920" height="96" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="318" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">排在前面和排在后面的消息混在同一段里，回收必然滞后</text>
+  <text x="60" y="344" font-size="12" fill="#334155" text-anchor="start">入队顺序与 ack 顺序通常不一致：段里只要还有一条没 ack 的消息活着，整段就不能删。</text>
+  <text x="60" y="368" font-size="12" fill="#334155" text-anchor="start">所以“消费完了磁盘还满”几乎必然意味着：消息体大于 4096，正文都在内容存储里。</text>
+
+  <text x="40" y="428" font-size="13" fill="#0f172a" text-anchor="start">要点：清空队列能把 0.qi 与 0.qs 整段删掉（文件直接消失），这一步磁盘会降。</text>
+  <text x="40" y="456" font-size="13" fill="#0f172a" text-anchor="start">要点：正文在 0.rdq 时，purge 也不会立刻让内容存储变小 —— 只能等段级回收。</text>
+  <text x="40" y="484" font-size="13" fill="#b91c1c" text-anchor="start">注意：段文件没有“收缩”命令；能控制的是消息体大小与堆积时长，不是事后清理。</text>
+  <text x="40" y="524" font-size="11.5" fill="#64748B" text-anchor="start">读数来源：rabbitmq:4-management 4.3.6 单机容器，两遍 diff 逐行一致</text>
+</svg>
