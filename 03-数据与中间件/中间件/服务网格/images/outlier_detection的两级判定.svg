@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 730" width="1000" height="730" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="730" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">outlier_detection 的两级判定：detector 想摘，enforcer 才决定摘不摘</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">很多「设了参数却没生效」都卡在第二级；三个计数器正好对应这三步</text>
+  <defs>
+    <marker id="b1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="24" y="92" width="952" height="38" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="500" y="116" font-size="13" fill="#475569" text-anchor="middle">摘除不是即时动作：先被扫描检出，再过一道上限检查，最后才执行</text>
+  <rect x="400" y="128" width="400" height="56" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+  <text x="418" y="152" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">请求失败</text>
+  <text x="418" y="172" font-size="11.5" fill="#b91c1c" text-anchor="start">连接拒绝 / 5xx / 超时</text>
+  <rect x="400" y="196" width="400" height="56" rx="8" fill="#ffedd5" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="418" y="220" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">① detector 检出</text>
+  <text x="418" y="240" font-size="11.5" fill="#9a3412" text-anchor="start">按 consecutive_gateway_failure 连续计数</text>
+  <rect x="400" y="264" width="400" height="56" rx="8" fill="#fefce8" stroke="#fde047" stroke-width="1.5"/>
+  <text x="418" y="288" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">② interval 扫描</text>
+  <text x="418" y="308" font-size="11.5" fill="#854d0e" text-anchor="start">周期性执行，不是请求失败当场就摘</text>
+  <rect x="400" y="332" width="400" height="56" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="418" y="356" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">③ enforcer 决定</text>
+  <text x="418" y="376" font-size="11.5" fill="#1d4ed8" text-anchor="start">查 max_ejection_percent，并检查会不会把集群摘空</text>
+  <line x1="600" y1="184" x2="600" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="600" y1="252" x2="600" y2="264" stroke="#334155" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="600" y1="320" x2="600" y2="332" stroke="#334155" stroke-width="1.6" marker-end="url(#b1)"/>
+  <path d="M600,388 L600,410 L330,410 L330,432" stroke="#15803d" stroke-width="1.5" fill="none" marker-end="url(#b1)"/>
+  <path d="M600,410 L870,410 L870,432" stroke="#94a3b8" stroke-width="1.5" fill="none" stroke-dasharray="5,4" marker-end="url(#b1)"/>
+  <rect x="180" y="436" width="300" height="50" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="330" y="458" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">执行摘除</text>
+  <text x="330" y="476" font-size="11.5" fill="#475569" text-anchor="middle">ejections_total +1</text>
+  <rect x="720" y="436" width="300" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <text x="870" y="458" font-size="14" fill="#64748b" text-anchor="middle" font-weight="bold">拒绝执行</text>
+  <text x="870" y="476" font-size="11.5" fill="#475569" text-anchor="middle">ejections_overflow +1</text>
+  <text x="500" y="524" font-size="13.5" fill="#0f172a" text-anchor="middle" font-weight="bold">三个计数器各对应哪一步 —— 排查时先看它们的比例，能区分「没检出」和「检出被挡」</text>
+  <rect x="24" y="542" width="300" height="82" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+  <text x="40" y="566" font-size="12.5" fill="#9a3412" text-anchor="start" font-weight="bold">ejections_detected_*</text>
+  <text x="40" y="588" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">① 检出（想摘）</text>
+  <text x="40" y="610" font-size="11" fill="#475569" text-anchor="start">符合条件、准备摘的次数</text>
+  <rect x="350" y="542" width="300" height="82" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4"/>
+  <text x="366" y="566" font-size="12.5" fill="#15803d" text-anchor="start" font-weight="bold">ejections_total</text>
+  <text x="366" y="588" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">①②③ 全部通过</text>
+  <text x="366" y="610" font-size="11" fill="#475569" text-anchor="start">实际执行摘除的次数</text>
+  <rect x="676" y="542" width="300" height="82" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="692" y="566" font-size="12.5" fill="#1d4ed8" text-anchor="start" font-weight="bold">ejections_overflow</text>
+  <text x="692" y="588" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">③ 被上限挡回</text>
+  <text x="692" y="610" font-size="11" fill="#475569" text-anchor="start">想摘但超过上限的次数</text>
+  <text x="500" y="654" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">实测：同一份上游（2 个死端口），只改 max_ejection_percent</text>
+  <text x="30" y="684" font-size="12" fill="#b91c1c" text-anchor="start">max_ejection_percent: 50 → active=1，overflow=6（允许摘 1 个，再摘被挡）</text>
+  <text x="30" y="706" font-size="12" fill="#475569" text-anchor="start">max_ejection_percent: 100 → active=0，一个都不摘（摘了就摘空）</text>
+</svg>

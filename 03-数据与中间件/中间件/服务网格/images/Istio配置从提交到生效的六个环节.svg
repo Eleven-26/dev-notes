@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">从 kubectl apply 到配置生效：六个环节，两个地方会静默失败</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">上面一行是「对象怎么变成 Pod」，下面一行是「对象怎么变成 Envoy 的配置」</text>
+  <defs>
+    <marker id="b1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="36" y="108" width="280" height="88" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="54" y="142" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">① kubectl apply</text>
+  <text x="54" y="170" font-size="11.5" fill="#334155" text-anchor="start">提交 CRD 或改动 Service</text>
+  <rect x="350" y="108" width="280" height="88" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="368" y="142" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">② 准入 webhook 注入</text>
+  <text x="368" y="170" font-size="11.5" fill="#1d4ed8" text-anchor="start">往 Pod spec 里塞 istio-proxy</text>
+  <rect x="664" y="108" width="280" height="88" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="682" y="142" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">③ 边车连上 istiod</text>
+  <text x="682" y="170" font-size="11.5" fill="#1d4ed8" text-anchor="start">建立 ADS 长连接并上报身份</text>
+  <rect x="36" y="288" width="280" height="88" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="54" y="322" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">④ istiod 编译</text>
+  <text x="54" y="350" font-size="11.5" fill="#15803d" text-anchor="start">CRD + Service → xDS 四类资源</text>
+  <rect x="350" y="288" width="280" height="88" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="368" y="322" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">⑤ ADS 推送</text>
+  <text x="368" y="350" font-size="11.5" fill="#15803d" text-anchor="start">按类型增量下发</text>
+  <rect x="664" y="288" width="280" height="88" rx="8" fill="#fefce8" stroke="#fde047" stroke-width="1.5"/>
+  <text x="682" y="322" font-size="14" fill="#0f172a" text-anchor="start" font-weight="bold">⑥ Envoy ACK / NACK</text>
+  <text x="682" y="350" font-size="11.5" fill="#854d0e" text-anchor="start">接受则生效，拒绝则保留旧配置</text>
+  <line x1="316" y1="152" x2="346" y2="152" stroke="#334155" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="630" y1="152" x2="660" y2="152" stroke="#334155" stroke-width="1.6" marker-end="url(#b1)"/>
+  <path d="M804,196 L804,246 L176,246 L176,284" stroke="#334155" stroke-width="1.6" fill="none" marker-end="url(#b1)"/>
+  <line x1="316" y1="332" x2="346" y2="332" stroke="#334155" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="630" y1="332" x2="660" y2="332" stroke="#334155" stroke-width="1.6" marker-end="url(#b1)"/>
+  <rect x="36" y="400" width="928" height="74" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="54" y="426" font-size="12.5" fill="#9a3412" text-anchor="start" font-weight="bold">两个地方会静默失败，都不会报错、也不会 5xx：</text>
+  <text x="54" y="450" font-size="11.5" fill="#334155" text-anchor="start">② 注入没生效 —— 命名空间标签是建 Pod 时读的，改完标签不重建 Pod，新配置对它就是不存在</text>
+  <text x="54" y="468" font-size="11.5" fill="#334155" text-anchor="start">⑥ NACK —— 数据面拒绝新配置并继续用旧的，业务一切正常，只有 proxy-status 能看到 STALE</text>
+  <text x="500" y="512" font-size="12" fill="#64748b" text-anchor="middle" font-weight="bold">要点：排障先确认 ②（容器里有没有 istio-proxy），再确认 ⑥（proxy-status 是不是 SYNCED），最后才怀疑配置写错</text>
+</svg>

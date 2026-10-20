@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Istio 的 CRD 到 xDS：四类对象各自落在哪一层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">左边是你写的意图，右边是 Envoy 消费的资源，中间那一列是 istiod 的编译</text>
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="300" y="92" width="192" height="392" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="396" y="116" font-size="13" fill="#475569" text-anchor="middle" font-weight="bold">istiod 编译</text>
+  <text x="396" y="136" font-size="11.5" fill="#94a3b8" text-anchor="middle">CRD → xDS</text>
+  <rect x="36" y="148" width="240" height="78" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="54" y="178" font-size="15" fill="#1d4ed8" text-anchor="start" font-weight="bold">Gateway</text>
+  <text x="54" y="202" font-size="11.5" fill="#334155" text-anchor="start">入口端口 / 协议 / 域名</text>
+  <rect x="36" y="242" width="240" height="78" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="54" y="272" font-size="15" fill="#15803d" text-anchor="start" font-weight="bold">VirtualService</text>
+  <text x="54" y="296" font-size="11.5" fill="#334155" text-anchor="start">match / route / timeout / retries</text>
+  <rect x="36" y="336" width="240" height="78" rx="8" fill="#fefce8" stroke="#fde047" stroke-width="1.5"/>
+  <text x="54" y="366" font-size="15" fill="#854d0e" text-anchor="start" font-weight="bold">DestinationRule</text>
+  <text x="54" y="390" font-size="11.5" fill="#334155" text-anchor="start">subsets / 连接池 / outlierDetection</text>
+  <rect x="36" y="430" width="240" height="78" rx="8" fill="#fdf4ff" stroke="#e9a8f5" stroke-width="1.5"/>
+  <text x="54" y="460" font-size="15" fill="#86198f" text-anchor="start" font-weight="bold">ServiceEntry</text>
+  <text x="54" y="484" font-size="11.5" fill="#334155" text-anchor="start">把集群外地址纳入网格</text>
+  <rect x="524" y="148" width="246" height="78" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="542" y="176" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">LDS</text>
+  <text x="542" y="200" font-size="11.5" fill="#475569" text-anchor="start">监听器：端口 → filter 链</text>
+  <text x="786" y="194" font-size="11" fill="#94a3b8" text-anchor="start">listen / server_name</text>
+  <rect x="524" y="242" width="246" height="78" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="542" y="270" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">RDS</text>
+  <text x="542" y="294" font-size="11.5" fill="#475569" text-anchor="start">路由表：host/path → subset</text>
+  <text x="786" y="288" font-size="11" fill="#94a3b8" text-anchor="start">location / proxy_pass</text>
+  <rect x="524" y="336" width="246" height="78" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="542" y="364" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">CDS</text>
+  <text x="542" y="388" font-size="11.5" fill="#475569" text-anchor="start">集群：每个 subset 一个</text>
+  <text x="786" y="382" font-size="11" fill="#94a3b8" text-anchor="start">upstream 块</text>
+  <rect x="524" y="430" width="246" height="78" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="542" y="458" font-size="15" fill="#0f172a" text-anchor="start" font-weight="bold">EDS</text>
+  <text x="542" y="482" font-size="11.5" fill="#475569" text-anchor="start">端点：集群里有哪些 IP:port</text>
+  <text x="786" y="476" font-size="11" fill="#94a3b8" text-anchor="start">upstream 里的 server 行</text>
+  <line x1="280" y1="187" x2="520" y2="187" stroke="#334155" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="280" y1="281" x2="520" y2="281" stroke="#334155" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="280" y1="375" x2="520" y2="375" stroke="#334155" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="280" y1="469" x2="520" y2="469" stroke="#334155" stroke-width="1.6" marker-end="url(#a1)"/>
+  <path d="M400,430 L400,352 L520,352" stroke="#94a3b8" stroke-width="1.4" fill="none" stroke-dasharray="5,4" marker-end="url(#a1)"/>
+  <text x="408" y="420" font-size="11" fill="#64748b" text-anchor="start">外部服务</text>
+  <rect x="36" y="522" width="928" height="62" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="500" y="546" font-size="11.5" fill="#9a3412" text-anchor="middle">映射不是一一对应：一个 DestinationRule 展开成多个 cluster（每个 subset 一个），一个 VirtualService 落进多张路由表（每个绑定它的监听器各一份）</text>
+  <text x="500" y="570" font-size="11.5" fill="#9a3412" text-anchor="middle" font-weight="bold">要点：改一个 CRD 会让多个 Envoy 同时变化 —— 这就是「配置改了没生效」必须逐个 Pod 核对的原因</text>
+  <text x="500" y="608" font-size="11.5" fill="#64748b" text-anchor="middle">注意：subset 定义在 DestinationRule、引用在 VirtualService，所以「subset 不存在」的报错位置永远在引用方</text>
+</svg>
