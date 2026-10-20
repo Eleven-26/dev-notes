@@ -2,7 +2,7 @@
 
 > 覆盖 ⭐ **JMS 到底是什么、以及为什么把它当「协议」会错位**：它是 JSR 914 定义的 **Java API 规范**（没有线上报文格式）、两个消息域（P2P / Pub-Sub）的语义差异、六种消息类型怎么选、消息体内 header / properties / body 三段的分工、四种确认模式各保证什么、selector 与 XA 事务的边界，以及 1.1 与 2.0 的实质变化。
 >
-> 不覆盖：AMQP 的线上帧格式见 [AMQP协议.md](../../../02-计算机基础/网络/消息协议/AMQP协议.md)；STOMP 的文本帧见 [STOMP.md](../../../02-计算机基础/网络/消息协议/STOMP.md)；ActiveMQ 的 Java 接入与 `redeliveryPolicy` 落地见 [ActiveMQ.md](ActiveMQ.md)；消息队列的粒度判据见 [队列粒度设计.md](队列粒度设计.md)。
+> 不覆盖：AMQP 的线上帧格式见 [AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md)；STOMP 的文本帧见 [STOMP.md](../../../02-计算机基础/网络/消息协议/STOMP.md)；ActiveMQ 的 Java 接入与 `redeliveryPolicy` 落地见 [ActiveMQ.md](ActiveMQ.md)；消息队列的粒度判据见 [队列粒度设计.md](队列粒度设计.md)。
 >
 > 内容整理自个人学习笔记，语义依据 JSR 914（JMS 1.1 / 2.0）规范。⚠️ **实测口径：本篇无需也不做容器实测**——JMS 规定的是 API 与语义，不是字节布局，**没有任何可抓的报文**；文中不引用吞吐或延迟数字。「具体使用」节的 Java 代码是规范用法，未在本机编译运行。
 
@@ -227,6 +227,6 @@ try (JMSContext ctx = factory.createContext(JMSContext.CLIENT_ACKNOWLEDGE)) {
 - **上游/总纲**：[队列粒度设计.md](队列粒度设计.md) — 队列与 Topic 在三种 MQ 里的粒度判据，本篇的两个域是它的 JMS 视角
 - **上游/总纲**：[消息队列选型对比.md](消息队列选型对比.md) — 消息队列目录的选型入口与分册导航
 - **下游机制**：[ActiveMQ.md](ActiveMQ.md) — JMS 最主要的开源实现：KahaDB、`redeliveryPolicy`、DLQ、Spring JMS 接入
-- **对照/互补**：[AMQP协议.md](../../../02-计算机基础/网络/消息协议/AMQP协议.md) — AMQP 是**协议**（有字节），JMS 是**API**（无字节），这是两者最根本的区别
+- **对照/互补**：[AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md) — AMQP 是**协议**（有字节），JMS 是**API**（无字节），这是两者最根本的区别
 - **对照/互补**：[STOMP.md](../../../02-计算机基础/网络/消息协议/STOMP.md) — STOMP 也常被当作「JMS 的跨语言替代」，因为它的 destination 语义与 JMS 的 Queue/Topic 能对应
 - **对照/互补**：[MQTT.md](../../../02-计算机基础/网络/消息协议/MQTT.md) — MQTT 的 QoS 与 JMS 的确认模式解决的是同一个问题（何时算消费成功），机制完全不同

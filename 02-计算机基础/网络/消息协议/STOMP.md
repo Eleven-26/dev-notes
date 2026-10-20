@@ -2,7 +2,7 @@
 
 > 覆盖 ⭐ **STOMP 用纯文本帧怎么表达一个完整消息协议**：帧的四段结构（`COMMAND` + headers + 空行 + body + `NUL`）、13 种命令的分工、`content-length` 与 `NUL` 两种定界的取舍、事务与 `receipt` 的用法、心跳，以及 1.0 / 1.1 / 1.2 的实质差异。
 >
-> 不覆盖：AMQP 的二进制帧与 channel 多路复用见 [AMQP协议.md](AMQP协议.md)；MQTT 的位段式固定头见 [MQTT.md](MQTT.md)；NATS 的文本命令见 [NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS协议.md)；ActiveMQ 的 Go（STOMP）/ Java（JMS）接入代码见 [ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)。
+> 不覆盖：AMQP 的二进制帧与 channel 多路复用见 [AMQP.md](AMQP.md)；MQTT 的位段式固定头见 [MQTT.md](MQTT.md)；NATS 的文本命令见 [NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS协议.md)；ActiveMQ 的 Go（STOMP）/ Java（JMS）接入代码见 [ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)。
 >
 > 内容整理自个人学习笔记，帧结构依据 STOMP 1.2 规范。⚠️ **实测口径：本篇未做本机实测**（本机无 STOMP Broker 容器），帧格式按规范陈述、**未逐字节抓包验证**；文中不引用吞吐或延迟数字。「具体使用」节是可直接照抄的裸 TCP 交互，未在本机执行。
 
@@ -230,7 +230,7 @@ id:msg-1
 
 - **上游/总纲**：[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md) — 应用层协议的七行对照，STOMP 的定位
 - **上游/总纲**：[README.md](../README.md) — 网络目录导读：消息协议这一类的位置
-- **对照/互补**：[AMQP协议.md](AMQP协议.md) — 同样面向 MQ，但用二进制帧 + 7 字节帧头 + `0xCE` 帧尾，与本篇的文本帧 + `NUL` 形成对照
+- **对照/互补**：[AMQP.md](AMQP.md) — 同样面向 MQ，但用二进制帧 + 7 字节帧头 + `0xCE` 帧尾，与本篇的文本帧 + `NUL` 形成对照
 - **对照/互补**：[MQTT.md](MQTT.md) — 二进制位段式固定头，与本篇「全文本」是两个极端
 - **对照/互补**：[NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS协议.md) — 同为文本协议，但 NATS 用「行 + 长度字段」而不是「段 + NUL」
 - **下游机制**：[ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md) — Go 侧的 STOMP 接入代码、Java 侧的 JMS 接入代码

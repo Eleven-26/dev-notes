@@ -2,7 +2,7 @@
 
 > 覆盖 ⭐ **Pulsar 协议为什么用 Protobuf 而不是自定义二进制**：一个帧的六段结构（总长 / 命令长 / 命令 / 魔数 / 校验和 / 元数据+载荷）、`BaseCommand` 的 oneof 分发机制、`lookup` 重定向为什么是 producer 的第一步、流控为什么靠 `FLOW` 的 permits 而不是 TCP 背压。
 >
-> 不覆盖：Pulsar 的产品能力（存算分离、BookKeeper、四种订阅类型、分层存储）见 [Pulsar.md](Pulsar.md)；Kafka 的请求-响应协议见 [协议与线上格式.md](Kafka/协议与线上格式.md)；NATS 的文本协议见 [NATS协议.md](NATS协议.md)；AMQP 的帧流见 [AMQP协议.md](../../../02-计算机基础/网络/消息协议/AMQP协议.md)。
+> 不覆盖：Pulsar 的产品能力（存算分离、BookKeeper、四种订阅类型、分层存储）见 [Pulsar.md](Pulsar.md)；Kafka 的请求-响应协议见 [协议与线上格式.md](Kafka/协议与线上格式.md)；NATS 的文本协议见 [NATS协议.md](NATS协议.md)；AMQP 的帧流见 [AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md)。
 >
 > 内容整理自个人学习笔记，帧结构与命令定义依据 Apache Pulsar 的 `PulsarApi.proto`。⚠️ **实测口径：本篇未做本机实测**（本机无 Pulsar 容器，镜像未拉取），**所有字节布局按 `PulsarApi.proto` 与官方文档陈述，未抓包验证**；文中不引用吞吐或延迟数字。「具体使用」节的十六进制是按 proto 定义推导的示意，未在本机生成。
 
@@ -168,4 +168,4 @@ Broker：继续推送
 - **上游/总纲**：[队列粒度设计.md](队列粒度设计.md) — 跨产品的粒度判据与代价对照
 - **对照/互补**：[协议与线上格式.md](Kafka/协议与线上格式.md) — Kafka 手写二进制 + 版本协商，与 Pulsar 的 Protobuf + 无版本号形成对照
 - **对照/互补**：[NATS协议.md](NATS协议.md) — 纯文本命令，与 Pulsar 的 Protobuf 是两个极端
-- **对照/互补**：[AMQP协议.md](../../../02-计算机基础/网络/消息协议/AMQP协议.md) — AMQP 用 magic 前缀与帧尾 `0xCE` 双重定界，Pulsar 用 `magicNumber` 分段
+- **对照/互补**：[AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md) — AMQP 用 magic 前缀与帧尾 `0xCE` 双重定界，Pulsar 用 `magicNumber` 分段

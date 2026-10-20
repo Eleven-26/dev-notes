@@ -2,7 +2,7 @@
 
 > 覆盖 ⭐ **XMPP 用一条长命的 XML 流承载所有交互**这件事的后果：流怎么打开与协商、三个核心 stanza（`message` / `presence` / `iq`）各管什么、JID 三段与 bare / full 的区别、服务端联邦（S2S）怎么靠 DNS 找到对方、以及「冗长」这个评价的具体代价落在哪。
 >
-> 不覆盖：MQTT 的二进制位段头见 [MQTT.md](MQTT.md)；STOMP 的文本帧见 [STOMP.md](STOMP.md)；AMQP 的帧与 channel 见 [AMQP协议.md](AMQP协议.md)；IM 场景怎么把状态映射到报文见 [协议设计.md](../../../04-架构与系统/系统设计/IM系统/协议设计.md)。
+> 不覆盖：MQTT 的二进制位段头见 [MQTT.md](MQTT.md)；STOMP 的文本帧见 [STOMP.md](STOMP.md)；AMQP 的帧与 channel 见 [AMQP.md](AMQP.md)；IM 场景怎么把状态映射到报文见 [协议设计.md](../../../04-架构与系统/系统设计/IM系统/协议设计.md)。
 >
 > 内容整理自个人学习笔记，流与 stanza 结构依据 RFC 6120 / 6121。⚠️ **实测口径：本篇未做本机实测**（本机无 XMPP 服务端容器），XML 结构按 RFC 陈述、**未抓包验证**；文中不引用吞吐或延迟数字。「具体使用」节的 XML 是规范形态的还原，未在本机执行。
 
@@ -224,5 +224,5 @@ XMPP 的心跳（whitespace keepalive）就是**往流里发一个空格字符**
 - **上游/总纲**：[README.md](../README.md) — 网络目录导读：消息协议这一类的位置
 - **对照/互补**：[MQTT.md](MQTT.md) — 同为消息协议，2 字节头 vs 50 字节 XML 头，是最直接的「省流量 vs 可演进」对照
 - **对照/互补**：[STOMP.md](STOMP.md) — 同为文本协议，但 STOMP 是「段 + NUL」，XMPP 是「XML 流 + 标签闭合」
-- **对照/互补**：[AMQP协议.md](AMQP协议.md) — 同为「多帧内容」的协议：AMQP 靠 content header + body 帧分段，XMPP 靠 XML 元素嵌套
+- **对照/互补**：[AMQP.md](AMQP.md) — 同为「多帧内容」的协议：AMQP 靠 content header + body 帧分段，XMPP 靠 XML 元素嵌套
 - **下游机制**：[协议设计.md](../../../04-架构与系统/系统设计/IM系统/协议设计.md) — 自研 IM 协议时，XMPP 的哪些设计值得抄（流 + stanza 分发）与哪些不该抄（XML 冗长）
