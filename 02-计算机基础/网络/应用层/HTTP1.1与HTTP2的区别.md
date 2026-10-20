@@ -327,6 +327,156 @@ HTTP/2 最初设计了一套 **依赖树 + 权重**（`PRIORITY` 帧，带 `depe
 
 ---
 
+### 7.4 一份 60 请求的量化：单连接上 1.1 与 2 的差距
+
+上一节说 1.1 的响应必须按序返回、多开连接只能缓解；这一节把「缓解到什么程度」量出来。这段是**在本机（Windows + Go，`httptest` 起 TLS 服务，每个请求固定 sleep 100ms，共 60 个请求）真实跑出来的**：
+
+| 协议 | 最大并发 | `MaxConnsPerHost` | 总耗时 | TCP 拨号次数 |
+|---|---|---|---|---|
+| HTTP/1.1 | 1 | 1 | 6.05s | 1 |
+| HTTP/1.1 | 6 | 1 | **6.04s** | 1 |
+| HTTP/1.1 | 60 | 1 | **6.05s** | 1 |
+| HTTP/2 | 1 | 1 | 6.05s | 1 |
+| HTTP/2 | 6 | 1 | **1.01s** | 1 |
+| HTTP/2 | 12 | 1 | **510ms** | 1 |
+| HTTP/2 | 30 | 1 | 210ms | 1 |
+| HTTP/2 | 60 | 1 | **110ms** | 1 |
+| HTTP/1.1 | 60 | 不限（默认） | 170ms | **60** |
+| HTTP/2 | 60 | 不限（默认） | 140ms | 60 |
+
+**四行结论**：
+
+1. **同一条连接上，HTTP/1.1 加并发毫无用处**：并发从 1 提到 60，总耗时死死钉在 6.05s = 60×100ms——
+   这就是**队头阻塞**：请求必须等前一个响应回来。
+2. **HTTP/2 同一条连接上并发直接生效**：6 并发 → 1.01s，60 并发 → 110ms，接近"并发数"倍的加速，
+   这就是**多路复用**（帧交错 + 流 ID 重排）。
+3. **`conc=1` 时两者都是 6.05s**：多路复用不是"服务端变快"，**没有并发就没有可复用的流**——
+   别把 HTTP/2 当成免费的性能提升。
+4. **最后一行才是现实**：不限连接数时，HTTP/1.1 靠**开 60 条 TCP 连接**也能压到 170ms。
+   所以 HTTP/2 省的不是"能不能并发"，而是**连接数**：
+   60 次 TCP+TLS 握手 vs 1 次。**这就是移动端/弱网/大量小接口场景下 HTTP/2 的真实收益，也是 HPACK 能生效的前提**
+   （索引表是按连接维护的，见本篇第四节）。
+
+![60 个请求打满一条连接的实测耗时比例：HTTP/1.1 无论并发 1、6 还是 60 都钉在 6.05s，HTTP/2 单连接随并发数一路降到 110ms；不限连接数时两者落到同一量级，但都要 60 次 TCP 拨号](images/单连接60个请求的串行与多路复用耗时对比.svg)
+
+图注：60 个请求打满一条连接时，HTTP/1.1 无论并发 1、6 还是 60 都钉在 6.05s；HTTP/2 单连接随并发数一路降到 110ms —— 省下来的正是 59 次 TCP + TLS 握手。
+
+复现程序（单文件，`go mod init x && go run main.go`）：
+
+```go
+package main
+
+import (
+	"context"
+	"crypto/tls"
+	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"sync"
+	"sync/atomic"
+	"time"
+)
+
+// countingDialer 让我们能数出"真的建了几条 TCP 连接"。
+type countingDialer struct {
+	base  net.Dialer
+	dials *int64
+}
+
+func (d *countingDialer) DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	atomic.AddInt64(d.dials, 1)
+	return d.base.DialContext(ctx, network, addr)
+}
+
+// run 起一个"每个请求固定慢 100ms"的 TLS 服务，
+// 然后用 n 个请求 / 指定并发 / 指定协议打它，返回总耗时与拨号次数。
+func run(proto string, maxConns, concurrency, n int) (time.Duration, int64) {
+	var dials int64
+
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		time.Sleep(100 * time.Millisecond) // 模拟下游耗时，让队头阻塞可见
+		fmt.Fprint(w, "ok")
+	}))
+	srv.EnableHTTP2 = true // 打开服务端 h2；客户端用 ALPN 协商
+	srv.StartTLS()
+	defer srv.Close()
+
+	d := &countingDialer{base: net.Dialer{KeepAlive: 15 * time.Second}, dials: &dials}
+	nextProtos := []string{"h2", "http/1.1"}
+	if proto == "h1" {
+		nextProtos = []string{"http/1.1"} // 通过 ALPN 把协商结果强制退回 1.1
+	}
+
+	tr := &http.Transport{
+		DialContext:         d.DialContext,
+		ForceAttemptHTTP2:   proto == "h2",
+		MaxConnsPerHost:     maxConns, // ← 关键变量：1 = 逼它只用一条连接
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 只因为 httptest 的证书是自签的
+			NextProtos:         nextProtos,
+		},
+	}
+	c := &http.Client{Transport: tr}
+
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, concurrency)
+	start := time.Now()
+	for range n {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			// 每个请求都要把 body 读干并 Close，否则连接不归还池 —— 这本身就是一个"队头阻塞"来源
+			resp, err := c.Get(srv.URL)
+			if err != nil {
+				fmt.Println("ERR", proto, err)
+				return
+			}
+			_, _ = io.Copy(io.Discard, resp.Body)
+			_ = resp.Body.Close()
+		}()
+	}
+	wg.Wait()
+	return time.Since(start), dials
+}
+
+func main() {
+	const n = 60
+	for _, proto := range []string{"h1", "h2"} {
+		// 单连接：把协议差异完全暴露出来
+		for _, conc := range []int{1, 6, 12, 30, 60} {
+			d, dial := run(proto, 1, conc, n)
+			fmt.Printf("%-3s maxConns=1   conc=%-3d total=%-12v dials=%d\n", proto, conc, d.Round(10*time.Millisecond), dial)
+		}
+		// 不限连接数：这才是 Go 程序的默认现实
+		d, dial := run(proto, 0, n, n)
+		fmt.Printf("%-3s maxConns=0   conc=%-3d total=%-12v dials=%d\n", proto, n, d.Round(10*time.Millisecond), dial)
+	}
+}
+```
+
+**容器内复跑核对**（`golang:1.26-alpine`，`go1.26.8 linux/amd64`，同一份程序连跑 4 轮、每轮 12 组读数）：
+
+| 组 | 上表读数（Windows 宿主机） | 容器内 4 轮区间 |
+|---|---|---|
+| HTTP/1.1 单连接，并发 1 / 6 / 60 | 6.05s / 6.04s / 6.05s | 6.06s ~ 6.11s，与并发数无关 |
+| HTTP/2 单连接，并发 1 → 60 | 6.05s / 1.01s / 510ms / 210ms / 110ms | 6.08s ~ 6.10s / 1.02s ~ 1.03s / 510ms ~ 530ms / 210ms / 110ms |
+| 不限连接数，并发 60 | 1.1 170ms、2 140ms | 1.1 170ms ~ 240ms、2 140ms ~ 220ms，拨号 54 ~ 60 次 |
+
+> 📌 只断言趋势：单连接上 HTTP/1.1 钉死在 60 × 100ms，HTTP/2 随并发数一路下降；不限连接数时两者落到同一量级、但都要 60 次拨号。绝对值随机器与容器负载浮动，跨轮次读数不混用。
+
+> ⚠️ 这个实验量的是**应用层并发**，没有真网络，所以绝对值不代表线上。
+> 想加上网络代价：`srv.Close()` 换成真实远端服务，或在 Linux 上用 `tc netem` 加延迟与丢包
+> （见 [TCP滑动窗口.md](../传输层/tcp/TCP滑动窗口.md) 的「具体使用」）——**HTTP/2 在丢包链路上的优势会缩水**，
+> 因为它的队头阻塞从"应用层"下移到了"TCP 层"，这正是 HTTP/3/QUIC 要解决的问题。
+
 ## 八、应用场景
 
 **本节要点**：版本差异最终落成三类线上问题 —— 并发度、头部开销与队头阻塞。
@@ -426,4 +576,4 @@ tshark -r h2.pcapng -Y 'http2.frame.type==1' -T fields -e http2.streamid -e http
 - **下游机制**：[TCP报文结构.md](../传输层/tcp/TCP报文结构.md) — 「TCP 是字节流、没有消息边界」的根因
 - **下游机制**：[TCP滑动窗口.md](../传输层/tcp/TCP滑动窗口.md) — `rwnd` 与窗口缩放，HTTP/2 流控的对标对象
 - **对照/互补**：[数据序列化.md](../选型/数据序列化.md) — 「序列化解决编码，不定义消息边界」
-> 反向引用（本篇被下列文档引到）：[霍夫曼树.md](../../数据结构/树/进阶与总结/霍夫曼树.md)、[WebSocket与SSE.md](WebSocket与SSE.md)、[通信选型.md](../选型/通信选型.md)
+> 反向引用（本篇被下列文档引到）：[霍夫曼树.md](../../数据结构/树/进阶与总结/霍夫曼树.md)、[WebSocket.md](WebSocket.md)、[SSE.md](SSE.md)、[通信选型.md](../选型/通信选型.md)

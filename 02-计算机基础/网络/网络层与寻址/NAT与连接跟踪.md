@@ -233,4 +233,4 @@ Get-NetTCPConnection -State Established | Select-Object LocalAddress,LocalPort,R
 - **上游/总纲**：[IP与路由基础.md](IP与路由基础.md) — 地址、路由与转发的基础
 - **下游机制**：[IPv6与双栈.md](IPv6与双栈.md) — 无 NAT 的地址模型与双栈差异
 
-> 反向引用（本篇被下列文档引到）：[WebSocket与SSE.md](../应用层/WebSocket与SSE.md)
+> 反向引用（本篇被下列文档引到）：[WebSocket.md](../应用层/WebSocket.md)、[SSE.md](../应用层/SSE.md)

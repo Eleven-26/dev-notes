@@ -2,7 +2,7 @@
 
 > 覆盖：TCP keepalive 探得到什么、探不到什么；TCP / 协议层 / 业务心跳 / 连接池探活这四层怎么分工；半开连接怎么形成；心跳间隔与超时怎么定；长连接断开后怎么排查。
 >
-> 不覆盖：链路上各段空闲超时的量级表与心跳周期的推导见 [NAT与连接跟踪.md](../网络层与寻址/NAT与连接跟踪.md) 第五节；`CLOSE_WAIT` 与四次挥手见 [TCP四次挥手.md](tcp/TCP四次挥手.md)；Nagle 与延迟确认见 [TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md)；WebSocket / SSE / gRPC 流各自的心跳写法见 [WebSocket与SSE.md](../应用层/WebSocket与SSE.md)。
+> 不覆盖：链路上各段空闲超时的量级表与心跳周期的推导见 [NAT与连接跟踪.md](../网络层与寻址/NAT与连接跟踪.md) 第五节；`CLOSE_WAIT` 与四次挥手见 [TCP四次挥手.md](tcp/TCP四次挥手.md)；Nagle 与延迟确认见 [TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md)；WebSocket / SSE / gRPC 流各自的心跳写法见 [WebSocket.md](../应用层/WebSocket.md) 与 [SSE.md](../应用层/SSE.md)。
 >
 > 内容整理自个人学习笔记；Go 侧代码只用标准库，`go build` / `go vet` / `gofmt` 通过，**未做长连接断链的运行时实测**，相关机制说明以 RFC 1122、Linux 内核参数与 Go 标准库为准。
 
@@ -213,7 +213,7 @@ Windows 侧用 `netstat -ano` 看状态、`pktmon` 抓包；容器内注意在**
 
 | 场景 | 涉及哪一层 | 为什么值得注意 |
 |---|---|---|
-| WebSocket / SSE / gRPC 流 | 协议层 + 业务心跳 | 代理空闲超时会掐断长流，详见 [WebSocket与SSE.md](../应用层/WebSocket与SSE.md) |
+| WebSocket / SSE / gRPC 流 | 协议层 + 业务心跳 | 代理空闲超时会掐断长流，详见 [WebSocket.md](../应用层/WebSocket.md) 与 [SSE.md](../应用层/SSE.md) |
 | HTTP 连接池 | 池探活 + 主动淘汰 | 旧连接会让第一个请求失败，详见 [HTTP客户端与连接池.md](../../../01-编程语言/go/网络编程/HTTP客户端与连接池.md) |
 | 数据库 / Redis 连接池 | `MaxLifetime` + `Ping` | 中间设备与云厂商都有连接寿命限制 |
 | 移动端推送长连接 | 业务心跳 + 系统推送 | 省电与实时性要折中 |
@@ -292,5 +292,5 @@ grpc.NewServer(
 - **对照/互补**：[NAT与连接跟踪.md](../网络层与寻址/NAT与连接跟踪.md) — 各段空闲超时的量级与心跳周期判据
 - **对照/互补**：[TCP四次挥手.md](tcp/TCP四次挥手.md) — `CLOSE_WAIT`、`TIME_WAIT` 与半关闭
 - **对照/互补**：[TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md) — `SO_KEEPALIVE` 与 Nagle 在同一个 socket 上的取舍
-- **下游机制**：[WebSocket与SSE.md](../应用层/WebSocket与SSE.md) — 长连接协议各自的心跳与重连
+- **下游机制**：[WebSocket.md](../应用层/WebSocket.md)、[SSE.md](../应用层/SSE.md) — 长连接协议各自的心跳与重连
 - **下游机制**：[HTTP客户端与连接池.md](../../../01-编程语言/go/网络编程/HTTP客户端与连接池.md) — 池化连接的探活与淘汰

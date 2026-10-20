@@ -1,0 +1,102 @@
+<svg width="1000" height="700" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="21" font-weight="bold" fill="#1a1a2e">SSE 的事件流格式与 Last-Event-ID 续传</text>
+  <text x="500" y="58" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#666">上：一条 HTTP 响应里流动的四类行与「空行 = 一条消息结束」；下：断线后 EventSource 带 Last-Event-ID 重连的时序</text>
+
+  <!-- ===== 上：事件流格式 ===== -->
+  <text x="40" y="92" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" font-weight="bold" fill="#2c3e50">一条 text/event-stream 响应里能出现四种行</text>
+
+  <g font-family="Consolas, monospace" font-size="13">
+    <!-- 响应头 -->
+    <rect x="40" y="104" width="300" height="118" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1"/>
+    <text x="52" y="126" fill="#2c3e50" font-size="12" font-weight="bold">响应头</text>
+    <text x="52" y="148" fill="#333">Content-Type: text/event-stream</text>
+    <text x="52" y="168" fill="#333">Cache-Control: no-cache</text>
+    <text x="52" y="188" fill="#555" font-size="11.5">没有 Content-Length（chunked）</text>
+    <text x="52" y="210" fill="#555" font-size="11.5">逐块 flush 才「实时」</text>
+
+    <!-- 行类型 -->
+    <rect x="360" y="104" width="600" height="118" fill="#ffffff" stroke="#bdc3c7" stroke-width="1"/>
+    <text x="372" y="126" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="bold" fill="#2c3e50">四类行（行首字段名 + 冒号 + 值）</text>
+    <rect x="372" y="136" width="70" height="24" fill="#e8f4fd" stroke="#2980b9"/>
+    <text x="407" y="153" text-anchor="middle" fill="#1a1a2e">data</text>
+    <text x="452" y="153" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">消息体，可多行，浏览器用 \n 拼接</text>
+    <rect x="372" y="166" width="70" height="24" fill="#eafaf1" stroke="#27ae60"/>
+    <text x="407" y="183" text-anchor="middle" fill="#1a1a2e">event</text>
+    <text x="452" y="183" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">事件名，对应 addEventListener</text>
+    <rect x="372" y="196" width="70" height="24" fill="#fef5e7" stroke="#d68910"/>
+    <text x="407" y="213" text-anchor="middle" fill="#1a1a2e">id</text>
+    <text x="452" y="213" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">事件 id，断线后由 Last-Event-ID 带回</text>
+    <rect x="372" y="226" width="70" height="24" fill="#fdeaea" stroke="#c0392b"/>
+    <text x="407" y="243" text-anchor="middle" fill="#1a1a2e">retry</text>
+    <text x="452" y="243" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">建议重连间隔（毫秒）</text>
+  </g>
+
+  <!-- 空行分界 -->
+  <rect x="40" y="240" width="920" height="62" fill="#f0f9f4" stroke="#27ae60" stroke-width="1.2"/>
+  <text x="56" y="262" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#1e8449">空行 = 一条消息结束，也是唯一的分界符</text>
+  <text x="56" y="286" font-family="Consolas, monospace" font-size="12.5" fill="#333">id: 43</text>
+  <text x="130" y="286" font-family="Consolas, monospace" font-size="12.5" fill="#333">event: price</text>
+  <text x="245" y="286" font-family="Consolas, monospace" font-size="12.5" fill="#333">data: {"symbol":"BTC","price":68000}</text>
+  <text x="560" y="286" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12.5" fill="#1e8449" font-weight="bold">← 这里一个空行</text>
+
+  <!-- 注释行 -->
+  <rect x="40" y="314" width="920" height="48" fill="#fef5e7" stroke="#d68910" stroke-width="1"/>
+  <text x="56" y="336" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12.5" fill="#333">以冒号开头的行是注释，不触发 message 事件 —— 最常见的用途就是心跳：</text>
+  <text x="56" y="356" font-family="Consolas, monospace" font-size="12.5" fill="#8a5a00">: keep-alive</text>
+  <text x="180" y="356" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#555">服务端定期发一行，让代理和 NAT 认为这条连接还活着</text>
+
+  <!-- ===== 下：续传时序 ===== -->
+  <text x="40" y="404" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" font-weight="bold" fill="#2c3e50">断线后：EventSource 自动重连，并带上 Last-Event-ID</text>
+
+  <!-- 客户端 -->
+  <rect x="40" y="424" width="130" height="240" fill="#e8f4fd" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="105" y="450" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#1a4f7a">浏览器 EventSource</text>
+  <text x="105" y="478" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">记住最后</text>
+  <text x="105" y="495" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">一个 id</text>
+  <text x="105" y="540" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">超时/断开</text>
+  <text x="105" y="582" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">自动重连</text>
+  <text x="105" y="600" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#555">带 Last-Event-ID</text>
+
+  <!-- 服务端 -->
+  <rect x="830" y="424" width="130" height="240" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="895" y="450" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#1e8449">服务端</text>
+  <text x="895" y="478" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">每条消息</text>
+  <text x="895" y="495" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">带 id 字段</text>
+  <text x="895" y="540" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">收到带头</text>
+  <text x="895" y="558" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">的请求</text>
+  <text x="895" y="600" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#555">续传语义自己实现</text>
+
+  <!-- 中间消息流 -->
+  <rect x="190" y="424" width="620" height="240" fill="#ffffff" stroke="#dee2e6" stroke-width="1"/>
+  <text x="500" y="446" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="bold" fill="#2c3e50">同一条 HTTP 响应持续推送</text>
+
+  <line x1="105" y1="466" x2="895" y2="466" stroke="#2980b9" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="105" y1="570" x2="895" y2="570" stroke="#c0392b" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="105" y1="636" x2="895" y2="636" stroke="#27ae60" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- 阶段标签 -->
+  <rect x="200" y="452" width="120" height="24" fill="#e8f4fd" stroke="#2980b9"/>
+  <text x="260" y="469" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#1a4f7a">① 正常推送</text>
+  <rect x="330" y="556" width="150" height="24" fill="#fdeaea" stroke="#c0392b"/>
+  <text x="405" y="573" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#922b21">② 连接断开</text>
+  <rect x="500" y="622" width="220" height="24" fill="#eafaf1" stroke="#27ae60"/>
+  <text x="610" y="639" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#1e8449">③ 带 Last-Event-ID 重连</text>
+
+  <!-- 消息行 -->
+  <g font-family="Consolas, monospace" font-size="11.5" fill="#333">
+    <text x="200" y="500">id: 41  data: ...</text>
+    <text x="200" y="520">id: 42  data: ...</text>
+    <text x="200" y="540">id: 43  data: ...   ← 最后收到的一条</text>
+  </g>
+
+  <!-- 断线标记 -->
+  <text x="200" y="592" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#922b21">（代理超时 / 网络抖动 / 服务端重启）</text>
+
+  <!-- 重连请求 -->
+  <rect x="500" y="600" width="310" height="0" fill="none"/>
+  <text x="200" y="668" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#1e8449">GET /events   Last-Event-ID: 43   → 服务端从 44 开始补发</text>
+
+  <!-- 要点 -->
+  <rect x="40" y="678" width="920" height="0" fill="none"/>
+</svg>

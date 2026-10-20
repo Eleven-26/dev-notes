@@ -63,6 +63,8 @@ ActiveMQ Classic 的持久化默认是 **KahaDB**：所有持久化目的地**�
 
 ![ActiveMQ 高可用：Shared-Store 主从、租约型主从与 Network of Brokers 级联](images/ActiveMQ主从与级联拓扑.svg)
 
+三种高可用形态按「共享什么、切换多快、会不会重复」三个问题区分，下面逐行对照：
+
 | 方案 | 机制 | 代价 |
 | --- | --- | --- |
 | Shared-Store Master/Slave | 主从挂同一份存储（NFS / SAN），从节点抢锁接管 | 依赖共享存储的可靠性；切换后客户端要重连 |
@@ -74,6 +76,31 @@ ActiveMQ Classic 的持久化默认是 **KahaDB**：所有持久化目的地**�
 ### 3.3 与 Artemis 的关系
 
 ActiveMQ Artemis 是 Apache **另起炉灶**的实现（源自 HornetQ 捐赠）：核心协议换成自研 Core Protocol + 地址模型（Address/Queue 分离）、存储换成分页 journal、集群用 Raft 无关的 quorum 复制。**两者配置文件、地址语义、集群方式互不兼容**——把 Classic 的 `activemq.xml` 抄进 Artemis 是新人最常见的事故。
+
+### 3.4 OpenWire：私有协议，为什么不该单独学 ⭐
+
+OpenWire 是 ActiveMQ Classic **自己的二进制协议**，端口 61616，也是 Java 客户端的默认通道。它的定位一句话就能说清：**JMS 定义 API 语义，OpenWire 定义那些 API 调用在线上长什么样。**
+
+| 层次 | 是什么 | 有字节吗 |
+|---|---|---|
+| 业务代码 | `JmsTemplate` / `@JmsListener` | ✗ |
+| JMS API | Connection / Session / Producer 这套接口 | ✗ **规范只规定 Java 接口与语义，不规定线上格式** |
+| **OpenWire** | 把 JMS 调用编码成字节的那一层 | ✓ **这一层才是「线上协议」** |
+| TCP | 61616 | ✓ |
+
+![ActiveMQ Classic 的四协议分工与 OpenWire 的位置：左侧从业务代码到 JMS API 到 OpenWire 再到 TCP 61616 逐层下落并标出哪一层才有字节，右侧列出同一进程四个端口、四种协议、是否公开规范与各自的使用者](images/ActiveMQ四协议分工与OpenWire的位置.svg)
+
+⭐ **它解释了「JMS 不是协议」这件事实**：同一段 JMS 代码，在 Classic 上跑出 OpenWire 字节，在 Artemis 上跑出 Core Protocol 字节，在 IBM MQ 上又是另一套——**规范没变，字节全变**。这正是 [JMS规范.md](JMS规范.md) 第一节那个结论的产品侧依据。
+
+⚠️ **为什么不建议为它单开一篇**，三条理由都是可核验的：
+
+1. **只有一家实现**。OpenWire 不出现在 ActiveMQ Classic 之外的任何 broker 上；Artemis 换成了 Core Protocol，RabbitMQ / Kafka / Pulsar 各有自己的协议。它不满足「可被多个产品实现」这条收录判据。
+2. **没有公开规范可核对**。Apache 没有发布 RFC 级的 OpenWire 规范，只有 wire format 的内部说明；这意味着任何「逐字节」的写法都无法交叉验证，本篇不给出字节读数。
+3. **两条使用路径都不需要直接碰它**。用 Java 时客户端库（`activemq-client`）已经处理好编解码；用 Go / 其他语言时走 STOMP 更省（本篇第六节就是这么做的，`go-stomp` 十几行就能收发）。
+
+那什么时候仍然会碰到它？三种情况：**连接串**（Java 侧 `tcp://host:61616`，也可显式写 `ssl://` / `nio://` 前缀）；**排障**（日志与异常里的协议层字段，以及 `wireFormat.maxInactivityDuration` 这类心跳配置）；**决定要不要迁 Artemis**（只需知道 Core Protocol 与 OpenWire 不兼容，客户端要跟着换）。
+
+> ⭐ 一句话记忆：**OpenWire 是「JMS 的线上编码」，不是一门需要单独学的协议**。要学协议层，学 STOMP / AMQP / MQTT 那些有公开规范的；要用 ActiveMQ，用 Java 客户端或走 STOMP。
 
 ---
 
@@ -98,7 +125,7 @@ ActiveMQ Artemis 是 Apache **另起炉灶**的实现（源自 HornetQ 捐赠）
 
 | 能力 | 说明 | 对比 |
 | --- | --- | --- |
-| ⭐ **协议覆盖最广** | OpenWire / STOMP / AMQP 1.0 / MQTT 同进程开放 | Kafka 只有自有协议 + REST，Pulsar 多协议但组件重 |
+| ⭐ **协议覆盖最广** | OpenWire / STOMP / AMQP 1.0 / MQTT 同进程开放（OpenWire 是什么、为什么不该单独学见 3.4） | Kafka 只有自有协议 + REST，Pulsar 多协议但组件重 |
 | ⭐ **Request-Reply 原生** | Temporary Queue + `reply-to` 头，调用方自建应答队列即可 | Kafka / RocketMQ 都要自建关联表 |
 | ⭐ **Selector 服务端过滤** | SQL92 子集按消息属性过滤，消费者只收匹配消息 | Kafka 无服务端过滤，只能客户端丢 |
 | **通配符目的地 / 虚拟消费者** | `Consumer.*.>` 这类订阅可把老代码的目的地名零改造映射走 | 迁移期的独门工具 |
@@ -590,6 +617,8 @@ curl -s -u admin:admin "http://127.0.0.1:8161/api/jolokia/read/org.apache.active
 - **`useAsyncSend=true` 的代价是什么？** → send 返回只代表进了客户端发送队列，**不代表 broker 落盘**；broker 崩溃丢最后一批。要「发了就算数」就用同步发送或带 receipt。
 - **怎么保证不丢消息？** → PERSISTENT + CLIENT_ACKNOWLEDGE（先处理再 ack）+ redeliveryPolicy 兜底重投 + DLQ 有人消费 + 业务幂等；任何一环缺了，丢的形态都不一样。
 - **selector 过滤是在哪一侧做的？** → broker 侧匹配、但**消息仍留在队列里**直到被消费或过期——用 selector 做「多租户隔离」会白白占存储，这是它和 Kafka 消费组过滤的本质区别。
+- **OpenWire 需要专门学吗？** → 不需要。它是 Classic 的私有协议且只有一家实现，Java 客户端库已处理编解码，非 JVM 语言走 STOMP 更省；它真正的价值是解释「JMS 无字节、字节由 broker 定」这件事（见 3.4）。
+- **为什么同一段 JMS 代码换 broker 会出问题？** → 因为 JMS 只规定接口与语义，**不规定线上格式**：Classic 走 OpenWire、Artemis 走 Core Protocol、IBM MQ 又不同。超时语义、重投时机、`JMSXDeliveryCount` 是否自动填充这些「规范没写死」的地方，才是跨 broker 迁移真正的坑。
 
 ---
 
@@ -601,4 +630,7 @@ curl -s -u admin:admin "http://127.0.0.1:8161/api/jolokia/read/org.apache.active
 - [消息类型与语义.md](RocketMQ/消息类型与语义.md) — 事务/延迟消息的另一种实现（半消息 vs AMQ_SCHEDULED_*）
 - [Pulsar.md](Pulsar.md) — 存算分离路线：把 KahaDB 单 store 换成 BookKeeper
 - [Nats.md](Nats.md) — Go 系轻量通信的对照选项
+- [JMS规范.md](JMS规范.md) — JMS 为什么不是协议：三层约束、两个域与四种确认模式
+- [STOMP.md](../../../02-计算机基础/网络/消息协议/STOMP.md) — 非 JVM 语言接 ActiveMQ 走的那条公开协议：文本帧与 `ack` 三种模式
+- [AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md) — ActiveMQ 也开的公开协议（注意是 1.0，不是 RabbitMQ 的 0-9-1）
 - [Skywalking.md](../可观测性/Skywalking.md) — 消息链路的 trace 埋点思路相通

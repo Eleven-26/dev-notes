@@ -514,4 +514,4 @@ curl -sS -o /dev/null -w 'GET /slow/ -> %{http_code} in %{time_total}s\n' http:/
 - **运维/配置**：[客户端真实IP与可信代理.md](../../网络/代理与网关/客户端真实IP与可信代理.md) — 反代下取真实 IP
 - **运维/配置**：[02-主机安全与SELinux.md](02-主机安全与SELinux.md) — 站点目录的 SELinux 上下文
 - **对照/互补**：[10-邮件服务器.md](10-邮件服务器.md) — 同为「对外提供服务」的架设场景
-> 反向引用（本篇被下列文档引到）：[11-容器化衔接.md](11-容器化衔接.md)、[WebSocket与SSE.md](../../网络/应用层/WebSocket与SSE.md)、[证书与HTTPS排障.md](../../网络/应用层/证书与HTTPS排障.md)
+> 反向引用（本篇被下列文档引到）：[11-容器化衔接.md](11-容器化衔接.md)、[WebSocket.md](../../网络/应用层/WebSocket.md)、[SSE.md](../../网络/应用层/SSE.md)、[证书与HTTPS排障.md](../../网络/应用层/证书与HTTPS排障.md)

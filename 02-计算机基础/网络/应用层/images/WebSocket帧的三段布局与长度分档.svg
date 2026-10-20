@@ -1,0 +1,112 @@
+<svg width="1000" height="760" viewBox="0 0 1000 760" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1000" height="760" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="21" font-weight="bold" fill="#1a1a2e">WebSocket 帧的三段布局与长度三档</text>
+  <text x="500" y="58" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#666">上：客户端发 11 字节文本帧的逐字节拆解（掩码异或）；下：三种长度分档的头大小对照</text>
+
+  <!-- ===== 上：逐字节拆解 ===== -->
+  <text x="40" y="90" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" font-weight="bold" fill="#2c3e50">实测：客户端发 "hello"（5 字节），共 11 字节</text>
+
+  <g font-family="Consolas, monospace" font-size="13">
+    <!-- 第 1 字节 -->
+    <rect x="40" y="104" width="52" height="46" fill="#e8f4fd" stroke="#2980b9" stroke-width="1.5"/>
+    <text x="66" y="126" text-anchor="middle" fill="#1a1a2e" font-weight="bold">81</text>
+    <text x="66" y="143" text-anchor="middle" fill="#555" font-size="11">字节 1</text>
+    <text x="66" y="172" text-anchor="middle" fill="#2980b9" font-size="12" font-weight="bold">FIN=1</text>
+    <text x="66" y="190" text-anchor="middle" fill="#2980b9" font-size="12">opcode=1</text>
+
+    <!-- 第 2 字节 -->
+    <rect x="100" y="104" width="52" height="46" fill="#fdeaea" stroke="#c0392b" stroke-width="1.5"/>
+    <text x="126" y="126" text-anchor="middle" fill="#1a1a2e" font-weight="bold">85</text>
+    <text x="126" y="143" text-anchor="middle" fill="#555" font-size="11">字节 2</text>
+    <text x="126" y="172" text-anchor="middle" fill="#c0392b" font-size="12" font-weight="bold">MASK=1</text>
+    <text x="126" y="190" text-anchor="middle" fill="#c0392b" font-size="12">len=5</text>
+
+    <!-- 掩码键 4 字节 -->
+    <rect x="160" y="104" width="120" height="46" fill="#fef5e7" stroke="#d68910" stroke-width="1.5"/>
+    <text x="220" y="126" text-anchor="middle" fill="#1a1a2e" font-weight="bold">01 02 03 04</text>
+    <text x="220" y="143" text-anchor="middle" fill="#555" font-size="11">字节 3-6</text>
+    <text x="220" y="172" text-anchor="middle" fill="#d68910" font-size="12">掩码键 4 字节</text>
+    <text x="220" y="190" text-anchor="middle" fill="#d68910" font-size="12">仅 MASK=1 时出现</text>
+
+    <!-- 载荷 5 字节 -->
+    <rect x="288" y="104" width="150" height="46" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="363" y="126" text-anchor="middle" fill="#1a1a2e" font-weight="bold">69 67 6f 68 6e</text>
+    <text x="363" y="143" text-anchor="middle" fill="#555" font-size="11">字节 7-11</text>
+    <text x="363" y="172" text-anchor="middle" fill="#27ae60" font-size="12">载荷 5 字节</text>
+    <text x="363" y="190" text-anchor="middle" fill="#27ae60" font-size="12">已按掩码异或加密</text>
+  </g>
+
+  <!-- 位段拆解 -->
+  <rect x="40" y="212" width="920" height="76" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  <text x="56" y="234" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#2c3e50">字节 1 的 8 位：</text>
+  <g font-family="Consolas, monospace" font-size="12">
+    <rect x="160" y="220" width="30" height="22" fill="#d6eaf8" stroke="#2980b9"/>
+    <text x="175" y="236" text-anchor="middle" fill="#1a1a2e">F</text>
+    <rect x="190" y="220" width="30" height="22" fill="#d6eaf8" stroke="#2980b9"/>
+    <text x="205" y="236" text-anchor="middle" fill="#1a1a2e">I</text>
+    <rect x="220" y="220" width="30" height="22" fill="#d6eaf8" stroke="#2980b9"/>
+    <text x="235" y="236" text-anchor="middle" fill="#1a1a2e">N</text>
+    <rect x="250" y="220" width="180" height="22" fill="#fdeaea" stroke="#c0392b"/>
+    <text x="340" y="236" text-anchor="middle" fill="#1a1a2e">RSV1 RSV2 RSV3</text>
+    <rect x="430" y="220" width="120" height="22" fill="#eafaf1" stroke="#27ae60"/>
+    <text x="490" y="236" text-anchor="middle" fill="#1a1a2e">opcode(4)</text>
+    <text x="575" y="236" fill="#555">0x81 = 1000 0001</text>
+  </g>
+  <text x="56" y="270" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#555">字节 2 的 8 位：MASK(1) + payload len(7)。len 只有 7 位，装不下就走下面三档</text>
+
+  <!-- 服务端回显对照 -->
+  <rect x="40" y="300" width="920" height="52" fill="#f0f9f4" stroke="#27ae60" stroke-width="1"/>
+  <text x="56" y="322" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#1e8449">同一份载荷，服务端回显只要 7 字节：81 05 68 65 6c 6c 6f</text>
+  <text x="56" y="342" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#555">第二字节 0x05：MASK=0、len=5 —— RFC 6455 5.1 规定服务端发往客户端的帧禁止掩码，所以少了 4 字节掩码键</text>
+
+  <!-- ===== 下：三档长度 ===== -->
+  <text x="40" y="392" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" font-weight="bold" fill="#2c3e50">payload len 的三档：7 位不够时往后借字节</text>
+
+  <g font-family="Consolas, monospace" font-size="12">
+    <!-- 档 1 -->
+    <rect x="40" y="406" width="290" height="128" fill="#ffffff" stroke="#bdc3c7" stroke-width="1.5"/>
+    <rect x="40" y="406" width="290" height="28" fill="#2980b9"/>
+    <text x="185" y="425" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">第一档：len 0-125</text>
+    <rect x="58" y="446" width="36" height="30" fill="#e8f4fd" stroke="#2980b9"/>
+    <text x="76" y="466" text-anchor="middle" fill="#1a1a2e">2B</text>
+    <rect x="100" y="446" width="120" height="30" fill="#eafaf1" stroke="#27ae60"/>
+    <text x="160" y="466" text-anchor="middle" fill="#1a1a2e">payload</text>
+    <text x="58" y="500" fill="#555" font-size="11">头 2 字节（客户端 +4 掩码）</text>
+    <text x="58" y="518" fill="#555" font-size="11">实测：81 85 … = 11 字节</text>
+
+    <!-- 档 2 -->
+    <rect x="350" y="406" width="290" height="128" fill="#ffffff" stroke="#bdc3c7" stroke-width="1.5"/>
+    <rect x="350" y="406" width="290" height="28" fill="#d68910"/>
+    <text x="495" y="425" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">第二档：len = 126</text>
+    <rect x="368" y="446" width="36" height="30" fill="#fef5e7" stroke="#d68910"/>
+    <text x="386" y="466" text-anchor="middle" fill="#1a1a2e">2B</text>
+    <rect x="410" y="446" width="36" height="30" fill="#fdeaea" stroke="#c0392b"/>
+    <text x="428" y="466" text-anchor="middle" fill="#1a1a2e">2B</text>
+    <rect x="452" y="446" width="174" height="30" fill="#eafaf1" stroke="#27ae60"/>
+    <text x="539" y="466" text-anchor="middle" fill="#1a1a2e">payload</text>
+    <text x="368" y="500" fill="#555" font-size="11">126 表示「真长度在后 2 字节」</text>
+    <text x="368" y="518" fill="#555" font-size="11">实测：82 fe 00 c8 = 200</text>
+
+    <!-- 档 3 -->
+    <rect x="660" y="406" width="300" height="128" fill="#ffffff" stroke="#bdc3c7" stroke-width="1.5"/>
+    <rect x="660" y="406" width="300" height="28" fill="#c0392b"/>
+    <text x="810" y="425" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">第三档：len = 127</text>
+    <rect x="678" y="446" width="36" height="30" fill="#fdeaea" stroke="#c0392b"/>
+    <text x="696" y="466" text-anchor="middle" fill="#1a1a2e">2B</text>
+    <rect x="720" y="446" width="58" height="30" fill="#fdeaea" stroke="#c0392b"/>
+    <text x="749" y="466" text-anchor="middle" fill="#1a1a2e">8B</text>
+    <rect x="784" y="446" width="162" height="30" fill="#eafaf1" stroke="#27ae60"/>
+    <text x="865" y="466" text-anchor="middle" fill="#1a1a2e">payload</text>
+    <text x="678" y="500" fill="#555" font-size="11">127 表示「真长度在后 8 字节」</text>
+    <text x="678" y="518" fill="#555" font-size="11">实测：82 ff … 01 11 70 = 70000</text>
+  </g>
+
+  <!-- 要点 -->
+  <rect x="40" y="556" width="920" height="180" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1"/>
+  <text x="56" y="580" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">要点</text>
+  <text x="56" y="606" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12.5" fill="#333">1. 126 与 127 是「哨兵值」不是长度：len 字段写 126 时真长在后 2 字节，写 127 时在后 8 字节。</text>
+  <text x="56" y="630" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12.5" fill="#333">2. 掩码只影响客户端发往服务端的方向，且是为了防缓存投毒，不是加密 —— 掩码键就在帧里，任何人都能解。</text>
+  <text x="56" y="654" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12.5" fill="#333">3. 控制帧（ping/pong/close）的 payload 必须 ≤125，永远走第一档；分片帧的 opcode=0x0 只做续帧。</text>
+  <text x="56" y="678" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12.5" fill="#333">4. 一个 WebSocket 消息可以拆成多个帧，但一个帧只能属于一个消息 —— 拆多少帧由发送方决定。</text>
+  <text x="56" y="716" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#777">字节读数来自本机 golang:1.26-alpine 容器内的标准库 echo 服务器，Python 标准库客户端实测，连续两遍 diff 零差异。</text>
+</svg>

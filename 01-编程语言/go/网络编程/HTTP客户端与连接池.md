@@ -141,6 +141,22 @@ resp, err := c.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace
 
 第一行是 300ms 空闲后的正常复用（一次复用 + 一次重试新建），第二行连接已经被清出池子，只能新拨。
 
+把上面那组回调补齐成**分阶段耗时**（加上 `ConnectStart` / `ConnectDone` 量拨号、`GotFirstResponseByte` 量首字节），读数会细到这个程度（`golang:1.26-alpine`，`go1.26.8 linux/amd64`；`httptest` 起 TLS 服务、每个请求固定 sleep 100ms；串行调 8 次，再放开并发到 8、`MaxConnsPerHost` 置 0；连跑 4 轮，趋势一致）：
+
+| 分支 / 场景 | 实测读数 |
+|---|---|
+| 新建（进程内第一个请求） | `Reused=false`、`Dial=200µs~900µs`、`FirstByte=108ms~118ms` |
+| 复用（第二次起） | `Reused=true`、`Dial=0s`（`ConnectStart` 根本不触发）、`FirstByte=101ms~105ms`，≈ 服务端 sleep 的 100ms |
+| 协商结果 | h2 时 `resp.Proto=HTTP/2.0`、`resp.TLS.NegotiatedProtocol=h2`；ALPN 里只给 `http/1.1` 时 `NegotiatedProtocol` 为空、`Proto=HTTP/1.1` |
+| 8 并发且不限连接数 | HTTP/1.1 得到 **8 个不同本地端口**、8 次拨号；HTTP/2 只有 **1 个本地端口**（8 个请求全压在同一条连接上），但拨号次数仍记到 8 |
+
+`Reused=false` 不一定是坏事（池刚建立时本来就要建），但**稳态下仍然持续 `Reused=false`** 就说明池被参数卡住了——第一个要查的就是 `MaxIdleConnsPerHost`。
+
+两条在读这些数时会踩的口径：
+
+- ⚠️ **`Remote` 相同不能证明复用**——它只是服务端地址，同一进程里本来就恒定；要区分「是不是同一条连接」得看 `Reused` 与本地端口（`GotConnInfo.Conn.LocalAddr()`）。
+- ⚠️ **拨号次数不等于承载请求的连接数**——并发瞬间标准库会多拨几条连接，但请求仍然走已经建好的那条；判量级时别把两者混为一谈。
+
 ### 2.3 归还这一步是有条件的
 
 还回池子前先查每主机上限，超了直接丢弃（`transport.go:1138-1153` 节选）：

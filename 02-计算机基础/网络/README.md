@@ -6,7 +6,7 @@
 > 内容整理自个人学习笔记。**本文件只给阅读顺序与依赖关系**——每篇的知识点描述见
 > [全仓知识点目录](../../目录.md)，本目录**不重复描述**；跨目录的延伸见「四、与其它目录的分工」。
 >
-> 当前共 **34 篇网络专题文档**（不含本 README），按 **8 个分类**组织；Go 侧的接入实现另有两篇，
+> 当前共 **35 篇网络专题文档**（不含本 README），按 **8 个分类**组织；Go 侧的接入实现另有两篇，
 > 在 [go/网络编程/](../../01-编程语言/go/网络编程/)。
 >
 > ⭐ 「消息协议」分类（MQTT / STOMP / XMPP / AMQP / 自定义协议）是本目录唯一按**协议族**切出来的一组：
@@ -76,7 +76,7 @@
 | **复习 TCP** | [TCP报文结构.md](传输层/tcp/TCP报文结构.md) → [TCP三次握手.md](传输层/tcp/TCP三次握手.md) → [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) → [TCP的Nagle与延迟确认.md](传输层/tcp/TCP的Nagle与延迟确认.md) → [TCP拥塞控制算法.md](传输层/tcp/TCP拥塞控制算法.md) → [TCP四次挥手.md](传输层/tcp/TCP四次挥手.md) → [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md) |
 | **搞懂 IP 与路由** | [IP与路由基础.md](网络层与寻址/IP与路由基础.md) → [IPv6与双栈.md](网络层与寻址/IPv6与双栈.md) → [NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) → [网络通信链路详解.md](网络通信链路详解.md)（逐跳改写） |
 | **排查 DNS 与证书** | [DNS安全与加密解析.md](网络层与寻址/DNS安全与加密解析.md) → [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) → [HTTPS与TLS.md](应用层/HTTPS与TLS.md) |
-| **做技术选型** | [通信选型.md](选型/通信选型.md) → [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) → [HTTP与gRPC.md](应用层/HTTP与gRPC.md) → [WebSocket与SSE.md](应用层/WebSocket与SSE.md) → [数据序列化.md](选型/数据序列化.md) |
+| **做技术选型** | [通信选型.md](选型/通信选型.md) → [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) → [HTTP与gRPC.md](应用层/HTTP与gRPC.md) → [WebSocket.md](应用层/WebSocket.md) → [SSE.md](应用层/SSE.md) → [数据序列化.md](选型/数据序列化.md) |
 | **只想搞懂 HTTP 版本差异** | [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) → [HTTP与gRPC.md](应用层/HTTP与gRPC.md) → [QUIC与HTTP3.md](应用层/QUIC与HTTP3.md) |
 | **只看 HTTP/3 相关** | [QUIC与HTTP3.md](应用层/QUIC与HTTP3.md) → [HTTPS与TLS.md](应用层/HTTPS与TLS.md)（ALPN）→ [TCP三次握手.md](传输层/tcp/TCP三次握手.md)（对照它被压成 1-RTT） |
 | **要动手抓一次包** | [抓包实战.md](观测与排障/抓包实战.md) → [网络通信链路详解.md](网络通信链路详解.md)（五、分层观测点） |
@@ -106,7 +106,8 @@
 | [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md) | 先懂握手，再谈证书链与错误码 |
 | [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md)、[TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 版本是 ALPN 协商的结果；定界的根因是「TCP 是字节流」 |
 | [HTTP与gRPC.md](应用层/HTTP与gRPC.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md)、[HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | 应用层在 TLS 之上；HTTP/2 是 gRPC 的地基 |
-| [WebSocket与SSE.md](应用层/WebSocket与SSE.md) | [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md)、[NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) | 推送建立在 HTTP 语义与长连接之上 |
+| [WebSocket.md](应用层/WebSocket.md) | [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md)、[NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) | RFC 6455 的握手、帧布局与掩码，及升级后丢失的 HTTP 语义 |
+| [SSE.md](应用层/SSE.md) | [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md)、[WebSocket.md](应用层/WebSocket.md) | 事件流格式、`Last-Event-ID` 续传与六连接上限，推送链路上更便宜的那一半 |
 | [QUIC与HTTP3.md](应用层/QUIC与HTTP3.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md)、[TCP三次握手.md](传输层/tcp/TCP三次握手.md)、[UDP与数据报传输.md](传输层/UDP与数据报传输.md) | 要懂 1-RTT / 0-RTT 的价值，先知道 TCP + TLS 要几次往返 |
 | [反向代理原理.md](代理与网关/反向代理原理.md) | [HTTP与gRPC.md](应用层/HTTP与gRPC.md)、[TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 要懂逐跳头与连接复用 |
 | [反向代理接入.md](../../01-编程语言/go/网络编程/反向代理接入.md) | [反向代理原理.md](代理与网关/反向代理原理.md) | 先懂「该做什么」，再谈「怎么接」 |
@@ -126,9 +127,9 @@
 
 ## 三、现有篇章地图（按主题分组）
 
-![网络体系总览：纵向与横向两篇总纲，加上数据链路层、网络层与寻址、传输层、应用层、消息协议、代理与观测、选型八个分类共 34 篇的分布](images/网络体系总览.svg)
+![网络体系总览：纵向与横向两篇总纲，加上数据链路层、网络层与寻址、传输层、应用层、消息协议、代理与观测、选型八个分类共 35 篇的分布](images/网络体系总览.svg)
 
-图注：网络体系总览：纵向与横向两篇总纲，加上数据链路层、网络层与寻址、传输层、应用层、消息协议、代理与观测、选型八个分类共 34 篇的分布，以及各分类之间的阅读方向。
+图注：网络体系总览：纵向与横向两篇总纲，加上数据链路层、网络层与寻址、传输层、应用层、消息协议、代理与观测、选型八个分类共 35 篇的分布，以及各分类之间的阅读方向。
 
 ### 总纲与端到端链路（2 篇）
 
@@ -168,20 +169,21 @@
 | [UDP与数据报传输.md](传输层/UDP与数据报传输.md) | 数据报语义与消息边界、8 字节首部与校验和、不保证什么、MTU 与队列丢包 |
 | [IO多路复用.md](传输层/IO多路复用.md) | 五种 I/O 模型、select/poll/epoll、LT vs ET、Reactor、`io_uring`、fd 上限 |
 
-### 应用层（6 篇）
+### 应用层（7 篇）
 
 | 篇章 | 主要职责 |
 |---|---|
 | [HTTPS与TLS.md](应用层/HTTPS与TLS.md) | TLS 1.2/1.3 握手、RSA vs ECDHE、会话复用、0-RTT、mTLS、ECH、HSTS 与性能 |
 | [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) | X.509 字段、信任链五步校验、自签与 ACME、证书固定、六类握手错误与排障命令 |
-| [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | ⭐ **HTTP 版本差异的唯一详解源**：ALPN、连接与并发模型、三种定界、HPACK、两级流控、队头阻塞 |
-| [HTTP与gRPC.md](应用层/HTTP与gRPC.md) | gRPC 与 HTTP 的差别、HTTP/2 五处改动、连接池与 `httptrace`、多路复用实测 |
-| [WebSocket与SSE.md](应用层/WebSocket与SSE.md) | 三方对照、三条判据、`Upgrade` 逐跳、6 连接上限、心跳与 `Last-Event-ID` |
+| [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | ⭐ **HTTP 版本差异的唯一详解源**：ALPN、连接与并发模型、三种定界、HPACK、两级流控、队头阻塞（含 7.4 的 60 请求量化实测） |
+| [HTTP与gRPC.md](应用层/HTTP与gRPC.md) | gRPC 与 HTTP 的差别、HTTP/2 五处改动、gRPC 落地的三件必做事（超时 / 重试预算 / 单例连接）、`curl` 与 `tshark` 的抓包判据；客户端池调参已按语言拆出 |
+| [WebSocket.md](应用层/WebSocket.md) | RFC 6455 握手与 Accept 算法、帧字节布局、掩码、分片与关闭握手，`Upgrade` 逐跳；⭐ 本机实测 |
+| [SSE.md](应用层/SSE.md) | 事件流四类行、空行分界、`Last-Event-ID` 续传三步时序、六连接上限与代理缓冲 |
 | [QUIC与HTTP3.md](应用层/QUIC与HTTP3.md) | 流隔离边界、0-RTT 与连接迁移、SVCB / Alt-Svc 两条发现路径与回退 |
 
 ### 消息协议（5 篇）
 
-这五篇的共同问题是「**一条消息在线上到哪结束、怎么被确认**」，与「应用层」的差别在于：应用层那六篇面向的是 Web 请求与推送，这五篇面向的是**消息中间件与即时通信背后的协议族**。
+这五篇的共同问题是「**一条消息在线上到哪结束、怎么被确认**」，与「应用层」的差别在于：应用层那七篇面向的是 Web 请求与推送，这五篇面向的是**消息中间件与即时通信背后的协议族**。
 
 | 篇章 | 主要职责 |
 |---|---|
@@ -209,7 +211,7 @@
 
 | 篇章 | 主要职责 |
 |---|---|
-| [通信选型.md](选型/通信选型.md) | 传输层、同步 RPC 与异步消息、七种应用层协议与六种序列化格式的横向选型 |
+| [通信选型.md](选型/通信选型.md) | 传输层、同步 RPC 与异步消息、七种应用层协议与六种序列化格式的横向选型；⭐ **3.1 ② 是「服务端推送三选一」（WebSocket / SSE / gRPC 流式）的权威版** |
 | [数据序列化.md](选型/数据序列化.md) | JSON 与 Protobuf 的对比与选型；序列化不定义消息边界 |
 
 ## 四、与其它目录的分工
@@ -252,7 +254,7 @@
 | NAT 与会话超时 | [NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) | SNAT / DNAT、conntrack、超时表与心跳判据 |
 | DNS 安全 | [DNS安全与加密解析.md](网络层与寻址/DNS安全与加密解析.md) | 劫持 vs 污染、HTTPDNS、DoH/DoT/DoQ、DNSSEC |
 | 证书排障 | [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) | 从 HTTPS 篇拆出：X.509、信任链、ACME、错误码 |
-| WebSocket / SSE | [WebSocket与SSE.md](应用层/WebSocket与SSE.md) | 从 HTTP 与 gRPC 篇拆出：三方对照、判据、链路坑 |
+| WebSocket / SSE | [WebSocket.md](应用层/WebSocket.md)、[SSE.md](应用层/SSE.md) | 从 HTTP 与 gRPC 篇拆出，再按协议拆分：WebSocket 专讲握手与帧布局，SSE 专讲事件流与续传 |
 | 连接保活 | [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md) | 从 TCP 窗口、四次挥手、I/O 多路复用三处收成一篇 |
 | 代理 / IP 的代码落地 | [反向代理接入.md](../../01-编程语言/go/网络编程/反向代理接入.md)、[客户端IP接入.md](../../01-编程语言/go/网络编程/客户端IP接入.md) | 原理篇留结论，Go 实现按语言目录拆分并互链 |
 | **消息协议族** | [消息协议/](消息协议/) 五篇 | 从「消息队列产品」目录里把**协议层**抽出来独立成分类：AMQP 篇整体迁入，MQTT / STOMP / XMPP 新写，另加一篇通用的定界方法篇 |
@@ -268,7 +270,7 @@
 
 ## 六、三条维护原则
 
-1. **一处讲透，其他地方互链。** 二层转发由 [以太网与二层转发.md](数据链路层/以太网与二层转发.md) 负责；寻址与选路由 [IP与路由基础.md](网络层与寻址/IP与路由基础.md) 负责；IPv6 由 [IPv6与双栈.md](网络层与寻址/IPv6与双栈.md) 负责；NAT 与超时由 [NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) 负责；保活由 [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md) 负责；证书排障由 [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) 负责；推送由 [WebSocket与SSE.md](应用层/WebSocket与SSE.md) 负责；HTTP 版本差异由 [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) 负责；**消息协议的帧布局**由 [消息协议/](消息协议/) 对应篇负责——AMQP 的帧与 method 只在这一处讲，产品篇（RabbitMQ）只链不重讲。
+1. **一处讲透，其他地方互链。** 二层转发由 [以太网与二层转发.md](数据链路层/以太网与二层转发.md) 负责；寻址与选路由 [IP与路由基础.md](网络层与寻址/IP与路由基础.md) 负责；IPv6 由 [IPv6与双栈.md](网络层与寻址/IPv6与双栈.md) 负责；NAT 与超时由 [NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) 负责；保活由 [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md) 负责；证书排障由 [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) 负责；推送由 [WebSocket.md](应用层/WebSocket.md) 与 [SSE.md](应用层/SSE.md) 负责；HTTP 版本差异由 [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) 负责；**消息协议的帧布局**由 [消息协议/](消息协议/) 对应篇负责——AMQP 的帧与 method 只在这一处讲，产品篇（RabbitMQ）只链不重讲。
 2. **不要混淆相近机制。** IP 分片 ≠ TCP 分段；TCP 字节流 ≠ UDP 数据报；`rwnd` 流量控制 ≠ `cwnd` 拥塞控制；HTTP/2 应用层多路复用 ≠ 消除 TCP 层队头阻塞；DNSSEC 完整性 ≠ DNS 查询加密；TLS ≠ HTTP；`io_uring` 的完成式语义 ≠ epoll 的就绪式语义；TCP keepalive ≠ 业务心跳。
 3. **版本敏感内容要标口径。** Linux sysctl 默认值（如 `somaxconn`）、内核 API、浏览器 HTTP/3 发现方式、延迟确认定时器、Go/Java 运行时实现都须注明版本或写「实现相关」；**单机实测不能直接写成协议定律**。
 

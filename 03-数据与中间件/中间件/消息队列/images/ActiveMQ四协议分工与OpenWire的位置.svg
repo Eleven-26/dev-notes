@@ -1,0 +1,95 @@
+<svg width="1000" height="620" viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="21" font-weight="bold" fill="#1a1a2e">ActiveMQ Classic 的四协议分工与 OpenWire 的位置</text>
+  <text x="500" y="58" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#666">同一个 broker 进程开四个端口；OpenWire 是唯一私有、也是 Java 客户端默认走的那一条</text>
+
+  <!-- ===== 左：客户端分层 ===== -->
+  <text x="40" y="92" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" font-weight="bold" fill="#2c3e50">Java 客户端的调用怎么落到字节上</text>
+
+  <rect x="40" y="104" width="290" height="52" fill="#e8f4fd" stroke="#2980b9" stroke-width="1.5"/>
+  <text x="185" y="126" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#1a4f7a">业务代码</text>
+  <text x="185" y="146" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">JmsTemplate / @JmsListener</text>
+
+  <line x1="185" y1="156" x2="185" y2="176" stroke="#7f8c8d" stroke-width="1.5"/>
+  <polygon points="185,176 180,168 190,168" fill="#7f8c8d"/>
+
+  <rect x="40" y="180" width="290" height="52" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/>
+  <text x="185" y="202" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#1e8449">JMS API（规范，无字节）</text>
+  <text x="185" y="222" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">Connection / Session / Producer</text>
+
+  <line x1="185" y1="232" x2="185" y2="252" stroke="#7f8c8d" stroke-width="1.5"/>
+  <polygon points="185,252 180,244 190,244" fill="#7f8c8d"/>
+
+  <rect x="40" y="256" width="290" height="56" fill="#fdeaea" stroke="#c0392b" stroke-width="2"/>
+  <text x="185" y="278" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#922b21">OpenWire（私有二进制协议）</text>
+  <text x="185" y="298" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#333">把 JMS 调用编码成字节 —— 这一段才是「线上格式」</text>
+
+  <line x1="185" y1="312" x2="185" y2="332" stroke="#7f8c8d" stroke-width="1.5"/>
+  <polygon points="185,332 180,324 190,324" fill="#7f8c8d"/>
+
+  <rect x="40" y="336" width="290" height="44" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.5"/>
+  <text x="185" y="356" text-anchor="middle" font-family="Consolas, monospace" font-size="12.5" fill="#333">TCP 61616</text>
+  <text x="185" y="373" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#555">Java 客户端的默认连接串 tcp://host:61616</text>
+
+  <rect x="40" y="398" width="290" height="60" fill="#fef5e7" stroke="#d68910" stroke-width="1"/>
+  <text x="56" y="420" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="bold" fill="#8a5a00">同一段 JMS 代码，换 broker 就换字节</text>
+  <text x="56" y="440" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#555">ActiveMQ Classic → OpenWire</text>
+  <text x="56" y="456" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#555">ActiveMQ Artemis → Core Protocol</text>
+
+  <!-- ===== 右：四协议对照 ===== -->
+  <text x="370" y="92" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="15" font-weight="bold" fill="#2c3e50">一个进程，四个端口，四种协议</text>
+
+  <!-- 表头 -->
+  <rect x="370" y="104" width="590" height="30" fill="#2c3e50"/>
+  <text x="386" y="124" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">协议</text>
+  <text x="500" y="124" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">端口</text>
+  <text x="580" y="124" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">公开规范</text>
+  <text x="700" y="124" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">谁在用</text>
+
+  <g font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12">
+    <!-- OpenWire -->
+    <rect x="370" y="134" width="590" height="52" fill="#fdeaea" stroke="#c0392b" stroke-width="1.5"/>
+    <text x="386" y="156" fill="#922b21" font-weight="bold">OpenWire</text>
+    <text x="500" y="156" font-family="Consolas, monospace" fill="#333">61616</text>
+    <text x="580" y="156" fill="#c0392b" font-weight="bold">✗ 私有</text>
+    <text x="700" y="156" fill="#333">Java 客户端默认</text>
+    <text x="386" y="176" fill="#777" font-size="11">仅 ActiveMQ Classic 一家实现；Apache 无 RFC 级规范</text>
+
+    <!-- STOMP -->
+    <rect x="370" y="186" width="590" height="52" fill="#eafaf1" stroke="#27ae60" stroke-width="1.5"/>
+    <text x="386" y="208" fill="#1e8449" font-weight="bold">STOMP</text>
+    <text x="500" y="208" font-family="Consolas, monospace" fill="#333">61613</text>
+    <text x="580" y="208" fill="#1e8449" font-weight="bold">✓ 公开</text>
+    <text x="700" y="208" fill="#333">Go / 非 JVM 语言</text>
+    <text x="386" y="228" fill="#777" font-size="11">文本帧，本篇第六节 Go 示例走这条</text>
+
+    <!-- AMQP -->
+    <rect x="370" y="238" width="590" height="52" fill="#e8f4fd" stroke="#2980b9" stroke-width="1.5"/>
+    <text x="386" y="260" fill="#1a4f7a" font-weight="bold">AMQP 1.0</text>
+    <text x="500" y="260" font-family="Consolas, monospace" fill="#333">5672</text>
+    <text x="580" y="260" fill="#1a4f7a" font-weight="bold">✓ 公开</text>
+    <text x="700" y="260" fill="#333">跨语言 / 企业集成</text>
+    <text x="386" y="280" fill="#777" font-size="11">注意是 1.0 不是 0-9-1，RabbitMQ 那套帧不通用</text>
+
+    <!-- MQTT -->
+    <rect x="370" y="290" width="590" height="52" fill="#fef5e7" stroke="#d68910" stroke-width="1.5"/>
+    <text x="386" y="312" fill="#8a5a00" font-weight="bold">MQTT</text>
+    <text x="500" y="312" font-family="Consolas, monospace" fill="#333">1883</text>
+    <text x="580" y="312" fill="#8a5a00" font-weight="bold">✓ 公开</text>
+    <text x="700" y="312" fill="#333">IoT / 移动端</text>
+    <text x="386" y="332" fill="#777" font-size="11">轻量发布订阅，本篇不展开，原理见消息协议目录</text>
+  </g>
+
+  <!-- 结论块 -->
+  <rect x="370" y="360" width="590" height="110" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1"/>
+  <text x="386" y="384" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#2c3e50">为什么 OpenWire 不该单独学</text>
+  <text x="386" y="408" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">1. 只有一家实现，且 Classic 已进入维护态，后继 Artemis 换成了 Core Protocol；</text>
+  <text x="386" y="430" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">2. Apache 没有 RFC 级公开规范，无从「按规范逐字节核对」，学不到可迁移的判据；</text>
+  <text x="386" y="452" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">3. 用 Java 时客户端库已处理字节，用 Go 时走 STOMP 更省 —— 都没有直接碰它的必要。</text>
+
+  <rect x="40" y="486" width="920" height="110" fill="#f0f9f4" stroke="#27ae60" stroke-width="1.2"/>
+  <text x="56" y="510" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="bold" fill="#1e8449">什么时候仍然会碰到它</text>
+  <text x="56" y="534" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">① 连接串：Java 侧 `tcp://host:61616`（也可显式写 `ssl://` 或 `nio://` 前缀）；② 排障：日志与异常里的协议层字段、</text>
+  <text x="56" y="556" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#333">`wireFormat.maxInactivityDuration` 这类心跳配置；③ 决定「要不要迁 Artemis」时，知道 Core Protocol 与 OpenWire 不兼容即可。</text>
+  <text x="56" y="582" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#777">本节为规范层陈述，未做 OpenWire 逐字节抓包实测——没有公开规范可核对，本篇不给出任何字节读数。</text>
+</svg>
