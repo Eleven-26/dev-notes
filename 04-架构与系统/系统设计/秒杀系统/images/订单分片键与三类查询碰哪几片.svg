@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="652" viewBox="0 0 1000 652" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ahg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 z" fill="#166534"/>
+    </marker>
+    <marker id="aho" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="652" fill="#ffffff"/>
+  <text x="30" y="32" font-size="19" font-weight="bold" fill="#0f172a">订单表水平切：分片键一选定，每类查询要碰哪几片就写死了</text>
+  <text x="30" y="56" font-size="13" fill="#475569">四格代表 hash(user_id) % N 切出的 N 片（0、1、k、N-1）；绿色 = 单片命中，橙色 = 广播到所有片</text>
+
+  <text x="30" y="96" font-size="13" fill="#14532d">① 我的订单 → hash(user_id) % N 单分片命中</text>
+  <line x1="350" y1="127" x2="424" y2="127" stroke="#166534" stroke-width="1.6" marker-end="url(#ahg)"/>
+  <rect x="430" y="106" width="92" height="42" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="6"/>
+  <text x="476" y="132" font-size="12" fill="#64748b" text-anchor="middle">分片 0</text>
+  <rect x="542" y="106" width="92" height="42" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="6"/>
+  <text x="588" y="132" font-size="12" fill="#64748b" text-anchor="middle">分片 1</text>
+  <text x="664" y="132" font-size="16" fill="#94a3b8" text-anchor="middle">…</text>
+  <rect x="684" y="106" width="92" height="42" fill="#dcfce7" stroke="#166534" stroke-width="1.4" rx="6"/>
+  <text x="730" y="132" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">分片 k</text>
+  <rect x="796" y="106" width="92" height="42" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="6"/>
+  <text x="842" y="132" font-size="12" fill="#64748b" text-anchor="middle">分片 N-1</text>
+  <text x="970" y="132" font-size="12" fill="#166534" text-anchor="end">只碰 1 片</text>
+
+  <text x="30" y="176" font-size="13" fill="#14532d">② 按 order_no 查 → 先从单号反解出片号</text>
+  <line x1="350" y1="207" x2="424" y2="207" stroke="#166534" stroke-width="1.6" marker-end="url(#ahg)"/>
+  <rect x="430" y="186" width="92" height="42" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="6"/>
+  <text x="476" y="212" font-size="12" fill="#64748b" text-anchor="middle">分片 0</text>
+  <rect x="542" y="186" width="92" height="42" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="6"/>
+  <text x="588" y="212" font-size="12" fill="#64748b" text-anchor="middle">分片 1</text>
+  <text x="664" y="212" font-size="16" fill="#94a3b8" text-anchor="middle">…</text>
+  <rect x="684" y="186" width="92" height="42" fill="#dcfce7" stroke="#166534" stroke-width="1.4" rx="6"/>
+  <text x="730" y="212" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">分片 k</text>
+  <rect x="796" y="186" width="92" height="42" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="6"/>
+  <text x="842" y="212" font-size="12" fill="#64748b" text-anchor="middle">分片 N-1</text>
+  <text x="970" y="212" font-size="12" fill="#166534" text-anchor="end">仍 1 片</text>
+
+  <text x="30" y="256" font-size="13" fill="#78350f">③ 分页 / 聚合统计 → 每片各查一段再内存归并</text>
+  <line x1="350" y1="287" x2="424" y2="287" stroke="#b45309" stroke-width="1.6" marker-end="url(#aho)"/>
+  <rect x="430" y="266" width="92" height="42" fill="#ffedd5" stroke="#b45309" stroke-width="1.4" rx="6"/>
+  <text x="476" y="292" font-size="12" fill="#78350f" text-anchor="middle">分片 0</text>
+  <rect x="542" y="266" width="92" height="42" fill="#ffedd5" stroke="#b45309" stroke-width="1.4" rx="6"/>
+  <text x="588" y="292" font-size="12" fill="#78350f" text-anchor="middle">分片 1</text>
+  <text x="664" y="292" font-size="16" fill="#94a3b8" text-anchor="middle">…</text>
+  <rect x="684" y="266" width="92" height="42" fill="#ffedd5" stroke="#b45309" stroke-width="1.4" rx="6"/>
+  <text x="730" y="292" font-size="12" fill="#78350f" text-anchor="middle">分片 k</text>
+  <rect x="796" y="266" width="92" height="42" fill="#ffedd5" stroke="#b45309" stroke-width="1.4" rx="6"/>
+  <text x="842" y="292" font-size="12" fill="#78350f" text-anchor="middle">分片 N-1</text>
+  <text x="970" y="292" font-size="12" fill="#b45309" text-anchor="end">碰 N 片</text>
+
+  <rect x="30" y="330" width="940" height="112" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="46" y="356" font-size="14" font-weight="bold" fill="#1e40af">④ 分片键的三条判据：选定之后就改不动</text>
+  <text x="46" y="384" font-size="12" fill="#1e40af">覆盖最常命中的查询条件 —— 否则每次查询都要广播到所有分片</text>
+  <text x="46" y="406" font-size="12" fill="#1e40af">足够离散 —— user_id 比 merchant_id 离散，避免大商家把单个分片打热</text>
+  <text x="46" y="428" font-size="12" fill="#1e40af">不可变 —— 分片键一旦定下就不能改，改一次等于一次数据重分布</text>
+
+  <rect x="30" y="454" width="940" height="96" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="8"/>
+  <text x="46" y="480" font-size="14" font-weight="bold" fill="#334155">⑤ 另外两种切法：单片命中的查询对象换了，代价就换了</text>
+  <text x="46" y="508" font-size="12" fill="#334155">商家维度 merchant_id：商家后台单片命中，代价是「我的订单」要跨片（一个用户会买多个商家）</text>
+  <text x="46" y="530" font-size="12" fill="#334155">时间维度 created_at 按月或按日：冷热分离、归档简单，代价是老数据要跨表、热点月份单表压力大</text>
+
+  <rect x="30" y="562" width="940" height="80" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2" rx="8"/>
+  <text x="500" y="586" font-size="13" fill="#334155" text-anchor="middle">要点：常用答案按 user_id 分 —— C 端最密集的查询是「我的订单」，商家侧低频，交给异构索引或离线数仓兜</text>
+  <text x="500" y="608" font-size="12" fill="#64748b" text-anchor="middle">按 order_no 这类非分表键定位的五条路线（独立哈希 / 双写冗余 / 路由表 / 基因法 / 异构索引）见篇末互链，本图不重画</text>
+  <text x="500" y="628" font-size="12" fill="#b45309" text-anchor="middle">注意：本篇未实测任何分库分表中间件，本图与 4.1、4.3 两张表同为设计口径，不含本机读数</text>
+</svg>

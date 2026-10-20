@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <text x="30" y="38" font-size="19" fill="#0f172a">轨道的空间划分与追尾判据：一条轨道什么时候算空出来</text>
+
+  <rect x="30" y="80" width="390" height="185" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="225" y="105" font-size="14" fill="#0f172a" text-anchor="middle">A. 屏幕纵向切成 N 条等高轨道</text>
+
+  <text x="36" y="142" font-size="11" fill="#475569">轨道 0</text>
+  <rect x="90" y="130" width="310" height="16" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="36" y="164" font-size="11" fill="#475569">轨道 1</text>
+  <rect x="90" y="152" width="310" height="16" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="36" y="186" font-size="11" fill="#475569">轨道 2</text>
+  <rect x="90" y="174" width="310" height="16" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="36" y="222" font-size="11" fill="#475569">轨道 N</text>
+  <rect x="90" y="210" width="310" height="16" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="45" y="200" font-size="12" fill="#64748b">...</text>
+  <text x="225" y="245" font-size="11" fill="#64748b" text-anchor="middle">每轨高度 = 字号 + 上下留白</text>
+
+  <text x="470" y="105" font-size="14" fill="#0f172a">B. 一条轨道被占用的那段时间</text>
+  <text x="470" y="133" font-size="12" fill="#1e40af">① 不追尾：(t_now − t_B) × 速度 ≥ 宽度(B) + 最小间距</text>
+  <text x="470" y="158" font-size="12" fill="#1e40af">② 不越界：B 的可视右端已离开入口</text>
+
+  <rect x="470" y="180" width="180" height="28" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="560" y="199" font-size="12" fill="#1e3a8a" text-anchor="middle">B 已在轨道内</text>
+  <rect x="660" y="180" width="110" height="28" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="715" y="199" font-size="12" fill="#78350f" text-anchor="middle">最小间距</text>
+  <rect x="780" y="180" width="150" height="28" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="855" y="199" font-size="12" fill="#14532d" text-anchor="middle">A 此刻可进</text>
+
+  <path d="M 470 232 L 920 232" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="945" y="237" font-size="11" fill="#475569" text-anchor="middle">时间</text>
+
+  <text x="470" y="262" font-size="11" fill="#9a3412">所有弹幕同一速度，后发的追不上先发的；宽度由 measureText 现量，宽弹幕占轨更久</text>
+
+  <rect x="30" y="285" width="300" height="88" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="180" y="310" font-size="13" fill="#7f1d1d" text-anchor="middle">丢弃</text>
+  <text x="180" y="333" font-size="11" fill="#b91c1c" text-anchor="middle">新弹幕直接不显示</text>
+  <text x="180" y="354" font-size="11" fill="#b91c1c" text-anchor="middle">丢的是最热时刻的弹幕</text>
+
+  <rect x="350" y="285" width="300" height="88" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="500" y="310" font-size="13" fill="#78350f" text-anchor="middle">重叠</text>
+  <text x="500" y="333" font-size="11" fill="#9a3412" text-anchor="middle">同一条轨再塞一条</text>
+  <text x="500" y="354" font-size="11" fill="#9a3412" text-anchor="middle">两条叠在一起，可读性差</text>
+
+  <rect x="670" y="285" width="300" height="88" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="820" y="310" font-size="13" fill="#14532d" text-anchor="middle">降采样 / 合并</text>
+  <text x="820" y="333" font-size="11" fill="#166534" text-anchor="middle">同一个人连发只留一条</text>
+  <text x="820" y="354" font-size="11" fill="#166534" text-anchor="middle">实现复杂，但观感最稳</text>
+
+  <text x="30" y="400" font-size="11" fill="#64748b">要点：轨道占用是有期限的，存活时长 =（屏幕宽 + 弹幕宽）÷ 速度，到点即释放，所以状态是滚动回收、不是一直累积。</text>
+  <text x="30" y="422" font-size="11" fill="#64748b">顶部与底部弹幕是固定位置的特殊轨道，单独占位、不参与滚动轨道的分配；seek 或切房间时整批轨道状态重置。</text>
+</svg>

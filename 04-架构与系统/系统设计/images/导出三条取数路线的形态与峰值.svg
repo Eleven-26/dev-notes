@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="418" viewBox="0 0 1000 418" font-family="sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="418" fill="#ffffff"/>
+  <text x="30" y="40" font-size="19" fill="#0f172a">导出三条取数路线：数据在哪一步被攒起来，内存峰值随行数怎么走</text>
+
+  <rect x="30" y="70" width="110" height="70" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="85" y="99" font-size="13" fill="#7f1d1d" text-anchor="middle">① 全量加载</text>
+  <text x="85" y="121" font-size="11" fill="#b91c1c" text-anchor="middle">O(行数)</text>
+
+  <path d="M 140 105 L 150 105" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="155" y="70" width="180" height="70" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="245" y="96" font-size="13" fill="#0f172a" text-anchor="middle">Find(&amp;list)</text>
+  <text x="245" y="118" font-size="11" fill="#475569" text-anchor="middle">一次取回整张结果</text>
+
+  <path d="M 335 105 L 345 105" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="350" y="70" width="180" height="70" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="440" y="96" font-size="13" fill="#7f1d1d" text-anchor="middle">结构体切片</text>
+  <text x="440" y="118" font-size="11" fill="#b91c1c" text-anchor="middle">带着结构体开销常驻</text>
+
+  <path d="M 530 105 L 540 105" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="545" y="70" width="180" height="70" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="635" y="96" font-size="13" fill="#0f172a" text-anchor="middle">拼字符串再写</text>
+  <text x="635" y="118" font-size="11" fill="#475569" text-anchor="middle">多付一次内存拷贝</text>
+
+  <path d="M 725 105 L 735 105" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="740" y="70" width="230" height="70" rx="8" fill="#ffffff" stroke="#dc2626"/>
+  <text x="855" y="92" font-size="11" fill="#7f1d1d" text-anchor="middle">峰值 17.1 / 60.2 / 203.1 MB</text>
+  <text x="855" y="112" font-size="11" fill="#b91c1c" text-anchor="middle">耗时 148 / 554 / 1476 ms</text>
+  <text x="855" y="132" font-size="11" fill="#475569" text-anchor="middle">行数 5 万 / 20 万 / 50 万</text>
+
+  <rect x="30" y="168" width="110" height="70" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="85" y="197" font-size="13" fill="#7c2d12" text-anchor="middle">② 游标分批</text>
+  <text x="85" y="219" font-size="11" fill="#9a3412" text-anchor="middle">O(页大小)</text>
+
+  <path d="M 140 203 L 150 203" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="155" y="168" width="180" height="70" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="245" y="194" font-size="13" fill="#0f172a" text-anchor="middle">每页 N 行循环取</text>
+  <text x="245" y="216" font-size="11" fill="#475569" text-anchor="middle">id 大于游标，不用 OFFSET</text>
+
+  <path d="M 335 203 L 345 203" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="350" y="168" width="180" height="70" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="440" y="194" font-size="13" fill="#7c2d12" text-anchor="middle">留中间结果</text>
+  <text x="440" y="216" font-size="11" fill="#9a3412" text-anchor="middle">跨页计算或排序时才用</text>
+
+  <path d="M 530 203 L 540 203" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="545" y="168" width="180" height="70" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="635" y="194" font-size="13" fill="#0f172a" text-anchor="middle">一页写一段</text>
+  <text x="635" y="216" font-size="11" fill="#475569" text-anchor="middle">可落多个文件</text>
+
+  <path d="M 725 203 L 735 203" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="740" y="168" width="230" height="70" rx="8" fill="#ffffff" stroke="#ea580c"/>
+  <text x="855" y="192" font-size="11" fill="#7c2d12" text-anchor="middle">OFFSET 翻页总成本 O(n²)</text>
+  <text x="855" y="212" font-size="11" fill="#b91c1c" text-anchor="middle">9004 ms 对 834 ms，差 10 倍</text>
+  <text x="855" y="232" font-size="11" fill="#b91c1c" text-anchor="middle">扫描量 1.25 亿 对 50.0 万，差 250 倍</text>
+
+  <rect x="30" y="266" width="110" height="70" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="85" y="295" font-size="13" fill="#14532d" text-anchor="middle">③ 流式游标</text>
+  <text x="85" y="317" font-size="11" fill="#166534" text-anchor="middle">O(1)</text>
+
+  <path d="M 140 301 L 150 301" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="155" y="266" width="180" height="70" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="245" y="292" font-size="13" fill="#0f172a" text-anchor="middle">rows.Next 逐行</text>
+  <text x="245" y="314" font-size="11" fill="#475569" text-anchor="middle">取一行放一行</text>
+
+  <path d="M 335 301 L 345 301" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="350" y="266" width="180" height="70" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="440" y="292" font-size="13" fill="#14532d" text-anchor="middle">直接写 io.Writer</text>
+  <text x="440" y="314" font-size="11" fill="#166534" text-anchor="middle">只剩写缓冲这一份常数</text>
+
+  <path d="M 530 301 L 540 301" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="545" y="266" width="180" height="70" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="635" y="292" font-size="13" fill="#0f172a" text-anchor="middle">首字节提前</text>
+  <text x="635" y="314" font-size="11" fill="#475569" text-anchor="middle">第一行查完就能出</text>
+
+  <path d="M 725 301 L 735 301" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="740" y="266" width="230" height="70" rx="8" fill="#ffffff" stroke="#16a34a"/>
+  <text x="855" y="290" font-size="11" fill="#14532d" text-anchor="middle">峰值恒为 3.4 MB，不随行数涨</text>
+  <text x="855" y="310" font-size="11" fill="#166534" text-anchor="middle">耗时 207 / 704 / 1284 ms</text>
+  <text x="855" y="330" font-size="11" fill="#166534" text-anchor="middle">50 万行反而比全量短 192 ms</text>
+
+  <text x="30" y="364" font-size="12" fill="#64748b">要点：流式的 3.4 MB 不是零，它由 csv 写缓冲、驱动内部预读与采样噪声构成，是一个与行数无关的常数。</text>
+  <text x="30" y="386" font-size="12" fill="#64748b">① 在 5 万行时只占 17.1 MB，测试环境根本看不出问题，这正是它危险的地方：问题只在生产的数据量下才出现。</text>
+</svg>
