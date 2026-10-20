@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">UDP 超过 MTU 就被 IP 切片，丢任何一片整包作废</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">MTU 1500 时一个 IP 包能装 1472 字节 UDP 载荷，越过这条线就开始分片</text>
+  <defs>
+    <marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="60" y="96" font-size="12.5" fill="#0f172a" text-anchor="start">原始数据报：UDP 头 8 + 载荷 4000 = 4008 字节（UDP 长度字段记的就是这 4008）</text>
+  <rect x="60" y="110" width="64" height="48" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="92" y="140" font-size="11.5" fill="#991b1b" text-anchor="middle">UDP 8</text>
+  <rect x="124" y="110" width="580" height="48" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="414" y="140" font-size="12" fill="#1e3a8a" text-anchor="middle">载荷 4000 字节</text>
+  <text x="60" y="184" font-size="12.5" fill="#0f172a" text-anchor="start">IP 层按 MTU 切片：每片都要自带一个 20 字节 IP 首部，只有第一片带 UDP 头</text>
+  <rect x="60" y="196" width="64" height="48" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="92" y="226" font-size="11.5" fill="#991b1b" text-anchor="middle">IP 20</text>
+  <rect x="124" y="196" width="214" height="48" rx="5" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+  <text x="231" y="226" font-size="11.5" fill="#075985" text-anchor="middle">1480 字节</text>
+  <text x="352" y="226" font-size="11.5" fill="#64748B" text-anchor="start">片 1 / 共 3</text>
+  <rect x="60" y="252" width="64" height="48" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="92" y="282" font-size="11.5" fill="#991b1b" text-anchor="middle">IP 20</text>
+  <rect x="124" y="252" width="214" height="48" rx="5" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+  <text x="231" y="282" font-size="11.5" fill="#075985" text-anchor="middle">1480 字节</text>
+  <text x="352" y="282" font-size="11.5" fill="#64748B" text-anchor="start">片 2 / 共 3</text>
+  <rect x="60" y="308" width="64" height="48" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="92" y="338" font-size="11.5" fill="#991b1b" text-anchor="middle">IP 20</text>
+  <rect x="124" y="308" width="152" height="48" rx="5" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+  <text x="200" y="338" font-size="11.5" fill="#075985" text-anchor="middle">1048 字节</text>
+  <text x="290" y="338" font-size="11.5" fill="#64748B" text-anchor="start">片 3 / 共 3，末片不满</text>
+  <rect x="700" y="196" width="260" height="160" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="720" y="222" font-size="13" fill="#991b1b" text-anchor="start" font-weight="bold">任一片丢失</text>
+  <text x="720" y="248" font-size="12" fill="#334155" text-anchor="start">→ 接收方无法重组</text>
+  <text x="720" y="274" font-size="12" fill="#334155" text-anchor="start">→ 整个数据报被丢弃</text>
+  <text x="720" y="300" font-size="12" fill="#334155" text-anchor="start">→ 应用只能整体重传</text>
+  <text x="720" y="328" font-size="11.5" fill="#64748B" text-anchor="start">1% 丢包、45 片时</text>
+  <text x="720" y="348" font-size="11.5" fill="#64748B" text-anchor="start">整包成功率 ≈ 0.99^45 ≈ 64%</text>
+  <text x="44" y="404" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">三条判据（本机两容器实测，Ip:FragCreates 取差值）</text>
+  <text x="60" y="436" font-size="12" fill="#334155" text-anchor="start">① 片数 = ceil((载荷 + 8) / 1480)，其中 1480 = MTU 1500 − IP 首部 20</text>
+  <text x="60" y="468" font-size="12" fill="#334155" text-anchor="start">② 边界落在 1472 / 1480 之间：1472 + 8 + 20 = 1500 正好压线，多 1 字节就切片</text>
+  <text x="60" y="500" font-size="12" fill="#334155" text-anchor="start">③ 65507 那一档要 45 片（FragCreates +45），丢一片就得重发 45 个包</text>
+  <text x="60" y="540" font-size="11.5" fill="#64748B" text-anchor="start">工程口径：主动把载荷压在路径 MTU 之内；按 IPv6 最小 MTU 1280 反推得 1232 字节，QUIC 初始包取 1200 附近</text>
+</svg>

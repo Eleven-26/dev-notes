@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HTTP 与 gRPC 的差别全在承载层与编码层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">两者底层都是 TCP；关键一步是把「HTTP 和 gRPC 的区别」转成「HTTP/2 和 HTTP/1.1 的区别」</text>
+  <defs>
+    <marker id="b1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="88" width="150" height="52" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="115" y="120" font-size="12.5" fill="#0f172a" text-anchor="middle" font-weight="bold">层次</text>
+  <rect x="198" y="88" width="370" height="52" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="383" y="120" font-size="12.5" fill="#1e3a8a" text-anchor="middle" font-weight="bold">传统 HTTP（1.1）</text>
+  <rect x="576" y="88" width="384" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="768" y="120" font-size="12.5" fill="#166534" text-anchor="middle" font-weight="bold">gRPC（HTTP/2 + Protobuf）</text>
+  <rect x="40" y="148" width="150" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="115" y="186" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">语义层</text>
+  <rect x="198" y="148" width="370" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="216" y="180" font-size="12" fill="#334155" text-anchor="start" font-weight="bold">方法 + 状态码 + 头</text>
+  <text x="216" y="206" font-size="11.5" fill="#64748B" text-anchor="start">每个请求各自带一份语义</text>
+  <rect x="576" y="148" width="384" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="594" y="180" font-size="12" fill="#166534" text-anchor="start" font-weight="bold">由 .proto 定义服务契约</text>
+  <text x="594" y="206" font-size="11.5" fill="#64748B" text-anchor="start">方法、字段类型、流式形态都写进契约</text>
+  <rect x="40" y="244" width="150" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="115" y="282" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">承载层</text>
+  <rect x="198" y="244" width="370" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="216" y="276" font-size="12" fill="#334155" text-anchor="start" font-weight="bold">HTTP/1.1 文本协议</text>
+  <text x="216" y="302" font-size="11.5" fill="#64748B" text-anchor="start">多连接 + 请求串行排队</text>
+  <rect x="576" y="244" width="384" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="594" y="276" font-size="12" fill="#166534" text-anchor="start" font-weight="bold">HTTP/2 二进制分帧</text>
+  <text x="594" y="302" font-size="11.5" fill="#64748B" text-anchor="start">单连接多流 + 帧交错</text>
+  <rect x="40" y="340" width="150" height="88" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="115" y="378" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">编码层</text>
+  <rect x="198" y="340" width="370" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="216" y="372" font-size="12" fill="#334155" text-anchor="start" font-weight="bold">JSON 文本为常态</text>
+  <text x="216" y="398" font-size="11.5" fill="#64748B" text-anchor="start">可换，但线上默认就是 JSON</text>
+  <rect x="576" y="340" width="384" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="594" y="372" font-size="12" fill="#166534" text-anchor="start" font-weight="bold">Protobuf 二进制为默认</text>
+  <text x="594" y="398" font-size="11.5" fill="#64748B" text-anchor="start">换 codec 可传 JSON，但会丢掉三项收益</text>
+  <text x="44" y="462" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">三条必须说清的结论</text>
+  <text x="60" y="494" font-size="12" fill="#334155" text-anchor="start">① 两者底层都是 TCP，差别全在应用层 —— 所以问题等价于「HTTP/2 相对 HTTP/1.1 改了哪五处」</text>
+  <text x="60" y="526" font-size="12" fill="#334155" text-anchor="start">② 不是「传的东西不一样」：gRPC 也能传 JSON，HTTP 也能传 Protobuf；真正的差别是机制（多路复用 / 头压缩 / 服务契约）</text>
+  <text x="60" y="558" font-size="12" fill="#334155" text-anchor="start">③ gRPC 的默认编码是 Protobuf，换 JSON 属于定制 codec，会同时丢掉「体积小、编解码快、编译期强类型」</text>
+  <text x="60" y="594" font-size="11.5" fill="#64748B" text-anchor="start">补充：浏览器「看起来是 h2」是 TLS 握手时用 ALPN 协商出来的；HTTP/2 另有明文版 h2c，gRPC 的明文连接就是它</text>
+  <text x="60" y="618" font-size="11.5" fill="#64748B" text-anchor="start">HTTP/1.1 规范里是有管线化的，但响应必须按请求顺序返回，主流浏览器实际未启用 —— 不要把「浏览器不用」讲成「协议不支持」</text>
+</svg>

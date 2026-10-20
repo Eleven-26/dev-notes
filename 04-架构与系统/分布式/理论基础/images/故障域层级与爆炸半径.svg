@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650" width="1000" height="650" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">故障域是「会一起坏掉的一组东西」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">三个副本都在同一台宿主机上，就只有一个故障域 —— 副本的意义全部来自故障域隔离</text>
+  <defs>
+    <marker id="g1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="420" height="300" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="56" y="108" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="bold">地域 Region</text>
+  <rect x="60" y="118" width="380" height="254" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="76" y="140" font-size="11" fill="#1e40af" text-anchor="start" font-weight="bold">可用区 AZ</text>
+  <rect x="80" y="150" width="340" height="212" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.3"/>
+  <text x="96" y="172" font-size="10.5" fill="#075985" text-anchor="start" font-weight="bold">机架</text>
+  <rect x="100" y="182" width="300" height="170" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="116" y="204" font-size="10.5" fill="#166534" text-anchor="start" font-weight="bold">宿主机</text>
+  <rect x="120" y="214" width="260" height="128" rx="5" fill="#fefce8" stroke="#ca8a04" stroke-width="1.1"/>
+  <text x="136" y="236" font-size="10.5" fill="#92400e" text-anchor="start" font-weight="bold">进程 / 容器</text>
+  <rect x="136" y="248" width="228" height="24" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="150" y="265" font-size="9.5" fill="#334155" text-anchor="start">实例 1</text>
+  <rect x="136" y="278" width="228" height="24" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="150" y="295" font-size="9.5" fill="#334155" text-anchor="start">实例 2</text>
+  <rect x="136" y="308" width="228" height="24" rx="3" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+  <text x="150" y="325" font-size="9.5" fill="#334155" text-anchor="start">实例 3</text>
+  <text x="56" y="400" font-size="10.5" fill="#64748B" text-anchor="start">越往里，一起坏掉的东西越少；跨层放置才有隔离意义</text>
+  <rect x="490" y="84" width="470" height="138" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="508" y="108" font-size="12" fill="#991b1b" text-anchor="start" font-weight="bold">❌ 三副本、一个故障域</text>
+  <text x="508" y="132" font-size="10.5" fill="#334155" text-anchor="start">副本 1 / 2 / 3 全在同一台宿主机（甚至同一进程）</text>
+  <text x="508" y="154" font-size="10.5" fill="#b91c1c" text-anchor="start">宿主机断电 → 三个副本同时不可用</text>
+  <text x="508" y="176" font-size="10.5" fill="#b91c1c" text-anchor="start">「副本数 = 3」只是数字上的安慰，RPO/RTO 一点没改善</text>
+  <text x="508" y="200" font-size="10" fill="#64748B" text-anchor="start">同样的问题：副本都在同一机架、同一 AZ、同一个共享存储</text>
+  <rect x="490" y="236" width="470" height="148" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="508" y="260" font-size="12" fill="#166534" text-anchor="start" font-weight="bold">✅ 三副本跨三层</text>
+  <text x="508" y="284" font-size="10.5" fill="#334155" text-anchor="start">副本 1 在 AZ-A / 机架 1 / 主机甲</text>
+  <text x="508" y="306" font-size="10.5" fill="#334155" text-anchor="start">副本 2 在 AZ-B / 机架 3 / 主机乙</text>
+  <text x="508" y="328" font-size="10.5" fill="#334155" text-anchor="start">副本 3 在 AZ-C / 机架 5 / 主机丙</text>
+  <text x="508" y="354" font-size="10.5" fill="#166534" text-anchor="start">任一层故障最多损失一个副本，多数派仍在</text>
+  <text x="508" y="376" font-size="10" fill="#64748B" text-anchor="start">代价是跨 AZ 写延迟 —— 这是必须付的账</text>
+  <text x="44" y="416" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">六层故障域与对应的隔离手段</text>
+  <text x="56" y="448" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">进程 / 容器</text>
+  <text x="230" y="448" font-size="10.5" fill="#334155" text-anchor="start">OOM、崩溃、坏发布</text>
+  <text x="560" y="448" font-size="10.5" fill="#64748B" text-anchor="start">多副本、健康检查、滚动发布</text>
+  <line x1="40" y1="456" x2="960" y2="456" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="56" y="478" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">宿主机</text>
+  <text x="230" y="478" font-size="10.5" fill="#334155" text-anchor="start">硬件故障、内核 panic</text>
+  <text x="560" y="478" font-size="10.5" fill="#64748B" text-anchor="start">反亲和调度、跨节点副本</text>
+  <line x1="40" y1="486" x2="960" y2="486" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="56" y="508" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">机架</text>
+  <text x="230" y="508" font-size="10.5" fill="#334155" text-anchor="start">交换机 / 电源故障</text>
+  <text x="560" y="508" font-size="10.5" fill="#64748B" text-anchor="start">机架感知、跨机架副本</text>
+  <line x1="40" y1="516" x2="960" y2="516" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="56" y="538" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">可用区</text>
+  <text x="230" y="538" font-size="10.5" fill="#334155" text-anchor="start">机房级断电、网络故障</text>
+  <text x="560" y="538" font-size="10.5" fill="#64748B" text-anchor="start">跨 AZ 副本、同城多活</text>
+  <line x1="40" y1="546" x2="960" y2="546" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="56" y="568" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">地域</text>
+  <text x="230" y="568" font-size="10.5" fill="#334155" text-anchor="start">自然灾害、区域网络故障</text>
+  <text x="560" y="568" font-size="10.5" fill="#64748B" text-anchor="start">异地容灾、异步复制</text>
+  <line x1="40" y1="576" x2="960" y2="576" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="56" y="598" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">共享依赖</text>
+  <text x="230" y="598" font-size="10.5" fill="#334155" text-anchor="start">数据库、DNS、证书、配置中心</text>
+  <text x="560" y="598" font-size="10.5" fill="#64748B" text-anchor="start">冗余、降级、本地缓存</text>
+  <line x1="40" y1="606" x2="960" y2="606" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="44" y="630" font-size="11" fill="#64748B" text-anchor="start">爆炸半径的控制手段是隔离舱：线程池、连接池、队列、配额按业务或租户切开，让一个依赖的故障只打满它自己的池子</text>
+</svg>

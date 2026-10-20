@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">熔断粒度：先摘点，再熔服务</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">一个服务三个节点、坏了一个，按服务统计的失败率 33% —— 若阈值 30%，健康节点会一起被拒</text>
+  <defs>
+    <marker id="h3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="920" height="148" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="108" font-size="12" fill="#991b1b" text-anchor="start" font-weight="bold">❌ 只有服务级熔断</text>
+  <rect x="58" y="122" width="180" height="56" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="148" y="146" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">节点 A</text>
+  <text x="148" y="166" font-size="10" fill="#991b1b" text-anchor="middle">连接超时</text>
+  <rect x="258" y="122" width="180" height="56" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="348" y="146" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">节点 B</text>
+  <text x="348" y="166" font-size="10" fill="#166534" text-anchor="middle">健康</text>
+  <rect x="458" y="122" width="180" height="56" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="548" y="146" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">节点 C</text>
+  <text x="548" y="166" font-size="10" fill="#166534" text-anchor="middle">健康</text>
+  <text x="660" y="146" font-size="10.5" fill="#991b1b" text-anchor="start">1/3 请求失败 → 失败率 33%</text>
+  <text x="660" y="166" font-size="10.5" fill="#991b1b" text-anchor="start" font-weight="bold">阈值 30% → 整个服务被熔断</text>
+  <text x="58" y="202" font-size="10.5" fill="#b91c1c" text-anchor="start">后果：B、C 明明健康，却一起被拒绝 —— 故障被从一个节点放大成整个服务不可用</text>
+  <text x="58" y="222" font-size="10" fill="#64748B" text-anchor="start">这就是「按服务统计」的固有缺陷：它把单点故障算成了全网故障</text>
+  <line x1="500" y1="236" x2="500" y2="262" stroke="#334155" stroke-width="1.6" marker-end="url(#h3)"/>
+  <rect x="40" y="264" width="920" height="148" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="58" y="288" font-size="12" fill="#166534" text-anchor="start" font-weight="bold">✅ 两级防线：节点级先摘，服务级兜底</text>
+  <rect x="58" y="302" width="180" height="56" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.3" stroke-dasharray="5,3"/>
+  <text x="148" y="326" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">节点 A</text>
+  <text x="148" y="346" font-size="10" fill="#dc2626" text-anchor="middle">摘除</text>
+  <rect x="258" y="302" width="180" height="56" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="348" y="326" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">节点 B</text>
+  <text x="348" y="346" font-size="10" fill="#16a34a" text-anchor="middle">健康</text>
+  <rect x="458" y="302" width="180" height="56" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="548" y="326" font-size="11" fill="#0f172a" text-anchor="middle" font-weight="bold">节点 C</text>
+  <text x="548" y="346" font-size="10" fill="#16a34a" text-anchor="middle">健康</text>
+  <text x="660" y="326" font-size="10.5" fill="#166534" text-anchor="start">流量只落在 B、C 上</text>
+  <text x="660" y="346" font-size="10.5" fill="#166534" text-anchor="start" font-weight="bold">服务级失败率回到 0</text>
+  <text x="58" y="382" font-size="10.5" fill="#334155" text-anchor="start">只有「整片都不行」时才轮到服务级熔断：比如依赖的下游数据库挂了，所有实例都答不了</text>
+  <text x="58" y="402" font-size="10" fill="#64748B" text-anchor="start">两者不是替代关系，而是两级防线：单点故障摘点，服务级故障熔服务</text>
+  <text x="44" y="448" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">两级的分工</text>
+  <rect x="40" y="466" width="920" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="56" y="492" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">节点级</text>
+  <text x="200" y="492" font-size="10" fill="#334155" text-anchor="start">连续失败摘除单个上游 + 冷却后探测回列</text>
+  <text x="680" y="492" font-size="10" fill="#64748B" text-anchor="start">有多个等价节点、故障是单点性的</text>
+  <rect x="40" y="514" width="920" height="40" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="56" y="540" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">服务级</text>
+  <text x="200" y="540" font-size="10" fill="#334155" text-anchor="start">熔断整个服务的调用</text>
+  <text x="680" y="540" font-size="10" fill="#64748B" text-anchor="start">故障是服务级的（所有实例都答不了）</text>
+  <text x="44" y="570" font-size="10.5" fill="#64748B" text-anchor="start">实现细节见节点级被动摘除.md：探测租约、唯一性认领、与主动探活的分工</text>
+</svg>

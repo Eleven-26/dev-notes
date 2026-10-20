@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">向量时钟能区分「因果先后」与「并发」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">每个节点记录它知道的所有节点各发生了多少事件；比较两个向量就能定性</text>
+  <defs>
+    <marker id="g3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="44" y="96" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">比较规则（V(a) 与 V(b) 逐维比）</text>
+  <rect x="40" y="112" width="920" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="58" y="141" font-size="11.5" fill="#166534" text-anchor="start" font-weight="bold">a → b</text>
+  <text x="300" y="141" font-size="11" fill="#334155" text-anchor="start">所有维都 ≤，且至少一维严格小于</text>
+  <rect x="40" y="168" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="58" y="197" font-size="11.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">b → a</text>
+  <text x="300" y="197" font-size="11" fill="#334155" text-anchor="start">对称情况：所有维都 ≥，且至少一维严格大于</text>
+  <rect x="40" y="224" width="920" height="46" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="58" y="253" font-size="11.5" fill="#92400e" text-anchor="start" font-weight="bold">a 与 b 并发</text>
+  <text x="300" y="253" font-size="11" fill="#334155" text-anchor="start">两个方向都不满足：各有分量更大</text>
+  <text x="44" y="300" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">一个具体的并发判定</text>
+  <rect x="40" y="316" width="420" height="120" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="58" y="342" font-size="13" fill="#1e3a8a" text-anchor="start" font-weight="bold">V(a) = [2, 0, 0]</text>
+  <text x="58" y="368" font-size="10.5" fill="#64748B" text-anchor="start">第一维 2，其余为 0</text>
+  <text x="58" y="398" font-size="10.5" fill="#334155" text-anchor="start">含义：a 之前，节点 1 上发生过 2 个事件</text>
+  <text x="58" y="420" font-size="10.5" fill="#334155" text-anchor="start">节点 2、3 上的事件 a 一个都不知道</text>
+  <rect x="480" y="316" width="480" height="120" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="498" y="342" font-size="13" fill="#166534" text-anchor="start" font-weight="bold">V(b) = [1, 1, 0]</text>
+  <text x="498" y="368" font-size="10.5" fill="#64748B" text-anchor="start">第一维 1、第二维 1</text>
+  <text x="498" y="398" font-size="10.5" fill="#334155" text-anchor="start">第一维 2 大于 1，第二维 0 小于 1</text>
+  <text x="498" y="420" font-size="10.5" fill="#92400e" text-anchor="start" font-weight="bold">两个方向都不满足 → a 与 b 并发</text>
+  <rect x="40" y="452" width="920" height="46" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="58" y="481" font-size="11" fill="#991b1b" text-anchor="start">这正是 LWW 会丢写、而版本向量能发现冲突的原因：LWW 只比时间戳，谁大留谁；向量能看出「这两个写根本没先后」</text>
+  <text x="44" y="524" font-size="11.5" fill="#64748B" text-anchor="start">代价：元数据随节点数线性增长 O(N) —— 节点很多时实际系统改用版本向量（只记写过的节点）、dotted version vector 或混合逻辑时钟来压缩</text>
+  <text x="44" y="552" font-size="11.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">与 Lamport 的分工：Lamport 给一个「大家都同意的全序」，向量时钟判「谁与谁并发」—— 前者便宜但粗，后者准但贵</text>
+</svg>

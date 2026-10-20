@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">注册靠租约自动过期，发现靠 Get 加 Watch</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">健康检查不需要额外探测器 —— 「服务挂掉 → 心跳停 → 租约到期 → key 消失」本身就是检查</text>
+  <defs>
+    <marker id="f1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="f2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="f3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="250" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="58" y="110" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">服务实例（注册方）</text>
+  <text x="58" y="142" font-size="10.5" fill="#334155" text-anchor="start">① 创建租约（常见 10 秒）</text>
+  <text x="58" y="168" font-size="10.5" fill="#334155" text-anchor="start">② 写 KV：服务名前缀 + IP:端口</text>
+  <text x="58" y="194" font-size="10.5" fill="#334155" text-anchor="start">③ KeepAlive 周期性续约</text>
+  <text x="58" y="220" font-size="10.5" fill="#334155" text-anchor="start">   剩余不足一半时自动续满</text>
+  <rect x="58" y="256" width="214" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="165" y="278" font-size="11" fill="#1e3a8a" text-anchor="middle" font-weight="bold">租约是一个容器</text>
+  <text x="165" y="298" font-size="10.5" fill="#1e3a8a" text-anchor="middle">一个租约可挂多个 KV</text>
+  <line x1="292" y1="200" x2="356" y2="200" stroke="#334155" stroke-width="1.6" marker-end="url(#f1)"/>
+  <rect x="358" y="84" width="284" height="250" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="376" y="110" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">注册中心（etcd）</text>
+  <text x="376" y="134" font-size="10.5" fill="#92400e" text-anchor="start">/svc/order/10.0.0.1:8080</text>
+  <text x="376" y="156" font-size="10.5" fill="#92400e" text-anchor="start">/svc/order/10.0.0.2:8080</text>
+  <text x="376" y="178" font-size="10.5" fill="#92400e" text-anchor="start">/svc/order/10.0.0.3:8080</text>
+  <text x="376" y="208" font-size="10.5" fill="#64748B" text-anchor="start">每个 KV 挂在某个租约上</text>
+  <text x="376" y="230" font-size="10.5" fill="#64748B" text-anchor="start">续约停止 → 租约到期</text>
+  <text x="376" y="252" font-size="10.5" fill="#b91c1c" text-anchor="start">→ 其下所有 KV 一起消失</text>
+  <rect x="376" y="268" width="248" height="50" rx="5" fill="#ffffff" stroke="#d97706" stroke-width="1.1"/>
+  <text x="388" y="288" font-size="10.5" fill="#92400e" text-anchor="start" font-weight="bold">故障发现延迟 ≈ 租约 TTL</text>
+  <text x="388" y="306" font-size="9.5" fill="#64748B" text-anchor="start">短 → 摘除快但易误摘；长 → 抗抖动但滞留久</text>
+  <line x1="642" y1="200" x2="700" y2="200" stroke="#d97706" stroke-width="1.6" marker-end="url(#f2)"/>
+  <rect x="702" y="84" width="258" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="720" y="110" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">客户端（消费方）</text>
+  <text x="720" y="140" font-size="10.5" fill="#334155" text-anchor="start">Get：按服务名拉全量</text>
+  <text x="720" y="162" font-size="10.5" fill="#64748B" text-anchor="start">→ 本地 list + 本地负载均衡</text>
+  <text x="720" y="192" font-size="10.5" fill="#334155" text-anchor="start">Watch：监听前缀变化</text>
+  <text x="720" y="214" font-size="10.5" fill="#64748B" text-anchor="start">→ 消失的删、新增的加</text>
+  <text x="720" y="244" font-size="10.5" fill="#b91c1c" text-anchor="start">⚠ 全量 Get 与建 Watch 之间</text>
+  <text x="720" y="264" font-size="10.5" fill="#b91c1c" text-anchor="start">有窗口：必须从 Revision + 1 起订</text>
+  <text x="720" y="296" font-size="10" fill="#64748B" text-anchor="start">两个机制分工：Get 保证「初始有数据」</text>
+  <text x="720" y="316" font-size="10" fill="#64748B" text-anchor="start">Watch 保证「数据始终最新」</text>
+  <text x="44" y="366" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">完整链路：一条被动式健康检查</text>
+  <rect x="40" y="384" width="180" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="130" y="411" font-size="10" fill="#334155" text-anchor="middle">服务启动</text>
+  <rect x="200" y="384" width="180" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="290" y="411" font-size="10" fill="#334155" text-anchor="middle">创建租约 10s</text>
+  <rect x="360" y="384" width="180" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="450" y="411" font-size="10" fill="#334155" text-anchor="middle">写入 KV 并 KeepAlive</text>
+  <rect x="560" y="384" width="190" height="44" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="650" y="411" font-size="10" fill="#334155" text-anchor="middle">宕机 → 续约停止</text>
+  <rect x="740" y="384" width="190" height="44" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="830" y="411" font-size="10" fill="#334155" text-anchor="middle">租约到期 → key 删除</text>
+  <line x1="222" y1="406" x2="232" y2="406" stroke="#64748B" stroke-width="1.2" marker-end="url(#f3)"/>
+  <line x1="382" y1="406" x2="392" y2="406" stroke="#64748B" stroke-width="1.2" marker-end="url(#f3)"/>
+  <line x1="552" y1="406" x2="562" y2="406" stroke="#64748B" stroke-width="1.2" marker-end="url(#f3)"/>
+  <line x1="732" y1="406" x2="742" y2="406" stroke="#64748B" stroke-width="1.2" marker-end="url(#f3)"/>
+  <text x="44" y="452" font-size="11.5" fill="#64748B" text-anchor="start">客户端从 Watch 收到的变更中得知这个地址没了 —— 注册中心从不需要主动去 ping 每个实例</text>
+  <text x="44" y="494" font-size="12.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">TTL 取值判据只有一句：你能容忍死地址在服务里滞留多久</text>
+  <rect x="40" y="512" width="920" height="52" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="58" y="534" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="bold">TTL 短（3~5s）</text>
+  <text x="58" y="554" font-size="10.5" fill="#166534" text-anchor="start">死地址消失快</text>
+  <text x="420" y="544" font-size="10.5" fill="#334155" text-anchor="start">心跳频繁、注册中心压力大、网络抖动易误摘</text>
+  <rect x="40" y="574" width="920" height="52" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="58" y="596" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="bold">TTL 长（30s 以上）</text>
+  <text x="58" y="616" font-size="10.5" fill="#166534" text-anchor="start">续约开销小、抗抖动</text>
+  <text x="420" y="606" font-size="10.5" fill="#334155" text-anchor="start">故障后最长 30s 仍有请求打到死地址</text>
+  <text x="44" y="632" font-size="11" fill="#64748B" text-anchor="start">优雅下线不要等 TTL：主动 Revoke 才能亚秒级消失</text>
+</svg>

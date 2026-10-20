@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">workerId 的五种分配方式，判据是自动、稳定、要不要额外依赖</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">10 位 = 1024 个节点是上限，不是一个方案；撞号后没有补救机制，数据已经写进去了</text>
+  <defs>
+    <marker id="d3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="88" width="920" height="64" rx="7" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="114" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">手动配置</text>
+  <text x="60" y="136" font-size="11" fill="#334155" text-anchor="start">写配置文件 / 环境变量</text>
+  <text x="520" y="126" font-size="11" fill="#64748B" text-anchor="start">最简单；节点多了易配重，容器重启 IP 会变</text>
+  <rect x="40" y="162" width="920" height="64" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="60" y="188" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">ZK / etcd 注册</text>
+  <text x="60" y="210" font-size="11" fill="#334155" text-anchor="start">启动时建顺序节点或抢锁拿号</text>
+  <text x="520" y="200" font-size="11" fill="#64748B" text-anchor="start">自动不重复；依赖 ZK / etcd</text>
+  <rect x="40" y="236" width="920" height="64" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="60" y="262" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">数据库分配</text>
+  <text x="60" y="284" font-size="11" fill="#334155" text-anchor="start">向 worker_node 表插行取自增 ID</text>
+  <text x="520" y="274" font-size="11" fill="#64748B" text-anchor="start">依赖少；要注意回收，超过 1024 就满了</text>
+  <rect x="40" y="310" width="920" height="64" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="60" y="336" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">K8s StatefulSet 序号</text>
+  <text x="60" y="358" font-size="11" fill="#334155" text-anchor="start">取 Pod 名 order-0/1/2 的末尾数字</text>
+  <text x="520" y="348" font-size="11" fill="#64748B" text-anchor="start">天然稳定；仅适用于有状态服务，Deployment 不行</text>
+  <rect x="40" y="384" width="920" height="64" rx="7" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="60" y="410" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">IP / MAC 哈希</text>
+  <text x="60" y="432" font-size="11" fill="#334155" text-anchor="start">IP 后 8 位或 MAC 哈希取模</text>
+  <text x="520" y="422" font-size="11" fill="#64748B" text-anchor="start">无需额外组件；可能碰撞（MyBatis-Plus 默认即此类）</text>
+  <rect x="40" y="468" width="920" height="68" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="60" y="494" font-size="12.5" fill="#5b21b6" text-anchor="start" font-weight="bold">无论用哪种方式，启动时都要做一次占用自检</text>
+  <text x="60" y="518" font-size="11.5" fill="#334155" text-anchor="start">把自己的 workerId 与最近活跃节点比对，发现重复直接拒绝启动 —— 而不是等到写库冲突才暴露出来</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">字符串序等于时间序，要三个条件同时成立</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">时间字段在最高位、编码不重排、字符表递增且定长 —— ULID 三条全中，UUIDv1 违反第一条</text>
+  <defs>
+    <marker id="d2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="88" width="600" height="72" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="60" y="114" font-size="12.5" fill="#166534" text-anchor="start" font-weight="bold">① 时间字段在最高位</text>
+  <text x="60" y="136" font-size="11" fill="#334155" text-anchor="start">字节 [0] 起就是时间戳</text>
+  <text x="60" y="154" font-size="11" fill="#64748B" text-anchor="start">跨时间的两个值比较时先比时间</text>
+  <rect x="40" y="172" width="600" height="72" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="60" y="198" font-size="12.5" fill="#166534" text-anchor="start" font-weight="bold">② 编码按高位到低位逐段切</text>
+  <text x="60" y="220" font-size="11" fill="#334155" text-anchor="start">不做重排、不做字节交换</text>
+  <text x="60" y="238" font-size="11" fill="#64748B" text-anchor="start">128 位原样写出，Base32 只是另一种写法</text>
+  <rect x="40" y="256" width="600" height="72" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="60" y="282" font-size="12.5" fill="#166534" text-anchor="start" font-weight="bold">③ 字符表递增且定长</text>
+  <text x="60" y="304" font-size="11" fill="#334155" text-anchor="start">Crockford Base32，定长 26 字符</text>
+  <text x="60" y="322" font-size="11" fill="#64748B" text-anchor="start">不会出现 9 大于 10 这种变长错位</text>
+  <rect x="660" y="88" width="300" height="240" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="680" y="114" font-size="12.5" fill="#991b1b" text-anchor="start" font-weight="bold">反例：UUIDv1 违反条件 ①</text>
+  <text x="680" y="142" font-size="11" fill="#334155" text-anchor="start">它把时间戳的最低段排在最前：</text>
+  <text x="680" y="162" font-size="10.5" fill="#64748B" text-anchor="start">time_low 32 位 → time_mid 16 → time_hi 12</text>
+  <text x="680" y="190" font-size="11" fill="#334155" text-anchor="start">time_low 每 2^32 × 100ns ≈ 429.5 秒</text>
+  <text x="680" y="210" font-size="11" fill="#b91c1c" text-anchor="start">就绕回 0，也就是 7 分 9 秒一次</text>
+  <text x="680" y="240" font-size="11" fill="#334155" text-anchor="start">实测跨回绕点 100 条：</text>
+  <text x="680" y="262" font-size="11.5" fill="#b91c1c" text-anchor="start" font-weight="bold">v1 逆序对 2500 = 50 × 50</text>
+  <text x="680" y="284" font-size="11.5" fill="#166534" text-anchor="start" font-weight="bold">v6 逆序对 0（只做了位序重排）</text>
+  <text x="680" y="310" font-size="10.5" fill="#64748B" text-anchor="start">所以「按字符串排 UUID 就是按时间排」这句</text>
+  <text x="44" y="372" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">实测：字符串排序后的序列是否等于生成顺序（100 毫秒 × 10 条）</text>
+  <rect x="40" y="390" width="920" height="130" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="60" y="416" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">写法</text>
+  <text x="560" y="416" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">字符串序 == 生成序</text>
+  <text x="800" y="416" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">16 字节大端序同序</text>
+  <line x1="40" y1="428" x2="960" y2="428" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="60" y="454" font-size="11.5" fill="#334155" text-anchor="start">UUIDv7 纯随机</text>
+  <text x="560" y="454" font-size="11.5" fill="#b91c1c" text-anchor="start" font-weight="bold">false</text>
+  <text x="800" y="454" font-size="11.5" fill="#b91c1c" text-anchor="start" font-weight="bold">false</text>
+  <text x="60" y="476" font-size="11.5" fill="#334155" text-anchor="start">UUIDv7 计数器版</text>
+  <text x="560" y="476" font-size="11.5" fill="#166534" text-anchor="start" font-weight="bold">true</text>
+  <text x="800" y="476" font-size="11.5" fill="#166534" text-anchor="start" font-weight="bold">true</text>
+  <text x="60" y="498" font-size="11.5" fill="#334155" text-anchor="start">ULID 单调模式</text>
+  <text x="560" y="498" font-size="11.5" fill="#166534" text-anchor="start" font-weight="bold">true</text>
+  <text x="800" y="498" font-size="11.5" fill="#166534" text-anchor="start" font-weight="bold">true</text>
+  <text x="44" y="552" font-size="11.5" fill="#64748B" text-anchor="start">为什么二进制存法也一样：ULID 没有做过任何字节交换，BINARY(16) 的 memcmp 与字符串序一致，所以 ORDER BY id 两种存法结果相同</text>
+</svg>

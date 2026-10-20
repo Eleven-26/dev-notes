@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">本地消息表：业务写与事件写必须在同一个本地事务里</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">先写业务再发消息会「业务成功、事件丢失」；先发消息再写业务会「事件已发、业务回滚」</text>
+  <defs>
+    <marker id="f4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="f5" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="920" height="168" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="108" font-size="12" fill="#1e3a8a" text-anchor="start" font-weight="bold">① 本地事务（同一个数据库、同一个事务）</text>
+  <rect x="58" y="122" width="400" height="52" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="72" y="144" font-size="11" fill="#1e3a8a" text-anchor="start" font-weight="bold">业务表：订单 / 支付 / 库存</text>
+  <text x="72" y="164" font-size="10" fill="#64748B" text-anchor="start">业务数据在这里落地</text>
+  <rect x="478" y="122" width="464" height="52" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="492" y="144" font-size="11" fill="#92400e" text-anchor="start" font-weight="bold">outbox_event（status = PENDING）</text>
+  <text x="492" y="164" font-size="10" fill="#64748B" text-anchor="start">待发事件与业务数据同生共死</text>
+  <text x="58" y="200" font-size="11" fill="#334155" text-anchor="start">两件事放在一个事务里：要么都落库，要么都不落 —— 这是整个方案唯一的关键点</text>
+  <text x="58" y="226" font-size="10.5" fill="#64748B" text-anchor="start">事件表只需最小字段：event_id、aggregate_id、payload、status、created_at、sent_at</text>
+  <text x="58" y="246" font-size="10.5" fill="#64748B" text-anchor="start">按 status + id 建索引，避免投递任务全表扫描</text>
+  <line x1="500" y1="254" x2="500" y2="282" stroke="#334155" stroke-width="1.6" marker-end="url(#f4)"/>
+  <rect x="40" y="284" width="920" height="108" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="58" y="310" font-size="12" fill="#166534" text-anchor="start" font-weight="bold">② 独立投递任务：扫 PENDING → 发送 MQ → 标记 SENT</text>
+  <rect x="58" y="324" width="260" height="50" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="72" y="344" font-size="10.5" fill="#334155" text-anchor="start">扫描 PENDING（分批领取）</text>
+  <text x="72" y="362" font-size="10" fill="#64748B" text-anchor="start">多实例用 SKIP LOCKED 或分片</text>
+  <line x1="322" y1="348" x2="352" y2="348" stroke="#16a34a" stroke-width="1.2" marker-end="url(#f5)"/>
+  <rect x="356" y="324" width="260" height="50" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="370" y="344" font-size="10.5" fill="#334155" text-anchor="start">发送 MQ（结果未知时宁可重发）</text>
+  <text x="370" y="362" font-size="10" fill="#64748B" text-anchor="start">重复发送由消费端幂等兜住</text>
+  <line x1="620" y1="348" x2="650" y2="348" stroke="#16a34a" stroke-width="1.2" marker-end="url(#f5)"/>
+  <rect x="654" y="324" width="288" height="50" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="668" y="344" font-size="10.5" fill="#334155" text-anchor="start">标记 SENT（发送成功之后才标）</text>
+  <text x="668" y="362" font-size="10" fill="#64748B" text-anchor="start">超过最大重试次数转人工并告警</text>
+  <text x="44" y="424" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">四个崩溃点分别会怎样</text>
+  <rect x="40" y="442" width="920" height="32" rx="5" fill="#dcfce7" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="464" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">提交前崩溃</text>
+  <text x="240" y="464" font-size="10.5" fill="#334155" text-anchor="start">业务与事件都没落库</text>
+  <text x="600" y="464" font-size="10.5" fill="#64748B" text-anchor="start">请求失败，重试整个事务</text>
+  <rect x="40" y="480" width="920" height="32" rx="5" fill="#dcfce7" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="502" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">提交后、发送前</text>
+  <text x="240" y="502" font-size="10.5" fill="#334155" text-anchor="start">两者都在，事件仍是 PENDING</text>
+  <text x="600" y="502" font-size="10.5" fill="#64748B" text-anchor="start">投递任务继续扫到它</text>
+  <rect x="40" y="518" width="920" height="32" rx="5" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="540" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">发送后、标记前</text>
+  <text x="240" y="540" font-size="10.5" fill="#334155" text-anchor="start">消息已到 MQ，事件仍 PENDING</text>
+  <text x="600" y="540" font-size="10.5" fill="#64748B" text-anchor="start">会重复发送 → 消费端幂等</text>
+  <rect x="40" y="556" width="920" height="32" rx="5" fill="#fef3c7" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="578" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">标记后、消费前</text>
+  <text x="240" y="578" font-size="10.5" fill="#334155" text-anchor="start">事件已投递，等待消费</text>
+  <text x="600" y="578" font-size="10.5" fill="#64748B" text-anchor="start">消费重试 + 对账兜底</text>
+  <text x="44" y="592" font-size="11" fill="#64748B" text-anchor="start">代价：业务库多一张表和一个投递任务，轮询有延迟；高吞吐下扫表会成为压力点，可用 CDC 替代轮询</text>
+</svg>

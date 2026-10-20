@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">HPACK 用两张表把重复的头压成索引号</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">静态表 61 条是编译期常量；动态表按连接维护、默认 4096 字节、索引从 62 起</text>
+  <defs>
+    <marker id="a8" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="a9" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="90" width="300" height="330" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="60" y="118" font-size="13.5" fill="#0f172a" text-anchor="start" font-weight="bold">静态表</text>
+  <text x="60" y="140" font-size="11.5" fill="#64748B" text-anchor="start">61 条，不占内存</text>
+  <rect x="60" y="156" width="260" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="72" y="176" font-size="11.5" fill="#334155" text-anchor="start">索引 2     :method: GET</text>
+  <rect x="60" y="190" width="260" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="72" y="210" font-size="11.5" fill="#334155" text-anchor="start">索引 3     :method: POST</text>
+  <rect x="60" y="224" width="260" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="72" y="244" font-size="11.5" fill="#334155" text-anchor="start">索引 4     :path: /</text>
+  <rect x="60" y="258" width="260" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="72" y="278" font-size="11.5" fill="#334155" text-anchor="start">索引 31   content-type</text>
+  <rect x="60" y="292" width="260" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="72" y="312" font-size="11.5" fill="#334155" text-anchor="start">索引 58   user-agent</text>
+  <text x="60" y="360" font-size="11.5" fill="#64748B" text-anchor="start">覆盖常见头名与少量头值</text>
+  <text x="60" y="382" font-size="11.5" fill="#64748B" text-anchor="start">实现里就是一组常量</text>
+  <text x="60" y="404" font-size="11.5" fill="#64748B" text-anchor="start">每条连接都用同一份</text>
+  <rect x="370" y="90" width="300" height="330" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="390" y="118" font-size="13.5" fill="#0f172a" text-anchor="start" font-weight="bold">动态表</text>
+  <text x="390" y="140" font-size="11.5" fill="#64748B" text-anchor="start">默认 4096 字节，按连接维护</text>
+  <rect x="390" y="156" width="260" height="28" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="402" y="176" font-size="11.5" fill="#334155" text-anchor="start">索引 62   新出现的组合</text>
+  <rect x="390" y="190" width="260" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="402" y="210" font-size="11.5" fill="#334155" text-anchor="start">索引 63   …</text>
+  <rect x="390" y="224" width="260" height="28" rx="4" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="402" y="244" font-size="11.5" fill="#334155" text-anchor="start">索引 64   …</text>
+  <line x1="520" y1="250" x2="520" y2="276" stroke="#334155" stroke-width="1.6" marker-end="url(#a8)"/>
+  <text x="390" y="300" font-size="11.5" fill="#334155" text-anchor="start">新条目从头部插入，满了从尾部淘汰</text>
+  <text x="390" y="324" font-size="11.5" fill="#334155" text-anchor="start">先进先出，索引号逐条递增</text>
+  <text x="390" y="360" font-size="11.5" fill="#b91c1c" text-anchor="start">⚠ 每条连接独立一张表</text>
+  <text x="390" y="382" font-size="11.5" fill="#b91c1c" text-anchor="start">连接重建 → 表从头开始</text>
+  <text x="390" y="404" font-size="11.5" fill="#b91c1c" text-anchor="start">所以连接越多，压缩率越差</text>
+  <rect x="700" y="90" width="260" height="330" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="720" y="118" font-size="13.5" fill="#0f172a" text-anchor="start" font-weight="bold">第 2 个请求发什么</text>
+  <rect x="720" y="140" width="220" height="56" rx="5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="730" y="164" font-size="11.5" fill="#334155" text-anchor="start">头部原样重发</text>
+  <text x="730" y="184" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">约 70 字节</text>
+  <line x1="830" y1="200" x2="830" y2="226" stroke="#334155" stroke-width="1.6" marker-end="url(#a9)"/>
+  <rect x="720" y="230" width="220" height="56" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="730" y="254" font-size="11.5" fill="#334155" text-anchor="start">只发索引号</text>
+  <text x="730" y="274" font-size="12" fill="#166534" text-anchor="start" font-weight="bold">约 7 字节</text>
+  <text x="720" y="316" font-size="11.5" fill="#64748B" text-anchor="start">收益是数量级</text>
+  <text x="720" y="338" font-size="11.5" fill="#64748B" text-anchor="start">不是「小一点」</text>
+  <text x="720" y="372" font-size="11.5" fill="#b91c1c" text-anchor="start">⚠ 新值要付一次字面量</text>
+  <text x="720" y="394" font-size="11.5" fill="#b91c1c" text-anchor="start">路径与方法越多，越压不下来</text>
+  <text x="44" y="458" font-size="13" fill="#0f172a" text-anchor="start" font-weight="bold">三条结论</text>
+  <text x="60" y="490" font-size="12" fill="#334155" text-anchor="start">① 静态表管「常见头名」，动态表管「本次连接新出现的名值组合」，两者索引号连续编号</text>
+  <text x="60" y="522" font-size="12" fill="#334155" text-anchor="start">② 动态表是每条连接独立的 → 连接数越多，每张表都从小开始，压缩率越差</text>
+  <text x="60" y="554" font-size="12" fill="#334155" text-anchor="start">③ 所以「一条连接跑更多请求」不只是省握手，它同时是头部压缩生效的前提</text>
+  <text x="60" y="584" font-size="11.5" fill="#64748B" text-anchor="start">对照：HTTP/1.1 每请求都要把 Cookie、User-Agent 完整重发，Cookie 越大冗余越夸张</text>
+</svg>

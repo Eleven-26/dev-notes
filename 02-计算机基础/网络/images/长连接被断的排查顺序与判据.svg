@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">长连接空闲后被断，第一嫌疑人应该是代理而不是 NAT</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">典型症状：空闲一段时间后第一个业务请求失败、重连立刻恢复 —— 这是会话过期，不是链路坏</text>
+  <defs>
+    <marker id="b4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="b5" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="920" height="56" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="60" y="118" font-size="12.5" fill="#92400e" text-anchor="start" font-weight="bold">症状：空闲一段时间后「第一个」请求失败、重连即恢复 → 先按会话过期查，别急着升级到网络故障</text>
+  <rect x="40" y="172" width="920" height="76" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+  <text x="62" y="202" font-size="12.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">① 代理 / LB 空闲超时</text>
+  <text x="62" y="226" font-size="11" fill="#334155" text-anchor="start">60s 级，通常比 NAT 更早断</text>
+  <text x="430" y="202" font-size="11" fill="#64748B" text-anchor="start">怎么取证</text>
+  <text x="430" y="226" font-size="11" fill="#334155" text-anchor="start">LB 访问日志、会话表；把空闲时长与断连时刻对齐</text>
+  <rect x="40" y="260" width="920" height="76" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="62" y="290" font-size="12.5" fill="#166534" text-anchor="start" font-weight="bold">② NAT / conntrack</text>
+  <text x="62" y="314" font-size="11" fill="#334155" text-anchor="start">会话表里的连接被回收</text>
+  <text x="430" y="290" font-size="11" fill="#64748B" text-anchor="start">怎么取证</text>
+  <text x="430" y="314" font-size="11" fill="#334155" text-anchor="start">网关 conntrack -L 看会话还在不在；对比超时值</text>
+  <rect x="40" y="348" width="920" height="76" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.3"/>
+  <text x="62" y="378" font-size="12.5" fill="#5b21b6" text-anchor="start" font-weight="bold">③ 服务端 keepalive</text>
+  <text x="62" y="402" font-size="11" fill="#334155" text-anchor="start">探测间隔比上面两者都长</text>
+  <text x="430" y="378" font-size="11" fill="#64748B" text-anchor="start">怎么取证</text>
+  <text x="430" y="402" font-size="11" fill="#334155" text-anchor="start">ss -ti 看 keepalive 状态；确认是否真在探测</text>
+  <rect x="40" y="436" width="920" height="76" rx="7" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="62" y="466" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">④ 客户端连接池</text>
+  <text x="62" y="490" font-size="11" fill="#334155" text-anchor="start">池里放着已被对端关掉的连接</text>
+  <text x="430" y="466" font-size="11" fill="#64748B" text-anchor="start">怎么取证</text>
+  <text x="430" y="490" font-size="11" fill="#334155" text-anchor="start">连接池「取出来先探活」，而不是直接用</text>
+  <rect x="40" y="528" width="920" height="56" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="60" y="552" font-size="12.5" fill="#1e3a8a" text-anchor="start" font-weight="bold">对策只有一句：心跳间隔要小于链路上最小的那个空闲超时</text>
+  <text x="60" y="574" font-size="11.5" fill="#64748B" text-anchor="start">排查顺序按 ①→④ 走，因为超时的量级通常是「代理 → NAT → 服务端 keepalive」，先断的那个才是真凶</text>
+</svg>

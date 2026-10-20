@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条链路只让一层重试，且重试必须包在熔断器内部</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">重试包在外层：熔断打开时还在重试；重试包在内层：熔断打开就直接短路</text>
+  <defs>
+    <marker id="h4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="h5" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <rect x="40" y="84" width="460" height="300" rx="10" fill="#f8fafc" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="58" y="108" font-size="12" fill="#1e3a8a" text-anchor="start" font-weight="bold">客户端 / SDK（最靠近下游，默认放在这一层）</text>
+  <rect x="60" y="122" width="420" height="244" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="76" y="146" font-size="11.5" fill="#5b21b6" text-anchor="start" font-weight="bold">熔断器</text>
+  <text x="76" y="166" font-size="10" fill="#64748B" text-anchor="start">每次尝试都算一次调用</text>
+  <rect x="80" y="180" width="380" height="168" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="96" y="204" font-size="11" fill="#166534" text-anchor="start" font-weight="bold">重试循环（最多 3 次 + 退避）</text>
+  <rect x="100" y="218" width="340" height="32" rx="4" fill="#ffffff" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="114" y="239" font-size="10" fill="#334155" text-anchor="start">尝试 1  →  调下游</text>
+  <rect x="100" y="258" width="340" height="32" rx="4" fill="#ffffff" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="114" y="279" font-size="10" fill="#334155" text-anchor="start">尝试 2  →  调下游</text>
+  <rect x="100" y="298" width="340" height="32" rx="4" fill="#ffffff" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="114" y="319" font-size="10" fill="#334155" text-anchor="start">尝试 3  →  调下游</text>
+  <text x="96" y="340" font-size="9.5" fill="#166534" text-anchor="start">每次尝试前先问熔断状态：打开则直接返回，不再发请求</text>
+  <rect x="530" y="84" width="430" height="300" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="548" y="108" font-size="12" fill="#991b1b" text-anchor="start" font-weight="bold">❌ 反过来包：熔断在内、重试在外</text>
+  <text x="548" y="134" font-size="10.5" fill="#334155" text-anchor="start">熔断已经打开，外层还在按 3 次重试</text>
+  <text x="548" y="156" font-size="10.5" fill="#b91c1c" text-anchor="start">→ 每次重试都真的打到上游</text>
+  <text x="548" y="178" font-size="10.5" fill="#b91c1c" text-anchor="start">→ 上游被重试放大 3 倍</text>
+  <text x="548" y="206" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">本机实测（四层链路）</text>
+  <text x="548" y="230" font-size="10.5" fill="#991b1b" text-anchor="start">客户端不感知熔断、仍重试 3 次：上游收到 27 次</text>
+  <text x="548" y="252" font-size="10.5" fill="#166534" text-anchor="start" font-weight="bold">重试前先问熔断状态：上游只收到 9 次</text>
+  <text x="548" y="280" font-size="10" fill="#64748B" text-anchor="start">同样的业务量，调用量差 3 倍 —— 这就是「重试包在哪一层」的实际代价</text>
+  <text x="44" y="414" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">三条硬规矩</text>
+  <rect x="40" y="432" width="920" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="56" y="452" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">① 一条链路只让一层重试</text>
+  <text x="56" y="470" font-size="10" fill="#334155" text-anchor="start">客户端 / SDK 是默认选择；网关重试会乘以所有调用方，最容易放大</text>
+  <rect x="40" y="484" width="920" height="44" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="56" y="504" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">② 重试包在熔断器内部</text>
+  <text x="56" y="522" font-size="10" fill="#334155" text-anchor="start">每次尝试都算熔断统计的一次调用；熔断打开直接短路，不再重试</text>
+  <rect x="40" y="536" width="920" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="56" y="556" font-size="10.5" fill="#0f172a" text-anchor="start" font-weight="bold">③ 上报熔断的是「最终结果」</text>
+  <text x="56" y="574" font-size="10" fill="#334155" text-anchor="start">重试 3 次才成功只上报一次成功；把中间失败也上报会推高错误率、导致误熔断</text>
+  <text x="44" y="602" font-size="10.5" fill="#64748B" text-anchor="start">另两条边界：非幂等写操作不放客户端默认重试；消息消费者的重投要配重试上限 + 死信队列，否则毒消息会无限重投</text>
+</svg>
