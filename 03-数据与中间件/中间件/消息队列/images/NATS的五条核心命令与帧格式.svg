@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" width="1000" height="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">NATS 五条核心命令与实测回执字节：服务端先开口，客户端必须能回 PING</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">nats-server 2.10.29 单机容器，Python 标准库手写命令，两遍输出一致</text>
+
+  <rect x="40" y="80" width="120" height="34" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="100" y="102" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">步骤</text>
+  <rect x="160" y="80" width="440" height="34" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="176" y="102" font-size="11.5" font-weight="bold" fill="#334155">线上字节</text>
+  <rect x="600" y="80" width="120" height="34" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="660" y="102" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">长度</text>
+  <rect x="720" y="80" width="240" height="34" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="736" y="102" font-size="11.5" font-weight="bold" fill="#334155">要点</text>
+
+  <rect x="40" y="114" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="144" text-anchor="middle" font-size="11.5" fill="#0f172a">① 连上</text>
+  <rect x="160" y="114" width="440" height="50" fill="#dbeafe" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="136" font-family="Consolas, monospace" font-size="11" fill="#1e3a8a">INFO {"proto":1,"headers":true,...}</text>
+  <text x="176" y="154" font-size="10.5" fill="#1d4ed8">服务端主动推，客户端还没开口</text>
+  <rect x="600" y="114" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="144" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">416 B</text>
+  <rect x="720" y="114" width="240" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="144" font-size="10.5" fill="#334155">max_payload 与 headers 能力都在这</text>
+
+  <rect x="40" y="164" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="194" text-anchor="middle" font-size="11.5" fill="#0f172a">② CONNECT</text>
+  <rect x="160" y="164" width="440" height="50" fill="#dbeafe" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="186" font-family="Consolas, monospace" font-size="11" fill="#1e3a8a">CONNECT {"verbose":true,...}\r\n</text>
+  <text x="176" y="204" font-size="10.5" fill="#1d4ed8">← 回 +OK\r\n</text>
+  <rect x="600" y="164" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="194" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">5 B</text>
+  <rect x="720" y="164" width="240" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="194" font-size="10.5" fill="#334155">verbose 开则每条命令回 +OK</text>
+
+  <rect x="40" y="214" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="244" text-anchor="middle" font-size="11.5" fill="#0f172a">③ PING</text>
+  <rect x="160" y="214" width="440" height="50" fill="#dbeafe" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="236" font-family="Consolas, monospace" font-size="11" fill="#1e3a8a">PING\r\n</text>
+  <text x="176" y="254" font-size="10.5" fill="#1d4ed8">← 回 PONG\r\n（唯一无参数的一对）</text>
+  <rect x="600" y="214" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="244" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">6 B</text>
+  <rect x="720" y="214" width="240" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="244" font-size="10.5" fill="#334155">双向都可发</text>
+
+  <rect x="40" y="264" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="294" text-anchor="middle" font-size="11.5" fill="#0f172a">④ SUB</text>
+  <rect x="160" y="264" width="440" height="50" fill="#dcfce7" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="286" font-family="Consolas, monospace" font-size="11" fill="#14532d">SUB demo.orders 1\r\n</text>
+  <text x="176" y="304" font-size="10.5" fill="#b91c1c">← 回 +OK\r\n 紧跟 PING\r\n（服务端主动探活）</text>
+  <rect x="600" y="264" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="294" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">11 B</text>
+  <rect x="720" y="264" width="240" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="294" font-size="10.5" fill="#334155">sid=1 由客户端自己编</text>
+
+  <rect x="40" y="314" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="344" text-anchor="middle" font-size="11.5" fill="#0f172a">⑤ PUB</text>
+  <rect x="160" y="314" width="440" height="50" fill="#dcfce7" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="336" font-family="Consolas, monospace" font-size="11" fill="#14532d">PUB demo.orders 11\r\nhello world\r\n</text>
+  <text x="176" y="354" font-size="10.5" fill="#14532d">← MSG demo.orders 1 11\r\nhello world\r\n</text>
+  <rect x="600" y="314" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="344" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">40 B</text>
+  <rect x="720" y="314" width="240" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="344" font-size="10.5" fill="#334155">11 是 payload 字节数</text>
+
+  <rect x="40" y="364" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="394" text-anchor="middle" font-size="11.5" fill="#0f172a">⑥ 未知命令</text>
+  <rect x="160" y="364" width="440" height="50" fill="#fecaca" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="386" font-family="Consolas, monospace" font-size="11" fill="#7f1d1d">BOGUS cmd\r\n</text>
+  <text x="176" y="404" font-size="10.5" fill="#b91c1c">← -ERR 'Unknown Protocol Operation'\r\n</text>
+  <rect x="600" y="364" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="394" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">35 B</text>
+  <rect x="720" y="364" width="240" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="394" font-size="10.5" fill="#334155">协议错误通常断开连接</text>
+
+  <rect x="40" y="414" width="120" height="50" fill="#fef9c3" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="444" text-anchor="middle" font-size="11.5" fill="#713f12">⑦ 长度写错</text>
+  <rect x="160" y="414" width="440" height="50" fill="#fef9c3" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="436" font-family="Consolas, monospace" font-size="11" fill="#713f12">PUB demo.orders 99\r\nhello world\r\n</text>
+  <text x="176" y="454" font-size="10.5" fill="#b91c1c">← 什么都不回，服务端在等剩下 88 字节</text>
+  <rect x="600" y="414" width="120" height="50" fill="#fef9c3" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="444" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">0 B</text>
+  <rect x="720" y="414" width="240" height="50" fill="#fef9c3" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="444" font-size="10.5" fill="#b91c1c">不报错、不断连 —— 最难排</text>
+
+  <rect x="40" y="464" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="100" y="494" text-anchor="middle" font-size="11.5" fill="#0f172a">⑧ HPUB</text>
+  <rect x="160" y="464" width="440" height="50" fill="#eef2ff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="176" y="486" font-family="Consolas, monospace" font-size="11" fill="#312e81">HPUB demo.hdr 18 29\r\n...</text>
+  <text x="176" y="504" font-size="10.5" fill="#4338ca">← HMSG demo.hdr 9 18 29\r\n（两个长度都给）</text>
+  <rect x="600" y="464" width="120" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="660" y="494" text-anchor="middle" font-size="12" font-weight="bold" fill="#4338ca">59 B</text>
+  <rect x="720" y="464" width="240" height="50" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="736" y="494" font-size="10.5" fill="#334155">18 + 11 = 29（header + payload）</text>
+
+  <text x="40" y="546" font-size="12" fill="#0f172a">要点：NATS 的「轻」只在协议简单（可 telnet 直接敲），单条命令行的固定开销仍有约 20 字节 —— 所以它赢在吞吐与运维简单，不赢在省流量。</text>
+  <text x="40" y="570" font-size="11.5" fill="#64748B">实测来源：nats:2.10-alpine（nats-server 2.10.29）单机容器 nats-proto-lab，宿主端口 14222，两遍归一化 client_id 后逐行一致</text>
+</svg>

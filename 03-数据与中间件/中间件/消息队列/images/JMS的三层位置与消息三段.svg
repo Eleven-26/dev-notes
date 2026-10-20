@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">JMS 处在「应用代码」与「线上协议」之间，以及消息体内的三段</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">同一段 JMS 代码在不同 Broker 上跑出完全不同的字节 —— 因为 JMS 本身没有字节</text>
+
+  <rect x="40" y="84" width="920" height="56" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="60" y="108" font-size="12.5" font-weight="bold" fill="#1e3a8a">应用代码（Java）</text>
+  <text x="60" y="128" font-size="11.5" fill="#1e40af">session.createProducer(queue).send(msg)　——　这一行在所有 Broker 上一模一样</text>
+
+  <line x1="500" y1="140" x2="500" y2="164" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="496,162 504,162 500,170" fill="#94a3b8"/>
+
+  <rect x="40" y="172" width="920" height="64" rx="7" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.6"/>
+  <text x="60" y="196" font-size="12.5" font-weight="bold" fill="#713f12">JMS（JSR 914）：只规定 API、方法语义、消息头字段名 —— 没有任何线上字节</text>
+  <text x="60" y="220" font-size="11.5" fill="#854d0e">所以「JMS 的性能」= 底层协议 + Broker 的性能；抓包看到的是底层协议的帧</text>
+
+  <line x1="500" y1="236" x2="500" y2="258" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="496,256 504,256 500,264" fill="#94a3b8"/>
+
+  <rect x="40" y="266" width="290" height="70" rx="7" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="185" y="290" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">ActiveMQ Classic</text>
+  <text x="185" y="312" text-anchor="middle" font-size="11.5" fill="#9a3412">底层走 OpenWire（私有二进制）</text>
+  <text x="185" y="330" text-anchor="middle" font-size="11" fill="#c2410c">也可走 STOMP / AMQP</text>
+
+  <rect x="355" y="266" width="290" height="70" rx="7" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="500" y="290" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">Artemis / RabbitMQ JMS</text>
+  <text x="500" y="312" text-anchor="middle" font-size="11.5" fill="#166534">底层走 Core / AMQP 0-9-1</text>
+  <text x="500" y="330" text-anchor="middle" font-size="11" fill="#15803d">语义映射由 Broker 层做</text>
+
+  <rect x="670" y="266" width="290" height="70" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="815" y="290" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#312e81">IBM MQ</text>
+  <text x="815" y="312" text-anchor="middle" font-size="11.5" fill="#4338ca">底层走厂商自有协议</text>
+  <text x="815" y="330" text-anchor="middle" font-size="11" fill="#4f46e5">对外仍暴露 JMS 接口</text>
+
+  <text x="40" y="372" font-size="12.5" font-weight="bold" fill="#0f172a">一条 JMS 消息的三段，只有后两段能自定义</text>
+
+  <rect x="40" y="386" width="300" height="90" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="56" y="410" font-size="12.5" font-weight="bold" fill="#1e3a8a">header（规范定义）</text>
+  <text x="56" y="432" font-size="11" fill="#1e40af">JMSMessageID / JMSCorrelationID</text>
+  <text x="56" y="450" font-size="11" fill="#1e40af">JMSRedelivered / JMSExpiration</text>
+  <text x="56" y="468" font-size="11" fill="#b91c1c">字段名固定，跨厂商唯一保证</text>
+
+  <rect x="350" y="386" width="300" height="90" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="366" y="410" font-size="12.5" font-weight="bold" fill="#14532d">properties（应用自定义）</text>
+  <text x="366" y="432" font-size="11" fill="#166534">setStringProperty / setIntProperty</text>
+  <text x="366" y="450" font-size="11" fill="#166534">只支持原始类型，不能放对象</text>
+  <text x="366" y="468" font-size="11" fill="#15803d">selector 主要作用在这段</text>
+
+  <rect x="660" y="386" width="300" height="90" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="676" y="410" font-size="12.5" font-weight="bold" fill="#334155">body（六种类型选一）</text>
+  <text x="676" y="432" font-size="11" fill="#475569">Text / Bytes / Map / Stream</text>
+  <text x="676" y="450" font-size="11" fill="#475569">Object（仅 Java）/ 无 body</text>
+  <text x="676" y="468" font-size="11" fill="#b91c1c">selector 不能过滤这段</text>
+
+  <text x="40" y="506" font-size="12" fill="#0f172a">要点：跨语言只选 TextMessage 或 BytesMessage —— ObjectMessage 的 body 出了 Java 就没人能解。</text>
+  <text x="40" y="530" font-size="12" fill="#b91c1c">注意：CLIENT_ACKNOWLEDGE 是累积确认，确认第 10 条会把前 9 条一起确认，处理失败的也回不来了。</text>
+
+  <text x="40" y="560" font-size="11.5" fill="#64748B">依据：JSR 914（JMS 1.1 / 2.0）规范；JMS 无线上字节，本篇无需抓包实测</text>
+</svg>

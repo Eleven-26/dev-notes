@@ -1,0 +1,228 @@
+# XMPP
+
+> 覆盖 ⭐ **XMPP 用一条长命的 XML 流承载所有交互**这件事的后果：流怎么打开与协商、三个核心 stanza（`message` / `presence` / `iq`）各管什么、JID 三段与 bare / full 的区别、服务端联邦（S2S）怎么靠 DNS 找到对方、以及「冗长」这个评价的具体代价落在哪。
+>
+> 不覆盖：MQTT 的二进制位段头见 [MQTT.md](MQTT.md)；STOMP 的文本帧见 [STOMP.md](STOMP.md)；AMQP 的帧与 channel 见 [AMQP协议.md](AMQP协议.md)；IM 场景怎么把状态映射到报文见 [协议设计.md](../../../04-架构与系统/系统设计/IM系统/协议设计.md)。
+>
+> 内容整理自个人学习笔记，流与 stanza 结构依据 RFC 6120 / 6121。⚠️ **实测口径：本篇未做本机实测**（本机无 XMPP 服务端容器），XML 结构按 RFC 陈述、**未抓包验证**；文中不引用吞吐或延迟数字。「具体使用」节的 XML 是规范形态的还原，未在本机执行。
+
+---
+
+## 一、XMPP 的「流」是怎么打开的？
+
+**本节要点**：XMPP 不是「一问一答」的协议，而是**先打开一条 XML 流，之后所有 stanza 都作为这条流的子元素被推送**。流的打开分三步：`<stream:stream>` 开头标签 → 双方各自声明 `<stream:features>` → 协商完（TLS + SASL）后才开始发业务 stanza。**流不关闭就一直开着**，这是它能做「服务端主动推送」的基础。
+
+![XMPP 的流生命周期与三个核心 stanza：stream 打开、features 协商、业务 stanza 往返](images/XMPP的流与三个stanza.svg)
+
+上图要读出两件事：**`<stream:stream>` 只发开头标签**（不是完整的 XML 文档，所以永远「不合法」于通用 XML 解析器），**关闭时才补上 `</stream:stream>`**；以及三个 stanza 都是**流的一级子元素**，靠元素名分发，不需要额外的「类型字段」。
+
+### 1.1 三步握手
+
+```text
+① C→S  <stream:stream to='example.com' xmlns='jabber:client' version='1.0'>
+② S→C  <stream:stream ...><stream:features><starttls/></stream:features>
+③ C→S  <starttls/> → S→C <proceed/> → 开始 TLS 握手（此后明文不可见）
+④ 在 TLS 之上重新开流，再协商 SASL：<mechanisms/> → <auth/> → <success/>
+⑤ 流重启（第三次），S→C 发 <stream:features> 带 <bind/> → 客户端 <iq> 绑定 resource
+```
+
+⭐ **注意流被重启了三次**（初始 → TLS 后 → SASL 后）。每次重启都重新发 `<stream:stream>` 开头标签，之前的流视为结束。这是 XMPP 排障时最容易被忽略的一点：**日志里会看到多个 `<stream:stream>`，那不是重连，是同一连接内的流重启。**
+
+### 1.2 心跳为什么是「一个空格」
+
+XMPP 的心跳（whitespace keepalive）就是**往流里发一个空格字符**。因为空格在 XML 的元素之间是合法的「可忽略空白」，接收方的解析器会直接跳过它，但 TCP 层确实有数据流动，从而让中间的 NAT / 负载均衡不把连接判定为空闲。
+
+> ⚠️ **这也意味着「心跳」在 XMPP 里不是协议定义的报文**，而是利用 XML 语法的副作用。好处是极省字节；坏处是**很难从抓包里「看出」心跳**，只能看到零星的空格。
+
+## 二、三个 stanza 各管什么？
+
+**本节要点**：XMPP 只有三个核心 stanza，分工是「**传内容 / 报状态 / 要答案**」——`message` 送消息、`presence` 广播在线状态、`iq` 做一问一答的请求。**没有第四个**，所有扩展能力都靠 `iq` 携带自定义命名空间的子元素。
+
+| stanza | 语义 | 有回执吗 | 典型用途 |
+| --- | --- | --- | --- |
+| **`<message>`** | 单向送内容 | ❌ **协议本身不要求回执** | 聊天消息、通知、pubsub 事件推送 |
+| **`<presence>`** | 广播状态（在线 / 离开 / 勿扰） | ❌ 广播，无定向回执 | 上线通知、状态订阅、出席授权 |
+| **`<iq>`** | 一问一答（get / set → result / error） | ✅ **必须回一个** | 花名册（roster）、服务发现、绑定 resource、任何扩展能力 |
+
+> ⚠️ **`<message>` 默认没有投递回执**——这是 XMPP 最常被误解的地方。要回执必须加 XEP-0184（Message Delivery Receipts）的 `<request/>` 子元素，对方回一个 `<received/>`。**核心协议不保证消息到达。**
+
+### 2.1 `<iq>` 的四种 type
+
+| type | 方向 | 含义 |
+| --- | --- | --- |
+| `get` | 请求 | 要一份数据（如「我的花名册」） |
+| `set` | 请求 | 改一份数据（如「加一个好友」） |
+| `result` | 应答 | 成功，可带 payload |
+| `error` | 应答 | 失败，带 `<error type='...'>` 与条件元素 |
+
+⭐ **`iq` 必须一问一答且 `id` 唯一**：`get` / `set` 必须对应一个 `result` / `error`，`id` 用来配对。**超时没回就该当失败处理**，不能无限等。
+
+### 2.2 五个公共属性
+
+每个 stanza 都可以带这五个属性，语义统一：
+
+| 属性 | 作用 |
+| --- | --- |
+| `to` | 收件人 JID（缺省表示「发给我自己」的服务端） |
+| `from` | 发件人 JID（**由服务端填写**，客户端伪造会被覆盖） |
+| `id` |  stanza 标识，`iq` 靠它配对 |
+| `type` | stanza 的子类型（`message` 的 `chat`/`groupchat`、`iq` 的 `get`/`set`…） |
+| `xml:lang` | 内容语言 |
+
+## 三、JID 三段是什么？
+
+**本节要点**：JID 是 `localpart@domainpart/resourcepart` 三段，**每一段都可能缺省**。关键区别是 **bare JID（前两段）** 与 **full JID（三段全有）**：前者标识「这个人」，后者标识「这个人在这台设备上的这一个连接」。
+
+| 形态 | 例子 | 标识什么 | 什么时候用 |
+| --- | --- | --- | --- |
+| **bare JID** | `alice@example.com` | 账号（人） | 花名册、好友关系、消息发到「所有端」 |
+| **full JID** | `alice@example.com/phone` | 账号 + 具体连接（设备） | 定向推送到某一台设备、`iq` 应答 |
+| 只有 domain | `example.com` | 服务端本身 | 服务发现、发往服务器 |
+| 只有 domain + resource | `example.com/news` | 服务上的一个资源（如 MUC 房间） | 群聊房间 JID |
+
+**为什么这个区分重要**：
+
+- 消息发到 **bare JID** 时，服务端按「优先级最高的在线端」或「全部在线端」投递（具体策略由服务端的 `presence` 优先级决定）。
+- 消息发到 **full JID** 时，只投给那一个连接。
+- 多端同步（XEP-0280 Message Carbons）就是让「发到 bare JID 的消息」被复制给所有在线端。
+
+> ⚠️ **`resource` 是客户端自己挑的**，服务端只保证「同一 bare JID 下 resource 唯一」。所以 `phone` / `desktop` 这类名字是约定，不是协议保证——用它对设备做路由前，先确认你的服务端是否稳定保留 resource。
+
+## 四、联邦怎么工作？
+
+**本节要点**：XMPP 的联邦（server-to-server，S2S）是**用 DNS 找到对方服务端，然后两个服务端直接开一条 TCP 互信连接**。所以 `alice@a.example` 给 `bob@b.example` 发消息，**不经过任何中心节点**，`a.example` 会直接连 `b.example`。
+
+### 4.1 找对方的顺序
+
+```text
+① 查 SRV 记录：_xmpp-server._tcp.<对方域名>  → 拿到主机名与端口（通常是 5269）
+② 没有 SRV 就退回到 A/AAAA 记录（对方域名本身，端口 5269）
+③ 开 TCP → STARTTLS → 双向 SASL 验证（用 dialback 或证书互信）
+④ 验证通过后才转发 stanza
+```
+
+### 4.2 联邦带来的两个后果
+
+- ⭐ **好处**：任何人都能和任何人通信，不需要中心服务器——这是 XMPP 与微信这类封闭 IM 的根本差别。
+- ⚠️ **代价**：**垃圾消息无法在中心点拦截**（没有中心点），且**你的服务端要接受陌生域名的入站连接**。所以在企业内部部署 XMPP 时，通常会把 S2S 关掉或只允许白名单域名。
+
+> ⚠️ **联邦不是默认开箱可用的**：需要正确的 DNS SRV 记录、有效的证书、以及对方服务端愿意接受你的连接。三者缺一，`alice` 发的消息就停在本地服务端。
+
+## 五、为什么说它「冗长」？代价具体在哪？
+
+**本节要点**：冗长的代价不在「字符多」，而在 **XML 让每个 stanza 都重复一遍命名空间与标签名**，而这个开销是**每帧固定**的——所以消息越短，开销占比越高。
+
+同一个动作的三种协议写法对照（语义都是「给某个地址发一条 5 字节的消息」）：
+
+| 协议 | 报文形态 | 头部固定开销 |
+| --- | --- | --- |
+| **MQTT** | 2 字节固定头 + topic + payload | **2 字节** |
+| **NATS** | `PUB subj 5\r\n` + payload | 约 12 字节（取决于 subject 长度） |
+| **XMPP** | `<message to='...' type='chat'><body>hello</body></message>` | **50 字节以上**（不含 `from` / `id` / 命名空间声明） |
+
+**冗长的三个具体来源**：
+
+- **标签名重复**：`<message>` 与 `</message>`、`<body>` 与 `</body>`，每层都要写两遍。
+- **命名空间重复**：扩展元素的 `xmlns` 每次都要带（除非用流级别的默认命名空间）。
+- **可读性带来的冗余**：属性名是完整单词（`to` / `from` / `type`），不是位段。
+
+> ⭐ **反过来说，冗长换来的是「可读 + 可扩展」**：抓包后直接能读懂、新能力只要加一个新命名空间的子元素、不需要改协议版本。这是 XMPP 用「流量」换「演进能力」的取舍。
+
+## 六、扩展（XEP）为什么是它的强项？
+
+**本节要点**：XMPP 的核心只定「流 + 三个 stanza」，**其余能力全部靠 XEP（XMPP Extension Protocols）**。所以它的能力边界不是由协议版本决定，而是由「双方实现了哪些 XEP」决定——这带来了极强的可扩展性，也带来了**互操作性问题**（双方 XEP 集合不一致）。
+
+| XEP | 能力 | 为什么重要 |
+| --- | --- | --- |
+| **XEP-0045** | 多用户聊天（MUC，群聊） | 群聊不是核心协议能力，必须靠它 |
+| **XEP-0198** | 流管理（断线重连 + 未确认 stanza 重发） | ⭐ **IM 必备**，否则断线就丢消息 |
+| **XEP-0280** | Message Carbons（多端同步） | 一条消息复制给所有在线端 |
+| **XEP-0163** | PEP（个人事件协议，基于 pubsub） | 头像、昵称、状态广播 |
+| **XEP-0184** | 消息送达回执 | 补上 `<message>` 没有回执的缺口 |
+| **XEP-0313** | 消息归档（MAM，历史消息拉取） | 换设备后拉历史 |
+
+> ⚠️ **「XMPP 支持群聊」这句话必须加限定**：核心协议不支持群聊，是 XEP-0045 支持。判断一个 XMPP 服务端能不能做群聊，要看它实现了哪些 XEP，不是看它「是不是 XMPP」。
+
+## 七、应用场景
+
+| 场景 | 适合吗 | 理由 |
+| --- | --- | --- |
+| **跨组织即时通信**（需要与外部互通） | ✅ 最适合 | 联邦是它的立身之本，别的协议做不到 |
+| **企业内部 IM** | ⚠️ 可用但偏重 | 要关掉 S2S、要挑实现齐全的 XEP（0198 / 0280 / 0313） |
+| **IoT 设备上报** | ❌ 不适合 | XML 冗长，流量与电量都不可接受，用 MQTT |
+| **高频消息推送（万级 QPS）** | ❌ 不适合 | 每帧固定开销 50 字节以上，带宽成本高 |
+| **需要「标准协议」避免自研** | ✅ 适合 | 协议与扩展都有 RFC / XEP 编号，不用自己定 |
+| **端侧完全可控 + 流量敏感** | ❌ 换自定义二进制 | 见 [自定义协议设计.md](自定义协议设计.md) |
+
+本仓对应落地：[协议设计.md](../../../04-架构与系统/系统设计/IM系统/协议设计.md)（自研 IM 协议时的对照）、[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md)（应用层协议对照）。
+
+## 八、具体使用
+
+### 8.1 一个完整的消息往返（规范形态）
+
+```text
+<!-- ① 打开流 -->
+<stream:stream to='example.com' xmlns='jabber:client'
+               xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>
+
+<!-- ② 服务端回应并给 features（此处假设 TLS 与 SASL 已完成） -->
+<stream:stream from='example.com' id='c2s-1' xmlns='jabber:client'
+               xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>
+  <stream:features>
+    <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'/>
+    <sm xmlns='urn:xmpp:sm:3'/>
+  </stream:features>
+
+<!-- ③ 绑定 resource（iq 必须一问一答） -->
+<iq type='set' id='b1'>
+  <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>
+    <resource>phone</resource>
+  </bind>
+</iq>
+<iq type='result' id='b1'>
+  <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'>
+    <jid>alice@example.com/phone</jid>
+  </bind>
+</iq>
+
+<!-- ④ 上线广播（presence 无定向回执） -->
+<presence/>
+
+<!-- ⑤ 发一条消息（核心协议不要求回执） -->
+<message to='bob@example.com' type='chat' id='m1'>
+  <body>hello</body>
+</message>
+
+<!-- ⑥ 关闭流 -->
+</stream:stream>
+```
+
+### 8.2 排障时先看的四个点
+
+```text
+① 日志里有几次 <stream:stream>？
+   三次是正常的（初始 → TLS 后 → SASL 后），不是重连
+② 有没有 XEP-0198 的 <sm/>？
+   没有就不支持断线重连，断线期间的 stanza 直接丢
+③ <message> 有没有 XEP-0184 的 <request/>？
+   没有就永远不知道对方收没收到
+④ S2S 的 DNS 对不对？
+   _xmpp-server._tcp.<域名> 的 SRV 记录缺失 → 跨域消息发不出去
+```
+
+## 延伸追问
+
+- **XMPP 为什么不用「一问一答」而要开一条长命的流？** 因为它要支持**服务端主动推送**（对方发消息、好友上线）。一问一答的模型下，服务端没有办法把事件推给客户端，只能靠轮询。
+- **`<message>` 真的不回执吗？** 核心协议（RFC 6121）不要求。回执要靠 XEP-0184。所以「XMPP 消息可靠」这个说法必须限定为「在实现了 0198 + 0184 的前提下」。
+- **为什么流被重启三次而不是一次做完？** 因为 TLS 与 SASL 都要在**明文的流**上协商，协商完之后的流量必须走新的一层，所以只能「关旧流、在新层上开新流」。这是 XMPP 分层设计的直接结果。
+- **联邦会不会带来安全问题？** 会。任何人都能连你的 S2S 端口，所以企业部署通常关闭 S2S 或做域名白名单。这也是「XMPP 适合开放互通、不适合封闭内网」的原因。
+- **XMPP 和 Matrix 该怎么选？** XMPP 是「消息协议 + 联邦」，Matrix 是「事件图 + 联邦」，后者的房间模型更适合「多人协作状态同步」，前者的生态与客户端更成熟。两者都解决了「不依赖中心节点」这件事。
+
+## 关联
+
+- **上游/总纲**：[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md) — 应用层协议七行对照，XMPP 的定位
+- **上游/总纲**：[README.md](../README.md) — 网络目录导读：消息协议这一类的位置
+- **对照/互补**：[MQTT.md](MQTT.md) — 同为消息协议，2 字节头 vs 50 字节 XML 头，是最直接的「省流量 vs 可演进」对照
+- **对照/互补**：[STOMP.md](STOMP.md) — 同为文本协议，但 STOMP 是「段 + NUL」，XMPP 是「XML 流 + 标签闭合」
+- **对照/互补**：[AMQP协议.md](AMQP协议.md) — 同为「多帧内容」的协议：AMQP 靠 content header + body 帧分段，XMPP 靠 XML 元素嵌套
+- **下游机制**：[协议设计.md](../../../04-架构与系统/系统设计/IM系统/协议设计.md) — 自研 IM 协议时，XMPP 的哪些设计值得抄（流 + stanza 分发）与哪些不该抄（XML 冗长）

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 670" width="1000" height="670" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="670" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Topic / MessageQueue / Tag 三级，与 CommitLog 共享的关系</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">加队列只加索引、不复制正文 —— 这是 RocketMQ 敢谈万级队列的物理基础</text>
+
+  <rect x="40" y="86" width="210" height="96" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="145" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">生产者</text>
+  <text x="145" y="132" text-anchor="middle" font-size="11.5" fill="#1e40af">Topic=ORDER_EVENT</text>
+  <text x="145" y="152" text-anchor="middle" font-size="11.5" fill="#1e40af">Tag=CREATED</text>
+  <text x="145" y="172" text-anchor="middle" font-size="11.5" fill="#1e40af">key=order-1</text>
+
+  <line x1="250" y1="134" x2="276" y2="134" stroke="#334155" stroke-width="1.6"/>
+  <polygon points="274,130 274,138 282,134" fill="#334155"/>
+
+  <rect x="282" y="86" width="678" height="96" rx="7" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="302" y="112" font-size="13" font-weight="bold" fill="#7c2d12">CommitLog（正文只存一份）</text>
+  <text x="302" y="136" font-size="12" fill="#9a3412">所有 Topic、所有队列的消息正文按到达顺序混写在一起，单文件 1 GiB 滚动</text>
+  <text x="302" y="160" font-size="12" fill="#c2410c">顺序写、零拷贝读：队列只是「从这段日志里挑哪些」的索引，不是独立的存储</text>
+
+  <line x1="500" y1="182" x2="500" y2="220" stroke="#94a3b8" stroke-width="1.6"/>
+  <polygon points="496,218 504,218 500,226" fill="#94a3b8"/>
+  <text x="512" y="206" font-size="11" fill="#64748B">按队列建索引</text>
+
+  <text x="282" y="248" font-size="12" font-weight="bold" fill="#0f172a">ConsumeQueue：每个 queueId 一套定长索引（20 B/条）</text>
+
+  <rect x="282" y="258" width="400" height="42" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="300" y="284" font-size="12" fill="#14532d">queue-0　指向 CommitLog 的物理偏移 + 消息长度 + Tag 哈希</text>
+  <rect x="282" y="306" width="400" height="42" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="300" y="332" font-size="12" fill="#14532d">queue-1　同一 Topic 的第二个并行单位，顺序边界在这里</text>
+  <rect x="282" y="354" width="400" height="42" rx="5" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="300" y="380" font-size="12" fill="#14532d">queue-2　同 key 的消息靠选队列落进同一个 queueId</text>
+
+  <rect x="702" y="258" width="258" height="138" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="720" y="282" font-size="12.5" font-weight="bold" fill="#312e81">IndexFile（按 Topic 建）</text>
+  <text x="720" y="306" font-size="11.5" fill="#4338ca">支持按 key 与时间区间反查</text>
+  <text x="720" y="328" font-size="11.5" fill="#4338ca">单文件 420,000,040 字节</text>
+  <text x="720" y="350" font-size="11.5" fill="#4338ca">与队列数无关，与 Topic 数有关</text>
+  <text x="720" y="376" font-size="11.5" fill="#b91c1c">注意：Tag 不在索引里，只有哈希</text>
+
+  <line x1="500" y1="396" x2="500" y2="426" stroke="#94a3b8" stroke-width="1.6"/>
+  <polygon points="496,424 504,424 500,432" fill="#94a3b8"/>
+
+  <rect x="40" y="434" width="440" height="76" rx="7" fill="#f8fafc" stroke="#64748b" stroke-width="1.4"/>
+  <text x="60" y="458" font-size="12.5" font-weight="bold" fill="#334155">cg-order-notify（订阅 CREATED || PAID）</text>
+  <text x="60" y="480" font-size="11.5" fill="#475569">Tag 在服务端拉取阶段就过滤，退款消息不占网络</text>
+  <text x="60" y="500" font-size="11.5" fill="#475569">组内一个队列只给一个消费者，并行度上限 = 队列数</text>
+
+  <rect x="520" y="434" width="440" height="76" rx="7" fill="#f8fafc" stroke="#64748b" stroke-width="1.4"/>
+  <text x="540" y="458" font-size="12.5" font-weight="bold" fill="#334155">cg-order-audit（订阅 *）</text>
+  <text x="540" y="480" font-size="11.5" fill="#475569">与 notify 读同一份正文，只多记一套位点，0 复制</text>
+  <text x="540" y="500" font-size="11.5" fill="#475569">这就是「多一个下游不加存储」在 RocketMQ 里的体现</text>
+
+  <rect x="40" y="526" width="920" height="106" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="550" font-size="12.5" font-weight="bold" fill="#0f172a">三级各自解决一件事，别混用</text>
+  <text x="60" y="574" font-size="12" fill="#334155">Topic 管「分类 + 保留策略 + 权限」；MessageQueue 管「并行 + 顺序边界」；Tag 只管「同一类消息的子类型过滤」。</text>
+  <text x="60" y="598" font-size="12" fill="#b91c1c">注意：用 Tag 当 Topic 使会丢掉独立保留策略与独立队列分布；订阅表达式不会让消息落两处。</text>
+  <text x="60" y="620" font-size="12" fill="#b91c1c">注意：扩队列会把 hash % 队列数 的映射整体改变，依赖同 key 有序的消费端会断序。</text>
+
+  <text x="40" y="658" font-size="11.5" fill="#64748B">实测依据：apache/rocketmq:5.3.1 单机，CommitLog 1,073,741,824 B / ConsumeQueue 6,000,000 B / IndexFile 420,000,040 B，见 README 第四节</text>
+</svg>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Kafka 请求帧与响应帧：size 是前缀，响应头只有 correlation_id</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">严格的请求-响应模型 —— 服务端不会主动推，消费者只能靠 Fetch 长轮询拉</text>
+
+  <text x="40" y="90" font-size="12.5" font-weight="bold" fill="#1e3a8a">请求帧（客户端 → Broker）</text>
+
+  <rect x="40" y="102" width="70" height="58" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="75" y="126" text-anchor="middle" font-size="11" fill="#334155">size</text>
+  <text x="75" y="146" text-anchor="middle" font-size="10.5" fill="#475569">4 B</text>
+  <rect x="110" y="102" width="60" height="58" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="140" y="126" text-anchor="middle" font-size="10.5" fill="#1e3a8a">api_key</text>
+  <text x="140" y="146" text-anchor="middle" font-size="10.5" fill="#1d4ed8">2 B</text>
+  <rect x="170" y="102" width="66" height="58" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="203" y="126" text-anchor="middle" font-size="10.5" fill="#1e3a8a">api_ver</text>
+  <text x="203" y="146" text-anchor="middle" font-size="10.5" fill="#1d4ed8">2 B</text>
+  <rect x="236" y="102" width="86" height="58" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.6"/>
+  <text x="279" y="124" text-anchor="middle" font-size="10.5" fill="#713f12">correlation</text>
+  <text x="279" y="142" text-anchor="middle" font-size="10.5" fill="#713f12">_id</text>
+  <text x="279" y="158" text-anchor="middle" font-size="10" fill="#854d0e">4 B</text>
+  <rect x="322" y="102" width="120" height="58" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="382" y="126" text-anchor="middle" font-size="10.5" fill="#1e3a8a">client_id</text>
+  <text x="382" y="146" text-anchor="middle" font-size="10" fill="#1d4ed8">2 B 长度 + 内容</text>
+  <rect x="442" y="102" width="518" height="58" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="701" y="136" text-anchor="middle" font-size="11.5" fill="#334155">请求体（结构由 api_key + api_version 共同决定）</text>
+
+  <text x="40" y="196" font-size="12.5" font-weight="bold" fill="#14532d">响应帧（Broker → 客户端）</text>
+
+  <rect x="40" y="208" width="70" height="58" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="75" y="232" text-anchor="middle" font-size="11" fill="#334155">size</text>
+  <text x="75" y="252" text-anchor="middle" font-size="10.5" fill="#475569">4 B</text>
+  <rect x="110" y="208" width="86" height="58" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.6"/>
+  <text x="153" y="230" text-anchor="middle" font-size="10.5" fill="#713f12">correlation</text>
+  <text x="153" y="248" text-anchor="middle" font-size="10.5" fill="#713f12">_id</text>
+  <text x="153" y="264" text-anchor="middle" font-size="10" fill="#854d0e">4 B</text>
+  <rect x="196" y="208" width="764" height="58" rx="4" fill="#f0fdf4" stroke="#86efac" stroke-width="1.4"/>
+  <text x="578" y="236" text-anchor="middle" font-size="11.5" fill="#14532d">响应体</text>
+  <text x="578" y="256" text-anchor="middle" font-size="10.5" fill="#b91c1c">注意：Flexible 版本这里还有一段 tagged_fields，不能只读 4 字节就往下解</text>
+
+  <text x="40" y="300" font-size="12.5" font-weight="bold" fill="#0f172a">实测的一个最小请求帧（ApiVersions v0，共 19 字节）</text>
+
+  <rect x="40" y="312" width="920" height="72" rx="6" fill="#0f172a"/>
+  <text x="58" y="336" font-family="Consolas, monospace" font-size="12" fill="#e2e8f0">00 00 00 0f   00 12   00 00   00 00 00 01   00 05   70 72 6f 62 65</text>
+  <text x="58" y="358" font-family="Consolas, monospace" font-size="12" fill="#7dd3fc">size=15      key=18  ver=0   corr=1        len=5   "probe"</text>
+  <text x="58" y="376" font-size="10.5" fill="#94a3b8">size 不含自身 4 字节；响应 376 B，error_code=0，返回 61 个 API 条目（实测）</text>
+
+  <rect x="40" y="402" width="920" height="98" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="426" font-size="12.5" font-weight="bold" fill="#0f172a">四个字段各自的错填后果（实测）</text>
+  <text x="60" y="450" font-size="12" fill="#334155">api_key 用不存在的值（9999）→ Broker 直接断连，不回错误帧；api_version 用不支持的版本（v99）→ 同样直接断连。</text>
+  <text x="60" y="474" font-size="12" fill="#334155">client_id 只影响日志与指标，空着也能用；correlation_id 由客户端自选，Broker 原样回填（实测 0x0A0B0C0D）。</text>
+  <text x="60" y="494" font-size="11.5" fill="#b91c1c">注意：因为不返回错误帧，「连上就断」在客户端侧只能看到 EOF，必须看 Broker 日志才能定位。</text>
+
+  <text x="40" y="534" font-size="11.5" fill="#64748B">实测来源：apache/kafka:3.9.0 单节点 KRaft 容器，Python 标准库手写 ApiVersions 请求，两遍输出逐行一致</text>
+</svg>

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">XMPP 的流生命周期（三次重启）与三个核心 stanza</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">stream 只发开头标签、关闭时才补结束标签；三个 stanza 靠元素名分发，没有类型字段</text>
+
+  <text x="40" y="88" font-size="12.5" font-weight="bold" fill="#0f172a">同一条 TCP 上，流被重启三次</text>
+
+  <rect x="40" y="100" width="290" height="84" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="56" y="122" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 开流 + features</text>
+  <text x="56" y="144" font-size="11" fill="#1e40af">C →S：stream:stream 开头标签</text>
+  <text x="56" y="162" font-size="11" fill="#1e40af">S →C：stream:features（starttls）</text>
+  <text x="56" y="180" font-size="11" fill="#1e40af">此时流是明文</text>
+
+  <line x1="332" y1="142" x2="352" y2="142" stroke="#334155" stroke-width="1.5"/>
+  <polygon points="350,138 350,146 358,142" fill="#334155"/>
+
+  <rect x="355" y="100" width="290" height="84" rx="7" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="371" y="122" font-size="12.5" font-weight="bold" fill="#713f12">② TLS 协商 → 流重启</text>
+  <text x="371" y="144" font-size="11" fill="#854d0e">starttls → proceed → 握手</text>
+  <text x="371" y="162" font-size="11" fill="#854d0e">在 TLS 之上重新发 stream 开头</text>
+  <text x="371" y="180" font-size="11" fill="#b45309">日志里第 2 个 stream 不是重连</text>
+
+  <line x1="647" y1="142" x2="667" y2="142" stroke="#334155" stroke-width="1.5"/>
+  <polygon points="665,138 665,146 673,142" fill="#334155"/>
+
+  <rect x="670" y="100" width="290" height="84" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="686" y="122" font-size="12.5" font-weight="bold" fill="#14532d">③ SASL → 流重启 → bind</text>
+  <text x="686" y="144" font-size="11" fill="#166534">auth → success → 第三次开流</text>
+  <text x="686" y="162" font-size="11" fill="#166534">features 带 bind，iq 绑定 resource</text>
+  <text x="686" y="180" font-size="11" fill="#15803d">此后才允许发业务 stanza</text>
+
+  <text x="40" y="212" font-size="12.5" font-weight="bold" fill="#0f172a">三个 stanza 各管一件事，没有第四个</text>
+
+  <rect x="40" y="224" width="290" height="140" rx="7" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="56" y="248" font-size="13" font-weight="bold" fill="#1e3a8a">message</text>
+  <text x="56" y="272" font-size="11.5" fill="#1e40af">单向送内容</text>
+  <text x="56" y="294" font-size="11.5" fill="#b91c1c">核心协议不要求回执</text>
+  <text x="56" y="316" font-size="11.5" fill="#1e40af">回执要靠 XEP-0184</text>
+  <text x="56" y="342" font-size="11" fill="#475569">type：chat / groupchat / headline / error</text>
+
+  <rect x="355" y="224" width="290" height="140" rx="7" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="371" y="248" font-size="13" font-weight="bold" fill="#7c2d12">presence</text>
+  <text x="371" y="272" font-size="11.5" fill="#9a3412">广播在线 / 离开 / 勿扰</text>
+  <text x="371" y="294" font-size="11.5" fill="#9a3412">无定向回执（是广播）</text>
+  <text x="371" y="316" font-size="11.5" fill="#9a3412">消息投 bare JID 时按它选端</text>
+  <text x="371" y="342" font-size="11" fill="#475569">订阅与出席授权也走它</text>
+
+  <rect x="670" y="224" width="290" height="140" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="686" y="248" font-size="13" font-weight="bold" fill="#14532d">iq</text>
+  <text x="686" y="272" font-size="11.5" fill="#166534">一问一答：get / set → result / error</text>
+  <text x="686" y="294" font-size="11.5" fill="#15803d">必须回且 id 唯一配对</text>
+  <text x="686" y="316" font-size="11.5" fill="#166534">所有扩展能力都挂它的子元素</text>
+  <text x="686" y="342" font-size="11" fill="#475569">roster / 服务发现 / resource 绑定</text>
+
+  <rect x="40" y="386" width="920" height="120" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="410" font-size="12.5" font-weight="bold" fill="#0f172a">三处最容易误判的地方</text>
+  <text x="60" y="434" font-size="12" fill="#334155">1. 日志里的多个 stream:stream 是同一连接内的流重启（TLS / SASL 各一次），不是重连。</text>
+  <text x="60" y="458" font-size="12" fill="#b91c1c">2. message 默认没有回执 —— 「XMPP 消息可靠」必须限定为「实现了 XEP-0198 + 0184」。</text>
+  <text x="60" y="482" font-size="12" fill="#b91c1c">3. 「XMPP 支持群聊」其实指 XEP-0045；核心协议只有三个 stanza，群聊能力要看实现清单。</text>
+
+  <text x="40" y="536" font-size="11.5" fill="#64748B">依据：RFC 6120 / 6121 与 XEP 目录；本篇未做本机实测（无 XMPP 服务端容器），XML 结构未抓包验证</text>
+</svg>

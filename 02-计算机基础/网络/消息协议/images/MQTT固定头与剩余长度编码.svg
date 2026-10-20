@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">MQTT 固定头：第 1 字节是位段，剩余长度是变长整数</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">判类型靠 b &gt;&gt; 4 而不是查表；剩余长度不含固定头自身的字节</text>
+
+  <text x="40" y="90" font-size="12.5" font-weight="bold" fill="#0f172a">固定头第 1 字节（8 位）</text>
+  <text x="300" y="90" text-anchor="middle" font-size="11.5" fill="#1e3a8a">高 4 位：报文类型 1~14</text>
+  <text x="700" y="90" text-anchor="middle" font-size="11.5" fill="#b45309">低 4 位：类型专属标志</text>
+
+  <rect x="100" y="100" width="100" height="58" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="150" y="124" text-anchor="middle" font-size="11" fill="#1e40af">bit7</text>
+  <text x="150" y="144" text-anchor="middle" font-size="10.5" fill="#1d4ed8">8</text>
+  <rect x="200" y="100" width="100" height="58" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="124" text-anchor="middle" font-size="11" fill="#1e40af">bit6</text>
+  <text x="250" y="144" text-anchor="middle" font-size="10.5" fill="#1d4ed8">4</text>
+  <rect x="300" y="100" width="100" height="58" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="350" y="124" text-anchor="middle" font-size="11" fill="#1e40af">bit5</text>
+  <text x="350" y="144" text-anchor="middle" font-size="10.5" fill="#1d4ed8">2</text>
+  <rect x="400" y="100" width="100" height="58" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="450" y="124" text-anchor="middle" font-size="11" fill="#1e40af">bit4</text>
+  <text x="450" y="144" text-anchor="middle" font-size="10.5" fill="#1d4ed8">1</text>
+  <rect x="500" y="100" width="100" height="58" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="550" y="124" text-anchor="middle" font-size="11" fill="#7c2d12">bit3</text>
+  <text x="550" y="144" text-anchor="middle" font-size="10.5" fill="#9a3412">DUP</text>
+  <rect x="600" y="100" width="100" height="58" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="650" y="124" text-anchor="middle" font-size="11" fill="#7c2d12">bit2</text>
+  <text x="650" y="144" text-anchor="middle" font-size="10.5" fill="#9a3412">QoS 高位</text>
+  <rect x="700" y="100" width="100" height="58" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="750" y="124" text-anchor="middle" font-size="11" fill="#7c2d12">bit1</text>
+  <text x="750" y="144" text-anchor="middle" font-size="10.5" fill="#9a3412">QoS 低位</text>
+  <rect x="800" y="100" width="100" height="58" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="850" y="124" text-anchor="middle" font-size="11" fill="#7c2d12">bit0</text>
+  <text x="850" y="144" text-anchor="middle" font-size="10.5" fill="#9a3412">RETAIN</text>
+
+  <text x="40" y="182" font-size="11.5" fill="#334155">例：0x30 = 0011 0000 → 类型 3（PUBLISH），DUP=0、QoS=00、RETAIN=0（标志位只对 PUBLISH 有意义，其余类型固定）</text>
+
+  <text x="40" y="216" font-size="12.5" font-weight="bold" fill="#0f172a">紧跟其后的「剩余长度」：每字节低 7 位存数据、最高位是续位</text>
+
+  <rect x="40" y="228" width="290" height="38" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="185" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">取值范围</text>
+  <rect x="330" y="228" width="150" height="38" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="405" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">字节数</text>
+  <rect x="480" y="228" width="480" height="38" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="720" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">编码结果</text>
+
+  <rect x="40" y="266" width="290" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="185" y="291" text-anchor="middle" font-size="12" fill="#0f172a">0 ~ 127</text>
+  <rect x="330" y="266" width="150" height="40" fill="#dcfce7" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="405" y="291" text-anchor="middle" font-size="12" fill="#14532d">1</text>
+  <rect x="480" y="266" width="480" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="500" y="291" font-size="12" fill="#0f172a">127 → 0x7F</text>
+
+  <rect x="40" y="306" width="290" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="185" y="331" text-anchor="middle" font-size="12" fill="#0f172a">128 ~ 16383</text>
+  <rect x="330" y="306" width="150" height="40" fill="#fef9c3" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="405" y="331" text-anchor="middle" font-size="12" fill="#713f12">2</text>
+  <rect x="480" y="306" width="480" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="500" y="331" font-size="12" fill="#0f172a">128 → 0x80 0x01　|　16383 → 0xFF 0x7F</text>
+
+  <rect x="40" y="346" width="290" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="185" y="371" text-anchor="middle" font-size="12" fill="#0f172a">16384 ~ 2097151</text>
+  <rect x="330" y="346" width="150" height="40" fill="#fed7aa" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="405" y="371" text-anchor="middle" font-size="12" fill="#7c2d12">3</text>
+  <rect x="480" y="346" width="480" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="500" y="371" font-size="12" fill="#0f172a">16384 → 0x80 0x80 0x01</text>
+
+  <rect x="40" y="386" width="290" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="185" y="411" text-anchor="middle" font-size="12" fill="#0f172a">2097152 ~ 268435455</text>
+  <rect x="330" y="386" width="150" height="40" fill="#fecaca" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="405" y="411" text-anchor="middle" font-size="12" fill="#7f1d1d">4</text>
+  <rect x="480" y="386" width="480" height="40" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="500" y="411" font-size="12" fill="#0f172a">上限即 0xFF 0xFF 0xFF 0x7F（约 256 MiB）</text>
+
+  <text x="40" y="456" font-size="12" fill="#0f172a">要点：QoS 0 的一条 PUBLISH 头最小 2 字节（1 B 类型 + 1 B 长度），这是 MQTT 能在弱网省流量的根本原因。</text>
+  <text x="40" y="480" font-size="12" fill="#b91c1c">注意：剩余长度不含固定头自身的字节；按「整个报文长度」去读会吃掉下一条报文的前几字节，只在 127→128 跨档时暴露。</text>
+  <text x="40" y="504" font-size="12" fill="#b91c1c">注意：连续 4 字节仍有续位就是非法报文，必须断开 —— 否则畸形长度能让服务端无限等待。</text>
+
+  <text x="40" y="528" font-size="11.5" fill="#64748B">依据：OASIS MQTT 3.1.1 / 5.0 规范；本篇未做本机抓包实测，字节布局按规范陈述</text>
+</svg>

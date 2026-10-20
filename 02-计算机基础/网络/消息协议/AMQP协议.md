@@ -2,7 +2,7 @@
 
 > 覆盖 AMQP 0-9-1 的三层结构（传输层帧 / 功能层 class-method / 内容层三段帧）、⭐ **一个帧的精确字节布局**（8 字节协议头 → 7 字节帧头 → payload → `0xCE`）、channel id 如何让一条 TCP 跑多路、大消息为什么被拆成多个 body 帧，以及 **0-9-1 与 1.0 为什么不是版本升级而是两套协议**。
 >
-> 不覆盖：RabbitMQ 把 Exchange/Queue/Binding 存成什么、怎么排障见 [README.md](RabbitMQ/README.md)；六款 MQ 的模型差异见 [消息队列选型对比.md](消息队列选型对比.md)；帧落到磁盘与投递队列的过程见 [存储与投递过程.md](RabbitMQ/存储与投递过程.md)。
+> 不覆盖：RabbitMQ 把 Exchange/Queue/Binding 存成什么、怎么排障见 [README.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/README.md)；六款 MQ 的模型差异见 [消息队列选型对比.md](../../../03-数据与中间件/中间件/消息队列/消息队列选型对比.md)；帧落到磁盘与投递队列的过程见 [存储与投递过程.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/存储与投递过程.md)。
 >
 > 内容整理自个人学习笔记；帧布局与 class/method 编号参考 AMQP 0-9-1 规范与 RabbitMQ 官方文档（4.x）。本篇**所有字节级读数**来自本机 `rabbitmq:4-management`（**4.3.6**）单机容器 `amqp-lab`，探针用 Python 标准库手写帧（不引客户端库，见第八节），连续两遍 `diff` 逐行一致。
 
@@ -25,7 +25,7 @@
 
 - **多实现可互通**：符合 0-9-1 的客户端能连 RabbitMQ、Qpid、支持 AMQP 的 ActiveMQ。Kafka 客户端只能连 Kafka 协议兼容的 Broker。
 - **协议本身带路由语义**：`exchange.declare` / `queue.bind` 是协议方法，不是产品私有 API。所以「换 Broker 不改业务代码」在 AMQP 生态里是可能的——只要不用实现扩展（如 RabbitMQ 的 `x-queue-type`、`x-delayed-message`，这些都在 `arguments` 表里，属**扩展位**，换实现就没了）。
-- **协议自带背压语义**：`basic.qos` 的 prefetch 是协议参数，见 [消费者与投递语义.md](RabbitMQ/消费者与投递语义.md) 第二节。
+- **协议自带背压语义**：`basic.qos` 的 prefetch 是协议参数，见 [消费者与投递语义.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/消费者与投递语义.md) 第二节。
 
 > ⚠️ **别把 0-9-1 当成「RabbitMQ 的协议版本号」**：RabbitMQ 4.x 在 5672 上同时认 0-9-1 和 1.0，靠首 8 字节分流，见第五节。
 
@@ -86,7 +86,7 @@
 - **客户端要靠 channel id 做分派**，不能靠「先发的先回」。这正是所有 AMQP 客户端库内部都维护「每 channel 一个等待队列」的原因。
 - **业务代码感知不到这一层**：库把 `declare` 变成了带返回值的同步调用。真出问题时（如 `PRECONDITION_FAILED`）你会看到「某个 channel 被关掉，其他 channel 照常」——**channel 级异常只废掉一条通道**，connection 不断。
 
-> ⚠️ **这就是 Channel「非线程安全」的物理原因**：帧里只有 channel id，没有「是哪次调用」的标识。两个 goroutine 往同一 Channel 写帧，等于两段命令序列被交错写进同一条通道，Broker 无法把它们分开。`amqp091-go` 因此在 `Publish`/`Ack`/`Nack`/`Reject` 上加了互斥锁，但 `Declare` 这类「发完还要等应答」的调用走另一条路径，锁不在同一个作用域——所以**正确的做法仍然是一个 goroutine 一个 Channel**，具体取舍见 [核心概念与架构.md](RabbitMQ/核心概念与架构.md) 第二节。
+> ⚠️ **这就是 Channel「非线程安全」的物理原因**：帧里只有 channel id，没有「是哪次调用」的标识。两个 goroutine 往同一 Channel 写帧，等于两段命令序列被交错写进同一条通道，Broker 无法把它们分开。`amqp091-go` 因此在 `Publish`/`Ack`/`Nack`/`Reject` 上加了互斥锁，但 `Declare` 这类「发完还要等应答」的调用走另一条路径，锁不在同一个作用域——所以**正确的做法仍然是一个 goroutine 一个 Channel**，具体取舍见 [核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/核心概念与架构.md) 第二节。
 
 **`channel-max` 是 2047 意味着什么？** 它限的是**同时打开的通道数**，不是累计值。每条 Connection 各自有一份配额；一个进程通常一条 Connection + 少量 Channel 就够，把 Channel 当锁粒度反而会撞上 `basic.qos` 的配额共享问题。
 
@@ -277,10 +277,10 @@ rabbitmq-diagnostics environment | grep -E "channel_max|frame_max|heartbeat"
 
 ## 关联
 
-- **上游/总纲**：[消息队列选型对比.md](消息队列选型对比.md) — AMQP 的 Exchange 模型在六款 MQ 里的位置
-- **下游机制**：[README.md](RabbitMQ/README.md) — RabbitMQ 对 0-9-1 的实现与扩展
-- **下游机制**：[核心概念与架构.md](RabbitMQ/核心概念与架构.md) — Connection / Channel / vhost 与「Channel 为什么非线程安全」
-- **下游机制**：[存储与投递过程.md](RabbitMQ/存储与投递过程.md) — 帧收完之后：消息怎么落盘、怎么被投递
-- **对照/互补**：[README.md](Kafka/README.md) — Kafka 的自定二进制协议：请求-应答带 correlation id，不靠 channel 号
-- **对照/互补**：[README.md](RocketMQ/README.md) — RocketMQ 的 Remoting 协议与「一个事件一个 Topic」的取舍
-- **对照/互补**：[Nats.md](Nats.md) — NATS 的文本协议（`PUB` / `SUB` 单行命令）：为什么它能用一个 telnet 就调通
+- **上游/总纲**：[消息队列选型对比.md](../../../03-数据与中间件/中间件/消息队列/消息队列选型对比.md) — AMQP 的 Exchange 模型在六款 MQ 里的位置
+- **下游机制**：[README.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/README.md) — RabbitMQ 对 0-9-1 的实现与扩展
+- **下游机制**：[核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/核心概念与架构.md) — Connection / Channel / vhost 与「Channel 为什么非线程安全」
+- **下游机制**：[存储与投递过程.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/存储与投递过程.md) — 帧收完之后：消息怎么落盘、怎么被投递
+- **对照/互补**：[README.md](../../../03-数据与中间件/中间件/消息队列/Kafka/README.md) — Kafka 的自定二进制协议：请求-应答带 correlation id，不靠 channel 号
+- **对照/互补**：[README.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) — RocketMQ 的 Remoting 协议与「一个事件一个 Topic」的取舍
+- **对照/互补**：[Nats.md](../../../03-数据与中间件/中间件/消息队列/Nats.md) — NATS 的文本协议（`PUB` / `SUB` 单行命令）：为什么它能用一个 telnet 就调通

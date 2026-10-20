@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 610" width="1000" height="610" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="610" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">QoS 0 / 1 / 2 的三条确认链：链路越长，语义越强，代价也越大</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">QoS 是「确认链长度」而不是抽象等级；投递 QoS = min(发布 QoS, 订阅 QoS)，会被降级</text>
+
+  <text x="150" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">发布方</text>
+  <text x="870" y="90" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">接收方</text>
+  <line x1="140" y1="98" x2="140" y2="466" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="880" y1="98" x2="880" y2="466" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4"/>
+
+  <text x="40" y="140" font-size="13" font-weight="bold" fill="#0f172a">QoS 0</text>
+  <line x1="150" y1="136" x2="858" y2="136" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="856,131 856,141 868,136" fill="#2563eb"/>
+  <text x="500" y="128" text-anchor="middle" font-size="11.5" fill="#1e40af">PUBLISH（fire and forget，无任何确认）</text>
+  <text x="150" y="162" font-size="11.5" fill="#b91c1c">可能丢：链路断就没了　|　不会重复</text>
+
+  <text x="40" y="222" font-size="13" font-weight="bold" fill="#0f172a">QoS 1</text>
+  <line x1="150" y1="212" x2="858" y2="212" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="856,207 856,217 868,212" fill="#2563eb"/>
+  <text x="500" y="204" text-anchor="middle" font-size="11.5" fill="#1e40af">PUBLISH（msgID=7）</text>
+  <line x1="870" y1="244" x2="162" y2="244" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="164,239 164,249 152,244" fill="#16a34a"/>
+  <text x="500" y="236" text-anchor="middle" font-size="11.5" fill="#15803d">PUBACK（msgID=7）</text>
+  <text x="150" y="268" font-size="11.5" fill="#b91c1c">不会丢：没收到 PUBACK 就重发　|　可能重复（PUBACK 在回程丢了）</text>
+
+  <text x="40" y="330" font-size="13" font-weight="bold" fill="#0f172a">QoS 2</text>
+  <line x1="150" y1="320" x2="858" y2="320" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="856,315 856,325 868,320" fill="#2563eb"/>
+  <text x="500" y="312" text-anchor="middle" font-size="11.5" fill="#1e40af">① PUBLISH（msgID=7）</text>
+  <line x1="870" y1="350" x2="162" y2="350" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="164,345 164,355 152,350" fill="#16a34a"/>
+  <text x="500" y="342" text-anchor="middle" font-size="11.5" fill="#15803d">② PUBREC（已收到，别重发）</text>
+  <line x1="150" y1="380" x2="858" y2="380" stroke="#7c3aed" stroke-width="2"/>
+  <polygon points="856,375 856,385 868,380" fill="#7c3aed"/>
+  <text x="500" y="372" text-anchor="middle" font-size="11.5" fill="#5b21b6">③ PUBREL（可以释放了）</text>
+  <line x1="870" y1="410" x2="162" y2="410" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="164,405 164,415 152,410" fill="#16a34a"/>
+  <text x="500" y="402" text-anchor="middle" font-size="11.5" fill="#15803d">④ PUBCOMP（完成）</text>
+  <text x="150" y="438" font-size="11.5" fill="#0f172a">不会丢、不会重：接收方在收到 ③ 之前只记 msgID、不投递 —— 重发的 ① 被 msgID 挡住</text>
+
+  <rect x="40" y="480" width="920" height="96" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="504" font-size="12.5" font-weight="bold" fill="#0f172a">什么时候不该用 QoS 2</text>
+  <text x="60" y="528" font-size="12" fill="#334155">传感器周期上报用 0（下一条马上覆盖）；命令下发用 1 + 业务幂等，比两阶段握手更实用。</text>
+  <text x="60" y="552" font-size="12" fill="#b91c1c">注意：QoS 2 只保证「这一跳」不重复；Broker 扇出到多个订阅方时每跳各跑状态机，端到端仍需业务唯一键去重。</text>
+
+  <text x="40" y="598" font-size="11.5" fill="#64748B">依据：OASIS MQTT 3.1.1 / 5.0 规范的状态机定义；本篇未做本机实测</text>
+</svg>
