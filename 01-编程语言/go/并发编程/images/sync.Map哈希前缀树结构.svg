@@ -52,7 +52,7 @@
   <line x1="510" y1="434" x2="510" y2="450" stroke="#b45309" stroke-width="1.2" marker-end="url(#m2)"/>
 
   <rect x="30" y="512" width="940" height="148" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
-  <text x="48" y="538" font-size="12" fill="#0f172a">· Load：从 root 起，每层用 (hash &gt;&gt; hashShift) &amp; 15 选 children 槽；槽空即 miss，是 entry 就到 overflow 链比 key。全链路 atomic.Pointer.Load，无锁。</text>
+  <text x="48" y="538" font-size="11" fill="#0f172a">· Load：从 root 起，每层用 (hash &gt;&gt; hashShift) &amp; 15 选 children 槽；槽空即 miss，是 entry 就到 overflow 链比 key。全链路 atomic.Pointer.Load，无锁。</text>
   <text x="48" y="562" font-size="12" fill="#0f172a">· Store：沿同路径找到插入点；把叶子换成 indirect 时锁该节点 mu，替换 children 用 CAS。</text>
   <text x="48" y="586" font-size="12" fill="#7f1d1d">· Delete：children 槽 Store(nil)；节点空了置 dead=true 并从 parent 摘除 —— 没有旧版 expunged 墓碑，也没有 dirty 重建。</text>
   <text x="48" y="614" font-size="12" font-weight="bold" fill="#14532d">· 结论：读多写少、键集稳定仍是它的主场；但插入/删除要新建 entry/indirect 节点，写密集时反而更慢、分配更多（见实测）。</text>
