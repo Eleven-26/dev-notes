@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="404" viewBox="0 0 1000 404" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="404" fill="#ffffff"/>
+  <text x="30" y="32" font-size="19" font-weight="bold" fill="#0f172a">一次跨路径调用的超时预算：逐跳扣减，每跳只减不增</text>
+  <text x="30" y="56" font-size="12" fill="#475569">三行是同一条预算 B 在路径①②③上的剩余；红色块是上一跳已经扣掉的开销，条形因此只会变短、不会变长。</text>
+
+  <rect x="60" y="80" width="820" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="60" y="132" width="640" height="42" rx="6" fill="#ffedd5" stroke="#b45309" stroke-width="1.5"/>
+  <rect x="704" y="132" width="176" height="42" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+  <rect x="60" y="184" width="470" height="42" rx="6" fill="#dcfce7" stroke="#166534" stroke-width="1.5"/>
+  <rect x="474" y="184" width="166" height="42" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+
+  <text x="470" y="107" font-size="12.5" fill="#1e40af" text-anchor="middle">路径①：客户端等待，总预算 = B</text>
+  <text x="350" y="159" font-size="12.5" fill="#78350f" text-anchor="middle">路径②：deadline = B 减网关自身开销</text>
+  <text x="792" y="158" font-size="10.5" fill="#7f1d1d" text-anchor="middle">已扣：网关自身开销</text>
+  <text x="265" y="211" font-size="12.5" fill="#14532d" text-anchor="middle">路径③：再减逻辑服务自身开销</text>
+  <text x="557" y="210" font-size="10.5" fill="#7f1d1d" text-anchor="middle">已扣：逻辑服务自身开销</text>
+
+  <text x="60" y="242" font-size="11.5" fill="#0f172a">每跳只减不增：下级 deadline 必须小于上级剩余预算，否则上级早已超时、下级还在跑。</text>
+
+  <rect x="60" y="250" width="400" height="76" rx="6" fill="#f8fafc" stroke="#166534" stroke-width="1.5"/>
+  <rect x="520" y="250" width="400" height="76" rx="6" fill="#f8fafc" stroke="#b91c1c" stroke-width="1.5"/>
+  <text x="260" y="274" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">正确做法</text>
+  <text x="260" y="296" font-size="11" fill="#334155" text-anchor="middle">重试只在外层做，且只对幂等方法做</text>
+  <text x="260" y="316" font-size="11" fill="#334155" text-anchor="middle">最坏总耗时仍在这条 B 之内</text>
+  <text x="720" y="274" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">反模式：每跳各设一个固定 3 秒</text>
+  <text x="720" y="296" font-size="11" fill="#334155" text-anchor="middle">浅调用看起来没事，链路一变深就露馅</text>
+  <text x="720" y="316" font-size="11" fill="#334155" text-anchor="middle">总耗时等于各跳超时之和，雪崩从这里开始</text>
+
+  <text x="30" y="352" font-size="11.5" fill="#475569">还要能取消下游：路径③ 的长查询与 MQ 消费在收到取消信号后尽快停，否则线程被慢慢拖死。</text>
+  <text x="30" y="376" font-size="11" fill="#64748b">注意：本篇未做实测，B 与各级开销只给关系不给毫秒数字；「3 秒」是正文对反模式的举例措辞，不是测量值。</text>
+</svg>

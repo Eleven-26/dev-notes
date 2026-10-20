@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="410" viewBox="0 0 1000 410" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="410" fill="#ffffff"/>
+  <text x="24" y="32" font-size="19" font-weight="bold" fill="#0f172a">三条跨地域复制路径：层次不同，但全部异步</text>
+  <text x="24" y="54" font-size="12" fill="#475569">一行是一条路径，从左侧「写入只等本地」到右侧「异地可读」；三行共用同一段还没复制过去的滞后窗口。</text>
+
+  <rect x="24" y="78" width="150" height="228" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <rect x="196" y="78" width="460" height="68" rx="6" fill="#ffedd5" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="196" y="158" width="460" height="68" rx="6" fill="#ffedd5" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="196" y="238" width="460" height="68" rx="6" fill="#ffedd5" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="720" y="78" width="220" height="228" rx="6" fill="#dcfce7" stroke="#166534" stroke-width="1.5"/>
+
+  <text x="99" y="104" font-size="13" font-weight="bold" fill="#1e40af" text-anchor="middle">本地地域</text>
+  <text x="99" y="196" font-size="12" fill="#1e40af" text-anchor="middle">写入只等本地</text>
+  <text x="99" y="218" font-size="12" fill="#1e40af" text-anchor="middle">落库即回上行 ACK</text>
+  <text x="99" y="240" font-size="12" fill="#1e40af" text-anchor="middle">不等异地确认</text>
+
+  <text x="426" y="104" font-size="12.5" fill="#78350f" text-anchor="middle">① 存储层复制（DB）：主库单向复制到从库</text>
+  <text x="426" y="126" font-size="10.5" fill="#78350f" text-anchor="middle">走 binlog 回放；最省事，延迟取决于链路与回放</text>
+  <text x="426" y="184" font-size="12.5" fill="#78350f" text-anchor="middle">② 链路层同步（DB 日志）：订阅 binlog 投递到异地</text>
+  <text x="426" y="206" font-size="10.5" fill="#78350f" text-anchor="middle">逻辑解耦，可按需过滤、转换</text>
+  <text x="426" y="264" font-size="12.5" fill="#78350f" text-anchor="middle">③ 业务层投递（应用）：消息事件投到跨域 MQ</text>
+  <text x="426" y="286" font-size="10.5" fill="#78350f" text-anchor="middle">异地消费写入；最灵活，可在异地做额外处理</text>
+
+  <text x="830" y="104" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">异地副本</text>
+  <text x="830" y="196" font-size="12" fill="#14532d" text-anchor="middle">消息多地可见</text>
+  <text x="830" y="218" font-size="12" fill="#14532d" text-anchor="middle">比本地慢一点</text>
+  <text x="830" y="240" font-size="12" fill="#14532d" text-anchor="middle">有未复制窗口</text>
+
+  <line x1="176" y1="112" x2="194" y2="112" stroke="#64748b" stroke-width="1.3" marker-end="url(#arr4)"/>
+  <line x1="176" y1="192" x2="194" y2="192" stroke="#64748b" stroke-width="1.3" marker-end="url(#arr4)"/>
+  <line x1="176" y1="272" x2="194" y2="272" stroke="#64748b" stroke-width="1.3" marker-end="url(#arr4)"/>
+  <line x1="658" y1="112" x2="718" y2="112" stroke="#64748b" stroke-width="1.3" marker-end="url(#arr4)"/>
+  <line x1="658" y1="192" x2="718" y2="192" stroke="#64748b" stroke-width="1.3" marker-end="url(#arr4)"/>
+  <line x1="658" y1="272" x2="718" y2="272" stroke="#64748b" stroke-width="1.3" marker-end="url(#arr4)"/>
+
+  <text x="24" y="340" font-size="11.5" fill="#475569">为什么必须复制（3.1）：这次连着地域 A、下次在地域 B 上线，用户要看到同一个会话的完整消息流，会话与成员也要多地可读。</text>
+  <text x="24" y="364" font-size="12" font-weight="bold" fill="#0f172a">判据：复制延迟是「用一致性换延迟」的账单——要问能接受多长的滞后，而不是能不能零延迟；强同步会把每次写入绑到最慢的地域。</text>
+  <text x="24" y="388" font-size="11" fill="#64748b">注意：本篇未做实测，本图不含跨地域滞后的毫秒数、吞吐或 QPS——滞后取决于专线质量、复制方式与写入压力。</text>
+</svg>

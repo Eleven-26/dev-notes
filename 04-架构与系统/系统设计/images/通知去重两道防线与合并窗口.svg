@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="630" viewBox="0 0 1000 630" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ahn" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2563eb"/>
+    </marker>
+    <marker id="ahn2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 z" fill="#166534"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="630" fill="#ffffff"/>
+  <text x="30" y="32" font-size="19" font-weight="bold" fill="#0f172a">重复通知的两条去重防线，与同键事件的一个合并窗口</text>
+  <text x="30" y="56" font-size="12.5" fill="#475569">重复来自三处：重试、同一事件多次触发、多条同质事件 —— 前两者靠幂等键去重，第三者靠合并压成一条</text>
+
+  <text x="30" y="104" font-size="14" font-weight="bold" fill="#1e40af">A 多条同键事件：一个窗口压成一条</text>
+  <rect x="90" y="116" width="430" height="96" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="104" y="138" font-size="12" fill="#1e40af">合并窗口（例：60s 内落到同一键的通知）</text>
+  <rect x="104" y="152" width="54" height="30" fill="#ffedd5" stroke="#b45309" stroke-width="1.2" rx="5"/>
+  <text x="131" y="172" font-size="13" fill="#78350f" text-anchor="middle">+1</text>
+  <rect x="172" y="152" width="54" height="30" fill="#ffedd5" stroke="#b45309" stroke-width="1.2" rx="5"/>
+  <text x="199" y="172" font-size="13" fill="#78350f" text-anchor="middle">+1</text>
+  <rect x="240" y="152" width="54" height="30" fill="#ffedd5" stroke="#b45309" stroke-width="1.2" rx="5"/>
+  <text x="267" y="172" font-size="13" fill="#78350f" text-anchor="middle">+1</text>
+  <rect x="308" y="152" width="54" height="30" fill="#ffedd5" stroke="#b45309" stroke-width="1.2" rx="5"/>
+  <text x="335" y="172" font-size="13" fill="#78350f" text-anchor="middle">+1</text>
+  <text x="392" y="173" font-size="16" fill="#94a3b8" text-anchor="middle">…</text>
+  <line x1="520" y1="164" x2="558" y2="164" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ahn)"/>
+  <rect x="568" y="130" width="340" height="68" fill="#dcfce7" stroke="#166534" stroke-width="1.4" rx="8"/>
+  <text x="738" y="156" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">窗口到点，只投递一条</text>
+  <text x="738" y="182" font-size="12" fill="#14532d" text-anchor="middle">张三等 10 人赞了你的帖子</text>
+  <text x="90" y="238" font-size="12" fill="#1e40af">合并键 = event_type + receiver + 业务对象（例：like + uid=42 + postId=7）</text>
+
+  <text x="30" y="292" font-size="14" font-weight="bold" fill="#1e40af">B 同一件事被重复送到：两道判重依次挡</text>
+  <rect x="30" y="306" width="250" height="76" fill="#ffedd5" stroke="#b45309" stroke-width="1.4" rx="8"/>
+  <text x="155" y="336" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">重复的同一件事</text>
+  <text x="155" y="362" font-size="11" fill="#78350f" text-anchor="middle">重试、同一事件多次触发</text>
+  <line x1="280" y1="344" x2="326" y2="344" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ahn)"/>
+  <rect x="336" y="306" width="250" height="76" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4" rx="8"/>
+  <text x="461" y="336" font-size="13" font-weight="bold" fill="#1e40af" text-anchor="middle">第一道：入口 SETNX</text>
+  <text x="461" y="362" font-size="11" fill="#1e40af" text-anchor="middle">挡住重复触发与重试，快</text>
+  <line x1="586" y1="344" x2="632" y2="344" stroke="#166534" stroke-width="1.6" marker-end="url(#ahn2)"/>
+  <rect x="642" y="306" width="328" height="76" fill="#dcfce7" stroke="#166534" stroke-width="1.4" rx="8"/>
+  <text x="806" y="332" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">第二道：落库唯一索引</text>
+  <text x="806" y="356" font-size="11" fill="#14532d" text-anchor="middle">uk(event_key, receiver, channel)</text>
+  <text x="806" y="376" font-size="11" fill="#14532d" text-anchor="middle">最终防线，缓存失误也兜得住</text>
+  <text x="30" y="412" font-size="12" fill="#475569">缓存会丢、会过期，唯一索引不会 —— 与点赞「一人一赞」同一套手法：内存判重 + 唯一索引兜底</text>
+
+  <rect x="30" y="430" width="940" height="118" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" rx="8"/>
+  <text x="46" y="456" font-size="13" font-weight="bold" fill="#334155">要不要合并的判据</text>
+  <text x="46" y="482" font-size="12" fill="#334155">可以合并且应该合并：同质、可累加、用户对逐条不敏感（点赞、关注、系统提示）</text>
+  <text x="46" y="506" font-size="12" fill="#334155">不能合并：每条信息都不同且都要看到（每条评论的正文、每条私信）</text>
+  <text x="46" y="530" font-size="12" fill="#b45309">合并的代价是延迟：为攒够一个窗口会晚发几十秒 —— 事务类（订单、支付）不合并，营销与社交类才合并</text>
+
+  <rect x="30" y="560" width="940" height="62" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2" rx="8"/>
+  <text x="500" y="584" font-size="12" fill="#334155" text-anchor="middle">要点：幂等键 = 事件类型 + 业务对象 + 关键状态；合并键 = event_type + receiver + 业务对象</text>
+  <text x="500" y="608" font-size="12" fill="#64748b" text-anchor="middle">键形态举例：order_shipped:orderNo=20260101-001 ／ comment_reply:commentId=8899:receiver=42</text>
+</svg>
