@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="b1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="b2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Jaeger v2 的一个进程：四段流水线 + 两个扩展</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">receivers 进、processors 改、exporters 出；jaeger_storage 被写和读同时引用，jaeger_query 只管查</text>
+
+  <rect x="30" y="96" width="140" height="80" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="46" y="122" font-size="12.5" font-weight="bold" fill="#334155">业务进程</text>
+  <text x="46" y="144" font-size="11" fill="#475569">OTel SDK</text>
+  <text x="46" y="162" font-size="11" fill="#475569">OTLP 上报</text>
+
+  <line x1="170" y1="136" x2="206" y2="136" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#b1)"/>
+  <text x="176" y="126" font-size="10.5" fill="#64748b">4317/4318</text>
+
+  <rect x="206" y="96" width="170" height="80" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="222" y="120" font-size="12.5" font-weight="bold" fill="#1e3a8a">receivers</text>
+  <text x="222" y="141" font-size="11" fill="#1e3a8a">otlp（Stable）</text>
+  <text x="222" y="159" font-size="11" fill="#1e3a8a">zipkin / kafka / jaeger</text>
+
+  <line x1="376" y1="136" x2="412" y2="136" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#b1)"/>
+
+  <rect x="412" y="96" width="160" height="80" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="428" y="120" font-size="12.5" font-weight="bold" fill="#7c2d12">processors</text>
+  <text x="428" y="141" font-size="11" fill="#7c2d12">batch（8192 / 200ms）</text>
+  <text x="428" y="159" font-size="11" fill="#7c2d12">tail_sampling 在这里</text>
+
+  <line x1="572" y1="136" x2="608" y2="136" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#b1)"/>
+
+  <rect x="608" y="96" width="196" height="80" rx="9" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="624" y="120" font-size="12.5" font-weight="bold" fill="#7c2d12">jaeger_storage_exporter</text>
+  <text x="624" y="141" font-size="11" fill="#7c2d12">trace_storage 指向后端</text>
+  <text x="624" y="159" font-size="11" fill="#b91c1c">默认不重试：写失败即丢</text>
+
+  <line x1="804" y1="136" x2="840" y2="136" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#b1)"/>
+
+  <rect x="840" y="96" width="130" height="80" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.7"/>
+  <text x="856" y="120" font-size="12.5" font-weight="bold" fill="#14532d">jaeger_storage</text>
+  <text x="856" y="141" font-size="11" fill="#14532d">backends 声明</text>
+  <text x="856" y="159" font-size="11" fill="#14532d">clickhouse / es</text>
+
+  <line x1="815" y1="290" x2="880" y2="180" stroke="#ea580c" stroke-width="1.8" marker-end="url(#b2)"/>
+  <text x="826" y="248" font-size="10.5" fill="#c2410c">读（同一份）</text>
+
+  <rect x="620" y="290" width="196" height="80" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.7"/>
+  <text x="636" y="316" font-size="12.5" font-weight="bold" fill="#14532d">jaeger_query</text>
+  <text x="636" y="337" font-size="11" fill="#14532d">HTTP :16686 / gRPC :16685</text>
+  <text x="636" y="355" font-size="11" fill="#14532d">默认 enable_tracing true</text>
+
+  <line x1="718" y1="370" x2="718" y2="404" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#b1)"/>
+
+  <rect x="620" y="404" width="196" height="62" rx="9" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="636" y="428" font-size="12.5" font-weight="bold" fill="#334155">内置 UI</text>
+  <text x="636" y="449" font-size="11" fill="#475569">检索页 → 链路页</text>
+
+  <rect x="30" y="240" width="560" height="226" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="50" y="268" font-size="13" font-weight="bold" fill="#0f172a">三个只在这套发行版里的组件</text>
+  <text x="50" y="294" font-size="11.5" fill="#334155">jaeger_storage：extension，声明后端；没配就一个后端都没有</text>
+  <text x="50" y="316" font-size="11.5" fill="#334155">jaeger_query：extension，查询面 + UI；不做流水线，只读存储</text>
+  <text x="50" y="338" font-size="11.5" fill="#334155">jaeger_storage_exporter：exporter，把 span 写进已声明的后端</text>
+
+  <text x="50" y="370" font-size="12.5" font-weight="bold" fill="#b91c1c">两个容易看错的地方</text>
+  <text x="50" y="394" font-size="11.5" fill="#7f1d1d">存储初始化失败时，报错出现在 jaeger_query 的启动日志里</text>
+  <text x="50" y="416" font-size="11.5" fill="#7f1d1d">query 的自埋点写进同一份存储 → 界面多出一个 jaeger 服务</text>
+  <text x="50" y="444" font-size="11.5" fill="#475569">核对手段：components 看有没有、featuregate 看开没开、print-config 看默认值</text>
+</svg>

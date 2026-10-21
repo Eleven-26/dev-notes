@@ -93,7 +93,7 @@ dev-notes/
     ├── 注册与配置中心/      Nacos.md（产品级横向对比以该篇为单一来源）
     ├── 网关与代理/          README 导读 + OpenResty.md + 网关选型对比.md
     ├── 任务调度/            xxl-job.md
-    ├── 可观测性/            README 选型总纲 + Skywalking / Jaeger 两条 tracing 主线
+    ├── 可观测性/            总纲是 可观测性选型对比.md（目录无 README，导读并入该篇）+ 两个册：Skywalking/（导读 + 架构部署 / 探针原理 / 协议 / UI 排障 / 集成五篇）、Jaeger/（导读 + 架构部署 / 采集传播 / 数据查询 / UI 排障 / 集成五篇）
     ├── RPC框架/             gRPC/ 为主；Dubbo/ 仅导读、Thrift/ 空壳；根下 RPC框架选型对比.md
     ├── 分布式协调/          README + 协调选型对比；分布式锁/ 为占位空壳（机制见 Redis 册的 分布式锁.md）
     ├── 分布式事务/          选型总纲 + DTM/ 专题

@@ -699,7 +699,7 @@ shop_nightly_report_seconds_total{instance="batch-1",job="nightly_report"} 75
 
 1. **延迟要直方图，不要平均值**。平均值会被少量慢请求淹没：本篇实测同一批数据里 `_sum/_count` 两边都是 6.06/8（平均 0.7575s），而 `histogram_quantile(0.95, ...)` 在同一服务上实测跑出 **0.4637s**——两者讲的不是同一件事，只有分位数能定 SLO。
 2. **高基数红线**：判断标准是「这个 label 的可能取值数量级」。`handler`（几十）、`code`（几个）、`method`（几个）安全；`user_id`、`order_id`、`ip`、`trace_id` 直接把 12 条序列变成 24000 条（第四节实测）。需要按用户排查就去查日志与 trace，见 [接入Jaeger.md](接入Jaeger.md)。
-3. **`/metrics` 不要暴露到公网**。它是「把你的内部结构、量级、依赖名、文件名全交给对方」的端点（6.1 那个 Collector 就把 `file="./main.go"` 写进了标签值）。做法：独立监听端口只在内网 / 抓取网络暴露（本篇实测就是给 Prometheus 单独发布 `18080`），或用反向代理加 IP 白名单 / basic auth / mTLS，网关侧的处理见 [从零实现网关.md](../网络编程/从零实现网关.md)，端口与部署面见 [README.md](../../../03-数据与中间件/中间件/可观测性/README.md)。
+3. **`/metrics` 不要暴露到公网**。它是「把你的内部结构、量级、依赖名、文件名全交给对方」的端点（6.1 那个 Collector 就把 `file="./main.go"` 写进了标签值）。做法：独立监听端口只在内网 / 抓取网络暴露（本篇实测就是给 Prometheus 单独发布 `18080`），或用反向代理加 IP 白名单 / basic auth / mTLS，网关侧的处理见 [从零实现网关.md](../网络编程/从零实现网关.md)，端口与部署面见 [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md)。
 
 ---
 
@@ -911,7 +911,7 @@ lab_sql_connections_idle{db="orders"} 1
 - [接入Skywalking.md](接入Skywalking.md) — Go 侧走编译期注入的路线，与本篇「手动埋点 + 自己暴露端点」的分工对照
 - [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 指标 / 日志 / 链路三条信号栈的选型与 Prometheus / VictoriaMetrics 的容量判据（活跃序列数）
 - [与Prometheus生态的关系.md](../../../03-数据与中间件/数据存储/时序数据库/VictoriaMetrics/与Prometheus生态的关系.md) — Prometheus 数据模型、抓取与服务发现、PromQL 与 TSDB 的背景，以及「标签基数就是成本本身」
-- [README.md](../../../03-数据与中间件/中间件/可观测性/README.md) — 可观测性目录导读与版本坐标；`/metrics` 端点的部署面保护
+- [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 可观测性总纲：三支柱分工、五层选型与版本坐标；`/metrics` 端点的部署面保护
 - [从零实现网关.md](../网络编程/从零实现网关.md) — 不引 SDK 直接输出 Prometheus 文本格式的一份完整实现，以及中间件里统一记 QPS / 延迟 / 错误率的落点
 - [runtime调试与trace.md](../运行时/runtime调试与trace.md) — `go_memstats_*` 背后的 `runtime.MemStats` 字段含义与「哪些数字会骗人」
 - [垃圾回收机制.md](../运行时/垃圾回收机制.md) — `go_gc_duration_seconds` 与 GC 暂停、GOGC 的对应关系

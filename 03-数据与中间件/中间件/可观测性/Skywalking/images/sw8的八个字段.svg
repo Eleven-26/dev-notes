@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sw8 头的八个字段：为什么能按短横线无歧义切分</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">8 个字段由 - 分隔，总长小于 2 KB；字符串字段全部 Base64，而 Base64 字母表里没有 -</text>
+
+  <text x="40" y="92" font-size="12" font-weight="bold" fill="#475569">序号</text>
+  <text x="120" y="92" font-size="12" font-weight="bold" fill="#475569">字段</text>
+  <text x="330" y="92" font-size="12" font-weight="bold" fill="#475569">含义</text>
+  <text x="800" y="92" font-size="12" font-weight="bold" fill="#475569">上限</text>
+
+  <rect x="40" y="102" width="920" height="46" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="52" y="131" font-size="13" font-weight="bold" fill="#7c2d12">1</text>
+  <text x="120" y="131" font-size="12.5" font-weight="bold" fill="#7c2d12">Sample</text>
+  <text x="330" y="131" font-size="12" fill="#7c2d12">0 或 1；1 = 需要采样上报，0 = 上下文存在但大概率被忽略（下游必须跟随）</text>
+  <text x="800" y="131" font-size="12" fill="#7c2d12">1 位</text>
+
+  <rect x="40" y="152" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="52" y="181" font-size="13" font-weight="bold" fill="#1e3a8a">2</text>
+  <text x="120" y="181" font-size="12.5" font-weight="bold" fill="#1e3a8a">Trace Id</text>
+  <text x="330" y="181" font-size="12" fill="#1e3a8a">全局唯一；原文是三个 long 用点连接，再做 Base64</text>
+  <text x="800" y="181" font-size="12" fill="#1e3a8a">—</text>
+
+  <rect x="40" y="202" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="52" y="231" font-size="13" font-weight="bold" fill="#1e3a8a">3</text>
+  <text x="120" y="231" font-size="12.5" font-weight="bold" fill="#1e3a8a">Parent segment Id</text>
+  <text x="330" y="231" font-size="12" fill="#1e3a8a">上游那条 segment 的 ID，下游 refs 要指向它</text>
+  <text x="800" y="231" font-size="12" fill="#1e3a8a">—</text>
+
+  <rect x="40" y="252" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="52" y="281" font-size="13" font-weight="bold" fill="#1e3a8a">4</text>
+  <text x="120" y="281" font-size="12.5" font-weight="bold" fill="#1e3a8a">Parent span Id</text>
+  <text x="330" y="281" font-size="12" fill="#1e3a8a">整数，从 0 开始；指向父 segment 里的具体 span</text>
+  <text x="800" y="281" font-size="12" fill="#1e3a8a">整数</text>
+
+  <rect x="40" y="302" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="52" y="331" font-size="13" font-weight="bold" fill="#1e3a8a">5</text>
+  <text x="120" y="331" font-size="12.5" font-weight="bold" fill="#1e3a8a">Parent service</text>
+  <text x="330" y="331" font-size="12" fill="#1e3a8a">上游服务名；缺它拓扑图就缺边</text>
+  <text x="800" y="331" font-size="12" fill="#1e3a8a">50 字符</text>
+
+  <rect x="40" y="352" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="52" y="381" font-size="13" font-weight="bold" fill="#1e3a8a">6</text>
+  <text x="120" y="381" font-size="12.5" font-weight="bold" fill="#1e3a8a">Parent instance</text>
+  <text x="330" y="381" font-size="12" fill="#1e3a8a">上游服务实例名；定位「哪台机器」靠它</text>
+  <text x="800" y="381" font-size="12" fill="#1e3a8a">50 字符</text>
+
+  <rect x="40" y="402" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="52" y="431" font-size="13" font-weight="bold" fill="#1e3a8a">7</text>
+  <text x="120" y="431" font-size="12.5" font-weight="bold" fill="#1e3a8a">Parent endpoint</text>
+  <text x="330" y="431" font-size="12" fill="#1e3a8a">上游 segment 里第一个 Entry span 的 operation name</text>
+  <text x="800" y="431" font-size="12" fill="#1e3a8a">150 字符</text>
+
+  <rect x="40" y="452" width="920" height="46" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="52" y="481" font-size="13" font-weight="bold" fill="#1e3a8a">8</text>
+  <text x="120" y="481" font-size="12.5" font-weight="bold" fill="#1e3a8a">Target address</text>
+  <text x="330" y="481" font-size="12" fill="#1e3a8a">客户端访问目标的网络地址，不一定是 IP 加端口</text>
+  <text x="800" y="481" font-size="12" fill="#1e3a8a">—</text>
+
+  <rect x="20" y="512" width="960" height="94" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="38" y="538" font-size="12" fill="#0f172a">⭐ 第 2 到 8 字段合起来，正好是一条跨进程引用（CROSS_PROCESS）的全部内容——所以协议里没有 refs 字段</text>
+  <text x="38" y="562" font-size="12" fill="#0f172a">⚠️ 2 KB 上限解释了 endpoint 为什么要截断：每个字段 Base64 后体积膨胀约三分之一</text>
+  <text x="38" y="586" font-size="12" fill="#334155">扩展头：sw8-x 管追踪模式与发送时间戳，sw8-correlation 管业务自定义关联字段</text>
+</svg>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a11" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三种接收格式的落点：只有原生 sw8 走完整分析链</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">收得下不等于体验一致：OTLP 与 Zipkin 进的是兼容通道，能力边界各不相同</text>
+
+  <rect x="30" y="82" width="200" height="70" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="44" y="108" font-size="12" font-weight="bold" fill="#7c2d12">SkyWalking Agent</text>
+  <text x="44" y="130" font-size="10.5" fill="#7c2d12">sw8 + 自有 protobuf</text>
+  <text x="44" y="146" font-size="10.5" fill="#7c2d12">gRPC 11800</text>
+
+  <rect x="30" y="176" width="200" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="44" y="202" font-size="12" font-weight="bold" fill="#1e3a8a">OTel SDK / Collector</text>
+  <text x="44" y="224" font-size="10.5" fill="#1e3a8a">traceparent + OTLP</text>
+  <text x="44" y="240" font-size="10.5" fill="#1e3a8a">复用 11800，不是 4317</text>
+
+  <rect x="30" y="270" width="200" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="44" y="296" font-size="12" font-weight="bold" fill="#14532d">Zipkin 客户端</text>
+  <text x="44" y="318" font-size="10.5" fill="#14532d">Zipkin v2 JSON</text>
+  <text x="44" y="334" font-size="10.5" fill="#14532d">9411（默认关闭）</text>
+
+  <line x1="230" y1="117" x2="272" y2="117" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a11)"/>
+  <line x1="230" y1="211" x2="272" y2="211" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a11)"/>
+  <line x1="230" y1="305" x2="272" y2="305" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a11)"/>
+
+  <rect x="272" y="82" width="180" height="258" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="362" y="108" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">Receiver</text>
+  <text x="286" y="140" font-size="11" fill="#334155">receiver-trace</text>
+  <text x="286" y="162" font-size="11" fill="#334155">默认启用</text>
+  <text x="286" y="208" font-size="11" fill="#334155">receiver-otel</text>
+  <text x="286" y="230" font-size="11" fill="#334155">默认启用三种 handler</text>
+  <text x="286" y="276" font-size="11" fill="#334155">receiver-zipkin</text>
+  <text x="286" y="298" font-size="11" fill="#b91c1c">selector 默认 -（关）</text>
+  <text x="286" y="324" font-size="10.5" fill="#b91c1c">无 receiver_jaeger</text>
+
+  <line x1="452" y1="117" x2="494" y2="117" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a11)"/>
+  <line x1="452" y1="211" x2="494" y2="211" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a11)"/>
+  <line x1="452" y1="305" x2="494" y2="305" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a11)"/>
+
+  <rect x="494" y="82" width="486" height="70" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="510" y="108" font-size="12" font-weight="bold" fill="#7c2d12">完整分析链：OAL 指标 + 拓扑边 + Profile + 告警</text>
+  <text x="510" y="130" font-size="11" fill="#7c2d12">segment 语义完整，refs 可跨进程接链；落 sw_trace</text>
+
+  <rect x="494" y="176" width="486" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="510" y="202" font-size="12" font-weight="bold" fill="#1e3a8a">meter 走 MAL 规则；trace 走 OTLP 存储模式</text>
+  <text x="510" y="224" font-size="11" fill="#1e3a8a">段语义降级：Profile 与部分拓扑能力受限</text>
+  <text x="510" y="240" font-size="10.5" fill="#b91c1c">采样率分母是一万（10000 = 100%）</text>
+
+  <rect x="494" y="270" width="486" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="510" y="296" font-size="12" font-weight="bold" fill="#14532d">只存 + 查询：不参与原生 OAL 指标</text>
+  <text x="510" y="318" font-size="11" fill="#14532d">落 sw_zipkinTrace（schema 无 is_error 列）</text>
+  <text x="510" y="334" font-size="10.5" fill="#14532d">查询面另有 9412，供 Zipkin 原生客户端</text>
+
+  <rect x="20" y="366" width="960" height="164" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="38" y="392" font-size="12.5" font-weight="bold" fill="#0f172a">三个判据</text>
+  <text x="38" y="418" font-size="12" fill="#0f172a">① 混跑断链发生在「传播」层，不在接收层——接收端能同时吃两种头，但进程内传播只认一种</text>
+  <text x="38" y="442" font-size="12" fill="#0f172a">② OTLP 的 exporter 端点写 11800；照抄教程写 4317 会「连接被拒」，容易误判成 OAP 没起来</text>
+  <text x="38" y="466" font-size="12" fill="#0f172a">③ 11.x 没有 Jaeger Receiver：Jaeger 侧配 Zipkin exporter 或 OTLP 即可，不必维护第三套接收器</text>
+  <text x="38" y="494" font-size="12" fill="#b91c1c">⚠️ 接收器默认值取自 11.x 发行包 application.yml；本机未做 OTLP / Zipkin 实发验证</text>
+  <text x="38" y="518" font-size="12" fill="#334155">不推荐并行双报：两套探针 = 双份开销 + 两套 UI，值班同事不知道看哪个</text>
+</svg>

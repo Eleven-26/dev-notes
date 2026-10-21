@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">存储后端与部署形态：选哪个库、起几个进程</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">storage.selector 默认已是 banyandb；OAP 只连 liaison，数据落在 data 节点</text>
+
+  <rect x="30" y="80" width="460" height="270" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="46" y="106" font-size="13.5" font-weight="bold" fill="#0f172a">四个候选（selector 只能选一个）</text>
+
+  <rect x="46" y="118" width="428" height="52" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="60" y="139" font-size="12" font-weight="bold" fill="#14532d">banyandb（默认）：为 APM 自研，省内存</text>
+  <text x="60" y="158" font-size="11" fill="#14532d">口径：200 服务 / 200+ CPS 用 2 liaison + 2 data（各 4 vCPU / 8 GB）</text>
+
+  <rect x="46" y="178" width="428" height="52" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="60" y="199" font-size="12" font-weight="bold" fill="#312e81">elasticsearch：生态成熟，按 tag 检索强</text>
+  <text x="60" y="218" font-size="11" fill="#312e81">代价：内存与副本要求高，集群资源成本大</text>
+
+  <rect x="46" y="238" width="428" height="52" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="60" y="259" font-size="12" font-weight="bold" fill="#0f172a">mysql / postgresql：复用既有 DB</text>
+  <text x="60" y="278" font-size="11" fill="#334155">代价：日志与 trace 明显更慢，且加节点不线性提升</text>
+
+  <text x="46" y="316" font-size="11.5" fill="#b91c1c">⚠️ H2 已在 10.2 移除；BanyanDB 配置自 10.2 挪到 bydb.yaml</text>
+  <text x="46" y="338" font-size="11.5" fill="#b91c1c">⚠️ 版本不匹配时 OAP 启动失败：Incompatible BanyanDB server API version</text>
+
+  <rect x="510" y="80" width="460" height="128" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="526" y="106" font-size="13" font-weight="bold" fill="#7c2d12">形态一：standalone（一个进程兼两职）</text>
+  <rect x="526" y="118" width="200" height="40" rx="7" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="540" y="143" font-size="11.5" fill="#7c2d12">banyandb standalone :17912</text>
+  <line x1="726" y1="138" x2="760" y2="138" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a3)"/>
+  <rect x="760" y="118" width="190" height="40" rx="7" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="774" y="143" font-size="11.5" fill="#7c2d12">OAP（Mixed 角色）</text>
+  <text x="526" y="180" font-size="11.5" fill="#7c2d12">启动必须带子命令 standalone，否则打印 help 后 exit 0</text>
+  <text x="526" y="200" font-size="11.5" fill="#7c2d12">适合本地与①档试水；单点，不可水平扩</text>
+
+  <rect x="510" y="222" width="460" height="128" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="526" y="248" font-size="13" font-weight="bold" fill="#1e3a8a">形态二：集群（liaison 入口 + data 存储）</text>
+  <rect x="526" y="260" width="120" height="34" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="536" y="282" font-size="11" fill="#1e3a8a">OAP-1</text>
+  <rect x="656" y="260" width="120" height="34" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="666" y="282" font-size="11" fill="#1e3a8a">OAP-2</text>
+  <rect x="796" y="260" width="154" height="34" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="806" y="282" font-size="11" fill="#14532d">liaison ×2 :17912</text>
+  <rect x="526" y="304" width="300" height="34" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="536" y="326" font-size="11" fill="#14532d">data ×N（热 / 温 / 冷，nodeSelector 绑标签）</text>
+  <text x="840" y="326" font-size="11" fill="#7c2d12">OAP 无状态</text>
+
+  <rect x="20" y="372" width="960" height="170" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="38" y="398" font-size="12.5" font-weight="bold" fill="#0f172a">BanyanDB 分组：数据落在哪个 TTL 下由组决定（命名前缀默认 sw_）</text>
+  <text x="38" y="424" font-size="12" fill="#0f172a">trace → sw_trace（Zipkin 进来的另立 sw_zipkinTrace，无 is_error 列）</text>
+  <text x="38" y="448" font-size="12" fill="#0f172a">日志 → sw_recordsLog；浏览器错误 → sw_recordsBrowserErrorLog；普通记录 → sw_records</text>
+  <text x="38" y="472" font-size="12" fill="#0f172a">指标 → sw_metricsMinute / sw_metricsHour / sw_metricsDay（Hour、Day 由 downsampling 控制）</text>
+  <text x="38" y="496" font-size="12" fill="#0f172a">元数据 → sw_metadata（index_mode 指标，只存索引）；sw_property（UI 配置、Profile 任务）</text>
+  <text x="38" y="522" font-size="12" fill="#b91c1c">每组可单独设 shardNum / segmentInterval / ttl / replicas —— 压容量先动 trace 与日志这两组</text>
+</svg>

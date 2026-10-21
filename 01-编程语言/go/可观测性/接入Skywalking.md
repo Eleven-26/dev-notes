@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Go 侧接入 SkyWalking 的完整手册，按**为什么只能编译期注入 → 路线一（skywalking-go 注入）→ 手动埋点 → 跨 goroutine → 日志与指标 → 路线二（OTel + OTLP）→ 两条路线取舍 → 单例边界与初始化顺序 → Dockerfile 构建 → 验证排查**组织。
 >
-> SkyWalking 本体原理、OAP 架构与 UI 面板见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md)；OTel 路线的后端部署见 [Jaeger.md](../../../03-数据与中间件/中间件/可观测性/Jaeger.md)；同命名口径的另两篇是 [接入Skywalking.md](../../java/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../../php/接入Skywalking.md)。
+> SkyWalking 本体原理、OAP 架构与 UI 面板见 [探针原理.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/探针原理.md) 与 [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/架构与部署.md)（册导读 [README.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/README.md)）；OTel 路线的后端部署见 [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/Jaeger/架构与部署.md)；同命名口径的另两篇是 [接入Skywalking.md](../../java/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../../php/接入Skywalking.md)。
 
 ---
 
@@ -228,7 +228,7 @@ go func() {
 1. 在每条日志里注入当前 `traceId` / `segmentId` / `spanId`（字段名由插件决定）；
 2. 按配置把日志本身也上报给 OAP，从而在 UI 的日志面板里按 Trace ID 反查。
 
-排查用法与 Java 侧一致：**Trace 找慢/失败的 span → 拿 traceId 查日志 → 看业务日志里当时在做什么**（UI 面板部分见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md) 第三节）。
+排查用法与 Java 侧一致：**Trace 找慢/失败的 span → 拿 traceId 查日志 → 看业务日志里当时在做什么**（UI 面板部分见 [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/UI与排障.md) 第二至七节）。
 
 指标侧：agent 会采集 `runtime/metrics` 的原生运行时指标（GC、goroutine 数、内存），这部分**不需要写代码**。业务指标 SkyWalking 侧能力有限，要完整的指标大盘与告警建议另接 Prometheus（分工见 [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md)）。
 
@@ -349,7 +349,7 @@ tp := sdktrace.NewTracerProvider(sdktrace.WithSampler(sdktrace.NeverSample()))
 
 ![skywalking-go 直连与 OTel OTLP 两条上报路线的架构图](images/两条路线上报架构对照.svg)
 
-**图怎么读**：蓝线是路线一（`sw8` 头直连 OAP 的 gRPC 11800），绿线是路线二（W3C `traceparent` 走 OTLP 4317，经 `receiver-otel` 转换）；OAP 只画到接口，内部架构见 [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md)。底部三个红框是 7.2 列出的两种关闭方式与运行期兜底开关。
+**图怎么读**：蓝线是路线一（`sw8` 头直连 OAP 的 gRPC 11800），绿线是路线二（W3C `traceparent` 走 OTLP，经 `receiver-otel` 转换；OTLP 在 11.x 复用核心 gRPC 端口，不要照 OTel 教程写 4317，见 [集成与生态.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/集成与生态.md) 第二节）；OAP 只画到接口，内部架构见 [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/架构与部署.md) 第三节。底部三个红框是 7.2 列出的两种关闭方式与运行期兜底开关。
 
 ---
 
@@ -504,7 +504,9 @@ nc -vz oap.observability 11800
 
 ## 关联
 
-- [Skywalking.md](../../../03-数据与中间件/中间件/可观测性/Skywalking.md) — 探针原理（javaAgent / 轻量级队列内核 / PHP SAPI 生命周期）、OAP 架构、UI 六大面板
+- [探针原理.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/探针原理.md) — 探针无侵入原理（javaAgent / 轻量级队列内核 / PHP SAPI 生命周期）与成本模型
+- [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/架构与部署.md) — OAP 四段架构、三类分析引擎、部署形态与采样容量
+- [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/UI与排障.md) — 六个面板的读法与七类故障的排障剧本
 - [接入Jaeger.md](接入Jaeger.md) — 同一套 OTel 埋点、换 endpoint 即换后端的对照写法
 - [接入Skywalking.md](../../java/可观测性/接入Skywalking.md) — Java agent 路线，对照「运行期字节码增强 vs 编译期注入」的差异
 - [接入Skywalking.md](../../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型

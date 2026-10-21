@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="c1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">单机两容器：启动顺序与四个坑</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">最小组装只有两个容器；四个坑全部来自「启动顺序」与「目录权限」，与 Jaeger 代码无关</text>
+
+  <rect x="30" y="86" width="450" height="428" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="50" y="114" font-size="13" font-weight="bold" fill="#0f172a">拓扑与依赖方向</text>
+
+  <rect x="60" y="136" width="390" height="102" rx="9" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="76" y="162" font-size="12.5" font-weight="bold" fill="#14532d">clickhouse:26.3-alpine</text>
+  <text x="76" y="184" font-size="11" fill="#14532d">9000 native（Jaeger 连这个）/ 8123 HTTP</text>
+  <text x="76" y="204" font-size="11" fill="#14532d">CLICKHOUSE_DB=jaeger（库要预先存在）</text>
+  <text x="76" y="224" font-size="11" fill="#b91c1c">healthcheck：clickhouse-client --query "SELECT 1"</text>
+
+  <line x1="255" y1="238" x2="255" y2="284" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#c1)"/>
+  <text x="266" y="266" font-size="10.5" fill="#64748b">depends_on: condition: service_healthy</text>
+
+  <rect x="60" y="284" width="390" height="102" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="76" y="310" font-size="12.5" font-weight="bold" fill="#1e3a8a">jaeger:2.20.0（Collector + Query + UI）</text>
+  <text x="76" y="332" font-size="11" fill="#1e3a8a">16686 查询 HTTP / 16685 查询 gRPC</text>
+  <text x="76" y="352" font-size="11" fill="#1e3a8a">4317 OTLP gRPC / 4318 OTLP HTTP / 9411 Zipkin</text>
+  <text x="76" y="372" font-size="11" fill="#b91c1c">command 里必须带 --feature-gates=storage.clickhouse</text>
+
+  <text x="60" y="416" font-size="11.5" fill="#334155">判据：容器状态是 Up 只说明进程活着；</text>
+  <text x="60" y="438" font-size="11.5" fill="#334155">能不能用，要看日志末尾有没有</text>
+  <text x="60" y="460" font-size="11.5" fill="#14532d">Everything is ready. Begin running and processing data.</text>
+  <text x="60" y="488" font-size="11" fill="#475569">再看一眼 SHOW TABLES：应该是 11 张表</text>
+
+  <rect x="500" y="86" width="470" height="428" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="520" y="114" font-size="13" font-weight="bold" fill="#0f172a">四个坑，按撞到的顺序</text>
+
+  <circle cx="530" cy="146" r="12" fill="#fecaca" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="530" y="151" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">1</text>
+  <text x="552" y="143" font-size="11.5" font-weight="bold" fill="#7f1d1d">漏了 feature gate</text>
+  <text x="552" y="162" font-size="11" fill="#334155">报错：ClickHouse storage is experimental and must be explicitly enabled</text>
+  <text x="552" y="180" font-size="11" fill="#475569">注意：validate 拦不住这一条，只在启动时炸</text>
+
+  <circle cx="530" cy="212" r="12" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="217" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">2</text>
+  <text x="552" y="209" font-size="11.5" font-weight="bold" fill="#7c2d12">只写了 depends_on 启动顺序</text>
+  <text x="552" y="228" font-size="11" fill="#334155">报错：failed to ping ClickHouse ... connection refused</text>
+  <text x="552" y="246" font-size="11" fill="#475569">Jaeger 不重试连接，直接退出；必须等 healthcheck 通过</text>
+
+  <circle cx="530" cy="278" r="12" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="283" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">3</text>
+  <text x="552" y="275" font-size="11.5" font-weight="bold" fill="#7c2d12">数据目录用 Windows 绑挂载</text>
+  <text x="552" y="294" font-size="11" fill="#334155">Jaeger 侧只看到 Sender failed，写入静默丢失</text>
+  <text x="552" y="312" font-size="11" fill="#475569">ClickHouse 侧才是真因：filesystem error: in rename: Permission denied</text>
+
+  <circle cx="530" cy="344" r="12" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="530" y="349" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">4</text>
+  <text x="552" y="341" font-size="11.5" font-weight="bold" fill="#7c2d12">库不存在</text>
+  <text x="552" y="360" font-size="11" fill="#334155">create_schema 只建表，不建库</text>
+  <text x="552" y="378" font-size="11" fill="#475569">Jaeger 不建库是设计如此：clickhouse.database 必须已存在</text>
+
+  <rect x="520" y="404" width="430" height="92" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="536" y="428" font-size="11.5" font-weight="bold" fill="#0f172a">坑 3 的排查顺序</text>
+  <text x="536" y="450" font-size="11" fill="#334155">先看存储侧日志（真因在这里），再看网络，最后才怀疑 Jaeger</text>
+  <text x="536" y="472" font-size="11" fill="#334155">修法：把绑定目录换成命名卷，重启后 3 条 span 全部落库</text>
+</svg>

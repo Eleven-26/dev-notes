@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">traceparent：跨进程只有这一个头，四段用短横线分隔</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">认不清这四段，就分不清「链路断了」还是「接到另一条链上」</text>
+
+  <text x="60" y="118" font-size="13" font-weight="bold" fill="#334155">traceparent:</text>
+
+  <rect x="182" y="96" width="58" height="42" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="211" y="123" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">00</text>
+  <rect x="244" y="96" width="322" height="42" rx="5" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="405" y="123" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7c2d12">4bf92f3577b34da6a3ce929d0e0e4736</text>
+  <rect x="570" y="96" width="172" height="42" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="656" y="123" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">00f067aa0ba902b7</text>
+  <rect x="746" y="96" width="52" height="42" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="772" y="123" text-anchor="middle" font-size="14" font-weight="bold" fill="#78350f">01</text>
+
+  <text x="211" y="162" text-anchor="middle" font-size="11.5" fill="#1e3a8a">version</text>
+  <text x="211" y="180" text-anchor="middle" font-size="10.5" fill="#64748b">当前固定 00</text>
+
+  <text x="405" y="162" text-anchor="middle" font-size="11.5" fill="#7c2d12">trace-id（32 位十六进制）</text>
+  <text x="405" y="180" text-anchor="middle" font-size="10.5" fill="#64748b">上下游必须逐位一致，否则是两条链</text>
+
+  <text x="656" y="162" text-anchor="middle" font-size="11.5" fill="#14532d">parent-id（16 位）</text>
+  <text x="656" y="180" text-anchor="middle" font-size="10.5" fill="#64748b">下游拿它当 parentSpanId</text>
+
+  <text x="772" y="162" text-anchor="middle" font-size="11.5" fill="#78350f">flags</text>
+  <text x="772" y="180" text-anchor="middle" font-size="10.5" fill="#64748b">最低位 1 = 采样</text>
+
+  <rect x="60" y="204" width="880" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="76" y="226" font-size="11.5" fill="#334155">共 52 个字符，加头名 13 个；成本可忽略，但它是全链路唯一必须逐字节一致的东西。</text>
+  <text x="76" y="246" font-size="11.5" fill="#334155">配套还有 tracestate（厂商扩展）与 baggage（业务键值，会一路透传，别放敏感信息）。</text>
+
+  <text x="60" y="292" font-size="13" font-weight="bold" fill="#0f172a">排障时最常抓到的三种错误写法</text>
+
+  <rect x="60" y="310" width="280" height="112" rx="9" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="76" y="336" font-size="12" font-weight="bold" fill="#7f1d1d">① 大小写混用</text>
+  <text x="76" y="358" font-size="11" fill="#334155">4BF9...4736</text>
+  <text x="76" y="378" font-size="11" fill="#475569">部分实现直接丢弃整个头</text>
+  <text x="76" y="400" font-size="11" fill="#b91c1c">结局：下游另起一条链</text>
+
+  <rect x="360" y="310" width="280" height="112" rx="9" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="376" y="336" font-size="12" font-weight="bold" fill="#7f1d1d">② 长度不对</text>
+  <text x="376" y="358" font-size="11" fill="#334155">trace-id 写成 16 位</text>
+  <text x="376" y="378" font-size="11" fill="#475569">32 位是硬要求，短的会被判非法</text>
+  <text x="376" y="400" font-size="11" fill="#b91c1c">结局：退化成一条新链</text>
+
+  <rect x="660" y="310" width="280" height="112" rx="9" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="676" y="336" font-size="12" font-weight="bold" fill="#7f1d1d">③ flags 写 00 却照常上报</text>
+  <text x="676" y="358" font-size="11" fill="#334155">上游说不采、下游自顾自采</text>
+  <text x="676" y="378" font-size="11" fill="#475569">采样决策没有跟随父级</text>
+  <text x="676" y="400" font-size="11" fill="#b91c1c">结局：一条没有开头的半条链</text>
+
+  <text x="60" y="456" font-size="11.5" fill="#475569">还有一个不在这个头里、但同样会断链的东西：老 Jaeger 的 uber-trace-id 与 SkyWalking 的 sw8。</text>
+  <text x="60" y="478" font-size="11.5" fill="#475569">两套头同时存在于一条链路上时，链路一定断——而且是「看起来上下游都在报」的那种断法。</text>
+</svg>

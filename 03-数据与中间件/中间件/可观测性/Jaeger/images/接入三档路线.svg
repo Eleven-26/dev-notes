@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="g1" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L8,3.5 L0,7 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">接入三档：先能看，再能查，最后能扛</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">两次分水岭各解决一件事：A→B 是成本，B→C 是治理；跨不过去的直接上生产，多半死在磁盘</text>
+
+  <rect x="40" y="92" width="250" height="196" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.7"/>
+  <text x="58" y="120" font-size="13.5" font-weight="bold" fill="#1e3a8a">A. 试玩</text>
+  <text x="58" y="148" font-size="11.5" fill="#1e3a8a">目标：一条链路能打开</text>
+  <text x="58" y="172" font-size="11" fill="#334155">· 两个容器：jaeger + clickhouse</text>
+  <text x="58" y="192" font-size="11" fill="#334155">· SDK 指向 OTLP，采样全开</text>
+  <text x="58" y="212" font-size="11" fill="#334155">· 门户端口 16686</text>
+  <text x="58" y="244" font-size="11" font-weight="bold" fill="#14532d">判据：/api/services 里有你的服务，</text>
+  <text x="58" y="262" font-size="11" font-weight="bold" fill="#14532d">点进去能看到完整树</text>
+
+  <path d="M290,190 L350,190" fill="none" stroke="#ea580c" stroke-width="2.2" marker-end="url(#g1)"/>
+  <text x="292" y="176" font-size="10.5" font-weight="bold" fill="#c2410c">分水岭一</text>
+  <text x="292" y="212" font-size="10.5" fill="#c2410c">成本</text>
+
+  <rect x="360" y="92" width="250" height="196" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.7"/>
+  <text x="378" y="120" font-size="13.5" font-weight="bold" fill="#7c2d12">B. 可用</text>
+  <text x="378" y="148" font-size="11.5" fill="#7c2d12">目标：能检索、成本可控</text>
+  <text x="378" y="172" font-size="11" fill="#334155">· 采样：SDK 全采 + Collector 尾部</text>
+  <text x="378" y="192" font-size="11" fill="#334155">· 配 TTL，别让数据只涨不降</text>
+  <text x="378" y="212" font-size="11" fill="#334155">· 查询面加鉴权 / 只内网可达</text>
+  <text x="378" y="244" font-size="11" font-weight="bold" fill="#14532d">判据：日增量稳定；错误链路 100% 可查</text>
+
+  <path d="M610,190 L670,190" fill="none" stroke="#ea580c" stroke-width="2.2" marker-end="url(#g1)"/>
+  <text x="612" y="176" font-size="10.5" font-weight="bold" fill="#c2410c">分水岭二</text>
+  <text x="612" y="212" font-size="10.5" fill="#c2410c">治理</text>
+
+  <rect x="680" y="92" width="280" height="196" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.7"/>
+  <text x="698" y="120" font-size="13.5" font-weight="bold" fill="#14532d">C. 生产</text>
+  <text x="698" y="148" font-size="11.5" fill="#14532d">目标：多副本、能迁移</text>
+  <text x="698" y="172" font-size="11" fill="#334155">· 多副本 + 负载均衡，无状态可重启</text>
+  <text x="698" y="192" font-size="11" fill="#334155">· k8sattributes 补 Pod / 节点信息</text>
+  <text x="698" y="212" font-size="11" fill="#334155">· 指标日志拓扑从旁边补，trace_id 串</text>
+  <text x="698" y="244" font-size="11" font-weight="bold" fill="#14532d">判据：停一个副本不影响写入；</text>
+  <text x="698" y="262" font-size="11" font-weight="bold" fill="#14532d">换后端不用改埋点</text>
+
+  <rect x="40" y="320" width="440" height="164" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="58" y="346" font-size="12.5" font-weight="bold" fill="#0f172a">两个分水岭各自解决什么</text>
+  <text x="58" y="372" font-size="11.5" font-weight="bold" fill="#c2410c">A→B：不采样会先把磁盘写满</text>
+  <text x="58" y="394" font-size="11" fill="#334155">Jaeger 不做预聚合，成本与 span 条数成正比；</text>
+  <text x="58" y="414" font-size="11" fill="#334155">先做尾部采样（错误与慢请求全留），再砍属性，</text>
+  <text x="58" y="434" font-size="11" fill="#334155">最后才动 TTL——顺序反了会查不到三个月前的故障。</text>
+  <text x="58" y="462" font-size="11" font-weight="bold" fill="#c2410c">B→C：不集中就管不住多语言多集群</text>
+
+  <rect x="500" y="320" width="460" height="164" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="518" y="346" font-size="12.5" font-weight="bold" fill="#0f172a">什么时候需要前置一层 Collector</text>
+  <text x="518" y="372" font-size="11.5" fill="#334155">判据：出口只有一个就别前置——v2 自己就是 Collector。</text>
+  <text x="518" y="396" font-size="11" fill="#475569">硬理由只有两个：</text>
+  <text x="518" y="418" font-size="11" fill="#334155">① 一份数据要发往多处（灰度、双活、同时进指标）</text>
+  <text x="518" y="440" font-size="11" fill="#334155">② 治理规则要集中改（脱敏、打标、统一采样）</text>
+  <text x="518" y="468" font-size="11" fill="#b91c1c">注意：尾部采样只能放在「能看到整条链」的那一层。</text>
+</svg>

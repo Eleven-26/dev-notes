@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" width="1000" height="720" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a9" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">排障七问：每步只往前走一格，不跳步</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">顺序即因果：有没有数据 → 有没有边 → 整条还是半条 → 有但慢 → 关键请求缺 → 查询慢 → 数字对不上</text>
+
+  <rect x="30" y="80" width="400" height="66" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="46" y="106" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 一条 trace 都查不到</text>
+  <text x="46" y="130" font-size="11" fill="#1e3a8a">先问 listServices 是否为空</text>
+  <line x1="430" y1="113" x2="470" y2="113" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+  <rect x="470" y="80" width="500" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="486" y="106" font-size="11.5" fill="#334155">空数组 = 没有 Agent 上报，别查 UI；有服务但 trace 空 → 时间窗或 duration</text>
+  <text x="486" y="128" font-size="11" fill="#b91c1c">最常见：上报地址写成 UI 的 8080，而不是 OAP 的 11800</text>
+
+  <line x1="230" y1="146" x2="230" y2="166" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+
+  <rect x="30" y="166" width="400" height="66" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="46" y="192" font-size="12.5" font-weight="bold" fill="#312e81">② 拓扑缺边</text>
+  <text x="46" y="216" font-size="11" fill="#312e81">按「Exit + Entry + sw8」三条件排</text>
+  <line x1="430" y1="199" x2="470" y2="199" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+  <rect x="470" y="166" width="500" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="486" y="192" font-size="11.5" fill="#334155">没 Exit → 框架不在插件范围；没 Entry → 下游没探针</text>
+  <text x="486" y="214" font-size="11" fill="#b91c1c">头被裁 → 网关 / Nginx 的 header 白名单</text>
+
+  <line x1="230" y1="232" x2="230" y2="252" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+
+  <rect x="30" y="252" width="400" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="46" y="278" font-size="12.5" font-weight="bold" fill="#7c2d12">③ 只有半条 trace</text>
+  <text x="46" y="302" font-size="11" fill="#7c2d12">看是缺段还是缺父子</text>
+  <line x1="430" y1="285" x2="470" y2="285" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+  <rect x="470" y="252" width="500" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="486" y="278" font-size="11.5" fill="#334155">缺段 → 下游没采（sample 没跟随）或上报失败</text>
+  <text x="486" y="300" font-size="11" fill="#b91c1c">缺父子 → 头缺段 3/4，或跨线程丢了上下文</text>
+
+  <line x1="230" y1="318" x2="230" y2="338" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+
+  <rect x="30" y="338" width="400" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="46" y="364" font-size="12.5" font-weight="bold" fill="#14532d">④ 数据延迟</text>
+  <text x="46" y="388" font-size="11" fill="#14532d">先分清延迟在探针、OAP 还是查询</text>
+  <line x1="430" y1="371" x2="470" y2="371" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+  <rect x="470" y="338" width="500" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="486" y="364" font-size="11.5" fill="#334155">攒批 + 队列 → 与流量正相关；分钟桶未结算 → 图表没点</text>
+  <text x="486" y="386" font-size="11" fill="#b91c1c">刚打完请求看 Trace 比 Dashboard 更快出结果</text>
+
+  <line x1="230" y1="404" x2="230" y2="424" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+
+  <rect x="30" y="424" width="400" height="66" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="46" y="450" font-size="12.5" font-weight="bold" fill="#0f172a">⑤ 关键请求被采样掉</text>
+  <text x="46" y="474" font-size="11" fill="#334155">错误请求查不到、日志里却有</text>
+  <line x1="430" y1="457" x2="470" y2="457" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+  <rect x="470" y="424" width="500" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="486" y="450" font-size="11.5" fill="#334155">头部采样 + 条数上限，额度被正常请求占满</text>
+  <text x="486" y="472" font-size="11" fill="#b91c1c">处置：force_sample 临时开，trace-ignore 砍噪声，别抬高全局限额</text>
+
+  <line x1="230" y1="490" x2="230" y2="510" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+
+  <rect x="30" y="510" width="400" height="66" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="46" y="536" font-size="12.5" font-weight="bold" fill="#312e81">⑥ 查询超时 / 变慢</text>
+  <text x="46" y="560" font-size="11" fill="#312e81">窗口、结果集、冷阶段、深分页</text>
+  <line x1="430" y1="543" x2="470" y2="543" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+  <rect x="470" y="510" width="500" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="486" y="536" font-size="11.5" fill="#334155">缩小窗口即恢复 → 窗口太大；条数接近结果窗口上限 → 加过滤</text>
+  <text x="486" y="558" font-size="11" fill="#b91c1c">数据在冷阶段 → BanyanDB 要显式传 coldStage，否则查不到而非慢</text>
+
+  <line x1="230" y1="576" x2="230" y2="596" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+
+  <rect x="30" y="596" width="400" height="66" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="46" y="622" font-size="12.5" font-weight="bold" fill="#7c2d12">⑦ 指标与 Prometheus 对不上</text>
+  <text x="46" y="646" font-size="11" fill="#7c2d12">这是口径差，不是 bug</text>
+  <line x1="430" y1="629" x2="470" y2="629" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a9)"/>
+  <rect x="470" y="596" width="500" height="66" rx="8" fill="#f8fcfc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="486" y="622" font-size="11.5" fill="#334155">先对单位（CPM 与 rate 差 60 倍），再对过滤，最后才怀疑算法</text>
+  <text x="486" y="644" font-size="11" fill="#b91c1c">采样只影响 trace，不影响 OAL 指标</text>
+</svg>

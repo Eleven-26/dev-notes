@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">队列内核的两代结构：线程数随 Buffer 数涨，还是一直固定</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">10.4 起 BatchQueue 取代 DataCarrier：结构变了，语义（有界 / 批量 / 异步 / 满了丢）没变</text>
+
+  <rect x="30" y="80" width="450" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="46" y="106" font-size="13.5" font-weight="bold" fill="#0f172a">第一代：DataCarrier（每 Buffer 一个消费线程）</text>
+
+  <rect x="46" y="120" width="120" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="60" y="142" font-size="11.5" fill="#1e3a8a">生产线程 ×N</text>
+  <line x1="166" y1="137" x2="196" y2="137" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+  <rect x="196" y="118" width="268" height="240" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="210" y="140" font-size="12" font-weight="bold" fill="#0f172a">Channel（持 N 个 Buffer）</text>
+
+  <rect x="210" y="152" width="240" height="56" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="222" y="172" font-size="11" fill="#7c2d12">Buffer 1（定长数组 + 环形游标）</text>
+  <text x="222" y="192" font-size="11" fill="#7c2d12">↳ 消费线程 T1</text>
+
+  <rect x="210" y="216" width="240" height="56" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="222" y="236" font-size="11" fill="#7c2d12">Buffer 2</text>
+  <text x="222" y="256" font-size="11" fill="#7c2d12">↳ 消费线程 T2</text>
+
+  <rect x="210" y="280" width="240" height="56" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="222" y="300" font-size="11" fill="#7c2d12">Buffer N</text>
+  <text x="222" y="320" font-size="11" fill="#7c2d12">↳ 消费线程 TN</text>
+
+  <text x="46" y="386" font-size="11.5" fill="#b91c1c">结构性成本：线程数 = Buffer 数 × DataCarrier 数（队列一多就线性涨）</text>
+
+  <rect x="510" y="80" width="460" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="526" y="106" font-size="13.5" font-weight="bold" fill="#0f172a">第二代：BatchQueue（线程数固定，批量取出）</text>
+
+  <rect x="526" y="120" width="120" height="34" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="540" y="142" font-size="11.5" fill="#1e3a8a">生产线程 ×N</text>
+  <line x1="646" y1="137" x2="676" y2="137" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a4)"/>
+
+  <rect x="676" y="118" width="278" height="100" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="690" y="140" font-size="12" font-weight="bold" fill="#14532d">有界队列（多队列，不各绑线程）</text>
+  <text x="690" y="164" font-size="11" fill="#14532d">入队仍是原子游标 + 定长数组</text>
+  <text x="690" y="184" font-size="11" fill="#14532d">满了仍按 IF_POSSIBLE 丢弃</text>
+  <text x="690" y="204" font-size="11" fill="#14532d">语义与第一代一致</text>
+
+  <line x1="815" y1="218" x2="815" y2="248" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#a4)"/>
+
+  <rect x="676" y="248" width="278" height="76" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.3"/>
+  <text x="690" y="270" font-size="12" font-weight="bold" fill="#312e81">固定大小的批处理线程池</text>
+  <text x="690" y="292" font-size="11" fill="#312e81">一次取一批，攒批上报 OAP</text>
+  <text x="690" y="312" font-size="11" fill="#312e81">线程数与队列数量解耦</text>
+
+  <text x="526" y="386" font-size="11.5" fill="#14532d">官方 changelog 口径：OAP 侧线程从 150+ 降到约 72（约 −50%）</text>
+
+  <rect x="20" y="428" width="960" height="74" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="38" y="454" font-size="12" fill="#0f172a">⭐ 读老资料看到 DataCarrier、读 10.4+ 源码看到 BatchQueue，都不算错——认准「结构 vs 语义」这一层区分</text>
+  <text x="38" y="478" font-size="12" fill="#b91c1c">⚠️ 本图右半部分的内部实现未读源码、未测线程数，仅依据官方 changelog 的两条结论绘制</text>
+</svg>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="f1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">七问排障：先按症状分流，再按判据定位</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">四种投诉、七条判据；前两问解决一半问题，因为「没数据」和「筛没了」的起点完全不同</text>
+
+  <rect x="380" y="80" width="240" height="48" rx="8" fill="#0f172a"/>
+  <text x="500" y="110" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">链路相关的投诉</text>
+
+  <path d="M500,128 L500,146 L140,146 L140,168" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M500,128 L500,146 L380,146 L380,168" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M500,128 L500,146 L620,146 L620,168" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M500,128 L500,146 L860,146 L860,168" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <rect x="40" y="168" width="200" height="46" rx="8" fill="#fecaca" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="140" y="196" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">一条都没有</text>
+  <rect x="280" y="168" width="200" height="46" rx="8" fill="#fed7aa" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="380" y="196" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">有，但缺一段</text>
+  <rect x="520" y="168" width="200" height="46" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="620" y="196" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#78350f">有，但不是我要的</text>
+  <rect x="760" y="168" width="200" height="46" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="860" y="196" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">界面打不开</text>
+
+  <rect x="40" y="228" width="200" height="352" rx="9" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <text x="56" y="254" font-size="11.5" font-weight="bold" fill="#7f1d1d">① 存储里有行吗</text>
+  <text x="56" y="274" font-size="10.5" fill="#475569">SELECT count() FROM spans</text>
+  <text x="56" y="292" font-size="10.5" fill="#b91c1c">0 行 = 根本没写进来</text>
+  <text x="56" y="316" font-size="11.5" font-weight="bold" fill="#7f1d1d">② 服务名一致吗</text>
+  <text x="56" y="336" font-size="10.5" fill="#475569">缺 service.name 会变成</text>
+  <text x="56" y="354" font-size="10.5" fill="#475569">unknown_service</text>
+  <text x="56" y="378" font-size="11" fill="#7f1d1d">往上查：SDK 有没有 End()</text>
+  <text x="56" y="396" font-size="11" fill="#7f1d1d">停机有没有 flush</text>
+  <text x="56" y="420" font-size="11" fill="#7f1d1d">采样是不是全丢了</text>
+  <text x="56" y="452" font-size="10.5" fill="#475569">判据：写失败时 Jaeger 日志</text>
+  <text x="56" y="470" font-size="10.5" fill="#475569">只有 Sender failed 一行</text>
+
+  <rect x="280" y="228" width="200" height="352" rx="9" fill="#fff7ed" stroke="#fdba74" stroke-width="1.3"/>
+  <text x="296" y="254" font-size="11.5" font-weight="bold" fill="#7c2d12">⑤ references 为空吗</text>
+  <text x="296" y="274" font-size="10.5" fill="#475569">空数组 = 它是新链的根</text>
+  <text x="296" y="292" font-size="10.5" fill="#b91c1c">断点在上游注入或下游提取</text>
+  <text x="296" y="316" font-size="11.5" font-weight="bold" fill="#7c2d12">⑥ 最后一段丢了吗</text>
+  <text x="296" y="336" font-size="10.5" fill="#475569">span 建了没 End()</text>
+  <text x="296" y="354" font-size="10.5" fill="#475569">或停机未 flush</text>
+  <text x="296" y="378" font-size="11" fill="#7c2d12">五个断点：客户端未埋点、</text>
+  <text x="296" y="396" font-size="11" fill="#7c2d12">头格式不一致、MQ 未 Inject、</text>
+  <text x="296" y="414" font-size="11" fill="#7c2d12">线程池没搬上下文、未 End</text>
+  <text x="296" y="452" font-size="10.5" fill="#475569">判据：日志有 trace_id 但</text>
+  <text x="296" y="470" font-size="10.5" fill="#475569">Jaeger 里查不到那一跳</text>
+
+  <rect x="520" y="228" width="200" height="352" rx="9" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.3"/>
+  <text x="536" y="254" font-size="11.5" font-weight="bold" fill="#78350f">③ 时间窗单位对吗</text>
+  <text x="536" y="274" font-size="10.5" fill="#475569">start / end 要微秒</text>
+  <text x="536" y="292" font-size="10.5" fill="#b91c1c">传毫秒 → 200 且空数组</text>
+  <text x="536" y="316" font-size="11.5" font-weight="bold" fill="#78350f">④ 标签值类型对吗</text>
+  <text x="536" y="336" font-size="10.5" fill="#475569">tags 的值必须是字符串</text>
+  <text x="536" y="354" font-size="10.5" fill="#475569">500 与 &quot;500&quot; 不是一回事</text>
+  <text x="536" y="378" font-size="11" fill="#78350f">多选标签只会更慢，</text>
+  <text x="536" y="396" font-size="11" fill="#78350f">因为属性列没有索引</text>
+  <text x="536" y="428" font-size="10.5" fill="#475569">判据：同一个 traceId</text>
+  <text x="536" y="446" font-size="10.5" fill="#475569">按 ID 查得到、按标签查不到</text>
+
+  <rect x="760" y="228" width="200" height="352" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.3"/>
+  <text x="776" y="254" font-size="11.5" font-weight="bold" fill="#334155">⑦ 反代与 base_path</text>
+  <text x="776" y="274" font-size="10.5" fill="#475569">GET / 返回 200 但页面空</text>
+  <text x="776" y="292" font-size="10.5" fill="#475569">→ 查静态资源前缀</text>
+  <text x="776" y="316" font-size="11.5" font-weight="bold" fill="#334155">先分清两件事</text>
+  <text x="776" y="336" font-size="10.5" fill="#475569">后端没数据 vs 界面没渲染</text>
+  <text x="776" y="354" font-size="10.5" fill="#475569">用 curl 打同一端点即可</text>
+  <text x="776" y="386" font-size="11" fill="#334155">最常见：容器起来但</text>
+  <text x="776" y="404" font-size="11" fill="#334155">feature gate 漏了，</text>
+  <text x="776" y="422" font-size="11" fill="#334155">进程直接退出</text>
+  <text x="776" y="452" font-size="10.5" fill="#475569">判据：docker ps 里</text>
+  <text x="776" y="470" font-size="10.5" fill="#475569">看不到 jaeger 容器</text>
+
+  <text x="40" y="606" font-size="11.5" fill="#475569">排序原则：越便宜的先问。「查 count()」比「翻 SDK 代码」便宜，「换个单位重试」比「查传播头」便宜。</text>
+</svg>

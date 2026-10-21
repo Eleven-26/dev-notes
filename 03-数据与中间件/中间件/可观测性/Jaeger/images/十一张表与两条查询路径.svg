@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="d2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ClickHouse 的十一张表，撑起两条查询路径</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">create_schema 建的不是一张表：明细一张、按 ID 定位一张、下拉框两张、依赖图预留一张</text>
+
+  <rect x="30" y="84" width="400" height="452" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="50" y="112" font-size="13" font-weight="bold" fill="#0f172a">SHOW TABLES FROM jaeger（实测 11 张）</text>
+
+  <rect x="50" y="126" width="360" height="52" rx="7" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="66" y="148" font-size="12" font-weight="bold" fill="#7c2d12">spans</text>
+  <text x="130" y="148" font-size="11" fill="#334155">一行一个 span，明细全在这</text>
+  <text x="66" y="168" font-size="10.5" fill="#475569">MergeTree；PARTITION BY toDate(start_time)</text>
+
+  <rect x="50" y="186" width="360" height="52" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="66" y="208" font-size="12" font-weight="bold" fill="#14532d">trace_id_timestamps</text>
+  <text x="212" y="208" font-size="11" fill="#334155">按 ID 查的入口</text>
+  <text x="66" y="228" font-size="10.5" fill="#475569">AggregatingMergeTree；ORDER BY trace_id；min/max 时间</text>
+
+  <rect x="50" y="246" width="360" height="52" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="66" y="268" font-size="12" font-weight="bold" fill="#1e3a8a">services / operations</text>
+  <text x="228" y="268" font-size="11" fill="#334155">界面的两个下拉框</text>
+  <text x="66" y="288" font-size="10.5" fill="#475569">AggregatingMergeTree；天然去重</text>
+
+  <rect x="50" y="306" width="360" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="66" y="328" font-size="12" font-weight="bold" fill="#334155">dependencies</text>
+  <text x="176" y="328" font-size="11" fill="#334155">依赖图预留，本机无写入者</text>
+  <text x="66" y="348" font-size="10.5" fill="#475569">MergeTree；ORDER BY timestamp</text>
+
+  <rect x="50" y="366" width="360" height="52" rx="7" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="66" y="388" font-size="12" font-weight="bold" fill="#334155">attribute_metadata</text>
+  <text x="212" y="388" font-size="11" fill="#334155">属性名与类型，供界面提示</text>
+  <text x="66" y="408" font-size="10.5" fill="#475569">写入时自动登记</text>
+
+  <rect x="50" y="426" width="360" height="52" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="5 4"/>
+  <text x="66" y="448" font-size="12" font-weight="bold" fill="#475569">+ 5 个物化视图</text>
+  <text x="184" y="448" font-size="11" fill="#334155">把明细折成上面四张小表</text>
+  <text x="66" y="468" font-size="10.5" fill="#475569">services_mv / operations_mv / trace_id_timestamps_mv / event_·link_attribute_metadata_mv</text>
+
+  <text x="50" y="510" font-size="11" fill="#475569">注意：没有「trace 表」。一条链的 span 靠 trace_id 聚出来。</text>
+  <text x="50" y="528" font-size="11" fill="#475569">原因：span 边到边陆续到达，任何「一条链一行」的设计都要在写入时改行。</text>
+
+  <rect x="452" y="84" width="518" height="452" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="472" y="112" font-size="13" font-weight="bold" fill="#0f172a">两条路径的代价差一个量级</text>
+
+  <text x="472" y="142" font-size="12" font-weight="bold" fill="#14532d">路径 A：按 traceId 精查（点查）</text>
+  <rect x="472" y="154" width="150" height="44" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="547" y="181" text-anchor="middle" font-size="11" fill="#14532d">trace_id_timestamps</text>
+  <line x1="622" y1="176" x2="654" y2="176" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#d1)"/>
+  <rect x="654" y="154" width="120" height="44" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="714" y="181" text-anchor="middle" font-size="11" fill="#14532d">定出时间窗</text>
+  <line x1="774" y1="176" x2="806" y2="176" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#d1)"/>
+  <rect x="806" y="154" width="144" height="44" rx="7" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="878" y="181" text-anchor="middle" font-size="11" fill="#14532d">只扫 1~2 个分区</text>
+  <text x="472" y="218" font-size="11" fill="#475569">实测：3 条 span 的链，毫秒级返回；数据长大也只是「一个分区里的一段」</text>
+
+  <line x1="472" y1="234" x2="950" y2="234" stroke="#e2e8f0" stroke-width="1.2"/>
+
+  <text x="472" y="260" font-size="12" font-weight="bold" fill="#7c2d12">路径 B：按属性检索（扫描）</text>
+  <rect x="472" y="272" width="230" height="58" rx="7" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="488" y="294" font-size="11" fill="#7c2d12">排序键命中：service + name + 时间窗</text>
+  <text x="488" y="314" font-size="11" fill="#7c2d12">(service_name, name, toDateTime(start_time))</text>
+  <line x1="702" y1="301" x2="734" y2="301" stroke="#ea580c" stroke-width="1.6" marker-end="url(#d2)"/>
+  <rect x="734" y="272" width="216" height="58" rx="7" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="750" y="294" font-size="11" fill="#7f1d1d">标签过滤：数组逐行匹配</text>
+  <text x="750" y="314" font-size="11" fill="#7f1d1d">属性列没有独立索引</text>
+
+  <text x="472" y="352" font-size="11" fill="#475569">实测：同样的 service 与时间窗，加了标签条件仍能返回，但扫描量不降。</text>
+  <text x="472" y="370" font-size="11" fill="#b91c1c">反直觉结论：多选几个标签不会更快，只会更慢。</text>
+
+  <line x1="472" y1="386" x2="950" y2="386" stroke="#e2e8f0" stroke-width="1.2"/>
+
+  <text x="472" y="412" font-size="12" font-weight="bold" fill="#0f172a">最常踩的单位坑</text>
+  <text x="472" y="436" font-size="11" fill="#334155">入参：start / end 是微秒。传毫秒 → HTTP 200 且返回空数组。</text>
+  <text x="472" y="458" font-size="11" fill="#334155">出参：startTime / duration / logs.timestamp 全是微秒。</text>
+  <text x="472" y="480" font-size="11" fill="#334155">存储：DateTime64(9) 纳秒；duration 列 Int64 纳秒。</text>
+  <text x="472" y="506" font-size="11" fill="#7f1d1d">一句话：只有 OTLP 报文和 ClickHouse 列是纳秒，API 里没有纳秒也没有毫秒。</text>
+</svg>

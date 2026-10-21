@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="a12" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">接入三档：差别不在装多少组件，而在采样口径</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">档位越高，越要把「全采」换成「按重要性分配额度」</text>
+
+  <rect x="30" y="82" width="300" height="250" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="48" y="110" font-size="14" font-weight="bold" fill="#14532d">① 单体试水</text>
+  <text x="48" y="138" font-size="11.5" fill="#14532d">规模：1 到 10 个服务、单团队</text>
+  <text x="48" y="164" font-size="11.5" fill="#14532d">部署：单机三容器</text>
+  <text x="48" y="184" font-size="11.5" fill="#14532d">BanyanDB 用 standalone</text>
+  <text x="48" y="210" font-size="11.5" fill="#14532d">采样：sample_n_per_3_secs = -1（全采）</text>
+  <text x="48" y="236" font-size="11.5" fill="#14532d">关键动作：先验证「链路能连、面板能读」</text>
+  <text x="48" y="262" font-size="11.5" fill="#b91c1c">别在这一档上集群——先证明它有用</text>
+  <text x="48" y="288" font-size="11.5" fill="#14532d">产出：一周的日夜量级感受</text>
+  <text x="48" y="314" font-size="11.5" fill="#14532d">+ 一份「哪些接口值得追」的清单</text>
+
+  <line x1="330" y1="207" x2="358" y2="207" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#a12)"/>
+
+  <rect x="358" y="82" width="300" height="250" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="376" y="110" font-size="14" font-weight="bold" fill="#1e3a8a">② 中等</text>
+  <text x="376" y="138" font-size="11.5" fill="#1e3a8a">规模：10 到 100 个服务</text>
+  <text x="376" y="164" font-size="11.5" fill="#1e3a8a">部署：OAP 双实例共用一套 BanyanDB</text>
+  <text x="376" y="184" font-size="11.5" fill="#1e3a8a">UI 指到负载均衡后端</text>
+  <text x="376" y="210" font-size="11.5" fill="#1e3a8a">采样：按服务设条数 + 关键接口 force_sample</text>
+  <text x="376" y="236" font-size="11.5" fill="#1e3a8a">关键动作：告警接 IM；trace-ignore 砍噪声</text>
+  <text x="376" y="262" font-size="11.5" fill="#b91c1c">开始算日条数（N × 28,800）</text>
+  <text x="376" y="288" font-size="11.5" fill="#1e3a8a">产出：服务级 SLO 与告警联动</text>
+  <text x="376" y="314" font-size="11.5" fill="#1e3a8a">+ 存储容量第一次预算</text>
+
+  <line x1="658" y1="207" x2="686" y2="207" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#a12)"/>
+
+  <rect x="686" y="82" width="284" height="250" rx="10" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="704" y="110" font-size="14" font-weight="bold" fill="#312e81">③ 大规模</text>
+  <text x="704" y="138" font-size="11.5" fill="#312e81">规模：100+ 服务、多团队</text>
+  <text x="704" y="164" font-size="11.5" fill="#312e81">部署：OAP 拆 Receiver / Aggregator</text>
+  <text x="704" y="184" font-size="11.5" fill="#312e81">BanyanDB 集群 + 冷热分层</text>
+  <text x="704" y="210" font-size="11.5" fill="#312e81">采样：只对核心链路全采，其余降采样</text>
+  <text x="704" y="236" font-size="11.5" fill="#312e81">关键动作：按组设 TTL 与 segmentInterval</text>
+  <text x="704" y="262" font-size="11.5" fill="#b91c1c">日志分流：不都塞进 APM，留 ELK</text>
+  <text x="704" y="288" font-size="11.5" fill="#312e81">产出：容量与成本可预测</text>
+  <text x="704" y="314" font-size="11.5" fill="#312e81">+ 多团队共用一套命名规范</text>
+
+  <rect x="20" y="352" width="960" height="178" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="38" y="378" font-size="12.5" font-weight="bold" fill="#0f172a">三档之间的分水岭判据（按顺序问自己）</text>
+  <text x="38" y="404" font-size="12" fill="#0f172a">① 日 segment 条数是否超过单机 OAP 的稳定处理量 —— 超了就拆 Receiver / Aggregator</text>
+  <text x="38" y="428" font-size="12" fill="#0f172a">② 是否要跨团队看同一套大盘 —— 要，则服务命名与 Layer 必须先统一</text>
+  <text x="38" y="452" font-size="12" fill="#0f172a">③ 是否有必须 100% 采样的链路（支付、登录）—— 有，则单独设服务级采样，别抬高全局限额</text>
+  <text x="38" y="480" font-size="12" fill="#b91c1c">⚠️ 三档是规划口径（组件数与采样策略），不是压测结论；「单机稳定处理量」本机未压测</text>
+  <text x="38" y="506" font-size="12" fill="#334155">通用铁律：先统一命名，再谈注入；先证明有用，再谈扩容</text>
+</svg>
