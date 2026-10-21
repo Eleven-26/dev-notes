@@ -269,4 +269,4 @@ export default { hello, check };
 - [14-OpenResty生态.md](14-OpenResty生态.md) — Lua 路线的生态与版本增量
 - [15-Tengine生态.md](15-Tengine生态.md) — Tengine **内置了 Lua 模块**（另一条路线）
 - [01-编译安装与配置.md](01-编译安装与配置.md) — `ngx_http_json_module`（读 body 字段的原生替代）
-- [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md) — Lua 的完整用法与实测
+- [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md) — Lua 侧的部署配置、阶段落位与 `ngx.*` API 速查

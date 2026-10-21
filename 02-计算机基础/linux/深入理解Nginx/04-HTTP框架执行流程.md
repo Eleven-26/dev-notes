@@ -256,6 +256,6 @@ curl -si -H 'Host: a.example.com' http://127.0.0.1:8095/loc-noalways-404 | sed -
 - [01-编译安装与配置.md](01-编译安装与配置.md) — `add_header` 继承实测、Early Hints 与 predicate location 配置
 - [02-进程模型与基础架构.md](02-进程模型与基础架构.md) — 为什么 worker 不读配置
 - [03-事件驱动与epoll.md](03-事件驱动与epoll.md) — 请求读取为什么是异步的
-- [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md) — 11 个阶段与 Lua 阶段的对应关系及本机实测
+- [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md) — 10 个执行阶段与 Lua 入口的对照、六个能力分别落在哪个阶段
 - [反向代理原理.md](../../网络/代理与网关/反向代理原理.md) — 代理侧的头部治理
 > 反向引用（本篇被下列文档引到）：[05-内存管理与数据结构.md](05-内存管理与数据结构.md)、[07-配置解析与请求上下文.md](07-配置解析与请求上下文.md)、[08-upstream与子请求.md](08-upstream与子请求.md)、[09-HTTP过滤模块.md](09-HTTP过滤模块.md)、[11-HTTP3与QUIC支持.md](11-HTTP3与QUIC支持.md)

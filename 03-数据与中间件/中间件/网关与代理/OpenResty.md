@@ -1,16 +1,18 @@
 # OpenResty
 
-> OpenResty 的定位（为什么要在 Nginx 里跑脚本）、**执行阶段模型**、够用版的 Lua 语法、nginx 配置语法要点（location 优先级 / `proxy_pass` 拼接 / `rewrite` / `limit_req`，**全部本机实测**）、`ngx.*` API 速查，以及六个典型应用（鉴权 / 限流 / 灰度 / 动态路由 / WAF / 聚合）。
+> 覆盖：OpenResty 的定位与部署、**执行阶段与 Lua 入口的对应关系**、`ngx.*` API 速查（含 cosocket 三条硬限制）、六个典型能力（鉴权 / 限流 / 灰度 / 动态路由 / WAF / 聚合），以及把它接进一个真实 Go 后端时的配置与排障。
 >
-> ⭐ 本篇的 **nginx 配置行为**用本机 `nginx/1.15.11` 建隔离实例**真跑验证**（location 优先级 5 例、`proxy_pass` 2 例、`rewrite` 3 例、`limit_req` 正反例对照）；**Lua 部分本机没有 OpenResty / LuaJIT，未实跑**，语法与 API 以官方文档为准——文中已逐处标注。
+> 不覆盖：Lua 语法本身（`local`、真值、table、模块）见 [Lua语法够用版.md](../../../01-编程语言/lua/Lua语法够用版.md)；`location` / `proxy_pass` / `rewrite` / `limit_req` 的配置语义与四组本机实测见 [Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md)；11 个处理阶段的框架级原理见 [04-HTTP框架执行流程.md](../../../02-计算机基础/linux/深入理解Nginx/04-HTTP框架执行流程.md)；版本与 `lua-resty-*` 生态见 [14-OpenResty生态.md](../../../02-计算机基础/linux/深入理解Nginx/14-OpenResty生态.md)。
 >
-> 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。限流的算法原理见 [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md)，跨机限流与 Redis+Lua 见 [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md)；网关选型见 [网关选型对比.md](网关选型对比.md)。
+> ⭐ 本篇的**配置行为结论**来自本机 `nginx/1.15.11` 隔离实例的四组真跑读数（已移入 Nginx配置语义篇，本文只引用结论）；**Lua 代码未逐个跑通**——`openresty/openresty:1.31.1.1-alpine` 镜像在本机可用，但本轮没有为每个片段搭 location 回读响应。分块口径见第九节。
+>
+> 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。网关选型见 [网关选型对比.md](网关选型对比.md)，限流算法见 [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md)。
 
 ---
 
-## 一、OpenResty 是什么？为什么不直接在 Nginx 里写 C 模块？
+## 一、一句话定位：OpenResty 与「只改配置的 Nginx」差在哪
 
-**本节要点**：OpenResty **不是另一个服务器**，它就是 Nginx（配置 100% 兼容）**加上 LuaJIT 和一个脚本运行时**。理解它要回答一个问题：**只改配置的 Nginx，什么时候不够用？**
+**本节要点**：OpenResty **不是另一个服务器**，它就是 Nginx（配置 100% 兼容）**加上 LuaJIT 和一个脚本运行时**。判据只有一句：**只改配置的 Nginx，什么时候不够用？**
 
 ### 1.1 Nginx 的天花板在哪
 
@@ -39,13 +41,11 @@ Nginx 的配置是**声明式**的，规则在**启动 / reload 时**就定死�
 1. **"OpenResty 是 Nginx 的替代品"** —— 不是。它**就是** Nginx，`nginx.conf` 的语法、模块、指令全部照旧；Lua 只是多出来的一种"可编程能力"。
 2. **"用了 Lua 就会变慢"** —— 关键看**写在哪**。LuaJIT 把热点代码编译成机器码，简单判断与字符串处理的性能接近 C；真正拖慢的是**用错阶段**（比如在 `log_by_lua` 里做阻塞 I/O）和**每次请求都重新 `require` 模块**。
 
----
-
-## 二、执行阶段：理解 OpenResty 的关键 ⭐
+## 二、核心概念：一个请求在 OpenResty 里要经过哪些阶段
 
 **本节要点**：Nginx 处理一个请求是一条**流水线**，每个阶段只允许做特定的事。**「这段逻辑该写在哪个阶段」是 OpenResty 里最核心的判断题**——写错阶段，代码要么不执行、要么报错。
 
-### 2.1 Nginx 的阶段与对应的 Lua 入口
+### 2.1 阶段与 Lua 入口的对照表
 
 | Nginx 阶段 | OpenResty 指令 | 典型用途 | 该阶段**不能**做什么 |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Nginx 的配置是**声明式**的，规则在**启动 / reload 时**就定死�
 | （日志） | `log_by_lua*` | 打点、异步上报 | ⚠️ 不能做阻塞 I/O（会拖住连接） |
 | （TLS 握手） | `ssl_certificate_by_lua*` | 按 SNI 动态选证书 | — |
 
-⭐ **一句话判据**：
+### 2.2 该写哪个阶段的四条判据
 
 - **要拦人**（鉴权、限流、黑名单）→ `access_by_lua*`
 - **要改 URI**（重写、跳转）→ `rewrite_by_lua*`
@@ -69,376 +69,31 @@ Nginx 的配置是**声明式**的，规则在**启动 / reload 时**就定死�
 
 ![OpenResty 请求处理阶段：每个阶段的 Lua 入口与典型用途](images/OpenResty请求处理阶段.svg)
 
-### 2.2 ⭐ 本机实测：阶段顺序不是"背下来"的，是能测出来的
+这 10 个 Lua 入口对应 nginx 的 11 个原生阶段，逐阶段的 `rewrite_log` 验证与 `error_page` 旁证见 [04-HTTP框架执行流程.md](../../../02-计算机基础/linux/深入理解Nginx/04-HTTP框架执行流程.md) 第三节——**阶段本体不是 OpenResty 发明的，它只是往既有阶段上挂了 Lua 钩子**。
 
-「阶段到底谁先谁后」有一个非常干净的验证方式——**把限流和 `return` 放在同一个 location 里**。
+### 2.3 六个能力分别落在哪个阶段
 
-本机 `nginx/1.15.11` 隔离实例，两个 location 配**完全相同**的限流参数（`rate=2r/s, burst=1, nodelay`），唯一差别是**有没有 content handler**：
+**本节要点**：把第五～七节的六个能力先按阶段摆一遍——**同一个请求里，阶段越靠前越能"拦住"，越靠后越只能"修饰"**。
 
-```nginx
-# ④a 反例：本 location 里有 return
-location = /limited-return {
-    limit_req zone=perip burst=1 nodelay;
-    return 200;
-}
+![六个能力与阶段落位：鉴权/限流/灰度/WAF 在 access，动态路由跨 init_worker 与 access，聚合在 content](images/六个能力与阶段落位.svg)
 
-# ④b 正例：交给静态文件做 content handler
-location = /limited {
-    limit_req zone=perip burst=1 nodelay;
-    root html;
-}
-```
+⭐ 这张矩阵最有用的一行是**动态路由**：它同时占两个阶段——`init_worker` 起定时器把路由表刷进共享字典，`access` 只负责查表。**把"拉数据"放进请求路径是常见错误**：每个请求都连一次 Redis，延迟和连接数都会失控。
 
-连发 6 个请求的实测结果：
+### 2.4 写错阶段的真实代价
 
-```text
-④a /limited-return（内含 return 200）: [200, 200, 200, 200, 200, 200]   → 限流完全没生效
-④b /limited（静态文件当 content handler）: [200, 200, 503, 503, 503, 503] → 第 3 个起被拒
-再等 2 秒单发 1 个: 200（令牌补充回来了）
-```
+**本节要点**：阶段写错往往**不报错**，只是静默不生效——所以它比语法错误难查得多。
 
-⭐ **根因**（这正是阶段模型的直接证据）：
+最典型的例子是 `limit_req` 与 `return` 同处一个 location：本机连发 6 个请求，带 `return 200` 的 location 全部返回 200（限流完全没执行），而参数完全相同、用静态文件做 content handler 的 location 从第 3 个起返回 503。根因是 `return` 在 REWRITE 阶段就把请求结束了，PREACCESS 阶段的 `limit_req` 根本没跑到。
 
-```text
-nginx 阶段顺序:  REWRITE  →  POST_REWRITE  →  PREACCESS  →  ACCESS  →  CONTENT
-                   ↑                            ↑
-               return / rewrite 在这里      limit_req 在这里
+⚠️ 同理，**鉴权必须写在 `access_by_lua*`** 而不是 `rewrite_by_lua*`：写在 rewrite 阶段虽然"能跑通"，但同 location 里排在后面的限流、其他 access 检查会与它错位。
 
-④a：return 在 REWRITE 阶段就把请求结束了 → limit_req 所在的 PREACCESS 根本没跑到
-④b：没有 return，请求正常走到 PREACCESS → 限流生效
-```
+完整的对照配置、实测输出与阶段顺序图见 [Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md) 第四节。
 
-⚠️ **推论（很容易踩）**：**任何用 `return` 直接返回的 location，写在它里面的 `limit_req` / `access_by_lua*` 都可能够不着**。这解释了一个常见困惑——"我明明配了限流，为什么测不出来"：不是限流错了，是**测试用的 location 太早返回了**。
+## 三、整体架构：`ngx.*` 与 cosocket 提供了什么
 
-> 同理，OpenResty 里的**鉴权必须写在 `access_by_lua*`**而不是 `rewrite_by_lua*`：写在 rewrite 阶段虽然在 `limit_req` 之前，但它**挡不住**后续阶段的逻辑（写错了也能"跑通"，直到某天发现限流没生效）。
+**本节要点**：OpenResty 给 Lua 注入了一个全局 `ngx` 表。**记住每一类 API 属于哪个阶段**，比记住函数名更重要；语法层面（`local`、table、模块）先看 [Lua语法够用版.md](../../../01-编程语言/lua/Lua语法够用版.md)。
 
----
-
-## 三、Lua 语法（够用版）
-
-**本节要点**：只讲 **OpenResty 里真会用到的** Lua 子集，重点是**和主流语言不一样、容易写错**的地方。
-
-⚠️ **本机没有 OpenResty / LuaJIT，本节与第五节的 Lua 代码未实跑**，语法以 Lua 5.1 / LuaJIT 官方手册为准。
-
-### 3.1 `local` 必须写：这是第一条军规
-
-```lua
--- ❌ 不写 local：变量进全局表 _G
-count = 0
-
--- ✅ 写 local：局部变量，作用域到当前块
-local count = 0
-```
-
-为什么在 OpenResty 里**尤其**要写 `local`：
-
-1. **`_G` 是所有请求共享的**——不写 `local` 就是跨请求污染（一个用户的数据可能被另一个用户的请求改掉）；
-2. **访问全局变量要走一次哈希查找**，`local` 是寄存器访问，在热点路径上差距明显；
-3. 惯用法是把常用 API 先本地化：
-
-```lua
--- ✅ 常见做法：模块顶部把常用函数/模块拿到 local
-local ngx_req   = ngx.req
-local ngx_var   = ngx.var
-local tonumber  = tonumber
-local string_format = string.format
-```
-
-### 3.2 ⚠️ 真值判断：只有 `nil` 和 `false` 为假
-
-这是**最容易踩的坑**——Lua 里 **`0` 和 `""` 都是真**：
-
-```lua
-if 0 then     ngx.say("0 为真")  end   -- ✅ 会打印
-if "" then    ngx.say("空串为真") end  -- ✅ 会打印
-if nil then   ngx.say("不会打印") end   -- 不会打印
-if false then ngx.say("不会打印") end   -- 不会打印
-```
-
-对照其它语言：C / PHP / JS 里 `0` 和 `""` 通常是假，Lua 里**不是**。所以从 `ngx.var` 读到的值（**永远是字符串**）要显式转换：
-
-```lua
--- ⚠️ ngx.var.xxx 永远是字符串；缺失时是 nil
-local uid = tonumber(ngx.var.arg_uid)        -- "123" → 123；nil/非数字 → nil
-if not uid then
-    return ngx.exit(400)                     -- 参数缺失/非法
-end
-if uid == 0 then                             -- ⚠️ 用 == 比较，不要用 if uid then
-    -- ...
-end
-```
-
-### 3.3 table：Lua 唯一的复合结构
-
-数组、字典、对象、模块——**全都是 table**：
-
-```lua
-local arr = { "a", "b", "c" }        -- 数组：下标从 1 开始（不是 0！）
-local map = { name = "go", ver = 1.26 }  -- 字典
-local mix = { "x", "y", key = "v" }  -- 混合（不推荐）
-
-ngx.say(arr[1])      -- "a"；arr[0] 是 nil，不是第一个元素
-ngx.say(#arr)        -- 3，`#` 取长度（对"含 nil 的数组"不可靠）
-ngx.say(map.name)    -- 等价于 map["name"]
-```
-
-遍历有两种，**别混用**：
-
-```lua
-for i, v in ipairs(arr) do      -- ⭐ 数组用 ipairs：从 1 开始、遇到 nil 就停
-    ngx.say(i, ":", v)
-end
-
-for k, v in pairs(map) do       -- ⭐ 字典用 pairs：遍历所有键，⚠️ 顺序不确定
-    ngx.say(k, "=", v)
-end
-```
-
-⚠️ 三个常见错误：`ipairs` 遍历字典会得到空循环；`pairs` 的顺序**不保证**（要排序得先收 key 再 `table.sort`）；`#t` 在表中间有 `nil` 时结果未定义。
-
-### 3.4 字符串：拼接用 `..`，不是 `+`
-
-```lua
-local name = "world"
-ngx.say("hello " .. name)        -- ✅ .. 拼接
--- ngx.say("hello " + name)      -- ❌ 报错（+ 是算术运算）
-
--- 数字与字符串会自动转换（这点像 PHP）
-ngx.say("1" + 1)                 -- 2
-
--- 常用函数
-local s = "a,b,c"
-local parts = {}                 -- ⭐ 手写 split（Lua 没有内置 split）
-for piece in s:gmatch("[^,]+") do
-    parts[#parts + 1] = piece
-end
-ngx.say(#parts)                  -- 3
-ngx.say(string.format("%.2f%%", 12.345))   -- 12.35%
-ngx.say(("abc"):upper())         -- ABC（字符串也能用 ':' 调方法）
-```
-
-### 3.5 函数、闭包、多返回值
-
-```lua
--- 函数是一等公民；多返回值是常态
-local function divmod(a, b)
-    return math.floor(a / b), a % b     -- 返回两个值
-end
-local q, r = divmod(7, 2)               -- q=3, r=1
-
--- 闭包：OpenResty 里做"每请求缓存"很常见
-local function make_counter()
-    local n = 0
-    return function() n = n + 1; return n end
-end
-```
-
-⭐ 一个实用惯用法——**用 `and`/`or` 当三元表达式**（短路求值）：
-
-```lua
-local timeout = tonumber(ngx.var.arg_timeout) or 3      -- 默认值：nil 时取 3
--- ⚠️ 注意陷阱：如果候选值是 false，or 会跳过它（与"默认值"直觉不符）
-```
-
-### 3.6 模块：`require` 返回一个 table
-
-```lua
--- lua/auth.lua
-local _M = {}
-
-function _M.verify(token)
-    if not token or token == "" then
-        return false, "empty token"
-    end
-    return true, nil
-end
-
-return _M          -- ⭐ 模块必须返回一个值（惯例是 table）
-```
-
-```lua
--- 使用方（放在文件顶部，不要在 handler 里反复 require）
-local auth = require("auth")
-local ok, err = auth.verify(ngx.var.http_authorization)
-```
-
-⚠️ **`require` 只在第一次真正加载并编译**（LuaJIT 会缓存），但**在 handler 里反复写 `require` 仍有查表开销** → 提到模块顶部。
-
-### 3.7 错误处理：`pcall` 与 `ngx.exit`
-
-```lua
--- pcall：捕获运行时错误，不让它变成 500
-local ok, res = pcall(function()
-    return do_something_risky()
-end)
-if not ok then
-    ngx.log(ngx.ERR, "failed: ", res)
-    return ngx.exit(500)
-end
-
--- ngx.exit：结束请求并返回状态码（⭐ 结束请求只能用 ngx.exit，return 只是结束当前 handler）
-ngx.exit(ngx.HTTP_FORBIDDEN)    -- 403
-```
-
-⚠️ 两个区别要清楚：
-
-| 写法 | 效果 |
-|---|---|
-| `return` | 只结束**当前 handler 函数**，后续阶段（如 `header_filter`）照常执行 |
-| `ngx.exit(status)` | ⭐ **结束整个请求**（status ≥ 200 时），后续阶段不再执行 |
-| `error("msg")` | 抛 Lua 异常 → 若没被 `pcall` 包住，返回 **500** |
-
-### 3.8 常用代码片段
-
-```lua
--- 读请求体（⚠️ 默认已读进内存；大 body 用 ngx.req.socket 流式处理）
-ngx.req.read_body()
-local body = ngx.req.get_body_data()
-
--- 读 JSON 体（需要 lua-cjson，OpenResty 自带）
-local cjson = require("cjson.safe")     -- ⭐ 用 safe 版：解析失败返回 nil+err 而不是抛异常
-local obj, err = cjson.decode(body)
-if not obj then
-    return ngx.exit(400)
-end
-
--- 输出 JSON
-ngx.header["Content-Type"] = "application/json; charset=utf-8"
-ngx.say(cjson.encode({ code = 0, data = obj }))
-```
-
----
-
-## 四、nginx 配置语法要点（本机实测）
-
-**本节要点**：OpenResty 的底座还是 Nginx，**这四件事配错了，Lua 写得再好也没用**。以下全部用本机 `nginx/1.15.11` 隔离实例实测。
-
-### 4.1 location 匹配优先级 ⭐
-
-规则（按检查顺序）：
-
-```text
-1. `=`  精确匹配        → 命中就用它，结束
-2. `^~` 前缀匹配        → 若它是最长前缀，则「抑制正则」，用它
-3. `~` / `~*` 正则      → 按配置文件中的出现顺序，第一个匹配的胜出
-4. 普通前缀（无修饰符）  → 取「最长前缀」
-5. `/`                  → 兜底
-```
-
-实测配置与结果（5 个 location 同时存在）：
-
-```nginx
-location = /a     { ... }   # 精确
-location ^~ /a/b  { ... }   # 前缀 + 抑制正则
-location ~ ^/a/c  { ... }   # 正则
-location /a/      { ... }   # 普通前缀
-location /        { ... }   # 兜底
-```
-
-```text
-请求        X-Matched 响应头                结论
-/a          exact (=)                       精确匹配优先于一切
-/a/b/c      caret-prefix (^~)               ^~ 是最长前缀 → 抑制正则
-/a/c/x      regex (~)                       正则优先于「普通前缀 /a/」
-/a/x        普通前缀 (/a/)                   最长前缀命中
-/z          普通前缀 (/ fallback)            兜底
-```
-
-⭐ **两条最常被搞错**：
-
-1. **`^~` 不是"优先级更高的前缀"**，而是"**如果我最长，就别再看正则了**"。`/a/b/c` 命中 `^~ /a/b` 而不是正则 `~ ^/a/c`，就是它在起作用。
-2. **正则一旦匹配就胜出，会盖掉更长的普通前缀**：`/a/c/x` 的最长前缀是 `/a/`，但正则 `^/a/c` 出现了 → 正则赢。
-
-![location 匹配优先级：按检查顺序的判定流程与实测结果](images/location匹配优先级判定.svg)
-
-### 4.2 `proxy_pass` 末尾那个斜杠，差一个字符结果完全不同 ⭐
-
-实测（`/api/` 与 `/api2/` 两个 location，只有 `proxy_pass` 的末尾斜杠不同）：
-
-```nginx
-location /api/  { proxy_pass http://127.0.0.1:18081/; }   # 带斜杠
-location /api2/ { proxy_pass http://127.0.0.1:18081;  }   # 不带斜杠
-```
-
-```text
-请求 /api/users?x=1  → 后端收到 /users?x=1         ← 带斜杠：剥掉 location 前缀
-请求 /api2/users?x=1 → 后端收到 /api2/users?x=1    ← 不带斜杠：保留完整 URI
-```
-
-⭐ **记忆口径**：`proxy_pass` 的 URI 部分**只要写了（哪怕只是一个 `/`），就用它替换掉 location 匹配到的那一段**；**完全没写 URI** 时，原样透传。
-
-⚠️ 这个差异在网关改造里是大坑：后端服务期望的路径是 `/users`，而 location 是 `/api/`，此时**必须**写成 `proxy_pass http://backend/`（带斜杠），否则后端会收到 404。
-
-⚠️ 另一个连带坑：`proxy_pass` 里**用了变量**（如 `proxy_pass http://$upstream;`）时，nginx 会改用"原样透传"，此时**必须**自己拼好 URI——动态 upstream 场景最容易踩。
-
-### 4.3 `rewrite` 的三个 flag：`last` / `break` / `redirect`
-
-实测：
-
-```nginx
-location /r/  { rewrite ^/r/(.*)$  /a/$1 last; }        # last
-location /rb/ { rewrite ^/rb/(.*)$ /a/$1 break;
-                add_header X-Matched "break (same location)" always; return 200; }
-location /rd/ { rewrite ^/rd/(.*)$ /a/$1 redirect; }     # 302
-```
-
-```text
-请求 /r/x   → 200  X-Matched: 普通前缀 (/a/)           ← last：改了 URI 后「重新走 location 匹配」
-请求 /rb/x  → 404  X-Matched: break (same location)   ← break：停在本 location
-请求 /rd/x  → 302  Location: http://127.0.0.1:18080/a/x  ← redirect：返回 302 + 绝对 URL
-```
-
-⭐ 三个 flag 的准确语义：
-
-| flag | 做什么 | 后续 |
-|---|---|---|
-| `last` | 重写 URI | **重新走一遍 location 匹配**（在同一个 server 内，最多 10 次防循环） |
-| `break` | 重写 URI | **停在本 location**，不再匹配、且**跳过本 location 里排在后面的 rewrite 模块指令** |
-| `redirect` | 不改 URI | 返回 **302**，`Location` 是**绝对 URL** |
-| `permanent` | 同上 | 返回 **301** |
-
-⚠️ **实测里那个 404 是个绝佳的反面教材**：`/rb/x` 里 `rewrite ... break` 之后**同一 location 里的 `return 200` 没有执行**（因为 `rewrite` 与 `return` 同属 rewrite 模块，`break` 把它后面的同胞都跳过了），于是请求落到 content 阶段去找文件 `/a/x` → 不存在 → 404。但 `add_header ... always` 属于 header filter 阶段，仍然生效——所以响应里**既有 404 又有那个头**。
-
-### 4.4 `limit_req`：三个参数与它"够不着 return"的坑
-
-```nginx
-http {
-    limit_req_zone $binary_remote_addr zone=perip:1m rate=2r/s;   # 定义在 http 层：共享内存区
-    server {
-        location /limited {
-            limit_req zone=perip burst=1 nodelay;
-        }
-    }
-}
-```
-
-| 参数 | 含义 |
-|---|---|
-| `zone=perip:1m` | 共享内存区（1MB 大约能存 1.6 万个 IP 的状态）+ **限流键**（这里是按 IP） |
-| `rate=2r/s` | 令牌生成速率（可写 `30r/m`） |
-| `burst=1` | 允许的突发排队数；**超出就拒**（默认返回 503） |
-| `nodelay` | 突发不排队、**立即处理**；不写则是"排队 + 延迟处理" |
-
-实测（`rate=2r/s, burst=1, nodelay`，连发 6 个）：
-
-```text
-[200, 200, 503, 503, 503, 503]     ← 前 2 个：1 个立即可用的令牌 + 1 个 burst
-再等 2 秒单发 1 个: 200             ← 令牌按速率补充回来了
-```
-
-⚠️ **最大的坑上一节已经实测过**：**配了 `limit_req` 的 location 里如果写了 `return`，限流根本不会执行**（`return` 在 REWRITE 阶段先返回，`limit_req` 在 PREACCESS 阶段够不着）。测限流时 location 里**必须有一个真实的 content handler**（静态文件、`proxy_pass`、或者 OpenResty 的 `content_by_lua*`）。
-
-⭐ 还有一个**进阶口径**：`limit_req` 是**漏桶式的排队整形**（要么排队、要么拒绝），**不是令牌桶**——它**不允许突发**（除非配 `burst`），这与 [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md) 第四节讲的令牌桶语义不同。要真正做"允许突发 + 跨机共享配额"，得用 OpenResty 的 `resty.limit.req`（见第六节）或 Redis+Lua 方案（见 [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md)）。
-
----
-
-## 五、`ngx.*` API 速查
-
-**本节要点**：OpenResty 给 Lua 注入了一个全局 `ngx` 表。**记住每一类 API 属于哪个阶段**，比记住函数名更重要。
-
-⚠️ 本节代码**未实跑**（本机无 OpenResty），签名以官方文档为准。
-
-### 5.1 输出与结束请求
+### 3.1 输出与结束请求
 
 | API | 说明 |
 |---|---|
@@ -448,9 +103,9 @@ http {
 | `ngx.status = 404` | 只改状态码，**不结束请求** |
 | `ngx.redirect(url, 302)` | 发 302/301 跳转并结束请求 |
 
-⚠️ **`ngx.status` 与 `ngx.exit` 的区别**是新手最常混的：`ngx.status = 403` 之后如果继续 `ngx.say("x")`，客户端会收到 **403 + "x"**；而 `ngx.exit(403)` 会立刻终止。
+⚠️ **`ngx.status` 与 `ngx.exit` 的区别**是新手最常混的：`ngx.status = 403` 之后如果继续 `ngx.say("x")`，客户端会收到 **403 + "x"**；而 `ngx.exit(403)` 会立刻终止。另外 `return` 只结束**当前 handler 函数**，后续阶段（如 `header_filter`）照常执行——**结束整个请求只能用 `ngx.exit`**。
 
-### 5.2 读请求
+### 3.2 读请求
 
 | API | 说明 |
 |---|---|
@@ -463,7 +118,7 @@ http {
 | `ngx.req.set_header(k, v)` / `ngx.req.clear_header(k)` | 改/删请求头（**转发给上游前改**） |
 | `ngx.req.set_uri(uri, jump)` | 改 URI；`jump=true` 会**重新走 location 匹配**（相当于 `rewrite ... last`） |
 
-### 5.3 写响应（多在 `header_filter_by_lua*`）
+### 3.3 写响应
 
 | API | 说明 |
 |---|---|
@@ -473,7 +128,7 @@ http {
 
 ⚠️ `body_filter_by_lua*` 会被**多次调用**（每个响应数据块一次），不能假设一次拿到完整 body——要聚合必须自己用 `ngx.ctx` 攒。
 
-### 5.4 子请求与上下文
+### 3.4 子请求与两种上下文
 
 | API | 说明 |
 |---|---|
@@ -491,7 +146,7 @@ http {
 | 能存什么 | 任意 Lua 值 | 只有**字符串 / 数字 / 布尔 / nil** |
 | 典型用途 | 传参（鉴权结果 → content） | 限流计数、配置缓存、锁 |
 
-### 5.5 时间、日志、定时器
+### 3.5 时间、日志、定时器
 
 | API | 说明 |
 |---|---|
@@ -502,7 +157,7 @@ http {
 
 ⚠️ `ngx.now()` **不刷新时间**是个经典坑：在一个长 handler 里连续调用会拿到同一个值（精度够用但"时间不动"）。要准就先 `ngx.update_time()`。
 
-### 5.6 cosocket：为什么能连 Redis 却不阻塞
+### 3.6 cosocket：为什么能连 Redis 却不阻塞
 
 **cosocket（cosock）是 OpenResty 的核心发明**：它让 Lua 里写"看起来同步"的网络代码，实际由 nginx 事件循环驱动，**不阻塞 worker**。
 
@@ -526,15 +181,109 @@ red:set_keepalive(60000, 100)     -- ⭐ 放回连接池（不写这句每次都
 2. **不能在 `set_by_lua*` 里用**（该阶段要求纯计算、同步返回）；
 3. **有连接池就要 `set_keepalive`**，否则每个请求都新建连接，性能直接塌掉。
 
----
+### 3.7 读请求体与 JSON
 
-## 六、六个典型应用
+```lua
+-- 读请求体（⚠️ 默认已读进内存；大 body 用 ngx.req.socket 流式处理）
+ngx.req.read_body()
+local body = ngx.req.get_body_data()
 
-**本节要点**：这六个场景覆盖了 OpenResty 的绝大多数真实用途。每个都只给**骨架**（够开工），细节靠第五节的 API。
+-- 读 JSON 体（需要 lua-cjson，OpenResty 自带）
+local cjson = require("cjson.safe")     -- ⭐ 用 safe 版：解析失败返回 nil+err 而不是抛异常
+local obj, err = cjson.decode(body)
+if not obj then
+    return ngx.exit(400)
+end
 
-⚠️ 本节代码**未实跑**（本机无 OpenResty / LuaJIT）。
+-- 输出 JSON
+ngx.header["Content-Type"] = "application/json; charset=utf-8"
+ngx.say(cjson.encode({ code = 0, data = obj }))
+```
 
-### 6.1 鉴权网关：把 JWT 解析搬到入口
+## 四、部署：最小可运行配置与启动检查
+
+**本节要点**：OpenResty 的部署单位是**一个目录**：`conf/nginx.conf` + `lua/` + `logs/`。所有 Lua 模块路径都由 `lua_package_path` 决定，配错时表现为 `module 'xxx' not found`。
+
+### 4.1 装什么、放哪里
+
+| 方式 | 做法 | 适用 |
+|---|---|---|
+| 官方镜像 | `openresty/openresty:<nginx版本>.<补丁号>-alpine` | 容器化部署、本机实验 |
+| 官方仓库包 | `apt install openresty` / `yum install openresty` | 虚拟机、物理机 |
+
+⭐ OpenResty 的版本号是 `<nginx 版本>.<补丁号>`：`1.31.1.1` 读作「基于 nginx 1.31.1 的第 1 个补丁」；本仓对齐的版本与变更清单见 [14-OpenResty生态.md](../../../02-计算机基础/linux/深入理解Nginx/14-OpenResty生态.md)。
+
+目录结构固定成这样，`nginx.conf` 里的相对路径才有意义：
+
+```text
+gateway/
+├── conf/nginx.conf
+├── lua/
+│   ├── auth.lua          # JWT 校验 + 注入身份头
+│   ├── limit.lua         # 按 company_id 限流
+│   └── routes.lua        # 动态路由表热更新
+└── logs/                 # error.log / access.log
+```
+
+### 4.2 最小 `nginx.conf`
+
+```nginx
+worker_processes auto;
+error_log logs/error.log warn;
+
+events { worker_connections 1024; }
+
+http {
+    lua_shared_dict limit_store 10m;      # 限流计数器（所有 worker 共享）
+    lua_shared_dict routes      1m;       # 路由表
+    lua_package_path "/usr/local/openresty/nginx/lua/?.lua;;";   # ⚠️ 末尾 ;; = 再带上默认搜索路径
+    lua_code_cache on;                    # ⚠️ 生产必须 on
+
+    server {
+        listen 80;
+
+        location /healthz {
+            content_by_lua_block { ngx.say("ok") }
+        }
+
+        location /api/ {
+            access_by_lua_file lua/auth.lua;
+            proxy_pass http://127.0.0.1:8080/;   # 带斜杠：剥掉 /api 前缀
+        }
+    }
+}
+```
+
+⚠️ 三个配置项直接决定能不能上线：`lua_package_path` 的 `;;` 不能漏（漏了会丢掉默认路径，连 `resty.redis` 都加载不到）；`lua_code_cache` 生产必须 `on`；`lua_shared_dict` 的容量是**静态的**，写满后 `set` 返回 `nil, "no memory"`。
+
+### 4.3 启动与检查
+
+```bash
+# ① 语法检查（不影响运行中的进程）
+nginx -t
+
+# ② 热加载：新 worker 起来、老 worker 处理完存量连接再退出
+nginx -s reload
+
+# ③ 冒烟（容器映射到宿主的 18080 时用 18080）
+curl -s http://127.0.0.1/healthz
+
+# ④ 容器方式（本机镜像 tag 见 14-OpenResty生态篇）
+MSYS_NO_PATHCONV=1 docker run -d --name or-gateway -p 18080:80 \
+  -v D:/www/dev-notes/.verify-tmp/gateway/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro \
+  -v D:/www/dev-notes/.verify-tmp/gateway/lua:/usr/local/openresty/nginx/lua:ro \
+  openresty/openresty:1.31.1.1-alpine
+```
+
+⭐ 判断"到底是不是 OpenResty"只需一条：`openresty -V` 的输出里带 ngx_http_lua 模块；原生 nginx 配 `content_by_lua_block` 会直接报 `unknown directive`。
+
+> ⚠️ 本节配置片段**本轮未实跑**（未起容器），只用 `nginx -t` 级别的语法口径编写；容器命令里的路径是本仓实验目录约定，换成你自己的目录即可。
+
+## 五、使用一：鉴权与按租户限流
+
+**本节要点**：这两件事是网关出现的第一理由，且都落在 `access_by_lua*`——**在请求被转发之前决定"放不放行"**。
+
+### 5.1 鉴权网关：把 JWT 解析搬到入口
 
 ```lua
 -- access_by_lua_file auth.lua
@@ -554,20 +303,17 @@ if not claims then
     return ngx.exit(401)
 end
 
--- ⭐ 核心动作：把身份注入请求头，后端不再重复解析 JWT
-ngx.req.set_header("X-Company-Id", claims.company_id)
-ngx.req.set_header("X-User-Id",    claims.user_id)
-
--- ⭐ 安全必做：剥离客户端伪造的同名头（否则越权）
+-- ⭐ 安全必做：先剥离客户端伪造的同名头，再写自己算出来的（否则越权）
 ngx.req.clear_header("X-Company-Id")
 ngx.req.set_header("X-Company-Id", claims.company_id)
+ngx.req.set_header("X-User-Id",    claims.user_id)
 ```
 
-⚠️ **最后两行的顺序就是重点**：一定要先 `clear`（清掉外部传进来的）再 `set`（写自己算出来的），否则客户端只要在请求头里塞一个 `X-Company-Id` 就能冒充别的租户——**多租户系统的头号越权漏洞**。
+⚠️ **`clear` 与 `set` 的顺序就是重点**：一定要先 `clear`（清掉外部传进来的）再 `set`（写自己算出来的），否则客户端只要在请求头里塞一个 `X-Company-Id` 就能冒充别的租户——**多租户系统的头号越权漏洞**。
 
 ⭐ 另一个现实问题：JWT 校验要算 HMAC / RSA，纯 Lua 实现慢。常见做法是**第一次校验结果存 `ngx.shared.DICT`**（key 用 token 的 hash、TTL 设成 token 剩余有效期），后续请求只查内存。
 
-### 6.2 限流：`resty.limit.req`（令牌桶 + 共享计数）
+### 5.2 限流：`resty.limit.req`（令牌桶 + 共享计数）
 
 ```nginx
 http {
@@ -610,7 +356,13 @@ http {
 | 拒绝方式 | 直接 503 | 可**自定义**（改状态码、返回 JSON、降级到缓存） |
 | 精确性 | 漏桶式整形 | 令牌桶（允许突发） |
 
-### 6.3 灰度发布：按 company_id 分流
+原生 `limit_req` 的参数含义、`return` 让限流失效的实测见 [Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md) 第四节；跨机共享配额的 Redis 方案见 [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md) 第九节。
+
+## 六、使用二：灰度与动态路由
+
+**本节要点**：这两件都是"改一行配置就要 reload"的经典痛点；客户端口的做法是**把决策搬进 Lua，把决策依据搬进共享状态**。
+
+### 6.1 灰度发布：按 company_id 分流
 
 ```lua
 -- access_by_lua_block（放在 proxy_pass 之前）
@@ -627,15 +379,15 @@ end
 location /api/ {
     set $backend "http://127.0.0.1:8080";        # ⭐ 先在配置里声明变量
     access_by_lua_file gray.lua;                 # 由 Lua 改写 $backend
-    proxy_pass $backend;                         # ⚠️ 用变量时 URI 不再自动替换（见 4.2）
+    proxy_pass $backend;                         # ⚠️ 用变量时 URI 不再自动替换
 }
 ```
 
-⚠️ 两个坑：① **必须先 `set $backend` 声明**，否则 Lua 里写 `ngx.var.backend` 会报 "variable not found"；② **`proxy_pass` 用变量时不自动替换 URI**（4.2 实测过），要自己拼：`proxy_pass $backend$request_uri;`。
+⚠️ 两个坑：① **必须先 `set $backend` 声明**，否则 Lua 里写 `ngx.var.backend` 会报 "variable not found"；② **`proxy_pass` 用变量时不自动替换 URI**（见 [Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md) 第二节），要自己拼：`proxy_pass $backend$request_uri;`。
 
-⭐ 为什么用**稳定哈希**而不是随机：灰度要"同一个租户始终命中同一版本"，否则用户会看到版本来回跳。
+⭐ 为什么用**稳定哈希**而不是随机：灰度要"同一个租户始终命中同一版本"，否则用户会看到版本来回跳。原生 nginx 的等价手段 `split_clients` 与它的实测见 [网关选型对比.md](网关选型对比.md) 第 3.4 节。
 
-### 6.4 动态路由：从共享字典 / Redis 读配置
+### 6.2 动态路由：从共享字典 / Redis 读配置
 
 ```lua
 -- 配置热更新：定时器每 5 秒从 Redis 拉一次路由表
@@ -666,7 +418,13 @@ end
 
 ⭐ **这就是 OpenResty 相比原生 nginx 最大的价值**：路由表变了**不用 reload**（原生 nginx 改 upstream 必须 reload，会掉长连接）。APISIX / Kong 的核心机制就是这一套（它们把路由存在 etcd / PostgreSQL，再下发到共享字典）。
 
-### 6.5 WAF：拦截明显的注入特征
+⚠️ 定时器第一次执行时 `load_routes` 的 `premature` 参数不用管（只在 worker 退出时才是 true）；但**拉取失败必须保留上一版路由表**——直接把字典清空会让全部请求瞬间 404。
+
+## 七、使用三：WAF 粗筛与响应聚合
+
+**本节要点**：这两个能力一个在入口"减噪"、一个在出口"合并"，共同点是**都不该承载业务判断**。
+
+### 7.1 WAF：拦截明显的注入特征
 
 ```lua
 local function has_dangerous(s)
@@ -690,9 +448,9 @@ end
 
 1. **正则匹配请求体代价高**（要读 body、要跑正则）→ 通常只查 URI / UA / 少量参数，body 交给应用自己防（参数化查询才是根本）；
 2. **WAF 是"降低噪声"，不是"安全边界"**——真正防注入靠**参数化 SQL**（见 [Web攻击与防御.md](../../../06-工程实践/安全/应用与数据安全/Web攻击与防御.md)）；
-3. **规则要可热更新**，否则每次加规则都得 reload（同 6.4 的做法）。
+3. **规则要可热更新**，否则每次加规则都得 reload（同 6.2 的做法）。
 
-### 6.6 响应聚合与缓存：`capture_multi` + 共享字典
+### 7.2 响应聚合与缓存：`capture_multi` + 共享字典
 
 ```lua
 -- content_by_lua_block：并发调用多个内部接口再合并
@@ -723,13 +481,13 @@ ngx.say(body)
 
 ![capture_multi 响应聚合调用时序：并发子请求 → 合并 → 共享字典缓存](images/响应聚合调用时序.svg)
 
----
+这张图强调的是**两次并发的区别**：`capture_multi` 让两个子请求在同一个请求内并行（总耗时取决于最慢的那个），而共享字典的命中与否决定了这一次要不要真的发子请求——**缓存放在聚合之前**，才有意义。
 
-## 使用：把 OpenResty 接在 photography-server 的入口
+## 八、验证与排查：接进 photography-server 与故障速查
 
-**本节要点**：拿一个真实的 Go 后端（多租户摄影 SaaS）走一遍——**哪些该放在网关、哪些绝不能放**。
+**本节要点**：拿一个真实的 Go 后端走一遍——**哪些该放在网关、哪些绝不能放**，以及上线前后各查什么。
 
-### 场景
+### 8.1 边界：哪些下沉到网关，哪些留在后端
 
 [photography-server](https://github.com/Eleven-26/photography-server) 是 `Go + Gin + GORM` 的多租户服务（按 `company_id` 隔离数据），直接对外暴露。引入 OpenResty 做**南北向入口**后，能下沉这些事：
 
@@ -743,16 +501,7 @@ ngx.say(body)
 
 ⚠️ **判据（与 [网关选型对比.md](网关选型对比.md) 的口径一致）**：网关只做**所有请求都需要的横切关注点**；**业务逻辑（订单校验、库存判断）绝不进网关**——否则网关会变成"最难发布、最不敢改"的组件。
 
-### 目录结构与配置
-
-```text
-gateway/
-├── conf/nginx.conf
-└── lua/
-    ├── auth.lua          # JWT 校验 + 注入身份头
-    ├── limit.lua         # 按 company_id 限流
-    └── routes.lua        # 动态路由表热更新
-```
+### 8.2 完整配置
 
 ```nginx
 http {
@@ -786,7 +535,9 @@ http {
 }
 ```
 
-### 上线前必须确认的四件事
+⭐ 回到第二节的阶段口径：**`/metrics` 用 `return 404` 是安全的**（就是要它早早返回），但如果想把**限流**也加到这个 location 上，那个 `limit_req` / `access_by_lua*` **永远不会执行**——这正是 [Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md) 第四节实测出来的阶段顺序。
+
+### 8.3 上线前必须确认的四件事
 
 | 项 | 为什么 |
 |---|---|
@@ -795,9 +546,43 @@ http {
 | cosocket 用完 `set_keepalive` | 否则每次请求都重建 TCP 连接 |
 | 共享字典 `set` 判返回值 | 容量写满后 `set` 返回 `nil, "no memory"`，**缓存会静默失效** |
 
-⭐ 回到第一步的实测：**`/metrics` 用 `return 404` 是安全的**（就是要它早早返回），但如果想把**限流**也加到这个 location 上，那个 `limit_req` / `access_by_lua*` **永远不会执行**——这正是 4.4 节实测出来的阶段顺序。
+### 8.4 故障速查
 
----
+| 症状 | 先查什么 |
+|---|---|
+| 启动报 `unknown directive "content_by_lua_block"` | 装的是原生 nginx 还是 OpenResty？`openresty -V` 里要有 ngx_http_lua |
+| 改了 Lua 文件不生效 | 生产是不是 `lua_code_cache off`？改完有没有 `nginx -s reload` |
+| 报 `API disabled in the context of init_by_lua*` | cosocket 用在了没有请求上下文的阶段，挪进 `ngx.timer.at(0, fn)` |
+| 报 `variable "backend" not found` | 配置里没有 `set $backend`，Lua 写 `ngx.var.backend` 之前必须先声明 |
+| 报 `module 'xxx' not found` | `lua_package_path` 少了 `;;`，或模块没有放在声明的目录里 |
+| 限流 / 鉴权配了却不生效 | 同 location 里是不是有 `return`？见 [Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md) 第四节 |
+| 上游收到的路径不对 | `proxy_pass` 用了变量时不自动替换 URI；或末尾斜杠写错 |
+| 缓存命中率突然归零 | 共享字典写满，`set` 静默失败 |
+| Lua 报 `attempt to index a nil value` | `require` 的模块没有 `return`；或变量名拼错（Lua 的拼错不会报"未定义"，只会给 nil） |
+
+| 排查项 | 命令 |
+|---|---|
+| 版本与编译模块 | `openresty -V` |
+| 配置语法 | `nginx -t` |
+| 生效的完整配置 | `nginx -T` |
+| 响应头回读（看命中了哪个 location） | `curl -s -D - -o /dev/null <url>` |
+| 错误日志尾部 | `tail -n 50 logs/error.log` |
+| 容器日志 | `docker logs or-gateway` |
+
+## 九、校验口径
+
+> ✅ 本篇的校验方式与范围（本机 `nginx/1.15.11` 隔离实例；OpenResty 镜像 `1.31.1.1`）：
+
+- **配置行为真跑**：`location` 匹配 5 例、`proxy_pass` 2 例、`rewrite` 3 例、`limit_req` 正反例四组读数，来自本机 nginx 隔离实例，已移入 [Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md)；本篇第 2.4、6.1、8.2 节只引用结论。
+- **未逐个跑通**：第三、五、六、七、八节的 Lua 代码与配置片段。`openresty/openresty:1.31.1.1-alpine` 镜像在本机可用（版本与 `nginx -t` 读数见 [14-OpenResty生态.md](../../../02-计算机基础/linux/深入理解Nginx/14-OpenResty生态.md)），但本轮**没有**为每个片段搭 location 并回读响应。
+- **未实测**：多机共享限流（需 Redis + 多实例）、TLS/SNI 动态证书（需证书链）、容器化部署命令（本轮未起容器）。
+- **语义来源**：`lua-nginx-module` 与 `lua-resty-*` 官方文档、Lua 5.1 参考手册。
+
+| 依赖 | 实际版本 |
+|---|---|
+| nginx（配置实测） | 1.15.11 |
+| OpenResty（镜像可用的版本，本篇未跑代码） | 1.31.1.1 |
+| Lua / LuaJIT | 未独立安装（语义以 5.1 文档为准） |
 
 ## 延伸追问
 
@@ -811,21 +596,22 @@ http {
 - **能不能在 OpenResty 里直接连 MySQL？** → 能（`lua-resty-mysql`），但**不建议**：SQL 逻辑会散落到网关，且结果集在 Lua 里处理很笨。网关只连 **Redis / 配置中心**这类"决策用"的存储。
 - **`ngx.location.capture` 和直接 `proxy_pass` 有什么区别？** → `capture` 是**内部子请求**（不出网卡、不发真实 HTTP），能在一个响应里聚合多个上游；`proxy_pass` 是直接把请求转给上游。前者用于聚合，后者用于转发。
 - **和 Go 写的网关相比怎么选？** → 要**极致性能 + 复用现有 Nginx 运维体系** → OpenResty；要**强类型、复杂业务编排、团队是 Go 栈** → Go 网关（[Kratos框架.md](../../../01-编程语言/go/工程实践/框架/微服务/Kratos框架.md) 的网关层）。⚠️ 别在网关里写业务逻辑，这条与选哪种技术栈无关。
-- **`proxy_pass` 带变量的那个坑有多坑？** → 很坑：写了变量就**不再自动替换 URI**（4.2 实测），动态 upstream 场景必须自己写 `$backend$request_uri`，否则上游收到的路径是错的。而且这类错误**只在动态路径上出现**，平时测不出来。
-
----
+- **`proxy_pass` 带变量的那个坑有多坑？** → 很坑：写了变量就**不再自动替换 URI**（[Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md) 第二节实测），动态 upstream 场景必须自己写 `$backend$request_uri`，否则上游收到的路径是错的。而且这类错误**只在动态路径上出现**，平时测不出来。
+- **写 Lua 时最容易犯的语法错是什么？** → 不是语法，是**语义**：忘了 `local`（跨请求污染）、把 `0` 或 `""` 当假、数组从 `arr[0]` 开始取值。三类坑与真值表见 [Lua语法够用版.md](../../../01-编程语言/lua/Lua语法够用版.md)。
 
 ## 关联
 
-- [网关选型对比.md](网关选型对比.md) — **本篇的上一层**：四层横向对比（流量网关 / API 网关 / 微服务网关 / K8s 入口）、Nginx 能力边界的四组本机实测、跟服务网格的边界
-- [中间件选型.md](../中间件选型.md) — 上一层的**族与子类级**选型（要不要引网关子类）
-- [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md) — 令牌桶 / 漏桶的原理，与 `limit_req` 的"漏桶式整形"口径对照
-- [限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md) — 跨机限流：Redis + Lua 的原子计数（与 `lua_shared_dict` 的单机局限互补）
-- [网络通信链路详解.md](../../../02-计算机基础/网络/网络通信链路详解.md) — 请求到达网关之前那一跳（NAT / LB / CDN）改了什么
-- [服务发现.md](../../../04-架构与系统/分布式/服务治理/服务发现.md)、[负载均衡.md](../../../04-架构与系统/分布式/服务治理/负载均衡.md) — 动态 upstream 的控制面（`balancer_by_lua*` 的上一层）
-- [Web攻击与防御.md](../../../06-工程实践/安全/应用与数据安全/Web攻击与防御.md) — 6.5 的 WAF 只是"降噪"，真正的注入防御在参数化查询
-- [HTTPS与TLS.md](../../../02-计算机基础/网络/应用层/HTTPS与TLS.md) — `ssl_certificate_by_lua*` 按 SNI 动态选证书的前置知识
-- [容器原理.md](../../../06-工程实践/部署/docker/容器原理.md) — Nginx / OpenResty 的官方镜像与容器化部署（`nginx -g` 传参那点事）
-- [Kratos框架.md](../../../01-编程语言/go/工程实践/框架/微服务/Kratos框架.md) — 网关与微服务框架的分工边界
-- [14-OpenResty生态.md](../../../02-计算机基础/linux/深入理解Nginx/14-OpenResty生态.md) — **生态与版本增量**：`lua-resty-*` 三层地图、1.31.1.1 变更清单、LuaJIT `ffi.abi()`（本篇讲用法，那篇讲版本与生态）
+- **上游/总纲**：[网关选型对比.md](网关选型对比.md) — 本篇的上一层：四层横向对比（流量网关 / API 网关 / 微服务网关 / K8s 入口）、Nginx 能力边界的四组本机实测、跟服务网格的边界
+- **上游/总纲**：[中间件选型.md](../中间件选型.md) — 上一层的**族与子类级**选型（要不要引网关子类）
+- **配置语义**：[Nginx配置语义.md](../../../02-计算机基础/网络/代理与网关/Nginx配置语义.md) — `location` / `proxy_pass` / `rewrite` / `limit_req` 四组实测，本篇依赖它的结论
+- **语言基础**：[Lua语法够用版.md](../../../01-编程语言/lua/Lua语法够用版.md) — 写本篇 Lua 代码之前该先过一遍的语法子集
+- **生态与版本**：[14-OpenResty生态.md](../../../02-计算机基础/linux/深入理解Nginx/14-OpenResty生态.md) — `lua-resty-*` 三层地图、版本变更清单（本篇讲用法，那篇讲版本与生态）
+- **阶段本体**：[04-HTTP框架执行流程.md](../../../02-计算机基础/linux/深入理解Nginx/04-HTTP框架执行流程.md) — 11 个处理阶段的框架级原理与逐阶段日志实测
+- **算法原理**：[限流算法.md](../../../04-架构与系统/分布式/稳定性/限流算法.md) — 令牌桶 / 漏桶的原理，与 `limit_req`、`resty.limit.req` 的口径对照
+- **安全**：[Web攻击与防御.md](../../../06-工程实践/安全/应用与数据安全/Web攻击与防御.md) — 7.1 的 WAF 只是"降噪"，真正的注入防御在参数化查询
+- **TLS**：[HTTPS与TLS.md](../../../02-计算机基础/网络/应用层/HTTPS与TLS.md) — `ssl_certificate_by_lua*` 按 SNI 动态选证书的前置知识
+- **部署**：[容器原理.md](../../../06-工程实践/部署/docker/容器原理.md) — Nginx / OpenResty 的官方镜像与容器化部署
+- **对照/互补**：[Kratos框架.md](../../../01-编程语言/go/工程实践/框架/微服务/Kratos框架.md) — 网关与微服务框架的分工边界
+- **控制面**：[服务发现.md](../../../04-架构与系统/分布式/服务治理/服务发现.md)、[负载均衡.md](../../../04-架构与系统/分布式/服务治理/负载均衡.md) — 动态 upstream 的控制面（`balancer_by_lua*` 的上一层）
+
 > 反向引用（本篇被下列文档引到）：[从零实现网关.md](../../../01-编程语言/go/网络编程/从零实现网关.md)、[网关路由匹配.md](../../../01-编程语言/go/网络编程/网关路由匹配.md)、[01-编译安装与配置.md](../../../02-计算机基础/linux/深入理解Nginx/01-编译安装与配置.md)、[04-HTTP框架执行流程.md](../../../02-计算机基础/linux/深入理解Nginx/04-HTTP框架执行流程.md)、[06-HTTP模块开发入门.md](../../../02-计算机基础/linux/深入理解Nginx/06-HTTP模块开发入门.md)、[07-配置解析与请求上下文.md](../../../02-计算机基础/linux/深入理解Nginx/07-配置解析与请求上下文.md)、[08-upstream与子请求.md](../../../02-计算机基础/linux/深入理解Nginx/08-upstream与子请求.md)、[09-HTTP过滤模块.md](../../../02-计算机基础/linux/深入理解Nginx/09-HTTP过滤模块.md)、[10-HTTP变量机制.md](../../../02-计算机基础/linux/深入理解Nginx/10-HTTP变量机制.md)、[13-njs模块与动态脚本.md](../../../02-计算机基础/linux/深入理解Nginx/13-njs模块与动态脚本.md)、[15-Tengine生态.md](../../../02-计算机基础/linux/深入理解Nginx/15-Tengine生态.md)、[16-模块开发实战.md](../../../02-计算机基础/linux/深入理解Nginx/16-模块开发实战.md)

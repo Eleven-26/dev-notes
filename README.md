@@ -28,7 +28,8 @@ dev-notes/
 │   ├── 运行时/
 │   ├── 工程实践/
 │   └── 可观测性/
-└── php/                     暂不分层，散篇直接放在本册根下
+├── php/                     暂不分层，散篇直接放在本册根下
+└── lua/                     Lua 够用版语法（OpenResty 脚本 / Redis EVAL 所需子集）
 
 02-计算机基础/               语言无关的原理层 + 系统基础｜边界：与语言无关、且还没到多机（多机新问题归 04，产品参数归 03）
 ├── linux/                   根下散篇：命令 / 进程与线程 / 内存 / 文件系统与IO / 零拷贝 / 性能排查
@@ -42,7 +43,7 @@ dev-notes/
 │   ├── 传输层/              IO 多路复用 / TCP 保活与连接存活 / UDP 与数据报传输
 │   │   └── tcp/             三次握手 / 四次挥手 / 滑动窗口 / 拥塞控制 / 报文结构 / Nagle
 │   ├── 应用层/              HTTP1.1 与 HTTP2 / HTTPS 与 TLS / HTTP 与 gRPC / QUIC 与 HTTP3 / WebSocket 与 SSE / 证书排障
-│   ├── 代理与网关/          反向代理原理 / 客户端真实 IP 与可信代理
+│   ├── 代理与网关/          反向代理原理 / 客户端真实 IP 与可信代理 / Nginx 配置语义
 │   ├── 观测与排障/          抓包实战
 │   └── 选型/                通信选型 / 数据序列化
 ├── 数据结构/                README.md 是「数据怎么存」的入口｜边界：怎么存（怎么算归 算法/）
@@ -90,7 +91,7 @@ dev-notes/
 └── 中间件/                  根下 中间件选型.md 是全仓组件选型总纲
     ├── 消息队列/            Kafka/、RocketMQ/ 两册；根下散篇 ActiveMQ / Nats / Pulsar / RabbitMQ / 消息队列选型对比
     ├── 注册与配置中心/      Nacos.md（产品级横向对比以该篇为单一来源）
-    ├── 网关与代理/          OpenResty.md + 网关选型对比.md
+    ├── 网关与代理/          README 导读 + OpenResty.md + 网关选型对比.md
     ├── 任务调度/            xxl-job.md
     ├── 可观测性/            README 选型总纲 + Skywalking / Jaeger 两条 tracing 主线
     ├── RPC框架/             gRPC/ 为主；Dubbo/ 仅导读、Thrift/ 空壳；根下 RPC框架选型对比.md

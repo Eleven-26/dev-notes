@@ -4,7 +4,10 @@
 > 1.31.1.1 的变更清单，以及与 njs / Tengine 内置 Lua 的取舍。
 >
 > ⚠️ **本篇不重复 Lua 语法、11 阶段模型、`cosocket` 三条硬限制、典型应用** ——
-> 那些在 [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md)（800+ 行、带本机实测）里。
+> 阶段与六个能力落在哪、`ngx.*` API 与部署配置在
+> [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md)（单技术手册体例），
+> Lua 语法在 [Lua语法够用版.md](../../../01-编程语言/lua/Lua语法够用版.md)，
+> nginx 配置语义在 [Nginx配置语义.md](../../网络/代理与网关/Nginx配置语义.md)。
 > 本篇只回答「**1.29.2 → 1.31.1 又多了什么、生态里有什么、该不该选它**」。
 >
 > 素材来源：OpenResty 官方 Release Notes（`openresty.org/cn/changelog-1031001.html`）
@@ -308,5 +311,7 @@ luajit -e 'local ffi=require("ffi")
 - [15-Tengine生态.md](15-Tengine生态.md) — Tengine 内置 Lua 模块（另一种组合）
 - [11-HTTP3与QUIC支持.md](11-HTTP3与QUIC支持.md) — OpenSSL 3.5.1 门槛与本版本 3.5.6 的关系
 - [16-模块开发实战.md](16-模块开发实战.md) — 共享内存 / 限流在 C 模块里怎么写（与 Lua 侧对照）
-- [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md) — **完整用法**（Lua 语法、11 阶段、cosocket 硬限制、六个典型应用，均带实测）
+- [OpenResty.md](../../../03-数据与中间件/中间件/网关与代理/OpenResty.md) — **怎么用起来**（阶段表、六能力落位、`ngx.*` API、部署配置、三个使用组、故障速查）
+- [Lua语法够用版.md](../../../01-编程语言/lua/Lua语法够用版.md) — 写 OpenResty 脚本所需的最小 Lua 子集
+- [Nginx配置语义.md](../../网络/代理与网关/Nginx配置语义.md) — `location` / `proxy_pass` / `rewrite` / `limit_req` 的本机实测语义
 - [网关选型对比.md](../../../03-数据与中间件/中间件/网关与代理/网关选型对比.md) — Nginx 作网关的能力边界四组实测

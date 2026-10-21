@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">六个能力分别落在哪个阶段：拦人在 access，产响应在 content，热更新在 init_worker</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">每行一个能力；阶段列的颜色表示它主要挂在哪一阶段</text>
+
+  <rect x="30" y="86" width="150" height="34" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="108" font-size="12.5" font-weight="bold" fill="#334155">能力</text>
+  <rect x="180" y="86" width="190" height="34" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="190" y="108" font-size="12.5" font-weight="bold" fill="#334155">主落位阶段</text>
+  <rect x="370" y="86" width="330" height="34" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="380" y="108" font-size="12.5" font-weight="bold" fill="#334155">需要的外部状态</text>
+  <rect x="700" y="86" width="270" height="34" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="710" y="108" font-size="12.5" font-weight="bold" fill="#334155">关键 API</text>
+
+  <rect x="30" y="120" width="150" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="148" font-size="12.5" font-weight="bold" fill="#0f172a">JWT 鉴权</text>
+  <rect x="180" y="120" width="190" height="46" fill="#dcfce7" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="190" y="148" font-size="12" fill="#14532d">access_by_lua</text>
+  <rect x="370" y="120" width="330" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="380" y="148" font-size="12" fill="#0f172a">共享字典：验签结果缓存</text>
+  <rect x="700" y="120" width="270" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="710" y="148" font-size="11.5" fill="#0f172a">ngx.req.clear_header + set_header</text>
+
+  <rect x="30" y="166" width="150" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="194" font-size="12.5" font-weight="bold" fill="#0f172a">按租户限流</text>
+  <rect x="180" y="166" width="190" height="46" fill="#dcfce7" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="190" y="194" font-size="12" fill="#14532d">access_by_lua</text>
+  <rect x="370" y="166" width="330" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="380" y="194" font-size="12" fill="#0f172a">lua_shared_dict 计数器</text>
+  <rect x="700" y="166" width="270" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="710" y="194" font-size="11.5" fill="#0f172a">resty.limit.req</text>
+
+  <rect x="30" y="212" width="150" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="240" font-size="12.5" font-weight="bold" fill="#0f172a">灰度分流</text>
+  <rect x="180" y="212" width="190" height="46" fill="#dcfce7" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="190" y="240" font-size="12" fill="#14532d">access_by_lua 改写变量</text>
+  <rect x="370" y="212" width="330" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="380" y="240" font-size="12" fill="#0f172a">无：稳定哈希就够了</text>
+  <rect x="700" y="212" width="270" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="710" y="240" font-size="11.5" fill="#0f172a">ngx.crc32_short</text>
+
+  <rect x="30" y="258" width="150" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="286" font-size="12.5" font-weight="bold" fill="#0f172a">动态路由</text>
+  <rect x="180" y="258" width="190" height="46" fill="#ffedd5" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="190" y="280" font-size="11.5" fill="#7c2d12">init_worker 起定时器</text>
+  <text x="190" y="295" font-size="11.5" fill="#7c2d12">+ access 查表</text>
+  <rect x="370" y="258" width="330" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="380" y="280" font-size="12" fill="#0f172a">共享字典，数据来自 Redis</text>
+  <text x="380" y="295" font-size="11.5" fill="#64748b">改了不用 reload</text>
+  <rect x="700" y="258" width="270" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="710" y="286" font-size="11.5" fill="#0f172a">ngx.timer.at</text>
+
+  <rect x="30" y="304" width="150" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="332" font-size="12.5" font-weight="bold" fill="#0f172a">WAF 粗筛</text>
+  <rect x="180" y="304" width="190" height="46" fill="#dcfce7" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="190" y="332" font-size="12" fill="#14532d">access_by_lua</text>
+  <rect x="370" y="304" width="330" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="380" y="332" font-size="12" fill="#0f172a">规则集：可放共享字典热更新</text>
+  <rect x="700" y="304" width="270" height="46" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="710" y="332" font-size="11.5" fill="#0f172a">ngx.var.request_uri</text>
+
+  <rect x="30" y="350" width="150" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="378" font-size="12.5" font-weight="bold" fill="#0f172a">响应聚合</text>
+  <rect x="180" y="350" width="190" height="46" fill="#dbeafe" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="190" y="378" font-size="12" fill="#1e3a8a">content_by_lua</text>
+  <rect x="370" y="350" width="330" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="380" y="378" font-size="12" fill="#0f172a">共享字典：合并后的响应缓存</text>
+  <rect x="700" y="350" width="270" height="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="710" y="378" font-size="11.5" fill="#0f172a">ngx.location.capture_multi</text>
+
+  <line x1="30" y1="410" x2="970" y2="410" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="434" font-size="12.5" font-weight="bold" fill="#0f172a">要点：阶段越靠前越能「拦住」，越靠后越只能「修饰」；跨请求的状态一律放共享字典。</text>
+</svg>

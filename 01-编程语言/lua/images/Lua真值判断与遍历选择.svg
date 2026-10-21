@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Lua 的两个高频坑：真假判断只有 nil / false，数组下标从 1 开始</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">左边是 if 的判定，右边是 table 的访问与遍历 —— 两处都和主流语言不一样</text>
+
+  <rect x="30" y="86" width="450" height="386" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="50" y="116" font-size="14" font-weight="bold" fill="#1e3a8a">一、if x then：只有 nil 和 false 为假</text>
+  <line x1="45" y1="128" x2="465" y2="128" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="55" y="152" font-size="12" font-weight="bold" fill="#475569">值</text>
+  <text x="255" y="152" font-size="12" font-weight="bold" fill="#475569" text-anchor="middle">Lua</text>
+  <text x="380" y="152" font-size="12" font-weight="bold" fill="#475569" text-anchor="middle">C / PHP / JS</text>
+  <line x1="45" y1="162" x2="465" y2="162" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="55" y="190" font-size="12.5" fill="#0f172a">nil（或 null）</text>
+  <text x="255" y="190" font-size="12.5" fill="#475569" text-anchor="middle">假</text>
+  <text x="380" y="190" font-size="12.5" fill="#475569" text-anchor="middle">假</text>
+
+  <text x="55" y="222" font-size="12.5" fill="#0f172a">false</text>
+  <text x="255" y="222" font-size="12.5" fill="#475569" text-anchor="middle">假</text>
+  <text x="380" y="222" font-size="12.5" fill="#475569" text-anchor="middle">假</text>
+
+  <rect x="45" y="234" width="420" height="32" rx="6" fill="#fee2e2"/>
+  <text x="55" y="255" font-size="12.5" fill="#7f1d1d">0</text>
+  <text x="255" y="255" font-size="12.5" font-weight="bold" fill="#b91c1c" text-anchor="middle">真</text>
+  <text x="380" y="255" font-size="12.5" fill="#7f1d1d" text-anchor="middle">假</text>
+
+  <rect x="45" y="270" width="420" height="32" rx="6" fill="#fee2e2"/>
+  <text x="55" y="291" font-size="12.5" fill="#7f1d1d">""（空字符串）</text>
+  <text x="255" y="291" font-size="12.5" font-weight="bold" fill="#b91c1c" text-anchor="middle">真</text>
+  <text x="380" y="291" font-size="12.5" fill="#7f1d1d" text-anchor="middle">假</text>
+
+  <text x="55" y="323" font-size="12.5" fill="#0f172a">{}（空 table）</text>
+  <text x="255" y="323" font-size="12.5" fill="#475569" text-anchor="middle">真</text>
+  <text x="380" y="323" font-size="12.5" fill="#475569" text-anchor="middle">因语言而异</text>
+
+  <line x1="45" y1="342" x2="465" y2="342" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="50" y="368" font-size="12.5" font-weight="bold" fill="#0f172a">要点：从外部读到的值永远是字符串，"0" 也是真。</text>
+  <text x="50" y="392" font-size="12.5" fill="#0f172a">要判数字是否合法，先 tonumber 再判 nil；</text>
+  <text x="50" y="416" font-size="12.5" fill="#0f172a">要判数值是否为零，用 == 比较，不要用 if x then。</text>
+  <text x="50" y="446" font-size="12" fill="#7f1d1d">注意：判断"有没有传参"只能靠 nil，空串要用 == "" 单独判。</text>
+
+  <rect x="520" y="86" width="450" height="386" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="540" y="116" font-size="14" font-weight="bold" fill="#14532d">二、table 的下标从 1 开始，遍历分两种</text>
+  <line x1="535" y1="128" x2="955" y2="128" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="540" y="138" width="410" height="38" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="552" y="163" font-size="12.5" fill="#0f172a">local arr = { "a", "b", "c" }   -- 第一个元素是 arr[1]</text>
+
+  <rect x="540" y="190" width="94" height="46" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="587" y="210" font-size="12" fill="#7f1d1d" text-anchor="middle">arr[0]</text>
+  <text x="587" y="228" font-size="12" font-weight="bold" fill="#b91c1c" text-anchor="middle">nil</text>
+  <rect x="646" y="190" width="94" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="693" y="210" font-size="12" fill="#14532d" text-anchor="middle">arr[1]</text>
+  <text x="693" y="228" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">"a"</text>
+  <rect x="752" y="190" width="94" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="799" y="210" font-size="12" fill="#14532d" text-anchor="middle">arr[2]</text>
+  <text x="799" y="228" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">"b"</text>
+  <rect x="858" y="190" width="92" height="46" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="904" y="210" font-size="12" fill="#14532d" text-anchor="middle">arr[3]</text>
+  <text x="904" y="228" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">"c"</text>
+
+  <rect x="540" y="252" width="200" height="72" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="640" y="274" font-size="12.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">ipairs(arr)</text>
+  <text x="640" y="294" font-size="12" fill="#1d4ed8" text-anchor="middle">i = 1,2,3 按序</text>
+  <text x="640" y="312" font-size="12" fill="#1d4ed8" text-anchor="middle">遇到 nil 就停</text>
+
+  <rect x="752" y="252" width="198" height="72" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="851" y="274" font-size="12.5" font-weight="bold" fill="#7c2d12" text-anchor="middle">pairs(map)</text>
+  <text x="851" y="294" font-size="12" fill="#9a3412" text-anchor="middle">遍历全部键</text>
+  <text x="851" y="312" font-size="12" fill="#9a3412" text-anchor="middle">顺序不保证</text>
+
+  <line x1="535" y1="342" x2="955" y2="342" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="540" y="368" font-size="12.5" font-weight="bold" fill="#0f172a">要点：数组用 ipairs，字典用 pairs，别混用。</text>
+  <text x="540" y="392" font-size="12.5" fill="#0f172a">ipairs 遍历字典得到空循环；pairs 的顺序要排序得自己收 key。</text>
+  <text x="540" y="416" font-size="12.5" fill="#0f172a">#arr 只在"数组中间没有 nil"时才可靠。</text>
+  <text x="540" y="446" font-size="12" fill="#7f1d1d">注意：table 既是数组也是字典，别写混合表。</text>
+</svg>
