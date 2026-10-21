@@ -1,6 +1,6 @@
 # AMQP
 
-> 覆盖 AMQP 0-9-1 的三层结构（传输层帧 / 功能层 class-method / 内容层三段帧）、⭐ **一个帧的精确字节布局**（8 字节协议头 → 7 字节帧头 → payload → `0xCE`）、channel id 如何让一条 TCP 跑多路、大消息为什么被拆成多个 body 帧，以及 **0-9-1 与 1.0 为什么不是版本升级而是两套协议**。
+> 覆盖 ⭐ **AMQP 是什么、三种角色各认什么**（生产者只认 exchange、broker 认路由表、消费者只认 queue，以及它为什么不是「RabbitMQ 的协议名」）、0-9-1 的三层结构（传输层帧 / 功能层 class-method / 内容层三段帧）、⭐ **一个帧的精确字节布局**（8 字节协议头 → 7 字节帧头 → payload → `0xCE`）、channel id 如何让一条 TCP 跑多路、大消息为什么被拆成多个 body 帧、⭐ **出错时 `channel.close` 与 `connection.close` 两级原语怎么分**（含 `reply-code` 常用码表），以及 **0-9-1 与 1.0 为什么不是版本升级而是两套协议**。
 >
 > 不覆盖：RabbitMQ 把 Exchange/Queue/Binding 存成什么、怎么排障见 [README.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/README.md)；六款 MQ 的模型差异见 [消息队列选型对比.md](../../../03-数据与中间件/中间件/消息队列/消息队列选型对比.md)；帧落到磁盘与投递队列的过程见 [存储与投递过程.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/存储与投递过程.md)。
 >
@@ -8,9 +8,31 @@
 
 ---
 
-## 一、AMQP 到底规定了什么？
+## 一、AMQP 是什么，它到底规定了哪几层？
 
-**本节要点**：AMQP 0-9-1 规定的是**线上字节**和**语义名词**两层：前者让任意语言的客户端能连任意实现，后者让 Exchange / Queue / Binding 成为协议概念而不是 RabbitMQ 的产品概念。这是它和 Kafka / RocketMQ 自定协议的分水岭。
+**本节要点**：AMQP 是一个**跨语言的线协议 + 语义规范**，不是某个产品名——它既规定字节怎么排，也规定路由叫什么，于是不同语言的客户端能连不同实现。读它的顺序是：先认三种角色（生产者 / exchange+binding+queue / 消费者），再看它把这件事切成哪几层。
+
+### 1.1 三种角色：生产者只认 exchange，消费者只认 queue
+
+它要解决的问题很具体：**Java 有 JMS，但 JMS 只是 Java 的接口规范**，换个语言就没有统一的消息 API 了。AMQP 换了个层次——**把线上字节也规定下来**，于是任意语言的客户端只要照规范拼帧，就能连任意实现。
+
+出身：2003 年从摩根大通的内部消息系统里抽出来，由 AMQP Working Group（Cisco、Red Hat、iMatix、微软等参与）维护，**0-9-1 版 2008 年定稿**；之后工作组在 1.0 上分道，1.0 交由 OASIS 维护并在 **2012 年成为标准**，两套协议**互不兼容**（详见第五节）。
+
+![AMQP 的三种角色：生产者把消息发到 exchange 并带 routing key，exchange 按 binding 投进队列，消费者只从队列取消息并回 ack](images/AMQP三角色与路由表.svg)
+
+这张图要读出的核心：**路由规则是协议定义的，不是产品私有的**。生产者不认识消费者、也不认识队列；消费者不认识 exchange。中间那张 exchange + binding + queue 的路由表，就是「换 broker 不改业务代码」能成立的全部原因。
+
+| 角色 | 只认识 | 不需要知道 |
+|---|---|---|
+| **生产者** | 把消息发到某个 exchange，并给一个 routing key | 下游有几个队列、谁在消费 |
+| **broker** | exchange / binding / queue 这张路由表，以及 vhost 隔离边界 | 业务语义 |
+| **消费者** | 只从某个 queue 取消息、发 `basic.ack` | 消息是从哪个 exchange 来的 |
+
+> ⚠️ **「AMQP」≠「RabbitMQ」**：RabbitMQ 是 0-9-1 最主流的实现，从 3.x 起在 5672 上也能认 1.0（靠首 8 字节分流，见第五节）。本篇讲 0-9-1，因为仓里所有产品篇的实测都是落在它上面。
+
+### 1.2 规范把线上字节和语义切成了哪几层
+
+AMQP 0-9-1 规定的是**线上字节**和**语义名词**两层：前者让任意语言的客户端能连任意实现，后者让 Exchange / Queue / Binding 成为协议概念而不是 RabbitMQ 的产品概念。这是它和 Kafka / RocketMQ 自定协议的分水岭。
 
 | 层面 | AMQP 0-9-1 规定了什么 | 换掉实现还成立吗 |
 | --- | --- | --- |
@@ -177,7 +199,35 @@ closing AMQP 1.0 connection (duration: '0ms'):
 
 **③ field table 的值带类型标签**。`x-dead-letter-exchange`、`x-queue-type` 这些 `arguments` 都是 table，编码是「长度 + 若干 `key + 类型字符 + 值`」，`S` 表示 long string。这就是为什么 RabbitMQ 的扩展参数在**其他 AMQP 实现上会失效**——类型对得上，但 key 是产品私有的。
 
-**④ 心跳帧是唯一 payload 为空的帧**。`type=8`、`channel=0`、`size=0`，实测发出去之后同一条连接上的其他 channel 不受影响。
+**④ 心跳帧的 payload 是空的**。`type=8`、`channel=0`、`size=0`（另一类零 payload 的是 `close-ok` 这种无参应答），实测发出去之后同一条连接上的其他 channel 不受影响。
+
+**⑤ 出错时有两个关闭原语，粒度不同**。这是 AMQP 与「一个错误码直接断连」的协议最不一样的地方——它把「关掉一个会话」和「关掉整条连接」拆成了两个方法：
+
+| 原语 | 作用域 | 关掉之后 | 典型语义 |
+| --- | --- | --- | --- |
+| `channel.close` | 一个 channel（一个 `channel id`） | 同一条 TCP 上的其他 channel **照常收发** | 「这一个会话的参数不合法」，重开一个 channel 就能换个参数重试 |
+| `connection.close` | 整条 TCP 连接 | 上面所有 channel 一起失效，客户端要重连 + 重握手 | 「这条连接的身份、权限或状态已经不可信」 |
+
+两个方法带**完全相同的四个参数**：`reply-code`（short）、`reply-text`（shortstr，给人看的）、`class-id`、`method-id`。为什么还要带 `class-id` 和 `method-id`？因为 `reply-text` 是自由文本、**不能拿来做程序判断**，而「出错的是哪个类的哪个方法」是结构化的字节——客户端可以据此判定「这个错误是不是我这次调用引起的」。这也解释了为什么第 1.2 节那张 class / method 编号表在这里要再出现一次。
+
+**⑥ `reply-code` 不按数字段分级，按「这个错误会不会让连接失去意义」分级**。规范自己写的规则是 3xx 为 soft error、4xx / 5xx 为 hard error，但真正决定行为的是下面这张常用码表：
+
+| `reply-code` | 常量名 | 什么情况下出现 | RabbitMQ 上的实际粒度 |
+| --- | --- | --- | --- |
+| 200 | `REPLY_SUCCESS` | 主动 `close` 时用 200 表示「正常关闭，没出错」 | — |
+| 311 | `CONTENT_TOO_LARGE` | body 超过协商的 `frame-max` / 上限 | channel |
+| 312 | `NO_ROUTE` | 消息路由不到任何队列（规范里的 soft error） | ⚠️ 不断连，改走 `basic.return` 把消息退回 |
+| 320 | `CONNECTION_FORCED` | 运维强制断开（管理台关连接、节点下线） | connection |
+| 403 | `ACCESS_REFUSED` | vhost / 资源无权限 | connection |
+| 404 | `NOT_FOUND` | 对象不存在（操作不存在的 queue / exchange） | channel |
+| 406 | `PRECONDITION_FAILED` | 参数与已存在对象冲突（改了 `durable` 再 declare） | channel |
+| 501 / 502 | `FRAME_ERROR` / `SYNTAX_ERROR` | 帧结构或方法参数解不开 | connection |
+| 503 / 504 / 505 | `COMMAND_INVALID` / `CHANNEL_ERROR` / `UNEXPECTED_FRAME` | 状态机不允许这个命令 | connection |
+| 541 | `INTERNAL_ERROR` | broker 内部错误 | connection |
+
+> ⚠️ **规范与实现在这里有偏差，值得单独记一笔**：按规范的 3xx / 4xx 分段，404 与 406 属于 hard error（该断连），但 RabbitMQ 把它们降成了 channel 级——理由是「这个错误只让当前这个会话失去意义，连接本身还是好的」。所以排查时**不要靠数字段猜连接会不会断，要看日志里是 `channel.close` 还是 `connection.close`**。这一条是依据 RabbitMQ 文档与错误文案的形态归纳，**未做本机抓包验证**。
+
+> 顺带澄清一个容易记反的点：**`404` 出现在「操作一个不存在的对象」时**（`passive=true` 的 `queue.declare`、`queue.bind` 到不存在的 exchange、`basic.consume` 一个不存在的队列……），而**非 passive 的 `queue.declare` 不会 404**——它直接把队列建出来。这就是本节第 ① 条那五个 bit 里 `passive` 位的意义：把「只检查」与「不存在就建」这两种语义分开，前者失败要报错，后者本来就不该报错。
 
 ## 七、应用场景
 
@@ -274,9 +324,11 @@ rabbitmq-diagnostics environment | grep -E "channel_max|frame_max|heartbeat"
 - **为什么 `connection.start` 有 519 字节，而 `tune` 只有 12 字节？** `start` 带服务端属性表（产品、版本、capabilities），是为了让客户端能做特性探测；`tune` 只有三个整数（`channel-max`、`frame-max`、`heartbeat`），因为该协商的就这三个。**协议里所有「表」都比「定长字段」重**，这是解析器实现时最容易踩的性能坑。
 - **`channel-max=2047` 是 2 的 11 次方减 1，为什么不是 65535？** 因为 channel id 在帧头占 2 字节，但 0 号通道被 connection 级方法独占；2047 是 RabbitMQ 选的默认值（可以调大），选小是为了让每个连接的通道数组更省内存。真正的上限由 `frame_max` 与 Broker 内存共同约束。
 - **手工拼帧和用客户端库，差在哪？** 客户端库帮你做了四件事：channel 号分配与请求-应答配对、`bit` 打包、field table 的编解码、心跳与重连。**只有当你需要解释「库里为什么这么做」时，才值得下到帧这一层**——日常开发用库，排障时看这一层。
+- **`reply-text` 里明明写着原因，为什么不能拿它做程序判断？** 因为规范只把它定义为「给人看的 shortstr」，措辞由实现自定——RabbitMQ 会在里面塞队列名、参数名、甚至建议值，换个版本就变。可靠的做法只有两条：判 `reply-code`（粗分类）、判 `class-id` + `method-id`（定位是哪次调用）。这也是为什么 `close` 方法要额外带这两个字段，而不是只用一段文字说清。
 
 ## 关联
 
+- **上游/总纲**：[消息协议族全景.md](消息协议族全景.md) — 这一族的四个可变量与八维横向矩阵；本篇是「长度前缀 + 帧尾双保险」那一格的代表
 - **上游/总纲**：[消息队列选型对比.md](../../../03-数据与中间件/中间件/消息队列/消息队列选型对比.md) — AMQP 的 Exchange 模型在六款 MQ 里的位置
 - **下游机制**：[README.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/README.md) — RabbitMQ 对 0-9-1 的实现与扩展
 - **下游机制**：[核心概念与架构.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/核心概念与架构.md) — Connection / Channel / vhost 与「Channel 为什么非线程安全」
@@ -284,3 +336,6 @@ rabbitmq-diagnostics environment | grep -E "channel_max|frame_max|heartbeat"
 - **对照/互补**：[README.md](../../../03-数据与中间件/中间件/消息队列/Kafka/README.md) — Kafka 的自定二进制协议：请求-应答带 correlation id，不靠 channel 号
 - **对照/互补**：[README.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) — RocketMQ 的 Remoting 协议与「一个事件一个 Topic」的取舍
 - **对照/互补**：[Nats.md](../../../03-数据与中间件/中间件/消息队列/Nats.md) — NATS 的文本协议（`PUB` / `SUB` 单行命令）：为什么它能用一个 telnet 就调通
+- **对照/互补**：[MQTT.md](MQTT.md) — 同为二进制消息协议，但用变长整数定界、2 字节最小头，与本篇的 7 字节定长头 + `0xCE` 是两种取舍
+- **对照/互补**：[STOMP.md](STOMP.md) — 纯文本帧 + `NUL` 定界，与本篇的二进制帧形成极端对照
+- **对照/互补**：[XMPP.md](XMPP.md) — 用 XML 流而不是长度前缀定界，可演进性最强、开销也最大

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">设备影子：App 与影子服务对话，设备经 Broker 与影子同步</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">retain 保住「最后状态」，缓存接住「离线期间的命令」——设备在线与否与业务控制解耦</text>
+
+  <rect x="40" y="100" width="185" height="92" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="132" y="128" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">App / 业务系统</text>
+  <text x="132" y="152" text-anchor="middle" font-size="10.5" fill="#1d4ed8">只与影子服务对话</text>
+  <text x="132" y="174" text-anchor="middle" font-size="10.5" fill="#1d4ed8">不直连设备</text>
+
+  <rect x="270" y="100" width="200" height="92" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="370" y="128" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">设备影子服务</text>
+  <text x="370" y="152" text-anchor="middle" font-size="10.5" fill="#9a3412">缓存 desired（期望）</text>
+  <text x="370" y="174" text-anchor="middle" font-size="10.5" fill="#9a3412">与 reported（上报）</text>
+
+  <rect x="515" y="100" width="185" height="92" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="607" y="128" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#5b21b6">MQTT Broker</text>
+  <text x="607" y="152" text-anchor="middle" font-size="10.5" fill="#6d28d9">retain 保留最后一条</text>
+  <text x="607" y="174" text-anchor="middle" font-size="10.5" fill="#6d28d9">按订阅表匹配转发</text>
+
+  <rect x="745" y="100" width="215" height="92" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="852" y="128" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">设备 dev/123</text>
+  <text x="852" y="152" text-anchor="middle" font-size="10.5" fill="#15803d">上线后同步 desired</text>
+  <text x="852" y="174" text-anchor="middle" font-size="10.5" fill="#15803d">在线时上报 status</text>
+
+  <line x1="227" y1="128" x2="260" y2="128" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="260,123 260,133 270,128" fill="#2563eb"/>
+  <circle cx="243.5" cy="128" r="10" fill="#2563eb"/>
+  <text x="243.5" y="132" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ffffff">1</text>
+
+  <line x1="472" y1="128" x2="505" y2="128" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="505,123 505,133 515,128" fill="#2563eb"/>
+  <circle cx="488.5" cy="128" r="10" fill="#2563eb"/>
+  <text x="488.5" y="132" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ffffff">2</text>
+
+  <line x1="702" y1="128" x2="735" y2="128" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="735,123 735,133 745,128" fill="#2563eb"/>
+  <circle cx="718.5" cy="128" r="10" fill="#2563eb"/>
+  <text x="718.5" y="132" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ffffff">3</text>
+
+  <line x1="743" y1="164" x2="710" y2="164" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="710,159 710,169 700,164" fill="#16a34a"/>
+  <circle cx="726.5" cy="164" r="10" fill="#16a34a"/>
+  <text x="726.5" y="168" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ffffff">4</text>
+
+  <line x1="513" y1="164" x2="480" y2="164" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="480,159 480,169 470,164" fill="#16a34a"/>
+  <circle cx="496.5" cy="164" r="10" fill="#16a34a"/>
+  <text x="496.5" y="168" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#ffffff">5</text>
+
+  <text x="40" y="225" font-size="12" font-weight="bold" fill="#1e3a8a">命令下行：App → 影子服务 → Broker → 设备</text>
+  <text x="60" y="250" font-size="11.5" fill="#0f172a">1 App 查状态：直接读影子里的 reported 缓存——设备离线也返回最后已知值</text>
+  <text x="60" y="274" font-size="11.5" fill="#0f172a">2 App 发命令：写入影子的 desired；设备离线时命令不丢，等它上线再执行</text>
+  <text x="60" y="298" font-size="11.5" fill="#0f172a">3 Broker 用保留消息（retain）把最新 desired 推给刚连上的设备；设备也可上线后主动同步</text>
+
+  <text x="40" y="332" font-size="12" font-weight="bold" fill="#14532d">状态上行：设备 → Broker → 影子服务</text>
+  <text x="60" y="357" font-size="11.5" fill="#0f172a">4 设备在线时上报 dev/123/status（retain=1 + QoS 1），Broker 按订阅表转发</text>
+  <text x="60" y="381" font-size="11.5" fill="#0f172a">5 影子服务订阅 dev/#，把每条上报写回 reported 缓存——App 读到的永远是这份缓存</text>
+
+  <text x="40" y="422" font-size="12" fill="#0f172a">要点：设备影子不是 MQTT 协议的一部分，而是 Broker 之上的应用层服务（AWS IoT 把它产品化为 Device Shadow）。</text>
+  <text x="40" y="448" font-size="12" fill="#0f172a">协议只提供 retain 与 QoS 两块积木，「影子」是拿积木搭出来的屋——即第八节表里「设备状态 / 影子」一行的完整形态。</text>
+
+  <text x="40" y="478" font-size="11.5" fill="#64748B">依据：OASIS MQTT 3.1.1 / 5.0 规范；设备影子为应用层架构模式，本篇未做本机实测</text>
+</svg>

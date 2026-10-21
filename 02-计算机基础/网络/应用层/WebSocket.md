@@ -430,4 +430,4 @@ ws.onclose = (e) => console.log('closed', e.code, e.reason); // 重连要自己�
 - **运维/配置**：[08-WWW服务器.md](../../linux/鸟哥服务器架设篇/08-WWW服务器.md) — Nginx 的 upgrade 与 buffering 配置
 - **消息协议族**：[MQTT.md](../消息协议/MQTT.md)、[STOMP.md](../消息协议/STOMP.md) — 同样是「长连接上的消息边界」，但消息模型是发布订阅而非双向字节流
 
-> 反向引用（本篇被下列文档引到）：[TCP保活与连接存活.md](../传输层/TCP保活与连接存活.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[通信选型.md](../选型/通信选型.md)、[08-WWW服务器.md](../../linux/鸟哥服务器架设篇/08-WWW服务器.md)
+> 反向引用（本篇被下列文档引到）：[TCP保活与连接存活.md](../传输层/TCP保活与连接存活.md)、[消息协议族全景.md](../消息协议/消息协议族全景.md)

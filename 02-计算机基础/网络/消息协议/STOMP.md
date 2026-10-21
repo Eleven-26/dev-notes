@@ -1,6 +1,6 @@
 # STOMP
 
-> 覆盖 ⭐ **STOMP 用纯文本帧怎么表达一个完整消息协议**：帧的四段结构（`COMMAND` + headers + 空行 + body + `NUL`）、13 种命令的分工、`content-length` 与 `NUL` 两种定界的取舍、事务与 `receipt` 的用法、心跳，以及 1.0 / 1.1 / 1.2 的实质差异。
+> 覆盖 ⭐ **STOMP 是什么、为什么它只定语法不定语义**（客户端与 broker 两个角色、`destination` 是唯一的路由信息），以及它用纯文本帧怎么表达一个完整消息协议：帧的四段结构（`COMMAND` + headers + 空行 + body + `NUL`）、13 种命令的分工、`content-length` 与 `NUL` 两种定界的取舍、事务与 `receipt` 的用法、心跳，以及 1.0 / 1.1 / 1.2 的实质差异。
 >
 > 不覆盖：AMQP 的二进制帧与 channel 多路复用见 [AMQP.md](AMQP.md)；MQTT 的位段式固定头见 [MQTT.md](MQTT.md)；NATS 的文本命令见 [NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS协议.md)；ActiveMQ 的 Go（STOMP）/ Java（JMS）接入代码见 [ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)。
 >
@@ -8,7 +8,32 @@
 
 ---
 
-## 一、STOMP 的帧长什么样？
+## 一、STOMP 是什么，它的帧为什么能直接用 telnet 敲？
+
+**本节要点**：STOMP 只规定「帧怎么写在 TCP 上」，不规定「消息是什么意思」——所以它简单到能在 telnet 里手敲，也所以它的语义完全跟着 broker 走。
+
+### 1.1 STOMP 是什么：只定语法，不定语义
+
+名字就是设计取舍：**S**imple / **S**treaming **T**ext **O**riented **M**essaging **P**rotocol——面向文本、面向流、尽量简单。它 2005 年前后随 ActiveMQ 的跨语言客户端需求成形，**1.2 版 2012 年定稿**，之后没再出新版本。
+
+它和 JMS 不是竞争关系，而是**两层**：JMS 规定 Java 侧的接口与语义，STOMP 规定「帧怎么写」。同一个 ActiveMQ 里，Java 的 JMS 客户端实际发的是 OpenWire 字节，换成 STOMP 客户端发的是纯文本，broker 把它们都翻成内部消息——**语法可以换，语义还得看 broker**。
+
+因此它只有两个角色，比 AMQP 少了「交换机」那一层：
+
+| 角色 | 干什么 | 不管什么 |
+|---|---|---|
+| **客户端** | 连接、`SUBSCRIBE` 订阅、`SEND` 发到 `destination`、`ACK` 确认——收发都是它 | 消息最终存哪、投给谁 |
+| **broker** | 把 `destination` 翻译成内部结构（队列 / 主题），并负责认证与授权 | 协议本身没约定这些语义 |
+
+![客户端只发纯文本帧，destination 是唯一的路由信息，由 broker 决定它是点对点队列还是广播主题](images/STOMP角色与destination语义.svg)
+
+这张图要盯住右下那两格：**`/queue/…` 与 `/topic/…` 这层含义不是规范给的**，而是 ActiveMQ 的约定。换成别的 broker，同一个 destination 字符串可能落到完全不同的内部结构上——这就是「STOMP 最好学、也最容易换 broker 就踩坑」的根源。
+
+> ⚠️ **别把 STOMP 当「轻量 AMQP」**：AMQP 的 exchange 是规范里的名词，STOMP 的 destination 只是一个字符串。前者跨 broker 可移植，后者不可移植。
+
+> 本节只交代角色与分工：13 种命令全集见第二节，`content-length` 与 `NUL` 的定界取舍见第三节，事务与 `receipt` 见第四节。
+
+### 1.2 一帧的四段结构
 
 **本节要点**：STOMP 的帧是**四段纯文本**——第一行命令、若干行 `key:value` 头、**一个空行**、body，最后用 `NUL`（`0x00`）收尾。它的设计目标是「能用 telnet 手敲」，所以没有一条二进制位运算。
 
@@ -29,7 +54,7 @@ content-length:27
 
 后面紧跟一个 `0x00`。注意 **`content-length` 是 27**，它数的是 body 的字节数（不含 `NUL`）。
 
-### 1.1 三段各自的规则
+### 1.3 三段各自的规则
 
 | 段 | 规则 | 注意 |
 | --- | --- | --- |
@@ -38,7 +63,7 @@ content-length:27
 | **空行** | 单独一个 `EOL` | 没有 body 的帧也必须保留这个空行 |
 | **body** | 任意字节（可以含 `NUL`，此时必须给 `content-length`） | 没有 `content-length` 时读到第一个 `NUL` 为止 |
 
-### 1.2 头部转义（1.1 起）
+### 1.4 头部转义（1.1 起）
 
 1.1 引入了头值转义，因为「头里放 URL 或含换行的值」在 1.0 里无法表达：
 
@@ -228,6 +253,7 @@ id:msg-1
 
 ## 关联
 
+- **上游/总纲**：[消息协议族全景.md](消息协议族全景.md) — 这一族的四个可变量与八维横向矩阵；本篇是「分隔符定界」那一格的代表
 - **上游/总纲**：[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md) — 应用层协议的七行对照，STOMP 的定位
 - **上游/总纲**：[README.md](../README.md) — 网络目录导读：消息协议这一类的位置
 - **对照/互补**：[AMQP.md](AMQP.md) — 同样面向 MQ，但用二进制帧 + 7 字节帧头 + `0xCE` 帧尾，与本篇的文本帧 + `NUL` 形成对照
