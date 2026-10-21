@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">超时不是失败：一次请求的三种结局，与重试前必须过的四问</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">请求已经写进 socket，服务端可能已经执行完，只是响应没回来</text>
+
+  <!-- 三态 -->
+  <rect x="24" y="82" width="952" height="222" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="108" font-size="14" font-weight="bold" fill="#334155">结局一：成功</text>
+  <text x="44" y="128" font-size="10.5" fill="#64748b">收到成功响应，确认已执行</text>
+
+  <rect x="44" y="142" width="150" height="52" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="119" y="166" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">客户端发出请求</text>
+  <text x="119" y="183" text-anchor="middle" font-size="10" fill="#64748b">帧头 seq = 42</text>
+
+  <path d="M194,160 L268,132" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M194,168 L268,196" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M194,178 L268,258" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arrR)"/>
+
+  <rect x="272" y="106" width="152" height="44" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="348" y="126" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">成功</text>
+  <text x="348" y="142" text-anchor="middle" font-size="10" fill="#166534">已执行</text>
+  <text x="440" y="124" font-size="11.5" fill="#334155">继续下一步，不需要任何补偿</text>
+
+  <rect x="272" y="172" width="152" height="44" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="348" y="192" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c2d12">明确失败</text>
+  <text x="348" y="208" text-anchor="middle" font-size="10" fill="#7c2d12">收到错误响应</text>
+  <text x="440" y="190" font-size="11.5" fill="#334155">按错误码的 retryable 决定是否重试（第七节）</text>
+  <text x="440" y="208" font-size="10.5" fill="#64748b">前提到位：错误码能说明「没执行」</text>
+
+  <rect x="272" y="236" width="152" height="44" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="348" y="256" text-anchor="middle" font-size="12" font-weight="bold" fill="#991b1b">未知</text>
+  <text x="348" y="272" text-anchor="middle" font-size="10" fill="#991b1b">超时 / 断在响应前</text>
+  <text x="440" y="254" font-size="11.5" font-weight="bold" fill="#991b1b">不知道执行了没有 — 这是最容易被写成「失败」的一格</text>
+  <text x="440" y="272" font-size="10.5" fill="#64748b">只能「幂等重试」或「事后查询补偿」，不能本地回滚</text>
+
+  <text x="44" y="296" font-size="10.5" fill="#64748b">TCP 的 ACK 只说明对端内核收到了字节，不说明对端应用处理了；响应也可能丢在上行路径</text>
+
+  <!-- 四问 -->
+  <rect x="24" y="315" width="952" height="182" rx="10" fill="#f0f9ff" stroke="#bae6fd"/>
+  <text x="44" y="336" font-size="14" font-weight="bold" fill="#0c4a6e">重试前必须过的四问：任一问不过，就不要重试</text>
+
+  <rect x="44" y="352" width="212" height="72" rx="8" fill="#ffffff" stroke="#0284c7"/>
+  <text x="150" y="374" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">一、错误可重试吗</text>
+  <text x="150" y="392" text-anchor="middle" font-size="10" fill="#334155">看错误码的 retryable</text>
+  <text x="150" y="408" text-anchor="middle" font-size="10" fill="#64748b">不看 message 文本</text>
+
+  <path d="M256,388 L288,388" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="292" y="352" width="212" height="72" rx="8" fill="#ffffff" stroke="#0284c7"/>
+  <text x="398" y="374" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">二、操作幂等吗</text>
+  <text x="398" y="392" text-anchor="middle" font-size="10" fill="#334155">有客户端生成的幂等键</text>
+  <text x="398" y="408" text-anchor="middle" font-size="10" fill="#64748b">不幂等就只能上抛交人工</text>
+
+  <path d="M504,388 L536,388" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="540" y="352" width="212" height="72" rx="8" fill="#ffffff" stroke="#0284c7"/>
+  <text x="646" y="374" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">三、退避多久、几次</text>
+  <text x="646" y="392" text-anchor="middle" font-size="10" fill="#334155">指数退避 + 抖动，上限 5 次</text>
+  <text x="646" y="408" text-anchor="middle" font-size="10" fill="#64748b">无抖动会同一秒一起重试</text>
+
+  <path d="M752,388 L784,388" stroke="#64748b" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <rect x="788" y="352" width="168" height="72" rx="8" fill="#ffffff" stroke="#0284c7"/>
+  <text x="872" y="374" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">四、落在哪</text>
+  <text x="872" y="392" text-anchor="middle" font-size="10" fill="#334155">原连接复用，或新连接</text>
+  <text x="872" y="408" text-anchor="middle" font-size="10" fill="#64748b">+ 带同一个幂等键</text>
+
+  <text x="44" y="452" font-size="10.5" fill="#0c4a6e">注意：三层各重试 3 次等于 27 次；要用「重试预算」限制整条调用链的总次数，并配合第九节的背压</text>
+  <text x="44" y="472" font-size="10.5" fill="#0c4a6e">超时也要分四层：连接 / 写 / 读 / 业务处理。读超时必须显著大于服务端的业务处理超时，否则错误码永远送不到</text>
+
+  <!-- 小结 -->
+  <rect x="24" y="508" width="952" height="52" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="44" y="530" font-size="12" fill="#78350f">要点：超时的语义是「不知道」，不是「失败」。凡是会改变状态的操作，必须幂等，否则它就不能重试 —— 而它总会遇到超时。</text>
+  <text x="44" y="549" font-size="10.5" fill="#78350f">幂等键必须由客户端生成、重试时保持不变；服务端生成的 ID 当不了幂等键</text>
+</svg>
