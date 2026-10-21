@@ -158,7 +158,7 @@ payload = "你好"        # 字符数 2，UTF-8 字节数 6
 | **需要二进制 payload** | 直接用 `PUB`（长度按字节算） | 长度算错就静默卡住 |
 | **需要消息头** | `HPUB` / `HMSG` | 前提是 `INFO` 里 `headers:true` |
 
-本仓对应落地：[README.md](README.md)（JetStream、集群、Leaf Node、Go/Java 客户端）、[队列粒度设计.md](../队列粒度设计.md)（队列组与另两个产品的竞争消费对照）。
+本仓对应落地：[README.md](README.md)（JetStream、集群、Leaf Node、Go/Java 客户端）、[消息模型与存储代价.md](../消息模型与存储代价.md)（队列组与其余五款的竞争消费对照）。
 
 ## 八、具体使用
 
@@ -211,7 +211,7 @@ s.close()
 ## 关联
 
 - **上游/总纲**：[README.md](README.md) — 产品能力：JetStream、集群、Leaf Node、Go/Java 客户端
-- **上游/总纲**：[队列粒度设计.md](../队列粒度设计.md) — 队列组与 RabbitMQ 竞争消费、Kafka 消费组的对照
+- **上游/总纲**：[消息模型与存储代价.md](../消息模型与存储代价.md) — 队列组与族 A 竞争消费、族 B 消费组 / 订阅的对照
 - **上游/总纲**：[README.md](../../../../02-计算机基础/网络/README.md) — 网络目录导读：协议分层与消息协议的位置
 - **对照/互补**：[Kafka协议.md](../Kafka/Kafka协议.md) — 同样是消息协议，Kafka 是二进制 + 严格请求-响应，NATS 是文本 + 双向推送
 - **对照/互补**：[STOMP.md](../../../../02-计算机基础/网络/消息协议/STOMP.md) — 同为文本协议，STOMP 用「四段 + NUL」，NATS 用「命令行 + 长度字段」

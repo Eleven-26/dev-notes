@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 740" width="1000" height="740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">六款的两本账：拆一个「存储或并行单位」 vs 多一个下游</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">族 A 两笔账是同一笔（多下游必然多存储），族 B 是两笔完全不同的账 —— 混着算会得出反向结论</text>
+
+  <rect x="30" y="82" width="150" height="30" rx="5" fill="#f1f5f9"/>
+  <text x="105" y="102" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">产品</text>
+  <rect x="185" y="82" width="400" height="30" rx="5" fill="#fff7ed" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="385" y="102" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">拆一个单位：队列 / 分区 / Stream</text>
+  <rect x="590" y="82" width="380" height="30" rx="5" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="780" y="102" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">多一个下游：怎么收费</text>
+
+  <rect x="185" y="116" width="400" height="64" rx="5" fill="#fffbf5" stroke="#fdba74" stroke-width="1"/>
+  <text x="197" y="138" font-size="12" fill="#0f172a">610 条队列 → <tspan font-weight="bold" fill="#b91c1c">+1220 个 Erlang 进程</tspan></text>
+  <text x="197" y="158" font-size="11.5" fill="#475569">每队列固定 2 进程 + 1 目录，本机两遍一致</text>
+  <text x="197" y="174" font-size="11.5" fill="#475569">六款里唯一「队列数 = 进程数」的一款</text>
+  <rect x="590" y="116" width="380" height="64" rx="5" fill="#fffbf5" stroke="#fdba74" stroke-width="1"/>
+  <text x="602" y="140" font-size="12" fill="#0f172a">多一条队列 = <tspan font-weight="bold" fill="#b91c1c">2 进程 + 1 目录 + 一份消息副本</tspan></text>
+  <text x="602" y="162" font-size="11.5" fill="#475569">两个下游要同一条消息，只能复制两份</text>
+  <text x="40" y="152" font-size="12.5" font-weight="bold" fill="#7c2d12">RabbitMQ</text>
+  <text x="40" y="170" font-size="10.5" fill="#9a3412">族 A</text>
+
+  <rect x="185" y="186" width="400" height="64" rx="5" fill="#fffbf5" stroke="#fdba74" stroke-width="1"/>
+  <text x="197" y="208" font-size="12" fill="#0f172a">610 条队列 → <tspan font-weight="bold" fill="#b91c1c">db.data 涨 14.4 MiB</tspan></text>
+  <text x="197" y="228" font-size="11.5" fill="#475569">平均 24 KB/队列；KahaDB 目录始终只有 4 个文件</text>
+  <text x="197" y="244" font-size="11.5" fill="#475569">610 条消息投同一队列只涨 192 KiB（322 B/条）</text>
+  <rect x="590" y="186" width="380" height="64" rx="5" fill="#fffbf5" stroke="#fdba74" stroke-width="1"/>
+  <text x="602" y="210" font-size="12" fill="#0f172a">多一条队列 ≈ <tspan font-weight="bold" fill="#b91c1c">24 KB + 一份消息副本</tspan></text>
+  <text x="602" y="232" font-size="11.5" fill="#475569">队列比消息贵 76 倍，贵的部分是索引页</text>
+  <text x="602" y="248" font-size="11.5" fill="#475569">Topic 域则是多一个持久订阅（+ 游标）</text>
+  <text x="40" y="222" font-size="12.5" font-weight="bold" fill="#7c2d12">ActiveMQ</text>
+  <text x="40" y="240" font-size="10.5" fill="#9a3412">族 A</text>
+
+  <rect x="185" y="256" width="400" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="197" y="278" font-size="12" fill="#0f172a">620 分区 → <tspan font-weight="bold" fill="#1e3a8a">622 个目录，实占 7.4 MB</tspan></text>
+  <text x="197" y="298" font-size="11.5" fill="#475569">表观 13 GB 是稀疏索引预分配，ls 会骗人</text>
+  <text x="197" y="314" font-size="11.5" fill="#475569">⚠️ 只能加不能减，是永久决策</text>
+  <rect x="590" y="256" width="380" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="602" y="280" font-size="12" fill="#0f172a">多一个消费组 = <tspan font-weight="bold" fill="#15803d">一套 offset，0 份数据</tspan></text>
+  <text x="602" y="302" font-size="11.5" fill="#475569">位点存在 __consumer_offsets 这个内部 Topic</text>
+  <text x="602" y="318" font-size="11.5" fill="#475569">⚠️ 为每个下游建 Topic 才是复制数据</text>
+  <text x="40" y="292" font-size="12.5" font-weight="bold" fill="#1e3a8a">Kafka</text>
+  <text x="40" y="310" font-size="10.5" fill="#1e40af">族 B</text>
+
+  <rect x="185" y="326" width="400" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="197" y="348" font-size="12" fill="#0f172a">1 套 ConsumeQueue = <tspan font-weight="bold" fill="#1e3a8a">6,000,000 B 定长文件起</tspan></text>
+  <text x="197" y="368" font-size="11.5" fill="#475569">30 万条 × 20 B；正文在共享 CommitLog</text>
+  <text x="197" y="384" font-size="11.5" fill="#475569">⚠️ 本档未做队列数代价实测</text>
+  <rect x="590" y="326" width="380" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="602" y="350" font-size="12" fill="#0f172a">多一个消费组 = <tspan font-weight="bold" fill="#15803d">一套 offset，0 份数据</tspan></text>
+  <text x="602" y="372" font-size="11.5" fill="#475569">重试与死信按 %RETRY% / %DLQ% 组名生成</text>
+  <text x="602" y="388" font-size="11.5" fill="#475569">队列可 updateTopic 扩，比 Kafka 软</text>
+  <text x="40" y="362" font-size="12.5" font-weight="bold" fill="#1e3a8a">RocketMQ</text>
+  <text x="40" y="380" font-size="10.5" fill="#1e40af">族 B</text>
+
+  <rect x="185" y="396" width="400" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="197" y="418" font-size="12" fill="#0f172a">21 个分区 → <tspan font-weight="bold" fill="#1e3a8a">21 套 managed ledger</tspan></text>
+  <text x="197" y="438" font-size="11.5" fill="#475569">ledgerId 各不相同（9 / 10~13 / 16~19 …）</text>
+  <text x="197" y="454" font-size="11.5" fill="#475569">⭐ 但全部共用一个 entry log：0.log 21922 B</text>
+  <rect x="590" y="396" width="380" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="602" y="420" font-size="12" fill="#0f172a">多一个订阅 = <tspan font-weight="bold" fill="#b91c1c">1 个 cursor × 分区数</tspan></text>
+  <text x="602" y="442" font-size="11.5" fill="#475569">4 分区 × 50 订阅 = 200 个 cursor，逐分区各一套</text>
+  <text x="602" y="458" font-size="11.5" fill="#475569">⚠️ 唯一把「订阅」和「分区」相乘的一款</text>
+  <text x="40" y="432" font-size="12.5" font-weight="bold" fill="#1e3a8a">Pulsar</text>
+  <text x="40" y="450" font-size="10.5" fill="#1e40af">族 B</text>
+
+  <rect x="185" y="466" width="400" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="197" y="488" font-size="12" fill="#0f172a">610 个 Stream → <tspan font-weight="bold" fill="#1e3a8a">14668 KB，24 KB/个</tspan></text>
+  <text x="197" y="508" font-size="11.5" fill="#475569">三个文件加起来不到 1 KB，全被 4 KB 块取整放大</text>
+  <text x="197" y="524" font-size="11.5" fill="#475569">Core NATS 连这笔都没有：Subject 只是内存兴趣表</text>
+  <rect x="590" y="466" width="380" height="64" rx="5" fill="#f8fbff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="602" y="490" font-size="12" fill="#0f172a">多一个 Consumer = <tspan font-weight="bold" fill="#15803d">16 KB，0 份数据</tspan></text>
+  <text x="602" y="512" font-size="11.5" fill="#475569">1 / 10 / 50 三档：14684 / 14828 / 15468 KB</text>
+  <text x="602" y="528" font-size="11.5" fill="#475569">六款里唯一能把两笔账都量到 KB 的产品</text>
+  <text x="40" y="502" font-size="12.5" font-weight="bold" fill="#1e3a8a">NATS</text>
+  <text x="40" y="520" font-size="10.5" fill="#1e40af">族 B</text>
+
+  <rect x="30" y="548" width="940" height="140" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="46" y="572" font-size="12.5" font-weight="bold" fill="#0f172a">两本账不在一个量级：族 A 付的是数据副本，族 B 付的是常量级位点</text>
+  <text x="46" y="596" font-size="12" fill="#334155">加存储单位：RabbitMQ 是<tspan font-weight="bold">进程</tspan>（不可用 KB 计），ActiveMQ 与 NATS 是 <tspan font-weight="bold">24 KB</tspan>，</text>
+  <text x="46" y="616" font-size="12" fill="#334155">Kafka 与 Pulsar 落在<tspan font-weight="bold">元数据</tspan>（目录与 entry log 都被共享），RocketMQ 首个 ConsumeQueue 文件 <tspan font-weight="bold">6 MB</tspan>。</text>
+  <text x="46" y="640" font-size="12" fill="#334155">加下游：族 A 是<tspan font-weight="bold">一整份数据</tspan>，族 B 是 <tspan font-weight="bold">0 份数据</tspan> —— Pulsar 付 cursor（还要乘分区数）、NATS 付 16 KB、Kafka 与 RocketMQ 只付一套 offset。</text>
+  <text x="46" y="664" font-size="11.5" fill="#b91c1c">所以「多建几个」在不同族里问的不是同一个问题：族 A 问「存储够不够」，族 B 问「位点与元数据要不要清」。</text>
+
+  <text x="30" y="712" font-size="11" fill="#64748B">读数来源：rabbitmq 4.3.6、activemq-classic 6.1.4、kafka 3.9.0、pulsar 4.0.5、nats 2.10 单机容器；RocketMQ 5.3.1 为存储结构陈述，未做队列数代价实测</text>
+</svg>

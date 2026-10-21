@@ -121,7 +121,7 @@ Broker：继续推送
 | **需要 Schema 校验** | `GET_OR_CREATE_SCHEMA` 是协议级支持，Kafka 要靠外部 Registry |
 | **需要断点续消费** | 用 `CLOSE_CONSUMER` 而不是 `UNSUBSCRIBE`（后者删订阅与位点） |
 
-本仓对应落地：[README.md](README.md)（存算分离、MessageId、四种订阅类型、Go/Java 客户端）、[队列粒度设计.md](../队列粒度设计.md)（消息粒度在三产品里的落点）。
+本仓对应落地：[README.md](README.md)（存算分离、MessageId、四种订阅类型、Go/Java 客户端）、[消息模型与存储代价.md](../消息模型与存储代价.md)（消息粒度在六款里的落点）。
 
 ## 七、具体使用
 
@@ -165,7 +165,7 @@ Broker：继续推送
 ## 关联
 
 - **上游/总纲**：[README.md](README.md) — 产品能力：存算分离、BookKeeper、订阅类型、分层存储
-- **上游/总纲**：[队列粒度设计.md](../队列粒度设计.md) — 跨产品的粒度判据与代价对照
+- **上游/总纲**：[消息模型与存储代价.md](../消息模型与存储代价.md) — 跨产品的粒度判据与代价对照
 - **对照/互补**：[Kafka协议.md](../Kafka/Kafka协议.md) — Kafka 手写二进制 + 版本协商，与 Pulsar 的 Protobuf + 无版本号形成对照
 - **对照/互补**：[NATS协议.md](../NATS/NATS协议.md) — 纯文本命令，与 Pulsar 的 Protobuf 是两个极端
 - **对照/互补**：[AMQP.md](../../../../02-计算机基础/网络/消息协议/AMQP.md) — AMQP 用 magic 前缀与帧尾 `0xCE` 双重定界，Pulsar 用 `magicNumber` 分段

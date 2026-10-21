@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一个业务，三种切分维度得到完全不同数量的对象</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">例子：财务域有两个聚合根（费用、账单），各有创建 / 修改 / 支付等约 25 个操作</text>
+
+  <rect x="40" y="84" width="300" height="330" rx="8" fill="#fef2f2" stroke="#f87171" stroke-width="1.6"/>
+  <rect x="40" y="84" width="300" height="40" rx="8" fill="#fee2e2"/>
+  <text x="190" y="110" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#b91c1c">按操作切（错）</text>
+  <text x="56" y="150" font-size="11.5" fill="#7f1d1d">做法</text>
+  <text x="56" y="172" font-size="12" fill="#0f172a">fee.created / fee.updated</text>
+  <text x="56" y="192" font-size="12" fill="#0f172a">bill.paid / bill.refunded …</text>
+  <line x1="56" y1="212" x2="324" y2="212" stroke="#fca5a5" stroke-width="1"/>
+  <text x="56" y="236" font-size="11.5" fill="#7f1d1d">对象数</text>
+  <text x="56" y="262" font-size="20" font-weight="bold" fill="#b91c1c">约 50 个 Topic</text>
+  <text x="56" y="286" font-size="11.5" fill="#7f1d1d">下游视角</text>
+  <text x="56" y="308" font-size="12" fill="#0f172a">要处理全量就得订阅</text>
+  <text x="56" y="328" font-size="12" fill="#0f172a">几十个 Topic，权限、配额、</text>
+  <text x="56" y="348" font-size="12" fill="#0f172a">监控全按操作数翻倍</text>
+  <rect x="56" y="366" width="268" height="34" rx="5" fill="#fee2e2"/>
+  <text x="190" y="388" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">Topic 泛滥，且顺序被切碎</text>
+
+  <rect x="360" y="84" width="300" height="330" rx="8" fill="#fffbeb" stroke="#fbbf24" stroke-width="1.6"/>
+  <rect x="360" y="84" width="300" height="40" rx="8" fill="#fef3c7"/>
+  <text x="510" y="110" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#b45309">按微服务切（凑合）</text>
+  <text x="376" y="150" font-size="11.5" fill="#78350f">做法</text>
+  <text x="376" y="172" font-size="12" fill="#0f172a">finance-service-events</text>
+  <text x="376" y="192" font-size="12" fill="#0f172a">全服务所有事件一个 Topic</text>
+  <line x1="376" y1="212" x2="644" y2="212" stroke="#fcd34d" stroke-width="1"/>
+  <text x="376" y="236" font-size="11.5" fill="#78350f">对象数</text>
+  <text x="376" y="262" font-size="20" font-weight="bold" fill="#b45309">1 个 Topic</text>
+  <text x="376" y="286" font-size="11.5" fill="#78350f">下游视角</text>
+  <text x="376" y="308" font-size="12" fill="#0f172a">收全量再自己筛，</text>
+  <text x="376" y="328" font-size="12" fill="#0f172a">代码里写满 switch</text>
+  <text x="376" y="348" font-size="12" fill="#0f172a">按月结 / 账期都混在一起</text>
+  <rect x="376" y="366" width="268" height="34" rx="5" fill="#fef3c7"/>
+  <text x="510" y="388" text-anchor="middle" font-size="12" font-weight="bold" fill="#b45309">职责耦合，拆分时剥不出去</text>
+
+  <rect x="680" y="84" width="300" height="330" rx="8" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.6"/>
+  <rect x="680" y="84" width="300" height="40" rx="8" fill="#dcfce7"/>
+  <text x="830" y="110" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#15803d">按聚合根切（对）</text>
+  <text x="696" y="150" font-size="11.5" fill="#14532d">做法</text>
+  <text x="696" y="172" font-size="12" fill="#0f172a">finance.fee / finance.bill</text>
+  <text x="696" y="192" font-size="12" fill="#0f172a">动作留在 event_type 里</text>
+  <line x1="696" y1="212" x2="964" y2="212" stroke="#86efac" stroke-width="1"/>
+  <text x="696" y="236" font-size="11.5" fill="#14532d">对象数</text>
+  <text x="696" y="262" font-size="20" font-weight="bold" fill="#15803d">2 个 Topic</text>
+  <text x="696" y="286" font-size="11.5" fill="#14532d">下游视角</text>
+  <text x="696" y="308" font-size="12" fill="#0f172a">只关心账单就订阅一个，</text>
+  <text x="696" y="328" font-size="12" fill="#0f172a">两个都关心就起两个消费者</text>
+  <text x="696" y="348" font-size="12" fill="#0f172a">对象数随实体数增长</text>
+  <rect x="696" y="366" width="268" height="34" rx="5" fill="#dcfce7"/>
+  <text x="830" y="388" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">与限界上下文对齐，可拆可交接</text>
+
+  <rect x="40" y="434" width="940" height="96" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="58" y="460" font-size="13" font-weight="bold" fill="#312e81">判据：这个对象有独立的生命周期与事务边界吗？</text>
+  <text x="58" y="484" font-size="12" fill="#334155">有 → 它该独占一个 Topic（聚合根 / 限界上下文）；没有，只是同一个实体流里的一个动作 → 只该占一个 event_type 值，不是一个 Topic。</text>
+  <text x="58" y="508" font-size="12" fill="#334155">数量级对比：实体数是个位到十位，操作数是百位，所以「按操作切」的膨胀是按乘法放大的，不是按加法。</text>
+
+  <text x="40" y="548" font-size="11" fill="#64748B">判据与反模式在正文第一至四节；切完之后的物理代价（队列 / 分区 / Stream 各付多少）见 消息模型与存储代价.md</text>
+</svg>

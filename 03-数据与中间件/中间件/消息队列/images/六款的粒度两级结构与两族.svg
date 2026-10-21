@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="800" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">六款 MQ 的粒度两级结构：两族的分野在「多一个下游要不要多一份存储」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">判据相同、落点不同 —— 同一条「该拆该合」换到另一款就不能直译</text>
+
+  <rect x="30" y="76" width="940" height="30" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="44" y="96" font-size="12.5" font-weight="bold" fill="#9a3412">族 A · 独占队列：一条消息进了这条队列就不会进那条，ack 之后删除 —— 多一个下游 = 多一份存储</text>
+
+  <rect x="40" y="116" width="450" height="26" rx="5" fill="#ffedd5"/>
+  <text x="265" y="134" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">RabbitMQ</text>
+  <rect x="510" y="116" width="450" height="26" rx="5" fill="#ffedd5"/>
+  <text x="735" y="134" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">ActiveMQ Classic</text>
+
+  <rect x="40" y="146" width="450" height="52" rx="6" fill="#fffbf5" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="54" y="166" font-size="11" fill="#9a3412">分类容器</text>
+  <text x="54" y="186" font-size="12.5" fill="#0f172a">Exchange + routing key，binding 决定去向</text>
+
+  <rect x="510" y="146" width="450" height="52" rx="6" fill="#fffbf5" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="524" y="166" font-size="11" fill="#9a3412">分类容器</text>
+  <text x="524" y="186" font-size="12.5" fill="#0f172a">Destination：Queue 或 Topic（两种域）</text>
+
+  <rect x="40" y="202" width="450" height="52" rx="6" fill="#fffbf5" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="54" y="222" font-size="11" fill="#9a3412">并行单位</text>
+  <text x="54" y="242" font-size="12.5" font-weight="bold" fill="#7c2d12">Queue（可无限加，代价见第三节）</text>
+
+  <rect x="510" y="202" width="450" height="52" rx="6" fill="#fffbf5" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="524" y="222" font-size="11" fill="#9a3412">并行单位</text>
+  <text x="524" y="242" font-size="12.5" font-weight="bold" fill="#b91c1c">Queue，且没有分区：单队列不能再拆</text>
+
+  <rect x="40" y="258" width="450" height="52" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="54" y="278" font-size="11" fill="#475569">消费进度记在哪</text>
+  <text x="54" y="298" font-size="12.5" fill="#334155">队列内 ack，无位点，ack 即删不可回溯</text>
+
+  <rect x="510" y="258" width="450" height="52" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="524" y="278" font-size="11" fill="#475569">消费进度记在哪</text>
+  <text x="524" y="298" font-size="12.5" fill="#334155">ack 即删；只有持久订阅按 clientID + 订阅名记游标</text>
+
+  <rect x="30" y="326" width="940" height="30" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="44" y="346" font-size="12.5" font-weight="bold" fill="#1e3a8a">族 B · 共享日志：消息追加进日志后不动，消费只是移动位点 —— 多一个下游 = 多一套位点，数据仍只有一份</text>
+
+  <rect x="40" y="366" width="225" height="24" rx="5" fill="#dbeafe"/>
+  <text x="152" y="383" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Kafka</text>
+  <rect x="275" y="366" width="225" height="24" rx="5" fill="#dbeafe"/>
+  <text x="387" y="383" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">RocketMQ</text>
+  <rect x="510" y="366" width="225" height="24" rx="5" fill="#dbeafe"/>
+  <text x="622" y="383" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Pulsar</text>
+  <rect x="745" y="366" width="225" height="24" rx="5" fill="#dbeafe"/>
+  <text x="857" y="383" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">NATS JetStream</text>
+
+  <rect x="40" y="394" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="52" y="412" font-size="10.5" fill="#1e40af">分类容器</text>
+  <text x="52" y="430" font-size="12" font-weight="bold" fill="#0f172a">Topic</text>
+  <text x="52" y="447" font-size="10.5" fill="#475569">分区是它的子单位</text>
+
+  <rect x="275" y="394" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="287" y="412" font-size="10.5" fill="#1e40af">分类容器</text>
+  <text x="287" y="430" font-size="12" font-weight="bold" fill="#0f172a">Topic + Tag</text>
+  <text x="287" y="447" font-size="10.5" fill="#475569">Tag 是消息上的二级过滤</text>
+
+  <rect x="510" y="394" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="522" y="412" font-size="10.5" fill="#1e40af">分类容器</text>
+  <text x="522" y="430" font-size="12" font-weight="bold" fill="#0f172a">Topic</text>
+  <text x="522" y="447" font-size="10.5" fill="#475569">tenant / namespace 是它的前缀</text>
+
+  <rect x="745" y="394" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="757" y="412" font-size="10.5" fill="#1e40af">分类容器</text>
+  <text x="757" y="430" font-size="12" font-weight="bold" fill="#0f172a">Subject 到 Stream</text>
+  <text x="757" y="447" font-size="10.5" fill="#475569">Subject 是名字，Stream 才是存储</text>
+
+  <rect x="40" y="460" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="52" y="478" font-size="10.5" fill="#1e40af">并行单位</text>
+  <text x="52" y="496" font-size="12" font-weight="bold" fill="#1e3a8a">Partition</text>
+  <text x="52" y="513" font-size="10.5" fill="#475569">副本数是正交旋钮</text>
+
+  <rect x="275" y="460" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="287" y="478" font-size="10.5" fill="#1e40af">并行单位</text>
+  <text x="287" y="496" font-size="12" font-weight="bold" fill="#1e3a8a">MessageQueue</text>
+  <text x="287" y="513" font-size="10.5" fill="#475569">正文统一落共享 CommitLog</text>
+
+  <rect x="510" y="460" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="522" y="478" font-size="10.5" fill="#1e40af">并行单位（两个来源）</text>
+  <text x="522" y="496" font-size="12" font-weight="bold" fill="#b91c1c">Partition，或订阅内多消费者</text>
+  <text x="522" y="513" font-size="10.5" fill="#475569">Shared 订阅多消费者不保顺序</text>
+
+  <rect x="745" y="460" width="225" height="62" rx="6" fill="#f8fbff" stroke="#93c5fd" stroke-width="1.1"/>
+  <text x="757" y="478" font-size="10.5" fill="#1e40af">并行单位</text>
+  <text x="757" y="496" font-size="12" font-weight="bold" fill="#1e3a8a">Consumer</text>
+  <text x="757" y="513" font-size="10.5" fill="#475569">没有分区，顺序只能靠拆 Subject</text>
+
+  <rect x="40" y="526" width="225" height="62" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="52" y="544" font-size="10.5" fill="#475569">消费进度记在哪</text>
+  <text x="52" y="562" font-size="12" fill="#334155">消费组在分区上的 offset</text>
+  <text x="52" y="579" font-size="10.5" fill="#475569">可重置，能回溯</text>
+
+  <rect x="275" y="526" width="225" height="62" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="287" y="544" font-size="10.5" fill="#475569">消费进度记在哪</text>
+  <text x="287" y="562" font-size="12" fill="#334155">消费组在队列上的 offset</text>
+  <text x="287" y="579" font-size="10.5" fill="#475569">可重置，能回溯</text>
+
+  <rect x="510" y="526" width="225" height="62" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="522" y="544" font-size="10.5" fill="#475569">消费进度记在哪</text>
+  <text x="522" y="562" font-size="12" fill="#334155">每个订阅一套 cursor</text>
+  <text x="522" y="579" font-size="10.5" fill="#475569">cursor 数 = 订阅数 × 分区数</text>
+
+  <rect x="745" y="526" width="225" height="62" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.1"/>
+  <text x="757" y="544" font-size="10.5" fill="#475569">消费进度记在哪</text>
+  <text x="757" y="562" font-size="12" fill="#334155">Consumer 的游标与未 ACK 集</text>
+  <text x="757" y="579" font-size="10.5" fill="#475569">Durable 才有进度</text>
+
+  <text x="152" y="612" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b91c1c">多一个消费方 = 多一条队列 + 一份存储</text>
+  <text x="387" y="612" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#15803d">多一个消费方 = 多一套位点，0 存储</text>
+  <text x="622" y="612" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#15803d">多一套 cursor，0 份消息</text>
+  <text x="857" y="612" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#15803d">多一个 Consumer，0 份消息</text>
+
+  <rect x="30" y="634" width="470" height="130" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <text x="44" y="656" font-size="12.5" font-weight="bold" fill="#b91c1c">特例 1 · Core NATS：没有存储也没有进度</text>
+  <text x="44" y="678" font-size="11.5" fill="#334155">「拆」只是多一个 Subject，代价接近零 —— 六款里唯一</text>
+  <text x="44" y="698" font-size="11.5" fill="#334155">拆分几乎免费的方案。代价在别处：订阅者不在线，消息</text>
+  <text x="44" y="718" font-size="11.5" fill="#334155">直接丢弃，没有位点可以补。要可靠就必须开 JetStream，</text>
+  <text x="44" y="738" font-size="11.5" fill="#334155">而 JetStream 一开，Stream 就是存储单位，与族 B 同形。</text>
+
+  <rect x="510" y="634" width="460" height="130" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.3"/>
+  <text x="524" y="656" font-size="12.5" font-weight="bold" fill="#1e3a8a">特例 2 · Pulsar：并行度有两个来源</text>
+  <text x="524" y="678" font-size="11.5" fill="#334155">族 B 里只有它能在同一订阅上挂多个消费者并行（Shared</text>
+  <text x="524" y="698" font-size="11.5" fill="#334155">按条轮询、Key_Shared 按 key 哈希），不必先把分区数</text>
+  <text x="524" y="718" font-size="11.5" fill="#334155">加上去。代价是 Shared 不保顺序，而 Kafka 的</text>
+  <text x="524" y="738" font-size="11.5" fill="#334155">「分区内有序」正是建立在「一个分区只给一个消费者」上。</text>
+
+  <text x="30" y="786" font-size="11" fill="#64748B">读数来源：RabbitMQ 4.3.6、ActiveMQ 6.1.4、Kafka 3.9.0、Pulsar 4.0.5、NATS 2.10 单机容器，见正文第一、三节</text>
+</svg>

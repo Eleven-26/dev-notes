@@ -396,7 +396,7 @@ service apache.rocketmq.v2.MessagingService
 | **自己实现管理命令** | `200`–`299` 号段 | 这一段是 `mqadmin` 的协议底座 |
 | **新语言客户端** | `apache.rocketmq.v2.MessagingService` | 优先用 gRPC，别手写 Remoting |
 
-本仓对应落地：[核心概念与架构.md](核心概念与架构.md)（长轮询在存储层的另一半）、[消费者与消费位点.md](消费者与消费位点.md)（位点提交与 rebalance）、[运维与排障.md](运维与排障.md)（用 `mqadmin` 的这些 opcode 排障）、[队列粒度设计.md](../队列粒度设计.md)（队列数与 `readQueueNums` 的关系）。
+本仓对应落地：[核心概念与架构.md](核心概念与架构.md)（长轮询在存储层的另一半）、[消费者与消费位点.md](消费者与消费位点.md)（位点提交与 rebalance）、[运维与排障.md](运维与排障.md)（用 `mqadmin` 的这些 opcode 排障）、[消息模型与存储代价.md](../消息模型与存储代价.md)（队列数与 `readQueueNums` 的关系）。
 
 ## 十一、具体使用
 

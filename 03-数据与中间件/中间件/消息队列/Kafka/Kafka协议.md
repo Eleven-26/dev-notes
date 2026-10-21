@@ -227,7 +227,7 @@ for i in range(n):
 ## 关联
 
 - **上游/总纲**：[README.md](README.md) — 本目录的阅读路线与三节点 KRaft 实测坐标
-- **上游/总纲**：[队列粒度设计.md](../队列粒度设计.md) — 跨产品对比：Kafka 的 Topic/Partition 在三种 MQ 里的位置
+- **上游/总纲**：[消息模型与存储代价.md](../消息模型与存储代价.md) — 跨产品对比：Kafka 的 Topic/Partition 在两族六款里的位置
 - **下游机制**：[Topic与分区设计.md](Topic与分区设计.md) — 分区数与副本：协议层之下的存储决策
 - **下游机制**：[核心概念与架构.md](核心概念与架构.md) — 日志段与稀疏索引：Record Batch 落盘之后长什么样
 - **下游机制**：[消息可靠性.md](消息可靠性.md) — `acks` 与幂等：`producerId` / `baseSequence` 在可靠性里的作用

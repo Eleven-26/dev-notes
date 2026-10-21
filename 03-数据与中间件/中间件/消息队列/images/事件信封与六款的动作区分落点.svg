@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">动作怎么区分：统一事件信封 + 六款各自的落点</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">Topic 承载「哪个实体」，信封里的 event_type 承载「哪个动作」——两层不要混用</text>
+
+  <rect x="40" y="80" width="430" height="292" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="56" y="104" font-size="13" font-weight="bold" fill="#0f172a">事件信封（六个字段固定）</text>
+
+  <rect x="56" y="116" width="398" height="34" rx="5" fill="#eef2ff"/>
+  <text x="68" y="138" font-size="12" font-weight="bold" fill="#312e81">event_id</text>
+  <text x="150" y="138" font-size="12" fill="#334155">全局唯一，消费端幂等键</text>
+  <rect x="56" y="156" width="398" height="34" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="68" y="178" font-size="12" font-weight="bold" fill="#312e81">event_type</text>
+  <text x="150" y="178" font-size="12" fill="#334155">动作名，全大写，有限枚举</text>
+  <rect x="56" y="196" width="398" height="34" rx="5" fill="#eef2ff"/>
+  <text x="68" y="218" font-size="12" font-weight="bold" fill="#312e81">aggregate_id</text>
+  <text x="150" y="218" font-size="12" fill="#334155">聚合根 ID，同时是分区键</text>
+  <rect x="56" y="236" width="398" height="34" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="68" y="258" font-size="12" font-weight="bold" fill="#312e81">occurred_at</text>
+  <text x="150" y="258" font-size="12" fill="#334155">业务发生时间，不是投递时间</text>
+  <rect x="56" y="276" width="398" height="34" rx="5" fill="#eef2ff"/>
+  <text x="68" y="298" font-size="12" font-weight="bold" fill="#312e81">version</text>
+  <text x="150" y="298" font-size="12" fill="#334155">Schema 版本，只增不改</text>
+  <rect x="56" y="316" width="398" height="34" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="68" y="338" font-size="12" font-weight="bold" fill="#312e81">data</text>
+  <text x="150" y="338" font-size="12" fill="#334155">业务载荷，不含路由信息</text>
+
+  <rect x="490" y="80" width="470" height="292" rx="8" fill="#fffbeb" stroke="#fbbf24" stroke-width="1.4"/>
+  <text x="506" y="104" font-size="13" font-weight="bold" fill="#78350f">为什么信封要固定：三件事只能靠它</text>
+  <text x="506" y="132" font-size="12" fill="#334155">① 幂等：没有 event_id，重投只能靠业务字段猜「是不是同一条」</text>
+  <text x="506" y="158" font-size="12" fill="#334155">② 路由：没有 event_type，下游只能把消息体全解析一遍再判断</text>
+  <text x="506" y="184" font-size="12" fill="#334155">③ 演进：没有 version，加字段时不知道对面能不能读</text>
+  <line x1="506" y1="204" x2="944" y2="204" stroke="#fcd34d" stroke-width="1"/>
+  <text x="506" y="230" font-size="12" font-weight="bold" fill="#b45309">信封不要塞的东西</text>
+  <text x="506" y="256" font-size="12" fill="#334155">× 消费方名字（换下游就得改生产者）</text>
+  <text x="506" y="282" font-size="12" fill="#334155">× 重试次数 / 死信原因（那是投递层的事）</text>
+  <text x="506" y="308" font-size="12" fill="#334155">× 大字段（附件、快照），只放引用</text>
+  <text x="506" y="340" font-size="12" fill="#475569">× 环境名（用 vhost / namespace / account 隔离）</text>
+
+  <rect x="40" y="392" width="925" height="24" rx="4" fill="#e0e7ff"/>
+  <text x="56" y="409" font-size="11.5" font-weight="bold" fill="#3730a3">同一个 event_type，在六款里分别落到哪一层</text>
+
+  <rect x="40" y="422" width="455" height="58" rx="6" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.2"/>
+  <text x="54" y="443" font-size="12.5" font-weight="bold" fill="#15803d">RocketMQ · Tag</text>
+  <text x="54" y="466" font-size="11.5" fill="#334155">Broker 拉取阶段按 Tag 哈希预过滤，最省带宽</text>
+
+  <rect x="510" y="422" width="455" height="58" rx="6" fill="#fef2f2" stroke="#f87171" stroke-width="1.2"/>
+  <text x="524" y="443" font-size="12.5" font-weight="bold" fill="#b91c1c">Kafka · 消息体里的 event_type</text>
+  <text x="524" y="466" font-size="11.5" fill="#334155">Broker 不参与过滤，只能拉下来自己筛</text>
+
+  <rect x="40" y="488" width="455" height="58" rx="6" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.2"/>
+  <text x="54" y="509" font-size="12.5" font-weight="bold" fill="#15803d">NATS · Subject 后缀</text>
+  <text x="54" y="532" font-size="11.5" fill="#334155">finance.fee.created，订阅侧通配，拆分类不产生对象</text>
+
+  <rect x="510" y="488" width="455" height="58" rx="6" fill="#fffbeb" stroke="#fbbf24" stroke-width="1.2"/>
+  <text x="524" y="509" font-size="12.5" font-weight="bold" fill="#b45309">Pulsar · 消息 properties + key</text>
+  <text x="524" y="532" font-size="11.5" fill="#334155">属性供应用侧筛，key 决定分区与同 key 有序</text>
+
+  <rect x="40" y="554" width="455" height="58" rx="6" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.2"/>
+  <text x="54" y="575" font-size="12.5" font-weight="bold" fill="#15803d">RabbitMQ · routing key</text>
+  <text x="54" y="598" font-size="11.5" fill="#334155">topic exchange 按段匹配，分类落在绑定而不是队列数</text>
+
+  <rect x="510" y="554" width="455" height="58" rx="6" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.2"/>
+  <text x="524" y="575" font-size="12.5" font-weight="bold" fill="#15803d">ActiveMQ · 消息属性 + selector</text>
+  <text x="524" y="598" font-size="11.5" fill="#334155">Broker 侧过滤，selector 可做组合条件</text>
+
+  <text x="40" y="632" font-size="11" fill="#64748B">绿色 = Broker / 服务端参与判断；红色与黄色 = 拉到客户端再判。谁过滤决定「省不省带宽」，不决定「该不该拆 Topic」</text>
+</svg>
