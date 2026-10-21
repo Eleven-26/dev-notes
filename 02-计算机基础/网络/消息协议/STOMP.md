@@ -173,10 +173,10 @@ COMMIT（transaction:tx-1）
 | --- | --- | --- |
 | **浏览器直连 MQ** | ✅ STOMP over WebSocket | 浏览器只有 WebSocket，STOMP 的文本帧可以直接用 JS 拼 |
 | **脚本 / 运维手工发消息** | ✅ STOMP | `telnet` 就能敲，不用装客户端 |
-| **高频消息（万级 QPS）** | ❌ 换 AMQP / 私有二进制 | 每个报文都要重复发 `destination:` 这类字符串，开销占比高 |
+| **高频消息（万级 QPS）** | ❌ 换 [AMQP](AMQP.md) / 私有二进制（见 [自定义协议设计.md](../应用层/自定义协议设计.md)） | 每个报文都要重复发 `destination:` 这类字符串，开销占比高 |
 | **需要消息级事务（生产侧）** | ✅ STOMP 事务 | `BEGIN` / `COMMIT` / `ABORT` 是原生命令 |
-| **IoT 弱网省流量** | ❌ 换 MQTT | STOMP 的文本头在按流量计费的链路上不可接受 |
-| **需要完整路由语义（交换机 / 绑定）** | ❌ 换 AMQP | STOMP 只有 `destination` 一个概念，路由交给服务端解释 |
+| **IoT 弱网省流量** | ❌ 换 [MQTT](MQTT.md) | STOMP 的文本头在按流量计费的链路上不可接受 |
+| **需要完整路由语义（交换机 / 绑定）** | ❌ 换 [AMQP](AMQP.md) | STOMP 只有 `destination` 一个概念，路由交给服务端解释 |
 
 本仓对应落地：[ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)（Go 走 STOMP 的完整接入代码）、[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md)（应用层协议对照）。
 

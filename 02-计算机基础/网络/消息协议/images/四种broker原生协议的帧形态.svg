@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="740" viewBox="0 0 1000 740" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="740" fill="#ffffff"/>
+  <text x="30" y="40" font-size="20" font-weight="bold" fill="#0f172a">四种 broker 原生协议的帧形态：都靠长度前缀定界，但「长度」量的不是同一段字节</text>
+  <text x="30" y="64" font-size="13" fill="#64748b">前三行是二进制（Kafka / Pulsar / RocketMQ），最后一行是纯文本（NATS）；蓝色块是定界字段，灰块是载荷</text>
+
+  <!-- ① Kafka -->
+  <rect x="20" y="86" width="960" height="112" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="20" y="86" width="6" height="112" fill="#2563eb"/>
+  <text x="40" y="112" font-size="14" font-weight="bold" fill="#0f172a">Kafka 请求帧</text>
+  <text x="40" y="134" font-size="11" fill="#475569">二进制 · 定长头</text>
+  <text x="40" y="156" font-size="11" fill="#475569">定界：size 前缀</text>
+  <text x="40" y="178" font-size="11" fill="#475569">实测最小 19 B</text>
+
+  <rect x="250" y="106" width="80" height="54" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="290" y="130" font-size="11.5" fill="#1e3a8a" text-anchor="middle">size</text>
+  <text x="290" y="148" font-size="10" fill="#1e3a8a" text-anchor="middle">4 B</text>
+  <rect x="338" y="106" width="340" height="54" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="508" y="130" font-size="11.5" fill="#1e3a8a" text-anchor="middle">请求头 header</text>
+  <text x="508" y="148" font-size="10" fill="#1e3a8a" text-anchor="middle">api_key 2B · api_version 2B · correlation_id 4B · client_id 变长</text>
+  <rect x="686" y="106" width="200" height="54" rx="5" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="786" y="130" font-size="11.5" fill="#334155" text-anchor="middle">请求体 body</text>
+  <text x="786" y="148" font-size="10" fill="#334155" text-anchor="middle">Produce / Fetch 的参数</text>
+  <text x="250" y="184" font-size="11" fill="#475569">响应帧更短：只有 correlation_id + 响应体，没有 api_key 与 api_version</text>
+
+  <!-- ② Pulsar -->
+  <rect x="20" y="214" width="960" height="124" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="20" y="214" width="6" height="124" fill="#7c3aed"/>
+  <text x="40" y="240" font-size="14" font-weight="bold" fill="#0f172a">Pulsar 帧</text>
+  <text x="40" y="262" font-size="11" fill="#475569">二进制 · 六段（末段两截）</text>
+  <text x="40" y="284" font-size="11" fill="#475569">定界：totalSize</text>
+  <text x="40" y="306" font-size="11" fill="#475569">按 proto 陈述，未抓包</text>
+
+  <rect x="250" y="234" width="80" height="56" rx="5" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="290" y="258" font-size="10.5" fill="#4c1d95" text-anchor="middle">totalSize</text>
+  <text x="290" y="276" font-size="10" fill="#4c1d95" text-anchor="middle">4 B</text>
+  <rect x="334" y="234" width="86" height="56" rx="5" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="377" y="258" font-size="10.5" fill="#4c1d95" text-anchor="middle">commandSize</text>
+  <text x="377" y="276" font-size="10" fill="#4c1d95" text-anchor="middle">4 B</text>
+  <rect x="424" y="234" width="112" height="56" rx="5" fill="#f5f3ff" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="480" y="258" font-size="10.5" fill="#4c1d95" text-anchor="middle">command</text>
+  <text x="480" y="276" font-size="10" fill="#4c1d95" text-anchor="middle">Protobuf</text>
+  <rect x="540" y="234" width="70" height="56" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="575" y="258" font-size="10.5" fill="#78350f" text-anchor="middle">magic</text>
+  <text x="575" y="276" font-size="10" fill="#78350f" text-anchor="middle">0x0e01</text>
+  <rect x="614" y="234" width="80" height="56" rx="5" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="654" y="258" font-size="10.5" fill="#4c1d95" text-anchor="middle">checksum</text>
+  <text x="654" y="276" font-size="10" fill="#4c1d95" text-anchor="middle">CRC32-C</text>
+  <rect x="698" y="234" width="108" height="56" rx="5" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="752" y="258" font-size="10.5" fill="#334155" text-anchor="middle">metadata</text>
+  <text x="752" y="276" font-size="10" fill="#334155" text-anchor="middle">4 B + 变长</text>
+  <rect x="810" y="234" width="108" height="56" rx="5" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="864" y="258" font-size="10.5" fill="#334155" text-anchor="middle">payload</text>
+  <text x="864" y="276" font-size="10" fill="#334155" text-anchor="middle">4 B + 变长</text>
+  <text x="250" y="314" font-size="11" fill="#475569">magic 一出现就说明「命令段结束，后面是消息体」；command 与 metadata 是两个不同的 Protobuf 消息</text>
+
+  <!-- ③ RocketMQ -->
+  <rect x="20" y="352" width="960" height="112" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="20" y="352" width="6" height="112" fill="#0f766e"/>
+  <text x="40" y="378" font-size="14" font-weight="bold" fill="#0f172a">RocketMQ</text>
+  <text x="40" y="400" font-size="11" fill="#475569">RemotingCommand</text>
+  <text x="40" y="422" font-size="11" fill="#475569">定界：总长 + 头长</text>
+  <text x="40" y="444" font-size="11" fill="#475569">按 5.x 源码陈述，未抓包</text>
+
+  <rect x="250" y="372" width="84" height="54" rx="5" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="292" y="396" font-size="11.5" fill="#134e4a" text-anchor="middle">总长</text>
+  <text x="292" y="414" font-size="10" fill="#134e4a" text-anchor="middle">4 B</text>
+  <rect x="342" y="372" width="84" height="54" rx="5" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="384" y="396" font-size="11.5" fill="#134e4a" text-anchor="middle">头长</text>
+  <text x="384" y="414" font-size="10" fill="#134e4a" text-anchor="middle">4 B</text>
+  <rect x="434" y="372" width="300" height="54" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="584" y="396" font-size="11.5" fill="#1e3a8a" text-anchor="middle">头 header（默认 JSON）</text>
+  <text x="584" y="414" font-size="10" fill="#1e3a8a" text-anchor="middle">code · opaque · flag · extFields</text>
+  <rect x="742" y="372" width="170" height="54" rx="5" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="827" y="396" font-size="11.5" fill="#334155" text-anchor="middle">body</text>
+  <text x="827" y="414" font-size="10" fill="#334155" text-anchor="middle">消息体</text>
+  <text x="250" y="448" font-size="11" fill="#475569">头是 JSON、长度随字段数变 —— 所以必须先读「头长」，才知道头在哪结束</text>
+
+  <!-- ④ NATS -->
+  <rect x="20" y="478" width="960" height="124" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="20" y="478" width="6" height="124" fill="#0f766e"/>
+  <text x="40" y="504" font-size="14" font-weight="bold" fill="#0f172a">NATS</text>
+  <text x="40" y="526" font-size="11" fill="#475569">纯文本 · 行 + 显式长度</text>
+  <text x="40" y="548" font-size="11" fill="#475569">定界：CRLF + payload 字节数</text>
+  <text x="40" y="570" font-size="11" fill="#475569">实测 nats-server 2.10.29</text>
+
+  <rect x="250" y="496" width="670" height="100" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="266" y="520" font-size="12.5" font-family="Consolas, Menlo, monospace" fill="#1e3a8a">PUB demo.orders 11\r\n</text>
+  <text x="266" y="542" font-size="12.5" font-family="Consolas, Menlo, monospace" fill="#334155">hello world\r\n</text>
+  <text x="266" y="568" font-size="12.5" font-family="Consolas, Menlo, monospace" fill="#92400e">MSG demo.orders 1 11\r\n</text>
+  <text x="266" y="590" font-size="12.5" font-family="Consolas, Menlo, monospace" fill="#334155">hello world\r\n</text>
+  <text x="560" y="568" font-size="10.5" fill="#64748b">11 是 payload 的字节数，不含 CRLF</text>
+  <text x="560" y="590" font-size="10.5" fill="#64748b">1 是订阅时客户端自编的 sid</text>
+
+  <!-- 长度口径对照 -->
+  <rect x="20" y="618" width="231" height="80" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="36" y="644" font-size="12.5" font-weight="bold" fill="#1e3a8a">Kafka</text>
+  <text x="36" y="666" font-size="10.5" fill="#1e3a8a">size 不含自身 4 B</text>
+  <text x="36" y="684" font-size="10.5" fill="#1e3a8a">先读 size，再读它的字节数</text>
+
+  <rect x="263" y="618" width="231" height="80" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="279" y="644" font-size="12.5" font-weight="bold" fill="#4c1d95">Pulsar</text>
+  <text x="279" y="666" font-size="10.5" fill="#4c1d95">totalSize 不含自身 4 B</text>
+  <text x="279" y="684" font-size="10.5" fill="#4c1d95">command 与 metadata 分段存</text>
+
+  <rect x="506" y="618" width="231" height="80" rx="8" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.5"/>
+  <text x="522" y="644" font-size="12.5" font-weight="bold" fill="#134e4a">RocketMQ</text>
+  <text x="522" y="666" font-size="10.5" fill="#134e4a">总长 + 头长两个字段</text>
+  <text x="522" y="684" font-size="10.5" fill="#134e4a">头长决定头在哪结束</text>
+
+  <rect x="749" y="618" width="231" height="80" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="765" y="644" font-size="12.5" font-weight="bold" fill="#78350f">AMQP 0-9-1</text>
+  <text x="765" y="666" font-size="10.5" fill="#78350f">size 只算 payload</text>
+  <text x="765" y="684" font-size="10.5" fill="#78350f">另有 7 B 头 + 1 B 帧尾</text>
+
+  <text x="30" y="726" font-size="11" fill="#94a3b8">一句话：四个协议都叫「长度」，量的却分别是「后面的全部字节」「头」「头 + 体」「payload」——跨协议复用解析器必然读飞。</text>
+</svg>
