@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ActiveMQ 排障决策树：从「发送卡住 / 收不到」走到具体环节</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">按顺序问五个问题，每一层的「是 / 否」各指向一类根因；读数均来自 Jolokia</text>
+
+  <rect x="60" y="88" width="380" height="58" rx="8" fill="#e2e8f0" stroke="#475569" stroke-width="1.4"/>
+  <text x="250" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">症状：发送卡住，或消费端一直收不到</text>
+  <text x="250" y="134" text-anchor="middle" font-size="11.5" fill="#334155">先分清是「发送侧失败」还是「消费侧没拿到」</text>
+
+  <line x1="250" y1="146" x2="250" y2="172" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="250,176 244,165 256,165" fill="#475569"/>
+
+  <rect x="60" y="176" width="380" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="201" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 发送端有异常吗？</text>
+  <text x="250" y="223" text-anchor="middle" font-size="11.5" fill="#1d4ed8">异常 / -ERR / SecurityException / 连接被拒</text>
+
+  <line x1="440" y1="207" x2="512" y2="207" stroke="#ea580c" stroke-width="1.5"/>
+  <polygon points="516,207 505,202 505,212" fill="#ea580c"/>
+  <text x="454" y="200" font-size="11" fill="#64748b">有</text>
+
+  <rect x="520" y="176" width="440" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="536" y="201" font-size="12" font-weight="bold" fill="#7c2d12">先查接入层：鉴权、目的地名、端口选错</text>
+  <text x="536" y="223" font-size="11.5" fill="#9a3412">Java 走 61616、STOMP 走 61613；AMQP 是 1.0 不是 0-9-1</text>
+
+  <line x1="250" y1="238" x2="250" y2="264" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="250,268 244,257 256,257" fill="#475569"/>
+  <text x="262" y="258" font-size="11" fill="#64748b">无</text>
+
+  <rect x="60" y="268" width="380" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="293" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">② ConsumerCount 是不是 0？</text>
+  <text x="250" y="315" text-anchor="middle" font-size="11.5" fill="#1d4ed8">看目标队列的消费者计数，不是看进程存活</text>
+
+  <line x1="440" y1="299" x2="512" y2="299" stroke="#ea580c" stroke-width="1.5"/>
+  <polygon points="516,299 505,294 505,304" fill="#ea580c"/>
+  <text x="454" y="292" font-size="11" fill="#64748b">是</text>
+
+  <rect x="520" y="268" width="440" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="536" y="293" font-size="12" font-weight="bold" fill="#7c2d12">没人订阅：消费者掉线 / selector 全不匹配</text>
+  <text x="536" y="315" font-size="11.5" fill="#9a3412">selector 在 broker 侧过滤，属性类型写错也会全不匹配</text>
+
+  <line x1="250" y1="330" x2="250" y2="356" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="250,360 244,349 256,349" fill="#475569"/>
+  <text x="262" y="350" font-size="11" fill="#64748b">否</text>
+
+  <rect x="60" y="360" width="380" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="385" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">③ QueueSize 还在持续上涨吗？</text>
+  <text x="250" y="407" text-anchor="middle" font-size="11.5" fill="#1d4ed8">连读两次，看净增长而不是单次快照</text>
+
+  <line x1="440" y1="391" x2="512" y2="391" stroke="#16a34a" stroke-width="1.5"/>
+  <polygon points="516,391 505,386 505,396" fill="#16a34a"/>
+  <text x="454" y="384" font-size="11" fill="#64748b">否</text>
+
+  <rect x="520" y="360" width="440" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="536" y="385" font-size="12" font-weight="bold" fill="#14532d">消息已被消费，问题在业务侧</text>
+  <text x="536" y="407" font-size="11.5" fill="#166534">查处理日志与 ACK 时机；AUTO_ACKNOWLEDGE 会「先确认后处理」</text>
+
+  <line x1="250" y1="422" x2="250" y2="448" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="250,452 244,441 256,441" fill="#475569"/>
+  <text x="262" y="442" font-size="11" fill="#64748b">是</text>
+
+  <rect x="60" y="452" width="380" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="477" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">④ Memory / Store 水位接近 100%？</text>
+  <text x="250" y="499" text-anchor="middle" font-size="11.5" fill="#1d4ed8">MemoryPercentUsage / StorePercentUsage / TempPercentUsage</text>
+
+  <line x1="440" y1="483" x2="512" y2="483" stroke="#ea580c" stroke-width="1.5"/>
+  <polygon points="516,483 505,478 505,488" fill="#ea580c"/>
+  <text x="454" y="476" font-size="11" fill="#64748b">是</text>
+
+  <rect x="520" y="452" width="440" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="536" y="477" font-size="12" font-weight="bold" fill="#7c2d12">触发 producer flow control 或 store 写满</text>
+  <text x="536" y="499" font-size="11.5" fill="#9a3412">表象是「卡住不报错」；先加消费或扩存储，别直接重启</text>
+
+  <line x1="250" y1="514" x2="250" y2="540" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="250,544 244,533 256,533" fill="#475569"/>
+  <text x="262" y="534" font-size="11" fill="#64748b">否</text>
+
+  <rect x="60" y="544" width="380" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="250" y="569" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">⑤ 有没有单队列膨胀或大消息？</text>
+  <text x="250" y="591" text-anchor="middle" font-size="11.5" fill="#1d4ed8">看 AverageMessageSize 与单队列占比</text>
+
+  <line x1="440" y1="575" x2="512" y2="575" stroke="#ea580c" stroke-width="1.5"/>
+  <polygon points="516,575 505,570 505,580" fill="#ea580c"/>
+  <text x="454" y="568" font-size="11" fill="#64748b">是</text>
+
+  <rect x="520" y="544" width="440" height="62" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="536" y="569" font-size="12" font-weight="bold" fill="#7c2d12">KahaDB journal 页重写，IO 被放大</text>
+  <text x="536" y="591" font-size="11.5" fill="#9a3412">全局单 store：一个队列的病会拖慢所有目的地</text>
+
+  <line x1="250" y1="606" x2="250" y2="636" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="250,640 244,629 256,629" fill="#475569"/>
+  <text x="262" y="630" font-size="11" fill="#64748b">否</text>
+
+  <rect x="60" y="640" width="900" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="80" y="668" font-size="12.5" font-weight="bold" fill="#1e3a8a">都不是：查 DLQ 与 JMSXDeliveryCount</text>
+  <text x="80" y="690" font-size="11.5" fill="#1d4ed8">消息可能在重投或已进 ActiveMQ.DLQ；同一消息处理两次说明 ack 前崩溃，需要业务幂等</text>
+
+  <text x="60" y="736" font-size="11.5" fill="#64748b">注意：QueueSize 与 EnqueueCount - DequeueCount 可能对不上，差值是 broker 启动时从 store 载入的存量（本机实测 90 vs 0）</text>
+  <text x="60" y="760" font-size="11.5" fill="#64748b">判据：先看「有没有消费者」，再看「水位」，最后才怀疑存储与消息体；顺序反了会把容量问题当成代码 bug</text>
+</svg>

@@ -136,7 +136,7 @@ RabbitMQ 是基于 **AMQP 0-9-1** 协议的开源消息代理，**Erlang 编写*
 - **上游/总纲**：[队列粒度设计.md](../队列粒度设计.md) — 队列粒度的跨产品判据与代价对照，本文是该判据在 RabbitMQ 侧的落地版
 - **对照/互补**：[README.md](../RocketMQ/README.md) — Topic/Queue/Tag 模型 vs 本文的 Exchange/Binding/RoutingKey
 - **对照/互补**：[README.md](../Kafka/README.md) — 分区日志 + 消费位点：可以回溯重放，RabbitMQ 不能
-- **对照/互补**：[Pulsar.md](../Pulsar.md) — 存算分离路线，订阅类型承担了「路由」的一半职责
-- **对照/互补**：[ActiveMQ.md](../ActiveMQ.md) — 同为 JMS/AMQP 系的业务消息 broker，KahaDB 单 store 的存储形态
+- **对照/互补**：[README.md](../Pulsar/README.md) — 存算分离路线，订阅类型承担了「路由」的一半职责
+- **对照/互补**：[README.md](../ActiveMQ/README.md) — 同为 JMS/AMQP 系的业务消息 broker，KahaDB 单 store 的存储形态
 - **上游/总纲**：[Raft协议.md](../../../../04-架构与系统/分布式/共识协议/Raft协议.md) — Quorum 队列的多数派来源
 - **上游/总纲**：[最终一致方案.md](../../../../04-架构与系统/分布式/分布式事务/最终一致方案.md) — Confirm + 本地消息表的完整语义

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">同一套 NATS 语义，jnats 与 nats.go 在七处行为不同</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">两侧均为本机实测：Go nats.go v1.53.1 / Java jnats 2.20.5，连同一个 nats-server 2.10.29</text>
+
+  <rect x="40" y="82" width="240" height="40" rx="6" fill="#1e3a8a"/>
+  <text x="160" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">维度</text>
+  <rect x="288" y="82" width="320" height="40" rx="6" fill="#dcfce7"/>
+  <text x="448" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">Go（nats.go）</text>
+  <rect x="616" y="82" width="344" height="40" rx="6" fill="#ffedd5"/>
+  <text x="788" y="108" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">Java（jnats）</text>
+
+  <rect x="40" y="130" width="240" height="58" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="154" font-size="12" font-weight="bold" fill="#334155">连接创建</text>
+  <text x="52" y="174" font-size="11" fill="#64748b">首次建连失败的处理</text>
+  <rect x="288" y="130" width="320" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="300" y="154" font-size="11.5" fill="#334155">nats.Connect 返回 error</text>
+  <text x="300" y="174" font-size="11.5" fill="#475569">nats: Authorization Violation</text>
+  <rect x="616" y="130" width="344" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="628" y="154" font-size="11.5" fill="#334155">Nats.connect 抛 AuthenticationException</text>
+  <text x="628" y="174" font-size="11.5" fill="#475569">message 里带服务端原因</text>
+
+  <rect x="40" y="188" width="240" height="58" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="212" font-size="12" font-weight="bold" fill="#334155">订阅并发单元</text>
+  <text x="52" y="232" font-size="11" fill="#64748b">队列组成员怎么建</text>
+  <rect x="288" y="188" width="320" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="300" y="212" font-size="11.5" fill="#334155">每个成员一个 QueueSubscribe</text>
+  <text x="300" y="232" font-size="11.5" fill="#475569">回调在库内部协程池执行</text>
+  <rect x="616" y="188" width="344" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="628" y="212" font-size="11.5" fill="#334155">每个成员一个 Dispatcher</text>
+  <text x="628" y="232" font-size="11.5" fill="#475569">一个 Dispatcher 一条投递线程，串行</text>
+
+  <rect x="40" y="246" width="240" height="58" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="270" font-size="12" font-weight="bold" fill="#334155">无订阅者的请求</text>
+  <text x="52" y="290" font-size="11" fill="#64748b">request 的失败形态</text>
+  <rect x="288" y="246" width="320" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="300" y="270" font-size="11.5" fill="#334155">立即返回 ErrNoResponders</text>
+  <text x="300" y="290" font-size="11.5" fill="#475569">错误文案：no responders ...</text>
+  <rect x="616" y="246" width="344" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="628" y="270" font-size="11.5" fill="#334155">直接返回 null，不抛异常</text>
+  <text x="628" y="290" font-size="11.5" fill="#475569">必须先判空，再谈超时</text>
+
+  <rect x="40" y="304" width="240" height="58" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="328" font-size="12" font-weight="bold" fill="#334155">JetStream 管理</text>
+  <text x="52" y="348" font-size="11" fill="#64748b">建流 / 删流的位置</text>
+  <rect x="288" y="304" width="320" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="300" y="328" font-size="11.5" fill="#334155">与发布同一个 JetStream 句柄</text>
+  <text x="300" y="348" font-size="11.5" fill="#475569">CreateStream / DeleteStream</text>
+  <rect x="616" y="304" width="344" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="628" y="328" font-size="11.5" fill="#334155">单独取 JetStreamManagement</text>
+  <text x="628" y="348" font-size="11.5" fill="#475569">addStream / deleteStream</text>
+
+  <rect x="40" y="362" width="240" height="58" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="386" font-size="12" font-weight="bold" fill="#334155">服务端没开 JetStream</text>
+  <text x="52" y="406" font-size="11" fill="#64748b">报错长什么样</text>
+  <rect x="288" y="362" width="320" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="300" y="386" font-size="11.5" fill="#fef2f2">no responders available</text>
+  <text x="300" y="406" font-size="11.5" fill="#475569">看似订阅问题，实为未开 -js</text>
+  <rect x="616" y="362" width="344" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="628" y="386" font-size="11.5" fill="#fef2f2">IOException：Timeout or no response</text>
+  <text x="628" y="406" font-size="11.5" fill="#475569">看似网络慢，实为未开 -js</text>
+
+  <rect x="40" y="420" width="240" height="58" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="444" font-size="12" font-weight="bold" fill="#334155">drain 返回时状态</text>
+  <text x="52" y="464" font-size="11" fill="#64748b">排空是否已完成</text>
+  <rect x="288" y="420" width="320" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="300" y="444" font-size="11.5" fill="#334155">DRAINING_SUBS（仍在排空）</text>
+  <text x="300" y="464" font-size="11.5" fill="#475569">轮询到 CLOSED 再退出</text>
+  <rect x="616" y="420" width="344" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="628" y="444" font-size="11.5" fill="#334155">CONNECTED（尚未开始关闭）</text>
+  <text x="628" y="464" font-size="11.5" fill="#475569">同样要轮询到 CLOSED</text>
+
+  <rect x="40" y="478" width="240" height="58" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="502" font-size="12" font-weight="bold" fill="#334155">请求-应答往返</text>
+  <text x="52" y="522" font-size="11" fill="#64748b">100 次串行、本机回环</text>
+  <rect x="288" y="478" width="320" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="300" y="502" font-size="11.5" fill="#334155">75 ms，平均 0.75 ms</text>
+  <text x="300" y="522" font-size="11.5" fill="#475569">同一台机器、同一 broker</text>
+  <rect x="616" y="478" width="344" height="58" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="628" y="502" font-size="11.5" fill="#334155">316 ms，平均 3.16 ms</text>
+  <text x="628" y="522" font-size="11.5" fill="#475569">差异来自等待实现与 JIT，不是网络</text>
+
+  <rect x="40" y="552" width="920" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="576" text-anchor="middle" font-size="12.5" fill="#334155">读法：语义层两边一致（Core 不存、JetStream 落盘、队列组竞争），差异集中在「怎么发现失败」与「线程边界」。</text>
+  <text x="500" y="600" text-anchor="middle" font-size="12" fill="#475569">排障时先按语言对照：Go 的 no responders 与 Java 的 read timeout 说的是同一件事——服务端没开 JetStream。</text>
+</svg>

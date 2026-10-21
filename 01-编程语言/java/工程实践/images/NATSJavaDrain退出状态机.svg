@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">jnats 的 drain：返回不等于关闭，必须等状态走到 CLOSED</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机实测：drain(5s) 返回时 status=CONNECTED，轮询后变为 CLOSED；Go 侧同一操作返回 DRAINING_SUBS</text>
+
+  <rect x="60" y="120" width="220" height="86" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="170" y="150" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">CONNECTED</text>
+  <text x="170" y="172" text-anchor="middle" font-size="11.5" fill="#334155">正常收发</text>
+  <text x="170" y="192" text-anchor="middle" font-size="11.5" fill="#475569">本地 pending 可能非空</text>
+
+  <rect x="390" y="120" width="220" height="86" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.8"/>
+  <text x="500" y="150" text-anchor="middle" font-size="14" font-weight="bold" fill="#713f12">DRAINING_SUBS</text>
+  <text x="500" y="172" text-anchor="middle" font-size="11.5" fill="#334155">先退订，再排空在途</text>
+  <text x="500" y="192" text-anchor="middle" font-size="11.5" fill="#475569">不再接收新消息</text>
+
+  <rect x="720" y="120" width="220" height="86" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.8"/>
+  <text x="830" y="150" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">CLOSED</text>
+  <text x="830" y="172" text-anchor="middle" font-size="11.5" fill="#334155">连接真正断开</text>
+  <text x="830" y="192" text-anchor="middle" font-size="11.5" fill="#475569">此时进程退出才安全</text>
+
+  <line x1="280" y1="163" x2="382" y2="163" stroke="#2563eb" stroke-width="2"/>
+  <polygon points="390,163 378,157 378,169" fill="#2563eb"/>
+  <text x="335" y="146" text-anchor="middle" font-size="11.5" fill="#1d4ed8">drain()</text>
+
+  <line x1="610" y1="163" x2="712" y2="163" stroke="#16a34a" stroke-width="2"/>
+  <polygon points="720,163 708,157 708,169" fill="#16a34a"/>
+  <text x="665" y="146" text-anchor="middle" font-size="11.5" fill="#15803d">排空完成</text>
+
+  <path d="M280 178 C330 220 360 220 390 220" fill="none" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="330" y="238" text-anchor="middle" font-size="11.5" fill="#c2410c">close()：跳过排空</text>
+  <line x1="390" y1="220" x2="712" y2="220" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <polygon points="720,220 708,214 708,226" fill="#ea580c"/>
+  <line x1="720" y1="211" x2="720" y2="226" stroke="#ea580c" stroke-width="1.6"/>
+
+  <rect x="60" y="286" width="880" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="500" y="310" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">Java 实测时序</text>
+  <text x="500" y="333" text-anchor="middle" font-size="12" fill="#334155">DRAIN begin → CONSUME drain-1 / drain-2 → DRAIN returned status=CONNECTED → DRAIN final status=CLOSED</text>
+  <text x="500" y="356" text-anchor="middle" font-size="12" fill="#475569">drain(5s) 返回时在途消息还在排空；此刻直接退出 JVM，pending 中的 publish 会丢。</text>
+
+  <rect x="60" y="404" width="880" height="118" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="500" y="428" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">两种「看起来已经关了」的错误写法</text>
+  <text x="500" y="452" text-anchor="middle" font-size="12" fill="#334155">1）drain 之后立刻 System.exit：状态仍在 CONNECTED，本地缓冲未发出，Core 消息直接丢失。</text>
+  <text x="500" y="474" text-anchor="middle" font-size="12" fill="#334155">2）只关连接、不停 fetch 循环：后续 fetch 拿到关闭异常，日志刷屏，且看不出是主动退出。</text>
+  <text x="500" y="500" text-anchor="middle" font-size="12" fill="#475569">正确做法：先停入口与业务循环，再 drain，再轮询状态到 CLOSED，最后让 main 返回。</text>
+
+  <rect x="60" y="536" width="880" height="0" fill="#ffffff"/>
+</svg>

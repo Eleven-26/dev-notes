@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">NATS 部署拓扑：两个单机容器、四组宿主端口</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一镜像，一个开 JetStream、一个不开，用来对照有无持久化</text>
+
+  <rect x="20" y="80" width="960" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="106" font-size="14" font-weight="bold" fill="#0f172a">① 实测容器组：客户端只需要连宿主端口，容器内端口固定不变</text>
+
+  <rect x="50" y="126" width="190" height="154" rx="8" fill="#e2e8f0" stroke="#475569" stroke-width="1.4"/>
+  <text x="145" y="156" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e293b">客户端</text>
+  <text x="145" y="182" text-anchor="middle" font-size="11.5" fill="#334155">Go nats.go v1.53.1</text>
+  <text x="145" y="204" text-anchor="middle" font-size="11.5" fill="#334155">Python 手写探针</text>
+  <text x="145" y="230" text-anchor="middle" font-size="11" fill="#475569">CONNECT 带 token</text>
+  <text x="145" y="252" text-anchor="middle" font-size="11" fill="#475569">s3cret-token</text>
+
+  <line x1="244" y1="150" x2="360" y2="150" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="360,150 348,144 348,156" fill="#2563eb"/>
+  <text x="300" y="140" text-anchor="middle" font-size="11" fill="#1d4ed8">14222 → 4222</text>
+
+  <line x1="244" y1="214" x2="360" y2="214" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="360,214 348,208 348,220" fill="#2563eb"/>
+  <text x="300" y="204" text-anchor="middle" font-size="11" fill="#1d4ed8">18222 → 8222</text>
+
+  <rect x="370" y="120" width="580" height="112" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="386" y="146" font-size="12.5" font-weight="bold" fill="#1e3a8a">nats-lab：nats-server 2.10.29，启动参数 -c /etc/nats/nats.conf -js</text>
+  <text x="386" y="170" font-size="11.5" fill="#1d4ed8">宿主 14222 → 容器 4222（客户端） ｜ 宿主 18222 → 容器 8222（HTTP 监控）</text>
+  <text x="386" y="194" font-size="11.5" fill="#1d4ed8">JetStream：store_dir=/data，max_memory_store=256MB，max_file_store=2GB</text>
+  <text x="386" y="218" font-size="11.5" fill="#1d4ed8">/jsz 实测：streams=1，consumers=2，messages=6，bytes=317</text>
+
+  <rect x="370" y="250" width="580" height="58" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="386" y="272" font-size="12" fill="#334155">nats-lab-nojs：同一镜像、未加 -js（宿主 14223 → 4222，18223 → 8222）</text>
+  <text x="386" y="294" font-size="11.5" fill="#64748b">此时调用 JetStream 直接返回：nats: jetstream not enabled</text>
+
+  <rect x="20" y="336" width="960" height="152" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="362" font-size="14" font-weight="bold" fill="#0f172a">② nats.conf 的四个必写项：少了任何一项都会在某个方向上失效</text>
+
+  <rect x="40" y="376" width="440" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="52" y="396" font-size="11.5" fill="#14532d">port: 4222 —— 客户端监听端口</text>
+  <rect x="500" y="376" width="460" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="512" y="396" font-size="11.5" fill="#14532d">http_port: 8222 —— 不写则 /healthz 探针恒失败</text>
+
+  <rect x="40" y="414" width="440" height="30" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="52" y="434" font-size="11.5" fill="#7c2d12">authorization ｜ token 或 users 权限表</text>
+  <rect x="500" y="414" width="460" height="30" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="512" y="434" font-size="11.5" fill="#7c2d12">jetstream ｜ store_dir + 两个容量上限</text>
+
+  <text x="40" y="468" font-size="11.5" fill="#64748b">本机 /varz 实测默认值：max_payload=1048576，max_pending=67108864，ping_interval=120s，ping_max=2，max_control_line=4096</text>
+
+  <rect x="20" y="504" width="960" height="118" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="6 4"/>
+  <text x="36" y="530" font-size="14" font-weight="bold" fill="#0f172a">③ 集群形态（文档口径，未实测）：节点之间用 route 6222 互联成 mesh</text>
+
+  <rect x="200" y="548" width="150" height="42" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="275" y="574" text-anchor="middle" font-size="12" fill="#1e3a8a">node-1</text>
+  <rect x="425" y="548" width="150" height="42" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="500" y="574" text-anchor="middle" font-size="12" fill="#1e3a8a">node-2</text>
+  <rect x="650" y="548" width="150" height="42" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="725" y="574" text-anchor="middle" font-size="12" fill="#1e3a8a">node-3</text>
+
+  <line x1="350" y1="560" x2="425" y2="560" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="350" y1="578" x2="650" y2="578" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="575" y1="560" x2="650" y2="560" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="36" y="614" font-size="11.5" fill="#64748b">本机 docker network create 不可用，多节点互访未实测；单机建 Replicas 大于 1 的流会直接报错</text>
+</svg>

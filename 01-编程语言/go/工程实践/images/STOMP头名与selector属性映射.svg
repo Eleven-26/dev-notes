@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">STOMP 头如何变成可过滤的 JMS 属性：中划线名字静默失配</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机 go-stomp/v3 实测：各发 4 条（A / B 各 2）到同一队列，只改发送头名与 selector</text>
+
+  <text x="180" y="96" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">STOMP SEND 头</text>
+  <text x="480" y="96" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">Broker 侧的属性转换</text>
+  <text x="800" y="96" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">订阅端 selector 结果</text>
+
+  <rect x="60" y="118" width="240" height="70" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="180" y="145" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">order-key: A</text>
+  <text x="180" y="167" text-anchor="middle" font-size="11.5" fill="#334155">中划线头名</text>
+
+  <line x1="300" y1="153" x2="332" y2="153" stroke="#dc2626" stroke-width="1.6"/>
+  <polygon points="340,153 329,148 329,158" fill="#dc2626"/>
+
+  <rect x="340" y="118" width="280" height="70" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="480" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">不是合法的 JMS 标识符</text>
+  <text x="480" y="167" text-anchor="middle" font-size="11.5" fill="#334155">属性进不去，selector 看不到它</text>
+
+  <line x1="620" y1="153" x2="652" y2="153" stroke="#dc2626" stroke-width="1.6"/>
+  <polygon points="660,153 649,148 649,158" fill="#dc2626"/>
+
+  <rect x="660" y="118" width="280" height="70" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="800" y="145" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">selector order-key = 'A'</text>
+  <text x="800" y="167" text-anchor="middle" font-size="11.5" fill="#334155">收到 0 条，不报错</text>
+
+  <rect x="60" y="216" width="240" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="180" y="243" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">orderKey: A</text>
+  <text x="180" y="265" text-anchor="middle" font-size="11.5" fill="#334155">驼峰头名</text>
+
+  <line x1="300" y1="251" x2="332" y2="251" stroke="#16a34a" stroke-width="1.6"/>
+  <polygon points="340,251 329,246 329,256" fill="#16a34a"/>
+
+  <rect x="340" y="216" width="280" height="70" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="480" y="243" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">合法标识符，转成 JMS 属性</text>
+  <text x="480" y="265" text-anchor="middle" font-size="11.5" fill="#334155">orderKey 可被 selector 引用</text>
+
+  <line x1="620" y1="251" x2="652" y2="251" stroke="#16a34a" stroke-width="1.6"/>
+  <polygon points="660,251 649,246 649,256" fill="#16a34a"/>
+
+  <rect x="660" y="216" width="280" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="800" y="243" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">selector orderKey = 'A'</text>
+  <text x="800" y="265" text-anchor="middle" font-size="11.5" fill="#334155">收到 2 条（A 的两条）</text>
+
+  <rect x="60" y="314" width="240" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="180" y="341" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">任意头名，4 条全发</text>
+  <text x="180" y="363" text-anchor="middle" font-size="11.5" fill="#334155">不带头名过滤</text>
+
+  <line x1="300" y1="349" x2="332" y2="349" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="340,349 329,344 329,354" fill="#2563eb"/>
+
+  <rect x="340" y="314" width="280" height="70" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="480" y="341" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">不设 selector</text>
+  <text x="480" y="363" text-anchor="middle" font-size="11.5" fill="#334155">队列里的消息全量投递</text>
+
+  <line x1="620" y1="349" x2="652" y2="349" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="660,349 649,344 649,354" fill="#2563eb"/>
+
+  <rect x="660" y="314" width="280" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="800" y="341" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">收到 4 条（基线）</text>
+  <text x="800" y="363" text-anchor="middle" font-size="11.5" fill="#334155">证明消息确实都在队列里</text>
+
+  <rect x="40" y="412" width="920" height="86" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="438" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">结论：头名统一用驼峰或下划线</text>
+  <text x="500" y="461" text-anchor="middle" font-size="12" fill="#334155">selector 失配是「零匹配」而不是报错：消息照常入队、照常被别的消费者拿走，问题只在收不到的那一端。</text>
+  <text x="500" y="484" text-anchor="middle" font-size="12" fill="#475569">同一个坑在 Java 侧同样存在：setStringProperty("order-key") 能设进去，selector 仍然匹配不到。</text>
+</svg>

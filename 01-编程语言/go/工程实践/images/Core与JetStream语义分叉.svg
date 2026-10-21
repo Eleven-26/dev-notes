@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">同一个 nats.go，两套语义：Core 转发即忘，JetStream 落盘可补投</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判断只看一条：断线或崩溃之后，这条消息还要不要</text>
+
+  <rect x="40" y="88" width="440" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="260" y="116" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">Core NATS：At-Most-Once</text>
+
+  <rect x="66" y="140" width="180" height="62" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="156" y="165" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">Publish</text>
+  <text x="156" y="187" text-anchor="middle" font-size="11.5" fill="#334155">写进本地缓冲即返回</text>
+
+  <line x1="246" y1="171" x2="276" y2="171" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="280,171 269,166 269,176" fill="#2563eb"/>
+
+  <rect x="280" y="140" width="170" height="62" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="365" y="165" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">Broker 内存转发</text>
+  <text x="365" y="187" text-anchor="middle" font-size="11.5" fill="#334155">无落盘、无确认</text>
+
+  <rect x="66" y="230" width="384" height="96" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="258" y="256" text-anchor="middle" font-size="12" font-weight="bold" fill="#713f12">两条岔路，发布方都感知不到</text>
+  <text x="258" y="279" text-anchor="middle" font-size="11.5" fill="#334155">有订阅者：投递一次，不 ACK、不重投</text>
+  <text x="258" y="301" text-anchor="middle" font-size="11.5" fill="#334155">无订阅者：消息当场消失（本机 got=0）</text>
+
+  <rect x="66" y="350" width="384" height="82" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="258" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">订阅状态只在内存</text>
+  <text x="258" y="397" text-anchor="middle" font-size="11.5" fill="#334155">进程重启、消费者离线 = 这段时间的消息全丢</text>
+  <text x="258" y="418" text-anchor="middle" font-size="11.5" fill="#475569">适合事件广播、服务发现、命令下发</text>
+
+  <rect x="520" y="88" width="440" height="380" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="740" y="116" text-anchor="middle" font-size="14" font-weight="bold" fill="#4c1d95">JetStream：落盘 + ACK + 重投</text>
+
+  <rect x="546" y="140" width="180" height="62" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="636" y="165" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4c1d95">Publish</text>
+  <text x="636" y="187" text-anchor="middle" font-size="11.5" fill="#334155">请求-应答，等 PubAck</text>
+
+  <line x1="726" y1="171" x2="756" y2="171" stroke="#7c3aed" stroke-width="1.6"/>
+  <polygon points="760,171 749,166 749,176" fill="#7c3aed"/>
+
+  <rect x="760" y="140" width="170" height="62" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="845" y="165" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">Stream 落盘</text>
+  <text x="845" y="187" text-anchor="middle" font-size="11.5" fill="#334155">File 存储、可重放</text>
+
+  <rect x="546" y="230" width="384" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="738" y="256" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Consumer 游标挂在 durable 名上</text>
+  <text x="738" y="279" text-anchor="middle" font-size="11.5" fill="#334155">Ack 推进游标；Nak 触发重投，delivered 1 → 2 → 3</text>
+  <text x="738" y="301" text-anchor="middle" font-size="11.5" fill="#334155">离线期间的消息在重新上线后补投</text>
+
+  <rect x="546" y="350" width="384" height="82" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="738" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">MaxDeliver 用尽后不再投递</text>
+  <text x="738" y="397" text-anchor="middle" font-size="11.5" fill="#334155">消息留在 Stream 里，NATS 没有内置死信队列</text>
+  <text x="738" y="418" text-anchor="middle" font-size="11.5" fill="#475569">需要应用自己转发到 order.dead 这类主题</text>
+
+  <rect x="40" y="488" width="920" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="512" text-anchor="middle" font-size="12.5" fill="#334155">判据：要补投、重放、去重才上 JetStream；只做低延迟广播就用 Core，别为「可能有订阅者」付落盘代价。</text>
+  <text x="500" y="534" text-anchor="middle" font-size="11.5" fill="#475569">JetStream 的发布与管理调用本身也是请求-应答：服务端没开 -js 时，报的是 no responders。</text>
+</svg>

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">拉消息的响应体里，一条消息是 19 个字段的定长头加两段变长尾巴</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">实测单条 243 B：所有定长字段都能逐字节对上，topic 与 properties 是唯一的两段变长</text>
+
+  <text x="40" y="96" font-size="12.5" font-weight="bold" fill="#1e3a8a">按字节顺序切成 6 组（下方数字是该组占的字节数）</text>
+
+  <rect x="40" y="110" width="160" height="76" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="120" y="132" text-anchor="middle" font-size="11" fill="#334155">totalSize 4 ｜ magic 4</text>
+  <text x="120" y="151" text-anchor="middle" font-size="11" fill="#334155">bodyCRC 4 ｜ queueId 4</text>
+  <text x="120" y="170" text-anchor="middle" font-size="11" fill="#334155">flag 4 ｜ queueOffset 8</text>
+  <text x="120" y="182" text-anchor="middle" font-size="9.5" fill="#64748b">physicalOffset 8 ｜ sysFlag 4</text>
+
+  <rect x="200" y="110" width="130" height="76" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="265" y="134" text-anchor="middle" font-size="11" fill="#1e3a8a">bornTs 8 ｜ bornHost 8</text>
+  <text x="265" y="154" text-anchor="middle" font-size="11" fill="#1e3a8a">storeTs 8 ｜ storeHost 8</text>
+  <text x="265" y="173" text-anchor="middle" font-size="9.5" fill="#1d4ed8">时间与投递来源</text>
+
+  <rect x="330" y="110" width="70" height="76" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="365" y="134" text-anchor="middle" font-size="10.5" fill="#4c1d95">reconsume 4</text>
+  <text x="365" y="153" text-anchor="middle" font-size="10.5" fill="#4c1d95">preparedTx 8</text>
+  <text x="365" y="172" text-anchor="middle" font-size="9.5" fill="#6d28d9">12 B</text>
+
+  <rect x="400" y="110" width="100" height="76" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.6"/>
+  <text x="450" y="134" text-anchor="middle" font-size="11" fill="#713f12">bodyLen 4</text>
+  <text x="450" y="153" text-anchor="middle" font-size="11" fill="#713f12">body 14（变长）</text>
+  <text x="450" y="172" text-anchor="middle" font-size="9.5" fill="#854d0e">18 B</text>
+
+  <rect x="500" y="110" width="60" height="76" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="530" y="134" text-anchor="middle" font-size="10.5" fill="#14532d">topicLen 1</text>
+  <text x="530" y="153" text-anchor="middle" font-size="10.5" fill="#14532d">topic 9</text>
+  <text x="530" y="172" text-anchor="middle" font-size="9.5" fill="#15803d">10 B</text>
+
+  <rect x="560" y="110" width="400" height="76" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="760" y="132" text-anchor="middle" font-size="11" fill="#334155">propertiesLen 2（short）+ properties 129（变长）</text>
+  <text x="760" y="152" text-anchor="middle" font-size="10.5" fill="#475569">MSG_REGION·DefaultRegion ¤ UNIQ_KEY·C0A83003000E7745…</text>
+  <text x="760" y="172" text-anchor="middle" font-size="10" fill="#64748b">键值用 0x01 分隔，条目用 0x02 分隔，实测 5 条属性</text>
+
+  <text x="40" y="212" font-size="12" fill="#0f172a">合计 40 + 32 + 12 + 18 + 10 + 131 = 243 B，与 totalSize 字段的值一致</text>
+
+  <text x="40" y="248" font-size="12.5" font-weight="bold" fill="#0f172a">逐字段对出的实测值（同一份 243 字节）</text>
+
+  <rect x="40" y="260" width="920" height="46" rx="6" fill="#0f172a"/>
+  <text x="58" y="282" font-family="Consolas, monospace" font-size="12" fill="#e2e8f0">00 00 00 f3  da a3 20 a7  4a 27 e2 eb  00 00 00 00  00 00 00 00  00 00 00 00 00 00 00 00</text>
+  <text x="58" y="299" font-family="Consolas, monospace" font-size="11.5" fill="#7dd3fc">totalSize=243  magic=0xDAA320A7  bodyCRC  queueId=0  flag=0  queueOffset=0</text>
+
+  <rect x="40" y="316" width="920" height="60" rx="6" fill="#0f172a"/>
+  <text x="58" y="338" font-family="Consolas, monospace" font-size="11.5" fill="#e2e8f0">… 00 00 01 a1 5e 3c 0d 17  c0 a8 30 01 00 00 b4 b8  00 00 01 a1 5e 3c 0d 36  c0 a8 30 03 00 00 2a 9f</text>
+  <text x="58" y="358" font-family="Consolas, monospace" font-size="11.5" fill="#7dd3fc">bornTs=1792582356247  bornHost=192.168.48.1:46264  storeTs=…278  storeHost=192.168.48.3:10911</text>
+  <text x="58" y="372" font-size="10" fill="#94a3b8">storeHost 的端口 0x2A9F 就是 10911 —— 这条消息从哪个 Broker 落盘，字节里直接带着</text>
+
+  <text x="40" y="404" font-size="12.5" font-weight="bold" fill="#14532d">三个容易看错的地方</text>
+
+  <rect x="40" y="416" width="450" height="98" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="58" y="440" font-size="12" font-weight="bold" fill="#0f172a">totalSize 含自己那 4 字节</text>
+  <text x="58" y="462" font-size="11.5" fill="#334155">243 是「整条消息」的长度，不是剩余长度。</text>
+  <text x="58" y="482" font-size="11.5" fill="#334155">按「读到 243 字节为止」去切下一条会少读 4 字节。</text>
+  <text x="58" y="502" font-size="11" fill="#b91c1c">判据：下一条的起点 = 本条起点 + totalSize。</text>
+
+  <rect x="510" y="416" width="450" height="98" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="528" y="440" font-size="12" font-weight="bold" fill="#0f172a">properties 是两字节长度，不是一字节</text>
+  <text x="528" y="462" font-size="11.5" fill="#334155">topic 用 1 字节长度（上限 127），properties 用</text>
+  <text x="528" y="482" font-size="11.5" fill="#334155">short（上限 32767）。两者长度单位不同，别统一写。</text>
+  <text x="528" y="502" font-size="11" fill="#b91c1c">实测 propertiesLen=0x0081=129 B。</text>
+
+  <rect x="40" y="530" width="920" height="82" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="58" y="554" font-size="12" font-weight="bold" fill="#0f172a">两种消息 ID 都在这条消息里，但用途完全不同</text>
+  <text x="58" y="576" font-size="11.5" fill="#334155">响应头的 msgId（offsetMsgId）＝ IP 4 B ＋ 端口 4 B ＋ 物理偏移 8 B，实测 C0A83003 00002A9F 0000000000000000，能直接定位到 CommitLog 的哪个字节。</text>
+  <text x="58" y="596" font-size="11.5" fill="#334155">properties 里的 UNIQ_KEY ＝ 客户端生成并随消息带上来的全局唯一 ID，实测 C0A83003000E7745…，它不带物理偏移，但集群迁移后仍然唯一。</text>
+  <text x="58" y="606" font-size="10.5" fill="#64748b">查消息用前者快（知道去哪台机器哪个偏移找），做幂等台账用后者（换机器也不变）。</text>
+
+  <text x="960" y="632" text-anchor="end" font-size="11" fill="#64748B">实测：PULL_MESSAGE 响应体 243 B，逐字段按大端解析核对；字段顺序与 MessageDecoder 一致</text>
+</svg>

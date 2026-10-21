@@ -335,7 +335,7 @@ rabbitmq-diagnostics environment | grep -E "channel_max|frame_max|heartbeat"
 - **下游机制**：[存储与投递过程.md](../../../03-数据与中间件/中间件/消息队列/RabbitMQ/存储与投递过程.md) — 帧收完之后：消息怎么落盘、怎么被投递
 - **对照/互补**：[README.md](../../../03-数据与中间件/中间件/消息队列/Kafka/README.md) — Kafka 的自定二进制协议：请求-应答带 correlation id，不靠 channel 号
 - **对照/互补**：[README.md](../../../03-数据与中间件/中间件/消息队列/RocketMQ/README.md) — RocketMQ 的 Remoting 协议与「一个事件一个 Topic」的取舍
-- **对照/互补**：[Nats.md](../../../03-数据与中间件/中间件/消息队列/Nats.md) — NATS 的文本协议（`PUB` / `SUB` 单行命令）：为什么它能用一个 telnet 就调通
+- **对照/互补**：[README.md](../../../03-数据与中间件/中间件/消息队列/NATS/README.md) — NATS 的文本协议（`PUB` / `SUB` 单行命令）：为什么它能用一个 telnet 就调通
 - **对照/互补**：[MQTT.md](MQTT.md) — 同为二进制消息协议，但用变长整数定界、2 字节最小头，与本篇的 7 字节定长头 + `0xCE` 是两种取舍
 - **对照/互补**：[STOMP.md](STOMP.md) — 纯文本帧 + `NUL` 定界，与本篇的二进制帧形成极端对照
 - **对照/互补**：[XMPP.md](XMPP.md) — 用 XML 流而不是长度前缀定界，可演进性最强、开销也最大

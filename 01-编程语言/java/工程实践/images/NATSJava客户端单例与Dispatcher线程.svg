@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">Java 客户端：一条 Connection，多个 Dispatcher，各自一条投递线程</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">jnats 2.20.5 + JDK 17；回调在 Dispatcher 线程上串行执行，阻塞操作会卡住整条投递线</text>
+
+  <rect x="40" y="88" width="560" height="450" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="320" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">业务进程（JVM）</text>
+
+  <rect x="110" y="130" width="420" height="58" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="320" y="153" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">Connection（进程级单例）</text>
+  <text x="320" y="174" text-anchor="middle" font-size="12" fill="#334155">1 条 TCP + 读线程 + 重连线程</text>
+
+  <rect x="70" y="240" width="220" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="180" y="264" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">Dispatcher A</text>
+  <text x="180" y="285" text-anchor="middle" font-size="11.5" fill="#334155">订阅 labg.core（广播）</text>
+  <text x="180" y="305" text-anchor="middle" font-size="11.5" fill="#334155">投递线程 A：串行处理</text>
+  <text x="180" y="325" text-anchor="middle" font-size="11.5" fill="#475569">回调阻塞 = 该线全堵</text>
+
+  <rect x="310" y="240" width="220" height="96" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="420" y="264" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">Dispatcher B</text>
+  <text x="420" y="285" text-anchor="middle" font-size="11.5" fill="#334155">subscribe(subj, "workers")</text>
+  <text x="420" y="305" text-anchor="middle" font-size="11.5" fill="#334155">队列组成员的一份</text>
+  <text x="420" y="325" text-anchor="middle" font-size="11.5" fill="#475569">3 个成员 = 3 个 Dispatcher</text>
+
+  <rect x="70" y="372" width="460" height="112" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="300" y="396" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4c1d95">JetStreamSubscription（durable="order-pull"）</text>
+  <text x="300" y="417" text-anchor="middle" font-size="11.5" fill="#334155">拉取模式不需要 Dispatcher：fetch(10, 2s) 主动取</text>
+  <text x="300" y="438" text-anchor="middle" font-size="11.5" fill="#334155">游标与 ack 状态挂在 durable 名上</text>
+  <text x="300" y="459" text-anchor="middle" font-size="11.5" fill="#475569">maxDeliver=3 时 delivered 依次 1、2、3</text>
+
+  <line x1="320" y1="188" x2="180" y2="240" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="320" y1="188" x2="420" y2="240" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="320" y1="188" x2="300" y2="372" stroke="#94a3b8" stroke-width="1.4"/>
+
+  <rect x="660" y="88" width="300" height="450" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="810" y="112" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">nats-server 2.10.29</text>
+
+  <rect x="690" y="132" width="240" height="76" rx="8" fill="#ffffff" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="810" y="156" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">Subject 路由</text>
+  <text x="810" y="177" text-anchor="middle" font-size="11.5" fill="#334155">labg.core / labg.queue</text>
+  <text x="810" y="196" text-anchor="middle" font-size="11.5" fill="#475569">队列组 "workers" 竞争投递</text>
+
+  <rect x="690" y="238" width="240" height="76" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.3"/>
+  <text x="810" y="262" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#4c1d95">Stream LABJ</text>
+  <text x="810" y="283" text-anchor="middle" font-size="11.5" fill="#334155">labj.&gt;，File，replicas=1</text>
+  <text x="810" y="302" text-anchor="middle" font-size="11.5" fill="#475569">管理 API 在 JetStreamManagement</text>
+
+  <rect x="690" y="344" width="240" height="76" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.3"/>
+  <text x="810" y="368" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#713f12">Consumer 游标</text>
+  <text x="810" y="389" text-anchor="middle" font-size="11.5" fill="#334155">durable + ackWait + maxDeliver</text>
+  <text x="810" y="408" text-anchor="middle" font-size="11.5" fill="#475569">超限后不再投，无内置死信</text>
+
+  <line x1="530" y1="285" x2="682" y2="170" stroke="#2563eb" stroke-width="1.8"/>
+  <polygon points="688,168 676,164 680,176" fill="#2563eb"/>
+  <line x1="530" y1="428" x2="682" y2="382" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <polygon points="688,380 676,376 680,388" fill="#7c3aed"/>
+
+  <rect x="40" y="558" width="920" height="46" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="586" text-anchor="middle" font-size="12.5" fill="#334155">要点：Connection 共享；Dispatcher 与 Subscription 按业务各建一份——本机 300 条消息在 3 个 Dispatcher 间分到 105 / 84 / 111。</text>
+</svg>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">带 JMSXGroupID 才有亲和：两个消费者各拿两组，不带则同一业务键被打散</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机实测：2 个消费者、queuePrefetch=1、40 条消息、4 个组号各 10 条</text>
+
+  <rect x="40" y="88" width="440" height="470" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="260" y="116" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">场景 A：带 JMSXGroupID</text>
+  <text x="260" y="140" text-anchor="middle" font-size="11.5" fill="#334155">同一组号恒落同一消费者，分配后长期保持</text>
+
+  <rect x="72" y="160" width="88" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="116" y="181" text-anchor="middle" font-size="12" fill="#14532d">order-0</text>
+  <rect x="168" y="160" width="88" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="212" y="181" text-anchor="middle" font-size="12" fill="#14532d">order-1</text>
+  <rect x="264" y="160" width="88" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="308" y="181" text-anchor="middle" font-size="12" fill="#14532d">order-2</text>
+  <rect x="360" y="160" width="88" height="32" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="404" y="181" text-anchor="middle" font-size="12" fill="#14532d">order-3</text>
+
+  <line x1="212" y1="192" x2="190" y2="244" stroke="#16a34a" stroke-width="1.4"/>
+  <line x1="404" y1="192" x2="380" y2="244" stroke="#16a34a" stroke-width="1.4"/>
+  <line x1="116" y1="192" x2="330" y2="244" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="308" y1="192" x2="120" y2="244" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <rect x="70" y="248" width="170" height="150" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="155" y="276" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">消费者 #0</text>
+  <text x="155" y="304" text-anchor="middle" font-size="12" fill="#334155">order-1 × 10</text>
+  <text x="155" y="328" text-anchor="middle" font-size="12" fill="#334155">order-3 × 10</text>
+  <text x="155" y="356" text-anchor="middle" font-size="11.5" fill="#475569">共 20 条</text>
+
+  <rect x="270" y="248" width="170" height="150" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="355" y="276" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">消费者 #1</text>
+  <text x="355" y="304" text-anchor="middle" font-size="12" fill="#334155">order-0 × 10</text>
+  <text x="355" y="328" text-anchor="middle" font-size="12" fill="#334155">order-2 × 10</text>
+  <text x="355" y="356" text-anchor="middle" font-size="11.5" fill="#475569">共 20 条</text>
+
+  <rect x="65" y="418" width="390" height="118" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="260" y="442" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">读法：组号是亲和的唯一开关</text>
+  <text x="260" y="464" text-anchor="middle" font-size="11.5" fill="#334155">ActiveMQ 一次分配、长期保持</text>
+  <text x="260" y="485" text-anchor="middle" font-size="11.5" fill="#334155">不是 Kafka 那种哈希取模</text>
+  <text x="260" y="506" text-anchor="middle" font-size="11.5" fill="#475569">同一组恒落在同一个消费者</text>
+
+  <rect x="520" y="88" width="440" height="470" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="740" y="116" text-anchor="middle" font-size="14" font-weight="bold" fill="#7c2d12">场景 B：只带普通属性（无组号）</text>
+  <text x="740" y="140" text-anchor="middle" font-size="11.5" fill="#334155">同一业务键也会被打散到两个消费者</text>
+
+  <rect x="552" y="160" width="88" height="32" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="596" y="181" text-anchor="middle" font-size="12" fill="#7c2d12">biz-0</text>
+  <rect x="648" y="160" width="88" height="32" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="692" y="181" text-anchor="middle" font-size="12" fill="#7c2d12">biz-1</text>
+  <rect x="744" y="160" width="88" height="32" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="788" y="181" text-anchor="middle" font-size="12" fill="#7c2d12">biz-2</text>
+  <rect x="840" y="160" width="88" height="32" rx="6" fill="#ffedd5" stroke="#ea580c" stroke-width="1.3"/>
+  <text x="884" y="181" text-anchor="middle" font-size="12" fill="#7c2d12">biz-3</text>
+
+  <line x1="596" y1="192" x2="600" y2="244" stroke="#ea580c" stroke-width="1.3"/>
+  <line x1="692" y1="192" x2="800" y2="244" stroke="#ea580c" stroke-width="1.3"/>
+  <line x1="788" y1="192" x2="640" y2="244" stroke="#ea580c" stroke-width="1.3"/>
+  <line x1="884" y1="192" x2="840" y2="244" stroke="#ea580c" stroke-width="1.3"/>
+
+  <rect x="550" y="248" width="170" height="150" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="635" y="276" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">消费者 #0</text>
+  <text x="635" y="304" text-anchor="middle" font-size="12" fill="#334155">0:2　1:8</text>
+  <text x="635" y="328" text-anchor="middle" font-size="12" fill="#334155">2:1　3:9</text>
+  <text x="635" y="356" text-anchor="middle" font-size="11.5" fill="#475569">共 20 条</text>
+
+  <rect x="750" y="248" width="170" height="150" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="835" y="276" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">消费者 #1</text>
+  <text x="835" y="304" text-anchor="middle" font-size="12" fill="#334155">0:8　1:2</text>
+  <text x="835" y="328" text-anchor="middle" font-size="12" fill="#334155">2:9　3:1</text>
+  <text x="835" y="356" text-anchor="middle" font-size="11.5" fill="#475569">共 20 条</text>
+
+  <rect x="545" y="418" width="390" height="118" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="740" y="442" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">读法：无组号时按投递轮次分配</text>
+  <text x="740" y="464" text-anchor="middle" font-size="11.5" fill="#334155">属性名相同也不产生亲和</text>
+  <text x="740" y="485" text-anchor="middle" font-size="11.5" fill="#334155">要按业务键顺序消费必须设 JMSXGroupID</text>
+  <text x="740" y="506" text-anchor="middle" font-size="11.5" fill="#475569">Kafka 的 key 分区是哈希，两者机制不同</text>
+
+  <rect x="40" y="574" width="920" height="46" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="602" text-anchor="middle" font-size="12.5" fill="#334155">要点：带组号时 order-0/2 固定归一个消费者、order-1/3 归另一个；不带组号时同一业务键被打散成 2/8/1/9，无法据此保证顺序。</text>
+</svg>

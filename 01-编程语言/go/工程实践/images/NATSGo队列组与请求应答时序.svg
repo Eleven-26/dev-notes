@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">NATS Go 两种交互：队列组按分发竞争，请求-应答走 _INBOX</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机 nats.go v1.53.1 连 nats-server 2.10.29；读数取自本次容器运行，队列组与请求分别独立测量</text>
+
+  <text x="170" y="92" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Go 客户端</text>
+  <text x="500" y="92" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Broker（Subject 路由）</text>
+  <text x="810" y="92" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">三个 workers 成员</text>
+  <line x1="170" y1="104" x2="170" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="500" y1="104" x2="500" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="810" y1="104" x2="810" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <circle cx="34" cy="146" r="11" fill="#2563eb"/>
+  <text x="34" y="151" text-anchor="middle" font-size="12" fill="#ffffff">1</text>
+  <text x="56" y="151" font-size="12.5" fill="#1e293b">Publish("labg.queue") 连发 300 条，不关心谁来消费</text>
+  <line x1="170" y1="146" x2="492" y2="146" stroke="#2563eb" stroke-width="1.8"/>
+  <polygon points="500,146 488,140 488,152" fill="#2563eb"/>
+
+  <circle cx="34" cy="190" r="11" fill="#ea580c"/>
+  <text x="34" y="195" text-anchor="middle" font-size="12" fill="#ffffff">2</text>
+  <text x="56" y="195" font-size="12.5" fill="#1e293b">Broker 在队列组 "workers" 里挑一个成员投递，一条只投一次</text>
+  <line x1="500" y1="190" x2="802" y2="190" stroke="#ea580c" stroke-width="1.8"/>
+  <polygon points="810,190 798,184 798,196" fill="#ea580c"/>
+
+  <circle cx="34" cy="234" r="11" fill="#16a34a"/>
+  <text x="34" y="239" text-anchor="middle" font-size="12" fill="#ffffff">3</text>
+  <text x="56" y="239" font-size="12.5" fill="#1e293b">实测分配 c1=92  c2=104  c3=104：没有轮询，也没有 key 亲和</text>
+  <rect x="742" y="218" width="136" height="34" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="810" y="240" text-anchor="middle" font-size="12" fill="#14532d">92 / 104 / 104</text>
+
+  <line x1="120" y1="272" x2="950" y2="272" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 6"/>
+  <text x="56" y="294" font-size="12" fill="#64748b">请求-应答：客户端与服务端各用一条连接即可</text>
+
+  <circle cx="34" cy="332" r="11" fill="#2563eb"/>
+  <text x="34" y="337" text-anchor="middle" font-size="12" fill="#ffffff">4</text>
+  <text x="56" y="337" font-size="12.5" fill="#1e293b">Request("labg.echo", 2s)：自动订阅 _INBOX.xxx 并把它写进 reply</text>
+  <line x1="170" y1="332" x2="492" y2="332" stroke="#2563eb" stroke-width="1.8"/>
+  <polygon points="500,332 488,326 488,338" fill="#2563eb"/>
+
+  <circle cx="34" cy="376" r="11" fill="#0f766e"/>
+  <text x="34" y="381" text-anchor="middle" font-size="12" fill="#ffffff">5</text>
+  <text x="56" y="381" font-size="12.5" fill="#1e293b">服务端收到后 m.Respond(...)，回复直接写到 _INBOX.xxx</text>
+  <line x1="810" y1="376" x2="508" y2="376" stroke="#0f766e" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <polygon points="500,376 512,370 512,382" fill="#0f766e"/>
+
+  <circle cx="34" cy="420" r="11" fill="#16a34a"/>
+  <text x="34" y="425" text-anchor="middle" font-size="12" fill="#ffffff">6</text>
+  <text x="56" y="425" font-size="12.5" fill="#1e293b">100 次串行往返共 75 ms，平均 0.75 ms（本机回环、无业务处理）</text>
+  <line x1="500" y1="420" x2="178" y2="420" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="170,420 182,414 182,426" fill="#16a34a"/>
+
+  <circle cx="34" cy="464" r="11" fill="#dc2626"/>
+  <text x="34" y="469" text-anchor="middle" font-size="12" fill="#ffffff">7</text>
+  <text x="56" y="469" font-size="12.5" fill="#1e293b">无订阅者时不等待超时：立即返回 no responders available for request</text>
+  <rect x="742" y="448" width="136" height="34" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="810" y="470" text-anchor="middle" font-size="11.5" fill="#7f1d1d">ErrNoResponders</text>
+
+  <rect x="40" y="536" width="920" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="560" text-anchor="middle" font-size="12.5" fill="#334155">读法：上半段是队列组的「一条消息只投一个成员」，下半段是请求-应答的「点对点往返」。</text>
+  <text x="500" y="582" text-anchor="middle" font-size="12" fill="#475569">队列组不保证顺序与亲和：要按业务键保序，得让同一 Subject 只有单订阅，或换 JetStream 单 Consumer 串行处理。</text>
+  <text x="500" y="604" text-anchor="middle" font-size="12" fill="#475569">错误分流：no responders 说明对端没订阅（服务没起），超时才说明对端慢，两者在日志里必须分开。</text>
+</svg>

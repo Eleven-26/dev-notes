@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">长轮询的「挂多久」由两个因子决定：请求里的 suspend 与 Broker 的 5 秒检查粒度</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">sysFlag 的 SUSPEND 位不置位时，suspendTimeoutMillis 被完全忽略 —— 参数写了不等于生效</text>
+
+  <text x="40" y="92" font-size="12.5" font-weight="bold" fill="#1e3a8a">PULL_MESSAGE 的 sysFlag 位段（PullSysFlag，五位各有含义）</text>
+
+  <rect x="40" y="104" width="170" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="125" y="126" text-anchor="middle" font-size="11" fill="#14532d">0x01 COMMIT_OFFSET</text>
+  <rect x="218" y="104" width="170" height="34" rx="4" fill="#fde68a" stroke="#ca8a04" stroke-width="1.8"/>
+  <text x="303" y="126" text-anchor="middle" font-size="11" fill="#713f12">0x02 SUSPEND</text>
+  <rect x="396" y="104" width="170" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="481" y="126" text-anchor="middle" font-size="11" fill="#14532d">0x04 SUBSCRIPTION</text>
+  <rect x="574" y="104" width="170" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="659" y="126" text-anchor="middle" font-size="11" fill="#14532d">0x08 CLASS_FILTER</text>
+  <rect x="752" y="104" width="208" height="34" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="856" y="126" text-anchor="middle" font-size="11" fill="#14532d">0x10 LITE_PULL_MESSAGE</text>
+
+  <text x="40" y="164" font-size="11.5" fill="#b91c1c">实测：sysFlag=0（不带 0x02）时，suspend 写 0 或写 15000 都是 3 ms 内返回；带上 0x02 才开始挂起。</text>
+
+  <text x="200" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">消费端连接</text>
+  <text x="800" y="200" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">Broker</text>
+  <line x1="200" y1="212" x2="200" y2="640" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <line x1="800" y1="212" x2="800" y2="640" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 5"/>
+
+  <text x="40" y="236" font-size="12" font-weight="bold" fill="#0f172a">场景一：队列一直没新消息</text>
+
+  <line x1="200" y1="256" x2="792" y2="256" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="792,256 782,252 782,260" fill="#2563eb"/>
+  <text x="215" y="250" font-size="11" fill="#1e3a8a">PULL_MESSAGE(11)　queueOffset=1（已是队尾）　sysFlag=0x02　suspend=3000</text>
+
+  <rect x="700" y="266" width="196" height="30" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="798" y="286" text-anchor="middle" font-size="10.5" fill="#713f12">无新消息，挂进 pullRequestTable</text>
+
+  <line x1="800" y1="312" x2="800" y2="352" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="985" y="330" text-anchor="end" font-size="11" fill="#854d0e">每 5000 ms 醒一次</text>
+  <text x="985" y="346" text-anchor="end" font-size="11" fill="#854d0e">醒后 checkHoldRequest 判到期</text>
+
+  <line x1="792" y1="368" x2="208" y2="368" stroke="#16a34a" stroke-width="1.6"/>
+  <polygon points="208,368 218,364 218,372" fill="#16a34a"/>
+  <text x="215" y="386" font-size="11" fill="#14532d">code=19 PULL_NOT_FOUND　remark=OFFSET_OVERFLOW_ONE　nextBeginOffset 原样带回</text>
+  <text x="215" y="402" font-size="10.5" fill="#b91c1c">挂住时长被向上取整到 5 秒的整数倍：写 3000 实测 5000，写 6000 实测 10000</text>
+
+  <text x="40" y="444" font-size="12" font-weight="bold" fill="#0f172a">场景二：挂起期间来了新消息</text>
+
+  <line x1="200" y1="464" x2="792" y2="464" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="792,464 782,460 782,468" fill="#2563eb"/>
+  <text x="215" y="458" font-size="11" fill="#1e3a8a">PULL_MESSAGE(11)　sysFlag=0x02　suspend=30000（打算挂 30 秒）</text>
+
+  <line x1="200" y1="492" x2="792" y2="492" stroke="#7c3aed" stroke-width="1.6"/>
+  <polygon points="792,492 782,488 782,496" fill="#7c3aed"/>
+  <text x="215" y="486" font-size="11" fill="#4c1d95">另一条连接：SEND_MESSAGE(10) 写入同一队列（实测生产侧 8 ms 返回）</text>
+
+  <rect x="656" y="502" width="240" height="30" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="776" y="522" text-anchor="middle" font-size="10.5" fill="#4c1d95">notifyMessageArriving 唤醒挂起的请求</text>
+
+  <line x1="792" y1="548" x2="208" y2="548" stroke="#16a34a" stroke-width="1.6"/>
+  <polygon points="208,548 218,544 218,552" fill="#16a34a"/>
+  <text x="215" y="566" font-size="11" fill="#14532d">code=0，body 里带 243 B 的消息体 —— 实测从请求到返回只用 4 ms，没等 30 秒</text>
+
+  <rect x="40" y="590" width="920" height="98" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="58" y="614" font-size="12" font-weight="bold" fill="#0f172a">为什么「参数写了不生效」值得单独记一笔</text>
+  <text x="58" y="636" font-size="11.5" fill="#334155">客户端库里 sysFlag 是自动拼的，业务方只写 suspendTimeoutMillis，看着像「挂 3 秒」，实际可能挂 5 秒。</text>
+  <text x="58" y="656" font-size="11.5" fill="#334155">这个差异在压测时表现为「消费延迟比配置多一两秒」，而日志里每个参数都「按预期配置了」。</text>
+  <text x="58" y="676" font-size="11" fill="#b91c1c">另外：offset 超过队尾（OFFSET_OVERFLOW_BADLY，code=21）时直接返回，根本不进挂起分支。</text>
+
+  <text x="960" y="694" text-anchor="end" font-size="11" fill="#64748B">实测：apache/rocketmq:5.3.1 单机，suspend 取 0/1000/2000/3000/4000/6000/10000 七档；5 秒粒度由 PullRequestHoldService.run 的 waitForRunning 核实</text>
+</svg>

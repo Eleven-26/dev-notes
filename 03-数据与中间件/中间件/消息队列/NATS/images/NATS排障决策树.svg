@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 780" width="1000" height="780" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="780" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">NATS 排障决策树：消息「发了没收到」按五步排除</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">先分清是 Core 还是 JetStream，再分清「没发出去 / 没订阅 / 卡在流控 / 处理太慢」</text>
+
+  <rect x="350" y="80" width="300" height="44" rx="8" fill="#e2e8f0" stroke="#475569" stroke-width="1.4"/>
+  <text x="500" y="107" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e293b">消费者报告：消息没收到</text>
+
+  <line x1="500" y1="124" x2="500" y2="132" stroke="#475569" stroke-width="1.5"/>
+  <polygon points="500,132 494,124 506,124" fill="#475569"/>
+
+  <polygon points="350,132 500,180 350,228 200,180" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="350" y="184" text-anchor="middle" font-size="12.5" fill="#713f12">发布端收到 -ERR 或超时？</text>
+  <line x1="500" y1="180" x2="552" y2="180" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="552,180 544,175 544,185" fill="#ca8a04"/>
+  <text x="526" y="172" text-anchor="middle" font-size="11" fill="#a16207">有</text>
+  <rect x="560" y="152" width="400" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="574" y="174" font-size="12" font-weight="bold" fill="#1e3a8a">查发布侧：权限、长度、max_payload</text>
+  <text x="574" y="196" font-size="11" fill="#1d4ed8">权限拒绝不断连但丢消息；长度写错服务端静默等待</text>
+
+  <line x1="350" y1="228" x2="350" y2="243" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="350,243 345,235 355,235" fill="#ca8a04"/>
+  <text x="362" y="240" font-size="11" fill="#a16207">没有</text>
+
+  <polygon points="350,247 500,295 350,343 200,295" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="350" y="299" text-anchor="middle" font-size="12.5" fill="#713f12">该 Subject 上此刻有订阅者吗？</text>
+  <line x1="500" y1="295" x2="552" y2="295" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="552,295 544,290 544,300" fill="#ca8a04"/>
+  <text x="526" y="287" text-anchor="middle" font-size="11" fill="#a16207">没有</text>
+  <rect x="560" y="267" width="400" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="574" y="289" font-size="12" font-weight="bold" fill="#7f1d1d">Core 直接丢弃，没有任何回执</text>
+  <text x="574" y="311" font-size="11" fill="#991b1b">看 /connz 确认；需要补投就改走 JetStream</text>
+
+  <line x1="350" y1="343" x2="350" y2="358" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="350,358 345,350 355,350" fill="#ca8a04"/>
+  <text x="362" y="355" font-size="11" fill="#a16207">有</text>
+
+  <polygon points="350,362 500,410 350,458 200,410" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="350" y="414" text-anchor="middle" font-size="12.5" fill="#713f12">这条链路走的是 JetStream 吗？</text>
+  <line x1="500" y1="410" x2="552" y2="410" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="552,410 544,405 544,415" fill="#ca8a04"/>
+  <text x="526" y="402" text-anchor="middle" font-size="11" fill="#a16207">不是</text>
+  <rect x="560" y="382" width="400" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="574" y="404" font-size="12" font-weight="bold" fill="#1e3a8a">Core 不存储，检查订阅时机与队列组</text>
+  <text x="574" y="426" font-size="11" fill="#1d4ed8">订阅者是否在上线前就错过；同一组是否被别的实例吃掉</text>
+
+  <line x1="350" y1="458" x2="350" y2="473" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="350,473 345,465 355,465" fill="#ca8a04"/>
+  <text x="362" y="470" font-size="11" fill="#a16207">是</text>
+
+  <polygon points="350,477 500,525 350,573 200,525" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="350" y="529" text-anchor="middle" font-size="12.5" fill="#713f12">num_pending 大于 0 且不再下降？</text>
+  <line x1="500" y1="525" x2="552" y2="525" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="552,525 544,520 544,530" fill="#ca8a04"/>
+  <text x="526" y="517" text-anchor="middle" font-size="11" fill="#a16207">是</text>
+  <rect x="560" y="497" width="400" height="56" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="574" y="519" font-size="12" font-weight="bold" fill="#7f1d1d">流控卡住：MaxAckPending 已到上限</text>
+  <text x="574" y="541" font-size="11" fill="#991b1b">本机实测：上限 1 时 num_ack_pending=1、num_pending=4 不动</text>
+
+  <line x1="350" y1="573" x2="350" y2="588" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="350,588 345,580 355,580" fill="#ca8a04"/>
+  <text x="362" y="585" font-size="11" fill="#a16207">否</text>
+
+  <polygon points="350,592 500,640 350,688 200,640" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="350" y="644" text-anchor="middle" font-size="12.5" fill="#713f12">客户端日志里有 SlowConsumer？</text>
+  <line x1="500" y1="640" x2="552" y2="640" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="552,640 544,635 544,645" fill="#ca8a04"/>
+  <text x="526" y="632" text-anchor="middle" font-size="11" fill="#a16207">有</text>
+  <rect x="560" y="612" width="400" height="56" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="574" y="634" font-size="12" font-weight="bold" fill="#1e3a8a">回调太慢：pending 队列写满即丢</text>
+  <text x="574" y="656" font-size="11" fill="#1d4ed8">把处理搬出回调，或按业务键分片到更多 Subject</text>
+
+  <line x1="350" y1="688" x2="350" y2="706" stroke="#ca8a04" stroke-width="1.5"/>
+  <polygon points="350,706 345,698 355,698" fill="#ca8a04"/>
+  <text x="362" y="703" font-size="11" fill="#a16207">没有</text>
+
+  <rect x="220" y="710" width="560" height="50" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="240" y="732" font-size="12" font-weight="bold" fill="#14532d">查 Stream 保留策略与消费者 DeliverPolicy</text>
+  <text x="240" y="752" font-size="11" fill="#166534">消息可能已被 MaxAge / MaxBytes 淘汰，或消费者从 DeliverNew 开始而错过了历史</text>
+</svg>

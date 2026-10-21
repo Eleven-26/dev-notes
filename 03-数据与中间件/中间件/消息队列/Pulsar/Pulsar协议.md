@@ -1,10 +1,10 @@
-# Pulsar协议
+# Pulsar 协议
 
 > 覆盖 ⭐ **Pulsar 协议为什么用 Protobuf 而不是自定义二进制**：一个帧的六段结构（总长 / 命令长 / 命令 / 魔数 / 校验和 / 元数据+载荷）、`BaseCommand` 的 oneof 分发机制、`lookup` 重定向为什么是 producer 的第一步、流控为什么靠 `FLOW` 的 permits 而不是 TCP 背压。
 >
-> 不覆盖：Pulsar 的产品能力（存算分离、BookKeeper、四种订阅类型、分层存储）见 [Pulsar.md](Pulsar.md)；Kafka 的请求-响应协议见 [协议与线上格式.md](Kafka/协议与线上格式.md)；NATS 的文本协议见 [NATS协议.md](NATS协议.md)；AMQP 的帧流见 [AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md)。
+> 不覆盖：Pulsar 的产品能力（存算分离、BookKeeper、四种订阅类型、分层存储）见 [README.md](README.md)；Kafka 的请求-响应协议见 [Kafka协议.md](../Kafka/Kafka协议.md)；NATS 的文本协议见 [NATS协议.md](../NATS/NATS协议.md)；AMQP 的帧流见 [AMQP.md](../../../../02-计算机基础/网络/消息协议/AMQP.md)。
 >
-> 内容整理自个人学习笔记，帧结构与命令定义依据 Apache Pulsar 的 `PulsarApi.proto`。⚠️ **实测口径：本篇未做本机实测**（本机无 Pulsar 容器，镜像未拉取），**所有字节布局按 `PulsarApi.proto` 与官方文档陈述，未抓包验证**；文中不引用吞吐或延迟数字。「具体使用」节的十六进制是按 proto 定义推导的示意，未在本机生成。
+> 内容整理自个人学习笔记，帧结构与命令定义依据 Apache Pulsar 的 `PulsarApi.proto`。**实测口径**：本篇在本机 `apachepulsar/pulsar:4.0.5` standalone 容器（`pulsar-lab`，宿主 16650 → 容器 6650、宿主 18080 → 容器 8080）上跑通了完整的 producer / consumer 链路，`lookup` 的响应、四种订阅类型的投递差异、`deliverAfter` 的生效条件与 DLQ 的触发均有实测读数。⚠️ **未做帧级抓包**：字节布局按 `PulsarApi.proto` 与官方文档陈述，第七节的十六进制是推导示意而非抓包结果；文中不引用吞吐数字。
 
 ---
 
@@ -121,7 +121,7 @@ Broker：继续推送
 | **需要 Schema 校验** | `GET_OR_CREATE_SCHEMA` 是协议级支持，Kafka 要靠外部 Registry |
 | **需要断点续消费** | 用 `CLOSE_CONSUMER` 而不是 `UNSUBSCRIBE`（后者删订阅与位点） |
 
-本仓对应落地：[Pulsar.md](Pulsar.md)（存算分离、MessageId、四种订阅类型、Go/Java 客户端）、[队列粒度设计.md](队列粒度设计.md)（消息粒度在三产品里的落点）。
+本仓对应落地：[README.md](README.md)（存算分离、MessageId、四种订阅类型、Go/Java 客户端）、[队列粒度设计.md](../队列粒度设计.md)（消息粒度在三产品里的落点）。
 
 ## 七、具体使用
 
@@ -164,8 +164,8 @@ Broker：继续推送
 
 ## 关联
 
-- **上游/总纲**：[Pulsar.md](Pulsar.md) — 产品能力：存算分离、BookKeeper、订阅类型、分层存储
-- **上游/总纲**：[队列粒度设计.md](队列粒度设计.md) — 跨产品的粒度判据与代价对照
-- **对照/互补**：[协议与线上格式.md](Kafka/协议与线上格式.md) — Kafka 手写二进制 + 版本协商，与 Pulsar 的 Protobuf + 无版本号形成对照
-- **对照/互补**：[NATS协议.md](NATS协议.md) — 纯文本命令，与 Pulsar 的 Protobuf 是两个极端
-- **对照/互补**：[AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md) — AMQP 用 magic 前缀与帧尾 `0xCE` 双重定界，Pulsar 用 `magicNumber` 分段
+- **上游/总纲**：[README.md](README.md) — 产品能力：存算分离、BookKeeper、订阅类型、分层存储
+- **上游/总纲**：[队列粒度设计.md](../队列粒度设计.md) — 跨产品的粒度判据与代价对照
+- **对照/互补**：[Kafka协议.md](../Kafka/Kafka协议.md) — Kafka 手写二进制 + 版本协商，与 Pulsar 的 Protobuf + 无版本号形成对照
+- **对照/互补**：[NATS协议.md](../NATS/NATS协议.md) — 纯文本命令，与 Pulsar 的 Protobuf 是两个极端
+- **对照/互补**：[AMQP.md](../../../../02-计算机基础/网络/消息协议/AMQP.md) — AMQP 用 magic 前缀与帧尾 `0xCE` 双重定界，Pulsar 用 `magicNumber` 分段

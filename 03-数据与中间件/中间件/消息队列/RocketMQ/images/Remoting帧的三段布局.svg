@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 610" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="610" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Remoting 帧只有三段：总长、头长、头加体</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">帧长信息里藏着序列化类型 —— 高字节不是长度的一部分，是解码器的选择器</text>
+
+  <text x="40" y="92" font-size="12.5" font-weight="bold" fill="#1e3a8a">一、帧的横向布局（请求帧实测 140 B）</text>
+
+  <rect x="40" y="104" width="86" height="64" rx="4" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+  <text x="83" y="128" text-anchor="middle" font-size="11" fill="#334155">totalLen</text>
+  <text x="83" y="148" text-anchor="middle" font-size="10.5" fill="#475569">4 B</text>
+  <text x="83" y="163" text-anchor="middle" font-size="9.5" fill="#64748b">不含自身</text>
+
+  <rect x="126" y="104" width="150" height="64" rx="4" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.6"/>
+  <text x="201" y="128" text-anchor="middle" font-size="11" fill="#713f12">headerLen</text>
+  <text x="201" y="148" text-anchor="middle" font-size="10.5" fill="#854d0e">4 B（含序列化类型）</text>
+  <text x="201" y="163" text-anchor="middle" font-size="9.5" fill="#a16207">位段，不是纯长度</text>
+
+  <rect x="276" y="104" width="420" height="64" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="486" y="128" text-anchor="middle" font-size="11.5" fill="#1e3a8a">headerData（JSON 文本，实测 132 B）</text>
+  <text x="486" y="149" text-anchor="middle" font-size="10.5" fill="#1d4ed8">code / flag / language / opaque / version / extFields</text>
+  <text x="486" y="163" text-anchor="middle" font-size="9.5" fill="#1d4ed8">extFields 是嵌套的一层对象，不是平铺字段</text>
+
+  <rect x="696" y="104" width="264" height="64" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="828" y="130" text-anchor="middle" font-size="11.5" fill="#334155">body（二进制，可为空）</text>
+  <text x="828" y="151" text-anchor="middle" font-size="10.5" fill="#475569">发消息时是消息本体；查路由时为 RouteData</text>
+
+  <text x="40" y="196" font-size="12.5" font-weight="bold" fill="#0f172a">二、headerLen 这 4 个字节怎么读</text>
+
+  <rect x="40" y="208" width="920" height="46" rx="4" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <rect x="40" y="208" width="230" height="46" rx="4" fill="#fde68a" stroke="#ca8a04" stroke-width="1.6"/>
+  <text x="155" y="228" text-anchor="middle" font-size="11.5" fill="#713f12">最高 8 位：serializeType</text>
+  <text x="155" y="245" text-anchor="middle" font-size="10.5" fill="#854d0e">0 = JSON　1 = ROCKETMQ 私有编码</text>
+  <text x="470" y="228" text-anchor="middle" font-size="11.5" fill="#334155">低 24 位：headerData 的字节长度（掩码 0xFFFFFF）</text>
+  <text x="470" y="245" text-anchor="middle" font-size="10.5" fill="#b91c1c">所以单帧头部的硬上限是 16 MiB 减 1 字节，超出被截断而非报错</text>
+  <text x="790" y="228" text-anchor="middle" font-size="11.5" fill="#334155">编码式子：</text>
+  <text x="790" y="245" text-anchor="middle" font-size="10.5" fill="#0f172a">(type 左移 24) 按位或 (len 与 0xFFFFFF)</text>
+
+  <text x="40" y="288" font-size="12.5" font-weight="bold" fill="#0f172a">三、三个长度之间的关系（服务端按这个式子等字节）</text>
+
+  <rect x="40" y="300" width="920" height="40" rx="4" fill="#0f172a"/>
+  <text x="60" y="326" font-family="Consolas, monospace" font-size="13" fill="#e2e8f0">totalLen = 4 + headerLen + bodyLen　　整帧 = 4 + totalLen</text>
+
+  <text x="40" y="372" font-size="12.5" font-weight="bold" fill="#14532d">四、实测的请求帧开头 8 字节</text>
+
+  <rect x="40" y="390" width="920" height="66" rx="6" fill="#0f172a"/>
+  <text x="58" y="408" font-family="Consolas, monospace" font-size="12.5" fill="#e2e8f0">00 00 00 88   00 00 00 84   { "code":105, "flag":0, … }</text>
+  <text x="58" y="430" font-family="Consolas, monospace" font-size="12" fill="#7dd3fc">totalLen=136  headerLen=132（高字节 00 = JSON）  整帧 140 B</text>
+  <text x="58" y="444" font-size="10.5" fill="#94a3b8">响应帧同样三段，实测 totalLen=365、headerLen=96、bodyLen=265，整帧 369 B</text>
+
+  <text x="40" y="486" font-size="12.5" font-weight="bold" fill="#0f172a">五、三种写错法的实测后果</text>
+
+  <rect x="40" y="498" width="920" height="86" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="60" y="522" font-size="12" fill="#334155">totalLen 多写 1 → 服务端认为还差 1 字节，连接不断、不报错、不回响应（3 秒 0 字节）</text>
+  <text x="60" y="546" font-size="12" fill="#334155">totalLen 少写 1 → 头 JSON 被截断，解析失败，连接直接被关闭</text>
+  <text x="60" y="570" font-size="12" fill="#b91c1c">高字节改 1（声称是私有编码）但内容仍是 JSON → 连接直接被关闭，说明它真的被用来选解码器</text>
+
+  <text x="960" y="602" text-anchor="end" font-size="11" fill="#64748B">实测：apache/rocketmq:5.3.1 单机，Python 标准库手写帧，两遍输出一致；编码式与 frame 布局由 javap 反编译 encode 核实</text>
+</svg>

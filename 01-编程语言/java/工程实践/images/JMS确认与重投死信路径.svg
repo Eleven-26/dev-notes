@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">JMS 消息的三条出口：确认出队、回滚重投、超限进死信</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机 maximumRedeliveries=2；JMSXDeliveryCount 依次 1、2、3，第 4 次读不到</text>
+
+  <rect x="50" y="150" width="180" height="80" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="140" y="180" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">Queue lab.poison</text>
+  <text x="140" y="203" text-anchor="middle" font-size="11.5" fill="#334155">maximumRedeliveries=2</text>
+  <text x="140" y="221" text-anchor="middle" font-size="11" fill="#475569">事务会话 receive(2000)</text>
+
+  <line x1="230" y1="190" x2="296" y2="190" stroke="#2563eb" stroke-width="1.7"/>
+  <polygon points="300,190 289,185 289,195" fill="#2563eb"/>
+
+  <rect x="300" y="150" width="200" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="400" y="178" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">业务处理 handle(m)</text>
+  <text x="400" y="200" text-anchor="middle" font-size="11.5" fill="#334155">成功 → acknowledge / commit</text>
+  <text x="400" y="220" text-anchor="middle" font-size="11.5" fill="#334155">失败 → 不确认 / rollback</text>
+
+  <line x1="500" y1="176" x2="646" y2="158" stroke="#16a34a" stroke-width="1.7"/>
+  <polygon points="650,157 638,152 641,164" fill="#16a34a"/>
+  <text x="572" y="152" text-anchor="middle" font-size="11" fill="#14532d">成功</text>
+
+  <rect x="650" y="110" width="300" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="800" y="138" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">出口① 确认出队</text>
+  <text x="800" y="161" text-anchor="middle" font-size="11.5" fill="#334155">acknowledge() / commit()</text>
+  <text x="800" y="182" text-anchor="middle" font-size="11.5" fill="#334155">消息移除，不再投递</text>
+  <text x="800" y="199" text-anchor="middle" font-size="11" fill="#475569">CLIENT_ACK 与事务会话都走这条</text>
+
+  <line x1="400" y1="230" x2="400" y2="286" stroke="#ea580c" stroke-width="1.7"/>
+  <polygon points="400,290 395,279 405,279" fill="#ea580c"/>
+  <text x="452" y="262" text-anchor="middle" font-size="11" fill="#7c2d12">失败 / 未确认</text>
+
+  <rect x="300" y="290" width="200" height="112" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="400" y="316" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">出口② 回滚重投</text>
+  <text x="400" y="339" text-anchor="middle" font-size="11.5" fill="#334155">JMSXDeliveryCount 2 → 3</text>
+  <text x="400" y="360" text-anchor="middle" font-size="11.5" fill="#334155">redelivered=true</text>
+  <text x="400" y="382" text-anchor="middle" font-size="11" fill="#475569">按 RedeliveryPolicy 延迟重投</text>
+
+  <path d="M300 340 L272 340 L272 190 L296 190" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <polygon points="300,190 289,185 289,195" fill="#94a3b8"/>
+  <text x="258" y="270" text-anchor="middle" font-size="11" fill="#475569" transform="rotate(-90 258 270)">重投循环</text>
+
+  <line x1="500" y1="360" x2="646" y2="396" stroke="#dc2626" stroke-width="1.7"/>
+  <polygon points="650,398 640,389 637,400" fill="#dc2626"/>
+  <text x="568" y="366" text-anchor="middle" font-size="11" fill="#7f1d1d">2 次用尽仍失败</text>
+
+  <rect x="650" y="368" width="300" height="96" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
+  <text x="800" y="396" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">出口③ 超过上限进死信</text>
+  <text x="800" y="419" text-anchor="middle" font-size="11.5" fill="#334155">ActiveMQ.DLQ</text>
+  <text x="800" y="440" text-anchor="middle" font-size="11.5" fill="#334155">第 4 次 receive 返回 null</text>
+  <text x="800" y="457" text-anchor="middle" font-size="11" fill="#475569">本机 dlq 收到 poison-message</text>
+
+  <rect x="40" y="486" width="920" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="510" text-anchor="middle" font-size="11.5" fill="#334155">注意：AUTO_ACKNOWLEDGE 下 receive 返回即算确认，进程崩溃时消息既不重投也不进死信——等于提前走到了出口①。</text>
+  <text x="500" y="534" text-anchor="middle" font-size="11.5" fill="#475569">本机读数：attempt 0/1/2 的 JMSXDeliveryCount 依次 1/2/3，attempt=3 读不到，DLQ 收到 poison-message。</text>
+</svg>

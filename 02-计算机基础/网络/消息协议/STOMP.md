@@ -2,7 +2,7 @@
 
 > 覆盖 ⭐ **STOMP 是什么、为什么它只定语法不定语义**（客户端与 broker 两个角色、`destination` 是唯一的路由信息），以及它用纯文本帧怎么表达一个完整消息协议：帧的四段结构（`COMMAND` + headers + 空行 + body + `NUL`）、13 种命令的分工、`content-length` 与 `NUL` 两种定界的取舍、事务与 `receipt` 的用法、心跳，以及 1.0 / 1.1 / 1.2 的实质差异。
 >
-> 不覆盖：AMQP 的二进制帧与 channel 多路复用见 [AMQP.md](AMQP.md)；MQTT 的位段式固定头见 [MQTT.md](MQTT.md)；NATS 的文本命令见 [NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS协议.md)；ActiveMQ 的 Go（STOMP）/ Java（JMS）接入代码见 [ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)。
+> 不覆盖：AMQP 的二进制帧与 channel 多路复用见 [AMQP.md](AMQP.md)；MQTT 的位段式固定头见 [MQTT.md](MQTT.md)；NATS 的文本命令见 [NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS/NATS协议.md)；ActiveMQ 的接入代码见 Go 侧 [接入ActiveMQ.md](../../../01-编程语言/go/工程实践/接入ActiveMQ.md)（走 STOMP）与 Java 侧 [接入ActiveMQ.md](../../../01-编程语言/java/工程实践/接入ActiveMQ.md)（走 JMS）。
 >
 > 内容整理自个人学习笔记，帧结构依据 STOMP 1.2 规范。⚠️ **实测口径：本篇未做本机实测**（本机无 STOMP Broker 容器），帧格式按规范陈述、**未逐字节抓包验证**；文中不引用吞吐或延迟数字。「具体使用」节是可直接照抄的裸 TCP 交互，未在本机执行。
 
@@ -141,7 +141,7 @@ COMMIT（transaction:tx-1）
 ```
 
 - 所有带 `transaction:tx-1` 的帧在 `COMMIT` 之前**不生效**；`ABORT` 则全部丢弃。
-- ⚠️ **事务是「生产侧」的**：它保证「这两条消息要么都进队列、要么都不进」，**不保证消费者端的两条被同一个事务处理**。消费侧的事务要另找服务端能力（ActiveMQ 的 JMS 事务是另一套，见 [ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)）。
+- ⚠️ **事务是「生产侧」的**：它保证「这两条消息要么都进队列、要么都不进」，**不保证消费者端的两条被同一个事务处理**。消费侧的事务要另找服务端能力（ActiveMQ 的 JMS 事务是另一套，见 [接入ActiveMQ.md](../../../01-编程语言/java/工程实践/接入ActiveMQ.md)）。
 
 ### 4.3 `ack` 头的三种模式
 
@@ -178,7 +178,7 @@ COMMIT（transaction:tx-1）
 | **IoT 弱网省流量** | ❌ 换 [MQTT](MQTT.md) | STOMP 的文本头在按流量计费的链路上不可接受 |
 | **需要完整路由语义（交换机 / 绑定）** | ❌ 换 [AMQP](AMQP.md) | STOMP 只有 `destination` 一个概念，路由交给服务端解释 |
 
-本仓对应落地：[ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md)（Go 走 STOMP 的完整接入代码）、[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md)（应用层协议对照）。
+本仓对应落地：[接入ActiveMQ.md](../../../01-编程语言/go/工程实践/接入ActiveMQ.md)（Go 走 STOMP 的完整接入代码）、[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md)（应用层协议对照）。
 
 ## 七、具体使用
 
@@ -258,6 +258,7 @@ id:msg-1
 - **上游/总纲**：[README.md](../README.md) — 网络目录导读：消息协议这一类的位置
 - **对照/互补**：[AMQP.md](AMQP.md) — 同样面向 MQ，但用二进制帧 + 7 字节帧头 + `0xCE` 帧尾，与本篇的文本帧 + `NUL` 形成对照
 - **对照/互补**：[MQTT.md](MQTT.md) — 二进制位段式固定头，与本篇「全文本」是两个极端
-- **对照/互补**：[NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS协议.md) — 同为文本协议，但 NATS 用「行 + 长度字段」而不是「段 + NUL」
-- **下游机制**：[ActiveMQ.md](../../../03-数据与中间件/中间件/消息队列/ActiveMQ.md) — Go 侧的 STOMP 接入代码、Java 侧的 JMS 接入代码
+- **对照/互补**：[NATS协议.md](../../../03-数据与中间件/中间件/消息队列/NATS/NATS协议.md) — 同为文本协议，但 NATS 用「行 + 长度字段」而不是「段 + NUL」
+- **下游机制**：[接入ActiveMQ.md](../../../01-编程语言/go/工程实践/接入ActiveMQ.md) — Go 侧的 STOMP 接入代码
+- **下游机制**：[接入ActiveMQ.md](../../../01-编程语言/java/工程实践/接入ActiveMQ.md) — Java 侧的 JMS 接入代码
 - **下游机制**：[自定义协议设计.md](../应用层/自定义协议设计.md) — 想自研文本协议时，STOMP 的「四段 + NUL」是最省事的定界模板

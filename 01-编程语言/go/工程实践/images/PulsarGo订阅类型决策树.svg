@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">Go 侧订阅类型怎么选：先问实例数，再问同一 key 要不要保序</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">判据来自 pulsar-client-go 的 ConsumerOptions.Type；重复连接与延迟失效的读数见本页正文</text>
+
+  <rect x="340" y="88" width="320" height="54" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="500" y="111" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">同一订阅要几个实例</text>
+  <text x="500" y="131" text-anchor="middle" font-size="12" fill="#1d4ed8">并行消费？</text>
+
+  <line x1="400" y1="142" x2="240" y2="188" stroke="#475569" stroke-width="1.5"/>
+  <polygon points="232,190 244,184 242,196" fill="#475569"/>
+  <text x="296" y="170" font-size="12" font-weight="bold" fill="#16a34a">否</text>
+
+  <line x1="600" y1="142" x2="760" y2="188" stroke="#475569" stroke-width="1.5"/>
+  <polygon points="768,190 756,196 758,184" fill="#475569"/>
+  <text x="690" y="170" font-size="12" font-weight="bold" fill="#ea580c">是</text>
+
+  <rect x="60" y="192" width="340" height="86" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="76" y="216" font-size="13" font-weight="bold" fill="#14532d">Exclusive：单实例独占</text>
+  <text x="76" y="238" font-size="11.5" fill="#166534">最简单，但第二个实例连同一订阅会被拒</text>
+  <text x="76" y="258" font-size="11.5" fill="#166534">（ConsumerBusyException）；延迟投递不生效</text>
+
+  <rect x="620" y="192" width="360" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="636" y="216" font-size="13" font-weight="bold" fill="#0f172a">同一个 key 的消息要严格有序？</text>
+  <text x="636" y="238" font-size="11.5" fill="#334155">有序的边界是 key，不是 topic：同 key</text>
+  <text x="636" y="258" font-size="11.5" fill="#334155">落一边、按写入顺序消费</text>
+
+  <line x1="700" y1="278" x2="668" y2="330" stroke="#475569" stroke-width="1.5"/>
+  <polygon points="664,336 668,323 676,331" fill="#475569"/>
+  <text x="626" y="310" font-size="12" font-weight="bold" fill="#ea580c">是</text>
+
+  <line x1="820" y1="278" x2="852" y2="330" stroke="#475569" stroke-width="1.5"/>
+  <polygon points="856,336 844,331 852,323" fill="#475569"/>
+  <text x="850" y="310" font-size="12" font-weight="bold" fill="#16a34a">否</text>
+
+  <rect x="520" y="338" width="280" height="112" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="536" y="362" font-size="13" font-weight="bold" fill="#7c2d12">KeyShared：按 key 区间切</text>
+  <text x="536" y="384" font-size="11.5" fill="#9a3412">key 必须由生产端设置；分配按 key 数，</text>
+  <text x="536" y="404" font-size="11.5" fill="#9a3412">不按条数均分（本机 1 key 对 1 key）</text>
+  <text x="536" y="424" font-size="11.5" fill="#9a3412">实测：c1|order-0 -> 5，c2|order-1 -> 5</text>
+
+  <rect x="820" y="338" width="160" height="112" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="836" y="362" font-size="13" font-weight="bold" fill="#1e3a8a">Shared</text>
+  <text x="836" y="384" font-size="11.5" fill="#1d4ed8">按条轮询</text>
+  <text x="836" y="404" font-size="11.5" fill="#1d4ed8">同 key 会拆分</text>
+  <text x="836" y="424" font-size="11.5" fill="#1d4ed8">要求处理幂等</text>
+
+  <rect x="24" y="474" width="952" height="88" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="40" y="498" font-size="12.5" font-weight="bold" fill="#78350f">三种类型都要落同一套确认策略：AckWithResponse=true，先处理再 Ack，失败 Nack，并配 DLQ（本机 Go：投递 3 次后进死信）。</text>
+  <text x="40" y="522" font-size="12" fill="#78350f">延迟投递只在 Shared / Key_Shared 生效；Exclusive / Failover 下 deliverAfter 会被立即派发。</text>
+  <text x="40" y="546" font-size="12" fill="#78350f">单机 standalone 的 E/W/Q=1/1/1 只代表「写入被一个 bookie 确认」，不代表多副本冗余。</text>
+</svg>

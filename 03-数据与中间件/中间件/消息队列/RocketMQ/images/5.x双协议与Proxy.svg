@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">5.x 并存两套协议：老路走 Remoting 直连，新路走 gRPC 过 Proxy</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748B">Proxy 自己是双协议前端 —— 同一进程上 8080 收 Remoting、8081 收 HTTP/2，后端共用一套存储</text>
+
+  <text x="40" y="94" font-size="12.5" font-weight="bold" fill="#1e3a8a">两代客户端</text>
+
+  <rect x="40" y="106" width="290" height="66" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="185" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">老客户端（Java 4.x / Go v2）</text>
+  <text x="185" y="152" text-anchor="middle" font-size="11" fill="#1d4ed8">只认 Remoting 二进制协议</text>
+  <text x="185" y="167" text-anchor="middle" font-size="10.5" fill="#1d4ed8">code + opaque + JSON 头</text>
+
+  <rect x="670" y="106" width="290" height="66" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="815" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">新客户端（5.x SDK）</text>
+  <text x="815" y="152" text-anchor="middle" font-size="11" fill="#15803d">只认 gRPC，连的是 Proxy</text>
+  <text x="815" y="167" text-anchor="middle" font-size="10.5" fill="#15803d">protobuf 消息，方法即 API</text>
+
+  <line x1="185" y1="172" x2="185" y2="240" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="185,240 181,230 189,230" fill="#2563eb"/>
+  <line x1="815" y1="172" x2="815" y2="240" stroke="#16a34a" stroke-width="1.6"/>
+  <polygon points="815,240 811,230 819,230" fill="#16a34a"/>
+
+  <rect x="40" y="252" width="290" height="86" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="185" y="276" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">NameServer : 9876</text>
+  <text x="185" y="298" text-anchor="middle" font-size="11" fill="#475569">GET_ROUTEINFO_BY_TOPIC = 105</text>
+  <text x="185" y="316" text-anchor="middle" font-size="10.5" fill="#64748b">无状态、纯内存，返回 RouteData</text>
+  <text x="185" y="330" text-anchor="middle" font-size="10.5" fill="#64748b">实测 body 265 B</text>
+
+  <rect x="355" y="252" width="290" height="86" rx="6" fill="#f8fafc" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="500" y="276" text-anchor="middle" font-size="12" font-weight="bold" fill="#4c1d95">Proxy（mqproxy）</text>
+  <text x="500" y="298" text-anchor="middle" font-size="11" fill="#6d28d9">8080 Remoting（实测应答 105）</text>
+  <text x="500" y="316" text-anchor="middle" font-size="11" fill="#6d28d9">8081 HTTP/2 gRPC（实测回 SETTINGS）</text>
+  <text x="500" y="331" text-anchor="middle" font-size="10.5" fill="#7c3aed">同一个进程，两副面孔</text>
+
+  <rect x="670" y="252" width="290" height="86" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="815" y="276" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Broker : 10911</text>
+  <text x="815" y="298" text-anchor="middle" font-size="11" fill="#475569">SEND_MESSAGE = 10 / PULL_MESSAGE = 11</text>
+  <text x="815" y="316" text-anchor="middle" font-size="10.5" fill="#64748b">读写 CommitLog、维护消费位点</text>
+  <text x="815" y="330" text-anchor="middle" font-size="10.5" fill="#64748b">老客户端直连这里</text>
+
+  <line x1="185" y1="252" x2="185" y2="240" stroke="#94a3b8" stroke-width="0"/>
+  <line x1="330" y1="295" x2="352" y2="295" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <polygon points="352,295 344,291 344,299" fill="#7c3aed"/>
+  <text x="341" y="286" text-anchor="middle" font-size="9.5" fill="#7c3aed">也可走</text>
+  <line x1="645" y1="295" x2="667" y2="295" stroke="#7c3aed" stroke-width="1.6"/>
+  <polygon points="667,295 659,291 659,299" fill="#7c3aed"/>
+  <line x1="185" y1="338" x2="185" y2="404" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <line x1="815" y1="338" x2="815" y2="404" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="4 3"/>
+
+  <rect x="40" y="404" width="920" height="72" rx="6" fill="#0f172a"/>
+  <text x="58" y="428" font-family="Consolas, monospace" font-size="11.5" fill="#e2e8f0">service apache.rocketmq.v2.MessagingService {　15 个方法：QueryRoute / SendMessage / ReceiveMessage /</text>
+  <text x="58" y="448" font-family="Consolas, monospace" font-size="11.5" fill="#e2e8f0">  AckMessage / PullMessage / UpdateOffset / GetOffset / QueryAssignment / EndTransaction / Telemetry … }</text>
+  <text x="58" y="466" font-family="Consolas, monospace" font-size="10.5" fill="#7dd3fc">proto 定义在 rocketmq-proto-2.0.3.jar 内：apache/rocketmq/v2/ 下 definition.proto、service.proto、admin.proto</text>
+
+  <text x="40" y="508" font-size="12.5" font-weight="bold" fill="#0f172a">为什么要多这一层</text>
+
+  <rect x="40" y="520" width="450" height="78" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="58" y="544" font-size="11.5" fill="#334155">Remoting 协议把「哪个 API」压在 code 数字里，</text>
+  <text x="58" y="564" font-size="11.5" fill="#334155">加能力只能追加码值，跨语言实现各写一遍编解码。</text>
+  <text x="58" y="584" font-size="11" fill="#64748b">gRPC 有 IDL 与代码生成，多语言客户端不用再手写协议。</text>
+
+  <rect x="510" y="520" width="450" height="78" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="528" y="544" font-size="11.5" fill="#334155">代价是多一跳：客户端 → Proxy → Broker，</text>
+  <text x="528" y="564" font-size="11.5" fill="#334155">Proxy 成了要独立部署、要扩缩容的有状态近邻。</text>
+  <text x="528" y="584" font-size="11" fill="#b91c1c">所以 5.x 仍然保留 Remoting，老客户端不需要迁移。</text>
+
+  <text x="960" y="612" text-anchor="end" font-size="11" fill="#64748B">实测：apache/rocketmq:5.3.1 起 mqproxy，8081 回 HTTP/2 SETTINGS 帧，8080 回 code=0 的 105 响应</text>
+</svg>

@@ -89,7 +89,7 @@ dev-notes/
 │   ├── 存储架构与场景/      README + 存储选型与组合 + 形态篇/ 横切篇/
 │   └── 数据库选型对比.md
 └── 中间件/                  根下 中间件选型.md 是全仓组件选型总纲
-    ├── 消息队列/            Kafka/、RocketMQ/ 两册；根下散篇 ActiveMQ / Nats / Pulsar / RabbitMQ / 消息队列选型对比
+    ├── 消息队列/            Kafka/、RocketMQ/、RabbitMQ/、NATS/、ActiveMQ/、Pulsar/ 六册；根下 消息队列选型对比.md / 队列粒度设计.md / JMS规范.md
     ├── 注册与配置中心/      Nacos.md（产品级横向对比以该篇为单一来源）
     ├── 网关与代理/          README 导读 + OpenResty.md + 网关选型对比.md
     ├── 任务调度/            xxl-job.md

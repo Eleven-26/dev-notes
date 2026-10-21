@@ -1,8 +1,8 @@
-# NATS协议
+# NATS 协议
 
 > 覆盖 ⭐ **NATS 用五行纯文本命令跑完整个发布订阅**：服务端为什么先推 `INFO`、`CONNECT` / `PUB` / `SUB` / `MSG` / `PING` 的精确字节形态、长度字段的三条硬规则（含**长度写错时服务端不报错、只等数据**这个实测行为）、`sid` 与队列组、请求-应答怎么在纯文本上实现、以及服务端主动 `PING` 的异步语义。
 >
-> 不覆盖：NATS 的产品能力（JetStream 持久化、集群、Leaf Node）见 [Nats.md](Nats.md)；Kafka 的二进制请求-响应协议见 [协议与线上格式.md](Kafka/协议与线上格式.md)；AMQP 的帧流见 [AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md)；STOMP 的文本帧见 [STOMP.md](../../../02-计算机基础/网络/消息协议/STOMP.md)。
+> 不覆盖：NATS 的产品能力（JetStream 持久化、集群、Leaf Node）见 [README.md](README.md)；Kafka 的二进制请求-响应协议见 [Kafka协议.md](../Kafka/Kafka协议.md)；AMQP 的帧流见 [AMQP.md](../../../../02-计算机基础/网络/消息协议/AMQP.md)；STOMP 的文本帧见 [STOMP.md](../../../../02-计算机基础/网络/消息协议/STOMP.md)。
 >
 > 内容整理自个人学习笔记，协议规则依据 NATS 官方文档。**实测口径**：本篇**全部字节读数来自本机 `nats:2.10-alpine`（nats-server **2.10.29**）容器 `nats-proto-lab`**（宿主端口 14222），探针用 Python 标准库手写命令、不引客户端库，**连续两遍输出在归一化 `client_id` 后逐行一致**；JetStream 相关的 `+ACK` / `-ACK` 流控**未实测**。
 
@@ -158,7 +158,7 @@ payload = "你好"        # 字符数 2，UTF-8 字节数 6
 | **需要二进制 payload** | 直接用 `PUB`（长度按字节算） | 长度算错就静默卡住 |
 | **需要消息头** | `HPUB` / `HMSG` | 前提是 `INFO` 里 `headers:true` |
 
-本仓对应落地：[Nats.md](Nats.md)（JetStream、集群、Leaf Node、Go/Java 客户端）、[队列粒度设计.md](队列粒度设计.md)（队列组与另两个产品的竞争消费对照）。
+本仓对应落地：[README.md](README.md)（JetStream、集群、Leaf Node、Go/Java 客户端）、[队列粒度设计.md](../队列粒度设计.md)（队列组与另两个产品的竞争消费对照）。
 
 ## 八、具体使用
 
@@ -210,9 +210,9 @@ s.close()
 
 ## 关联
 
-- **上游/总纲**：[Nats.md](Nats.md) — 产品能力：JetStream、集群、Leaf Node、Go/Java 客户端
-- **上游/总纲**：[队列粒度设计.md](队列粒度设计.md) — 队列组与 RabbitMQ 竞争消费、Kafka 消费组的对照
-- **上游/总纲**：[README.md](../../../02-计算机基础/网络/README.md) — 网络目录导读：协议分层与消息协议的位置
-- **对照/互补**：[协议与线上格式.md](Kafka/协议与线上格式.md) — 同样是消息协议，Kafka 是二进制 + 严格请求-响应，NATS 是文本 + 双向推送
-- **对照/互补**：[STOMP.md](../../../02-计算机基础/网络/消息协议/STOMP.md) — 同为文本协议，STOMP 用「四段 + NUL」，NATS 用「命令行 + 长度字段」
-- **对照/互补**：[AMQP.md](../../../02-计算机基础/网络/消息协议/AMQP.md) — AMQP 把路由写进协议，NATS 只有 subject 通配
+- **上游/总纲**：[README.md](README.md) — 产品能力：JetStream、集群、Leaf Node、Go/Java 客户端
+- **上游/总纲**：[队列粒度设计.md](../队列粒度设计.md) — 队列组与 RabbitMQ 竞争消费、Kafka 消费组的对照
+- **上游/总纲**：[README.md](../../../../02-计算机基础/网络/README.md) — 网络目录导读：协议分层与消息协议的位置
+- **对照/互补**：[Kafka协议.md](../Kafka/Kafka协议.md) — 同样是消息协议，Kafka 是二进制 + 严格请求-响应，NATS 是文本 + 双向推送
+- **对照/互补**：[STOMP.md](../../../../02-计算机基础/网络/消息协议/STOMP.md) — 同为文本协议，STOMP 用「四段 + NUL」，NATS 用「命令行 + 长度字段」
+- **对照/互补**：[AMQP.md](../../../../02-计算机基础/网络/消息协议/AMQP.md) — AMQP 把路由写进协议，NATS 只有 subject 通配

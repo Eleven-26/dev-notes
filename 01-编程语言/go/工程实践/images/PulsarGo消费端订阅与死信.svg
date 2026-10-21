@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">Pulsar Go 消费端：订阅建游标、Ack 推进、Nack 重投，到上限转投死信</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机 pulsar-client-go v0.21.0 + pulsar 4.0.5 standalone；DLQ 策略 MaxDeliveries=3，NackRedeliveryDelay=1s</text>
+
+  <text x="700" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Go Consumer</text>
+  <text x="820" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Broker（订阅游标）</text>
+  <text x="940" y="86" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">死信 Topic</text>
+  <line x1="700" y1="96" x2="700" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="820" y1="96" x2="820" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="940" y1="96" x2="940" y2="500" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+
+  <circle cx="34" cy="170" r="11" fill="#2563eb"/>
+  <text x="34" y="175" text-anchor="middle" font-size="12" fill="#ffffff">1</text>
+  <text x="56" y="175" font-size="12.5" fill="#1e293b">Subscribe(Shared, Earliest)：新建订阅才按起始位置建游标</text>
+  <line x1="700" y1="170" x2="812" y2="170" stroke="#2563eb" stroke-width="1.8"/>
+  <polygon points="820,170 808,164 808,176" fill="#2563eb"/>
+
+  <circle cx="34" cy="214" r="11" fill="#16a34a"/>
+  <text x="34" y="219" text-anchor="middle" font-size="12" fill="#ffffff">2</text>
+  <text x="56" y="219" font-size="12.5" fill="#1e293b">← FLOW permits(1000)：预取队列满即停推，这是背压点</text>
+  <line x1="820" y1="214" x2="708" y2="214" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <polygon points="700,214 712,208 712,220" fill="#16a34a"/>
+
+  <circle cx="34" cy="258" r="11" fill="#16a34a"/>
+  <text x="34" y="263" text-anchor="middle" font-size="12" fill="#ffffff">3</text>
+  <text x="56" y="263" font-size="12.5" fill="#1e293b">← MESSAGE redelivery=0：按订阅类型决定给哪个实例</text>
+  <line x1="820" y1="258" x2="708" y2="258" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="700,258 712,252 712,264" fill="#16a34a"/>
+
+  <circle cx="34" cy="302" r="11" fill="#2563eb"/>
+  <text x="34" y="307" text-anchor="middle" font-size="12" fill="#ffffff">4</text>
+  <text x="56" y="307" font-size="12.5" fill="#1e293b">业务处理：先执行本地事务，成功后才有资格 Ack</text>
+  <path d="M700 302 L748 302 L748 316 L700 316" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="700,316 712,310 712,322" fill="#2563eb"/>
+
+  <circle cx="34" cy="346" r="11" fill="#16a34a"/>
+  <text x="34" y="351" text-anchor="middle" font-size="12" fill="#ffffff">5</text>
+  <text x="56" y="351" font-size="12.5" fill="#1e293b">Ack(AckWithResponse=true)：游标推进并持久化</text>
+  <line x1="700" y1="346" x2="812" y2="346" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="820,346 808,340 808,352" fill="#16a34a"/>
+
+  <circle cx="34" cy="390" r="11" fill="#ea580c"/>
+  <text x="34" y="395" text-anchor="middle" font-size="12" fill="#ffffff">6</text>
+  <text x="56" y="395" font-size="12.5" fill="#1e293b">Nack 或 ackTimeout 超时：按 NackRedeliveryDelay 重投</text>
+  <line x1="700" y1="390" x2="812" y2="390" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <polygon points="820,390 808,384 808,396" fill="#ea580c"/>
+
+  <circle cx="34" cy="434" r="11" fill="#ea580c"/>
+  <text x="34" y="439" text-anchor="middle" font-size="12" fill="#ffffff">7</text>
+  <text x="56" y="439" font-size="12.5" fill="#1e293b">← 重投 redelivery=1、2：同一消息再次派发</text>
+  <line x1="820" y1="434" x2="708" y2="434" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <polygon points="700,434 712,428 712,440" fill="#ea580c"/>
+
+  <circle cx="34" cy="478" r="11" fill="#dc2626"/>
+  <text x="34" y="483" text-anchor="middle" font-size="12" fill="#ffffff">8</text>
+  <text x="56" y="483" font-size="12.5" fill="#1e293b">第 4 次不再投：消息转投死信 Topic（本机 Go 口径）</text>
+  <line x1="820" y1="478" x2="932" y2="478" stroke="#dc2626" stroke-width="1.8"/>
+  <polygon points="940,478 928,472 928,484" fill="#dc2626"/>
+
+  <rect x="24" y="518" width="952" height="120" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="40" y="542" font-size="12.5" font-weight="bold" fill="#78350f">本机读数一（Key_Shared，10 条 / 2 个 key / 2 个消费者）：KS c1|order-0 -> 5；KS c2|order-1 -> 5</text>
+  <text x="40" y="566" font-size="12.5" font-weight="bold" fill="#78350f">本机读数二（DLQ）：DLQ recv redelivery=0/1/2；DLQ receive stopped: context deadline exceeded；DLQ TOPIC got body=go-dlq-1</text>
+  <text x="40" y="592" font-size="12" fill="#78350f">要点一：Shared 按条轮询，同一个 key 会跨消费者；Key_Shared 按 key 区间切，一个 key 只落一边。</text>
+  <text x="40" y="616" font-size="12" fill="#78350f">要点二：顺序必须是「先处理、后 Ack」；先 Ack 后处理，进程崩了这条就真丢了。</text>
+</svg>

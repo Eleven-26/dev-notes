@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">STOMP 消费的三条出口：Ack、不 Ack 断开、Nack 各去哪里</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机 go-stomp/v3 v3.1.5 + activemq-classic 6.1.4 实测；队列与死信计数由 Jolokia 读取</text>
+
+  <rect x="60" y="92" width="240" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="180" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Subscribe（client-individual）</text>
+  <text x="180" y="140" text-anchor="middle" font-size="11.5" fill="#334155">/queue/labg.xxx，AckClientIndividual</text>
+
+  <rect x="380" y="92" width="240" height="70" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.6"/>
+  <text x="500" y="118" text-anchor="middle" font-size="13" font-weight="bold" fill="#0c4a6e">Read 取到消息</text>
+  <text x="500" y="140" text-anchor="middle" font-size="11.5" fill="#334155">redelivered 头为空表示首次投递</text>
+
+  <line x1="300" y1="127" x2="372" y2="127" stroke="#94a3b8" stroke-width="1.6"/>
+  <polygon points="380,127 368,121 368,133" fill="#94a3b8"/>
+
+  <line x1="500" y1="162" x2="500" y2="196" stroke="#94a3b8" stroke-width="1.4"/>
+  <polygon points="500,204 494,192 506,192" fill="#94a3b8"/>
+
+  <rect x="320" y="204" width="360" height="52" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.4"/>
+  <text x="500" y="228" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">业务处理完成？</text>
+  <text x="500" y="247" text-anchor="middle" font-size="11" fill="#475569">处理成功才允许确认</text>
+
+  <line x1="410" y1="256" x2="250" y2="300" stroke="#16a34a" stroke-width="1.6"/>
+  <polygon points="244,303 257,297 253,309" fill="#16a34a"/>
+  <text x="330" y="286" text-anchor="middle" font-size="11.5" fill="#15803d">成功 → Ack</text>
+
+  <line x1="500" y1="256" x2="500" y2="300" stroke="#ea580c" stroke-width="1.6"/>
+  <polygon points="500,308 494,296 506,296" fill="#ea580c"/>
+  <text x="560" y="286" text-anchor="middle" font-size="11.5" fill="#c2410c">失败 → 不 Ack 断开</text>
+
+  <line x1="590" y1="256" x2="760" y2="300" stroke="#dc2626" stroke-width="1.6"/>
+  <polygon points="766,303 753,297 757,309" fill="#dc2626"/>
+  <text x="700" y="286" text-anchor="middle" font-size="11.5" fill="#b91c1c">失败 → Nack</text>
+
+  <rect x="60" y="312" width="340" height="132" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="230" y="338" text-anchor="middle" font-size="13" font-weight="bold" fill="#14532d">Ack：出队，不再投</text>
+  <text x="230" y="362" text-anchor="middle" font-size="11.5" fill="#334155">本机：10 条发送 → 10 条读取 → acked=10</text>
+  <text x="230" y="384" text-anchor="middle" font-size="11.5" fill="#334155">QueueSize 归零，DequeueCount 递增</text>
+  <text x="230" y="410" text-anchor="middle" font-size="11.5" fill="#475569">用 AckAuto 时等于「发出去就算成功」</text>
+  <text x="230" y="432" text-anchor="middle" font-size="11.5" fill="#7f1d1d">业务崩溃也无法重投，等于静默丢失</text>
+
+  <rect x="430" y="312" width="240" height="132" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.5"/>
+  <text x="550" y="338" text-anchor="middle" font-size="13" font-weight="bold" fill="#7c2d12">不 Ack 断开：重投</text>
+  <text x="550" y="362" text-anchor="middle" font-size="11.5" fill="#334155">消息回到队列</text>
+  <text x="550" y="384" text-anchor="middle" font-size="11.5" fill="#334155">重连后 redelivered="true"</text>
+  <text x="550" y="406" text-anchor="middle" font-size="11.5" fill="#334155">message-id 不变</text>
+  <text x="550" y="430" text-anchor="middle" font-size="11.5" fill="#15803d">本机实测：同一条被新消费者拿到</text>
+
+  <rect x="700" y="312" width="240" height="132" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="820" y="338" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">Nack：语义不等价</text>
+  <text x="820" y="362" text-anchor="middle" font-size="11.5" fill="#334155">12 秒内同订阅不再收到</text>
+  <text x="820" y="384" text-anchor="middle" font-size="11.5" fill="#334155">QueueSize=0，未回队列</text>
+  <text x="820" y="406" text-anchor="middle" font-size="11.5" fill="#334155">ActiveMQ.DLQ 计数未增加</text>
+  <text x="820" y="430" text-anchor="middle" font-size="11.5" fill="#7f1d1d">不要依赖 STOMP NACK 做重投</text>
+
+  <rect x="60" y="474" width="880" height="110" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="500" y="500" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">选型建议</text>
+  <text x="500" y="524" text-anchor="middle" font-size="12" fill="#334155">要「处理成功才出队」：AckClientIndividual + 成功后再 Ack，失败靠断开重投。</text>
+  <text x="500" y="548" text-anchor="middle" font-size="12" fill="#334155">要「失败重试 N 次后进死信」：走 Java 侧 JMS 的 RedeliveryPolicy 与事务回滚，STOMP 侧拿不到同等保证。</text>
+  <text x="500" y="572" text-anchor="middle" font-size="12" fill="#475569">重投一定带来重复消费：业务幂等（唯一键 / 去重表 / 状态机 CAS）不能省。</text>
+
+  <rect x="60" y="596" width="880" height="0" fill="#ffffff"/>
+</svg>
