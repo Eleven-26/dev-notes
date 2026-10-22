@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">缩小比例：只踢人还是重新洗牌，决定了能不能反复调</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左panel为本机实测（同一批 1000 个 uid，同配置两个阈值）；右panel为取模写法的推演，非实测</text>
+
+  <text x="40" y="94" font-size="13.5" font-weight="bold" fill="#166534">区间判定（split_clients）：阈值收窄 = 取子集</text>
+
+  <rect x="40" y="112" width="440" height="150" rx="9" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="56" y="136" font-size="11" fill="#334155">哈希落在 [0, 阈值) 才进灰度，阈值就是区间的右端点</text>
+
+  <rect x="56" y="152" width="408" height="34" rx="4" fill="#dcfce7" stroke="#86efac"/>
+  <rect x="56" y="152" width="122" height="34" rx="4" fill="#16a34a"/>
+  <text x="117" y="174" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">10% 阈值</text>
+  <text x="300" y="174" text-anchor="middle" font-size="10.5" fill="#166534">30% 阈值覆盖前 122 + 后 244</text>
+
+  <text x="56" y="212" font-size="10.5" fill="#334155">30% 灰度 289 个</text>
+  <text x="56" y="232" font-size="10.5" fill="#334155">10% 灰度  79 个</text>
+  <text x="56" y="252" font-size="10.5" font-weight="bold" fill="#166534">G10 中不在 G30 的：0 个 —— 收缩时无人被换组</text>
+
+  <text x="40" y="292" font-size="11" fill="#64748b">被踢出 210 个，保留 79 个；扩容时同理反向成立</text>
+
+  <text x="530" y="94" font-size="13.5" font-weight="bold" fill="#7f1d1d">取模判定（uid % N）：换模数 = 全体重排</text>
+
+  <rect x="530" y="112" width="430" height="150" rx="9" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="546" y="136" font-size="11" fill="#334155">N 从 100 改成 10，同一个 uid 的余数含义完全变了</text>
+
+  <text x="546" y="164" font-size="10.5" font-family="Consolas, monospace" fill="#334155">uid=1007 → 1007 % 100 = 7  → 灰度（小于 30）</text>
+  <text x="546" y="186" font-size="10.5" font-family="Consolas, monospace" fill="#334155">uid=1007 → 1007 % 10  = 7  → 不进（不小于 1）</text>
+  <text x="546" y="212" font-size="10.5" fill="#b91c1c">比例改一次，已经稳定的灰度用户会被换掉一大批</text>
+  <text x="546" y="234" font-size="10.5" fill="#b91c1c">现象：用户反馈「昨天好的，今天又坏了」</text>
+  <text x="546" y="252" font-size="10" fill="#64748b">（此panel为算法推演，未做实测）</text>
+
+  <rect x="530" y="276" width="430" height="60" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.3"/>
+  <text x="546" y="300" font-size="11.5" font-weight="bold" fill="#78350f">判据：能不能只靠改一个数字扩面 / 收面</text>
+  <text x="546" y="322" font-size="10.5" fill="#b45309">能，就是区间判定；不能，就是每次都要重排一次用户分组</text>
+
+  <rect x="40" y="352" width="920" height="90" rx="9" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="56" y="378" font-size="12" font-weight="bold" fill="#0f172a">实测口径</text>
+  <text x="56" y="400" font-size="10.5" fill="#334155">Nginx 1.26.3；同一份 ingress.conf 内并列 ${arg_uid}gz-seed 的两个 split_clients 块，阈值 30% 与 10%；1000 个规律 uid</text>
+  <text x="56" y="422" font-size="10.5" fill="#334155">输出：289 / 79，交集 79，差集 0 —— 子集关系成立，且两次判定完全确定（同 uid 连打 5 次同侧）</text>
+</svg>
