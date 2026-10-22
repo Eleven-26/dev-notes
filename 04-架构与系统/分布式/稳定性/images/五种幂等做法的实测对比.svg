@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="470" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">五种做法：100 并发同一 requestId 的三轮实测</text>
+  <text x="500" y="56" text-anchor="middle" font-size="14" fill="#64748b">连接已预热，三轮读数（第四节）；条形长度按总耗时区间绘制</text>
+
+  <!-- 表头 -->
+  <text x="30" y="92" font-size="12" font-weight="bold" fill="#475569">做法</text>
+  <text x="300" y="92" font-size="12" font-weight="bold" fill="#475569">表内行数</text>
+  <text x="410" y="92" font-size="12" font-weight="bold" fill="#475569">错误</text>
+  <text x="560" y="92" font-size="12" font-weight="bold" fill="#475569">总耗时</text>
+  <line x1="30" y1="100" x2="970" y2="100" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- A -->
+  <text x="30" y="140" font-size="13" fill="#0f172a">A 先查后写</text>
+  <text x="30" y="158" font-size="11" fill="#64748b">（无唯一约束）</text>
+  <rect x="300" y="126" width="86" height="24" rx="4" fill="#fef2f2" stroke="#f87171" stroke-width="1"/>
+  <text x="343" y="143" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">32 / 74 / 89</text>
+  <text x="410" y="143" font-size="12" fill="#64748b">0 个</text>
+  <rect x="560" y="130" width="158" height="16" rx="3" fill="#ef4444" opacity="0.75"/>
+  <text x="726" y="143" font-size="11" fill="#b91c1c">0.083~0.087s</text>
+
+  <!-- A2 -->
+  <text x="30" y="198" font-size="13" fill="#0f172a">A2 先查后写</text>
+  <text x="30" y="216" font-size="11" fill="#64748b">+ FOR UPDATE</text>
+  <rect x="300" y="184" width="86" height="24" rx="4" fill="#f0fdf4" stroke="#4ade80" stroke-width="1"/>
+  <text x="343" y="201" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">1</text>
+  <text x="410" y="201" font-size="12" font-weight="bold" fill="#b91c1c">99 个 1213</text>
+  <rect x="560" y="188" width="336" height="16" rx="3" fill="#f59e0b" opacity="0.75"/>
+  <text x="904" y="201" font-size="11" fill="#92400e">0.131~0.185s</text>
+
+  <!-- B -->
+  <text x="30" y="256" font-size="13" font-weight="bold" fill="#065f46">B 唯一索引 ⭐</text>
+  <text x="30" y="274" font-size="11" fill="#64748b">（捕获 1062）</text>
+  <rect x="300" y="242" width="86" height="24" rx="4" fill="#ecfdf5" stroke="#34d399" stroke-width="1.5"/>
+  <text x="343" y="259" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">1</text>
+  <text x="410" y="259" font-size="12" font-weight="bold" fill="#047857">0 个</text>
+  <rect x="560" y="246" width="113" height="16" rx="3" fill="#10b981" opacity="0.85"/>
+  <text x="681" y="259" font-size="11" fill="#065f46">0.059~0.062s</text>
+
+  <!-- C -->
+  <text x="30" y="314" font-size="13" fill="#0f172a">C 状态机条件更新</text>
+  <text x="30" y="332" font-size="11" fill="#64748b">（用影响行数判断）</text>
+  <rect x="300" y="300" width="86" height="24" rx="4" fill="#ecfdf5" stroke="#34d399" stroke-width="1"/>
+  <text x="343" y="317" text-anchor="middle" font-size="12" font-weight="bold" fill="#065f46">1</text>
+  <text x="410" y="317" font-size="12" font-weight="bold" fill="#047857">0 个</text>
+  <rect x="560" y="304" width="129" height="16" rx="3" fill="#10b981" opacity="0.85"/>
+  <text x="697" y="317" font-size="11" fill="#065f46">0.054~0.071s</text>
+
+  <!-- D -->
+  <text x="30" y="372" font-size="13" fill="#0f172a">D Redis SETNX</text>
+  <text x="30" y="390" font-size="11" fill="#64748b">（带 TTL）</text>
+  <rect x="300" y="358" width="86" height="24" rx="4" fill="#fffbeb" stroke="#fbbf24" stroke-width="1"/>
+  <text x="343" y="375" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">1</text>
+  <text x="410" y="375" font-size="12" fill="#047857">0 个</text>
+  <rect x="560" y="362" width="400" height="16" rx="3" fill="#fbbf24" opacity="0.7"/>
+  <text x="970" y="375" text-anchor="end" font-size="11" fill="#92400e">0.056~0.220s</text>
+
+  <!-- 底部结论 -->
+  <line x1="30" y1="408" x2="970" y2="408" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="430" font-size="13" font-weight="bold" fill="#0f172a">正确性和性能在这里不冲突：</text>
+  <text x="30" y="452" font-size="12" fill="#475569">唯一索引只用 1 次往返、不产生间隙锁，既拿到了正确结果，也比两次往返的先查后写更快。D 的 TTL 到期后会重新放行（第八节）。</text>
+</svg>

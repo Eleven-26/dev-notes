@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">重复请求的四个来源与四层拦截</text>
+  <text x="500" y="58" text-anchor="middle" font-size="14" fill="#64748b">来源与「能否从源头消掉」出自第一节；四层的分工与易错点出自第六节</text>
+
+  <!-- 上排：四个来源 -->
+  <rect x="30" y="86" width="220" height="104" rx="8" fill="#fef2f2" stroke="#f87171" stroke-width="1.5"/>
+  <text x="140" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">客户端 / 网关重试</text>
+  <text x="140" y="136" text-anchor="middle" font-size="11" fill="#7f1d1d">超时后结果未知，只能再发</text>
+  <text x="140" y="158" text-anchor="middle" font-size="11" fill="#7f1d1d">源头消不掉：重试是唯一选择</text>
+  <text x="140" y="178" text-anchor="middle" font-size="11" font-weight="bold" fill="#b91c1c">❌ 接收侧兜</text>
+
+  <rect x="270" y="86" width="220" height="104" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="380" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#92400e">MQ 至少一次投递</text>
+  <text x="380" y="136" text-anchor="middle" font-size="11" fill="#78350f">消费成功但 ACK 丢失</text>
+  <text x="380" y="158" text-anchor="middle" font-size="11" fill="#78350f">只能缩窗口，不能消除</text>
+  <text x="380" y="178" text-anchor="middle" font-size="11" font-weight="bold" fill="#b45309">⚠️ 减少但不清零</text>
+
+  <rect x="510" y="86" width="220" height="104" rx="8" fill="#fef2f2" stroke="#f87171" stroke-width="1.5"/>
+  <text x="620" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#991b1b">第三方回调</text>
+  <text x="620" y="136" text-anchor="middle" font-size="11" fill="#7f1d1d">没收到 200 就一直重推</text>
+  <text x="620" y="158" text-anchor="middle" font-size="11" fill="#7f1d1d">重推可持续数小时到数天</text>
+  <text x="620" y="178" text-anchor="middle" font-size="11" font-weight="bold" fill="#b91c1c">❌ 对方控制</text>
+
+  <rect x="750" y="86" width="220" height="104" rx="8" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="860" y="112" text-anchor="middle" font-size="15" font-weight="bold" fill="#166534">用户重复点击</text>
+  <text x="860" y="136" text-anchor="middle" font-size="11" fill="#14532d">网络慢、按钮没置灰</text>
+  <text x="860" y="158" text-anchor="middle" font-size="11" fill="#14532d">前端置灰可缓解</text>
+  <text x="860" y="178" text-anchor="middle" font-size="11" font-weight="bold" fill="#15803d">✅ 不能依赖</text>
+
+  <!-- 汇聚 -->
+  <path d="M140 190 L140 214 L500 214" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M380 190 L380 214" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M620 190 L620 214" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M860 190 L860 214 L500 214" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M500 214 L500 246" stroke="#475569" stroke-width="2" fill="none"/>
+  <path d="M494 240 L500 250 L506 240" fill="none" stroke="#475569" stroke-width="2"/>
+  <text x="500" y="232" text-anchor="middle" font-size="12" fill="#475569">前三行的 ❌ 意味着：幂等只能做在接收侧</text>
+
+  <!-- 下排：四层拦截 -->
+  <rect x="30" y="258" width="220" height="120" rx="8" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="140" y="284" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">接入层（网关）</text>
+  <text x="140" y="308" text-anchor="middle" font-size="11" fill="#1e40af">requestId 头 + Redis SETNX</text>
+  <text x="140" y="330" text-anchor="middle" font-size="11" fill="#1e40af">挡：同一客户端请求被重发</text>
+  <text x="140" y="352" text-anchor="middle" font-size="11" fill="#b91c1c">漏：MQ 重投、跨实例重复</text>
+
+  <rect x="270" y="258" width="220" height="120" rx="8" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="380" y="284" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">应用层</text>
+  <text x="380" y="308" text-anchor="middle" font-size="11" fill="#1e40af">业务状态查询 / 状态机</text>
+  <text x="380" y="330" text-anchor="middle" font-size="11" fill="#1e40af">挡：已知业务态重复</text>
+  <text x="380" y="352" text-anchor="middle" font-size="11" fill="#b91c1c">漏：并发首次进入</text>
+
+  <rect x="510" y="258" width="220" height="120" rx="8" fill="#ecfdf5" stroke="#34d399" stroke-width="2"/>
+  <text x="620" y="284" text-anchor="middle" font-size="15" font-weight="bold" fill="#065f46">存储层 ⭐</text>
+  <text x="620" y="308" text-anchor="middle" font-size="11" fill="#047857">唯一索引 / 条件更新</text>
+  <text x="620" y="330" text-anchor="middle" font-size="11" fill="#047857">挡：一切并发重复写</text>
+  <text x="620" y="352" text-anchor="middle" font-size="11" fill="#b91c1c">漏：不落库的操作</text>
+
+  <rect x="750" y="258" width="220" height="120" rx="8" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="860" y="284" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">消息层</text>
+  <text x="860" y="308" text-anchor="middle" font-size="11" fill="#1e40af">消费去重表</text>
+  <text x="860" y="330" text-anchor="middle" font-size="11" fill="#1e40af">挡：投递侧重投</text>
+  <text x="860" y="352" text-anchor="middle" font-size="11" fill="#b91c1c">漏：生产端重复发</text>
+
+  <!-- 箭头连接四层 -->
+  <path d="M250 318 L266 318" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M490 318 L506 318" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M730 318 L746 318" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+
+  <!-- 底部判据 -->
+  <rect x="30" y="398" width="940" height="196" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="50" y="424" font-size="15" font-weight="bold" fill="#0f172a">三条判据</text>
+
+  <text x="50" y="452" font-size="13" fill="#334155">① 下层兜底、上层省事：只做接入层会在链路深处漏；只做存储层会让无效请求打到数据库。</text>
+  <text x="50" y="476" font-size="13" fill="#334155">② 裁决要落在「最终一致的那份数据」旁边：业务在 MySQL，幂等记录就必须同库同事务。</text>
+  <text x="50" y="500" font-size="13" fill="#334155">③ 幂等记录必须与业务结果同生共死：业务失败要回滚，或标 FAILED 允许重试。</text>
+
+  <line x1="50" y1="516" x2="950" y2="516" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="50" y="540" font-size="13" font-weight="bold" fill="#b91c1c">最严重的误用：幂等记录写成 PROCESSING 却没人清理</text>
+  <text x="50" y="562" font-size="12" fill="#7f1d1d">后续真正该执行的请求被永久拦住——比重复一次严重得多，且监控同样看不出来。</text>
+  <text x="50" y="584" font-size="12" fill="#64748b">重放实测：无幂等扣 10 次 → 余额 1000 变 0；DB 幂等表扣 1 次 → 900。两者日志都是 200。</text>
+</svg>

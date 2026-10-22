@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">先查后写的竞态窗口 vs 唯一索引的一次裁决</text>
+  <text x="500" y="56" text-anchor="middle" font-size="14" fill="#64748b">100 并发同一 requestId，连接预热后实测（第二、四节）</text>
+
+  <!-- 上半区：先查后写 -->
+  <rect x="30" y="76" width="940" height="196" rx="8" fill="#fef2f2" stroke="#f87171" stroke-width="1.5"/>
+  <text x="48" y="100" font-size="15" font-weight="bold" fill="#991b1b">A 先查后写：两条语句、两个时刻，中间就是漏洞</text>
+  <text x="48" y="120" font-size="12" fill="#b91c1c">三轮实测落 32 / 74 / 89 行，零错误码——错了也不报错</text>
+
+  <!-- 窗口框 -->
+  <rect x="330" y="132" width="300" height="118" rx="6" fill="#fee2e2" stroke="#ef4444" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="480" y="150" text-anchor="middle" font-size="11" font-weight="bold" fill="#b91c1c">三条都查到 0 行</text>
+
+  <!-- 线程线 -->
+  <text x="48" y="176" font-size="12" fill="#334155">线程 A</text>
+  <line x1="110" y1="172" x2="900" y2="172" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="360" cy="172" r="7" fill="#ffffff" stroke="#ef4444" stroke-width="2"/>
+  <text x="360" y="163" text-anchor="middle" font-size="10" fill="#b91c1c">SELECT=0</text>
+  <circle cx="560" cy="172" r="7" fill="#ef4444"/>
+  <text x="560" y="196" text-anchor="middle" font-size="10" fill="#b91c1c">INSERT 成功</text>
+
+  <text x="48" y="220" font-size="12" fill="#334155">线程 B</text>
+  <line x1="110" y1="216" x2="900" y2="216" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="380" cy="216" r="7" fill="#ffffff" stroke="#ef4444" stroke-width="2"/>
+  <text x="380" y="207" text-anchor="middle" font-size="10" fill="#b91c1c">SELECT=0</text>
+  <circle cx="580" cy="216" r="7" fill="#ef4444"/>
+  <text x="580" y="240" text-anchor="middle" font-size="10" fill="#b91c1c">INSERT 成功</text>
+
+  <text x="48" y="258" font-size="12" fill="#334155">线程 C</text>
+  <line x1="110" y1="254" x2="900" y2="254" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="400" cy="254" r="7" fill="#ffffff" stroke="#ef4444" stroke-width="2"/>
+  <text x="400" y="245" text-anchor="middle" font-size="10" fill="#b91c1c">SELECT=0</text>
+  <circle cx="600" cy="254" r="7" fill="#ef4444"/>
+  <text x="600" y="272" text-anchor="middle" font-size="10" fill="#b91c1c">INSERT 成功</text>
+
+  <text x="760" y="212" text-anchor="middle" font-size="12" fill="#7f1d1d">同一个 requestId</text>
+  <text x="760" y="232" text-anchor="middle" font-size="12" fill="#7f1d1d">落了 3 行</text>
+
+  <!-- 下半区：唯一索引 -->
+  <rect x="30" y="300" width="940" height="180" rx="8" fill="#ecfdf5" stroke="#34d399" stroke-width="1.5"/>
+  <text x="48" y="324" font-size="15" font-weight="bold" fill="#065f46">B 唯一索引：把「判断 + 写入」压成一次原子操作</text>
+  <text x="48" y="344" font-size="12" fill="#047857">三轮实测恒 1 行 + 99 个 1062，零错误，总耗时 0.059~0.062s（比 A 的 0.083~0.087s 更快）</text>
+
+  <text x="48" y="384" font-size="12" fill="#334155">线程 A</text>
+  <line x1="110" y1="380" x2="900" y2="380" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="400" cy="380" r="8" fill="#10b981"/>
+  <text x="400" y="371" text-anchor="middle" font-size="10" fill="#065f46">INSERT</text>
+  <text x="470" y="384" font-size="11" font-weight="bold" fill="#065f46">first：抢到了，返回首次结果</text>
+
+  <text x="48" y="418" font-size="12" fill="#334155">线程 B</text>
+  <line x1="110" y1="414" x2="900" y2="414" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="400" cy="414" r="8" fill="#f59e0b"/>
+  <text x="400" y="405" text-anchor="middle" font-size="10" fill="#92400e">INSERT</text>
+  <text x="470" y="418" font-size="11" fill="#92400e">1062 重复键 → 读首次结果，返回成功</text>
+
+  <text x="48" y="452" font-size="12" fill="#334155">线程 C</text>
+  <line x1="110" y1="448" x2="900" y2="448" stroke="#cbd5e1" stroke-width="1"/>
+  <circle cx="400" cy="448" r="8" fill="#f59e0b"/>
+  <text x="400" y="439" text-anchor="middle" font-size="10" fill="#92400e">INSERT</text>
+  <text x="470" y="452" font-size="11" fill="#92400e">1062 重复键 → 同上，无一次额外往返</text>
+
+  <!-- 底部 -->
+  <text x="30" y="510" font-size="13" font-weight="bold" fill="#0f172a">为什么 A2（加 FOR UPDATE）也不行：</text>
+  <text x="30" y="532" font-size="13" fill="#7f1d1d">空结果集上的 FOR UPDATE 锁不住「不存在」，只能锁出间隙竞争 —— 100 并发里 99 个拿到 1213 Deadlock。</text>
+  <text x="30" y="556" font-size="12" fill="#64748b">验证前提：连接必须预热。未预热时五种做法都跑 8~9 秒，锁的代价被建连开销完全淹没。</text>
+</svg>
