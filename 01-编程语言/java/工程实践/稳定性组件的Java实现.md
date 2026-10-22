@@ -234,6 +234,58 @@ DegradeRule errRule = new DegradeRule("pay").setGrade(CircuitBreakerStrategy.ERR
 - `setCount` 的含义随 `grade` 变：错误率模式下直接是 0.0~1.0，慢调用模式下是 RT 阈值（ms）。
 - `setMinRequestAmount` 与 `setStatIntervalMs` 一起决定**样本够不够**；样本不足时不该判熔断。
 
+### 多副本下的配额：`clusterMode` 与 token server
+
+⚠️ 上面所有规则都是**单机规则**：`setCount(20)` 在 3 个实例上等于 60 QPS，
+而且没有任何报错（现象与判据见 [多副本共享状态.md](../../../04-架构与系统/分布式/稳定性/多副本共享状态.md) 第一、二节）。
+
+Sentinel 的解法是把判定搬到一个**独立角色**上，实例退化成「领额度的人」：
+
+| 角色 | 干什么 | 部署形态 |
+|---|---|---|
+| Token Server | 持有全局配额，做真正的判定 | 独立进程（`sentinel-cluster-server-default`），或嵌在某一个实例里 |
+| Token Client | 每次限流时向 server 领令牌 | 就是你的业务实例，加一个 starter + 两行配置 |
+
+```java
+ClusterFlowConfig cluster = new ClusterFlowConfig()
+        .setFlowId(1001L)                                  // 全局唯一，server 靠它识别规则
+        .setThresholdType(ClusterRuleConstant.FLOW_THRESHOLD_GLOBAL)  // 全局阈值
+        .setFallbackToLocalWhenFail(true)                  // ⭐ server 不可用时退回单机规则
+        .setSampleCount(10)
+        .setWindowIntervalMs(1000);
+
+FlowRule rule = new FlowRule("payOrder")
+        .setGrade(RuleConstant.FLOW_GRADE_QPS)
+        .setCount(1000)                 // 全局 1000 QPS，由 server 统一分配
+        .setClusterMode(true)
+        .setClusterConfig(cluster);
+FlowRuleManager.loadRules(Collections.singletonList(rule));
+```
+
+⭐ **两种阈值类型的差别，是这套机制里最容易误解的地方**：
+
+| `thresholdType` | `count` 的含义 | `count = 1000` 换算成单机 |
+|---|---|---|
+| `FLOW_THRESHOLD_GLOBAL` | 所有实例**合计**的上限 | 3 实例时单机约 333 |
+| `FLOW_THRESHOLD_AVG_LOCAL` | 每个实例的目标值，server 按实例数放大 | 单机 1000，总计 3000 |
+
+**通信次数可以靠批量领取摊薄**：客户端默认一次只领 1 个令牌，等于「每个请求一次往返」；
+把 `-Dcsp.sentinel.cluster.client.acquireBatchCount` 调大（如 10~100），
+往返频率就按批数下降 —— 这与 Go 篇讲的**租约预领**是同一个思路，
+误差方向也一致：领多了用不完会作废，**宁可少放，不会超发**。
+
+⚠️ **三个部署前提**，缺一个就会误判成「框架不生效」：
+
+1. `fallbackToLocalWhenFail` 必须显式打开 —— 否则 token server 抖动时请求直接失败，
+   保护机制变成新的故障点；
+2. token server **不负责规则持久化**：它自己的规则源要单独接（Nacos / 文件），
+   只把 client 侧规则推到 Dashboard 是不够的；
+3. token server 是**单点**：嵌入某实例时那台实例重启就是全局限流失效（退回单机语义，
+   实际放行 = 单机阈值 × 实例数）。要真高可用就得单独部署并做主备。
+
+> 本节配置项（`flowId`、`thresholdType`、`acquireBatchCount`、token server 默认端口 18730）
+> 按 Sentinel 1.8.8 官方文档与 API 核对，**未在本机起 token server 实测**，口径见第九节。
+
 ## 六、手写实现：与 Go 版同场景对照
 
 **本节要点**：Java 侧同样手写一套（对应「Resilience4j 内部是怎么实现的」）。**代码结构与 Go 版一一对应**：`TokenBucket` / `SlideWindow` / `Breaker` 三个内部类，同样把时钟作为参数传入。
@@ -320,6 +372,7 @@ void report(long nowMs, boolean ok) {
 - **未编译运行**：第三节的 Sentinel / Resilience4j 依赖、切面、YAML，第四节注解示例，第五节规则代码均需 Spring Boot 3 与联网拉包，本次只做 API 与参数核对。
 - **未独立编译**：第六节为类片段（`openedAtMs`、`consecFails`、`failThreshold` 等字段在前序章节定义），不能单独成文件运行。
 - **同场景对照**：完整读数与 Go 侧实现见 [稳定性组件的Go实现.md](../../go/工程实践/稳定性组件的Go实现.md) 第七、八节。
+- **未起 token server**：第五节的 `clusterMode` / `flowId` / `thresholdType` / `acquireBatchCount` 与默认端口 18730 只做了 API 与官方文档核对，没在本机起 token server（需独立进程与自己的规则源），**批量领取到底把往返降了多少没有实测**。
 
 | 依赖 | 实际版本 |
 | --- | --- |

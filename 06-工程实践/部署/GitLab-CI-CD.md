@@ -690,7 +690,7 @@ ok  	gwlab/internal/clientip	0.834s
 | 自建 runner、要与 Issue / MR / Registry 一体 | GitLab CI |
 | 只要「vet + test + build」这三条 | 两家都够用 —— **别为了 CI 换托管平台** |
 
-## 使用：不装 GitLab 也能把 YAML 验证一遍
+## 使用一：不装 GitLab 也能把 YAML 验证一遍
 
 **本节要点**：改 `.gitlab-ci.yml` 最怕"推上去才发现 job 没被创建"。用 `gitlab-ci-local`
 可以**在本地把解析结果跑出来** —— 它只做语法解析与 job 过滤，不需要 GitLab 服务器、也不需要 Docker。
@@ -730,6 +730,95 @@ npx gitlab-ci-local --list --validate-dependency-chain
    实验文件放在被忽略的目录下，而 AI 不擅自 `git add`；
 3. **覆盖预定义变量（如 `CI_COMMIT_BRANCH`）只是模拟手段**，工具会发警告 ——
    这正说明生产里不该靠覆盖预定义变量来改行为。
+
+---
+
+## 使用二：从 CI 推到集群（GitOps 与 ArgoCD）
+
+**本节要点**：把「CI 里 `kubectl apply`」换成「CI 改 Git + 集群自己拉」，
+换来的是**集群凭证不外泄**与**审计链完整**，代价是多一条控制器链路要排障。
+选型与取舍见 [容器与编排选型.md](容器与编排选型.md)、
+事故视角见 [CI-CD面试题.md](CI-CD面试题.md) 第四节，这里只讲**接法**。
+
+### 1) 职责怎么切
+
+```text
+应用仓库  代码 → 构建 → 推镜像（带 digest）→ 改清单仓库里的 tag → 开 MR
+清单仓库  K8s YAML / Helm values / Kustomize overlay   ← 唯一事实源
+集群内    ArgoCD 定时拉清单仓库 → 比对实时状态 → 不一致就同步
+```
+
+⭐ CI 侧只写**一行改动**（镜像 tag），且**不持有集群凭证** —— 这是拉模式相对推模式最实际的收益。
+推模式的问题不是「不安全」这么笼统：凭证散落在每个项目的变量里，谁改过生产、什么时候改的，
+只能去翻流水线日志。
+
+### 2) CI 里怎么改（别手搓 `sed`）
+
+```yaml
+deploy:
+  stage: deploy
+  image: mikefarah/yq:4
+  script:
+    - IMAGE="$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - yq -i '.spec.template.spec.containers[0].image = strenv(IMAGE)' deploy/order/deployment.yaml
+    - git commit -am "deploy(order): $IMAGE" && git push
+```
+
+用 Kustomize 时换成 `kustomize edit set image`，用 Helm 时改 values 里的 tag。
+
+⭐⭐ **tag 必须不可变**（commit sha、版本号或 digest）。用 `latest` 时清单内容根本没变，
+ArgoCD 会显示 **Synced**，而集群里跑的还是旧镜像 —— 「同步成功但没发布」是最难查的一类事故。
+生产建议直接钉 digest。
+
+### 3) `Application` 对象长什么样
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: order
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://git.example.com/platform/deploy.git
+    targetRevision: main
+    path: overlays/prod/order
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: order
+  syncPolicy:
+    automated:
+      prune: true       # 清单里删掉的资源，集群里也删
+      selfHeal: true    # 有人 kubectl edit 就纠回去
+    syncOptions:
+      - CreateNamespace=true
+```
+
+⚠️ `prune` + `selfHeal` 才是「Git 即事实源」的完整形态，但它会**打断值班时的肌肉记忆**：
+现场为了止血 `kubectl edit` 调了个副本数，几秒后被纠回原值 —— 值班的人第一反应是「集群在自动回滚」。
+⭐ 所以规矩要提前定死：**紧急变更也走 Git**（改清单 + 快速合并），或临时关掉 `selfHeal`；
+绝不能改完集群然后指望它留下来。
+
+### 4) 四个会踩的坑
+
+| 坑 | 现象 | 做法 |
+|---|---|---|
+| Secret 明文进清单仓库 | 生产密码躺在 Git 历史里 | SealedSecrets / External Secrets / SOPS，三者选一 |
+| 把 `Synced` 当「发布成功」 | 同步完成，Pod 却 `CrashLoopBackOff` | `Synced` 只说明清单与集群一致；健康与否要另看 health 状态 |
+| CI 里还留着 `kubectl apply` | 与 ArgoCD 双写，互相覆盖 | 推模式必须彻底删掉，不能「过渡期并存」 |
+| 清单仓库没开 review | 谁都能直接推 `main` 上生产 | 保护分支 + MR 审批 —— **审批动作本身就是发布授权** |
+
+### 5) 灰度不要用分支做
+
+`targetRevision` 技术上可以指向某个分支，但**别用「切分支」实现灰度**：
+那是两套清单在抢同一批资源，回滚时还会留下孤儿对象。
+正确做法是**同一套清单**，灰度差异由副本数、权重等参数表达，
+状态交给流量层控制（见 [灰度发布与流量路由.md](灰度发布与流量路由.md)）。
+
+> ⚠️ 本节 `Application` 字段与 `syncPolicy` 语义按 ArgoCD 官方文档陈述，**未在本机验证**
+> —— 本机没有 K8s 集群，`kubectl` 连不上；第 2) 段的 `yq` 改法与第 4) 段的四个坑
+> 来自 CI 实操经验，不是本次跑出来的读数。
 
 ---
 
