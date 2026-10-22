@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">爆炸半径靠三层闸门收窄，命中率等于注入副本数除以总副本数</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">前提是流量真在请求级轮询；上游一旦开连接复用，比例就不再等于 1/N</text>
+
+  <rect x="36" y="82" width="440" height="336" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="56" y="110" font-size="12.5" font-weight="bold" fill="#312e81">① 环境：namespace / 标签</text>
+  <text x="56" y="130" font-size="10.5" fill="#4338ca">决定能不能打到生产，与强度无关</text>
+
+  <rect x="80" y="146" width="352" height="248" rx="10" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="100" y="174" font-size="12.5" font-weight="bold" fill="#4c1d95">② 范围：mode</text>
+  <text x="100" y="194" font-size="10.5" fill="#5b21b6">one / fixed / fixed-percent，决定打几个</text>
+
+  <rect x="124" y="210" width="264" height="156" rx="9" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="144" y="238" font-size="12.5" font-weight="bold" fill="#713f12">③ 时间：duration</text>
+  <text x="144" y="258" font-size="10.5" fill="#854d0e">决定打多久，到时强制恢复</text>
+
+  <rect x="152" y="276" width="208" height="66" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="256" y="300" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">剩下的可接受风险</text>
+  <text x="256" y="322" text-anchor="middle" font-size="10.5" fill="#7f1d1d">1 个副本 x 短窗口 x 一类故障</text>
+
+  <text x="470" y="70" font-size="10.5" fill="#94a3b8">收窄顺序</text>
+
+  <text x="745" y="88" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">慢请求占比（超过 50ms），各三轮</text>
+  <line x1="580" y1="392" x2="940" y2="392" stroke="#334155" stroke-width="1.4"/>
+  <line x1="580" y1="392" x2="580" y2="150" stroke="#334155" stroke-width="1.4"/>
+
+  <rect x="622" y="282" width="104" height="110" rx="4" fill="#f59e0b"/>
+  <text x="674" y="272" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">50.0%</text>
+  <text x="674" y="418" text-anchor="middle" font-size="11" fill="#475569">仅 1/2 副本</text>
+  <text x="674" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">P50 193.2 到 197.9ms</text>
+
+  <rect x="790" y="172" width="104" height="220" rx="4" fill="#b91c1c"/>
+  <text x="842" y="162" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">100.0%</text>
+  <text x="842" y="418" text-anchor="middle" font-size="11" fill="#475569">2/2 副本</text>
+  <text x="842" y="438" text-anchor="middle" font-size="10.5" fill="#64748b">P50 211.3 到 213.8ms</text>
+
+  <text x="600" y="176" font-size="10.5" fill="#64748b">三轮零漂移：</text>
+  <text x="600" y="194" font-size="10.5" fill="#64748b">50.0 / 50.0 / 50.0</text>
+  <text x="600" y="212" font-size="10.5" fill="#64748b">两种范围错误率</text>
+  <text x="600" y="230" font-size="10.5" fill="#64748b">都是 0</text>
+
+  <text x="500" y="456" text-anchor="middle" font-size="11" fill="#94a3b8">同一个摘点机制：一副本 kill 只损失 1 个请求（2.5%），两副本各丢 30% 包却被整体判死（97.5% 失败）</text>
+</svg>
