@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一段 60 秒毛刺，三种规则给出三种响应</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">1000 QPS、故障期错误率 50%、前置 1 小时 0.1% 基线，promtool 逐 15 秒求值</text>
+
+  <rect x="120" y="96" width="820" height="60" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="530" y="88" text-anchor="middle" font-size="11.5" fill="#b91c1c">毛刺 60 秒（t=0 到 t=60）</text>
+
+  <text x="30" y="150" font-size="12" fill="#64748b">t=0</text>
+  <text x="230" y="150" font-size="12" fill="#64748b">60s</text>
+  <text x="425" y="150" font-size="12" fill="#64748b">180s</text>
+  <text x="615" y="150" font-size="12" fill="#64748b">300s</text>
+  <text x="800" y="150" font-size="12" fill="#64748b">420s</text>
+  <line x1="120" y1="160" x2="940" y2="160" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="120" y1="96" x2="120" y2="160" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="237" y1="96" x2="237" y2="160" stroke="#fca5a5" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="940" y1="96" x2="940" y2="160" stroke="#cbd5e1" stroke-width="1.2"/>
+
+  <text x="30" y="200" font-size="13" font-weight="bold" fill="#0f172a">绝对条数</text>
+  <text x="30" y="220" font-size="11" fill="#64748b">errors 5m &gt; 5</text>
+  <rect x="149" y="182" width="791" height="26" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="160" y="200" font-size="11.5" fill="#991b1b">t=15s 就触发，之后一直亮（正常状态下 5 分钟也有 3000 条错误）</text>
+
+  <text x="30" y="266" font-size="13" font-weight="bold" fill="#0f172a">比例 + 无 for</text>
+  <text x="30" y="286" font-size="11" fill="#64748b">ratio 5m &gt; 1%</text>
+  <rect x="149" y="248" width="662" height="26" rx="5" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="160" y="266" font-size="11.5" fill="#854d0e">t=15s 触发，条件持续 339 秒</text>
+
+  <text x="30" y="332" font-size="13" font-weight="bold" fill="#0f172a">比例 + for 5m</text>
+  <text x="30" y="352" font-size="11" fill="#64748b">ratio 5m &gt; 1%</text>
+  <line x1="734" y1="314" x2="734" y2="342" stroke="#a16207" stroke-width="1"/>
+  <rect x="734" y="314" width="76" height="26" rx="5" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.4"/>
+  <text x="744" y="332" font-size="11.5" fill="#854d0e">只在这 39 秒里亮</text>
+  <text x="149" y="332" font-size="11.5" fill="#94a3b8">条件已持续 300 秒，for 才刚满足</text>
+
+  <text x="30" y="398" font-size="13" font-weight="bold" fill="#0f172a">燃烧率</text>
+  <text x="30" y="418" font-size="11" fill="#64748b">ratio 1h &gt; 1.44%</text>
+  <line x1="149" y1="392" x2="940" y2="392" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="160" y="410" font-size="11.5" fill="#475569">全程不触发：1 小时窗口被稀释到 0.9351%，低于 1.44% 阈值</text>
+
+  <rect x="120" y="436" width="820" height="46" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="136" y="456" font-size="12" fill="#334155">要点：前两条为一次毛刺叫两次人，燃烧率完全不叫；for 5m 不是「过滤抖动」，</text>
+  <text x="136" y="474" font-size="12" fill="#334155">而是把告警从「故障开始 15 秒」推迟到「故障结束 15 秒」——处置窗口正好错过。</text>
+</svg>
