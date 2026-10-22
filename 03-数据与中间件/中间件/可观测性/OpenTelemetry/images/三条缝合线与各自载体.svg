@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三条缝合线与各自的载体：都不是后端自动完成的</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">字段、派生、外挂——三种载体的建立位置都在采集侧，因此也都有各自的静默失败形态</text>
+
+  <rect x="70" y="96" width="230" height="104" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="185" y="126" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e3a8a">Metrics 指标</text>
+  <text x="185" y="150" text-anchor="middle" font-size="11.5" fill="#1d4ed8">低基数、可长期、聚合快</text>
+  <text x="185" y="172" text-anchor="middle" font-size="11.5" fill="#1d4ed8">负责「发现异常」</text>
+
+  <rect x="385" y="96" width="230" height="104" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="500" y="126" text-anchor="middle" font-size="15" font-weight="bold" fill="#14532d">Traces 链路</text>
+  <text x="500" y="150" text-anchor="middle" font-size="11.5" fill="#166534">高基数、按采样留存</text>
+  <text x="500" y="172" text-anchor="middle" font-size="11.5" fill="#166534">负责「慢在哪一跳」</text>
+
+  <rect x="700" y="96" width="230" height="104" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="815" y="126" text-anchor="middle" font-size="15" font-weight="bold" fill="#0f172a">Logs 日志</text>
+  <text x="815" y="150" text-anchor="middle" font-size="11.5" fill="#64748b">基数最高、有完整正文</text>
+  <text x="815" y="172" text-anchor="middle" font-size="11.5" fill="#64748b">负责「这一次发生了什么」</text>
+
+
+
+  <rect x="70" y="248" width="860" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="90" y="272" font-size="12.5" font-weight="bold" fill="#0f172a">trace → log</text>
+  <text x="200" y="272" font-size="11.5" fill="#334155">载体：日志记录里的 trace_id / span_id 字段　→　负责方：应用日志框架挂当前 span 上下文</text>
+  <text x="200" y="294" font-size="11.5" fill="#b91c1c">断开后果：到 span 之后找不到这次请求的日志；空值主要来自异步任务、MQ 消费、定时任务、初始化阶段</text>
+
+  <rect x="70" y="318" width="860" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="90" y="342" font-size="12.5" font-weight="bold" fill="#0f172a">trace → metric</text>
+  <text x="200" y="342" font-size="11.5" fill="#334155">载体：span 派生指标（每端点请求数 / 错误数 / 延迟）　→　负责方：Collector 的 spanmetrics 或后端</text>
+  <text x="200" y="364" font-size="11.5" fill="#b91c1c">限制：错误率与分位数可用；请求总数与流量不可用——链路是采样过的，绝对量会按采样率缩水</text>
+
+  <rect x="70" y="388" width="860" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="90" y="412" font-size="12.5" font-weight="bold" fill="#0f172a">metric → trace</text>
+  <text x="200" y="412" font-size="11.5" fill="#334155">载体：exemplar，样本外挂 trace_id 与 span_id　→　负责方：SDK 或 Collector 在数据点上附加</text>
+  <text x="200" y="434" font-size="11.5" fill="#b91c1c">前提：只在 OpenMetrics 编码下输出，且挂在具体 bucket 行上——Counter 上的 exemplar 意义有限</text>
+
+  <line x1="20" y1="470" x2="980" y2="470" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="496" font-size="13" fill="#0f172a">要点：三条线里只有「链路内部」（trace → span）是自动的；跨支柱的三条线全部要在采集侧显式配置。</text>
+  <text x="30" y="520" font-size="12" fill="#64748b">这也是「选一套能同屏的后端」的真实收益：把 trace → log 那一跳的手动复制动作消掉，而不是组件能力变强了。</text>
+  <text x="30" y="544" font-size="11.5" fill="#94a3b8">三条限制的实测读数见本篇第六节与第八节。</text>
+</svg>

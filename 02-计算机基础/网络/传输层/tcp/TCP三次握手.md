@@ -287,7 +287,7 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 |---|---|---|
 | 高并发短连接的服务端 | 半连接队列（SYN queue） | 队列满时 `tcp_syncookies` 决定丢包还是降级，详见 本篇 2.3 |
 | 「服务没满却连不上」 | `backlog` / `somaxconn` | `listen()` 的 `backlog` 会被 `somaxconn` 封顶，详见 本篇 2.2 |
-| 建连耗时异常 | SYN 重传与队列溢出 | 线上观测建连耗时见 [UI与排障.md](../../../../03-数据与中间件/中间件/可观测性/Skywalking/UI与排障.md) |
+| 建连耗时异常 | SYN 重传与队列溢出 | 线上观测建连耗时见 [UI与排障.md](../../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/UI与排障.md) |
 | 首包延迟 | TCP Fast Open | 握手阶段带数据，省一个 RTT，详见 本篇第三节 |
 | 短连接改长连接 | 三次握手的固定开销 | 复用连接就是省掉这次握手，详见 [../HTTP与gRPC.md](../../应用层/HTTP与gRPC.md) |
 
@@ -342,6 +342,6 @@ nstat -az | grep -iE "ListenOverflow|ListenDrops|TCPReqQFull|SyncookiesSent"
 - **对照/互补**：[TCP报文结构.md](TCP报文结构.md) — 首部字段与序列号语义
 - **对照/互补**：[TCP滑动窗口.md](TCP滑动窗口.md) — 窗口与窗口缩放都在建连阶段协商
 - **下游机制**：[../HTTPS与TLS.md](../../应用层/HTTPS与TLS.md) — 握手之上的 TLS 握手
-- **下游机制**：[UI与排障.md](../../../../03-数据与中间件/中间件/可观测性/Skywalking/UI与排障.md) — 线上观测建连耗时的手段
+- **下游机制**：[UI与排障.md](../../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/UI与排障.md) — 线上观测建连耗时的手段
 
 > 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[QUIC与HTTP3.md](../../应用层/QUIC与HTTP3.md)、[DNS解析.md](../../网络层与寻址/DNS解析.md)、[网络通信链路详解.md](../../网络通信链路详解.md)、[抓包实战.md](../../观测与排障/抓包实战.md)、[通信选型.md](../../选型/通信选型.md)

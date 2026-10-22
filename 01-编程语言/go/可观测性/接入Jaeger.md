@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Go 侧接入 Jaeger 的完整手册，按**前提认知 → 依赖 → TracerProvider 初始化 → 单例边界与初始化顺序 → HTTP / SQL / MQ / 定时任务四类埋点 → context 传播铁律 → 日志关联 → 优雅退出 → 项目落地映射 → 验证排查**组织，并结合 [photography-server](https://github.com/Eleven-26/photography-server) 项目的实际接入点整理。
 >
-> Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [README.md](../../../03-数据与中间件/中间件/可观测性/Jaeger/README.md)；同一套埋点发往 SkyWalking OAP 的写法见 [接入Skywalking.md](接入Skywalking.md)。
+> Jaeger 的概念、架构、与 OpenTelemetry 的关系、部署（v2 + ClickHouse）与采样策略见 [README.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Jaeger/README.md)；同一套埋点发往 SkyWalking OAP 的写法见 [接入Skywalking.md](接入Skywalking.md)。
 
 ---
 
@@ -93,7 +93,7 @@ func Shutdown(ctx context.Context) error {
 
 ⚠️ **`ParentBased` 不能省**：它保证子 span 沿用父 span 的采样决策。只用 `TraceIDRatioBased` 会出现「上游采了、下游没采」，一条 trace 只剩半截，比不采更难排查。
 
-采样率的取值与尾部采样方案见 [采集与传播.md](../../../03-数据与中间件/中间件/可观测性/Jaeger/采集与传播.md) 第四节。
+采样率的取值与尾部采样方案见 [采集与传播.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Jaeger/采集与传播.md) 第四节。
 
 ---
 
@@ -415,7 +415,7 @@ jaeger（v2，collector+query 一体）──▶ ClickHouse（库 jaeger）─�
 
 ![OTel SDK 埋点经 OTLP 4317 上报 Jaeger v2 落 ClickHouse 的数据流转图](images/OTel上报链路数据流.svg)
 
-**图怎么读**：纵向主干就是 12.2 的上报链路，backend 面板内 ①~④ 对应四类埋点落点（12.3 表）；Jaeger 与 ClickHouse 只画到端点为止，它们的内部架构与部署见 [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/Jaeger/架构与部署.md)。右侧黄框是 12.1 的「二选一」约束，红框是 12.4 的挂载坑。
+**图怎么读**：纵向主干就是 12.2 的上报链路，backend 面板内 ①~④ 对应四类埋点落点（12.3 表）；Jaeger 与 ClickHouse 只画到端点为止，它们的内部架构与部署见 [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Jaeger/架构与部署.md)。右侧黄框是 12.1 的「二选一」约束，红框是 12.4 的挂载坑。
 
 ### 12.3 接入落点
 
@@ -479,7 +479,7 @@ curl -s "http://localhost:16686/api/services"
 | MQ 消费端是全新 trace | 生产端没 `Inject`，或 MQ 不支持消息头 | 按 9.1 实现 Inject/Extract；NATS 需 2.2+ |
 | 定时任务的 SQL 全是孤立 trace | 任务入口没创建根 span | 用 `traced()` 包装（9.2） |
 | 重启后最后几秒的 trace 缺失 | 没调 `tp.Shutdown`，批量队列未 flush | 按第十一节接入优雅退出 |
-| ClickHouse 存储启动报错 | 漏了 `--feature-gates=storage.clickhouse` | 见 [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/Jaeger/架构与部署.md) 第六节 |
+| ClickHouse 存储启动报错 | 漏了 `--feature-gates=storage.clickhouse` | 见 [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Jaeger/架构与部署.md) 第六节 |
 | 存储成本涨得离谱 | span attribute 里塞了完整请求体 / SQL 参数 | 4KB 截断 + 敏感字段脱敏；收紧采样率（第十节） |
 
 ---
@@ -519,7 +519,7 @@ curl -s "http://localhost:16686/api/services"
 
 ## 关联
 
-- [README.md](../../../03-数据与中间件/中间件/可观测性/Jaeger/README.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
+- [README.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Jaeger/README.md) — Trace/Span 概念、与 OTel 的关系、v2 + ClickHouse 部署、采样策略、与 SkyWalking 的分工
 - [接入Skywalking.md](接入Skywalking.md) — 同一套 OTel 埋点发往 SkyWalking OAP；以及编译期注入路线的对照
 - [接入Jaeger.md](../../java/可观测性/接入Jaeger.md) — Java 侧的 OTel Agent 与 Micrometer Tracing 两条路线
 - [context.md](../工程实践/context.md) — ctx 传播、超时预算与级联取消的基础

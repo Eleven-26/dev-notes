@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">采样断链：50% 头部采样下，近一半日志的 trace_id 在后端查不到实体</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">采样只作用于链路，不作用于日志——两侧的留存数量因此出现一段固定落差</text>
+
+  <text x="196" y="112" text-anchor="end" font-size="12.5" font-weight="bold" fill="#0f172a">发出的请求</text>
+  <rect x="200" y="96" width="640" height="26" rx="4" fill="#94a3b8"/>
+  <text x="520" y="114" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">100 条请求，每条各生成一条 trace 与一条日志</text>
+
+  <text x="196" y="176" text-anchor="end" font-size="12.5" font-weight="bold" fill="#14532d">链路侧留存</text>
+  <rect x="200" y="160" width="640" height="26" rx="4" fill="#e2e8f0"/>
+  <rect x="200" y="160" width="330" height="26" rx="4" fill="#16a34a"/>
+  <text x="365" y="178" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">50 ~ 55 条（50% ~ 55%）</text>
+  <text x="560" y="178" font-size="11.5" fill="#64748b">灰色部分：被头部采样丢弃，Jaeger 里查不到</text>
+
+  <text x="196" y="240" text-anchor="end" font-size="12.5" font-weight="bold" fill="#0f172a">日志侧留存</text>
+  <rect x="200" y="224" width="640" height="26" rx="4" fill="#334155"/>
+  <text x="520" y="242" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">100 条，全部带 trace_id（日志不受链路采样控制）</text>
+
+  <line x1="540" y1="190" x2="540" y2="220" stroke="#b91c1c" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <line x1="200" y1="190" x2="200" y2="220" stroke="#b91c1c" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <rect x="196" y="194" width="348" height="22" rx="3" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="370" y="209" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#b91c1c">落差 45 ~ 50 条：有 ID 无链路</text>
+
+  <text x="30" y="292" font-size="13" fill="#0f172a">要点：这段落差不是 bug，而是两个支柱共用一个 ID 却各有各的留存策略的必然结果——采样率降到 1% 时，落差接近 99%。</text>
+
+  <line x1="20" y1="314" x2="980" y2="314" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="340" font-size="13" font-weight="bold" fill="#0f172a">三轮实测读数（每轮各发 100 条 trace 与 100 条 log，日志均带自己的 trace_id）</text>
+
+  <rect x="30" y="356" width="940" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="60" y="382" font-size="12" font-weight="bold" fill="#334155">轮次</text>
+  <text x="200" y="382" font-size="12" font-weight="bold" fill="#334155">发出 trace</text>
+  <text x="370" y="382" font-size="12" font-weight="bold" fill="#334155">Jaeger 可查到</text>
+  <text x="560" y="382" font-size="12" font-weight="bold" fill="#334155">日志带 ID 数</text>
+  <text x="740" y="382" font-size="12" font-weight="bold" fill="#b91c1c">有 ID 无链路</text>
+
+  <text x="60" y="408" font-size="12" fill="#0f172a">①</text>
+  <text x="200" y="408" font-size="12" fill="#0f172a">100</text>
+  <text x="370" y="408" font-size="12" fill="#166534">55（55.0%）</text>
+  <text x="560" y="408" font-size="12" fill="#0f172a">100</text>
+  <text x="740" y="408" font-size="12" font-weight="bold" fill="#b91c1c">45（45.0%）</text>
+
+  <text x="60" y="432" font-size="12" fill="#0f172a">②</text>
+  <text x="200" y="432" font-size="12" fill="#0f172a">100</text>
+  <text x="370" y="432" font-size="12" fill="#166534">52（52.0%）</text>
+  <text x="560" y="432" font-size="12" fill="#0f172a">100</text>
+  <text x="740" y="432" font-size="12" font-weight="bold" fill="#b91c1c">48（48.0%）</text>
+
+  <text x="60" y="456" font-size="12" fill="#0f172a">③</text>
+  <text x="200" y="456" font-size="12" fill="#0f172a">100</text>
+  <text x="370" y="456" font-size="12" fill="#166534">50（50.0%）</text>
+  <text x="560" y="456" font-size="12" fill="#0f172a">100</text>
+  <text x="740" y="456" font-size="12" font-weight="bold" fill="#b91c1c">50（50.0%）</text>
+
+  <text x="30" y="486" font-size="11.5" fill="#94a3b8">采样器为 Collector 的 probabilistic_sampler，sampling_percentage 设为 50；三轮用不同 trace_id 区间，避免后一轮命中前一轮已落库的记录。</text>
+</svg>

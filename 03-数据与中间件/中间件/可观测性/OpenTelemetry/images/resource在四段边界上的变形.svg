@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">resource 在四段边界上的变形：每一段都可能悄悄改掉缝合的地基</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一条 resource 从 SDK 走到后端，字段会被改名、削掉或整体覆盖，全程没有任何错误日志</text>
+
+  <rect x="30" y="96" width="210" height="300" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="48" y="124" font-size="14.5" font-weight="bold" fill="#1e3a8a">① SDK 侧 resource</text>
+  <text x="48" y="150" font-size="11.5" fill="#1d4ed8">service.name</text>
+  <text x="56" y="170" font-size="11" fill="#1e40af">= obs-demo</text>
+  <text x="48" y="196" font-size="11.5" fill="#1d4ed8">deployment.environment.name</text>
+  <text x="56" y="216" font-size="11" fill="#1e40af">= lab</text>
+  <text x="48" y="242" font-size="11.5" fill="#1d4ed8">service.version</text>
+  <text x="56" y="262" font-size="11" fill="#1e40af">= 1.0.0</text>
+  <text x="48" y="300" font-size="11" fill="#1e3a8a">要点：resource 描述「谁产生的</text>
+  <text x="48" y="318" font-size="11" fill="#1e3a8a">数据」，三种信号共用同一套字段</text>
+  <text x="48" y="344" font-size="11" fill="#1e3a8a">这是三支柱能对齐的唯一依据</text>
+
+  <line x1="240" y1="246" x2="258" y2="246" stroke="#334155" stroke-width="1.6" marker-end="url(#ar1)"/>
+
+  <rect x="260" y="96" width="210" height="300" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="278" y="124" font-size="14.5" font-weight="bold" fill="#0f172a">② OTLP 传输</text>
+  <text x="278" y="152" font-size="11.5" fill="#475569">gRPC 4317 / HTTP 4318</text>
+  <text x="278" y="178" font-size="11.5" fill="#475569">resource 原样透传</text>
+  <text x="278" y="204" font-size="11.5" fill="#475569">不校验语义、不改名</text>
+  <text x="278" y="240" font-size="11.5" fill="#475569">成功响应 200 且</text>
+  <text x="278" y="260" font-size="11" fill="#334155">partialSuccess 为空对象</text>
+  <text x="278" y="286" font-size="11" fill="#334155">（表示全部成功）</text>
+  <text x="278" y="322" font-size="11" fill="#475569">注意：HTTP 200 不足以判断</text>
+  <text x="278" y="340" font-size="11" fill="#475569">数据进了，要看 rejected 字段</text>
+
+  <line x1="470" y1="246" x2="488" y2="246" stroke="#334155" stroke-width="1.6" marker-end="url(#ar1)"/>
+
+  <rect x="490" y="96" width="210" height="300" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.6"/>
+  <text x="508" y="124" font-size="14.5" font-weight="bold" fill="#78350f">③ Collector</text>
+  <text x="508" y="152" font-size="11.5" fill="#92400e">唯一能同时看到三种信号</text>
+  <text x="508" y="170" font-size="11.5" fill="#92400e">的位置，也是最容易改坏的地方</text>
+  <text x="508" y="200" font-size="11.5" fill="#92400e">resource processor：能改</text>
+  <text x="516" y="220" font-size="11" fill="#78350f">upsert service.name 后，</text>
+  <text x="516" y="238" font-size="11" fill="#78350f">svc-a 与 svc-b 合并成一个</text>
+  <text x="508" y="264" font-size="11.5" fill="#92400e">attributes processor：改不动</text>
+  <text x="516" y="284" font-size="11" fill="#78350f">它只处理记录自身属性，</text>
+  <text x="516" y="302" font-size="11" fill="#78350f">resource 仍是 obs-demo</text>
+  <text x="508" y="336" font-size="11" fill="#78350f">两者配置结构几乎一样，配错</text>
+  <text x="508" y="354" font-size="11" fill="#78350f">不报错，只是不生效</text>
+
+  <line x1="700" y1="246" x2="718" y2="246" stroke="#334155" stroke-width="1.6" marker-end="url(#ar1)"/>
+
+  <rect x="720" y="96" width="250" height="300" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="738" y="124" font-size="14.5" font-weight="bold" fill="#14532d">④ 到后端后的样子</text>
+
+  <rect x="736" y="138" width="218" height="82" rx="7" fill="#ffffff" stroke="#86efac" stroke-width="1.2"/>
+  <text x="746" y="158" font-size="12" font-weight="bold" fill="#166534">Jaeger（按 OTLP 收）</text>
+  <text x="746" y="178" font-size="10.8" fill="#334155">service.name 变成服务列表里的名字</text>
+  <text x="746" y="196" font-size="10.8" fill="#334155">被 upsert 后：collector-forced</text>
+  <text x="746" y="212" font-size="10.8" fill="#b91c1c">svc-a 与 svc-b 双双消失</text>
+
+  <rect x="736" y="230" width="218" height="76" rx="7" fill="#ffffff" stroke="#86efac" stroke-width="1.2"/>
+  <text x="746" y="250" font-size="12" font-weight="bold" fill="#166534">Prometheus（默认）</text>
+  <text x="746" y="270" font-size="10.8" fill="#334155">service.name 改名为 job</text>
+  <text x="746" y="288" font-size="10.8" fill="#b91c1c">其余属性整条消失</text>
+  <text x="746" y="302" font-size="10.8" fill="#334155">只剩 job="obs-demo"</text>
+
+  <rect x="736" y="316" width="218" height="70" rx="7" fill="#ffffff" stroke="#86efac" stroke-width="1.2"/>
+  <text x="746" y="336" font-size="12" font-weight="bold" fill="#166534">Prometheus（开转换后）</text>
+  <text x="746" y="356" font-size="10.8" fill="#334155">多出 service_name、</text>
+  <text x="746" y="372" font-size="10.8" fill="#334155">deployment_environment_name</text>
+  <text x="746" y="384" font-size="10.8" fill="#b91c1c">代价：每个属性都成一个标签</text>
+
+  <line x1="20" y1="424" x2="980" y2="424" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="452" font-size="13" fill="#0f172a">要点：四段里只有第 ② 段是「原样透传」，第 ① ③ ④ 段都各自有一套改名与裁剪规则，而这套规则默认不产生任何告警。</text>
+  <text x="30" y="478" font-size="13" fill="#0f172a">注意：resource 被削掉之后，现象不是「报错」，而是指标缺维度、拓扑塌成一个点——排障时往往先从「面板怎么对不上」开始怀疑后端。</text>
+  <text x="30" y="504" font-size="12" fill="#64748b">防护：在 Collector 侧统计「进入的 resource 里 service.name 的去重数量」与「导出的去重数量」，两者不一致即说明地基被改写了。</text>
+  <text x="30" y="530" font-size="12" fill="#64748b">另一条：转换高基数字段（k8s.pod.name、host.name）前先删减，否则序列数会被标签乘出来。</text>
+  <text x="30" y="566" font-size="11.5" fill="#94a3b8">实测：OTel Collector 0.157.0 与 Jaeger 2.20.0 与 ClickHouse 26.3；载荷为手写 OTLP/HTTP JSON 直投，不经 SDK。</text>
+  <text x="30" y="590" font-size="11.5" fill="#94a3b8">读数来源见本篇第八节「校验口径」。</text>
+</svg>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="c1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条日志的五段，与每一段各自的失败形态</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">排障先定位「哪一段的产物不对」，而不是先换工具；四、五两段的失败都是静默的</text>
+
+  <rect x="30" y="82" width="150" height="96" rx="8" fill="#0f172a"/>
+  <text x="105" y="108" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">① 产生</text>
+  <text x="105" y="130" text-anchor="middle" font-size="10" fill="#cbd5e1">zap / logback</text>
+  <text x="105" y="148" text-anchor="middle" font-size="10" fill="#cbd5e1">stdout 或文件</text>
+  <text x="105" y="168" text-anchor="middle" font-size="10" fill="#fca5a5">格式不统一</text>
+
+  <path d="M180,130 L204,130" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c1)"/>
+
+  <rect x="204" y="82" width="150" height="96" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="279" y="108" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">② 采集</text>
+  <text x="279" y="130" text-anchor="middle" font-size="10" fill="#334155">tail / file</text>
+  <text x="279" y="148" text-anchor="middle" font-size="10" fill="#334155">跟 offset</text>
+  <text x="279" y="168" text-anchor="middle" font-size="10" fill="#b45309">轮转后丢行</text>
+
+  <path d="M354,130 L378,130" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c1)"/>
+
+  <rect x="378" y="82" width="150" height="96" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="453" y="108" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">③ 缓冲</text>
+  <text x="453" y="130" text-anchor="middle" font-size="10" fill="#334155">Mem_Buf_Limit</text>
+  <text x="453" y="148" text-anchor="middle" font-size="10" fill="#334155">filesystem</text>
+  <text x="453" y="168" text-anchor="middle" font-size="10" fill="#b91c1c">满了暂停输入</text>
+
+  <path d="M528,130 L552,130" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c1)"/>
+
+  <rect x="552" y="82" width="150" height="96" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="627" y="108" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">④ 解析</text>
+  <text x="627" y="130" text-anchor="middle" font-size="10" fill="#334155">parser / multiline</text>
+  <text x="627" y="148" text-anchor="middle" font-size="10" fill="#334155">字段提取</text>
+  <text x="627" y="168" text-anchor="middle" font-size="10" fill="#b91c1c">静默失效</text>
+
+  <path d="M702,130 L726,130" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c1)"/>
+
+  <rect x="726" y="82" width="150" height="96" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.4"/>
+  <text x="801" y="108" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#334155">⑤ 存储查询</text>
+  <text x="801" y="130" text-anchor="middle" font-size="10" fill="#334155">Loki / ES / CH</text>
+  <text x="801" y="148" text-anchor="middle" font-size="10" fill="#334155">标签索引</text>
+  <text x="801" y="168" text-anchor="middle" font-size="10" fill="#b45309">标签基数爆炸</text>
+
+  <rect x="886" y="82" width="84" height="96" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="928" y="106" text-anchor="middle" font-size="10.5" fill="#64748b">查询</text>
+  <text x="928" y="128" text-anchor="middle" font-size="10.5" fill="#64748b">Grafana</text>
+  <text x="928" y="150" text-anchor="middle" font-size="10.5" fill="#64748b">Kibana</text>
+
+  <text x="30" y="216" font-size="14" font-weight="bold" fill="#0f172a">按「现象」反推「哪一段」</text>
+
+  <rect x="30" y="232" width="300" height="120" rx="9" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.3"/>
+  <text x="46" y="256" font-size="12" font-weight="bold" fill="#7f1d1d">同文件其它行能查到，某条查不到</text>
+  <text x="46" y="280" font-size="10.5" fill="#334155">→ ④ 解析段</text>
+  <text x="46" y="302" font-size="10.5" fill="#334155">多行拼接把它合进了别的记录</text>
+  <text x="46" y="324" font-size="10.5" fill="#334155">或退化成只有 log 字段的纯文本</text>
+  <text x="46" y="344" font-size="10" fill="#64748b">实测：13 行 → 13 条 / 3 条 / 1 条</text>
+
+  <rect x="350" y="232" width="300" height="120" rx="9" fill="#fff7ed" stroke="#fdba74" stroke-width="1.3"/>
+  <text x="366" y="256" font-size="12" font-weight="bold" fill="#7c2d12">延迟整体上涨，文件在涨查询不涨</text>
+  <text x="366" y="280" font-size="10.5" fill="#334155">→ ③ 缓冲段</text>
+  <text x="366" y="302" font-size="10.5" fill="#334155">输入被 pause，正在积压</text>
+  <text x="366" y="324" font-size="10.5" fill="#334155">下游不通 / 存储写入变慢</text>
+  <text x="366" y="344" font-size="10" fill="#64748b">实测：tail.0 paused (mem buf overlimit)</text>
+
+  <rect x="670" y="232" width="300" height="120" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="686" y="256" font-size="12" font-weight="bold" fill="#334155">缺了中间一整段时间</text>
+  <text x="686" y="280" font-size="10.5" fill="#334155">→ ② 采集段 + 进程重启</text>
+  <text x="686" y="302" font-size="10.5" fill="#334155">轮转换 inode / 容器重建</text>
+  <text x="686" y="324" font-size="10.5" fill="#334155">内存缓冲随进程一起丢</text>
+  <text x="686" y="344" font-size="10" fill="#64748b">默认 storage type=memory</text>
+
+  <rect x="30" y="378" width="940" height="152" rx="9" fill="#fffbeb" stroke="#d97706" stroke-width="1.4"/>
+  <text x="46" y="404" font-size="12.5" font-weight="bold" fill="#78350f">两个「配了但不生效」的实测案例（都无报错）</text>
+  <text x="46" y="430" font-size="11" fill="#334155">Multiline.Parser java —— 镜像自带 parsers.conf 里 0 个多行解析器，写错名字只在启动时输出一行 multiline core started</text>
+  <text x="46" y="452" font-size="11" fill="#334155">Parser json 但缺 Parsers_File parsers.conf —— 每条记录只剩 date 与 log 两个字段，JSON 原样躺在 log 字符串里</text>
+  <text x="46" y="480" font-size="11" fill="#b45309">两者共同点：管道「通」、后端「能查」，只是产物不是你想要的；等到要按字段过滤时已经攒了几天数据</text>
+  <text x="46" y="508" font-size="11" fill="#334155">验证手段只有一个：拿真实日志跑一遍，数记录条数、数字段个数 —— 不看配置写了什么，看产物长什么样</text>
+</svg>

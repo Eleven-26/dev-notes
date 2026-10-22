@@ -2,7 +2,7 @@
 
 > 内容整理自个人学习笔记 —— Java 侧接入 SkyWalking 的完整手册，按**javaagent 为什么能零改码 → 接入清单 → 配置优先级 → 插件目录 → Spring Boot / Dockerfile / K8s → 单例边界与初始化顺序 → 日志关联 → 跨线程 → 优雅停机 → 验证排查**组织。
 >
-> SkyWalking 本体原理（javaAgent 机制、ByteBuddy 织入、轻量级队列内核、Dubbo 插件生命周期）、OAP 架构与 UI 面板见 [探针原理.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/探针原理.md) 与 [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/UI与排障.md)（册导读 [README.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/README.md)）；同命名口径的另两篇是 [接入Skywalking.md](../../go/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../../php/接入Skywalking.md)。
+> SkyWalking 本体原理（javaAgent 机制、ByteBuddy 织入、轻量级队列内核、Dubbo 插件生命周期）、OAP 架构与 UI 面板见 [探针原理.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/探针原理.md) 与 [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/UI与排障.md)（册导读 [README.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/README.md)）；同命名口径的另两篇是 [接入Skywalking.md](../../go/可观测性/接入Skywalking.md) 与 [接入Skywalking.md](../../php/接入Skywalking.md)。
 
 ---
 
@@ -247,7 +247,7 @@ String traceId = TraceContext.traceId();  // 未接入 agent 时返回 ""
 
 从 `optional-plugins/` 拷日志上报插件到 `plugins/`，再加对应 toolkit 依赖（`apm-toolkit-logback-1.x` 的 `LogbackAppender`）。上报后在 UI 的**日志面板**按 Trace ID 查询，能直接捞出这一次请求的所有日志。
 
-标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**（日志面板用法见 [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/UI与排障.md) 第六节）。
+标准排查姿势：**Trace 找慢/失败的 span → 用 traceId 查日志 → 看业务日志里当时在做什么**（日志面板用法见 [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/UI与排障.md) 第六节）。
 
 ![traceId 的两条去路：方式一由 toolkit 的 layout 把 %tid 写进日志 pattern（没挂 agent 时输出 TID: N/A），方式二拷日志上报插件把日志送进 OAP，在 UI 日志面板按 Trace ID 反查](images/Skywalking的traceId写进日志与上报两种方式.svg)
 
@@ -378,9 +378,9 @@ grep -m1 'TID' /path/to/app.log
 
 ## 关联
 
-- [探针原理.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/探针原理.md) — javaAgent 与 ByteBuddy 织入原理、轻量级队列内核、Dubbo 插件生命周期、成本模型
-- [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/架构与部署.md) — OAP 架构、三类分析引擎、部署三形态与采样容量
-- [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/Skywalking/UI与排障.md) — 面板读法与七类故障的排障剧本
+- [探针原理.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/探针原理.md) — javaAgent 与 ByteBuddy 织入原理、轻量级队列内核、Dubbo 插件生命周期、成本模型
+- [架构与部署.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/架构与部署.md) — OAP 架构、三类分析引擎、部署三形态与采样容量
+- [UI与排障.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Skywalking/UI与排障.md) — 面板读法与七类故障的排障剧本
 - [接入Jaeger.md](接入Jaeger.md) — OTel Java Agent / Micrometer Tracing 两条路线的对照
 - [接入Skywalking.md](../../go/可观测性/接入Skywalking.md) — 编译期注入路线，对照「运行期字节码增强 vs 编译期 AST 注入」的差异
 - [接入Skywalking.md](../../php/接入Skywalking.md) — PHP 扩展路线，对照多进程 + 共享内存的上报模型与 `exec` 信号转发

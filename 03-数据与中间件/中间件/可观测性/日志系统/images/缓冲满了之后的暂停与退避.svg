@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="d2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">缓冲满了之后：先暂停，再退避，最后靠落盘兜住</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">fluent/fluent-bit:3.2.10 实测（Mem_Buf_Limit 1MB + 20000 行 + 输出指向不可达地址）</text>
+
+  <rect x="40" y="84" width="150" height="76" rx="8" fill="#0f172a"/>
+  <text x="115" y="112" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#ffffff">tail 输入</text>
+  <text x="115" y="136" text-anchor="middle" font-size="10" fill="#cbd5e1">读文件、跟 offset</text>
+
+  <path d="M190,122 L232,122" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#d1)"/>
+
+  <rect x="232" y="84" width="190" height="76" rx="8" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="327" y="112" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7c2d12">内存缓冲</text>
+  <text x="327" y="134" text-anchor="middle" font-size="10" fill="#334155">Mem_Buf_Limit 1MB</text>
+  <text x="327" y="152" text-anchor="middle" font-size="10" fill="#334155">max_chunks_up=128</text>
+
+  <path d="M422,122 L464,122" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#d1)"/>
+
+  <rect x="464" y="84" width="190" height="76" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="559" y="112" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">输出（不可达）</text>
+  <text x="559" y="134" text-anchor="middle" font-size="10" fill="#334155">http 127.0.0.1:9</text>
+  <text x="559" y="152" text-anchor="middle" font-size="10" fill="#334155">connection refused</text>
+
+  <rect x="700" y="84" width="270" height="76" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.3"/>
+  <text x="716" y="108" font-size="11" font-weight="bold" fill="#334155">两件事同时发生，互不阻塞</text>
+  <text x="716" y="128" font-size="10.5" fill="#334155">缓冲涨满 → 输入被 pause</text>
+  <text x="716" y="148" font-size="10.5" fill="#334155">输出失败 → chunk 留在缓冲里重试</text>
+
+  <text x="40" y="204" font-size="14" font-weight="bold" fill="#0f172a">实测日志原文（四行连起来看，就是完整的行为链）</text>
+
+  <rect x="40" y="220" width="930" height="112" rx="9" fill="#0f172a"/>
+  <text x="58" y="246" font-size="11" font-family="Consolas, monospace" fill="#93c5fd">[ info] [storage] ver=1.5.2, type=memory, sync=normal, checksum=off, max_chunks_up=128</text>
+  <text x="58" y="270" font-size="11" font-family="Consolas, monospace" fill="#fca5a5">[ warn] [input] tail.0 paused (mem buf overlimit)</text>
+  <text x="58" y="294" font-size="11" font-family="Consolas, monospace" fill="#fcd34d">[ warn] [engine] failed to flush chunk '1-1792643486.694227147.flb', retry in 10 seconds</text>
+  <text x="58" y="318" font-size="11" font-family="Consolas, monospace" fill="#fcd34d">[ warn] [engine] failed to flush chunk '1-1792643486.694227147.flb', retry in 14 seconds</text>
+
+  <rect x="40" y="348" width="295" height="130" rx="9" fill="#fff7ed" stroke="#fdba74" stroke-width="1.3"/>
+  <text x="56" y="372" font-size="12" font-weight="bold" fill="#7c2d12">① 暂停，不是丢</text>
+  <text x="56" y="396" font-size="10.5" fill="#334155">offset 停在原处</text>
+  <text x="56" y="416" font-size="10.5" fill="#334155">文件继续增长，日志不丢</text>
+  <text x="56" y="436" font-size="10.5" fill="#b45309">代价：日志延迟从秒级变成分钟级</text>
+  <text x="56" y="462" font-size="10" fill="#64748b">恢复后从 offset 继续读</text>
+
+  <rect x="352" y="348" width="295" height="130" rx="9" fill="#fffbeb" stroke="#d97706" stroke-width="1.3"/>
+  <text x="368" y="372" font-size="12" font-weight="bold" fill="#78350f">② 指数退避重试</text>
+  <text x="368" y="396" font-size="10.5" fill="#334155">10 秒 → 14 秒 → 更长</text>
+  <text x="368" y="416" font-size="10.5" fill="#334155">同一个 chunk 反复重发</text>
+  <text x="368" y="436" font-size="10.5" fill="#b45309">Retry_Limit 决定什么时候放弃</text>
+  <text x="368" y="462" font-size="10" fill="#64748b">放弃 = 这个 chunk 被丢弃</text>
+
+  <rect x="664" y="348" width="306" height="130" rx="9" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+  <text x="680" y="372" font-size="12" font-weight="bold" fill="#7f1d1d">③ 内存存储的隐藏代价</text>
+  <text x="680" y="396" font-size="10.5" fill="#334155">type=memory 是默认值</text>
+  <text x="680" y="416" font-size="10.5" fill="#334155">进程重启 = 缓冲全丢</text>
+  <text x="680" y="436" font-size="10.5" fill="#b91c1c">这才是「日志缺一段」最常见的原因</text>
+  <text x="680" y="462" font-size="10" fill="#64748b">滚动发布 / OOM / 节点驱逐都会触发</text>
+
+  <rect x="40" y="494" width="930" height="86" rx="9" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="56" y="518" font-size="12" font-weight="bold" fill="#14532d">要抗重启：把缓冲落盘，而不是加大内存上限</text>
+  <text x="56" y="542" font-size="10.5" font-family="Consolas, monospace" fill="#334155">storage.path /var/lib/fluent-bit/ + storage.sync normal + storage.type filesystem（input 级）</text>
+  <text x="56" y="566" font-size="10.5" fill="#166534">同时按级别做分级保留：ERROR 全量长保留，INFO 流水采样或直接丢 —— 「丢」要是策略，不是事故</text>
+</svg>

@@ -2,7 +2,7 @@
 
 > Jaeger 是**只存原始 span、查询时再算**的链路追踪后端。本册五篇零件按「架构 → 采集 → 数据 → 界面 → 集成」切开：**它为什么长成 OTel Collector 的样子**、**埋点与传播怎么才不断链**、**落库的数据模型决定了哪些查询便宜哪些贵**、**面板上能看出什么**、**和 Collector / Prometheus / SkyWalking 怎么分工**。
 >
-> 内容整理自个人学习笔记。**本文件只给定位、阅读路线与实测坐标**——每篇的知识点描述见 [目录.md](../../../../目录.md)，本册不重复；接入代码按语言分册，见第四节。
+> 内容整理自个人学习笔记。**本文件只给定位、阅读路线与实测坐标**——每篇的知识点描述见 [目录.md](../../../../../目录.md)，本册不重复；接入代码按语言分册，见第四节。
 
 Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNCF，2019 年毕业（Graduated）：一次请求经过了哪些服务、每个服务做了什么、耗时卡在哪一跳、失败发生在哪个环节。
 
@@ -64,8 +64,8 @@ Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNC
 
 | 语言 | 分册 | 覆盖内容 |
 |---|---|---|
-| Go | [接入Jaeger.md](../../../../01-编程语言/go/可观测性/接入Jaeger.md) | OTel SDK 初始化、Gin / GORM / NATS / xxl-job 四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、[photography-server](https://github.com/Eleven-26/photography-server) 落地映射 |
-| Java | [接入Jaeger.md](../../../../01-编程语言/java/可观测性/接入Jaeger.md) | OTel Java Agent 无侵入路线、Spring Boot 3 + Micrometer Tracing、日志 MDC 与响应头、跨线程传播、从 `jaeger-client` 迁移 |
+| Go | [接入Jaeger.md](../../../../../01-编程语言/go/可观测性/接入Jaeger.md) | OTel SDK 初始化、Gin / GORM / NATS / xxl-job 四类埋点、context 传播三条铁律、trace_id 关联日志与响应、优雅退出、[photography-server](https://github.com/Eleven-26/photography-server) 落地映射 |
+| Java | [接入Jaeger.md](../../../../../01-编程语言/java/可观测性/接入Jaeger.md) | OTel Java Agent 无侵入路线、Spring Boot 3 + Micrometer Tracing、日志 MDC 与响应头、跨线程传播、从 `jaeger-client` 迁移 |
 
 > ⚠️ `jaeger-client-go` / `jaeger-client-java` **均已归档**，新项目一律用 OTel SDK + OTLP，不要再用私有客户端与私有 `uber-trace-id` 头。
 
@@ -99,8 +99,8 @@ Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNC
 |---|---|
 | Jaeger 组件本体：进程形态、存储 schema、查询 API、界面读法 | **各语言接入代码** → `01-编程语言/{go,java}/可观测性/接入Jaeger.md` |
 | OTLP / Zipkin 落到 Jaeger 后的字段差异 | **OTel 规范本身**（SDK 内部、Exporter 语义）→ 只讲到「够判断链路断在哪」为止 |
-| `traceparent` 的字段级传播规则 | **服务网格侧的无埋点观测** → [服务网格](../../服务网格/README.md) |
-| 与 SkyWalking / Tempo / Zipkin 的分工判据 | **存储引擎原理**（MergeTree 怎么排序合并）→ [定位与适用场景.md](../../../数据存储/列式数据库/ClickHouse/定位与适用场景.md) |
+| `traceparent` 的字段级传播规则 | **服务网格侧的无埋点观测** → [服务网格](../../../服务网格/README.md) |
+| 与 SkyWalking / Tempo / Zipkin 的分工判据 | **存储引擎原理**（MergeTree 怎么排序合并）→ [定位与适用场景.md](../../../../数据存储/列式数据库/ClickHouse/定位与适用场景.md) |
 | 采样在 Collector 侧的配置形态 | **告警与值班流程** → 属流程而非知识，本册不写 |
 
 ## 延伸追问
@@ -115,8 +115,8 @@ Jaeger 是 Uber 开源的**分布式链路追踪系统**，2017 年捐赠给 CNC
 
 ## 关联
 
-- **上游/总纲**：[可观测性选型对比.md](../可观测性选型对比.md) — 为什么选这条路线、存储与采样在选型里的权重
+- **上游/总纲**：[可观测性选型对比.md](../../可观测性选型对比.md) — 为什么选这条路线、存储与采样在选型里的权重
 - **对照/互补**：[README.md](../Skywalking/README.md) — 「写时聚合」的另一条主线（探针式 APM 册导读）
 - **下游机制**：[架构与部署.md](架构与部署.md)、[采集与传播.md](采集与传播.md)、[数据模型与查询.md](数据模型与查询.md)、[UI与排障.md](UI与排障.md)、[集成与生态.md](集成与生态.md) — 本册五篇零件
-- **落地代码**：[接入Jaeger.md](../../../../01-编程语言/go/可观测性/接入Jaeger.md)、[接入Jaeger.md](../../../../01-编程语言/java/可观测性/接入Jaeger.md) — Go / Java 两侧的接入手册
-- **存储侧**：[定位与适用场景.md](../../../数据存储/列式数据库/ClickHouse/定位与适用场景.md) — Jaeger 官方推荐的明细存储选型
+- **落地代码**：[接入Jaeger.md](../../../../../01-编程语言/go/可观测性/接入Jaeger.md)、[接入Jaeger.md](../../../../../01-编程语言/java/可观测性/接入Jaeger.md) — Go / Java 两侧的接入手册
+- **存储侧**：[定位与适用场景.md](../../../../数据存储/列式数据库/ClickHouse/定位与适用场景.md) — Jaeger 官方推荐的明细存储选型
