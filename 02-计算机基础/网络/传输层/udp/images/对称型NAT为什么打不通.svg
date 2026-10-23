@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">对称型 NAT 为什么是个死结：一个内网端口对应了多个公网端口</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">STUN 只能测「到 STUN 服务器」那一条流的映射，而打洞需要的是「到对端」那一条</text>
+
+  <rect x="20" y="76" width="470" height="244" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="40" y="102" font-size="13" font-weight="bold" fill="#15803d">锥型（endpoint-independent mapping）</text>
+  <text x="40" y="128" font-size="10.5" fill="#166534">内网 192.168.1.10:9001 对外只有一个公网端口</text>
+
+  <rect x="36" y="142" width="438" height="34" rx="4" fill="#dcfce7"/>
+  <text x="50" y="164" font-size="10" fill="#15803d">到 STUN 10.0.0.1:3478</text>
+  <text x="300" y="164" font-size="10" font-family="Consolas, monospace" fill="#15803d">10.0.0.11:9001</text>
+  <rect x="36" y="182" width="438" height="34" rx="4" fill="#dcfce7"/>
+  <text x="50" y="204" font-size="10" fill="#15803d">到对端 10.0.0.12:9001</text>
+  <text x="300" y="204" font-size="10" font-family="Consolas, monospace" fill="#15803d">10.0.0.11:9001</text>
+
+  <text x="40" y="244" font-size="11" font-weight="bold" fill="#15803d">两个端口一致 → STUN 给的地址可以直接用</text>
+  <text x="40" y="270" font-size="10.5" fill="#166534">对端往 10.0.0.11:9001 发包，natA 查到映射就转给 A</text>
+  <text x="40" y="296" font-size="10.5" fill="#166534">这就是「打洞能成」的全部前提，没有第二条</text>
+
+  <rect x="510" y="76" width="470" height="244" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="530" y="102" font-size="13" font-weight="bold" fill="#b91c1c">对称型（endpoint-dependent mapping）</text>
+  <text x="530" y="128" font-size="10.5" fill="#991b1b">同一个内网端口，按目的各分配一个公网端口</text>
+
+  <rect x="526" y="142" width="438" height="34" rx="4" fill="#fee2e2"/>
+  <text x="540" y="164" font-size="10" fill="#b91c1c">到 STUN 10.0.0.1:3478</text>
+  <text x="790" y="164" font-size="10" font-family="Consolas, monospace" fill="#b91c1c">10.0.0.11:9001</text>
+  <rect x="526" y="182" width="438" height="34" rx="4" fill="#fee2e2"/>
+  <text x="540" y="204" font-size="10" fill="#b91c1c">到对端 10.0.0.12:9001</text>
+  <text x="790" y="204" font-size="10" font-family="Consolas, monospace" fill="#b91c1c">10.0.0.11:38521</text>
+
+  <text x="530" y="244" font-size="11" font-weight="bold" fill="#b91c1c">两个端口不一致 → STUN 给的地址是错的</text>
+  <text x="530" y="270" font-size="10.5" fill="#991b1b">对端往 10.0.0.11:9001 发包，natA 上没有这个端口的入向映射</text>
+  <text x="530" y="296" font-size="10.5" fill="#991b1b">包在门口被丢掉，两侧都以为对方没发</text>
+
+  <rect x="20" y="336" width="960" height="164" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="362" font-size="13" font-weight="bold" fill="#1e293b">本机抓包：包确实发到了对端门口，只是进不去</text>
+
+  <rect x="60" y="378" width="150" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="135" y="398" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1e40af">B（192.168.2.10）</text>
+  <text x="135" y="416" text-anchor="middle" font-size="9.5" fill="#1e40af">发往 10.0.0.11:9001</text>
+
+  <line x1="210" y1="401" x2="290" y2="401" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="298,401 288,396 288,406" fill="#2563eb"/>
+  <text x="216" y="394" font-size="9" fill="#2563eb">经 natB 出向映射</text>
+
+  <rect x="300" y="378" width="170" height="46" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="385" y="398" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1e40af">natA 公网口</text>
+  <text x="385" y="416" text-anchor="middle" font-size="9.5" fill="#1e40af">10.0.0.12:9001 到达</text>
+
+  <line x1="470" y1="401" x2="540" y2="401" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <text x="474" y="394" font-size="9" fill="#dc2626">查映射：9001 无项</text>
+
+  <rect x="548" y="378" width="150" height="46" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="623" y="398" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#b91c1c">丢弃</text>
+  <text x="623" y="416" text-anchor="middle" font-size="9.5" fill="#b91c1c">只留 [UNREPLIED] 记录</text>
+
+  <line x1="698" y1="401" x2="768" y2="401" stroke="#cbd5e1" stroke-width="1.6" stroke-dasharray="4 4"/>
+  <polygon points="776,401 766,396 766,406" fill="#cbd5e1"/>
+
+  <rect x="776" y="378" width="180" height="46" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="866" y="398" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#475569">A（192.168.1.10）</text>
+  <text x="866" y="416" text-anchor="middle" font-size="9.5" fill="#475569">一个包都没收到</text>
+
+  <text x="60" y="452" font-size="10" fill="#475569">三处抓包拼起来才能定位：natA 公网口有 3 个来自 10.0.0.12:9001 的包、natB 公网口有 3 个发往 10.0.0.11:9001 的包、</text>
+  <text x="60" y="472" font-size="10" fill="#475569">而 cB 的内网口只有出向没有入向 —— 只看公网口会误判成"两边都发出去为什么不通"，只看应用日志会误判成"代码有 bug"</text>
+
+  <rect x="20" y="516" width="960" height="32" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="40" y="537" font-size="11" fill="#92400e">⭐ 判据：先看 conntrack 里「到 STUN」与「到对端」的回程端口是否一致。不一致就不必再调参数了 —— 直接走中继</text>
+</svg>

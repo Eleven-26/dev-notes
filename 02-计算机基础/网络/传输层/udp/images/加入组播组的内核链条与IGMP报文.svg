@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 IP_ADD_MEMBERSHIP 走过的四步</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">前三步在主机内，第四步在交换机上；任何一步没做，表现都是"收不到包"，但原因完全不同</text>
+
+  <rect x="20" y="74" width="960" height="246" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="100" font-size="13" font-weight="bold" fill="#1e293b">四步链条：从 socket 到网卡再到交换机</text>
+
+  <rect x="40" y="114" width="215" height="146" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="56" y="140" font-size="12" font-weight="bold" fill="#1e40af">① 应用调 setsockopt</text>
+  <text x="56" y="166" font-size="10" fill="#1e40af">IP_ADD_MEMBERSHIP</text>
+  <text x="56" y="190" font-size="10" fill="#1e40af">参数：组地址 + 接口</text>
+  <text x="56" y="222" font-size="10" fill="#64748b">失败：ENODEV /</text>
+  <text x="56" y="240" font-size="10" fill="#64748b">EADDRNOTAVAIL</text>
+
+  <line x1="255" y1="187" x2="272" y2="187" stroke="#94a3b8" stroke-width="1.4"/>
+  <polygon points="280,187 270,182 270,192" fill="#94a3b8"/>
+
+  <rect x="282" y="114" width="215" height="146" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="298" y="140" font-size="12" font-weight="bold" fill="#1e40af">② 内核 maddr 表</text>
+  <text x="298" y="166" font-size="10" fill="#1e40af">inet 239.1.2.3</text>
+  <text x="298" y="190" font-size="10" fill="#1e40af">link 01:00:5e:01:02:03</text>
+  <text x="298" y="222" font-size="10" fill="#64748b">查证：ip maddr</text>
+  <text x="298" y="240" font-size="10" fill="#64748b">show dev eth1</text>
+
+  <line x1="497" y1="187" x2="514" y2="187" stroke="#94a3b8" stroke-width="1.4"/>
+  <polygon points="522,187 512,182 512,192" fill="#94a3b8"/>
+
+  <rect x="524" y="114" width="215" height="146" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="540" y="140" font-size="12" font-weight="bold" fill="#92400e">③ 发 IGMP report</text>
+  <text x="540" y="166" font-size="10" fill="#92400e">目的 224.0.0.22</text>
+  <text x="540" y="190" font-size="10" fill="#92400e">不是组地址本身</text>
+  <text x="540" y="222" font-size="10" fill="#b45309">抓包：tcpdump</text>
+  <text x="540" y="240" font-size="10" fill="#b45309">-i eth1 igmp</text>
+
+  <line x1="739" y1="187" x2="756" y2="187" stroke="#94a3b8" stroke-width="1.4"/>
+  <polygon points="764,187 754,182 754,192" fill="#94a3b8"/>
+
+  <rect x="766" y="114" width="190" height="146" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2"/>
+  <text x="782" y="140" font-size="12" font-weight="bold" fill="#334155">④ 交换机建表</text>
+  <text x="782" y="166" font-size="10" fill="#334155">bridge mdb add</text>
+  <text x="782" y="190" font-size="10" fill="#334155">无 querier 就泛洪</text>
+  <text x="782" y="222" font-size="10" fill="#64748b">查证：bridge</text>
+  <text x="782" y="240" font-size="10" fill="#64748b">mdb show br0</text>
+
+  <text x="40" y="288" font-size="10" fill="#64748b">前两步决定"内核认不认这个组"，第三步决定"交换机知不知道往哪转"，第四步在交换机侧重来一遍</text>
+  <text x="40" y="308" font-size="10" fill="#64748b">排查时必须分开看：maddr 有而抓包没有 → 驱动/混杂模式；抓包有 report 而收不到 → 交换机 mdb 或 membership</text>
+
+  <rect x="20" y="332" width="960" height="176" rx="10" fill="#0f172a"/>
+  <text x="40" y="358" font-size="13" font-weight="bold" fill="#e2e8f0">本机抓到的 IGMP 报文（h2 加入 239.1.2.3 时，在 h1 的 eth1 上抓）</text>
+  <text x="40" y="388" font-size="11" font-family="Consolas, monospace" fill="#7dd3fc">16:45:51.448716  IP 10.99.0.12 &gt; 224.0.0.22: igmp v3 report, 1 group record(s)</text>
+  <text x="40" y="412" font-size="11" font-family="Consolas, monospace" fill="#7dd3fc">16:45:51.908664  IP 10.99.0.12 &gt; 224.0.0.22: igmp v3 report, 1 group record(s)</text>
+  <text x="40" y="436" font-size="11" font-family="Consolas, monospace" fill="#7dd3fc">16:45:55.860649  IP 10.99.0.12 &gt; 224.0.0.22: igmp v3 report, 1 group record(s)</text>
+  <text x="40" y="460" font-size="11" font-family="Consolas, monospace" fill="#7dd3fc">16:45:56.196756  IP 10.99.0.12 &gt; 224.0.0.22: igmp v3 report, 1 group record(s)</text>
+  <text x="40" y="488" font-size="10" fill="#94a3b8">发了 4 条不是 1 条：第一条是加入触发的立即上报，后面几条是 query 响应与重传（IGMP 本身不可靠）</text>
+
+  <rect x="20" y="520" width="960" height="32" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="40" y="541" font-size="11" fill="#1e40af">这个 report 的目的 MAC 是 01:00:5e:00:00:16（224.0.0.22 的映射），不是 01:00:5e:01:02:03 —— 它发给"所有嗅探者"，不是发给组内成员</text>
+</svg>

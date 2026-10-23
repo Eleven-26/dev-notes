@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">组播地址只有低 23 位能进 MAC：32 个地址共用一个 MAC</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机实测（alpine:3.21 + ip netns）：239.1.2.3 与 239.129.2.3 在 maddr 表里合并成一条，引用计数 users 2</text>
+
+  <rect x="20" y="74" width="960" height="232" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="100" font-size="13" font-weight="bold" fill="#1e293b">① 32 位组播地址里，取低 23 位拼到 01:00:5e 后面</text>
+
+  <text x="110" y="128" font-size="10" fill="#64748b">第 1 字节</text>
+  <text x="226" y="128" font-size="10" fill="#64748b">第 2 字节</text>
+  <text x="342" y="128" font-size="10" fill="#64748b">第 3 字节</text>
+  <text x="458" y="128" font-size="10" fill="#64748b">第 4 字节</text>
+
+  <rect x="110" y="136" width="112" height="44" rx="6" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="166" y="164" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#312e81">11101110</text>
+  <rect x="226" y="136" width="112" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="282" y="164" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#1e40af">00000001</text>
+  <rect x="342" y="136" width="112" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="398" y="164" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#1e40af">00000010</text>
+  <rect x="458" y="136" width="112" height="44" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="514" y="164" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#1e40af">00000011</text>
+
+  <text x="110" y="196" font-size="10" fill="#4f46e5">D 类前缀固定 1110，高 5 位不进 MAC</text>
+  <line x1="226" y1="192" x2="570" y2="192" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="578" y="196" font-size="10" fill="#2563eb">= 低 23 位（239.1.2.3 的 0x010203）</text>
+
+  <line x1="340" y1="204" x2="340" y2="228" stroke="#94a3b8" stroke-width="1.4"/>
+  <polygon points="340,236 335,226 345,226" fill="#94a3b8"/>
+
+  <text x="110" y="252" font-size="10" fill="#64748b">固定 OUI</text>
+  <rect x="110" y="258" width="76" height="38" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="148" y="283" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#334155">01</text>
+  <rect x="190" y="258" width="76" height="38" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="228" y="283" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#334155">00</text>
+  <rect x="270" y="258" width="76" height="38" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="308" y="283" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#334155">5e</text>
+  <rect x="350" y="258" width="76" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="388" y="283" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#1e40af">01</text>
+  <rect x="430" y="258" width="76" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="468" y="283" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#1e40af">02</text>
+  <rect x="510" y="258" width="76" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="548" y="283" text-anchor="middle" font-size="14" font-family="Consolas, monospace" fill="#1e40af">03</text>
+  <text x="600" y="283" font-size="11" fill="#64748b">← 01:00:5e:01:02:03</text>
+
+  <rect x="20" y="316" width="960" height="120" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="40" y="342" font-size="13" font-weight="bold" fill="#92400e">② 第二个字节的最高位被丢掉，于是两个不同的组撞在同一个 MAC 上</text>
+  <text x="60" y="374" font-size="12" font-family="Consolas, monospace" fill="#78350f">239.1.2.3      →  01:00:5e:01:02:03</text>
+  <text x="60" y="402" font-size="12" font-family="Consolas, monospace" fill="#78350f">239.129.2.3    →  01:00:5e:01:02:03</text>
+  <text x="470" y="374" font-size="11" fill="#b45309">← 129 = 1000 0001，最高位 1 在映射时被丢弃</text>
+  <text x="470" y="402" font-size="11" fill="#b45309">← 两者低 23 位都是 0x010203，必然同 MAC</text>
+
+  <rect x="20" y="446" width="960" height="40" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="40" y="470" font-size="11" fill="#1e40af">实测的 maddr 表里这条只剩一行并标了 users 2 —— 内核在网卡层就把冲突合并了，之后只能靠 IP 目的地址再筛一遍</text>
+</svg>

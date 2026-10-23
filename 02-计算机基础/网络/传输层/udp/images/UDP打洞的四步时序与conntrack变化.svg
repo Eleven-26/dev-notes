@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">UDP 打洞的四步，以及每一步之后 conntrack 的样子</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">打洞不是"骗过 NAT"，而是让两侧 NAT 各自先有一条出向映射，对方发来的包才过得去</text>
+
+  <rect x="40" y="74" width="920" height="24" rx="4" fill="#e2e8f0"/>
+  <text x="140" y="91" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">① A 查映射</text>
+  <text x="350" y="91" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">② B 查映射</text>
+  <text x="560" y="91" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">③ 交换地址</text>
+  <text x="815" y="91" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">④ 双向打洞</text>
+
+  <rect x="40" y="108" width="920" height="34" rx="4" fill="#eff6ff"/>
+  <text x="52" y="130" font-size="12" font-weight="bold" fill="#1e40af">A</text>
+  <text x="120" y="130" font-size="10" fill="#1e40af">192.168.1.10:9001</text>
+  <rect x="40" y="148" width="920" height="34" rx="4" fill="#dbeafe"/>
+  <text x="52" y="170" font-size="12" font-weight="bold" fill="#1e40af">natA</text>
+  <text x="120" y="170" font-size="10" fill="#1e40af">10.0.0.11</text>
+  <rect x="40" y="188" width="920" height="34" rx="4" fill="#fef3c7"/>
+  <text x="52" y="210" font-size="12" font-weight="bold" fill="#92400e">STUN</text>
+  <text x="120" y="210" font-size="10" fill="#92400e">10.0.0.1:3478</text>
+  <rect x="40" y="228" width="920" height="34" rx="4" fill="#dbeafe"/>
+  <text x="52" y="250" font-size="12" font-weight="bold" fill="#1e40af">natB</text>
+  <text x="120" y="250" font-size="10" fill="#1e40af">10.0.0.12</text>
+  <rect x="40" y="268" width="920" height="34" rx="4" fill="#eff6ff"/>
+  <text x="52" y="290" font-size="12" font-weight="bold" fill="#1e40af">B</text>
+  <text x="120" y="290" font-size="10" fill="#1e40af">192.168.2.10:9001</text>
+
+  <line x1="130" y1="125" x2="130" y2="165" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="130,173 125,163 135,163" fill="#2563eb"/>
+  <line x1="130" y1="165" x2="130" y2="205" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="130,213 125,203 135,203" fill="#2563eb"/>
+  <text x="250" y="134" font-size="9.5" fill="#2563eb">HELLO（同 socket）</text>
+
+  <line x1="130" y1="213" x2="130" y2="285" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="250" y="250" font-size="9.5" fill="#92400e">MAPPED 10.0.0.11:9001</text>
+
+  <line x1="340" y1="285" x2="340" y2="245" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="340,237 335,247 345,247" fill="#2563eb"/>
+  <line x1="340" y1="245" x2="340" y2="205" stroke="#2563eb" stroke-width="1.6"/>
+  <polygon points="340,197 335,207 345,207" fill="#2563eb"/>
+  <text x="358" y="288" font-size="9.5" fill="#2563eb">HELLO（同 socket）</text>
+
+  <line x1="340" y1="205" x2="340" y2="125" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="358" y="216" font-size="9.5" fill="#92400e">MAPPED 10.0.0.12:9001</text>
+
+  <line x1="470" y1="125" x2="650" y2="125" stroke="#4f46e5" stroke-width="1.2" stroke-dasharray="5 3"/>
+  <polygon points="658,125 648,120 648,130" fill="#4f46e5"/>
+  <line x1="470" y1="285" x2="650" y2="285" stroke="#4f46e5" stroke-width="1.2" stroke-dasharray="5 3"/>
+  <polygon points="658,285 648,280 648,290" fill="#4f46e5"/>
+  <text x="500" y="118" font-size="9.5" fill="#4f46e5">PEER 10.0.0.12:9001</text>
+  <text x="500" y="278" font-size="9.5" fill="#4f46e5">PEER 10.0.0.11:9001</text>
+
+  <line x1="700" y1="125" x2="700" y2="165" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="700,173 695,163 705,163" fill="#16a34a"/>
+  <line x1="700" y1="165" x2="700" y2="245" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="700,253 695,243 705,243" fill="#16a34a"/>
+  <line x1="700" y1="253" x2="700" y2="285" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="700,293 695,283 705,283" fill="#16a34a"/>
+  <text x="718" y="166" font-size="9.5" fill="#15803d">PUNCH 到对方的映射地址</text>
+
+  <line x1="790" y1="285" x2="790" y2="253" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="790,245 785,255 795,255" fill="#16a34a"/>
+  <line x1="790" y1="253" x2="790" y2="173" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="790,165 785,175 795,175" fill="#16a34a"/>
+  <line x1="790" y1="165" x2="790" y2="125" stroke="#16a34a" stroke-width="1.8"/>
+  <polygon points="790,117 785,127 795,127" fill="#16a34a"/>
+  <text x="808" y="288" font-size="9.5" fill="#15803d">反向同时发，先到的命中过滤</text>
+
+  <rect x="40" y="320" width="920" height="42" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="346" font-size="11" font-weight="bold" fill="#334155">conntrack</text>
+  <text x="180" y="346" font-size="10.5" font-weight="bold" fill="#1e40af">natA</text>
+  <text x="600" y="346" font-size="10.5" font-weight="bold" fill="#1e40af">natB</text>
+
+  <rect x="40" y="366" width="920" height="44" rx="4" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="52" y="392" font-size="10" fill="#64748b">① 之后</text>
+  <text x="180" y="392" font-size="10" font-family="Consolas, monospace" fill="#334155">A→STUN  9001 → 9001  [ASSURED]</text>
+  <text x="600" y="392" font-size="10" fill="#94a3b8">（空）</text>
+
+  <rect x="40" y="414" width="920" height="44" rx="4" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="52" y="440" font-size="10" fill="#64748b">② 之后</text>
+  <text x="180" y="440" font-size="10" font-family="Consolas, monospace" fill="#334155">A→STUN  9001 → 9001  [ASSURED]</text>
+  <text x="600" y="440" font-size="10" font-family="Consolas, monospace" fill="#334155">B→STUN  9001 → 9001  [ASSURED]</text>
+
+  <rect x="40" y="462" width="920" height="44" rx="4" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="52" y="488" font-size="10" fill="#64748b">③ 之后</text>
+  <text x="180" y="488" font-size="10" fill="#94a3b8">（不变，信令走的是同一条流）</text>
+  <text x="600" y="488" font-size="10" fill="#94a3b8">（不变）</text>
+
+  <rect x="40" y="510" width="920" height="44" rx="4" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="52" y="536" font-size="10" fill="#15803d">④ 之后</text>
+  <text x="180" y="536" font-size="10" font-family="Consolas, monospace" fill="#15803d">A→B  9001 → 38521  [UNREPLIED]</text>
+  <text x="600" y="536" font-size="10" font-family="Consolas, monospace" fill="#15803d">B→A  9001 → 1803   [UNREPLIED]</text>
+
+  <rect x="40" y="560" width="920" height="30" rx="6" fill="#fef2f2" stroke="#ef4444" stroke-width="1.2"/>
+  <text x="52" y="580" font-size="10.5" fill="#b91c1c">⚠️ 最后一行是本机的真实读数：到 STUN 是 9001，到对端变成 38521 / 1803 —— 对端按 STUN 答案发包就打不进来，这正是第四节失败的根因</text>
+</svg>

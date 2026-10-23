@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">NAT 的两条独立轴：映射决定"端口稳不稳"，过滤决定"能不能进来"</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">打洞能不能成，先看横轴 —— 横轴是 endpoint-dependent，纵轴怎么配都没用</text>
+
+  <rect x="20" y="76" width="150" height="34" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="95" y="98" text-anchor="middle" font-size="11" fill="#475569">纵轴：过滤</text>
+  <rect x="180" y="76" width="390" height="34" rx="6" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1"/>
+  <text x="375" y="98" text-anchor="middle" font-size="11" font-weight="bold" fill="#312e81">映射：endpoint-independent（换目的用同一端口）</text>
+  <rect x="576" y="76" width="384" height="34" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="768" y="98" text-anchor="middle" font-size="11" font-weight="bold" fill="#991b1b">映射：endpoint-dependent（换目的换端口）</text>
+
+  <rect x="176" y="116" width="150" height="176" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="251" y="186" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">endpoint-independent</text>
+  <text x="251" y="208" text-anchor="middle" font-size="10" fill="#64748b">filtering</text>
+  <text x="251" y="232" text-anchor="middle" font-size="10" fill="#64748b">任何人可进</text>
+
+  <rect x="176" y="298" width="150" height="176" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="251" y="368" text-anchor="middle" font-size="11" font-weight="bold" fill="#334155">address-dependent</text>
+  <text x="251" y="390" text-anchor="middle" font-size="10" fill="#64748b">filtering</text>
+  <text x="251" y="414" text-anchor="middle" font-size="10" fill="#64748b">要先向对方发过包</text>
+
+  <rect x="332" y="116" width="382" height="176" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="352" y="144" font-size="14" font-weight="bold" fill="#15803d">全锥型（Full Cone）</text>
+  <text x="352" y="172" font-size="10.5" fill="#166534">映射：内网 9001 到任何目的都是公网 9001</text>
+  <text x="352" y="196" font-size="10.5" fill="#166534">过滤：任何外部地址都能通过 9001 打进来</text>
+  <text x="352" y="228" font-size="11" font-weight="bold" fill="#15803d">打洞：✅ 最容易，甚至不需要先互发</text>
+  <text x="352" y="254" font-size="10" fill="#166534">典型：家用路由器 DMZ / 静态端口映射</text>
+  <text x="352" y="276" font-size="10" fill="#166534">实测等价物：DNAT 静态映射</text>
+
+  <rect x="720" y="116" width="238" height="176" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="740" y="144" font-size="14" font-weight="bold" fill="#b91c1c">对称型（Symmetric）</text>
+  <text x="740" y="172" font-size="10.5" fill="#991b1b">映射：到 STUN 用 9001，</text>
+  <text x="740" y="194" font-size="10.5" fill="#991b1b">到对端变成 38521</text>
+  <text x="740" y="222" font-size="10.5" fill="#991b1b">过滤：要先向对方发过包</text>
+  <text x="740" y="252" font-size="11" font-weight="bold" fill="#b91c1c">打洞：❌ 必然失败</text>
+  <text x="740" y="276" font-size="10" fill="#991b1b">实测：所有 iptables 写法都落在这一格</text>
+
+  <rect x="332" y="298" width="382" height="176" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.4"/>
+  <text x="352" y="326" font-size="14" font-weight="bold" fill="#92400e">受限型（Restricted Cone）</text>
+  <text x="352" y="354" font-size="10.5" fill="#92400e">映射：端口固定，STUN 给的地址有效</text>
+  <text x="352" y="378" font-size="10.5" fill="#92400e">过滤：只放行"我发过包的地址"，别人进不来</text>
+  <text x="352" y="410" font-size="11" font-weight="bold" fill="#92400e">打洞：✅ 可行，前提是双方都先发一次</text>
+  <text x="352" y="436" font-size="10" fill="#92400e">这正是"打洞"这个动作要解决的问题</text>
+  <text x="352" y="458" font-size="10" fill="#92400e">两侧同时发，先到的会命中对方的过滤规则</text>
+
+  <rect x="720" y="298" width="238" height="176" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.4"/>
+  <text x="740" y="326" font-size="14" font-weight="bold" fill="#334155">罕见组合</text>
+  <text x="740" y="354" font-size="10.5" fill="#334155">映射随目的变，但过滤很松</text>
+  <text x="740" y="378" font-size="10.5" fill="#334155">实际产品里基本见不到</text>
+  <text x="740" y="410" font-size="11" font-weight="bold" fill="#334155">打洞：⚠️ 只能靠猜端口</text>
+  <text x="740" y="436" font-size="10" fill="#475569">猜中概率取决于端口分配规律</text>
+  <text x="740" y="458" font-size="10" fill="#475569">工程上不值得依赖</text>
+
+  <rect x="20" y="486" width="938" height="56" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.2"/>
+  <text x="40" y="508" font-size="11" fill="#1e40af">本机实测的结论很干脆：MASQUERADE、SNAT --to-source、SNAT --random 三种写法，同一个内网 9001 到 STUN 用 9001、到对端分别用 38521 / 38521 / 59717</text>
+  <text x="40" y="530" font-size="11" fill="#1e40af">三种全都落在右列 —— 也就是说，在单机上用 iptables 做不出"双私网打洞成功"的实验，只能靠单侧 NAT 或用户态代理</text>
+</svg>
