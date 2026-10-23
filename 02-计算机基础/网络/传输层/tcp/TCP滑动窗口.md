@@ -2,7 +2,7 @@
 
 > 覆盖：窗口怎么滑、窗口的本质是什么、`rwnd` 与 `cwnd` 的交集如何决定吞吐上限、窗口缩放 / SACK / 零窗口探测这三个常被忽略的机制，以及把窗口与保活落到 socket 选项上的 Go / Java 写法与可复现实验。
 >
-> 不覆盖：拥塞窗口的增长算法见 [../TCP拥塞控制算法.md](TCP拥塞控制算法.md)；窗口字段所在的首部见 [TCP报文结构.md](TCP报文结构.md)；发送端小包合并见 [TCP的Nagle与延迟确认.md](TCP的Nagle与延迟确认.md)。
+> 不覆盖：拥塞窗口的增长算法见 [../TCP拥塞控制算法.md](TCP拥塞控制算法.md)；窗口字段所在的首部见 [TCP协议基础与报文结构.md](TCP协议基础与报文结构.md)；发送端小包合并见 [TCP的Nagle与延迟确认.md](TCP的Nagle与延迟确认.md)。
 >
 > 内容整理自个人学习笔记，素材见 [素材清单](../../../../素材清单.md)。
 >
@@ -219,7 +219,7 @@ func BulkWrite() Options {
 // Dial 拨号并把所有选项设好；**任何一步失败都要 Close**，否则连接泄漏。
 func Dial(ctx context.Context, addr string, o Options) (*net.TCPConn, error) {
 	d := net.Dialer{
-		Timeout: 3 * time.Second, // ⚠️ 只管"建连"，不管读写——读写超时见 [TCP报文结构.md](TCP报文结构.md) 使用一
+		Timeout: 3 * time.Second, // ⚠️ 只管"建连"，不管读写——读写超时见 [TCP协议基础与报文结构.md](TCP协议基础与报文结构.md) 使用一
 		// 这里故意不设 KeepAlive：我们要用更细粒度的 SetKeepAliveConfig
 	}
 
@@ -473,7 +473,7 @@ sudo tc qdisc del dev lo root               # ⚠️ 一定记得删，忘了删
 
 - **上游/总纲**：[../网络分层与数据包旅程.md](../../网络分层与数据包旅程.md) — 传输层在五层模型里的位置
 - **对照/互补**：[TCP的Nagle与延迟确认.md](TCP的Nagle与延迟确认.md) — 发送端合并小包与接收端合并 ACK 的另一半
-- **对照/互补**：[TCP报文结构.md](TCP报文结构.md) — 窗口字段所在的首部、SACK 与窗口缩放都是首部选项
+- **对照/互补**：[TCP协议基础与报文结构.md](TCP协议基础与报文结构.md) — 窗口字段所在的首部、SACK 与窗口缩放都是首部选项
 - **对照/互补**：[../TCP拥塞控制算法.md](TCP拥塞控制算法.md) — 与 `rwnd` 组成 `min(rwnd, cwnd)` 的另一半（`cwnd`）
 - **对照/互补**：[TCP三次握手.md](TCP三次握手.md) — 窗口与窗口缩放都在建连阶段协商
 - **对照/互补**：[../IP与路由基础.md](../../网络层与寻址/IP与路由基础.md) — 为什么「窗口 = 吞吐上限」还要受 MSS / MTU 约束

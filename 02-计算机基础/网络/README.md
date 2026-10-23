@@ -80,7 +80,7 @@
 | **排查「慢 / 不通」** | [网络通信链路详解.md](网络通信链路详解.md)（五、症状→层级→证据→工具表）→ [IP与路由基础.md](网络层与寻址/IP与路由基础.md)（MTU / PMTUD）→ [DNS解析.md](网络层与寻址/DNS解析.md)（排查命令）→ [抓包实战.md](观测与排障/抓包实战.md) |
 | **想看一次带数字的端到端算账** | [跨城传输全链路-TCP篇.md](跨城传输全链路-TCP篇.md)（3 KB 杭州→深圳：DNS 与 TCP 建连、MSS 决定的三段切分、光纤里的串行与三重复用、光电转换、光猫与路由器分工、IP/MAC、乱序与零窗口、8 个报文与 2 个 RTT）→ [跨城传输全链路-UDP篇.md](跨城传输全链路-UDP篇.md)（同一趟换成 UDP：3 个数据报还是 3 个分片、丢了谁补、没有窗口怎么办、5 个报文与 0 个握手 RTT）→ [跨城传输全链路-HTTP篇.md](跨城传输全链路-HTTP篇.md)（应用层这 3 KB 上线时变成多少字节、2 KB Cookie 如何把 3 段变 4 段、三个 HTTP 版本在丢包时的连坐范围、CDN 命中砍掉哪一段、`curl -w` 五段时间怎么读）→ 再按需跳到 [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md)、[UDP与数据报传输.md](传输层/UDP与数据报传输.md)、[IP与路由基础.md](网络层与寻址/IP与路由基础.md) |
 | **长连接莫名断开** | [NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md)（五、空闲超时）→ [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md)（四层保活与心跳参数）→ [TCP四次挥手.md](传输层/tcp/TCP四次挥手.md)（`CLOSE_WAIT`） |
-| **复习 TCP** | [TCP报文结构.md](传输层/tcp/TCP报文结构.md) → [TCP三次握手.md](传输层/tcp/TCP三次握手.md) → [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) → [TCP的Nagle与延迟确认.md](传输层/tcp/TCP的Nagle与延迟确认.md) → [TCP拥塞控制算法.md](传输层/tcp/TCP拥塞控制算法.md) → [TCP四次挥手.md](传输层/tcp/TCP四次挥手.md) → [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md) |
+| **复习 TCP** | [TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md) → [TCP三次握手.md](传输层/tcp/TCP三次握手.md) → [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) → [TCP的Nagle与延迟确认.md](传输层/tcp/TCP的Nagle与延迟确认.md) → [TCP拥塞控制算法.md](传输层/tcp/TCP拥塞控制算法.md) → [TCP四次挥手.md](传输层/tcp/TCP四次挥手.md) → [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md) |
 | **搞懂 IP 与路由** | [IP与路由基础.md](网络层与寻址/IP与路由基础.md) → [IPv6与双栈.md](网络层与寻址/IPv6与双栈.md) → [NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) → [网络通信链路详解.md](网络通信链路详解.md)（逐跳改写） |
 | **排查 DNS 与证书** | [DNS安全与加密解析.md](网络层与寻址/DNS安全与加密解析.md) → [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) → [HTTPS与TLS.md](应用层/HTTPS与TLS.md) |
 | **做技术选型** | [通信选型.md](选型/通信选型.md) → [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) → [HTTP与gRPC.md](应用层/HTTP与gRPC.md) → [WebSocket.md](应用层/WebSocket.md) → [SSE.md](应用层/SSE.md) → [数据序列化.md](选型/数据序列化.md) |
@@ -106,27 +106,27 @@
 | [NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) | [IP与路由基础.md](网络层与寻址/IP与路由基础.md) | 先懂地址与端口，才懂五元组改写 |
 | [DNS安全与加密解析.md](网络层与寻址/DNS安全与加密解析.md) | [DNS解析.md](网络层与寻址/DNS解析.md) | 先懂递归、缓存与记录类型 |
 | [UDP与数据报传输.md](传输层/UDP与数据报传输.md) | [IP与路由基础.md](网络层与寻址/IP与路由基础.md) | 大包与分片的代价要先懂 MTU |
-| [TCP三次握手.md](传输层/tcp/TCP三次握手.md) | [TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 握手报文就是带 `SYN` / `ACK` 标志位的首部 |
-| [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) | [TCP报文结构.md](传输层/tcp/TCP报文结构.md)、[TCP三次握手.md](传输层/tcp/TCP三次握手.md) | 窗口字段在首部里；连接建好才谈吞吐 |
+| [TCP三次握手.md](传输层/tcp/TCP三次握手.md) | [TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md) | 握手报文就是带 `SYN` / `ACK` 标志位的首部 |
+| [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) | [TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md)、[TCP三次握手.md](传输层/tcp/TCP三次握手.md) | 窗口字段在首部里；连接建好才谈吞吐 |
 | [TCP的Nagle与延迟确认.md](传输层/tcp/TCP的Nagle与延迟确认.md) | [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) | 都是传输效率问题，放一起看 |
 | [TCP拥塞控制算法.md](传输层/tcp/TCP拥塞控制算法.md) | [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) | `min(rwnd, cwnd)` 的另一半 |
 | [TCP四次挥手.md](传输层/tcp/TCP四次挥手.md) | [TCP三次握手.md](传输层/tcp/TCP三次握手.md) | 关闭是握手的镜像，`TIME_WAIT` 在这一步出现 |
 | [TCP保活与连接存活.md](传输层/TCP保活与连接存活.md) | [TCP四次挥手.md](传输层/tcp/TCP四次挥手.md)、[NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) | 半开连接与中间设备超时是同一件事的两面 |
 | [HTTPS与TLS.md](应用层/HTTPS与TLS.md) | [TCP三次握手.md](传输层/tcp/TCP三次握手.md)、[DNS解析.md](网络层与寻址/DNS解析.md) | TLS 跑在 TCP 之上；证书要靠 SNI 选 |
 | [证书与HTTPS排障.md](应用层/证书与HTTPS排障.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md) | 先懂握手，再谈证书链与错误码 |
-| [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md)、[TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 版本是 ALPN 协商的结果；定界的根因是「TCP 是字节流」 |
+| [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md)、[TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md) | 版本是 ALPN 协商的结果；定界的根因是「TCP 是字节流」 |
 | [HTTP与gRPC.md](应用层/HTTP与gRPC.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md)、[HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | 应用层在 TLS 之上；HTTP/2 是 gRPC 的地基 |
 | [WebSocket.md](应用层/WebSocket.md) | [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md)、[NAT与连接跟踪.md](网络层与寻址/NAT与连接跟踪.md) | RFC 6455 的握手、帧布局与掩码，及升级后丢失的 HTTP 语义 |
 | [SSE.md](应用层/SSE.md) | [HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md)、[WebSocket.md](应用层/WebSocket.md) | 事件流格式、`Last-Event-ID` 续传与六连接上限，推送链路上更便宜的那一半 |
 | [QUIC与HTTP3.md](应用层/QUIC与HTTP3.md) | [HTTPS与TLS.md](应用层/HTTPS与TLS.md)、[TCP三次握手.md](传输层/tcp/TCP三次握手.md)、[UDP与数据报传输.md](传输层/UDP与数据报传输.md) | 要懂 1-RTT / 0-RTT 的价值，先知道 TCP + TLS 要几次往返 |
-| [自定义协议设计.md](应用层/自定义协议设计.md) | [TCP报文结构.md](传输层/tcp/TCP报文结构.md)、[数据序列化.md](选型/数据序列化.md) | 定界源于「TCP 是字节流」，序列化只管编码不管边界；四变量骨架见族总纲 |
-| [反向代理原理.md](代理与网关/反向代理原理.md) | [HTTP与gRPC.md](应用层/HTTP与gRPC.md)、[TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 要懂逐跳头与连接复用 |
+| [自定义协议设计.md](应用层/自定义协议设计.md) | [TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md)、[数据序列化.md](选型/数据序列化.md) | 定界源于「TCP 是字节流」，序列化只管编码不管边界；四变量骨架见族总纲 |
+| [反向代理原理.md](代理与网关/反向代理原理.md) | [HTTP与gRPC.md](应用层/HTTP与gRPC.md)、[TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md) | 要懂逐跳头与连接复用 |
 | [反向代理接入.md](../../01-编程语言/go/网络编程/反向代理接入.md) | [反向代理原理.md](代理与网关/反向代理原理.md) | 先懂「该做什么」，再谈「怎么接」 |
 | [客户端真实IP与可信代理.md](代理与网关/客户端真实IP与可信代理.md) | [反向代理原理.md](代理与网关/反向代理原理.md) | 先知道代理这一跳写了什么头，再谈「信哪个」 |
 | [客户端IP接入.md](../../01-编程语言/go/网络编程/客户端IP接入.md) | [客户端真实IP与可信代理.md](代理与网关/客户端真实IP与可信代理.md) | 先懂五条规则，再谈落地 |
-| [抓包实战.md](观测与排障/抓包实战.md) | [网络通信链路详解.md](网络通信链路详解.md)、[TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 先知道「该看什么」，抓包才有意义 |
+| [抓包实战.md](观测与排障/抓包实战.md) | [网络通信链路详解.md](网络通信链路详解.md)、[TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md) | 先知道「该看什么」，抓包才有意义 |
 | [通信选型.md](选型/通信选型.md) | 前面大部分 | 没见过各层，选型表看不出取舍 |
-| [消息协议族全景.md](消息协议/消息协议族全景.md) | [TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 定界问题源于「TCP 是字节流」，先有这条才谈得上四种定界家族 |
+| [消息协议族全景.md](消息协议/消息协议族全景.md) | [TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md) | 定界问题源于「TCP 是字节流」，先有这条才谈得上四种定界家族 |
 | [AMQP.md](消息协议/AMQP.md) | [消息协议族全景.md](消息协议/消息协议族全景.md)、[HTTP1.1与HTTP2的区别.md](应用层/HTTP1.1与HTTP2的区别.md) | 先有「帧要自己定边界」的概念，才看得懂 channel 多路复用与 HTTP/2 的流是一类思路 |
 | [MQTT.md](消息协议/MQTT.md) | [消息协议族全景.md](消息协议/消息协议族全景.md) | 变长剩余长度是「省字节」的极端做法，先懂定界在解决什么 |
 | [STOMP.md](消息协议/STOMP.md) | [MQTT.md](消息协议/MQTT.md) | 两者是同一件事的两种权衡：二进制位段 vs 文本命令 |
@@ -178,7 +178,7 @@
 
 | 篇章 | 主要职责 |
 |---|---|
-| [TCP报文结构.md](传输层/tcp/TCP报文结构.md) | 连接的本质、首部字段、`SEG.LEN` 与确认号公式、累计 ACK 与 SACK、字节流边界 |
+| [TCP协议基础与报文结构.md](传输层/tcp/TCP协议基础与报文结构.md) | TCP 是什么与为什么需要（四个定语、IP 缺的五件事）、**保证 / 不保证边界表**、连接的本质、首部字段、`SEG.LEN` 与确认号公式、累计 ACK 与 SACK、字节流边界 |
 | [TCP三次握手.md](传输层/tcp/TCP三次握手.md) | 握手逐步拆解、两个队列与 `backlog`、溢出行为、TCP Fast Open |
 | [TCP滑动窗口.md](传输层/tcp/TCP滑动窗口.md) | 窗口滑动、`min(rwnd, cwnd)`、窗口缩放 / SACK / 零窗口探测、socket 选项 |
 | [TCP的Nagle与延迟确认.md](传输层/tcp/TCP的Nagle与延迟确认.md) | Nagle 的条件触发、延迟确认的实现差异、两者叠加的时序与破解 |
