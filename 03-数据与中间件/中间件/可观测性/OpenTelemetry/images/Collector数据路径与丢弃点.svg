@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="Noto Sans CJK SC, Microsoft YaHei, sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+
+  <text x="60" y="44" font-size="18" font-weight="bold" fill="#1f2937">Collector 的数据路径：三处会丢数据，只有前两处上游能察觉</text>
+
+  <rect x="40" y="120" width="120" height="62" rx="6" fill="#eef2f7" stroke="#374151" stroke-width="1.5"/>
+  <text x="100" y="157" font-size="14" fill="#1f2937" text-anchor="middle">上游 SDK</text>
+
+  <rect x="190" y="120" width="130" height="62" rx="6" fill="#eaf2fb" stroke="#2c6fbb" stroke-width="1.5"/>
+  <text x="255" y="157" font-size="13" fill="#1b4f8a" text-anchor="middle">receiver</text>
+
+  <rect x="350" y="120" width="150" height="62" rx="6" fill="#fff7ed" stroke="#c05621" stroke-width="1.5"/>
+  <text x="425" y="157" font-size="13" fill="#9c4221" text-anchor="middle">memory_limiter</text>
+
+  <rect x="530" y="120" width="110" height="62" rx="6" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="585" y="157" font-size="13" fill="#374151" text-anchor="middle">batch</text>
+
+  <rect x="670" y="120" width="170" height="62" rx="6" fill="#fdecea" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="755" y="150" font-size="13" fill="#7b241c" text-anchor="middle">exporter 队列</text>
+  <text x="755" y="170" font-size="12" fill="#7b241c" text-anchor="middle">sending_queue + retry</text>
+
+  <rect x="870" y="120" width="100" height="62" rx="6" fill="#eaf7ef" stroke="#2f8f5b" stroke-width="1.5"/>
+  <text x="920" y="157" font-size="13" fill="#1d6b45" text-anchor="middle">后端</text>
+
+  <line x1="160" y1="151" x2="184" y2="151" stroke="#374151" stroke-width="1.5"/>
+  <polygon points="190,151 182,146 182,156" fill="#374151"/>
+  <line x1="320" y1="151" x2="344" y2="151" stroke="#374151" stroke-width="1.5"/>
+  <polygon points="350,151 342,146 342,156" fill="#374151"/>
+  <line x1="500" y1="151" x2="524" y2="151" stroke="#374151" stroke-width="1.5"/>
+  <polygon points="530,151 522,146 522,156" fill="#374151"/>
+  <line x1="640" y1="151" x2="664" y2="151" stroke="#374151" stroke-width="1.5"/>
+  <polygon points="670,151 662,146 662,156" fill="#374151"/>
+  <line x1="840" y1="151" x2="864" y2="151" stroke="#374151" stroke-width="1.5"/>
+  <polygon points="870,151 862,146 862,156" fill="#374151"/>
+
+  <circle cx="175" cy="98" r="12" fill="#fdecea" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="175" y="103" font-size="13" fill="#c0392b" text-anchor="middle">1</text>
+  <circle cx="335" cy="98" r="12" fill="#fdecea" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="335" y="103" font-size="13" fill="#c0392b" text-anchor="middle">2</text>
+  <circle cx="855" cy="98" r="12" fill="#fdecea" stroke="#c0392b" stroke-width="1.5"/>
+  <text x="855" y="103" font-size="13" fill="#c0392b" text-anchor="middle">3</text>
+
+  <rect x="40" y="222" width="920" height="54" rx="6" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="52" y="244" font-size="13" fill="#374151">1 入口拒绝（receiver）：上游收到可重试错误，SDK 会重发</text>
+  <text x="52" y="266" font-size="13" fill="#374151">2 内存限制拒绝（memory_limiter）：同上；⚠ 若它排在 batch 之后，就退化成丢弃，上游察觉不到</text>
+
+  <rect x="40" y="286" width="920" height="54" rx="6" fill="#fdecea" stroke="#f5c6c0" stroke-width="1"/>
+  <text x="52" y="308" font-size="13" fill="#7b241c">3 队列满 / 重试耗尽（exporter）：丢弃并打 error 日志，接收端返回的仍是成功</text>
+  <text x="52" y="330" font-size="13" fill="#7b241c">实测：100 spans 全部丢弃，send_failed_spans 100，sent_spans 0</text>
+
+  <text x="40" y="376" font-size="13" fill="#6b7280">判据一句话：accepted − sent − 在途 = 丢失；对不上先看 send_failed_spans。</text>
+  <text x="40" y="404" font-size="13" fill="#6b7280">三处里只有第 3 处对上游完全不可见，所以它必须靠自监控指标兜底。</text>
+</svg>

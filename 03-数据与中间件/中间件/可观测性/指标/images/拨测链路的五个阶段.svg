@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" viewBox="0 0 1000 400" font-family="Noto Sans CJK SC, Microsoft YaHei, sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+
+  <text x="60" y="44" font-size="18" font-weight="bold" fill="#1f2937">一次拨测的五个阶段：停在哪一段，就该找谁</text>
+
+  <rect x="60" y="96" width="160" height="60" fill="#eaf2fb" stroke="#2c6fbb" stroke-width="1.5"/>
+  <rect x="220" y="96" width="160" height="60" fill="#eef2f7" stroke="#6b7280" stroke-width="1.5"/>
+  <rect x="380" y="96" width="160" height="60" fill="#fff7ed" stroke="#c05621" stroke-width="1.5"/>
+  <rect x="540" y="96" width="200" height="60" fill="#eaf7ef" stroke="#2f8f5b" stroke-width="1.5"/>
+  <rect x="740" y="96" width="200" height="60" fill="#f3f4f6" stroke="#6b7280" stroke-width="1.5"/>
+
+  <text x="140" y="124" font-size="13" fill="#1b4f8a" text-anchor="middle">1 解析</text>
+  <text x="140" y="146" font-size="12" fill="#1b4f8a" text-anchor="middle">DNS 查询</text>
+  <text x="300" y="124" font-size="13" fill="#374151" text-anchor="middle">2 建连</text>
+  <text x="300" y="146" font-size="12" fill="#374151" text-anchor="middle">TCP 握手</text>
+  <text x="460" y="124" font-size="13" fill="#9c4221" text-anchor="middle">3 握手</text>
+  <text x="460" y="146" font-size="12" fill="#9c4221" text-anchor="middle">TLS 协商</text>
+  <text x="640" y="124" font-size="13" fill="#1d6b45" text-anchor="middle">4 请求</text>
+  <text x="640" y="146" font-size="12" fill="#1d6b45" text-anchor="middle">首字节</text>
+  <text x="840" y="124" font-size="13" fill="#374151" text-anchor="middle">5 响应</text>
+  <text x="840" y="146" font-size="12" fill="#374151" text-anchor="middle">读正文</text>
+
+  <text x="140" y="184" font-size="11" fill="#6b7280" text-anchor="middle">dns_lookup_time</text>
+  <text x="300" y="184" font-size="11" fill="#6b7280" text-anchor="middle">无独立指标：看 duration</text>
+  <text x="460" y="184" font-size="11" fill="#6b7280" text-anchor="middle">ssl_earliest_cert_expiry</text>
+  <text x="640" y="184" font-size="11" fill="#6b7280" text-anchor="middle">http_status_code</text>
+  <text x="840" y="184" font-size="11" fill="#6b7280" text-anchor="middle">duration_seconds</text>
+
+  <rect x="60" y="216" width="440" height="52" rx="6" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="72" y="238" font-size="13" fill="#374151">停在 1：域名、权威 DNS、GSLB 解析结果</text>
+  <text x="72" y="258" font-size="13" fill="#374151">停在 2：端口、安全组、LB 是否监听</text>
+
+  <rect x="520" y="216" width="420" height="52" rx="6" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="532" y="238" font-size="13" fill="#374151">停在 3：证书过期、链不全、协议或 SNI</text>
+  <text x="532" y="258" font-size="13" fill="#374151">停在 4、5：应用状态码、接入规则、带宽</text>
+
+  <text x="60" y="304" font-size="13" fill="#6b7280">probe_success 只给结论，原因在分项：状态码为 0 说明根本没拿到响应。</text>
+  <text x="60" y="330" font-size="13" fill="#6b7280">状态码 404 说明网络与证书都好着，问题在路由或发布——这两种失败不能一起告警。</text>
+  <text x="60" y="362" font-size="13" fill="#6b7280">实测：同一探针访问正常页 0.1229s 成功，改路径得 404，闭端口得状态码 0。</text>
+</svg>
