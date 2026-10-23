@@ -2,7 +2,7 @@
 
 > 覆盖：域名 → IP 的分布式命名系统 —— 层级结构、递归 / 迭代查询、资源记录、负载均衡与安全（DNSSEC、DoH / DoT / DoQ、负缓存），以及 Go / Java 两版使用示例。
 >
-> 不覆盖：DNS 为什么默认走 UDP、截断后怎么回落见 [UDP与数据报传输.md](../传输层/UDP与数据报传输.md)；劫持 / 污染、HTTPDNS、DoH / DoT / DoQ、DNSSEC 与负缓存的展开见 [DNS安全与加密解析.md](DNS安全与加密解析.md)；解析出来的地址怎么被路由见 [IP与路由基础.md](IP与路由基础.md)；BIND 部署与 zone 文件见 [07-DNS服务器.md](../../linux/鸟哥服务器架设篇/07-DNS服务器.md)。
+> 不覆盖：DNS 为什么默认走 UDP、截断后怎么回落见 [UDP与数据报传输.md](../传输层/udp/UDP与数据报传输.md)；劫持 / 污染、HTTPDNS、DoH / DoT / DoQ、DNSSEC 与负缓存的展开见 [DNS安全与加密解析.md](DNS安全与加密解析.md)；解析出来的地址怎么被路由见 [IP与路由基础.md](IP与路由基础.md)；BIND 部署与 zone 文件见 [07-DNS服务器.md](../../linux/鸟哥服务器架设篇/07-DNS服务器.md)。
 >
 > 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。
 >
@@ -508,7 +508,7 @@ OkHttpClient client = new OkHttpClient.Builder()
 ## 关联
 
 - **上游/总纲**：[网络分层与数据包旅程.md](../网络分层与数据包旅程.md) — DNS 在整条链路里的位置（应用层第一步）
-- **对照/互补**：[UDP与数据报传输.md](../传输层/UDP与数据报传输.md) — DNS 为什么默认走 UDP、截断后如何回落
+- **对照/互补**：[UDP与数据报传输.md](../传输层/udp/UDP与数据报传输.md) — DNS 为什么默认走 UDP、截断后如何回落
 - **对照/互补**：[DHCP.md](DHCP.md) — 同为网络配置类问题的对照（TTL 与缓存）
 - **对照/互补**：[IP与路由基础.md](IP与路由基础.md) — 解析出来的地址如何被路由、双栈与 Happy Eyeballs
 - **下游机制**：[IPv6与双栈.md](IPv6与双栈.md) — AAAA 记录与双栈解析

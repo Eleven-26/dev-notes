@@ -61,7 +61,7 @@
 | **第一次搞懂「HTTP 到底怎么传」** | [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)（一~三节：语义与承载、并发模型、消息定界）→ 回到 [网络分层与数据包旅程.md](../网络分层与数据包旅程.md) 第七节看它在封装里的位置 |
 | **服务端要主动推消息，选哪个** | [通信选型.md](../选型/通信选型.md) 3.1 ②（先做决策）→ [SSE.md](SSE.md)（最便宜的那条）→ [WebSocket.md](WebSocket.md)（需要双向时）→ [HTTP与gRPC.md](HTTP与gRPC.md)（已有 gRPC 栈时用流式） |
 | **HTTP/2 开了怎么还是慢** | [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) 七节（队头阻塞的真实边界）→ 五节（流控）→ 四节（HPACK） |
-| **要上 HTTP/3** | [QUIC与HTTP3.md](QUIC与HTTP3.md)（全篇）→ [HTTPS与TLS.md](HTTPS与TLS.md)（ALPN 与 QUIC 内嵌 TLS 1.3）→ [UDP与数据报传输.md](../传输层/UDP与数据报传输.md)（底下换成了什么） |
+| **要上 HTTP/3** | [QUIC与HTTP3.md](QUIC与HTTP3.md)（全篇）→ [HTTPS与TLS.md](HTTPS与TLS.md)（ALPN 与 QUIC 内嵌 TLS 1.3）→ [UDP与数据报传输.md](../传输层/udp/UDP与数据报传输.md)（底下换成了什么） |
 | **HTTPS 报错 / 证书过期** | [证书与HTTPS排障.md](证书与HTTPS排障.md) 四节（五类握手错误的判据）→ 二节（信任链五步）→ 需要懂原理时再回 [HTTPS与TLS.md](HTTPS与TLS.md) |
 | **想上双向认证（mTLS）** | [HTTPS与TLS.md](HTTPS与TLS.md)（握手现场与证书请求）→ [证书与HTTPS排障.md](证书与HTTPS排障.md) 六节（证书固定的取舍） |
 | **现有协议都不合适，要自己定** | [自定义协议设计.md](自定义协议设计.md)（全篇）→ [消息协议族全景.md](../消息协议/消息协议族全景.md)（先看别人怎么定那四个变量）→ [数据序列化.md](../选型/数据序列化.md)（编码只解决编码） |
@@ -75,7 +75,7 @@
 |---|---|---|
 | [HTTP与gRPC.md](HTTP与gRPC.md) | [HTTPS与TLS.md](HTTPS与TLS.md)、[HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md) | gRPC 跑在 HTTP/2 上，而版本是 ALPN 协商出来的；不先懂 HTTP/2 就看不出 gRPC 的差别在哪 |
 | [证书与HTTPS排障.md](证书与HTTPS排障.md) | [HTTPS与TLS.md](HTTPS与TLS.md) | 先懂握手，再谈证书链与错误码 |
-| [QUIC与HTTP3.md](QUIC与HTTP3.md) | [HTTPS与TLS.md](HTTPS与TLS.md)、[UDP与数据报传输.md](../传输层/UDP与数据报传输.md) | 要懂 1-RTT / 0-RTT 的价值，先知道 TCP + TLS 要几次往返 |
+| [QUIC与HTTP3.md](QUIC与HTTP3.md) | [HTTPS与TLS.md](HTTPS与TLS.md)、[UDP与数据报传输.md](../传输层/udp/UDP与数据报传输.md) | 要懂 1-RTT / 0-RTT 的价值，先知道 TCP + TLS 要几次往返 |
 | [WebSocket.md](WebSocket.md) | [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)、[NAT与连接跟踪.md](../网络层与寻址/NAT与连接跟踪.md) | 升级前的握手是 HTTP，升级后要自己处理长连接的存活 |
 | [SSE.md](SSE.md) | [HTTP1.1与HTTP2的区别.md](HTTP1.1与HTTP2的区别.md)、[WebSocket.md](WebSocket.md) | 六连接上限是 HTTP/1.1 的并发限制带来的；与 WebSocket 对照才看出取舍 |
 | [自定义协议设计.md](自定义协议设计.md) | [TCP协议基础与报文结构.md](../传输层/tcp/TCP协议基础与报文结构.md)、[数据序列化.md](../选型/数据序列化.md) | 定界源于「TCP 是字节流」，序列化只管编码不管边界 |

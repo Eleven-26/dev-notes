@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">版本协商包的 35 个字节：QUIC 里唯一明文可读的一段</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">本机实测（quic-go v0.48.2）：向 QUIC 端口发一个「长首部 + 不认识的版本」的 1200 字节报文，服务端回 35 字节</text>
+
+  <rect x="20" y="74" width="960" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+
+  <text x="72" y="100" text-anchor="middle" font-size="9" fill="#9a3412">首字节</text>
+  <text x="132" y="100" text-anchor="middle" font-size="9" fill="#991b1b">版本 = 0</text>
+  <text x="192" y="100" text-anchor="middle" font-size="8.5" fill="#1e40af">长度</text>
+  <text x="300" y="100" text-anchor="middle" font-size="9" fill="#1e40af">DCID = 客户端的 SCID</text>
+  <text x="408" y="100" text-anchor="middle" font-size="8.5" fill="#5b21b6">长度</text>
+  <text x="516" y="100" text-anchor="middle" font-size="9" fill="#5b21b6">SCID = 客户端的 DCID</text>
+  <text x="660" y="100" text-anchor="middle" font-size="9" fill="#14532d">GREASE 版本</text>
+  <text x="756" y="100" text-anchor="middle" font-size="9" fill="#0c4a6e">QUIC v1</text>
+  <text x="852" y="100" text-anchor="middle" font-size="9" fill="#334155">校验（实现扩展）</text>
+
+  <rect x="60" y="108" width="24" height="42" rx="2" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="72" y="134" text-anchor="middle" font-size="9" fill="#9a3412">C3</text>
+
+  <rect x="84" y="108" width="96" height="42" rx="2" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="132" y="134" text-anchor="middle" font-size="9" fill="#991b1b">00 00 00 00</text>
+
+  <rect x="180" y="108" width="24" height="42" rx="2" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="192" y="134" text-anchor="middle" font-size="9" fill="#1e40af">08</text>
+
+  <rect x="204" y="108" width="192" height="42" rx="2" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="300" y="134" text-anchor="middle" font-size="9" fill="#1e40af">09 0A 0B 0C 0D 0E 0F 10</text>
+
+  <rect x="396" y="108" width="24" height="42" rx="2" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.1"/>
+  <text x="408" y="134" text-anchor="middle" font-size="9" fill="#5b21b6">08</text>
+
+  <rect x="420" y="108" width="192" height="42" rx="2" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.1"/>
+  <text x="516" y="134" text-anchor="middle" font-size="9" fill="#5b21b6">01 02 03 04 05 06 07 08</text>
+
+  <rect x="612" y="108" width="96" height="42" rx="2" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="660" y="134" text-anchor="middle" font-size="9" fill="#14532d">8A 0A 5A 6A</text>
+
+  <rect x="708" y="108" width="96" height="42" rx="2" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.1"/>
+  <text x="756" y="134" text-anchor="middle" font-size="9" fill="#0c4a6e">00 00 00 01</text>
+
+  <rect x="804" y="108" width="96" height="42" rx="2" fill="#f1f5f9" stroke="#64748b" stroke-width="1.1"/>
+  <text x="852" y="134" text-anchor="middle" font-size="9" fill="#334155">6B 33 43 CF</text>
+
+  <text x="60" y="166" font-size="8.5" fill="#64748b">0</text>
+  <text x="84" y="166" font-size="8.5" fill="#64748b">1</text>
+  <text x="180" y="166" font-size="8.5" fill="#64748b">5</text>
+  <text x="204" y="166" font-size="8.5" fill="#64748b">6</text>
+  <text x="396" y="166" font-size="8.5" fill="#64748b">14</text>
+  <text x="420" y="166" font-size="8.5" fill="#64748b">15</text>
+  <text x="612" y="166" font-size="8.5" fill="#64748b">23</text>
+  <text x="708" y="166" font-size="8.5" fill="#64748b">27</text>
+  <text x="804" y="166" font-size="8.5" fill="#64748b">31</text>
+  <text x="900" y="166" font-size="8.5" fill="#64748b">35</text>
+
+  <rect x="34" y="180" width="928" height="44" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="46" y="198" font-size="10" fill="#334155">首字节的高两位是 10（长首部），低六位随机 —— 三次实测分别是 C3 / F8 / DC，说明它不承载语义。</text>
+  <text x="46" y="216" font-size="10" fill="#334155">两个连接 ID 相对我方发出去的那份「互换位置」：服务端把我方的 SCID 当 DCID 回，这是识别"这是回给我的包"的唯一依据。</text>
+
+  <rect x="34" y="232" width="928" height="50" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="46" y="250" font-size="10.5" font-weight="bold" fill="#14532d">三次只有一处变化：GREASE 版本号每次随机</text>
+  <text x="46" y="268" font-size="10" fill="#14532d">8A0A5A6A / 0A1A6AFA / 9ABAFA5A —— 四个字节的低 4 位都是 A，符合 RFC 9287 的 0x?a?a?a?a 形状，用来验证客户端没有硬编码版本列表。</text>
+
+  <rect x="20" y="306" width="470" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="330" font-size="15" font-weight="bold" fill="#0f172a">与 nginx 的 27 字节对照</text>
+  <text x="34" y="350" font-size="10.5" fill="#64748b">同一份报文，另一台启用 HTTP/3 的 nginx 只回 27 字节</text>
+
+  <rect x="34" y="362" width="442" height="26" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="46" y="380" font-size="10" fill="#1e40af">27 = 1 + 4 + 1 + 8 + 1 + 8 + 4：只有一项版本、没有 GREASE</text>
+  <rect x="34" y="394" width="442" height="26" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="46" y="412" font-size="10" fill="#14532d">35 = 27 + 4（GREASE）+ 4（尾部校验）</text>
+  <rect x="34" y="426" width="442" height="48" rx="5" fill="#fff7ed" stroke="#ea580c" stroke-width="1"/>
+  <text x="46" y="444" font-size="10" fill="#9a3412">所以「版本协商包是 27 字节」只对那台服务端成立。</text>
+  <text x="46" y="462" font-size="10" fill="#9a3412">共同部分是：版本=0 标记 + 两个互换的连接 ID + 支持版本列表。</text>
+
+  <rect x="510" y="306" width="470" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="524" y="330" font-size="15" font-weight="bold" fill="#0f172a">为什么这一段必须明文</text>
+  <text x="524" y="350" font-size="10.5" fill="#64748b">中间设备要读连接 ID 做路由，所以它不能加密</text>
+
+  <rect x="524" y="362" width="442" height="50" rx="5" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+  <text x="536" y="380" font-size="10" fill="#0c4a6e">不变首部：首字节 + 版本 + DCID 长度 + DCID + SCID 长度 + SCID</text>
+  <text x="536" y="398" font-size="10" fill="#0c4a6e">这段结构在长首部与短首部里都一样，所以叫"不变"。</text>
+
+  <rect x="524" y="422" width="442" height="52" rx="5" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <text x="536" y="440" font-size="10" fill="#991b1b">包号在短首部里存在，但被头部保护掩码；载荷全部加密。</text>
+  <text x="536" y="458" font-size="10" fill="#991b1b">所以抓包只能看到"谁在跟哪个连接 ID 说话"，看不到内容。</text>
+
+  <rect x="20" y="496" width="960" height="34" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="500" y="518" text-anchor="middle" font-size="10" fill="#334155">判据：发 1200 字节未知版本报文，有回包说明 UDP 端口上真有 QUIC 服务；回 27 还是 35 字节取决于实现。</text>
+</svg>

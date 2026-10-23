@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">KCP 的 24 字节首部与四个命令</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">固定 24 字节，没有选项字段；比 TCP 的 20 字节多出来的 4 字节是 conv（会话号），因为 KCP 没有握手</text>
+
+  <rect x="20" y="74" width="960" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="98" font-size="15" font-weight="bold" fill="#0f172a">字节布局：一个字节 40px，整条首部正好 24 字节</text>
+
+  <rect x="30" y="112" width="160" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="110" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">conv</text>
+  <text x="110" y="146" text-anchor="middle" font-size="9" fill="#1e40af">4 字节：会话号</text>
+
+  <rect x="190" y="112" width="40" height="42" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="210" y="131" text-anchor="middle" font-size="10" font-weight="bold" fill="#9a3412">cmd</text>
+  <text x="210" y="146" text-anchor="middle" font-size="9" fill="#9a3412">1</text>
+
+  <rect x="230" y="112" width="40" height="42" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="250" y="131" text-anchor="middle" font-size="10" font-weight="bold" fill="#9a3412">frg</text>
+  <text x="250" y="146" text-anchor="middle" font-size="9" fill="#9a3412">1</text>
+
+  <rect x="270" y="112" width="80" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="310" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">wnd</text>
+  <text x="310" y="146" text-anchor="middle" font-size="9" fill="#1e40af">2 字节：接收窗口</text>
+
+  <rect x="350" y="112" width="160" height="42" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="430" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">ts</text>
+  <text x="430" y="146" text-anchor="middle" font-size="9" fill="#14532d">4 字节：发送时间戳，ACK 原样带回</text>
+
+  <rect x="510" y="112" width="160" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="590" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">sn</text>
+  <text x="590" y="146" text-anchor="middle" font-size="9" fill="#1e40af">4 字节：包序号，每包 +1</text>
+
+  <rect x="670" y="112" width="160" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="750" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">una</text>
+  <text x="750" y="146" text-anchor="middle" font-size="9" fill="#1e40af">4 字节：对端最小未确认号</text>
+
+  <rect x="830" y="112" width="160" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="910" y="131" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e40af">len</text>
+  <text x="910" y="146" text-anchor="middle" font-size="9" fill="#1e40af">4 字节：载荷长度</text>
+
+  <text x="30" y="172" font-size="10" fill="#64748b">偏移 0</text>
+  <text x="462" y="172" text-anchor="middle" font-size="10" fill="#64748b">↑ 偏移 12 是 sn，偏移 8 是 ts</text>
+  <text x="972" y="172" text-anchor="end" font-size="10" fill="#64748b">偏移 23</text>
+
+  <rect x="30" y="184" width="480" height="30" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="44" y="204" font-size="10" fill="#14532d">要点：ACK 段自带 ts 与 sn，所以 RTT 可以逐包采样，被跳过几次也算得出来</text>
+
+  <rect x="530" y="184" width="450" height="30" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="544" y="204" font-size="10" fill="#991b1b">注意：没有版本号、没有校验和、没有选项，字段少到没有余量</text>
+
+  <rect x="20" y="240" width="470" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="264" font-size="15" font-weight="bold" fill="#0f172a">cmd 只有四个取值</text>
+  <text x="34" y="284" font-size="10.5" fill="#64748b">WASK 与 WINS 是一对：一方探测窗口、一方通告窗口</text>
+
+  <rect x="34" y="298" width="120" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="94" y="316" text-anchor="middle" font-size="10" fill="#1e40af">81 = PUSH</text>
+  <rect x="164" y="298" width="310" height="26" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="178" y="316" font-size="10" fill="#1e40af">带数据的包（此时 len 字段才有意义）</text>
+
+  <rect x="34" y="332" width="120" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="94" y="350" text-anchor="middle" font-size="10" fill="#14532d">82 = ACK</text>
+  <rect x="164" y="332" width="310" height="26" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="178" y="350" font-size="10" fill="#14532d">确认包，一包可装多条 24 字节的 ACK 段</text>
+
+  <rect x="34" y="366" width="120" height="26" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="94" y="384" text-anchor="middle" font-size="10" fill="#9a3412">83 = WASK</text>
+  <rect x="164" y="366" width="310" height="26" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="178" y="384" font-size="10" fill="#9a3412">窗口探测：对端通告窗口为 0 时主动去问</text>
+
+  <rect x="34" y="400" width="120" height="26" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="94" y="418" text-anchor="middle" font-size="10" fill="#9a3412">84 = WINS</text>
+  <rect x="164" y="400" width="310" height="26" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="178" y="418" font-size="10" fill="#9a3412">窗口通告：告诉对端我这边还剩多少</text>
+
+  <rect x="510" y="240" width="470" height="200" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="524" y="264" font-size="15" font-weight="bold" fill="#0f172a">与 TCP 首部的差别不在长度</text>
+  <text x="524" y="284" font-size="10.5" fill="#64748b">24 对 20 字节，差 4 字节；真正的差别在语义</text>
+
+  <rect x="524" y="298" width="220" height="120" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="536" y="318" font-size="11" font-weight="bold" fill="#1e40af">KCP 的确认</text>
+  <text x="536" y="338" font-size="10" fill="#1e40af">逐个包确认：ACK 里带</text>
+  <text x="536" y="354" font-size="10" fill="#1e40af">这一包的 sn 与 ts</text>
+  <text x="536" y="374" font-size="10" fill="#1e40af">丢了几个补几个，</text>
+  <text x="536" y="390" font-size="10" fill="#1e40af">不像累计 ACK 那样连坐</text>
+
+  <rect x="754" y="298" width="212" height="120" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.1"/>
+  <text x="766" y="318" font-size="11" font-weight="bold" fill="#991b1b">TCP 的确认</text>
+  <text x="766" y="338" font-size="10" fill="#991b1b">累计确认：ack 号之前</text>
+  <text x="766" y="354" font-size="10" fill="#991b1b">全部算收到</text>
+  <text x="766" y="374" font-size="10" fill="#991b1b">中间缺一个就停在那里，</text>
+  <text x="766" y="390" font-size="10" fill="#991b1b">靠 SACK 选项补救</text>
+
+  <rect x="20" y="456" width="960" height="82" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="480" font-size="13" font-weight="bold" fill="#0f172a">小结：字段少不是优点也不是缺点，是取舍</text>
+  <text x="34" y="502" font-size="10.5" fill="#334155">没有版本号与选项，换来的是"每个字节都参与可靠传输，解析没有分支"；</text>
+  <text x="34" y="522" font-size="10.5" fill="#334155">代价是扩展只能改 conv 之后的约定，任何字段的语义变化都要两侧同时升级。</text>
+</svg>

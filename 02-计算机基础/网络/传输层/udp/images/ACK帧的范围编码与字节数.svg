@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">ACK 帧怎么用 5 个字节确认 34 个包号</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">QUIC 的 ACK 报的是「包号区间」而不是「字节区间」；一段连续包号只占 5 字节，TCP 的 SACK 每块固定 8 字节</text>
+
+  <rect x="20" y="74" width="960" height="132" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="96" font-size="15" font-weight="bold" fill="#0f172a">字段顺序：类型固定 1 字节，其余全部是 varint 可变长度</text>
+
+  <rect x="34" y="108" width="90" height="42" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="79" y="126" text-anchor="middle" font-size="10" font-weight="bold" fill="#9a3412">Type</text>
+  <text x="79" y="142" text-anchor="middle" font-size="9" fill="#9a3412">固定 1 字节</text>
+
+  <rect x="130" y="108" width="150" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="205" y="126" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">最大已确认包号</text>
+  <text x="205" y="142" text-anchor="middle" font-size="9" fill="#1e40af">从大到小报</text>
+
+  <rect x="286" y="108" width="140" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="356" y="126" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">ACK 延迟</text>
+  <text x="356" y="142" text-anchor="middle" font-size="9" fill="#1e40af">扣掉延迟确认</text>
+
+  <rect x="432" y="108" width="130" height="42" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="497" y="126" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">区间数</text>
+  <text x="497" y="142" text-anchor="middle" font-size="9" fill="#1e40af">还有几段</text>
+
+  <rect x="568" y="108" width="150" height="42" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="643" y="126" text-anchor="middle" font-size="10" font-weight="bold" fill="#14532d">第一段长度</text>
+  <text x="643" y="142" text-anchor="middle" font-size="9" fill="#14532d">从最大值往下数</text>
+
+  <rect x="724" y="108" width="242" height="42" rx="4" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="845" y="126" text-anchor="middle" font-size="10" font-weight="bold" fill="#5b21b6">[ 间隔 , 区间长度 ] × 区间数</text>
+  <text x="845" y="142" text-anchor="middle" font-size="9" fill="#5b21b6">间隔 = 上一段最小号 − 本段最大号 − 2</text>
+
+  <text x="34" y="170" font-size="10" fill="#64748b">为什么"从大到小报"：varint 的编码长度随数值增长，报最大值最省 —— 小数值 1 字节，大数值要 2 或 4 字节</text>
+  <text x="34" y="190" font-size="10" fill="#991b1b">那个 −2 最容易记错：两个端点本身已经算在相邻两段里，间隔数的是"中间空过去几个号"</text>
+
+  <rect x="20" y="216" width="470" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="34" y="240" font-size="15" font-weight="bold" fill="#0f172a">实测一：一段连续包号（5 字节）</text>
+  <text x="34" y="260" font-size="10.5" fill="#64748b">确认 0~33 共 34 个包号</text>
+
+  <rect x="34" y="274" width="34" height="22" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="51" y="290" text-anchor="middle" font-size="10" fill="#9a3412">02</text>
+  <text x="78" y="290" font-size="10" fill="#334155">Type = ACK 帧</text>
+
+  <rect x="34" y="302" width="34" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="51" y="318" text-anchor="middle" font-size="10" fill="#1e40af">21</text>
+  <text x="78" y="318" font-size="10" fill="#334155">Largest = 33，最大包号</text>
+
+  <rect x="34" y="330" width="34" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="51" y="346" text-anchor="middle" font-size="10" fill="#1e40af">00</text>
+  <text x="78" y="346" font-size="10" fill="#334155">Delay = 0，没有延迟确认</text>
+
+  <rect x="34" y="358" width="34" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="51" y="374" text-anchor="middle" font-size="10" fill="#1e40af">00</text>
+  <text x="78" y="374" font-size="10" fill="#334155">Range Count = 0，只有一段</text>
+
+  <rect x="34" y="386" width="34" height="22" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="51" y="402" text-anchor="middle" font-size="10" fill="#14532d">21</text>
+  <text x="78" y="402" font-size="10" fill="#334155">First Range = 33 → 覆盖 0~33</text>
+
+  <rect x="34" y="420" width="442" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="46" y="438" font-size="11" font-weight="bold" fill="#14532d">34 个包号 → 5 个字节</text>
+  <text x="46" y="455" font-size="9.5" fill="#14532d">顺序到达时几乎不花确认带宽，这是最划算的一档</text>
+
+  <rect x="34" y="472" width="442" height="62" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="46" y="490" font-size="11" font-weight="bold" fill="#991b1b">对照 TCP 的 SACK：每块固定 8 字节</text>
+  <text x="46" y="508" font-size="9.5" fill="#991b1b">一个 TCP 首部只放得下一个 SACK 选项、最多 4 块，</text>
+  <text x="46" y="524" font-size="9.5" fill="#991b1b">表达 34 段不连续确认要拆到多个包里分摊。</text>
+
+  <rect x="510" y="216" width="470" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="524" y="240" font-size="15" font-weight="bold" fill="#0f172a">实测二：中间缺一段（7 字节）</text>
+  <text x="524" y="260" font-size="10.5" fill="#64748b">确认 40~50 与 0~33，中间 34~39 缺失</text>
+
+  <rect x="524" y="274" width="34" height="22" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="541" y="290" text-anchor="middle" font-size="10" fill="#9a3412">02</text>
+  <text x="568" y="290" font-size="10" fill="#334155">Type = ACK 帧</text>
+
+  <rect x="524" y="302" width="34" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="541" y="318" text-anchor="middle" font-size="10" fill="#1e40af">32</text>
+  <text x="568" y="318" font-size="10" fill="#334155">Largest = 50</text>
+
+  <rect x="524" y="330" width="34" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="541" y="346" text-anchor="middle" font-size="10" fill="#1e40af">00</text>
+  <text x="568" y="346" font-size="10" fill="#334155">Delay = 0</text>
+
+  <rect x="524" y="358" width="34" height="22" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="541" y="374" text-anchor="middle" font-size="10" fill="#1e40af">01</text>
+  <text x="568" y="374" font-size="10" fill="#334155">Range Count = 1，还有一段</text>
+
+  <rect x="524" y="386" width="34" height="22" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="541" y="402" text-anchor="middle" font-size="10" fill="#14532d">0A</text>
+  <text x="568" y="402" font-size="10" fill="#334155">First Range = 10 → 覆盖 40~50</text>
+
+  <rect x="524" y="414" width="34" height="22" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.1"/>
+  <text x="541" y="430" text-anchor="middle" font-size="10" fill="#5b21b6">05</text>
+  <text x="568" y="430" font-size="10" fill="#334155">Gap = 5（40 − 33 − 2）</text>
+
+  <rect x="524" y="442" width="34" height="22" rx="3" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.1"/>
+  <text x="541" y="458" text-anchor="middle" font-size="10" fill="#5b21b6">21</text>
+  <text x="568" y="458" font-size="10" fill="#334155">Range = 33 → 覆盖 0~33</text>
+
+  <rect x="524" y="474" width="442" height="60" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="536" y="492" font-size="11" font-weight="bold" fill="#9a3412">缺了 6 个号，字段里写的是 5</text>
+  <text x="536" y="510" font-size="9.5" fill="#9a3412">这就是"减 2"：40 与 33 两个端点本身已在两段里。</text>
+  <text x="536" y="526" font-size="9.5" fill="#9a3412">最坏情况是"每段只剩 1 个包号"：34 段要 72 字节，平均 2.12 字节/包号。</text>
+</svg>

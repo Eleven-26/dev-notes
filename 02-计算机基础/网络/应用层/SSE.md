@@ -201,4 +201,4 @@ data: first
 - **下游机制**：[NAT与连接跟踪.md](../网络层与寻址/NAT与连接跟踪.md) — 长连接的空闲超时与心跳依据
 - **运维/配置**：[08-WWW服务器.md](../../linux/鸟哥服务器架设篇/08-WWW服务器.md) — Nginx 的 `proxy_buffering` 与 upgrade 配置
 
-> 反向引用（本篇被下列文档引到）：[TCP保活与连接存活.md](../传输层/TCP保活与连接存活.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[通信选型.md](../选型/通信选型.md)
+> 反向引用（本篇被下列文档引到）：[TCP保活与连接存活.md](../传输层/tcp/TCP保活与连接存活.md)、[HTTP与gRPC.md](HTTP与gRPC.md)、[通信选型.md](../选型/通信选型.md)
