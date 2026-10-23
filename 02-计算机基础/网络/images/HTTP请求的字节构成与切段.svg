@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="540" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条 3 KB 请求的字节账：2 KB Cookie 把它从 3 段推到 4 段</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12" fill="#64748b">HTTP 只产出字节流；切成几段由 MSS 决定，Cookie 改变的是总字节数，不是「头部的段数」</text>
+
+  <text x="60" y="78" font-size="13" font-weight="bold" fill="#0f172a">带 2 KB Cookie：共 5286 B（首部占 41.9%）</text>
+
+  <rect x="60" y="88" width="26" height="54" fill="#e0f2fe" stroke="#0284c7"/>
+  <rect x="86" y="88" width="343" height="54" fill="#fef3c7" stroke="#d97706"/>
+  <rect x="429" y="88" width="511" height="54" fill="#dcfce7" stroke="#15803d"/>
+  <text x="257.5" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Cookie 2058 B</text>
+  <text x="684.5" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">消息体 3072 B</text>
+
+  <line x1="73" y1="142" x2="73" y2="152" stroke="#0284c7" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="60" y="166" font-size="11" fill="#075985">最左边 26 px = 请求行 27 B + 其他首部 129 B = 156 B</text>
+
+  <text x="60" y="186" font-size="12" font-weight="bold" fill="#334155">TCP 按 MSS = 1460 B 切段：边界与 HTTP 的头部 / 消息体边界无关</text>
+
+  <rect x="60" y="196" width="243" height="44" fill="#f8fafc" stroke="#475569"/>
+  <rect x="303" y="196" width="243" height="44" fill="#f8fafc" stroke="#475569"/>
+  <rect x="546" y="196" width="243" height="44" fill="#f8fafc" stroke="#475569"/>
+  <rect x="789" y="196" width="151" height="44" fill="#f8fafc" stroke="#475569"/>
+  <text x="181.5" y="223" text-anchor="middle" font-size="12" fill="#334155">段 1 · 1460 B</text>
+  <text x="424.5" y="223" text-anchor="middle" font-size="12" fill="#334155">段 2 · 1460 B</text>
+  <text x="667.5" y="223" text-anchor="middle" font-size="12" fill="#334155">段 3 · 1460 B</text>
+  <text x="864.5" y="223" text-anchor="middle" font-size="12" fill="#334155">段 4 · 906 B</text>
+
+  <line x1="303" y1="180" x2="303" y2="196" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="546" y1="180" x2="546" y2="196" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="789" y1="180" x2="789" y2="196" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <text x="60" y="262" font-size="11" fill="#b91c1c">段 1 = 首部 156 B + Cookie 前 1304 B；段 2 = Cookie 后 754 B + 消息体前 706 B</text>
+  <text x="60" y="280" font-size="11" fill="#b91c1c">段 3 = 消息体 1460 B；段 4 = 消息体 906 B —— 头部与消息体被切在同一段里是常态</text>
+
+  <text x="60" y="316" font-size="13" font-weight="bold" fill="#0f172a">不带 Cookie：共 3228 B（首部占 4.8%）→ 3 段</text>
+  <rect x="60" y="326" width="26" height="40" fill="#e0f2fe" stroke="#0284c7"/>
+  <rect x="86" y="326" width="511" height="40" fill="#dcfce7" stroke="#15803d"/>
+  <text x="341.5" y="352" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">消息体 3072 B</text>
+
+  <rect x="60" y="378" width="243" height="40" fill="#f8fafc" stroke="#475569"/>
+  <rect x="303" y="378" width="243" height="40" fill="#f8fafc" stroke="#475569"/>
+  <rect x="546" y="378" width="51" height="40" fill="#f8fafc" stroke="#475569"/>
+  <text x="181.5" y="403" text-anchor="middle" font-size="12" fill="#334155">段 1 · 1460 B</text>
+  <text x="424.5" y="403" text-anchor="middle" font-size="12" fill="#334155">段 2 · 1460 B</text>
+  <text x="571.5" y="403" text-anchor="middle" font-size="11" fill="#334155">308 B</text>
+
+  <text x="60" y="440" font-size="11" fill="#334155">少掉 2058 B 之后，消息体尾部正好落在第 3 段；同一份 3 KB 业务数据，线上少发了一段</text>
+
+  <rect x="40" y="460" width="920" height="60" rx="10" fill="#f0fdfa" stroke="#0f766e"/>
+  <text x="56" y="482" font-size="12" font-weight="bold" fill="#115e59">结论：首部不是「附带的几十字节」</text>
+  <text x="56" y="502" font-size="12" fill="#134e4a">2 KB Cookie 让首部占到 41.9%，总字节数从 3228 涨到 5286，段数从 3 变 4；每多一段，跨城链路上就多一次被丢包或乱序命中的机会。</text>
+</svg>
