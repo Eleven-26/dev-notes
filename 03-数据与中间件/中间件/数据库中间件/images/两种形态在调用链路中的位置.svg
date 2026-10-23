@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 380" width="1000" height="380" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwY" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="380" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">规则被放在哪个进程里，决定了接入方式与运维成本</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">ShardingSphere-JDBC 5.5.2 与本机两库四表实验拓扑一致；Proxy 形态本篇未实测</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="460" height="286" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. JDBC：规则在应用进程内</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">换掉 DataSource，应用仍直连 MySQL</text>
+
+    <rect x="14" y="58" width="432" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">应用进程</text>
+    <text x="28" y="99" font-size="10" fill="#1e40af">业务代码 + ShardingSphereDataSource</text>
+
+    <line x1="230" y1="114" x2="230" y2="132" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwY)"/>
+    <text x="240" y="128" font-size="9.5" fill="#b45309">进程内改写</text>
+
+    <rect x="14" y="136" width="432" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="157" font-size="11.5" font-weight="bold" fill="#92400e">分片规则（由 YAML 加载）</text>
+    <text x="28" y="175" font-size="10" fill="#92400e">路由、改写、结果归并都在这一层完成</text>
+
+    <line x1="230" y1="188" x2="230" y2="206" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="240" y="202" font-size="9.5" fill="#2563eb">只发出改写后的 SQL</text>
+
+    <rect x="14" y="210" width="432" height="58" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="232" font-size="11.5" font-weight="bold" fill="#334155">MySQL 真实库</text>
+    <text x="28" y="251" font-size="10" fill="#334155">ds_0 与 ds_1，各自持有 t_order_0 / t_order_1</text>
+  </g>
+
+  <g transform="translate(520,74)">
+    <rect x="0" y="0" width="460" height="286" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. Proxy：规则在独立进程里</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">换掉 host:port，应用以为自己连着 MySQL</text>
+
+    <rect x="14" y="58" width="432" height="56" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">应用进程（不限语言）</text>
+    <text x="28" y="99" font-size="10" fill="#1e40af">只说 MySQL 协议，不知道分片存在</text>
+
+    <line x1="230" y1="114" x2="230" y2="132" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="240" y="128" font-size="9.5" fill="#2563eb">多一跳网络</text>
+
+    <rect x="14" y="136" width="432" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="157" font-size="11.5" font-weight="bold" fill="#92400e">Proxy 进程（独立部署）</text>
+    <text x="28" y="175" font-size="10" fill="#92400e">同一套 YAML 规则，改写发生在这里</text>
+
+    <line x1="230" y1="188" x2="230" y2="206" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="240" y="202" font-size="9.5" fill="#2563eb">连接池在这一侧</text>
+
+    <rect x="14" y="210" width="432" height="58" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="232" font-size="11.5" font-weight="bold" fill="#334155">MySQL 真实库</text>
+    <text x="28" y="251" font-size="10" fill="#334155">与 A 完全相同，规则一致、位置不同</text>
+  </g>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwY2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#b45309"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">库按 user_id 选、表按 order_id 选，两级各管一件事</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">两库四表实测：10 条订单按 user_id 落库、按 order_id 落表，两条策略互不相干</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="600" height="336" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 一条查询被两级下推</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">逻辑表名对外，真实节点对内</text>
+
+    <rect x="14" y="58" width="572" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">逻辑 SQL：SELECT 星号 FROM t_order</text>
+    <text x="28" y="99" font-size="10" fill="#1e40af">应用只认识 t_order，不知道它被拆成四张表</text>
+
+    <line x1="300" y1="116" x2="300" y2="136" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwY2)"/>
+    <text x="310" y="131" font-size="9.5" fill="#b45309">第一级：user_id % 2 决定去哪个库</text>
+
+    <rect x="14" y="140" width="572" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="161" font-size="11.5" font-weight="bold" fill="#92400e">库路由：ds_${user_id % 2} 得到 ds_0</text>
+    <text x="28" y="179" font-size="10" fill="#92400e">user_id 为偶数的订单全部在 ds_0</text>
+
+    <line x1="300" y1="192" x2="300" y2="212" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwY2)"/>
+    <text x="310" y="207" font-size="9.5" fill="#b45309">第二级：order_id % 2 决定去哪个表</text>
+
+    <rect x="14" y="216" width="572" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="237" font-size="11.5" font-weight="bold" fill="#92400e">表路由：t_order_${order_id % 2} 得到 t_order_1</text>
+    <text x="28" y="255" font-size="10" fill="#92400e">两个策略用两个不同的列，任缺一个就退化</text>
+
+    <line x1="300" y1="268" x2="300" y2="288" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwB2)"/>
+    <text x="310" y="283" font-size="9.5" fill="#16a34a">最终只落到一个节点</text>
+
+    <rect x="14" y="292" width="572" height="34" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="314" font-size="11.5" font-weight="bold" fill="#14532d">真实节点：ds_0.t_order_1</text>
+  </g>
+
+  <g transform="translate(640,74)">
+    <rect x="0" y="0" width="340" height="336" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 四个节点只命中一个</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">actualDataNodes 展开的结果</text>
+
+    <rect x="14" y="58" width="150" height="56" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="82" font-size="11" fill="#64748b">ds_0.t_order_0</text>
+    <text x="28" y="100" font-size="9.5" fill="#64748b">空表，实测 0 行</text>
+
+    <rect x="176" y="58" width="150" height="56" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="190" y="82" font-size="11" font-weight="bold" fill="#14532d">ds_0.t_order_1</text>
+    <text x="190" y="100" font-size="9.5" fill="#14532d">命中，5 行</text>
+
+    <rect x="14" y="128" width="150" height="56" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="152" font-size="11" fill="#64748b">ds_1.t_order_0</text>
+    <text x="28" y="170" font-size="9.5" fill="#64748b">5 行，另一种奇数</text>
+
+    <rect x="176" y="128" width="150" height="56" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="190" y="152" font-size="11" fill="#64748b">ds_1.t_order_1</text>
+    <text x="190" y="170" font-size="9.5" fill="#64748b">空表，实测 0 行</text>
+
+    <rect x="14" y="200" width="312" height="122" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="222" font-size="11.5" font-weight="bold" fill="#92400e">两个 0 行不是巧合</text>
+    <text x="28" y="242" font-size="10" fill="#92400e">四张表里两张全空，说明分布</text>
+    <text x="28" y="260" font-size="10" fill="#92400e">由插入时序决定，不是散列</text>
+    <text x="28" y="280" font-size="10" fill="#92400e">详见本篇第四节分表键讨论</text>
+  </g>
+</svg>

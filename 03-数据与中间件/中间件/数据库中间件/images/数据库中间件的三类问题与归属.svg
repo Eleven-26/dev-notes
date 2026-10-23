@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 392" width="1000" height="392" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB7" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="392" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数据库中间件只解决三类问题，本目录只覆盖第一类</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">判据：先看瓶颈在「放不下」「读不动」还是「连不上」，再决定加不加这一层</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="300" height="180" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">① 放不下</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">单表数据量增长到索引失效</text>
+
+    <rect x="14" y="58" width="272" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#14532d">分库分表</text>
+    <text x="28" y="98" font-size="10" fill="#14532d">本目录已覆盖：ShardingSphere</text>
+
+    <text x="14" y="134" font-size="10" fill="#334155">路由算法本身在 MySQL 分表篇</text>
+    <text x="14" y="152" font-size="10" fill="#334155">这里只讲产品规则怎么落</text>
+    <text x="14" y="170" font-size="10" fill="#64748b">实测：JDBC 5.5.2 两库四表</text>
+  </g>
+
+  <g transform="translate(350,74)">
+    <rect x="0" y="0" width="300" height="180" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">② 读不动</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">读请求压满主库，写入其实不多</text>
+
+    <rect x="14" y="58" width="272" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#92400e">读写分离</text>
+    <text x="28" y="98" font-size="10" fill="#92400e">主答案不在本目录</text>
+
+    <text x="14" y="134" font-size="10" fill="#334155">复制机制与延迟见 MySQL 复制篇</text>
+    <text x="14" y="152" font-size="10" fill="#334155">中间件只负责把读路由到从库</text>
+    <text x="14" y="170" font-size="10" fill="#64748b">本目录暂无专篇</text>
+  </g>
+
+  <g transform="translate(680,74)">
+    <rect x="0" y="0" width="300" height="180" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">③ 连不上</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">应用实例多，连接数把数据库顶满</text>
+
+    <rect x="14" y="58" width="272" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#334155">连接池代理</text>
+    <text x="28" y="98" font-size="10" fill="#334155">ProxySQL 一类，本目录暂无专篇</text>
+
+    <text x="14" y="134" font-size="10" fill="#334155">应用侧连接池参数见参数调优篇</text>
+    <text x="14" y="152" font-size="10" fill="#334155">代理层解决的是总量而不是单池</text>
+    <text x="14" y="170" font-size="10" fill="#64748b">缺口，待补</text>
+  </g>
+
+  <g transform="translate(20,274)">
+    <rect x="0" y="0" width="960" height="98" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="10"/>
+    <text x="14" y="26" font-size="14" font-weight="bold" fill="#0f172a">三类的共同前提：先确认瓶颈真的在数据库这一层</text>
+    <text x="14" y="50" font-size="11" fill="#92400e">慢查询先做索引与 SQL 优化，读不动先加缓存，连接多先查连接池配置——这些都做完仍不够，再考虑加中间件。</text>
+    <text x="14" y="74" font-size="11" fill="#92400e">加一层的代价是：多一个组件要运维、多一跳延迟、多一类「结果不对但不报错」的故障（见 ShardingSphere 篇 5.3）。</text>
+  </g>
+</svg>
