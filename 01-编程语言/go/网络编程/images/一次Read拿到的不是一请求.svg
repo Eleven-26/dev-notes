@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 528" width="1000" height="528" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="528" fill="#ffffff" rx="0"/>
+  <rect x="0" y="0" width="1000" height="78" fill="#ffffff" rx="0"/>
+  <text x="500" y="34" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">一次 Read 拿到的不是「一个请求」</text>
+  <text x="500" y="60" font-size="12" fill="#64748b" text-anchor="middle">同一条协议、同一个客户端，TCP 交付的边界可以和报文边界完全对不上 —— 实测三次 Read 分别读到 83 / 108 / 20 字节</text>
+  <rect x="24" y="92" width="300" height="276" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="44" y="120" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">① 1 次 Read = 1 个请求</text>
+  <text x="44" y="142" font-size="11" fill="#64748b" text-anchor="start">curl 发 GET /hello，共 83 字节</text>
+  <rect x="44" y="158" width="260" height="58" fill="#ffffff" rx="6" stroke="#93c5fd" stroke-width="1"/>
+  <text x="54" y="180" font-size="11" fill="#1e40af" text-anchor="start" font-weight="bold">请求行</text>
+  <text x="54" y="200" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">GET /hello HTTP/1.1 + CRLF</text>
+  <text x="240" y="200" font-size="10" fill="#1e40af" text-anchor="end" font-weight="bold">21 B</text>
+  <rect x="44" y="224" width="260" height="58" fill="#ffffff" rx="6" stroke="#93c5fd" stroke-width="1"/>
+  <text x="54" y="246" font-size="11" fill="#1e40af" text-anchor="start" font-weight="bold">首部 3 行</text>
+  <text x="54" y="266" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">Host / User-Agent / Accept</text>
+  <text x="240" y="266" font-size="10" fill="#1e40af" text-anchor="end" font-weight="bold">60 B</text>
+  <rect x="44" y="290" width="260" height="46" fill="#ffffff" rx="6" stroke="#93c5fd" stroke-width="1"/>
+  <text x="54" y="312" font-size="11" fill="#1e40af" text-anchor="start" font-weight="bold">空行（首部结束）</text>
+  <text x="54" y="328" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">CRLF</text>
+  <text x="240" y="328" font-size="10" fill="#1e40af" text-anchor="end" font-weight="bold">2 B</text>
+  <text x="44" y="350" font-size="11" fill="#b45309" text-anchor="start">最理想的情况，也最容易被当成普遍规律</text>
+  <rect x="350" y="92" width="300" height="276" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="370" y="120" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">② 1 次 Read = 3 个请求</text>
+  <text x="370" y="142" font-size="11" fill="#64748b" text-anchor="start">pipelining，共 108 字节 = 36 × 3</text>
+  <rect x="370" y="156" width="260" height="56" fill="#ffffff" rx="6" stroke="#93c5fd" stroke-width="1"/>
+  <text x="380" y="176" font-size="11" fill="#1e40af" text-anchor="start" font-weight="bold">请求 1</text>
+  <text x="380" y="196" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">GET /hello + Host + 空行</text>
+  <text x="566" y="196" font-size="10" fill="#1e40af" text-anchor="end" font-weight="bold">36 B</text>
+  <rect x="370" y="218" width="260" height="56" fill="#ffffff" rx="6" stroke="#93c5fd" stroke-width="1"/>
+  <text x="380" y="238" font-size="11" fill="#1e40af" text-anchor="start" font-weight="bold">请求 2</text>
+  <text x="380" y="258" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">GET /hello + Host + 空行</text>
+  <text x="566" y="258" font-size="10" fill="#1e40af" text-anchor="end" font-weight="bold">36 B</text>
+  <rect x="370" y="280" width="260" height="56" fill="#ffffff" rx="6" stroke="#93c5fd" stroke-width="1"/>
+  <text x="380" y="300" font-size="11" fill="#1e40af" text-anchor="start" font-weight="bold">请求 3</text>
+  <text x="380" y="320" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">GET /hello + Host + 空行</text>
+  <text x="566" y="320" font-size="10" fill="#1e40af" text-anchor="end" font-weight="bold">36 B</text>
+  <text x="370" y="356" font-size="11" fill="#b45309" text-anchor="start">客户端连写三个，内核一次就全交付了</text>
+  <rect x="676" y="92" width="300" height="276" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="696" y="120" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">③ 1 次 Read = 半个请求</text>
+  <text x="696" y="142" font-size="11" fill="#64748b" text-anchor="start">同一个请求分两次 Write，间隔 200ms</text>
+  <rect x="696" y="158" width="260" height="58" fill="#ffffff" rx="6" stroke="#fca5a5" stroke-width="1"/>
+  <text x="706" y="180" font-size="11" fill="#b91c1c" text-anchor="start" font-weight="bold">第一段：20 字节</text>
+  <text x="706" y="200" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">GET /hello HTTP/1.1\r</text>
+  <text x="946" y="200" font-size="10" fill="#b91c1c" text-anchor="end" font-weight="bold">20 B</text>
+  <rect x="696" y="224" width="260" height="58" fill="#ffffff" rx="6" stroke="#86efac" stroke-width="1"/>
+  <text x="706" y="246" font-size="11" fill="#15803d" text-anchor="start" font-weight="bold">第二段：16 字节</text>
+  <text x="706" y="266" font-size="10" fill="#334155" text-anchor="start" font-family="Consolas, 'Courier New', monospace">Host: probe\r\n\r\n</text>
+  <text x="946" y="266" font-size="10" fill="#15803d" text-anchor="end" font-weight="bold">16 B</text>
+  <text x="696" y="306" font-size="11" fill="#b45309" text-anchor="start">连请求行都没收全，</text>
+  <text x="696" y="324" font-size="11" fill="#b45309" text-anchor="start">而且断在 CRLF 中间</text>
+  <text x="696" y="350" font-size="11" fill="#b45309" text-anchor="start" font-weight="bold">TCP 是字节流，没有消息边界</text>
+  <rect x="24" y="388" width="952" height="118" fill="#eff6ff" rx="8" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="408" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">所以解析器的输入单位是「字节」，不是「请求」</text>
+  <text x="44" y="434" font-size="12" fill="#334155" text-anchor="start">报文边界只能自己找：首部结束看空行（CRLF CRLF），请求体结束看 Content-Length 或 chunked 的末块。</text>
+  <text x="44" y="458" font-size="12" fill="#334155" text-anchor="start">这就是为什么每个连接都要一个 bufio.Reader —— 它替你在流上维护「读到哪里了」，而不是让你反复单次 Read。</text>
+  <text x="44" y="482" font-size="12" fill="#b91c1c" text-anchor="start">反过来：任何「一次 Read 就是一个请求」的写法，在 pipelining 和半包面前都会错位。</text>
+</svg>

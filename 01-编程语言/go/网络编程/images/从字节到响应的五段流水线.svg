@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 716" width="1000" height="716" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="716" fill="#ffffff" rx="0"/>
+  <rect x="0" y="0" width="1000" height="78" fill="#ffffff" rx="0"/>
+  <text x="500" y="34" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">从字节到响应：五个阶段与各自的拒绝条件</text>
+  <text x="500" y="60" font-size="12" fill="#64748b" text-anchor="middle">手写 HTTP/1.1 服务端的全部判断都在这条线上；括号里是失败时应该回的状态码</text>
+  <rect x="24" y="96" width="952" height="100" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="24" y="96" width="6" height="100" fill="#1e40af" rx="0"/>
+  <text x="48" y="122" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">① 请求行</text>
+  <text x="48" y="142" font-size="10" fill="#64748b" text-anchor="start" font-family="Consolas, 'Courier New', monospace">method SP target SP HTTP-version</text>
+  <text x="48" y="158" font-size="10" fill="#334155" text-anchor="start">· 必须恰好 3 段（用 SplitN 3，不用 Fields）</text>
+  <text x="48" y="172" font-size="10" fill="#334155" text-anchor="start">· method 必须是 token；target 拆 path / query</text>
+  <text x="48" y="186" font-size="10" fill="#334155" text-anchor="start">· 只接受 HTTP/1.x</text>
+  <rect x="700" y="112" width="262" height="34" fill="#fef2f2" rx="6" stroke="#fca5a5" stroke-width="1"/>
+  <text x="712" y="134" font-size="10" fill="#b91c1c" text-anchor="start" font-weight="bold">400 Bad Request｜414 URI Too Long</text>
+  <rect x="24" y="204" width="952" height="100" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="24" y="204" width="6" height="100" fill="#1e40af" rx="0"/>
+  <text x="48" y="230" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">② 首部区循环</text>
+  <text x="48" y="250" font-size="10" fill="#64748b" text-anchor="start" font-family="Consolas, 'Courier New', monospace">读到空行为止，同名首部 append</text>
+  <text x="48" y="266" font-size="10" fill="#334155" text-anchor="start">· 两道闸门：单行 8 KB、累计 16 KB · net/http 是 1 MB</text>
+  <text x="48" y="280" font-size="10" fill="#334155" text-anchor="start">· 名字与冒号之间不许有空格；值只裁首尾 OWS</text>
+  <text x="48" y="294" font-size="10" fill="#334155" text-anchor="start">· 不支持 obs-fold 折叠行（RFC 7230 已废弃）</text>
+  <rect x="700" y="220" width="262" height="34" fill="#fef2f2" rx="6" stroke="#fca5a5" stroke-width="1"/>
+  <text x="712" y="242" font-size="10" fill="#b91c1c" text-anchor="start" font-weight="bold">431 Request Header Fields Too Large</text>
+  <rect x="24" y="312" width="952" height="100" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="24" y="312" width="6" height="100" fill="#1e40af" rx="0"/>
+  <text x="48" y="338" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">③ 请求体定界</text>
+  <text x="48" y="358" font-size="10" fill="#64748b" text-anchor="start" font-family="Consolas, 'Courier New', monospace">Transfer-Encoding / Content-Length / 无</text>
+  <text x="48" y="374" font-size="10" fill="#334155" text-anchor="start">· 先判「两者同给」→ 直接拒绝（请求走私）</text>
+  <text x="48" y="388" font-size="10" fill="#334155" text-anchor="start">· chunked：十六进制尺寸 + 末块 0 + trailer 空行</text>
+  <text x="48" y="402" font-size="10" fill="#334155" text-anchor="start">· 都没有 → body 长度 0</text>
+  <rect x="700" y="328" width="262" height="34" fill="#fef2f2" rx="6" stroke="#fca5a5" stroke-width="1"/>
+  <text x="712" y="350" font-size="10" fill="#b91c1c" text-anchor="start" font-weight="bold">400 Bad Request｜408 Request Timeout</text>
+  <rect x="24" y="420" width="952" height="100" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="24" y="420" width="6" height="100" fill="#1e40af" rx="0"/>
+  <text x="48" y="446" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">④ 写响应</text>
+  <text x="48" y="466" font-size="10" fill="#64748b" text-anchor="start" font-family="Consolas, 'Courier New', monospace">状态行 + Date + 类型 + 长度 + 连接</text>
+  <text x="48" y="482" font-size="10" fill="#334155" text-anchor="start">· 首部必须在第一次 Write 之前拼好，之后补无效</text>
+  <text x="48" y="496" font-size="10" fill="#334155" text-anchor="start">· HEAD 有 Content-Length 但不写体；204/304 不能有体</text>
+  <text x="48" y="510" font-size="10" fill="#334155" text-anchor="start">· bufio.Writer 不 Flush，响应就卡在用户态</text>
+  <rect x="700" y="436" width="262" height="34" fill="#fef2f2" rx="6" stroke="#fca5a5" stroke-width="1"/>
+  <text x="712" y="458" font-size="10" fill="#b91c1c" text-anchor="start" font-weight="bold">—</text>
+  <rect x="24" y="528" width="952" height="100" fill="#fafafa" rx="8" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="24" y="528" width="6" height="100" fill="#1e40af" rx="0"/>
+  <text x="48" y="554" font-size="14" fill="#1e40af" text-anchor="start" font-weight="bold">⑤ keep-alive 判定</text>
+  <text x="48" y="574" font-size="10" fill="#64748b" text-anchor="start" font-family="Consolas, 'Courier New', monospace">关不关连接，取决于协议版本与 Connection</text>
+  <text x="48" y="590" font-size="10" fill="#334155" text-anchor="start">· 排空请求体 —— 最容易漏的一步，漏了就串味</text>
+  <text x="48" y="604" font-size="10" fill="#334155" text-anchor="start">· 1.1 默认持久（除 Connection: close）</text>
+  <text x="48" y="618" font-size="10" fill="#334155" text-anchor="start">· 1.0 默认关闭（除 Connection: keep-alive）</text>
+  <rect x="700" y="544" width="262" height="34" fill="#fef2f2" rx="6" stroke="#fca5a5" stroke-width="1"/>
+  <text x="712" y="566" font-size="10" fill="#b91c1c" text-anchor="start" font-weight="bold">回到 ① 或关闭连接</text>
+  <rect x="24" y="640" width="952" height="62" fill="#eff6ff" rx="8" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="666" font-size="13" fill="#1e40af" text-anchor="start" font-weight="bold">这条线上没有一步可以省，但每一步都可以做得比这里宽（net/http 就宽得多）</text>
+  <text x="44" y="688" font-size="11" fill="#334155" text-anchor="start">「从零」的价值不是替代标准库，而是知道标准库在每个岔路口替你选了哪一边。</text>
+</svg>
