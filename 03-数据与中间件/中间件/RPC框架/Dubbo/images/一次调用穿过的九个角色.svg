@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 Dubbo 调用穿过的九个角色，以及卡住时各自的症状</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左侧三段是进程边界（决定该去谁的机器上看日志），右侧是每一层失效时的典型表现</text>
+
+  <g transform="translate(30,88)">
+    <rect x="0" y="0" width="200" height="342" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <rect x="0" y="0" width="6" height="342" fill="#2563eb" rx="3"/>
+    <text x="18" y="26" font-size="14" font-weight="bold" fill="#1e40af">消费端进程内</text>
+    <text x="18" y="50" font-size="10" fill="#334155">① ~ ⑥ 全在本进程</text>
+    <text x="18" y="74" font-size="9.5" fill="#64748b">先确认请求有没有出去</text>
+    <text x="18" y="98" font-size="9.5" fill="#64748b">这一步能砍掉一半排查量</text>
+  </g>
+
+  <g transform="translate(30,438)">
+    <rect x="0" y="0" width="200" height="116" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <rect x="0" y="0" width="6" height="116" fill="#b45309" rx="3"/>
+    <text x="18" y="26" font-size="14" font-weight="bold" fill="#92400e">线上</text>
+    <text x="18" y="50" font-size="10" fill="#334155">⑦ ⑧ 协议与传输</text>
+    <text x="18" y="74" font-size="9.5" fill="#64748b">这一段只剩字节</text>
+  </g>
+
+  <g transform="translate(30,562)">
+    <rect x="0" y="0" width="200" height="62" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <rect x="0" y="0" width="6" height="62" fill="#16a34a" rx="3"/>
+    <text x="18" y="26" font-size="14" font-weight="bold" fill="#14532d">提供方进程</text>
+    <text x="18" y="48" font-size="10" fill="#334155">⑨ 业务方法在这里执行</text>
+  </g>
+
+  <rect x="640" y="88" width="340" height="524" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <rect x="20" y="628" width="960" height="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+
+  <rect x="260" y="100" width="360" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="274" y="124" font-size="12" font-weight="bold" fill="#1e40af">① ProxyFactory 生成的代理</text>
+  <text x="650" y="124" font-size="10" fill="#475569">调用没进框架：断点停不到 Invoker</text>
+
+  <line x1="440" y1="138" x2="440" y2="154" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="260" y="156" width="360" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="274" y="180" font-size="12" font-weight="bold" fill="#1e40af">② ClusterInvoker（默认 failover）</text>
+  <text x="650" y="180" font-size="10" fill="#475569">重试放大：下游流量变成 N 倍</text>
+
+  <line x1="440" y1="194" x2="440" y2="210" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="260" y="212" width="360" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="274" y="236" font-size="12" font-weight="bold" fill="#1e40af">③ Directory（服务列表 + 订阅）</text>
+  <text x="650" y="236" font-size="10" fill="#475569">No provider available（列表为空）</text>
+
+  <line x1="440" y1="250" x2="440" y2="266" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="260" y="268" width="360" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="274" y="292" font-size="12" font-weight="bold" fill="#1e40af">④ Router（按规则过滤候选集）</text>
+  <text x="650" y="292" font-size="10" fill="#475569">同样报没提供者，但列表本非空</text>
+
+  <line x1="440" y1="306" x2="440" y2="322" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="260" y="324" width="360" height="38" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="274" y="348" font-size="12" font-weight="bold" fill="#1e40af">⑤ LoadBalance（从候选集选一个）</text>
+  <text x="650" y="348" font-size="10" fill="#475569">权重 0 等于摘除；预热期有尖刺</text>
+
+  <line x1="440" y1="362" x2="440" y2="378" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="260" y="380" width="360" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+  <text x="274" y="404" font-size="12" font-weight="bold" fill="#92400e">⑥ Filter 链（埋点 / 鉴权 / 上下文）</text>
+  <text x="650" y="404" font-size="10" fill="#b45309">3 次重试 = Filter 执行 3 次</text>
+
+  <line x1="440" y1="418" x2="440" y2="446" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="260" y="448" width="360" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+  <text x="274" y="472" font-size="12" font-weight="bold" fill="#92400e">⑦ Protocol / Exchange（请求响应配对）</text>
+  <text x="650" y="472" font-size="10" fill="#b45309">超时了，但对端其实已处理完</text>
+
+  <line x1="440" y1="486" x2="440" y2="502" stroke="#b45309" stroke-width="1.5" marker-end="url(#arwB)"/>
+
+  <rect x="260" y="504" width="360" height="38" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+  <text x="274" y="528" font-size="12" font-weight="bold" fill="#92400e">⑧ Transport（Netty 连接与编解码）</text>
+  <text x="650" y="528" font-size="10" fill="#b45309">连接数上涨 / channel 被关闭</text>
+
+  <line x1="440" y1="542" x2="440" y2="570" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG)"/>
+
+  <rect x="260" y="572" width="360" height="38" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="274" y="596" font-size="12" font-weight="bold" fill="#14532d">⑨ Exporter → 服务端线程池 → 业务</text>
+  <text x="650" y="596" font-size="10" fill="#16a34a">RejectedExecutionException</text>
+
+  <text x="30" y="646" font-size="9.5" fill="#64748b">注：实线箭头表示调用方向的先后；⑥ 在消费端与提供端各有一份，本篇的症状按消费端那一份标。</text>
+</svg>

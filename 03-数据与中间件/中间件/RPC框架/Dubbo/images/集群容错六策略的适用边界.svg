@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">六种集群容错策略：先问「重复执行会怎样」，再选策略</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">默认值 failover 是按读操作优化的；同一个默认值用在写接口上，重复执行就是重复数据</text>
+
+  <rect x="24" y="74" width="952" height="46" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+  <text x="40" y="103" font-size="11" font-weight="bold" fill="#92400e">排序判据：重复无害（读）→ failover ｜ 重复有害（写）→ failfast ｜ 结果无所谓 → failsafe ｜ 可以晚但要有 → failback</text>
+
+  <rect x="24" y="126" width="952" height="26" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="4"/>
+  <text x="30" y="146" font-size="10.5" font-weight="bold" fill="#475569">策略</text>
+  <text x="190" y="146" font-size="10.5" font-weight="bold" fill="#475569">行为</text>
+  <text x="520" y="146" font-size="10.5" font-weight="bold" fill="#475569">适合</text>
+  <text x="770" y="146" font-size="10.5" font-weight="bold" fill="#475569">明确不适合（代价）</text>
+
+  <rect x="24" y="156" width="952" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+  <text x="30" y="180" font-size="10.5" font-weight="bold" fill="#92400e">failover</text>
+  <text x="30" y="196" font-size="8.5" fill="#92400e">默认</text>
+  <text x="190" y="188" font-size="10" fill="#92400e">失败后换一个实例重试，retries 默认 2</text>
+  <text x="520" y="188" font-size="10" fill="#92400e">幂等的读操作</text>
+  <text x="770" y="188" font-size="9.5" fill="#991b1b">非幂等写：重复扣款、重复下单</text>
+
+  <rect x="24" y="216" width="952" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="30" y="240" font-size="10.5" font-weight="bold" fill="#14532d">failfast</text>
+  <text x="30" y="256" font-size="8.5" fill="#14532d">写接口</text>
+  <text x="190" y="248" font-size="10" fill="#14532d">失败立即抛错，不重试</text>
+  <text x="520" y="248" font-size="10" fill="#14532d">非幂等写操作</text>
+  <text x="770" y="248" font-size="9.5" fill="#991b1b">对瞬时抖动零容忍，一次抖动就失败</text>
+
+  <rect x="24" y="276" width="952" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="30" y="300" font-size="10.5" font-weight="bold" fill="#334155">failsafe</text>
+  <text x="30" y="316" font-size="8.5" fill="#334155">吞异常</text>
+  <text x="190" y="308" font-size="10" fill="#334155">忽略异常，返回空结果</text>
+  <text x="520" y="308" font-size="10" fill="#334155">日志、审计、非关键埋点</text>
+  <text x="770" y="308" font-size="9.5" fill="#991b1b">结果会影响业务判断的调用</text>
+
+  <rect x="24" y="336" width="952" height="52" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="30" y="360" font-size="10.5" font-weight="bold" fill="#334155">failback</text>
+  <text x="30" y="376" font-size="8.5" fill="#334155">定时重发</text>
+  <text x="190" y="368" font-size="10" fill="#334155">失败后记录，定时重发（默认 5 秒）</text>
+  <text x="520" y="368" font-size="10" fill="#334155">消息通知、异步补偿</text>
+  <text x="770" y="368" font-size="9.5" fill="#991b1b">要求「本次调用必须有结果」的场景</text>
+
+  <rect x="24" y="396" width="952" height="52" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+  <text x="30" y="420" font-size="10.5" font-weight="bold" fill="#92400e">forking</text>
+  <text x="30" y="436" font-size="8.5" fill="#92400e">并行</text>
+  <text x="190" y="428" font-size="10" fill="#92400e">并行调 forks（默认 2）个实例，取第一个成功</text>
+  <text x="520" y="428" font-size="10" fill="#92400e">读多写少、P99 要求极严</text>
+  <text x="770" y="428" font-size="9.5" fill="#991b1b">资源紧张时成倍放大下游流量</text>
+
+  <rect x="24" y="456" width="952" height="52" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="30" y="480" font-size="10.5" font-weight="bold" fill="#991b1b">broadcast</text>
+  <text x="30" y="496" font-size="8.5" fill="#991b1b">全发</text>
+  <text x="190" y="488" font-size="10" fill="#991b1b">广播给所有实例，逐个调用</text>
+  <text x="520" y="488" font-size="10" fill="#991b1b">缓存刷新、配置推送</text>
+  <text x="770" y="488" font-size="9.5" fill="#991b1b">任何有副作用且非幂等的操作</text>
+
+  <rect x="24" y="520" width="952" height="26" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="34" y="537" font-size="9.5" fill="#64748b">注：六种策略只决定「失败之后怎么办」；多久算失败由 timeout 决定，两者组合才是一次调用的实际行为。</text>
+</svg>

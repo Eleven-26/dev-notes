@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">接入的四步初始化，以及两个都不报错的顺序陷阱</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">「启动成功」不等于「引用可用」：能证明接上的只有订阅日志与 QOS 里的 ls</text>
+
+  <rect x="30" y="92" width="200" height="72" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+  <text x="44" y="116" font-size="11" font-weight="bold" fill="#92400e">① 配置中心（可选）</text>
+  <text x="44" y="136" font-size="9" fill="#92400e">动态路由 / 超时覆盖规则</text>
+  <text x="44" y="152" font-size="9" fill="#92400e">必须先于注册中心就绪</text>
+
+  <line x1="230" y1="128" x2="273" y2="128" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB2)"/>
+
+  <rect x="275" y="92" width="200" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="289" y="116" font-size="11" font-weight="bold" fill="#1e40af">② 注册中心</text>
+  <text x="289" y="136" font-size="9" fill="#1e40af">服务列表与订阅通知的来源</text>
+  <text x="289" y="152" font-size="9" fill="#1e40af">挂掉后仍用本地缓存继续调</text>
+
+  <line x1="475" y1="128" x2="518" y2="128" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB2)"/>
+
+  <rect x="520" y="92" width="200" height="72" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="534" y="116" font-size="11" font-weight="bold" fill="#1e40af">③ 引用 / 暴露</text>
+  <text x="534" y="136" font-size="9" fill="#1e40af">check 在这一步判定</text>
+  <text x="534" y="152" font-size="9" fill="#1e40af">ReferenceConfig.get() 才建连</text>
+
+  <line x1="720" y1="128" x2="763" y2="128" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arwG2)"/>
+
+  <rect x="765" y="92" width="200" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="779" y="116" font-size="11" font-weight="bold" fill="#14532d">④ 业务首次使用</text>
+  <text x="779" y="136" font-size="9" fill="#14532d">到这一步才真正知道连没连上</text>
+  <text x="779" y="152" font-size="9" fill="#14532d">check=false 的问题都在这里暴露</text>
+
+  <rect x="30" y="188" width="460" height="176" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="10"/>
+  <text x="46" y="212" font-size="13" font-weight="bold" fill="#991b1b">陷阱一：引用早于配置中心</text>
+  <text x="46" y="236" font-size="9.5" fill="#991b1b">现象：动态规则（路由 / 超时覆盖）一直不生效，</text>
+  <text x="46" y="255" font-size="9.5" fill="#991b1b">用的一直是本地默认值，而且没有任何报错。</text>
+  <text x="46" y="282" font-size="9.5" fill="#334155">机理：引用在创建时把当时的配置烧进了 URL，</text>
+  <text x="46" y="301" font-size="9.5" fill="#334155">之后配置中心推下来的规则没有再作用上去。</text>
+  <text x="46" y="328" font-size="9.5" fill="#14532d">做法：让配置中心先就绪；用 @DependsOn 或把</text>
+  <text x="46" y="347" font-size="9.5" fill="#14532d">配置中心装配排在注册中心之前。</text>
+
+  <rect x="510" y="188" width="460" height="176" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="10"/>
+  <text x="526" y="212" font-size="13" font-weight="bold" fill="#92400e">陷阱二：check=true 让整个应用起不来</text>
+  <text x="526" y="236" font-size="9.5" fill="#92400e">现象：提供者还没上线时，消费方应用启动直接失败。</text>
+  <text x="526" y="255" font-size="9.5" fill="#92400e">这是默认行为，不是配置错误。</text>
+  <text x="526" y="282" font-size="9.5" fill="#334155">取舍：check=false 让应用先起来，但错误从</text>
+  <text x="526" y="301" font-size="9.5" fill="#334155">「发布时立刻发现」推迟成「上线后某接口报错」。</text>
+  <text x="526" y="328" font-size="9.5" fill="#14532d">做法：check=false 必须配「可用提供者数」的告警，</text>
+  <text x="526" y="347" font-size="9.5" fill="#14532d">否则问题会静默很久。</text>
+
+  <rect x="30" y="382" width="940" height="30" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="44" y="402" font-size="9.5" fill="#64748b">注：判定「真的接上了」的三个证据是启动日志里的 Subscribe / Export、QOS 控制台 ls 的输出、注册中心实例数，缺一都不算。</text>
+</svg>

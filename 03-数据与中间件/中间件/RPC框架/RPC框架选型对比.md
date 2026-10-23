@@ -260,7 +260,7 @@ Dubbo 把治理做进框架。所以问题不是「谁强」，而是
 - Go：[不使用protoc的gRPC.md](../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md)、[从零实现网关.md](../../../01-编程语言/go/网络编程/从零实现网关.md)
 - Java：[接入gRPC.md](../../../01-编程语言/java/工程实践/接入gRPC.md)
 
-**占位**：[Dubbo/README.md](Dubbo/README.md) — Dubbo 的三篇（协议 / 治理 / 接入）待补。
+**Dubbo 册**（3 篇，⚠️ 全册零实测）：[调用链路.md](Dubbo/调用链路.md) 一次调用穿过的九个角色与 `Invoker` 收敛；[通信协议.md](Dubbo/通信协议.md) 16 字节头与 Triple；[服务治理.md](Dubbo/服务治理.md) 路由、五类 LB、六种容错、tag 灰度。语言分册：[接入Dubbo.md](../../../01-编程语言/java/工程实践/接入Dubbo.md)。
 
 ### 8.2 生成存根与兼容性门禁（未执行）
 
@@ -339,7 +339,7 @@ resp, err := client.CreateOrder(ctx, req)
 ## 关联
 
 - **上游/总纲**：[README.md](gRPC/README.md) — gRPC 13 篇的目录导读（本目录的纵向深入入口）
-- **对照/互补**：[README.md](Dubbo/README.md) — Dubbo 的占位导读
+- **对照/互补**：[README.md](Dubbo/README.md) — Dubbo 册导读（3 篇：调用链路 / 通信协议 / 服务治理，零实测）
 - **对照/互补**：[通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md) — 应用层协议与序列化格式的横向选型（同步 / 异步、HTTP/2 / gRPC / MQTT）
 - **对照/互补**：[数据序列化.md](../../../02-计算机基础/网络/选型/数据序列化.md) — JSON 与 Protobuf 的四维对比与选型
 - **下游机制**：[HTTP与gRPC.md](../../../02-计算机基础/网络/应用层/HTTP与gRPC.md) — HTTP/2 相对 HTTP/1.1 的五点改进（gRPC 的底座）

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两代协议的报文形态：固定 16 字节头 vs HTTP/2 上的标准帧</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左边只需读 3 个字段就能判断一段字节是不是 Dubbo 报文；右边可直接被 gRPC 客户端与抓包工具解析</text>
+
+  <rect x="20" y="74" width="460" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="34" y="100" font-size="15" font-weight="bold" fill="#1e40af">2.x 私有协议（dubbo://）</text>
+  <text x="34" y="120" font-size="10.5" fill="#64748b">头固定 16 字节，其后全是 body</text>
+
+  <rect x="34" y="140" width="51.5" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <rect x="85.5" y="140" width="25.75" height="44" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="4"/>
+  <rect x="111.25" y="140" width="25.75" height="44" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="4"/>
+  <rect x="137" y="140" width="206" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <rect x="343" y="140" width="103" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="4"/>
+
+  <text x="59.75" y="200" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e40af">magic 2B</text>
+  <text x="98.4" y="200" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">flag</text>
+  <text x="124" y="200" text-anchor="middle" font-size="8" font-weight="bold" fill="#92400e">status</text>
+  <text x="240" y="200" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e40af">requestId 8 字节</text>
+  <text x="394.5" y="200" text-anchor="middle" font-size="9" font-weight="bold" fill="#14532d">body 长度 4B</text>
+
+  <text x="34" y="216" font-size="8.5" fill="#64748b">偏移 0</text>
+  <text x="85.5" y="216" font-size="8.5" fill="#64748b">2</text>
+  <text x="111.25" y="216" font-size="8.5" fill="#64748b">3</text>
+  <text x="137" y="216" font-size="8.5" fill="#64748b">4</text>
+  <text x="343" y="216" font-size="8.5" fill="#64748b">12</text>
+
+  <text x="34" y="246" font-size="10" font-weight="bold" fill="#0f172a">flag 一个字节塞四件事</text>
+
+  <rect x="34" y="256" width="48" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="58" y="272" text-anchor="middle" font-size="8" fill="#1e40af">bit 7</text>
+  <text x="58" y="287" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#1e40af">请求/响应</text>
+
+  <rect x="82" y="256" width="48" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="106" y="272" text-anchor="middle" font-size="8" fill="#1e40af">bit 6</text>
+  <text x="106" y="287" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#1e40af">2way</text>
+
+  <rect x="130" y="256" width="48" height="40" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="154" y="272" text-anchor="middle" font-size="8" fill="#1e40af">bit 5</text>
+  <text x="154" y="287" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#1e40af">event</text>
+
+  <rect x="178" y="256" width="240" height="40" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="4"/>
+  <text x="298" y="272" text-anchor="middle" font-size="8" fill="#92400e">bit 4 ~ 0</text>
+  <text x="298" y="287" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">序列化 ID（5 位）</text>
+
+  <text x="34" y="322" font-size="9.5" fill="#334155">magic 不是 0xdabb：连到了非 Dubbo 端口（或用错了协议）</text>
+  <text x="34" y="342" font-size="9.5" fill="#334155">序列化 ID 两端不一致：报文能收到，body 解不开</text>
+  <text x="34" y="362" font-size="9.5" fill="#334155">body length 是唯一的分包依据，TCP 是字节流</text>
+  <text x="34" y="382" font-size="9.5" fill="#b45309">requestId 负责配对：超时后晚到的响应会被直接丢弃</text>
+
+  <rect x="34" y="404" width="432" height="54" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="46" y="424" font-size="9.5" fill="#475569">⭐ status 在请求报文里恒为 0，只在响应里有意义；</text>
+  <text x="46" y="443" font-size="9.5" fill="#475569">2way=0 表示单向：发完不管，没有响应也就无从重试。</text>
+
+  <rect x="500" y="74" width="480" height="400" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="514" y="100" font-size="15" font-weight="bold" fill="#14532d">3.x Triple（tri://）</text>
+  <text x="514" y="120" font-size="10.5" fill="#64748b">同样是请求-响应，但头上换成标准 HTTP/2</text>
+
+  <rect x="514" y="140" width="452" height="92" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="528" y="162" font-size="11" font-weight="bold" fill="#14532d">HEADERS 帧</text>
+  <text x="528" y="184" font-size="9.5" fill="#14532d">:method  POST</text>
+  <text x="528" y="202" font-size="9.5" fill="#14532d">:path  /{service}/{method}（service 为接口全限定名）</text>
+  <text x="528" y="220" font-size="9.5" fill="#14532d">content-type  application/grpc+proto 一类</text>
+
+  <rect x="514" y="252" width="452" height="120" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="528" y="274" font-size="11" font-weight="bold" fill="#1e40af">DATA 帧</text>
+
+  <rect x="528" y="286" width="40" height="40" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="548" y="304" text-anchor="middle" font-size="8" fill="#1e40af">1 字节</text>
+  <text x="548" y="318" text-anchor="middle" font-size="8" fill="#1e40af">压缩标志</text>
+
+  <rect x="576" y="286" width="120" height="40" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="636" y="304" text-anchor="middle" font-size="8" fill="#1e40af">4 字节</text>
+  <text x="636" y="318" text-anchor="middle" font-size="8" fill="#1e40af">消息长度</text>
+
+  <rect x="704" y="286" width="248" height="40" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="4"/>
+  <text x="828" y="311" text-anchor="middle" font-size="9" font-weight="bold" fill="#1e40af">消息体（Protobuf 编码）</text>
+
+  <text x="528" y="350" font-size="9.5" fill="#334155">这 5 字节前缀与 gRPC 的 Length-Prefixed-Message 完全一致</text>
+
+  <rect x="514" y="368" width="452" height="92" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="528" y="390" font-size="9.5" fill="#475569">⭐ 兼容是协议层的：gRPC 客户端能调通，</text>
+  <text x="528" y="409" font-size="9.5" fill="#475569">但 tag 路由、灰度这些治理策略仍在 Dubbo 一侧。</text>
+  <text x="528" y="430" font-size="9.5" fill="#b45309">异构客户端享受不到路由与灰度，只能调通。</text>
+
+  <rect x="20" y="486" width="960" height="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="30" y="502" font-size="9.5" fill="#64748b">注：字段宽度按字节数等比例绘制；两代协议都支持请求-响应配对，差别在头的可解析性与跨语言能力。</text>
+</svg>
