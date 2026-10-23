@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">乱序先到与接收缓冲满：状态与破局</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12" fill="#64748b">段②丢失形成洞，段③④进入乱序队列并吃掉缓冲；rwnd 归零后靠 persist 探测与窗口更新恢复</text>
+
+  <rect x="20" y="80" width="560" height="390" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="36" y="108" font-size="13" font-weight="bold" fill="#0f172a">接收方接收缓冲（按序交付）</text>
+
+  <rect x="50" y="126" width="500" height="62" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3"/>
+  <text x="66" y="163" font-size="12.5" fill="#14532d">已交付：1 ~ 1460</text>
+
+  <rect x="50" y="198" width="500" height="62" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="66" y="228" font-size="12.5" font-weight="bold" fill="#7f1d1d">缺口（洞）：1461 ~ 2920</text>
+  <text x="66" y="248" font-size="11.5" fill="#7f1d1d">累计 ACK 停在这里：ack = 1461</text>
+
+  <rect x="50" y="270" width="500" height="62" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="66" y="300" font-size="12.5" fill="#92400e">乱序队列：2921 ~ 4380</text>
+  <text x="66" y="320" font-size="11.5" fill="#92400e">已在缓冲里，但洞没补上，不能交付</text>
+
+  <rect x="50" y="342" width="500" height="62" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="66" y="372" font-size="12.5" fill="#92400e">乱序队列：4381 ~ 5840</text>
+  <text x="66" y="392" font-size="11.5" fill="#92400e">继续占用接收缓冲，rwnd 被压到 0</text>
+
+  <text x="50" y="436" font-size="12.5" fill="#7f1d1d">应用 read() 只能读到 1460；洞右边的字节读不到</text>
+  <text x="50" y="458" font-size="11.5" fill="#475569">SACK 可同时报告 [2921,4380] 与 [4381,5840] 两个块</text>
+
+  <rect x="600" y="80" width="380" height="390" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="616" y="108" font-size="13" font-weight="bold" fill="#0f172a">发送方状态</text>
+  <text x="616" y="142" font-size="12.5" fill="#334155">snd_una = 1461</text>
+  <text x="616" y="168" font-size="12.5" fill="#334155">snd_nxt = 3072</text>
+  <text x="616" y="200" font-size="12.5" fill="#7f1d1d">收到重复 ACK：ack = 1461</text>
+  <text x="616" y="224" font-size="11.5" fill="#7f1d1d">只有 1 ~ 2 个，不足 3 个</text>
+  <text x="616" y="250" font-size="12.5" fill="#334155">→ 等 TLP / RTO，或快速重传</text>
+
+  <line x1="616" y1="272" x2="964" y2="272" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="616" y="300" font-size="12.5" fill="#92400e">rwnd 缩小 → 0</text>
+  <text x="616" y="326" font-size="12.5" fill="#92400e">persist timer 启动</text>
+  <text x="616" y="352" font-size="12.5" fill="#92400e">周期发 1 字节窗口探测</text>
+  <text x="616" y="378" font-size="12.5" fill="#14532d">收到窗口更新 win 大于 0 才恢复</text>
+  <text x="616" y="410" font-size="11.5" fill="#7f1d1d">缺段重传也可能因无空间被丢</text>
+  <text x="616" y="432" font-size="11" fill="#64748b">实现相关：内核可能裁剪 ofo 队列</text>
+
+  <rect x="30" y="490" width="176" height="64" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="118" y="518" text-anchor="middle" font-size="11.5" fill="#7f1d1d">① 段②丢失</text>
+  <text x="118" y="538" text-anchor="middle" font-size="11" fill="#7f1d1d">洞形成</text>
+
+  <rect x="221" y="490" width="176" height="64" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="309" y="518" text-anchor="middle" font-size="11.5" fill="#92400e">② 段③④进 ofo 队列</text>
+  <text x="309" y="538" text-anchor="middle" font-size="11" fill="#92400e">不能交付</text>
+
+  <rect x="412" y="490" width="176" height="64" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="500" y="518" text-anchor="middle" font-size="11.5" fill="#92400e">③ 缓冲吃满 rwnd=0</text>
+  <text x="500" y="538" text-anchor="middle" font-size="11" fill="#92400e">发送方停发</text>
+
+  <rect x="603" y="490" width="176" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="691" y="518" text-anchor="middle" font-size="11.5" fill="#14532d">④ 应用读走数据</text>
+  <text x="691" y="538" text-anchor="middle" font-size="11" fill="#14532d">缓冲腾出</text>
+
+  <rect x="794" y="490" width="176" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="882" y="518" text-anchor="middle" font-size="11.5" fill="#14532d">⑤ 窗口更新</text>
+  <text x="882" y="538" text-anchor="middle" font-size="11" fill="#14532d">恢复发送</text>
+
+  <line x1="208" y1="522" x2="217" y2="522" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="399" y1="522" x2="408" y2="522" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="590" y1="522" x2="599" y2="522" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="781" y1="522" x2="790" y2="522" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+
+  <text x="30" y="592" font-size="12.5" font-weight="bold" fill="#0f172a">乱序数据同样占用接收窗口；洞不补，应用就不能跳过它去读。</text>
+  <text x="30" y="616" font-size="11.5" fill="#7f1d1d">若应用坚持「读满整条消息再处理」，会与 TCP 的窗口机制互相等待。</text>
+</svg>

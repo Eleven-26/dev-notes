@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="580" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">握手在服务端落进两个队列</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12" fill="#64748b">backlog=2 实测：队列只装得下 3 条，第 4~6 次 Dial 因 SYN 被丢而超时（Linux 6.18 容器）</text>
+
+  <rect x="20" y="70" width="960" height="170" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="36" y="96" font-size="14" font-weight="bold" fill="#334155">① 正常路径：两个队列各管一段状态，accept() 之后应用才真正拿到连接</text>
+
+  <rect x="40" y="112" width="120" height="84" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="100" y="148" text-anchor="middle" font-size="12" font-weight="bold" fill="#075985">客户端</text>
+  <text x="100" y="168" text-anchor="middle" font-size="11" fill="#075985">connect()</text>
+
+  <line x1="160" y1="154" x2="205" y2="154" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="182" y="144" text-anchor="middle" font-size="11" fill="#475569">SYN</text>
+
+  <rect x="205" y="112" width="225" height="84" rx="8" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="317" y="138" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">半连接队列 SYN queue</text>
+  <text x="317" y="160" text-anchor="middle" font-size="11" fill="#5b21b6">状态 SYN_RCVD</text>
+  <text x="317" y="180" text-anchor="middle" font-size="11" fill="#5b21b6">上限 tcp_max_syn_backlog</text>
+
+  <line x1="430" y1="154" x2="485" y2="154" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="457" y="144" text-anchor="middle" font-size="11" fill="#475569">第三个 ACK</text>
+
+  <rect x="485" y="112" width="250" height="84" rx="8" fill="#fff7ed" stroke="#c2410c"/>
+  <text x="610" y="138" text-anchor="middle" font-size="12" font-weight="bold" fill="#9a3412">全连接队列 accept queue</text>
+  <text x="610" y="160" text-anchor="middle" font-size="11" fill="#9a3412">状态 ESTABLISHED，等待取走</text>
+  <text x="610" y="180" text-anchor="middle" font-size="11" fill="#9a3412">上限 min(backlog, somaxconn)</text>
+
+  <line x1="735" y1="154" x2="790" y2="154" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="762" y="144" text-anchor="middle" font-size="11" fill="#475569">accept()</text>
+
+  <rect x="790" y="112" width="170" height="84" rx="8" fill="#dcfce7" stroke="#15803d"/>
+  <text x="875" y="148" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">应用</text>
+  <text x="875" y="168" text-anchor="middle" font-size="11" fill="#166534">取走连接开始读写</text>
+
+  <rect x="20" y="255" width="960" height="200" rx="10" fill="#fef2f2" stroke="#fca5a5"/>
+  <text x="36" y="281" font-size="14" font-weight="bold" fill="#b91c1c">② 队列满：backlog=2、应用不 accept，连续 Dial 6 次（本机实测）</text>
+
+  <rect x="40" y="298" width="64" height="46" rx="6" fill="#dcfce7" stroke="#15803d"/>
+  <text x="72" y="327" text-anchor="middle" font-size="14" fill="#166534">①</text>
+  <rect x="118" y="298" width="64" height="46" rx="6" fill="#dcfce7" stroke="#15803d"/>
+  <text x="150" y="327" text-anchor="middle" font-size="14" fill="#166534">②</text>
+  <rect x="196" y="298" width="64" height="46" rx="6" fill="#dcfce7" stroke="#15803d"/>
+  <text x="228" y="327" text-anchor="middle" font-size="14" fill="#166534">③</text>
+  <rect x="274" y="298" width="64" height="46" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-dasharray="5 4"/>
+  <text x="306" y="327" text-anchor="middle" font-size="14" fill="#b91c1c">④</text>
+  <rect x="352" y="298" width="64" height="46" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-dasharray="5 4"/>
+  <text x="384" y="327" text-anchor="middle" font-size="14" fill="#b91c1c">⑤</text>
+  <rect x="430" y="298" width="64" height="46" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-dasharray="5 4"/>
+  <text x="462" y="327" text-anchor="middle" font-size="14" fill="#b91c1c">⑥</text>
+
+  <text x="40" y="368" font-size="12" fill="#334155">①–③ 握手完成、进入全连接队列：rx_queue = 3 = backlog + 1</text>
+  <text x="40" y="390" font-size="12" fill="#b91c1c">④–⑥ 新 SYN 被直接丢弃：ListenOverflows=6、ListenDrops=6</text>
+
+  <rect x="560" y="292" width="400" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="576" y="314" font-size="11" font-weight="bold" fill="#334155">客户端视角：没人回 SYN-ACK，只能等自己重传</text>
+  <line x1="580" y1="348" x2="940" y2="348" stroke="#64748b" stroke-width="1.5" marker-end="url(#arw)"/>
+  <line x1="580" y1="342" x2="580" y2="354" stroke="#64748b"/>
+  <line x1="640" y1="342" x2="640" y2="354" stroke="#64748b"/>
+  <line x1="730" y1="342" x2="730" y2="354" stroke="#64748b"/>
+  <line x1="830" y1="342" x2="830" y2="354" stroke="#64748b"/>
+  <text x="580" y="370" text-anchor="middle" font-size="10" fill="#475569">0</text>
+  <text x="640" y="370" text-anchor="middle" font-size="10" fill="#475569">1s</text>
+  <text x="730" y="370" text-anchor="middle" font-size="10" fill="#475569">3s</text>
+  <text x="830" y="370" text-anchor="middle" font-size="10" fill="#475569">7s</text>
+  <text x="900" y="370" text-anchor="middle" font-size="10" fill="#475569">…</text>
+
+  <text x="40" y="424" font-size="12" fill="#7f1d1d">注意：实测里的 2 秒超时是我们设的 DialTimeout；内核默认重传到约 127 秒才放弃，线上看到的就是 connect 卡住。</text>
+
+  <rect x="20" y="470" width="960" height="90" rx="10" fill="#f0fdfa" stroke="#0f766e"/>
+  <text x="36" y="496" font-size="14" font-weight="bold" fill="#115e59">③ SYN Flood：打的就是这两个队列</text>
+  <text x="36" y="520" font-size="12" fill="#134e4a">伪造源 IP 灌 SYN，服务端为每个 SYN 建半开连接、永远等不到第三个 ACK；队列填满后，真实用户看到的就是 ④–⑥。</text>
+  <text x="36" y="542" font-size="12" fill="#134e4a">兜底：tcp_syncookies=1（队列满时改用 cookie 建连、不占半连接队列）+ 入口侧连接数限制。</text>
+</svg>

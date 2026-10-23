@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">3 KB 用 UDP 的两种切法</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12" fill="#64748b">链路 MTU 1500：单包应用数据上限 = 1500 − 20（IP 头）− 8（UDP 头）= 1472 字节</text>
+
+  <rect x="20" y="68" width="470" height="380" rx="10" fill="#f0fdfa" stroke="#0f766e"/>
+  <text x="36" y="94" font-size="14" font-weight="bold" fill="#115e59">① 应用自己切：3 个独立数据报</text>
+
+  <text x="40" y="124" font-size="11.5" fill="#334155">数据报① 载荷 1472 → IP 包 1500</text>
+  <rect x="150" y="132" width="44" height="38" fill="#fed7aa" stroke="#ea580c"/>
+  <text x="172" y="156" text-anchor="middle" font-size="10" fill="#7c2d12">UDP</text>
+  <rect x="194" y="132" width="280" height="38" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="334" y="156" text-anchor="middle" font-size="11" fill="#115e59">1472 字节</text>
+
+  <text x="40" y="204" font-size="11.5" fill="#334155">数据报② 载荷 1472 → IP 包 1500</text>
+  <rect x="150" y="212" width="44" height="38" fill="#fed7aa" stroke="#ea580c"/>
+  <text x="172" y="236" text-anchor="middle" font-size="10" fill="#7c2d12">UDP</text>
+  <rect x="194" y="212" width="280" height="38" fill="#ccfbf1" stroke="#0f766e"/>
+  <text x="334" y="236" text-anchor="middle" font-size="11" fill="#115e59">1472 字节</text>
+
+  <text x="40" y="284" font-size="11.5" fill="#334155">数据报③ 载荷 128 → IP 包 156</text>
+  <rect x="150" y="292" width="44" height="38" fill="#fed7aa" stroke="#ea580c"/>
+  <text x="172" y="316" text-anchor="middle" font-size="10" fill="#7c2d12">UDP</text>
+  <rect x="194" y="292" width="24" height="38" fill="#ccfbf1" stroke="#0f766e"/>
+
+  <text x="36" y="368" font-size="11.5" fill="#115e59">每个都带 8 字节 UDP 头，接收方 3 次 recvfrom</text>
+  <text x="36" y="390" font-size="11.5" fill="#115e59">丢一个只影响一个数据报，可只补那一个</text>
+  <text x="36" y="424" font-size="11.5" fill="#b45309">总字节：1472 + 1472 + 128 = 3072</text>
+
+  <rect x="510" y="68" width="470" height="380" rx="10" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="526" y="94" font-size="14" font-weight="bold" fill="#1e3a8a">② 一次 sendto(3072)：1 个数据报 3 片</text>
+
+  <text x="530" y="124" font-size="11.5" fill="#334155">分片① offset 0，MF=1，IP 包 1500</text>
+  <rect x="640" y="132" width="36" height="38" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="658" y="156" text-anchor="middle" font-size="10" fill="#1e3a8a">IP</text>
+  <rect x="676" y="132" width="280" height="38" fill="#e0e7ff" stroke="#4f46e5"/>
+  <text x="816" y="156" text-anchor="middle" font-size="11" fill="#3730a3">1480（含 UDP 头 + 1472）</text>
+
+  <text x="530" y="204" font-size="11.5" fill="#334155">分片② offset 185，MF=1，IP 包 1500</text>
+  <rect x="640" y="212" width="36" height="38" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="658" y="236" text-anchor="middle" font-size="10" fill="#1e3a8a">IP</text>
+  <rect x="676" y="212" width="280" height="38" fill="#e0e7ff" stroke="#4f46e5"/>
+  <text x="816" y="236" text-anchor="middle" font-size="11" fill="#3730a3">1480 字节</text>
+
+  <text x="530" y="284" font-size="11.5" fill="#334155">分片③ offset 370，MF=0，IP 包 140</text>
+  <rect x="640" y="292" width="36" height="38" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="658" y="316" text-anchor="middle" font-size="10" fill="#1e3a8a">IP</text>
+  <rect x="676" y="292" width="23" height="38" fill="#e0e7ff" stroke="#4f46e5"/>
+
+  <text x="526" y="368" font-size="11.5" fill="#1e3a8a">只有首片带 8 字节 UDP 头，3 片齐了才重组</text>
+  <text x="526" y="390" font-size="11.5" fill="#1e3a8a">recvfrom 一次拿到 3072 字节</text>
+  <text x="526" y="424" font-size="11.5" fill="#b91c1c">丢任一片 → 整个 3 KB 作废</text>
+
+  <text x="500" y="490" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">同样发 3 个 IP 包：3 个数据报能只补一个，3 个分片只能整包重发</text>
+</svg>
