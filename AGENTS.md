@@ -202,7 +202,7 @@
 
 适用对象：**讲某个具体产品本身**的篇目——它是什么、怎么装、怎么配、怎么用、出问题怎么查。区别于 3.1 原理篇（讲机制，把产品换掉仍然成立）与 3.2 实现篇（讲某个语言的接入代码）。
 
-典范篇目：`Nacos.md`、`Nats.md`、`xxl-job.md`、`Envoy.md`。⚠️ 同目录并非全部如此——`可观测性/链路追踪/Skywalking/` 与 `可观测性/链路追踪/Jaeger/` 各是一个**册**（`README.md` 导读 + 五篇零件），零件篇按本节骨架的**陈述式 H2** 写并各带 `## 校验口径`，导读篇走「目录导读」体例（照 `Kafka/`、`NATS/`）；`OpenResty.md` 已按本节骨架重写，原先混装的 Lua 语法与 nginx 配置语义拆到了 `01-编程语言/lua/Lua语法够用版.md` 与 `02-计算机基础/网络/代理与网关/Nginx配置语义.md`。新写篇目**以本节骨架为准**，不照抄历史篇目；「它是什么」与「怎么用」能由第一节定位 + 二至四节容纳，不必为此拆成两篇。
+典范篇目：`Nacos.md`、`xxl-job.md`、`Envoy.md`。⚠️ 同目录并非全部如此——`可观测性/链路追踪/Skywalking/` 与 `可观测性/链路追踪/Jaeger/` 各是一个**册**（`README.md` 导读 + 五篇零件），零件篇按本节骨架的**陈述式 H2** 写并各带 `## 校验口径`，导读篇走「目录导读」体例（照 `Kafka/`、`NATS/`）；`OpenResty.md` 已按本节骨架重写，原先混装的 Lua 语法与 nginx 配置语义拆到了 `01-编程语言/lua/Lua语法够用版.md` 与 `02-计算机基础/网络/代理与网关/Nginx配置语义.md`。新写篇目**以本节骨架为准**，不照抄历史篇目；「它是什么」与「怎么用」能由第一节定位 + 二至四节容纳，不必为此拆成两篇。
 
 ⭐ **变体：「工程动作」型**——`06-工程实践/部署/` 下的 `灰度发布与流量路由.md` 与 `混沌工程.md` 主体不是某个产品，而是一套动作（怎么切流量、怎么注入故障），仍按本节骨架写陈述式 H2 并带 `## 校验口径`（逐条标注哪些是本机实跑、哪些按文档未实测）。判据是**把工具换掉，这篇的判断还成立吗**：`混沌工程.md` 只有第四节讲 Chaos Mesh 的 CRD，其余八节讲实验怎么定义、注入兑现率怎么标定、爆炸半径怎么收窄，换任何一个混沌平台都不变。
 
@@ -338,7 +338,7 @@
     - Node：`MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w node:20-alpine node x.js`
 - 中间件用 `docker run -d --name <名> -p <宿主端口>:<容器端口> <镜像:tag>` 启动，容器内命令使用 `docker exec`，本机连接映射到 `127.0.0.1` 的端口。启动前检查 `docker ps -a`，避免端口或名称冲突。
 - 仅使用自己新建的容器、volume 和端口；不得复用、重启或删除用户已有的 `seckill-*`、`deploy-*`、`photography-*`、`mongodb`、`elasticsearch-dev` 等容器。实验结束用 `docker stop` 保留容器，不用 `docker rm`。
-- 常用镜像包括：`golang:1.26-alpine`、`php:8.0-cli`、`eclipse-temurin:8-jdk`、`eclipse-temurin:17-jdk`、`eclipse-temurin:24-jdk`、`node:20-alpine`、`redis:7-alpine`、`mysql:8.0`、`nats:2.10-alpine`、`mongo:7.0`、`elasticsearch:8.19.0`、`clickhouse/clickhouse-server`、`nacos/nacos-server`、`xxl-job-admin`、`prom/prometheus`、`grafana/grafana`、`jaegertracing/jaeger`、`apache/skywalking-*`。本地没有 Kafka 镜像，需要时再拉取。
+- 常用镜像包括：`golang:1.26-alpine`、`php:8.0-cli`、`eclipse-temurin:8-jdk`、`eclipse-temurin:17-jdk`、`eclipse-temurin:24-jdk`、`node:20-alpine`、`redis:7-alpine`、`mysql:8.0`、`nats:2.10-alpine`、`apache/kafka:3.9.0`、`apache/rocketmq:5.3.1`、`apachepulsar/pulsar:4.0.5`、`apache/activemq-classic:6.1.4`、`rabbitmq:4-management`、`mongo:7.0`、`elasticsearch:8.19.0`、`clickhouse/clickhouse-server`、`nacos/nacos-server`、`xxl-job-admin`、`prom/prometheus`、`grafana/grafana`、`jaegertracing/jaeger`、`apache/skywalking-*`。⚠️ Pulsar 与 ActiveMQ 实际经镜像站拉取，本地名带前缀（如 `dockerproxy.net/apachepulsar/pulsar:4.0.5`），起容器前以 `docker images` 的实际输出为准。
 - 容器版本可能与宿主机补丁版本不同，记录实测版本。编译、`go vet`、`php -l`、单测和 `gofmt` 等不依赖运行环境的操作可在宿主机执行。
 - Spring 实验使用 `eclipse-temurin:17-jdk`；挂载 Maven 仓库到 `/m2:ro`，classpath 使用 Linux 路径和 `:` 分隔。JDK 镜像不含 `src.zip` 和 `unzip`，需挂载源码包后用 `jar xf` 提取。
 - 时序类数据连跑 3～5 次并报告波动范围，只断言趋势；确定性参数、比例、日志字段和代码可精确比较。不同轮次读数不得混用。

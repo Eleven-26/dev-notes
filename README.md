@@ -91,13 +91,13 @@ dev-notes/
 └── 中间件/                  根下 中间件选型.md 是全仓组件选型总纲
     ├── 消息队列/            Kafka/、RocketMQ/、RabbitMQ/、NATS/、ActiveMQ/、Pulsar/ 六册；根下 消息队列选型对比.md / 消息模型与存储代价.md / JMS规范.md
     ├── 注册与配置中心/      Nacos.md（产品级横向对比以该篇为单一来源）
-    ├── 网关与代理/          README 导读 + OpenResty.md + 网关选型对比.md
+    ├── 网关与代理/          README 导读 + OpenResty.md（Lua 手册）+ APISIX.md（动态网关手册，有实测台）+ 网关选型对比.md
     ├── 任务调度/            xxl-job.md
     ├── 可观测性/            总纲是 可观测性选型对比.md（目录无 README，导读并入该篇）；OpenTelemetry/（三支柱缝合）、告警与响应/（规则与阈值）、指标/（指标选型对比）、日志系统/（日志系统选型对比 + 日志采集管道）、链路追踪/（链路追踪选型对比 + Skywalking/ 与 Jaeger/ 两册）
-    ├── RPC框架/             gRPC/ 为主；Dubbo/ 仅导读、Thrift/ 空壳；根下 RPC框架选型对比.md
+    ├── RPC框架/             gRPC/ 13 篇（有实测台）、Dubbo/ 3 篇（零实测）、Thrift/ 空壳；根下 RPC框架选型对比.md
     ├── 分布式协调/          README + 协调选型对比；分布式锁/ 为占位空壳（机制见 Redis 册的 分布式锁.md）
     ├── 分布式事务/          选型总纲 + DTM/ 专题
-    ├── 数据库中间件/        仅 README 导读，正文待补
+    ├── 数据库中间件/        README 导读 + ShardingSphere.md（分片产品手册，有实测台；路由算法在 数据存储/关系型/MySQL/分表与路由.md）
     └── 服务网格/            仅 README 导读，正文待补
 
 04-架构与系统/               领域系统层｜边界：理论设计（分布式/）＋ 实际场景实施（系统设计/），不写产品参数

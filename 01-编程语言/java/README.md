@@ -124,6 +124,7 @@ JMM与内存屏障.md        ① 内存模型与可见性 —— 并发问题的
 | Spring | [Spring-boot核心.md](Spring-boot核心.md)（IoC / 依赖注入 / AOP / 自动装配） |
 | JMM | [JMM与内存屏障.md](并发/JMM与内存屏障.md)（`happens-before`、伪共享、安全发布） |
 | gRPC 接入 | [接入gRPC.md](工程实践/接入gRPC.md)（手写 `MethodDescriptor` + `Marshaller`、四种模式、拦截器与 metadata；本体篇在 [gRPC 目录](../../03-数据与中间件/中间件/RPC框架/gRPC/README.md)） |
+| Dubbo 接入 | [接入Dubbo.md](工程实践/接入Dubbo.md)（`dubbo-bom` 三坐标、三种写法、单例边界与初始化顺序、`RpcContext` 跨线程、优雅退出；本体篇在 [Dubbo 目录](../../03-数据与中间件/中间件/RPC框架/Dubbo/README.md)，⚠️ 未编译未运行） |
 
 **仍然缺的**：
 
