@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="sans-serif">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="30" y="42" font-size="19" fill="#0f172a">七种上下文映射关系，本质是三档权力关系：谁改模型谁说了算</text>
+
+  <rect x="40" y="80" width="290" height="140" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="60" y="108" font-size="14" fill="#7c2d12">上游强势：下游只有两条路</text>
+  <text x="60" y="138" font-size="12" fill="#334155">① 顺从（Conformist）</text>
+  <text x="60" y="160" font-size="12" fill="#334155">② 加防腐层（ACL）</text>
+  <text x="60" y="190" font-size="12" fill="#c2410c">代价：模型被污染，或多一层翻译</text>
+
+  <rect x="355" y="80" width="290" height="140" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="375" y="108" font-size="14" fill="#1e3a8a">双方对等：还能谈</text>
+  <text x="375" y="138" font-size="12" fill="#334155">① 客户-供应商（有议价权）</text>
+  <text x="375" y="160" font-size="12" fill="#334155">② 共享内核（只共享一小块）</text>
+  <text x="375" y="190" font-size="12" fill="#1d4ed8">代价：上游要为下游排期</text>
+
+  <rect x="670" y="80" width="290" height="140" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="690" y="108" font-size="14" fill="#14532d">互不依赖：干脆不集成</text>
+  <text x="690" y="138" font-size="12" fill="#334155">分离方式（Separate Ways）</text>
+  <text x="690" y="160" font-size="12" fill="#334155">收益：两边各自独立演进</text>
+  <text x="690" y="190" font-size="12" fill="#166534">代价：数据重复、要人工对账</text>
+
+  <rect x="40" y="262" width="250" height="150" rx="12" fill="#ffffff" stroke="#64748b" stroke-width="1.5"/>
+  <text x="60" y="290" font-size="14" fill="#0f172a">上游上下文</text>
+  <text x="60" y="318" font-size="12" fill="#334155">on_hand / locked</text>
+  <text x="60" y="340" font-size="12" fill="#334155">frozen / batch_no</text>
+  <text x="60" y="362" font-size="12" fill="#334155">共 20 个字段</text>
+  <text x="60" y="392" font-size="12" fill="#64748b">语义属于上游</text>
+
+  <rect x="330" y="262" width="340" height="150" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="1.6"/>
+  <text x="350" y="290" font-size="14" fill="#7c2d12">防腐层：翻译 + 收窄 + 兜底</text>
+  <text x="350" y="318" font-size="12" fill="#334155">收窄：20 个字段只留 3 个</text>
+  <text x="350" y="340" font-size="12" fill="#334155">改语义：on_hand 减 locked 才是可售</text>
+  <text x="350" y="362" font-size="12" fill="#334155">兜底：上游超时按不可售处理</text>
+  <text x="350" y="392" font-size="12" fill="#c2410c">上游改名只改这一层</text>
+
+  <rect x="710" y="262" width="250" height="150" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="730" y="290" font-size="14" fill="#14532d">本上下文模型</text>
+  <text x="730" y="318" font-size="12" fill="#334155">StockView{SKU, Available}</text>
+  <text x="730" y="340" font-size="12" fill="#334155">只回答「能不能卖」</text>
+  <text x="730" y="362" font-size="12" fill="#334155">不含库位与批次</text>
+  <text x="730" y="392" font-size="12" fill="#166534">模型不被污染</text>
+
+  <line x1="290" y1="330" x2="326" y2="330" stroke="#64748b" stroke-width="1.8" marker-end="url(#ar3)"/>
+  <line x1="670" y1="330" x2="706" y2="330" stroke="#64748b" stroke-width="1.8" marker-end="url(#ar3)"/>
+
+  <rect x="40" y="446" width="920" height="58" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="62" y="474" font-size="13" fill="#0f172a">技术形态（HTTP / MQ / 共享库 / 同进程调用）是权力关系的结果，不是选择依据。</text>
+  <text x="62" y="494" font-size="12" fill="#64748b">检验防腐层写没写对：上游改字段名时，本上下文的领域模型要不要改 —— 要改，说明翻译漏了。</text>
+</svg>
