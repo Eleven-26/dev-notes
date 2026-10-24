@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 760" width="1000" height="760" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
   <defs>
     <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <rect x="0" y="0" width="1000" height="760" fill="#ffffff"/>
   <rect x="0" y="0" width="1000" height="74" fill="#ffffff"/>
   <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">socket 的三层结构：一个整数要穿过三层才找到那个对象</text>
   <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">只有最右一层是「网络的」；左边两层纯属进程与文件系统的记账</text>
@@ -54,7 +54,7 @@
   <text x="520" y="289" font-size="12.5" font-weight="bold" fill="#92400e">fork 之后：两张 fd 表指向同一个 file</text>
   <rect x="510" y="300" width="466" height="120" fill="#fffbeb" stroke="#d97706" stroke-width="1" rx="10"/>
   <text x="522" y="322" font-size="10.5" fill="#0f172a">parent.fd[4] ──┐</text>
-  <text x="522" y="344" font-size="10.5" fill="#0f172a">　　　　　　　├──▶ struct file（f_count=2）──▶ socket inode 47627</text>
+  <text x="522" y="344" font-size="10.5" fill="#0f172a">　　　　　　　 ├──▶ struct file（f_count=2）──▶ socket inode 47627</text>
   <text x="522" y="366" font-size="10.5" fill="#0f172a">child.fd[4]　──┘</text>
   <text x="522" y="392" font-size="9" fill="#92400e">父 close → f_count=1，不发 FIN；子 close → 0，才发 FIN</text>
   <text x="522" y="412" font-size="9" fill="#64748b">实测：父关闭后连接仍 ESTABLISHED，子还能读</text>
@@ -86,4 +86,33 @@
 
   <rect x="24" y="582" width="948" height="26" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
   <text x="36" y="599" font-size="9.5" fill="#475569">所以「Unix 把主机 + 端口叫做套接字」这句只在「已连接的客户端 socket」上勉强成立；对监听 socket、UDS socket 都不成立。</text>
+
+  <!-- 底层：对象里的两个队列，数据从哪进从哪出 -->
+  <rect x="24" y="622" width="948" height="126" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="38" y="644" font-size="12.5" font-weight="bold" fill="#475569">同一个 socket 对象里的两个队列（都在 DDR 里）：数据从哪进、从哪出</text>
+
+  <rect x="38" y="654" width="190" height="32" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="133" y="675" text-anchor="middle" font-size="10.5" fill="#1e40af">内核协议栈（收包）</text>
+  <rect x="272" y="654" width="250" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="397" y="675" text-anchor="middle" font-size="10.5" fill="#166534">接收队列 sk_receive_queue</text>
+  <rect x="610" y="654" width="180" height="32" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="700" y="675" text-anchor="middle" font-size="10.5" fill="#9a3412">用户缓冲区</text>
+  <line x1="228" y1="670" x2="272" y2="670" stroke="#475569" stroke-width="1.4" marker-end="url(#ar)"/>
+  <line x1="522" y1="670" x2="610" y2="670" stroke="#475569" stroke-width="1.4" marker-end="url(#ar)"/>
+  <text x="566" y="662" text-anchor="middle" font-size="9.5" fill="#94a3b8">CPU 拷贝</text>
+
+  <rect x="38" y="698" width="180" height="32" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="128" y="719" text-anchor="middle" font-size="10.5" fill="#9a3412">用户缓冲区</text>
+  <rect x="272" y="698" width="250" height="32" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="397" y="719" text-anchor="middle" font-size="10.5" fill="#166534">发送队列 sk_write_queue</text>
+  <rect x="610" y="698" width="190" height="32" rx="6" fill="#eff6ff" stroke="#2563eb"/>
+  <text x="705" y="719" text-anchor="middle" font-size="10.5" fill="#1e40af">内核协议栈（发包）</text>
+  <line x1="218" y1="714" x2="272" y2="714" stroke="#475569" stroke-width="1.4" marker-end="url(#ar)"/>
+  <line x1="522" y1="714" x2="610" y2="714" stroke="#475569" stroke-width="1.4" marker-end="url(#ar)"/>
+  <text x="566" y="706" text-anchor="middle" font-size="9.5" fill="#94a3b8">CPU 拷贝</text>
+
+  <rect x="806" y="654" width="152" height="76" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="818" y="674" font-size="9" fill="#64748b">队列只是「在哪儿等」，</text>
+  <text x="818" y="690" font-size="9" fill="#64748b">不等於数据已经到对端；</text>
+  <text x="818" y="706" font-size="9" fill="#64748b">Recv-Q 大＝应用读得慢</text>
 </svg>

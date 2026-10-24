@@ -281,7 +281,7 @@ UDP 长度 = 8 + 3072 = **3080** 字节，IP 层按 1480 字节一片切：
 | 软中断 backlog | `/proc/net/softnet_stat` 第 2 列 | CPU 被打满，一个核处理不过来 | 开 RPS / RFS，把中断分散到多核 |
 | socket 队列 | `Udp:RcvbufErrors` | 应用读得慢 | 见 6.3 |
 
-![UDP 收包路径上的三处丢包：网卡 RX ring、软中断 backlog、socket 接收队列，任何一处满都直接丢弃且不通知发送方](images/UDP收包路径的三处丢包.svg)
+![UDP 收包路径上的三处丢包：网卡 RX ring、软中断 backlog、socket 接收队列，任何一处满都直接丢弃且不通知发送方；上方物理硬件层说明帧是 DMA 直接写进 DDR 的 RX ring，CPU 只在软中断里处理描述符，所以第一处丢包 CPU 根本不知情](images/UDP收包路径的三处丢包.svg)
 
 这条路径解释了为什么「链路没丢包、应用却收不到」：三处缓冲各有自己的计数器，排查要按 RX ring → 软中断 → socket 队列的顺序走，最后才怀疑网络本身。
 
