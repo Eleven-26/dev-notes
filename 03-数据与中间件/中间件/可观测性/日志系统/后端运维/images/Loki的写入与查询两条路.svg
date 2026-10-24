@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Loki 的两条路：写入只存一份，查询先挑再扫</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">不建全文倒排：正文压缩成 chunk，索引只记「哪个 stream 的哪个 chunk 在哪个时间区间」</text>
+
+  <rect x="20" y="76" width="960" height="182" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">① 写入：一份数据 + 一个小索引</text>
+
+  <rect x="34" y="112" width="176" height="128" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="46" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">POST /push</text>
+  <text x="46" y="154" font-size="8.5" fill="#334155">报文按 stream 组织</text>
+  <text x="46" y="172" font-size="8.5" fill="#334155">时间戳是纳秒字符串</text>
+  <text x="46" y="192" font-size="8.5" fill="#334155">200 条 / 67.7 ms</text>
+  <text x="46" y="214" font-size="8.5" fill="#64748b">返回 204</text>
+
+  <line x1="214" y1="176" x2="248" y2="176" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="252,176 244,172 244,180" fill="#2563eb"/>
+
+  <rect x="256" y="112" width="204" height="128" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="268" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">ingester</text>
+  <text x="268" y="154" font-size="8.5" fill="#334155">按标签归到 stream</text>
+  <text x="268" y="172" font-size="8.5" fill="#334155">同标签的行攒进同一个 chunk</text>
+  <text x="268" y="192" font-size="8.5" fill="#334155">大 stream 会拆 __stream_shard__</text>
+  <text x="268" y="214" font-size="8.5" fill="#64748b">自动补 service_name / detected_level</text>
+
+  <line x1="464" y1="176" x2="498" y2="176" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="502,176 494,172 494,180" fill="#2563eb"/>
+
+  <rect x="506" y="112" width="212" height="128" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="518" y="134" font-size="10.5" font-weight="bold" fill="#78350f">chunk（内存）+ WAL</text>
+  <text x="518" y="154" font-size="8.5" fill="#334155">先写 WAL 保证不丢</text>
+  <text x="518" y="172" font-size="8.5" fill="#334155">chunk 攒到目标大小才落盘</text>
+  <text x="518" y="192" font-size="8.5" fill="#334155">本机：3 MB 数据 → WAL 3.0 MB</text>
+  <text x="518" y="214" font-size="8.5" fill="#64748b">此时 chunks/ 只有 8 KB</text>
+
+  <line x1="722" y1="176" x2="756" y2="176" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="760,176 752,172 752,180" fill="#f59e0b"/>
+
+  <rect x="764" y="112" width="200" height="128" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="776" y="134" font-size="10.5" font-weight="bold" fill="#78350f">chunks/ + tsdb 索引</text>
+  <text x="776" y="154" font-size="8.5" fill="#334155">flush 后落地</text>
+  <text x="776" y="172" font-size="8.5" fill="#334155">/flush 后 chunks 100 KB / 5 文件</text>
+  <text x="776" y="192" font-size="8.5" fill="#334155">压缩比看内容重复度</text>
+  <text x="776" y="214" font-size="8.5" fill="#64748b">随机约 2.8 倍，重复约 25 倍</text>
+
+  <rect x="20" y="270" width="960" height="182" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="294" font-size="12.5" font-weight="bold" fill="#b45309">② 查询：先用索引挑 chunk，再扫这些 chunk</text>
+
+  <rect x="34" y="306" width="176" height="128" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="46" y="328" font-size="10.5" font-weight="bold" fill="#78350f">LogQL 两段式</text>
+  <text x="46" y="348" font-size="8.5" fill="#334155">花括号里只能写标签</text>
+  <text x="46" y="366" font-size="8.5" fill="#334155">管道里才是正文过滤</text>
+  <text x="46" y="386" font-size="8.5" fill="#334155">日志查询必须带时间窗</text>
+  <text x="46" y="408" font-size="8.5" fill="#64748b">/query 只收指标类查询</text>
+
+  <line x1="214" y1="370" x2="248" y2="370" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="252,370 244,366 244,374" fill="#f59e0b"/>
+
+  <rect x="256" y="306" width="204" height="128" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="268" y="328" font-size="10.5" font-weight="bold" fill="#78350f">标签索引 → chunk 列表</text>
+  <text x="268" y="348" font-size="8.5" fill="#334155">走索引，很快</text>
+  <text x="268" y="366" font-size="8.5" fill="#334155">只留下「时间窗内、标签命中」的块</text>
+  <text x="268" y="386" font-size="8.5" fill="#334155">这一步决定扫描量的下限</text>
+  <text x="268" y="408" font-size="8.5" fill="#64748b">标签选得好不好，全看这一步</text>
+
+  <line x1="464" y1="370" x2="498" y2="370" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="502,370 494,366 494,374" fill="#f59e0b"/>
+
+  <rect x="506" y="306" width="212" height="128" fill="#fee2e2" stroke="#ef4444" stroke-width="1" rx="8"/>
+  <text x="518" y="328" font-size="10.5" font-weight="bold" fill="#991b1b">扫描 + 解压</text>
+  <text x="518" y="348" font-size="8.5" fill="#334155">这里没有索引可借</text>
+  <text x="518" y="366" font-size="8.5" fill="#334155">含 error 的过滤逐行判断</text>
+  <text x="518" y="386" font-size="8.5" fill="#334155">耗时正比于命中 chunk 的总字节</text>
+  <text x="518" y="408" font-size="8.5" fill="#64748b">范围越大越慢，且是线性增长</text>
+
+  <line x1="722" y1="370" x2="756" y2="370" stroke="#ef4444" stroke-width="1.5"/>
+  <polygon points="760,370 752,366 752,374" fill="#ef4444"/>
+
+  <rect x="764" y="306" width="200" height="128" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="776" y="328" font-size="10.5" font-weight="bold" fill="#0f172a">返回结果</text>
+  <text x="776" y="348" font-size="8.5" fill="#334155">limit 按总行数截断</text>
+  <text x="776" y="366" font-size="8.5" fill="#334155">不是每个 stream 各给 limit</text>
+  <text x="776" y="386" font-size="8.5" fill="#334155">真实条数用 count_over_time</text>
+  <text x="776" y="408" font-size="8.5" fill="#64748b">数返回行数会误判成丢数据</text>
+
+  <rect x="20" y="470" width="960" height="62" fill="#ecfdf5" stroke="#10b981" stroke-width="1" rx="8"/>
+  <text x="36" y="492" font-size="10.5" font-weight="bold" fill="#065f46">与 ES 的根本差别：ES 写两份（原文 + 倒排），Loki 写一份加一个小索引</text>
+  <text x="36" y="512" font-size="8.5" fill="#334155">所以「按关键词全文搜索」在 ES 是索引题、在 Loki 是扫描题；换来的是写入更轻、存储更小、以及「查得慢但查得起」</text>
+</svg>

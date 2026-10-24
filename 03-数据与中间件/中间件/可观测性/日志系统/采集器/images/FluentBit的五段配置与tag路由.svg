@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Fluent Bit 的五段配置：tag 是唯一把上下游连起来的东西</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">[SERVICE] 管全局，其余四段按 tag 串成一条链；Match 对不上不会报错，只会「没有数据出来」</text>
+
+  <rect x="20" y="76" width="960" height="250" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">主链：产生 → 解析 → 改写 → 缓冲 → 送出</text>
+
+  <rect x="30" y="114" width="176" height="130" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="42" y="136" font-size="10.5" font-weight="bold" fill="#0f172a">[INPUT]</text>
+  <text x="42" y="156" font-size="8.5" fill="#334155">Name  dummy / tail / forward</text>
+  <text x="42" y="174" font-size="8.5" fill="#334155">Tag   lab</text>
+  <text x="42" y="192" font-size="8.5" fill="#334155">Parser json</text>
+  <text x="42" y="212" font-size="8.5" fill="#64748b">打不好 tag，后面全落空</text>
+  <text x="42" y="230" font-size="8.5" fill="#64748b">本机还自动补了 date 字段</text>
+
+  <line x1="210" y1="180" x2="244" y2="180" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="248,180 240,176 240,184" fill="#2563eb"/>
+
+  <rect x="252" y="114" width="168" height="130" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="264" y="136" font-size="10.5" font-weight="bold" fill="#0f172a">[PARSER]</text>
+  <text x="264" y="156" font-size="8.5" fill="#334155">Format json / regex / logfmt</text>
+  <text x="264" y="174" font-size="8.5" fill="#334155">定义「怎么切字段」</text>
+  <text x="264" y="192" font-size="8.5" fill="#334155">被 input 或 filter 引用才生效</text>
+  <text x="264" y="212" font-size="8.5" fill="#64748b">定义了不引用 = 白写</text>
+  <text x="264" y="230" font-size="8.5" fill="#64748b">解析失败静默降级</text>
+
+  <line x1="424" y1="180" x2="458" y2="180" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="462,180 454,176 454,184" fill="#2563eb"/>
+
+  <rect x="466" y="114" width="168" height="130" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="478" y="136" font-size="10.5" font-weight="bold" fill="#0f172a">[FILTER]</text>
+  <text x="478" y="156" font-size="8.5" fill="#334155">Name  modify / grep / lua</text>
+  <text x="478" y="174" font-size="8.5" fill="#334155">Match lab</text>
+  <text x="478" y="192" font-size="8.5" fill="#334155">Add / Rename / Remove</text>
+  <text x="478" y="212" font-size="8.5" fill="#64748b">Match 写错 = 过滤不生效</text>
+  <text x="478" y="230" font-size="8.5" fill="#64748b">本机 message 改成 msg 成功</text>
+
+  <line x1="638" y1="180" x2="672" y2="180" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="676,180 668,176 668,184" fill="#2563eb"/>
+
+  <rect x="680" y="114" width="150" height="130" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="692" y="136" font-size="10.5" font-weight="bold" fill="#78350f">chunk 缓冲</text>
+  <text x="692" y="156" font-size="8.5" fill="#334155">flush 与重试以 chunk 为单位</text>
+  <text x="692" y="174" font-size="8.5" fill="#334155">memory 或 filesystem</text>
+  <text x="692" y="192" font-size="8.5" fill="#334155">背压都发生在这里</text>
+  <text x="692" y="212" font-size="8.5" fill="#64748b">失败日志带 .flb 文件名</text>
+  <text x="692" y="230" font-size="8.5" fill="#64748b">重试间隔带抖动</text>
+
+  <line x1="834" y1="180" x2="862" y2="180" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="866,180 858,176 858,184" fill="#f59e0b"/>
+
+  <rect x="870" y="114" width="94" height="130" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="880" y="136" font-size="10.5" font-weight="bold" fill="#1e3a8a">[OUTPUT]</text>
+  <text x="880" y="156" font-size="8.5" fill="#334155">Name http</text>
+  <text x="880" y="174" font-size="8.5" fill="#334155">Match *</text>
+  <text x="880" y="192" font-size="8.5" fill="#334155">Retry_Limit</text>
+  <text x="880" y="212" font-size="8.5" fill="#64748b">写不出去就积压</text>
+
+  <line x1="118" y1="270" x2="118" y2="300" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="126" y="286" font-size="8.5" fill="#64748b">tag=lab</text>
+
+  <rect x="30" y="300" width="934" height="14" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+  <text x="40" y="311" font-size="8" fill="#64748b">tag 从 INPUT 一路带到 FILTER 与 OUTPUT，Match 按它筛选；通配符只有 *，正则要用 Match_regex</text>
+
+  <rect x="20" y="340" width="960" height="104" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="10"/>
+  <text x="36" y="364" font-size="12.5" font-weight="bold" fill="#334155">[SERVICE]：全局段，影响上面每一段</text>
+  <text x="36" y="386" font-size="8.5" fill="#334155">Flush 1（多久推一次） / Log_Level info / Parsers_File（路径写错只报 error 继续跑）</text>
+  <text x="36" y="404" font-size="8.5" fill="#334155">Storage.path / Storage.type（memory 会暂停输入，filesystem 溢到磁盘） / Storage.max_chunks_up</text>
+  <text x="36" y="426" font-size="8.5" fill="#64748b">本机读到：memory 时 max_chunks_up=128；filesystem 时数据先进 WAL，磁盘够用就不暂停</text>
+
+  <rect x="20" y="456" width="960" height="50" fill="#fff1f2" stroke="#f43f5e" stroke-width="1" rx="8"/>
+  <text x="36" y="478" font-size="10.5" font-weight="bold" fill="#9f1239">最贵的一课：Mem_Buf_Limit 在 filesystem 存储下不生效</text>
+  <text x="36" y="496" font-size="8.5" fill="#334155">同一份配置只改 Storage.type：memory 触发 paused (mem buf overlimit)，filesystem 则继续灌盘、只在 flush 失败次数上体现</text>
+</svg>

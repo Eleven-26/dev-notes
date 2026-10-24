@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Vector 的拓扑：三段组件，靠 inputs 接线</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">拓扑是 DAG 不是链：一个 source 可喂多个 transform，一个 transform 可喂多个 sink</text>
+
+  <rect x="20" y="76" width="240" height="320" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="10"/>
+  <text x="34" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">sources：产数据</text>
+
+  <rect x="34" y="112" width="212" height="110" fill="#ffffff" stroke="#93c5fd" stroke-width="1" rx="8"/>
+  <text x="46" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">demo_logs</text>
+  <text x="46" y="154" font-size="8.5" fill="#334155">type: demo_logs</text>
+  <text x="46" y="172" font-size="8.5" fill="#334155">format: json / interval: 0.05</text>
+  <text x="46" y="192" font-size="8.5" fill="#64748b">本机 5 秒输出 343 条</text>
+  <text x="46" y="210" font-size="8.5" fill="#64748b">每条自带 host / service 元数据</text>
+
+  <rect x="34" y="240" width="212" height="110" fill="#ffffff" stroke="#93c5fd" stroke-width="1" rx="8"/>
+  <text x="46" y="262" font-size="10.5" font-weight="bold" fill="#0f172a">file / kubernetes_logs</text>
+  <text x="46" y="282" font-size="8.5" fill="#334155">type: file</text>
+  <text x="46" y="300" font-size="8.5" fill="#334155">include / exclude / read_from</text>
+  <text x="46" y="320" font-size="8.5" fill="#64748b">生产最常用的一类 source</text>
+  <text x="46" y="338" font-size="8.5" fill="#64748b">本机未实测（只用 demo_logs）</text>
+
+  <rect x="288" y="76" width="380" height="320" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="10"/>
+  <text x="302" y="100" font-size="12.5" font-weight="bold" fill="#78350f">transforms：唯一能改内容的地方</text>
+
+  <rect x="302" y="112" width="352" height="122" fill="#ffffff" stroke="#fcd34d" stroke-width="1" rx="8"/>
+  <text x="314" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">remap normalize（VRL）</text>
+  <text x="314" y="154" font-size="8.5" fill="#334155">.env = "lab"</text>
+  <text x="314" y="172" font-size="8.5" fill="#334155">.level = downcase(to_string(.level) ?? "info")</text>
+  <text x="314" y="190" font-size="8.5" fill="#64748b">?? 只兜「函数失败」，兜不住 null，实测得到空串</text>
+  <text x="314" y="212" font-size="8.5" fill="#64748b">写错 downcase! 直接 E620 编译失败（运行前就拒）</text>
+
+  <rect x="302" y="246" width="352" height="122" fill="#ffffff" stroke="#fcd34d" stroke-width="1" rx="8"/>
+  <text x="314" y="268" font-size="10.5" font-weight="bold" fill="#0f172a">remap mask（脱敏）</text>
+  <text x="314" y="288" font-size="8.5" fill="#334155">replace(.msg, r'1[3-9]\d{9}', "&lt;PHONE&gt;")</text>
+  <text x="314" y="306" font-size="8.5" fill="#334155">replace(.msg, r'...@...', "&lt;EMAIL&gt;")</text>
+  <text x="314" y="328" font-size="8.5" fill="#64748b">vector test 两用例 passed：改对了 + 不误伤</text>
+  <text x="314" y="350" font-size="8.5" fill="#64748b">反例断言失败退出 78，并打印实际值</text>
+
+  <rect x="692" y="76" width="288" height="320" fill="#ecfdf5" stroke="#10b981" stroke-width="1" rx="10"/>
+  <text x="706" y="100" font-size="12.5" font-weight="bold" fill="#065f46">sinks：送出去</text>
+
+  <rect x="706" y="112" width="260" height="110" fill="#ffffff" stroke="#6ee7b7" stroke-width="1" rx="8"/>
+  <text x="718" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">console</text>
+  <text x="718" y="154" font-size="8.5" fill="#334155">type: console</text>
+  <text x="718" y="172" font-size="8.5" fill="#334155">encoding.codec: json</text>
+  <text x="718" y="192" font-size="8.5" fill="#64748b">encoding 是必填；0.4x 在 codec 里</text>
+  <text x="718" y="210" font-size="8.5" fill="#64748b">旧版顶层写法会报 missing field</text>
+
+  <rect x="706" y="240" width="260" height="110" fill="#ffffff" stroke="#6ee7b7" stroke-width="1" rx="8"/>
+  <text x="718" y="262" font-size="10.5" font-weight="bold" fill="#0f172a">elasticsearch / loki / kafka</text>
+  <text x="718" y="282" font-size="8.5" fill="#334155">批量、重试、压缩都在 sink 上配</text>
+  <text x="718" y="300" font-size="8.5" fill="#334155">healthcheck 决定是否摘除端point</text>
+  <text x="718" y="320" font-size="8.5" fill="#64748b">本机未实测真实后端写入</text>
+
+  <line x1="248" y1="167" x2="298" y2="167" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="302,167 294,163 294,171" fill="#2563eb"/>
+  <line x1="248" y1="295" x2="298" y2="295" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="302,295 294,291 294,299" fill="#2563eb"/>
+
+  <line x1="656" y1="173" x2="702" y2="173" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="706,173 698,169 698,177" fill="#f59e0b"/>
+  <line x1="656" y1="307" x2="702" y2="307" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="706,307 698,303 698,311" fill="#f59e0b"/>
+
+  <rect x="20" y="412" width="960" height="94" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="36" y="436" font-size="10.5" font-weight="bold" fill="#334155">三道校验，强度递增（本机都跑过）</text>
+  <text x="36" y="458" font-size="8.5" fill="#334155">vector validate cfg.yaml：查组件能否构建 + VRL 能否编译，坏 VRL 退出 78</text>
+  <text x="36" y="476" font-size="8.5" fill="#334155">vector validate --no-environment cfg.yaml：只查 YAML 结构，坏 VRL 也返回 0（不能当门禁）</text>
+  <text x="36" y="494" font-size="8.5" fill="#64748b">vector test cfg.yaml tests.yaml：真跑输入断言输出，这才证明「语义对不对」</text>
+</svg>

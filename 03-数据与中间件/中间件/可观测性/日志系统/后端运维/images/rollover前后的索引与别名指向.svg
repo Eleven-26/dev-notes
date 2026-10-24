@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">rollover 前后：别名不变，写入目标挪走</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">applog 是稳定入口；rollover 只把 is_write_index 挪到新索引，旧索引仍留在别名下只读</text>
+
+  <rect x="20" y="76" width="960" height="150" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">① rollover 之前：一个索引接全部写入</text>
+
+  <rect x="40" y="112" width="200" height="96" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="52" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">应用侧写入</text>
+  <text x="52" y="154" font-size="8.5" fill="#334155">bulk 打到别名 applog</text>
+  <text x="52" y="172" font-size="8.5" fill="#334155">不写具体索引名</text>
+  <text x="52" y="192" font-size="8.5" fill="#64748b">这是「换索引不改代码」的前提</text>
+
+  <line x1="244" y1="160" x2="296" y2="160" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="300,160 292,156 292,164" fill="#2563eb"/>
+
+  <rect x="304" y="112" width="260" height="96" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="316" y="134" font-size="10.5" font-weight="bold" fill="#1e3a8a">alias: applog</text>
+  <text x="316" y="154" font-size="8.5" fill="#334155">is_write_index = true</text>
+  <text x="316" y="172" font-size="8.5" fill="#334155">指向 applog-000001</text>
+  <text x="316" y="192" font-size="8.5" fill="#64748b">别名是写入与查询的稳定入口</text>
+
+  <line x1="568" y1="160" x2="616" y2="160" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="620,160 612,156 612,164" fill="#2563eb"/>
+
+  <rect x="624" y="112" width="316" height="96" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="636" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">applog-000001</text>
+  <text x="636" y="154" font-size="8.5" fill="#334155">300 docs / 10 段 / 78 991 B</text>
+  <text x="636" y="172" font-size="8.5" fill="#334155">phase = hot</text>
+  <text x="636" y="192" font-size="8.5" fill="#64748b">段数多是因为分 10 批写入、每批都 refresh</text>
+
+  <rect x="20" y="246" width="960" height="170" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="270" font-size="12.5" font-weight="bold" fill="#b45309">② rollover 之后：写入挪到新索引，旧的降级为只读</text>
+
+  <rect x="40" y="282" width="230" height="116" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="52" y="304" font-size="10.5" font-weight="bold" fill="#78350f">alias: applog</text>
+  <text x="52" y="324" font-size="8.5" fill="#334155">is_write_index 挪到 000002</text>
+  <text x="52" y="342" font-size="8.5" fill="#334155">别名本身不变</text>
+  <text x="52" y="362" font-size="8.5" fill="#64748b">查 applog 会同时命中新旧两个索引</text>
+  <text x="52" y="382" font-size="8.5" fill="#64748b">所以别名下索引数会随天数增长</text>
+
+  <line x1="274" y1="340" x2="326" y2="340" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="330,340 322,336 322,344" fill="#f59e0b"/>
+
+  <rect x="334" y="282" width="290" height="116" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="346" y="304" font-size="10.5" font-weight="bold" fill="#78350f">applog-000002（新）</text>
+  <text x="346" y="324" font-size="8.5" fill="#334155">is_write_index = true</text>
+  <text x="346" y="342" font-size="8.5" fill="#334155">0 docs</text>
+  <text x="346" y="362" font-size="8.5" fill="#334155">phase = hot / check-rollover-ready</text>
+  <text x="346" y="382" font-size="8.5" fill="#64748b">新写入全部落到这里</text>
+
+  <rect x="644" y="282" width="296" height="116" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="656" y="304" font-size="10.5" font-weight="bold" fill="#334155">applog-000001（旧）</text>
+  <text x="656" y="324" font-size="8.5" fill="#334155">不再是写入目标，仍在别名下</text>
+  <text x="656" y="342" font-size="8.5" fill="#334155">phase = warm</text>
+  <text x="656" y="362" font-size="8.5" fill="#334155">1 段 / 29 077 B（forcemerge 后）</text>
+  <text x="656" y="382" font-size="8.5" fill="#64748b">120 秒后被 delete 阶段删除</text>
+
+  <rect x="20" y="436" width="960" height="62" fill="#ecfdf5" stroke="#10b981" stroke-width="1" rx="8"/>
+  <text x="36" y="458" font-size="10.5" font-weight="bold" fill="#065f46">为什么这层设计值得记：写入方的代码一行都不用改</text>
+  <text x="36" y="478" font-size="8.5" fill="#334155">滚动、合并、删除全部由 ILM 在别名背后完成；副作用是「查最近 30 天」要扫别名下所有还活着的索引，这正是 delete 阶段也在保查询延迟的原因</text>
+</svg>

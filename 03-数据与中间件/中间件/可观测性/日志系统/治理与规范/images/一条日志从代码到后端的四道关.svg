@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条日志从代码到后端的四道关：每一关都在改它</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">问题几乎从不出在某一关做错了，而出在「上游以为下游会补」——没有人对最终那条日志负责</text>
+
+  <rect x="20" y="76" width="960" height="290" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">四道关各自决定什么，以及各自对下游的错误假设</text>
+
+  <rect x="30" y="112" width="208" height="210" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="42" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">① SDK：决定长什么样</text>
+  <text x="42" y="158" font-size="8.5" fill="#334155">字段名 全部 snake_case</text>
+  <text x="42" y="176" font-size="8.5" fill="#334155">级别语义 写死在封装里</text>
+  <text x="42" y="194" font-size="8.5" fill="#334155">trace_id 从 context 取</text>
+  <text x="42" y="212" font-size="8.5" fill="#334155">采样 WARN 以上全留</text>
+  <line x1="42" y1="228" x2="226" y2="228" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="42" y="248" font-size="8.5" fill="#9f1239">假设 采集器会补 service 名</text>
+  <text x="42" y="266" font-size="8.5" fill="#334155">实际 只能补采集器维度</text>
+  <text x="42" y="284" font-size="8.5" fill="#64748b">业务语义补不了</text>
+  <text x="42" y="308" font-size="8.5" fill="#64748b">默认值就是规范</text>
+
+  <line x1="240" y1="216" x2="266" y2="216" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="270,216 262,212 262,220" fill="#2563eb"/>
+
+  <rect x="272" y="112" width="208" height="210" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="284" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">② 采集器：留不留、怎么切</text>
+  <text x="284" y="158" font-size="8.5" fill="#334155">JSON 解析失败是静默的</text>
+  <text x="284" y="176" font-size="8.5" fill="#334155">多行拼接靠首行正则</text>
+  <text x="284" y="194" font-size="8.5" fill="#334155">字段可改名 message→msg</text>
+  <text x="284" y="212" font-size="8.5" fill="#334155">低优先级可整条丢弃</text>
+  <line x1="284" y1="228" x2="468" y2="228" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="284" y="248" font-size="8.5" fill="#9f1239">假设 后端会自己解析 JSON</text>
+  <text x="284" y="266" font-size="8.5" fill="#334155">实际 失败只剩一个 log 键</text>
+  <text x="284" y="284" font-size="8.5" fill="#64748b">字段全掉进 message 里</text>
+  <text x="284" y="308" font-size="8.5" fill="#64748b">排障时才知道查不到</text>
+
+  <line x1="482" y1="216" x2="508" y2="216" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="512,216 504,212 504,220" fill="#2563eb"/>
+
+  <rect x="514" y="112" width="208" height="210" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="526" y="134" font-size="10.5" font-weight="bold" fill="#78350f">③ 后端：存多久、怎么查</text>
+  <text x="526" y="158" font-size="8.5" fill="#334155">mapping 建错要重建索引</text>
+  <text x="526" y="176" font-size="8.5" fill="#334155">分片数决定查询并行度</text>
+  <text x="526" y="194" font-size="8.5" fill="#334155">ILM hot→warm→delete</text>
+  <text x="526" y="212" font-size="8.5" fill="#334155">全文倒排 或 只索引标签</text>
+  <line x1="526" y1="228" x2="710" y2="228" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="526" y="248" font-size="8.5" fill="#9f1239">假设 查询时会做类型转换</text>
+  <text x="526" y="266" font-size="8.5" fill="#334155">实际 text 字段聚合不了</text>
+  <text x="526" y="284" font-size="8.5" fill="#64748b">duration 写成 "1.2s"</text>
+  <text x="526" y="308" font-size="8.5" fill="#64748b">改类型要 reindex</text>
+
+  <line x1="724" y1="216" x2="750" y2="216" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="754,216 746,212 746,220" fill="#f59e0b"/>
+
+  <rect x="756" y="112" width="204" height="210" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="768" y="134" font-size="10.5" font-weight="bold" fill="#1e3a8a">④ 查询方：值不值得索引</text>
+  <text x="768" y="158" font-size="8.5" fill="#334155">term 查 text 整串 0 命中</text>
+  <text x="768" y="176" font-size="8.5" fill="#334155">index:false 永远搜不到</text>
+  <text x="768" y="194" font-size="8.5" fill="#334155">track_total_hits 慢 5 倍</text>
+  <text x="768" y="212" font-size="8.5" fill="#334155">三种拼法写三遍查询</text>
+  <line x1="768" y1="228" x2="948" y2="228" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="768" y="248" font-size="8.5" fill="#9f1239">假设 字段名大家都一样</text>
+  <text x="768" y="266" font-size="8.5" fill="#334155">实际 trace_id 三种拼法</text>
+  <text x="768" y="284" font-size="8.5" fill="#64748b">trace_id / traceId / tid</text>
+  <text x="768" y="308" font-size="8.5" fill="#64748b">规范没进 SDK 的后果</text>
+
+  <text x="36" y="342" font-size="8.5" fill="#334155">⭐ 唯一判据：新人第一天写的日志，和老代码的日志能不能用一个查询同时捞出来？能，说明规范进了 SDK；不能，说明规范还在文档里。</text>
+  <text x="36" y="358" font-size="8.5" fill="#64748b">四道关的顺序不能倒：越靠上游改，成本越低；越靠下游改，越可能已经丢了信息（脱敏不可逆、解析失败的字节不回来）。</text>
+
+  <rect x="20" y="382" width="960" height="86" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="10"/>
+  <text x="36" y="404" font-size="12.5" font-weight="bold" fill="#334155">成本账：SDK 这一关的字段设计，实测差价接近一倍</text>
+  <text x="36" y="426" font-size="8.5" fill="#334155">本机 Go 1.26.5 + log/slog，1000 条、每条 4 个业务字段取平均：printf 手拼 106.9 B/行 ／ Text handler 158.9 B ／ JSON handler 188.7 B（+76.6%）</text>
+  <text x="36" y="444" font-size="8.5" fill="#334155">JSON 字段名缩写成短名 177.8 B（只省 5.8%）／ 去掉 timestamp 字段 145.9 B（−22.7%）——省字段名不如省字段</text>
+  <text x="36" y="460" font-size="8.5" fill="#64748b">所以字段表要短而稳：加一个大字段的代价，远大于把 trace_id 缩成 tid 省下来的那点体积。</text>
+
+  <rect x="20" y="484" width="960" height="64" fill="#fff1f2" stroke="#f43f5e" stroke-width="1" rx="8"/>
+  <text x="36" y="506" font-size="10.5" font-weight="bold" fill="#9f1239">最贵的那条：四道关里只有 SDK 能「补上语义」，下游全都是被动接收</text>
+  <text x="36" y="524" font-size="8.5" fill="#334155">采集器能补 IP、容器名、节点名，但不知道这次请求属于哪个租户；后端能把字段切成词条，但切不出原文里没有的东西。</text>
+  <text x="36" y="540" font-size="8.5" fill="#64748b">把 service、env、trace_id、字段名这几件事下沉到 SDK 的默认值里，后面三关才只是「搬运」。</text>
+</svg>

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" width="1000" height="590" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数据流上的四个可脱敏点：越往右越便宜，也越不可靠</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">同一个手机号，在四个位置都改得掉；差别只在「要不要发版」和「漏掉之后还能不能补救」</text>
+
+  <rect x="20" y="76" width="960" height="310" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">应用代码 → SDK → 采集器 → 后端 ingest，四者的取舍各不相同</text>
+
+  <rect x="32" y="112" width="210" height="228" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="44" y="134" font-size="10.5" font-weight="bold" fill="#14532d">① 应用代码（最准）</text>
+  <text x="44" y="158" font-size="9" font-weight="bold" fill="#334155">能做</text>
+  <text x="44" y="174" font-size="8.5" fill="#334155">干脆不写这个字段</text>
+  <text x="44" y="194" font-size="9" font-weight="bold" fill="#334155">代价</text>
+  <text x="44" y="210" font-size="8.5" fill="#334155">要发版、要改业务代码</text>
+  <text x="44" y="230" font-size="9" font-weight="bold" fill="#334155">覆盖</text>
+  <text x="44" y="246" font-size="8.5" fill="#334155">只有本服务、本调用点</text>
+  <text x="44" y="266" font-size="9" font-weight="bold" fill="#334155">漏掉</text>
+  <text x="44" y="282" font-size="8.5" fill="#334155">不会漏：不写就不存在</text>
+  <text x="44" y="308" font-size="8.5" fill="#14532d">⭐ 凭据（密码 / token）</text>
+  <text x="44" y="324" font-size="8.5" fill="#14532d">只能在这里拦，不是脱敏</text>
+
+  <line x1="246" y1="226" x2="264" y2="226" stroke="#16a34a" stroke-width="1.5"/>
+  <polygon points="268,226 260,222 260,230" fill="#16a34a"/>
+
+  <rect x="270" y="112" width="210" height="228" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="282" y="134" font-size="10.5" font-weight="bold" fill="#1e3a8a">② SDK（统一出口）</text>
+  <text x="282" y="158" font-size="9" font-weight="bold" fill="#334155">能做</text>
+  <text x="282" y="174" font-size="8.5" fill="#334155">按字段名替换或删除</text>
+  <text x="282" y="194" font-size="9" font-weight="bold" fill="#334155">代价</text>
+  <text x="282" y="210" font-size="8.5" fill="#334155">要发版，但只改一处</text>
+  <text x="282" y="230" font-size="9" font-weight="bold" fill="#334155">覆盖</text>
+  <text x="282" y="246" font-size="8.5" fill="#334155">本服务走 SDK 的日志</text>
+  <text x="282" y="266" font-size="9" font-weight="bold" fill="#334155">漏掉</text>
+  <text x="282" y="282" font-size="8.5" fill="#334155">printf 绕过 SDK 就漏</text>
+  <text x="282" y="308" font-size="8.5" fill="#1e3a8a">⭐ 结构化字段（user_id</text>
+  <text x="282" y="324" font-size="8.5" fill="#1e3a8a">/ phone）最省事</text>
+
+  <line x1="484" y1="226" x2="502" y2="226" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="506,226 498,222 498,230" fill="#2563eb"/>
+
+  <rect x="508" y="112" width="210" height="228" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="520" y="134" font-size="10.5" font-weight="bold" fill="#78350f">③ 采集器（覆盖全量）</text>
+  <text x="520" y="158" font-size="9" font-weight="bold" fill="#334155">能做</text>
+  <text x="520" y="174" font-size="8.5" fill="#334155">正则 replace（Vector）</text>
+  <text x="520" y="194" font-size="9" font-weight="bold" fill="#334155">代价</text>
+  <text x="520" y="210" font-size="8.5" fill="#334155">改配置、正则需要测</text>
+  <text x="520" y="230" font-size="9" font-weight="bold" fill="#334155">覆盖</text>
+  <text x="520" y="246" font-size="8.5" fill="#334155">所有接入进来的日志</text>
+  <text x="520" y="266" font-size="9" font-weight="bold" fill="#334155">漏掉</text>
+  <text x="520" y="282" font-size="8.5" fill="#334155">漏一种形态就真漏了</text>
+  <text x="520" y="308" font-size="8.5" fill="#78350f">⭐ 正文里的直接标识</text>
+  <text x="520" y="324" font-size="8.5" fill="#78350f">（手机 / 邮箱）放这里</text>
+
+  <line x1="722" y1="226" x2="740" y2="226" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="744,226 736,222 736,230" fill="#f59e0b"/>
+
+  <rect x="746" y="112" width="210" height="228" fill="#fff1f2" stroke="#f43f5e" stroke-width="1" rx="8"/>
+  <text x="758" y="134" font-size="10.5" font-weight="bold" fill="#9f1239">④ 后端 ingest（兜底）</text>
+  <text x="758" y="158" font-size="9" font-weight="bold" fill="#334155">能做</text>
+  <text x="758" y="174" font-size="8.5" fill="#334155">gsub 替换 / redact 识别</text>
+  <text x="758" y="194" font-size="9" font-weight="bold" fill="#334155">代价</text>
+  <text x="758" y="210" font-size="8.5" fill="#334155">redact 需白金许可</text>
+  <text x="758" y="230" font-size="9" font-weight="bold" fill="#334155">覆盖</text>
+  <text x="758" y="246" font-size="8.5" fill="#334155">只覆盖走这条 pipeline</text>
+  <text x="758" y="266" font-size="9" font-weight="bold" fill="#334155">漏掉</text>
+  <text x="758" y="282" font-size="8.5" fill="#9f1239">已落盘，不可逆</text>
+  <text x="758" y="308" font-size="8.5" fill="#9f1239">⚠ 另开索引 / 另起采集器</text>
+  <text x="758" y="324" font-size="8.5" fill="#9f1239">就绕过了这条 pipeline</text>
+
+  <text x="36" y="362" font-size="8.5" fill="#334155">⭐ 顺序上唯一不能讨价还价的一条：凭据在 ①，直接标识在 ②③，③ 的正则必须配单测（Vector 的 vector test 能跑正例 + 反例），④ 只当兜底。</text>
+  <text x="36" y="378" font-size="8.5" fill="#64748b">代价曲线与可靠性曲线是反向的：越往前覆盖越彻底但越贵，越往后越便宜但链路一绕就失效——所以四点是叠加，不是二选一。</text>
+
+  <rect x="20" y="400" width="960" height="84" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="10"/>
+  <text x="36" y="422" font-size="12.5" font-weight="bold" fill="#334155">三类数据各自的落点（按「能不能还原」选，不按「哪个方便」选）</text>
+  <text x="36" y="444" font-size="8.5" fill="#334155">凭据（密码 / token / cookie / 私钥）→ ① 一律不写；② 再兜一层删除。直接标识（手机 / 身份证 / 邮箱 / 卡号）→ ③ 正则替换 &lt;PHONE&gt; / &lt;EMAIL&gt;，② 也补一遍。</text>
+  <text x="36" y="462" font-size="8.5" fill="#334155">准标识（生日 / 邮编 / 设备 ID / 精确地址）→ 不替换而是泛化：截断成 前 3 位、或取区间。哈希只用于「同一用户的多条日志能串起来」，且必须加盐 + 定期轮换。</text>
+  <text x="36" y="478" font-size="8.5" fill="#64748b">⚠ 不加盐的哈希对 11 位手机号等于没脱敏——空间只有千亿级，彩虹表几秒就破。</text>
+
+  <rect x="20" y="498" width="960" height="74" fill="#fff1f2" stroke="#f43f5e" stroke-width="1" rx="8"/>
+  <text x="36" y="520" font-size="10.5" font-weight="bold" fill="#9f1239">后端侧的两条实测：一个要钱、一个只能逐条堆，所以它只能是兜底</text>
+  <text x="36" y="538" font-size="8.5" fill="#334155">redact processor 在基础许可下直接报 security_exception / license.expired.feature: [redact_processor]；换 gsub 可用，但要为每种形态各写一条。</text>
+  <text x="36" y="556" font-size="8.5" fill="#334155">脱敏不可逆的验证：入库 user &lt;EMAIL&gt; phone &lt;PHONE&gt; 后，按原邮箱 match_phrase 查出 0 条，按 EMAIL 查出 1 条——想让运营「按用户查日志」的路，在这一点上就断了。</text>
+</svg>
