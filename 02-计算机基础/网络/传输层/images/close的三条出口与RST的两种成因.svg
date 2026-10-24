@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 624" width="1000" height="624" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="624" fill="#ffffff"/>
+  <rect x="0" y="0" width="1000" height="74" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">close 的三条出口：FIN 还是 RST，由两个独立的开关决定</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">同一份「正常关闭」的代码，只因为没读完或设了 linger，对端看到的就是 connection reset</text>
+
+  <rect x="30" y="84" width="940" height="34" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="42" y="106" font-size="11.5" font-weight="bold" fill="#0f172a">close(fd) 被调用 —— 内核这时候检查两件互不相干的事：接收队列里还有没有未读数据？这个 socket 有没有设 SO_LINGER？</text>
+
+  <line x1="185" y1="122" x2="185" y2="146" stroke="#475569" stroke-width="1.6" marker-end="url(#ar3)"/>
+  <line x1="500" y1="122" x2="500" y2="146" stroke="#475569" stroke-width="1.6" marker-end="url(#ar3)"/>
+  <line x1="815" y1="122" x2="815" y2="146" stroke="#475569" stroke-width="1.6" marker-end="url(#ar3)"/>
+
+  <rect x="40" y="152" width="290" height="80" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4" rx="10"/>
+  <text x="52" y="174" font-size="12" font-weight="bold" fill="#166534">出口 A：唯一走四次挥手的路</text>
+  <text x="52" y="196" font-size="10" fill="#334155">接收队列已读空</text>
+  <text x="52" y="216" font-size="10" fill="#334155">且未设 SO_LINGER（或 l_onoff=0）</text>
+
+  <rect x="355" y="152" width="290" height="80" fill="#fef2f2" stroke="#dc2626" stroke-width="1.4" rx="10"/>
+  <text x="367" y="174" font-size="12" font-weight="bold" fill="#991b1b">出口 B：最常见的那条误伤</text>
+  <text x="367" y="196" font-size="10" fill="#334155">接收队列里还有未读数据</text>
+  <text x="367" y="216" font-size="10" fill="#334155">→ 内核判定「这些数据你不会再读了」</text>
+
+  <rect x="670" y="152" width="290" height="80" fill="#fff7ed" stroke="#ea580c" stroke-width="1.4" rx="10"/>
+  <text x="682" y="174" font-size="12" font-weight="bold" fill="#9a3412">出口 C：读光了也照样 RST</text>
+  <text x="682" y="196" font-size="10" fill="#334155">SO_LINGER = { l_onoff=1, l_linger=0 }</text>
+  <text x="682" y="216" font-size="10" fill="#334155">→ 丢弃发送缓冲区，立即断</text>
+
+  <line x1="185" y1="236" x2="185" y2="256" stroke="#475569" stroke-width="1.4" marker-end="url(#ar3)"/>
+  <line x1="500" y1="236" x2="500" y2="256" stroke="#475569" stroke-width="1.4" marker-end="url(#ar3)"/>
+  <line x1="815" y1="236" x2="815" y2="256" stroke="#475569" stroke-width="1.4" marker-end="url(#ar3)"/>
+
+  <rect x="40" y="262" width="290" height="52" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="52" y="284" font-size="11" font-weight="bold" fill="#0f172a">发 FIN，进 FIN_WAIT_1</text>
+  <text x="52" y="302" font-size="9.5" fill="#334155">后台尽力把剩余数据送完再关</text>
+
+  <rect x="355" y="262" width="290" height="52" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="367" y="284" font-size="11" font-weight="bold" fill="#0f172a">发 RST，连接直接作废</text>
+  <text x="367" y="302" font-size="9.5" fill="#334155">未读数据被丢弃，不走四次挥手</text>
+
+  <rect x="670" y="262" width="290" height="52" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="682" y="284" font-size="11" font-weight="bold" fill="#0f172a">发 RST，且丢弃发送缓冲区</text>
+  <text x="682" y="302" font-size="9.5" fill="#334155">已写未确认的数据对端收不到</text>
+
+  <line x1="185" y1="318" x2="185" y2="338" stroke="#475569" stroke-width="1.4" marker-end="url(#ar3)"/>
+  <line x1="500" y1="318" x2="500" y2="338" stroke="#475569" stroke-width="1.4" marker-end="url(#ar3)"/>
+  <line x1="815" y1="318" x2="815" y2="338" stroke="#475569" stroke-width="1.4" marker-end="url(#ar3)"/>
+
+  <rect x="40" y="344" width="290" height="76" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="52" y="366" font-size="10.5" font-weight="bold" fill="#1e40af">对端 read → 返回 0</text>
+  <text x="52" y="386" font-size="9.5" fill="#334155">EOF，正常结束</text>
+  <text x="52" y="406" font-size="9" fill="#64748b">抓包看到 Flags [F.]</text>
+
+  <rect x="355" y="344" width="290" height="76" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="367" y="366" font-size="10.5" font-weight="bold" fill="#1e40af">对端 read → -1，errno=104</text>
+  <text x="367" y="386" font-size="9.5" fill="#334155">ECONNRESET，常被写成 connection reset</text>
+  <text x="367" y="406" font-size="9" fill="#64748b">抓包看到 Flags [R.]</text>
+
+  <rect x="670" y="344" width="290" height="76" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="682" y="366" font-size="10.5" font-weight="bold" fill="#1e40af">对端 read → -1，errno=104</text>
+  <text x="682" y="386" font-size="9.5" fill="#334155">与出口 B 的表现完全一样</text>
+  <text x="682" y="406" font-size="9" fill="#64748b">光看对端报错分不出是哪条</text>
+
+  <rect x="40" y="432" width="920" height="24" fill="#fef2f2" stroke="#fca5a5" stroke-width="1" rx="6"/>
+  <text x="50" y="449" font-size="12" font-weight="bold" fill="#991b1b">本机三组对照（客户端都发 200 字节，服务端 sleep 1 秒后动作）</text>
+  <rect x="40" y="460" width="920" height="104" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="52" y="480" font-size="10" fill="#334155">A　读光后 close　　　　　→ 抓到最后一个是 Flags [F.]　→ 客户端 read 返回 0（EOF）</text>
+  <text x="52" y="502" font-size="10" fill="#334155">B　一行不读就 close　　　→ 抓到最后一个是 Flags [R.]　→ 客户端 read 返回 -1，errno=104</text>
+  <text x="52" y="524" font-size="10" fill="#334155">C　读光后设 linger{1,0} 再 close → 仍抓到 Flags [R.]　→ 客户端 read 返回 -1，errno=104</text>
+  <text x="52" y="548" font-size="9" fill="#64748b">C 组证明：RST 与「有没有未读数据」无关，它是另一条独立路径，不能从 B 的现象反推 C 的成因。</text>
+
+  <rect x="40" y="576" width="920" height="34" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1" rx="8"/>
+  <text x="52" y="598" font-size="10.5" font-weight="bold" fill="#065f46">排查顺序：先看本端 close 之前有没有读完 → 再看有没有人设了 SO_LINGER → 最后才怀疑网络中间设备。</text>
+</svg>

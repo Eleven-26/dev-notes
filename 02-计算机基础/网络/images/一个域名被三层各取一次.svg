@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 560" width="1120" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+      <path d="M0,0 L5,2.5 L0,5 Z" fill="#0284c7"/>
+    </marker>
+  </defs>
+  <rect width="1120" height="560" fill="#ffffff"/>
+
+  <text x="560" y="32" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">一个域名，被三层各取一次</text>
+  <text x="560" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">DNS 只把名字换成地址；名字本身在 HTTP、TLS、IP 三处各被读一次，各自落在不同的判断上</text>
+
+  <rect x="60" y="84" width="132" height="82" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+  <text x="126" y="112" text-anchor="middle" font-size="12" font-weight="bold" fill="#075985">解析输入</text>
+  <text x="126" y="134" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">api.example.com</text>
+  <text x="126" y="153" text-anchor="middle" font-size="11" fill="#475569">一个字符串</text>
+
+  <rect x="232" y="84" width="132" height="82" rx="6" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+  <text x="298" y="112" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">第 4 层缓存</text>
+  <text x="298" y="134" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">命不命中</text>
+  <text x="298" y="153" text-anchor="middle" font-size="11" fill="#475569">决定要不要发包</text>
+
+  <line x1="192" y1="125" x2="226" y2="125" stroke="#0284c7" stroke-width="1.6" marker-end="url(#arw2)"/>
+
+  <rect x="404" y="84" width="656" height="82" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="420" y="110" font-size="12" font-weight="bold" fill="#0f172a">命中任一层就不再往下问：浏览器缓存 → OS 缓存与 hosts → LDNS → 权威（迭代那段不是你的账）</text>
+  <text x="420" y="132" font-size="11.5" fill="#475569">实测（容器内 dig，另一轮读数）：命中缓存 4 / 4 / 8 ms，未命中 36 ~ 164 ms —— 差一个数量级</text>
+  <text x="420" y="152" font-size="11.5" fill="#b91c1c">未命中的解析可能比跨城 TCP 握手（20 ~ 40 ms）还贵，所以「第一次慢」不能默认怪握手</text>
+
+  <rect x="60" y="196" width="46" height="272" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="83" y="234" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">同</text>
+  <text x="83" y="274" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">一</text>
+  <text x="83" y="314" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">个</text>
+  <text x="83" y="354" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">名</text>
+  <text x="83" y="394" text-anchor="middle" font-size="13" font-weight="bold" fill="#1d4ed8">字</text>
+  <text x="83" y="434" text-anchor="middle" font-size="11" fill="#3b82f6">三处</text>
+
+  <line x1="106" y1="228" x2="126" y2="228" stroke="#0284c7" stroke-width="1.6" marker-end="url(#arw2)"/>
+  <line x1="106" y1="328" x2="126" y2="328" stroke="#0284c7" stroke-width="1.6" marker-end="url(#arw2)"/>
+  <line x1="106" y1="428" x2="126" y2="428" stroke="#0284c7" stroke-width="1.6" marker-end="url(#arw2)"/>
+
+  <rect x="130" y="200" width="132" height="56" rx="6" fill="#f1f5f9" stroke="#475569"/>
+  <text x="196" y="224" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">HTTP 层</text>
+  <text x="196" y="243" text-anchor="middle" font-size="11" fill="#475569">应用自己填</text>
+
+  <rect x="282" y="200" width="340" height="56" rx="6" fill="#ffffff" stroke="#0284c7"/>
+  <text x="298" y="224" font-size="13" font-weight="bold" fill="#075985">Host: api.example.com</text>
+  <text x="298" y="243" font-size="11.5" fill="#334155">网关按名字选虚拟主机、路由到后端</text>
+
+  <rect x="642" y="200" width="418" height="56" rx="6" fill="#fef3c7" stroke="#d97706"/>
+  <text x="658" y="224" font-size="12.5" font-weight="bold" fill="#92400e">名字不对：404 / 421，或打到别人家的站</text>
+  <text x="658" y="243" font-size="11.5" fill="#92400e">Host 是唯一能随手改的，改了就连到另一个虚拟主机</text>
+
+  <rect x="130" y="300" width="132" height="56" rx="6" fill="#f1f5f9" stroke="#475569"/>
+  <text x="196" y="324" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">TLS 层</text>
+  <text x="196" y="343" text-anchor="middle" font-size="11" fill="#475569">ClientHello 明文</text>
+
+  <rect x="282" y="300" width="340" height="56" rx="6" fill="#ffffff" stroke="#0284c7"/>
+  <text x="298" y="324" font-size="13" font-weight="bold" fill="#075985">SNI = api.example.com</text>
+  <text x="298" y="343" font-size="11.5" fill="#334155">服务端按这个名字挑证书</text>
+
+  <rect x="642" y="300" width="418" height="56" rx="6" fill="#fef3c7" stroke="#d97706"/>
+  <text x="658" y="324" font-size="12.5" font-weight="bold" fill="#92400e">名字不对：证书名不匹配，握手失败或只告警</text>
+  <text x="658" y="343" font-size="11.5" fill="#92400e">握手完成后改不了 —— 证书已按那个名字挑完了</text>
+
+  <rect x="130" y="400" width="132" height="56" rx="6" fill="#f1f5f9" stroke="#475569"/>
+  <text x="196" y="424" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">IP 层</text>
+  <text x="196" y="443" text-anchor="middle" font-size="11" fill="#475569">DNS 给</text>
+
+  <rect x="282" y="400" width="340" height="56" rx="6" fill="#ffffff" stroke="#0284c7"/>
+  <text x="298" y="424" font-size="13" font-weight="bold" fill="#075985">A / AAAA 记录 = 93.184.216.34</text>
+  <text x="298" y="443" font-size="11.5" fill="#334155">决定 SYN 发往哪台机器</text>
+
+  <rect x="642" y="400" width="418" height="56" rx="6" fill="#fef3c7" stroke="#d97706"/>
+  <text x="658" y="424" font-size="12.5" font-weight="bold" fill="#92400e">地址不对：SYN 发往旧机器，或根本连不上</text>
+  <text x="658" y="443" font-size="11.5" fill="#92400e">改它要等 TTL 过期；已建好的连接不会跟着换</text>
+
+  <rect x="60" y="484" width="1000" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="76" y="506" font-size="12" font-weight="bold" fill="#0f172a">三处读的是同一个字符串，但只有第三处是 DNS 给的 —— 前两处是客户端自己填的。</text>
+  <text x="76" y="526" font-size="11.5" fill="#475569">所以「Host 写对了、证书却不对」只有两种解释：连的那台不持有这个名字的证书，或中间设备按 IP 而不是按名字选后端。h3 还多出第四种用法：DNS 的 HTTPS 记录直接宣告协议版本。</text>
+</svg>

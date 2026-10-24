@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <rect x="0" y="0" width="1000" height="74" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">socket 的三层结构：一个整数要穿过三层才找到那个对象</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">只有最右一层是「网络的」；左边两层纯属进程与文件系统的记账</text>
+
+  <rect x="24" y="86" width="200" height="24" fill="#dbeafe" stroke="#93c5fd" stroke-width="1" rx="6"/>
+  <text x="34" y="103" font-size="12.5" font-weight="bold" fill="#1e40af">① 进程自己的 fd 表</text>
+  <rect x="24" y="114" width="200" height="136" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="10"/>
+  <text x="36" y="136" font-size="11" font-weight="bold" fill="#0f172a">fd_array（每进程一份）</text>
+  <text x="36" y="162" font-size="10" fill="#334155">fd 3  ──▶ struct file *</text>
+  <text x="36" y="186" font-size="10" fill="#334155">fd 4  ──▶ struct file *</text>
+  <text x="36" y="210" font-size="10" fill="#94a3b8">fd 5  ──  未使用</text>
+  <text x="36" y="238" font-size="9" fill="#64748b">ls -l /proc/&lt;pid&gt;/fd/3</text>
+
+  <line x1="228" y1="182" x2="264" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="270" y="86" width="212" height="24" fill="#dbeafe" stroke="#93c5fd" stroke-width="1" rx="6"/>
+  <text x="280" y="103" font-size="12.5" font-weight="bold" fill="#1e40af">② 系统打开文件表</text>
+  <rect x="270" y="114" width="212" height="136" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="10"/>
+  <text x="282" y="136" font-size="11" font-weight="bold" fill="#0f172a">struct file（带 f_count）</text>
+  <text x="282" y="162" font-size="10" fill="#334155">#1  模式 / 偏移  f_count=2</text>
+  <text x="282" y="186" font-size="10" fill="#334155">#2  模式 / 偏移  f_count=1</text>
+  <text x="282" y="214" font-size="9" fill="#64748b">这一层决定「关一个 fd 会不会真关连接」</text>
+  <text x="282" y="236" font-size="9" fill="#64748b">fork 之后 f_count 加一（见右下）</text>
+
+  <line x1="486" y1="182" x2="522" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="528" y="86" width="448" height="24" fill="#dbeafe" stroke="#93c5fd" stroke-width="1" rx="6"/>
+  <text x="538" y="103" font-size="12.5" font-weight="bold" fill="#1e40af">③ sockfs 里的 socket 对象（唯一「网络的」那层）</text>
+  <rect x="528" y="114" width="448" height="136" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="10"/>
+  <text x="540" y="136" font-size="11" font-weight="bold" fill="#0f172a">struct socket → struct sock</text>
+  <text x="540" y="162" font-size="10" fill="#334155">inode 41918　TCP_LISTEN　本地端点，对端为空</text>
+  <text x="540" y="186" font-size="10" fill="#334155">inode 41922　ESTABLISHED　四元组齐全</text>
+  <text x="540" y="216" font-size="9" fill="#64748b">地址族 · 类型 · 状态 · 收发缓冲区都在这层</text>
+  <text x="540" y="238" font-size="9" fill="#64748b">/proc/net/tcp 的 inode 列就是这里的号</text>
+
+  <rect x="24" y="272" width="462" height="24" fill="#dcfce7" stroke="#86efac" stroke-width="1" rx="6"/>
+  <text x="34" y="289" font-size="12.5" font-weight="bold" fill="#166534">accept 返回的是新对象：两个 inode 不同</text>
+  <rect x="24" y="300" width="462" height="120" fill="#f0fdf4" stroke="#16a34a" stroke-width="1" rx="10"/>
+  <text x="36" y="322" font-size="10.5" fill="#0f172a">listen fd=3  inode=41918　　accept 返回 cfd=4  inode=41922</text>
+  <text x="36" y="348" font-size="10" fill="#334155">四组独立实验的 inode 对：41918/41922、42130/42134</text>
+  <text x="36" y="368" font-size="10" fill="#334155">　　　　　　　　　　　　　47623/47627、48752/48756</text>
+  <text x="36" y="394" font-size="9" fill="#166534">监听 fd 不能收发数据；关闭连接 fd 不影响监听</text>
+  <text x="36" y="412" font-size="9" fill="#64748b">所以「一个端口」在进程里从来不是「一个 fd」</text>
+
+  <rect x="510" y="272" width="466" height="24" fill="#fef3c7" stroke="#fcd34d" stroke-width="1" rx="6"/>
+  <text x="520" y="289" font-size="12.5" font-weight="bold" fill="#92400e">fork 之后：两张 fd 表指向同一个 file</text>
+  <rect x="510" y="300" width="466" height="120" fill="#fffbeb" stroke="#d97706" stroke-width="1" rx="10"/>
+  <text x="522" y="322" font-size="10.5" fill="#0f172a">parent.fd[4] ──┐</text>
+  <text x="522" y="344" font-size="10.5" fill="#0f172a">　　　　　　　├──▶ struct file（f_count=2）──▶ socket inode 47627</text>
+  <text x="522" y="366" font-size="10.5" fill="#0f172a">child.fd[4]　──┘</text>
+  <text x="522" y="392" font-size="9" fill="#92400e">父 close → f_count=1，不发 FIN；子 close → 0，才发 FIN</text>
+  <text x="522" y="412" font-size="9" fill="#64748b">实测：父关闭后连接仍 ESTABLISHED，子还能读</text>
+
+  <rect x="24" y="446" width="948" height="24" fill="#e0e7ff" stroke="#a5b4fc" stroke-width="1" rx="6"/>
+  <text x="34" y="463" font-size="12.5" font-weight="bold" fill="#3730a3">四元组是「连上之后」才凑齐的：socket 对象在 socket() 那一刻就存在，但它一个地址都没有</text>
+
+  <rect x="24" y="476" width="300" height="92" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="10"/>
+  <text x="36" y="498" font-size="11" font-weight="bold" fill="#0f172a">socket(domain, type, 0)</text>
+  <text x="36" y="522" font-size="10" fill="#334155">对象已存在，无本地地址</text>
+  <text x="36" y="542" font-size="10" fill="#334155">也没有对端地址</text>
+  <text x="36" y="560" font-size="9" fill="#64748b">此后四元组一格都没填</text>
+
+  <line x1="328" y1="522" x2="360" y2="522" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="364" y="476" width="300" height="92" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="10"/>
+  <text x="376" y="498" font-size="11" font-weight="bold" fill="#0f172a">bind(ip, port)</text>
+  <text x="376" y="522" font-size="10" fill="#334155">填上本地端点</text>
+  <text x="376" y="542" font-size="10" fill="#334155">四元组只填了两格</text>
+  <text x="376" y="560" font-size="9" fill="#64748b">监听 socket 永远停在这一步</text>
+
+  <line x1="668" y1="522" x2="700" y2="522" stroke="#475569" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="704" y="476" width="268" height="92" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" rx="10"/>
+  <text x="716" y="498" font-size="11" font-weight="bold" fill="#0f172a">connect / accept 之后</text>
+  <text x="716" y="522" font-size="10" fill="#334155">源 IP、源端口、目的 IP、目的端口</text>
+  <text x="716" y="542" font-size="10" fill="#334155">四格齐 → 这条连接才可被唯一识别</text>
+  <text x="716" y="560" font-size="9" fill="#64748b">区别：socket 是对象，四元组是「连」</text>
+
+  <rect x="24" y="582" width="948" height="26" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <text x="36" y="599" font-size="9.5" fill="#475569">所以「Unix 把主机 + 端口叫做套接字」这句只在「已连接的客户端 socket」上勉强成立；对监听 socket、UDS socket 都不成立。</text>
+</svg>

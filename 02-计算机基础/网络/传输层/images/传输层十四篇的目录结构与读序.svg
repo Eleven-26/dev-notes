@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
-  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 714" width="1000" height="714" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="714" fill="#ffffff"/>
 
-  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">传输层十三篇：两个子目录、一条链、四组换维度</text>
-  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">tcp/ 七篇（①~⑥ 是严格读序，⑦ 换时间点）；udp/ 五篇（地基 + 两条重建路 + 两种换投递）；根目录一篇（换视角）</text>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">传输层十四篇：两个子目录、一条链、五组换维度</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12.5" fill="#64748b">tcp/ 七篇（①~⑥ 是严格读序，⑦ 换时间点）；udp/ 五篇（地基 + 两条重建路 + 两种换投递）；根目录两篇（接口 + 换个观察单位）</text>
 
   <rect x="20" y="70" width="560" height="22" fill="#dbeafe" stroke="#93c5fd" stroke-width="1" rx="6"/>
   <text x="30" y="86" font-size="12.5" font-weight="bold" fill="#1e40af">tcp/ · 七篇：①→⑥ 是一条连接从建到拆，⑦ 换时间点、可后读</text>
@@ -125,20 +125,29 @@
     <text x="8" y="90" font-size="8" fill="#64748b">实测：snooping 常等于没开</text>
   </g>
 
-  <rect x="20" y="382" width="320" height="22" fill="#fef3c7" stroke="#fcd34d" stroke-width="1" rx="6"/>
-  <text x="30" y="398" font-size="12.5" font-weight="bold" fill="#92400e">根目录 · 换视角：现有 1 篇</text>
+  <rect x="20" y="382" width="330" height="22" fill="#fef3c7" stroke="#fcd34d" stroke-width="1" rx="6"/>
+  <text x="30" y="398" font-size="12.5" font-weight="bold" fill="#92400e">根目录 · 换视角：两篇（接口 → 并发）</text>
 
   <g transform="translate(20,408)">
+    <rect x="0" y="0" width="960" height="104" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.4" rx="10"/>
+    <text x="14" y="24" font-size="12" font-weight="bold" fill="#0f172a">Socket 接口与连接生命周期 —— 程序怎么让内核替它收发数据</text>
+    <text x="14" y="46" font-size="9" fill="#5b21b6">三层结构（fd 表 → 打开文件表 → socket 对象）· 七个调用与状态机怎么对应 · read 的三种返回 · close 为什么发 RST · 选项按层归位 · 引用计数 · UDS</text>
+    <text x="14" y="68" font-size="9" fill="#334155">它换掉的不是协议，是「协议」与「程序调用协议的方式」之间的那道边界：TCP/UDP/UDS 共用同一套 API</text>
+    <text x="14" y="90" font-size="8.5" fill="#64748b">★ 先读它：accept 之前三次握手就完成了，accept 只是从全连接队列取一条再新建 fd</text>
+  </g>
+
+  <g transform="translate(20,522)">
     <rect x="0" y="0" width="960" height="74" fill="#fffbeb" stroke="#b45309" stroke-width="1" rx="10"/>
     <text x="14" y="24" font-size="12" font-weight="bold" fill="#0f172a">IO 多路复用 —— 一个进程怎么同时管 N 条连接</text>
     <text x="14" y="46" font-size="9" fill="#92400e">五种 I/O 模型 · select/poll/epoll 三代演进 · LT 与 ET · 惊群与 Reactor · Go netpoller · io_uring</text>
     <text x="14" y="64" font-size="8.5" fill="#64748b">它换掉的不是协议，是「一条连接」这个观察单位</text>
   </g>
 
-  <g transform="translate(20,492)">
-    <rect x="0" y="0" width="960" height="74" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <g transform="translate(20,610)">
+    <rect x="0" y="0" width="960" height="94" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" rx="10"/>
     <text x="14" y="22" font-size="11.5" font-weight="bold" fill="#0f172a">①~⑥ 不能跳着读：每一篇都用到前一篇的结论——窗口字段在报文里，握手之后才有窗口，拥塞窗口是窗口的另一半。</text>
     <text x="14" y="42" font-size="10.5" fill="#334155">udp/ 五篇分三组：UDP 篇给地基；KCP 与 QUIC 回答「要补到什么程度、代价是什么」；打洞与组播回答「单播之外怎么把包送到别人那里」。</text>
-    <text x="14" y="60" font-size="10.5" fill="#64748b">tcp/ 与 udp/ 都不单独设导读：七篇是一条读序，udp 内部也是「先地基、再分叉」；本目录 README 是唯一入口。</text>
+    <text x="14" y="62" font-size="10.5" fill="#334155">根目录两篇是先后关系：Socket 给「程序怎么拿到这条连接」，IO 多路复用给「一个人怎么管住上万条」——先有接口，才谈怎么复用。</text>
+    <text x="14" y="82" font-size="10.5" fill="#64748b">tcp/ 与 udp/ 都不单独设导读：七篇是一条读序，udp 内部也是「先地基、再分叉」；本目录 README 是唯一入口。</text>
   </g>
 </svg>
