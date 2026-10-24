@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">LogQL 的两层：花括号查索引，管道才碰正文</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">「这个查询为什么慢」的答案，几乎都在「你写的东西落进了哪一层」</text>
+
+  <rect x="20" y="76" width="960" height="264" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">① 一条 LogQL 的三层成本</text>
+
+  <rect x="30" y="112" width="96" height="66" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="78" y="138" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">第 1 层</text>
+  <text x="78" y="156" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e40af">索引</text>
+  <text x="78" y="171" text-anchor="middle" font-size="8" fill="#64748b">标签才进</text>
+
+  <rect x="136" y="112" width="210" height="66" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="148" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">{ env="lab" }</text>
+  <text x="148" y="152" font-size="8.5" fill="#334155">花括号里只能写标签</text>
+  <text x="148" y="168" font-size="8.5" fill="#64748b">正文条件写进去不生效也不报错</text>
+
+  <line x1="350" y1="145" x2="362" y2="145" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="366,145 358,141 358,149" fill="#2563eb"/>
+
+  <rect x="370" y="112" width="230" height="66" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="382" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">查标签索引</text>
+  <text x="382" y="152" font-size="8.5" fill="#334155">本机 2 个标签组合查出 4 个物理 stream</text>
+  <text x="382" y="168" font-size="8.5" fill="#64748b">自动补 service_name 与 shard 标签</text>
+
+  <line x1="604" y1="145" x2="616" y2="145" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="620,145 612,141 612,149" fill="#2563eb"/>
+
+  <rect x="624" y="112" width="346" height="66" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="636" y="134" font-size="10.5" font-weight="bold" fill="#0f172a">这一层的代价：命中几个 stream</text>
+  <text x="636" y="152" font-size="8.5" fill="#334155">与日志行数无关，只与 stream 数和时间窗有关</text>
+  <text x="636" y="168" font-size="8.5" fill="#64748b">时间窗越大，要碰的 chunk 越多</text>
+
+  <rect x="30" y="186" width="96" height="66" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="78" y="212" text-anchor="middle" font-size="10" font-weight="bold" fill="#b45309">第 2 层</text>
+  <text x="78" y="230" text-anchor="middle" font-size="10" font-weight="bold" fill="#b45309">扫描</text>
+  <text x="78" y="245" text-anchor="middle" font-size="8" fill="#64748b">正文在这</text>
+
+  <rect x="136" y="186" width="210" height="66" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="148" y="208" font-size="10.5" font-weight="bold" fill="#0f172a">|= "error" 与 | json</text>
+  <text x="148" y="226" font-size="8.5" fill="#334155">子串过滤最快，正则其次</text>
+  <text x="148" y="242" font-size="8.5" fill="#64748b">解析类操作符会静默丢行</text>
+
+  <line x1="350" y1="219" x2="362" y2="219" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="366,219 358,215 358,223" fill="#f59e0b"/>
+
+  <rect x="370" y="186" width="230" height="66" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="382" y="208" font-size="10.5" font-weight="bold" fill="#0f172a">解压 chunk 逐行匹配</text>
+  <text x="382" y="226" font-size="8.5" fill="#334155">chunk 是压缩的，不建全文倒排</text>
+  <text x="382" y="242" font-size="8.5" fill="#64748b">所以正文条件只能靠扫</text>
+
+  <line x1="604" y1="219" x2="616" y2="219" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="620,219 612,215 612,223" fill="#f59e0b"/>
+
+  <rect x="624" y="186" width="346" height="66" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="636" y="208" font-size="10.5" font-weight="bold" fill="#0f172a">这一层的代价：进入这一步的行数</text>
+  <text x="636" y="226" font-size="8.5" fill="#334155">同一个时间窗，条件越宽扫得越多</text>
+  <text x="636" y="242" font-size="8.5" fill="#64748b">limit 只截返回，不减少扫描量</text>
+
+  <rect x="30" y="260" width="96" height="66" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="78" y="286" text-anchor="middle" font-size="10" font-weight="bold" fill="#047857">第 3 层</text>
+  <text x="78" y="304" text-anchor="middle" font-size="10" font-weight="bold" fill="#047857">聚合</text>
+  <text x="78" y="319" text-anchor="middle" font-size="8" fill="#64748b">可选</text>
+
+  <rect x="136" y="260" width="210" height="66" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="148" y="282" font-size="10.5" font-weight="bold" fill="#0f172a">count_over_time</text>
+  <text x="148" y="300" font-size="8.5" fill="#334155">sum by / topk / rate</text>
+  <text x="148" y="316" font-size="8.5" fill="#64748b">要算数值还得先 | unwrap</text>
+
+  <line x1="350" y1="293" x2="362" y2="293" stroke="#059669" stroke-width="1.5"/>
+  <polygon points="366,293 358,289 358,297" fill="#059669"/>
+
+  <rect x="370" y="260" width="230" height="66" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="382" y="282" font-size="10.5" font-weight="bold" fill="#0f172a">先扫后算，不回传正文</text>
+  <text x="382" y="300" font-size="8.5" fill="#334155">所以日志转指标后带宽骤降</text>
+  <text x="382" y="316" font-size="8.5" fill="#64748b">代价仍然是第 2 层的扫描量</text>
+
+  <line x1="604" y1="293" x2="616" y2="293" stroke="#059669" stroke-width="1.5"/>
+  <polygon points="620,293 612,289 612,297" fill="#059669"/>
+
+  <rect x="624" y="260" width="346" height="66" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="636" y="282" font-size="10.5" font-weight="bold" fill="#0f172a">返回数值向量，可以走即时查询</text>
+  <text x="636" y="300" font-size="8.5" fill="#334155">日志查询必须带时间范围，否则 400</text>
+  <text x="636" y="316" font-size="8.5" fill="#64748b">原文：log queries are not supported as an instant query</text>
+
+  <rect x="20" y="352" width="960" height="188" fill="#fef2f2" stroke="#fca5a5" stroke-width="1" rx="10"/>
+  <text x="36" y="376" font-size="12.5" font-weight="bold" fill="#b91c1c">② 四个静默行为：不报错、但结果不是你以为的那样</text>
+
+  <rect x="30" y="390" width="224" height="136" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="42" y="414" font-size="10.5" font-weight="bold" fill="#0f172a">detected_level 选不中</text>
+  <text x="42" y="436" font-size="8.5" fill="#334155">它在结果的 labels 里看得见，</text>
+  <text x="42" y="450" font-size="8.5" fill="#334155">所以很自然会拿它当选择器用。</text>
+  <text x="42" y="472" font-size="8.5" fill="#64748b">但它是展示标签，不在索引里。</text>
+  <text x="42" y="494" font-size="8.5" fill="#b91c1c">实测：查它得 0 条，不报错。</text>
+  <text x="42" y="516" font-size="8.5" fill="#64748b">按级别过滤要采集端写进真标签。</text>
+
+  <rect x="268" y="390" width="224" height="136" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="280" y="414" font-size="10.5" font-weight="bold" fill="#0f172a">| json 解析失败丢行</text>
+  <text x="280" y="436" font-size="8.5" fill="#334155">解析不了的行直接消失，</text>
+  <text x="280" y="450" font-size="8.5" fill="#334155">不报错、不计数、不告警。</text>
+  <text x="280" y="472" font-size="8.5" fill="#64748b">正确做法：先 |= &quot;{&quot; 粗筛一遍，</text>
+  <text x="280" y="486" font-size="8.5" fill="#64748b">再和 json 之后的条数对比。</text>
+  <text x="280" y="508" font-size="8.5" fill="#b91c1c">两个数差太多，就是它在丢。</text>
+
+  <rect x="506" y="390" width="224" height="136" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="518" y="414" font-size="10.5" font-weight="bold" fill="#0f172a">limit 是总行数</text>
+  <text x="518" y="436" font-size="8.5" fill="#334155">不是每个 stream 各给一份。</text>
+  <text x="518" y="458" font-size="8.5" fill="#64748b">实测：limit 5000 对 4 个 stream</text>
+  <text x="518" y="472" font-size="8.5" fill="#64748b">一起生效，实际 6500 行只回 5000。</text>
+  <text x="518" y="494" font-size="8.5" fill="#334155">要真实条数用 count_over_time，</text>
+  <text x="518" y="516" font-size="8.5" fill="#b91c1c">不要数返回了几行。</text>
+
+  <rect x="744" y="390" width="224" height="136" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="756" y="414" font-size="10.5" font-weight="bold" fill="#0f172a">自动标签让 stream 变多</text>
+  <text x="756" y="436" font-size="8.5" fill="#334155">service_name 与分片标签</text>
+  <text x="756" y="450" font-size="8.5" fill="#334155">是运行时自动加上的。</text>
+  <text x="756" y="472" font-size="8.5" fill="#64748b">实测：2 个标签的组合，</text>
+  <text x="756" y="486" font-size="8.5" fill="#64748b">在存储层是 4 条物理 stream。</text>
+  <text x="756" y="508" font-size="8.5" fill="#b91c1c">代价按 4 份算，不是 1 份。</text>
+</svg>

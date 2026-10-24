@@ -85,7 +85,7 @@ Elasticsearch 是一个分布式、RESTful 的搜索和数据分析引擎。
 | ③ | [搜索流程与DSL.md](搜索流程与DSL.md) | query-then-fetch、match / term / bool、BM25 打分、profile 观测 |
 | ④ | [分页与聚合.md](分页与聚合.md) | from/size、search_after、scroll、PIT + bucket / metric / nested |
 | ⑤ | [向量与AI搜索.md](向量与AI搜索.md) | ⭐ **AI 线**：向量索引、BBQ、语义搜索、混合检索 |
-| ⑥ | [集群与运维.md](集群与运维.md) | 分片与分配、恢复、green/yellow/red 排查、ILM、索引状态管理 |
+| ⑥ | [集群与运维.md](集群与运维.md) | 分片与分配、恢复、green/yellow/red 排查、ILM 在引擎侧的位置、索引状态管理 |
 | ⑦ | [客户端.md](客户端.md) | Go（go-elasticsearch v8）与 Java（elasticsearch-java）的接入与最佳实践 |
 | ⑧ | [常见事故.md](常见事故.md) | 事故清单与排查顺序 |
 

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">retention 从配置到真删，要过五道闸门</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">任何一道没打开，外表现都是「一条都不少」，而且不会报任何错</text>
+
+  <rect x="36" y="104" width="928" height="80" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="50" y="128" font-size="11" font-weight="bold" fill="#0f172a">第 1 层 · chunk 关闭</text>
+  <text x="50" y="150" font-size="8.5" fill="#334155">条件：达到 chunk_target_size，或空闲超过 chunk_idle_period，或到 max_chunk_age</text>
+  <text x="50" y="170" font-size="8.5" fill="#64748b">chunk_idle_period 默认 30m，flush_check_period 默认 30s</text>
+  <text x="560" y="128" font-size="10.5" font-weight="bold" fill="#1e40af">卡住的样子：数据只在内存与 WAL</text>
+  <text x="560" y="150" font-size="8.5" fill="#334155">判据：chunks/ 下文件数不增长</text>
+  <text x="560" y="170" font-size="8.5" fill="#64748b">本机压到 20s 后，t=37s 才从 0 变 3</text>
+
+  <rect x="36" y="192" width="928" height="80" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="50" y="216" font-size="11" font-weight="bold" fill="#0f172a">第 2 层 · 写进索引</text>
+  <text x="50" y="238" font-size="8.5" fill="#334155">条件：chunk 关闭时，索引里登记一条指向它的 chunk entry</text>
+  <text x="50" y="258" font-size="8.5" fill="#64748b">删除的单位是 chunk entry，不是「行」</text>
+  <text x="560" y="216" font-size="10.5" font-weight="bold" fill="#1e40af">卡住的样子：chunk 落盘了，查询仍走 ingester</text>
+  <text x="560" y="238" font-size="8.5" fill="#334155">判据：index_total_chunks 为 0</text>
+  <text x="560" y="258" font-size="8.5" fill="#64748b">同时 ingester_chunk_refs 大于 0</text>
+
+  <rect x="36" y="280" width="928" height="80" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="50" y="304" font-size="11" font-weight="bold" fill="#78350f">第 3 层 · 索引上传</text>
+  <text x="50" y="326" font-size="8.5" fill="#334155">条件：当天那张表退出写入、被压实之后，索引文件才上传到对象存储</text>
+  <text x="50" y="346" font-size="8.5" fill="#64748b">schema 的 period 是 24h，这张表整天都在收写入</text>
+  <text x="560" y="304" font-size="10.5" font-weight="bold" fill="#b45309">卡住的样子：上传报成功，传的是空表</text>
+  <text x="560" y="326" font-size="8.5" fill="#334155">判据：对象存储里没有 index 目录</text>
+  <text x="560" y="346" font-size="8.5" fill="#64748b">本机 tables_upload success 为 5，仍无索引文件</text>
+
+  <rect x="36" y="368" width="928" height="80" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="50" y="392" font-size="11" font-weight="bold" fill="#78350f">第 4 层 · compactor 扫描</text>
+  <text x="50" y="414" font-size="8.5" fill="#334155">条件：apply_retention_interval 到点，默认 45s，与 compaction_interval 无关</text>
+  <text x="50" y="434" font-size="8.5" fill="#64748b">它遍历索引里的 chunk entry，判断结束时间是否早于边界</text>
+  <text x="560" y="392" font-size="10.5" font-weight="bold" fill="#b45309">卡住的样子：success 在涨，每轮不到 2 ms</text>
+  <text x="560" y="414" font-size="8.5" fill="#334155">判据：marker_files_current 为 0</text>
+  <text x="560" y="434" font-size="8.5" fill="#64748b">本机 3 轮 success，每轮 1.86 ms</text>
+
+  <rect x="36" y="456" width="928" height="80" fill="#fee2e2" stroke="#ef4444" stroke-width="1" rx="8"/>
+  <text x="50" y="480" font-size="11" font-weight="bold" fill="#991b1b">第 5 层 · 延迟删除</text>
+  <text x="50" y="502" font-size="8.5" fill="#334155">条件：标记之后再过 retention_delete_delay，本机配 5s，然后才真删</text>
+  <text x="50" y="522" font-size="8.5" fill="#64748b">这一层是「撤销窗口」，不是「生效延迟」</text>
+  <text x="560" y="480" font-size="10.5" font-weight="bold" fill="#991b1b">卡住的样子：从没进过删除队列</text>
+  <text x="560" y="502" font-size="8.5" fill="#334155">判据：pending_delete_requests_count 为 0</text>
+  <text x="560" y="522" font-size="8.5" fill="#64748b">前四层任意一层没通，这一层就永远为 0</text>
+
+  <rect x="36" y="548" width="928" height="56" fill="#ecfdf5" stroke="#10b981" stroke-width="1" rx="8"/>
+  <text x="50" y="570" font-size="10.5" font-weight="bold" fill="#065f46">本机实测：retention_period 设 2m，推 15 行超期数据，4 分钟采样 17 次，一条都没删</text>
+  <text x="50" y="590" font-size="8.5" fill="#334155">配置全对、compactor 在跑、chunk 已落盘，卡在第 3 层：当天表的索引还没上传，compactor 遍历到的是空集</text>
+</svg>

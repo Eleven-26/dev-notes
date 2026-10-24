@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Compactor 的启动四阶段与两条独立循环</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">「compactor started」只说明它上线了，不说明它会删数据；频率由另一个键决定</text>
+
+  <rect x="20" y="76" width="960" height="160" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">① 启动四阶段（本机实测时刻，容器启动于 10:36:05）</text>
+
+  <rect x="36" y="112" width="222" height="108" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="48" y="134" font-size="10" font-weight="bold" fill="#0f172a">JOINING in the ring</text>
+  <text x="48" y="156" font-size="8.5" fill="#334155">10:36:05.062</text>
+  <text x="48" y="178" font-size="8.5" fill="#334155">先以 JOINING 状态</text>
+  <text x="48" y="198" font-size="8.5" fill="#334155">注册进 compactor ring</text>
+
+  <rect x="266" y="112" width="222" height="108" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="278" y="134" font-size="10" font-weight="bold" fill="#0f172a">ACTIVE in the ring</text>
+  <text x="278" y="156" font-size="8.5" fill="#334155">10:36:05.212</text>
+  <text x="278" y="178" font-size="8.5" fill="#334155">150 毫秒后转为 ACTIVE</text>
+  <text x="278" y="198" font-size="8.5" fill="#334155">并被选为唯一 compactor</text>
+
+  <rect x="496" y="112" width="222" height="108" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="508" y="134" font-size="10" font-weight="bold" fill="#78350f">等待 ring 稳定 30 秒</text>
+  <text x="508" y="156" font-size="8.5" fill="#334155">10:36:10.213 起</text>
+  <text x="508" y="178" font-size="8.5" fill="#334155">等的是「ring 稳定」</text>
+  <text x="508" y="198" font-size="8.5" fill="#334155">不是等数据过期</text>
+
+  <rect x="726" y="112" width="238" height="108" fill="#ecfdf5" stroke="#10b981" stroke-width="1" rx="8"/>
+  <text x="738" y="134" font-size="10" font-weight="bold" fill="#065f46">compactor started</text>
+  <text x="738" y="156" font-size="8.5" fill="#334155">10:36:40.211</text>
+  <text x="738" y="178" font-size="8.5" fill="#334155">从启动到真正开跑</text>
+  <text x="738" y="198" font-size="8.5" fill="#334155">共 35 秒，全在等 ring</text>
+
+  <rect x="20" y="252" width="960" height="176" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="276" font-size="12.5" font-weight="bold" fill="#b45309">② 两条互不相干的循环，别混着调</text>
+
+  <rect x="36" y="288" width="460" height="126" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="48" y="310" font-size="10.5" font-weight="bold" fill="#1e40af">compaction_interval：30s（本机手写）</text>
+  <text x="48" y="332" font-size="8.5" fill="#334155">管：index 的压实与上传，影响查询与存储形态</text>
+  <text x="48" y="354" font-size="8.5" fill="#334155">不管：retention 多久扫一次</text>
+  <text x="48" y="376" font-size="8.5" fill="#334155">改它对「多久才删」没有可见影响</text>
+  <text x="48" y="398" font-size="8.5" fill="#64748b">这是最容易调错的一个键</text>
+
+  <rect x="504" y="288" width="460" height="126" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="516" y="310" font-size="10.5" font-weight="bold" fill="#b45309">apply_retention_interval：45s（默认值）</text>
+  <text x="516" y="332" font-size="8.5" fill="#334155">管：遍历索引、判定过期、标记待删</text>
+  <text x="516" y="354" font-size="8.5" fill="#334155">实测日志间隔 45s：10:36:40 到 10:39:40 共 4 次</text>
+  <text x="516" y="376" font-size="8.5" fill="#334155">要让过期数据更快被发现，改这个</text>
+  <text x="516" y="398" font-size="8.5" fill="#64748b">它不出现在自己写的配置文件里</text>
+
+  <rect x="20" y="444" width="960" height="92" fill="#fee2e2" stroke="#ef4444" stroke-width="1" rx="8"/>
+  <text x="36" y="468" font-size="11" font-weight="bold" fill="#991b1b">判断「到底删没删」只看两个数，不看 success 计数</text>
+  <text x="36" y="492" font-size="8.5" fill="#334155">marker_files_current：大于 0 才说明有 chunk 被判过期；pending_delete_requests_count：大于 0 才说明进了删除队列</text>
+  <text x="36" y="514" font-size="8.5" fill="#334155">apply_retention_operation_total{status="success"} 只证明循环跑过一轮，本机 3 轮 success、每轮 1.86 ms、markers 始终为 0</text>
+</svg>

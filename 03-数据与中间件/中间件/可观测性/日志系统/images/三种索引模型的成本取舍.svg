@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三种索引模型：差别不是功能多少，是为哪种查询付索引成本</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">同一份日志，选哪种模型就决定了「哪种查询快、哪种查询查不动、每 TB 花多少钱」</text>
+
+  <rect x="30" y="90" width="304" height="300" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="10"/>
+  <text x="46" y="116" font-size="12" font-weight="bold" fill="#1e40af">全文倒排索引</text>
+  <text x="46" y="140" font-size="9" fill="#334155">代表：Elasticsearch / OpenSearch</text>
+
+  <text x="46" y="170" font-size="9" font-weight="bold" fill="#0f172a">能做什么</text>
+  <text x="46" y="192" font-size="8.5" fill="#334155">任意词、任意字段的高效检索</text>
+  <text x="46" y="212" font-size="8.5" fill="#334155">任意字段的聚合</text>
+  <text x="46" y="232" font-size="8.5" fill="#334155">Kibana 里随手搜</text>
+
+  <text x="46" y="266" font-size="9" font-weight="bold" fill="#0f172a">代价是什么</text>
+  <text x="46" y="288" font-size="8.5" fill="#334155">索引本身与原文同量级</text>
+  <text x="46" y="308" font-size="8.5" fill="#334155">写入放大明显</text>
+
+  <text x="46" y="352" font-size="10.5" font-weight="bold" fill="#1e40af">单位成本：最高</text>
+  <text x="46" y="374" font-size="8.5" fill="#64748b">买的是「随手搜」的能力</text>
+
+  <rect x="348" y="90" width="304" height="300" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="10"/>
+  <text x="364" y="116" font-size="12" font-weight="bold" fill="#78350f">标签索引 + 正文顺序扫描</text>
+  <text x="364" y="140" font-size="9" fill="#334155">代表：Loki</text>
+
+  <text x="364" y="170" font-size="9" font-weight="bold" fill="#0f172a">能做什么</text>
+  <text x="364" y="192" font-size="8.5" fill="#334155">按 service / level 缩到很小范围</text>
+  <text x="364" y="212" font-size="8.5" fill="#334155">再在范围内按时间暴力扫</text>
+  <text x="364" y="232" font-size="8.5" fill="#334155">与 Grafana 一体化</text>
+
+  <text x="364" y="266" font-size="9" font-weight="bold" fill="#0f172a">代价是什么</text>
+  <text x="364" y="288" font-size="8.5" fill="#334155">没有标签的字段查不动</text>
+  <text x="364" y="308" font-size="8.5" fill="#334155">大范围模糊搜索极慢</text>
+
+  <text x="364" y="352" font-size="10.5" font-weight="bold" fill="#b45309">单位成本：最低</text>
+  <text x="364" y="374" font-size="8.5" fill="#64748b">前提是标签已把范围压小</text>
+
+  <rect x="666" y="90" width="304" height="300" fill="#ecfdf5" stroke="#10b981" stroke-width="1" rx="10"/>
+  <text x="682" y="116" font-size="12" font-weight="bold" fill="#065f46">列式存储 + 分区裁剪</text>
+  <text x="682" y="140" font-size="9" fill="#334155">代表：ClickHouse</text>
+
+  <text x="682" y="170" font-size="9" font-weight="bold" fill="#0f172a">能做什么</text>
+  <text x="682" y="192" font-size="8.5" fill="#334155">高吞吐写入</text>
+  <text x="682" y="212" font-size="8.5" fill="#334155">大范围 GROUP BY 与统计极快</text>
+  <text x="682" y="232" font-size="8.5" fill="#334155">按时间分区裁剪</text>
+
+  <text x="682" y="266" font-size="9" font-weight="bold" fill="#0f172a">代价是什么</text>
+  <text x="682" y="288" font-size="8.5" fill="#334155">行级检索没有倒排快</text>
+  <text x="682" y="308" font-size="8.5" fill="#334155">没有现成的 Kibana 式 UI</text>
+
+  <text x="682" y="352" font-size="10.5" font-weight="bold" fill="#065f46">单位成本：低</text>
+  <text x="682" y="374" font-size="8.5" fill="#64748b">每 TB 最低，适合长期与分析</text>
+
+  <rect x="30" y="406" width="940" height="80" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="46" y="430" font-size="11" font-weight="bold" fill="#0f172a">一句话判据：排障时你是先知道服务名和时间窗，还是要在一堆日志里搜一个词？</text>
+  <text x="46" y="454" font-size="9" fill="#334155">先知道服务名与时间窗 → 标签索引够用（Loki）；要在海量日志里搜一个词 → 需要倒排（ES）；要做统计报表 → 列式（ClickHouse）</text>
+  <text x="46" y="474" font-size="8.5" fill="#64748b">混合部署是常态：ERROR 进 Loki 短期排障，全量进列式或对象存储长期留存；但不要把同一份日志全文进两套倒排</text>
+</svg>

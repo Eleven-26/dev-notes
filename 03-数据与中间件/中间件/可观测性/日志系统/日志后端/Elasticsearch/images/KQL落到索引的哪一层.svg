@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">KQL 落到索引的哪一层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">同一句 field: value，在 keyword 与 text 上是两种查询——KQL 只过滤，不聚合、不排序</text>
+
+  <rect x="20" y="76" width="960" height="270" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">① 一句 KQL 从查询栏到倒排表的三跳</text>
+
+  <text x="180" y="124" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#1e40af">KQL 写法</text>
+  <text x="500" y="124" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#7c3aed">翻译成 DSL</text>
+  <text x="820" y="124" text-anchor="middle" font-size="10.5" font-weight="bold" fill="#059669">落到哪层索引</text>
+
+  <rect x="30" y="136" width="300" height="58" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="44" y="158" font-size="10.5" font-weight="bold" fill="#0f172a">level: ERROR（keyword 字段）</text>
+  <text x="44" y="176" font-size="8.5" fill="#334155">枚举值、服务名、状态码都该是这类</text>
+  <text x="44" y="189" font-size="8.5" fill="#64748b">大小写敏感，差一个字符即 0 命中</text>
+
+  <rect x="30" y="206" width="300" height="58" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="44" y="228" font-size="10.5" font-weight="bold" fill="#0f172a">message: timeout（text 字段）</text>
+  <text x="44" y="246" font-size="8.5" fill="#334155">词序无关：写 pointer null 也能命中</text>
+  <text x="44" y="259" font-size="8.5" fill="#64748b">查询值先过一遍分析器，再逐词条查</text>
+
+  <rect x="30" y="276" width="300" height="58" fill="#eff3ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="44" y="298" font-size="10.5" font-weight="bold" fill="#0f172a">message: "null pointer"</text>
+  <text x="44" y="316" font-size="8.5" fill="#334155">加引号才有顺序语义，仍是短语不是整串</text>
+  <text x="44" y="329" font-size="8.5" fill="#64748b">引号内的 * 是字面星号，不是通配</text>
+
+  <line x1="334" y1="165" x2="346" y2="165" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="350,165 342,161 342,169" fill="#7c3aed"/>
+  <line x1="334" y1="235" x2="346" y2="235" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="350,235 342,231 342,239" fill="#7c3aed"/>
+  <line x1="334" y1="305" x2="346" y2="305" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="350,305 342,301 342,309" fill="#7c3aed"/>
+
+  <rect x="350" y="136" width="300" height="58" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1" rx="8"/>
+  <text x="364" y="158" font-size="10.5" font-weight="bold" fill="#0f172a">term — 精确词条</text>
+  <text x="364" y="176" font-size="8.5" fill="#334155">对照读数 6 ms（本机 300 条，单次测量）</text>
+  <text x="364" y="189" font-size="8.5" fill="#64748b">不跑分析器，拿整串当词条去查</text>
+
+  <rect x="350" y="206" width="300" height="58" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1" rx="8"/>
+  <text x="364" y="228" font-size="10.5" font-weight="bold" fill="#0f172a">match — 先分析再查</text>
+  <text x="364" y="246" font-size="8.5" fill="#334155">对照读数 144 ms，是 term 的 20 倍以上</text>
+  <text x="364" y="259" font-size="8.5" fill="#64748b">每次查询都要把查询串跑一遍分析器</text>
+
+  <rect x="350" y="276" width="300" height="58" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1" rx="8"/>
+  <text x="364" y="298" font-size="10.5" font-weight="bold" fill="#0f172a">match_phrase — 保序短语</text>
+  <text x="364" y="316" font-size="8.5" fill="#334155">正序等于 300 条，颠倒等于 0 条（实测）</text>
+  <text x="364" y="329" font-size="8.5" fill="#64748b">要额外校验词的位置，比 match 更贵</text>
+
+  <line x1="654" y1="165" x2="666" y2="165" stroke="#059669" stroke-width="1.5"/>
+  <polygon points="670,165 662,161 662,169" fill="#059669"/>
+  <line x1="654" y1="235" x2="666" y2="235" stroke="#059669" stroke-width="1.5"/>
+  <polygon points="670,235 662,231 662,239" fill="#059669"/>
+  <line x1="654" y1="305" x2="666" y2="305" stroke="#059669" stroke-width="1.5"/>
+  <polygon points="670,305 662,301 662,309" fill="#059669"/>
+
+  <rect x="670" y="136" width="300" height="58" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="684" y="158" font-size="10.5" font-weight="bold" fill="#0f172a">keyword 倒排：整串就是一个词条</text>
+  <text x="684" y="176" font-size="8.5" fill="#334155">词条表里直接查得到，一次定位</text>
+  <text x="684" y="189" font-size="8.5" fill="#64748b">不能分词，所以也不支持全文搜索</text>
+
+  <rect x="670" y="206" width="300" height="58" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="684" y="228" font-size="10.5" font-weight="bold" fill="#0f172a">text 倒排：被拆成多个词条</text>
+  <text x="684" y="246" font-size="8.5" fill="#334155">path=/api/v1/orders/42 拆成 5 个词条</text>
+  <text x="684" y="259" font-size="8.5" fill="#64748b">没有任何一个词条等于整串</text>
+
+  <rect x="670" y="276" width="300" height="58" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="684" y="298" font-size="10.5" font-weight="bold" fill="#0f172a">text 倒排 + 词位置</text>
+  <text x="684" y="316" font-size="8.5" fill="#334155">多存一份位置信息，才判得出先后</text>
+  <text x="684" y="329" font-size="8.5" fill="#64748b">顺序对不上就是 0 命中，且不报错</text>
+
+  <rect x="20" y="362" width="960" height="176" fill="#fef2f2" stroke="#fca5a5" stroke-width="1" rx="10"/>
+  <text x="36" y="386" font-size="12.5" font-weight="bold" fill="#b91c1c">② 三种「必然 0 命中、且都不报错」的写法</text>
+
+  <rect x="30" y="400" width="300" height="126" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="44" y="424" font-size="10.5" font-weight="bold" fill="#0f172a">term 查 text 的整串</text>
+  <text x="44" y="446" font-size="8.5" fill="#334155">分词之后不存在等长的词条，</text>
+  <text x="44" y="460" font-size="8.5" fill="#334155">所以整串匹配永远是 0 条。</text>
+  <text x="44" y="486" font-size="8.5" fill="#64748b">要整串相等，字段必须是 keyword，</text>
+  <text x="44" y="500" font-size="8.5" fill="#64748b">或者改查它的 .keyword 子字段。</text>
+  <text x="44" y="518" font-size="8.5" fill="#b91c1c">KQL 里加引号救不回来：那只是短语。</text>
+
+  <rect x="350" y="400" width="300" height="126" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="364" y="424" font-size="10.5" font-weight="bold" fill="#0f172a">keyword 但 index: false</text>
+  <text x="364" y="446" font-size="8.5" fill="#334155">字段存在，_source 里看得见，</text>
+  <text x="364" y="460" font-size="8.5" fill="#334155">Discover 的字段列表里也在，</text>
+  <text x="364" y="486" font-size="8.5" fill="#64748b">但它根本没进倒排表，任何查询</text>
+  <text x="364" y="500" font-size="8.5" fill="#64748b">都是 0 命中。</text>
+  <text x="364" y="518" font-size="8.5" fill="#b91c1c">省空间的配置，代价是搜不到。</text>
+
+  <rect x="670" y="400" width="300" height="126" fill="#ffffff" stroke="#dc2626" stroke-width="1" rx="8"/>
+  <text x="684" y="424" font-size="10.5" font-weight="bold" fill="#0f172a">引号内写通配符</text>
+  <text x="684" y="446" font-size="8.5" fill="#334155">message: "orders*" 匹配的是</text>
+  <text x="684" y="460" font-size="8.5" fill="#334155">真的含这四个字符的文档，</text>
+  <text x="684" y="486" font-size="8.5" fill="#64748b">星号在引号里被当成字面量。</text>
+  <text x="684" y="500" font-size="8.5" fill="#64748b">通配符必须写在引号外。</text>
+  <text x="684" y="518" font-size="8.5" fill="#b91c1c">前置星号还会退化成扫描，很慢。</text>
+</svg>

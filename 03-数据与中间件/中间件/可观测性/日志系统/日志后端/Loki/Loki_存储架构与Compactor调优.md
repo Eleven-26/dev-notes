@@ -1,10 +1,10 @@
-# Loki 存储架构与调优
+# Loki 存储架构与 Compactor 调优
 
 > 覆盖：Loki 凭什么比 ES 便宜——它**不做全文倒排索引**，只索引标签，正文压缩后按时间块存；由此带来的一整套后果：标签设计直接决定查询代价、chunk 什么时候才落盘、压缩比由什么决定、限流与单行上限卡在哪、以及本机 3.5.0 上摸到的三个反直觉行为（日志查询不支持即时查询、`detected_level` 看着像标签却选不中、`limit` 是按总行数截断）。
 >
-> 不覆盖：LogQL 语法与排障方法论见 [日志查询语言与排障方法论.md](../查询与排障/日志查询语言与排障方法论.md)；采集端怎么推给 Loki 见 [日志采集管道.md](../日志采集管道.md)；Loki / ES / ClickHouse 三家怎么选见 [日志系统选型对比.md](../日志系统选型对比.md)。
+> 不覆盖：LogQL 语法与排障见 [LogQL查询与排障实战.md](LogQL查询与排障实战.md)；采集端怎么推给 Loki 见 [日志采集管道.md](../../日志采集管道.md)；Loki / ES / ClickHouse 三家怎么选见 [日志系统选型对比.md](../../日志系统选型对比.md)。
 >
-> 内容整理自个人学习笔记。实测环境 Loki **3.5.0**（单机单进程、`auth_enabled: false`、filesystem 存储、tsdb 索引、schema v13），全部读数来自本轮容器实跑，口径见第九节。
+> 内容整理自个人学习笔记。实测环境 Loki **3.5.0**（单机单进程、`auth_enabled: false`、filesystem 存储、tsdb 索引、schema v13），全部读数来自本轮容器实跑，口径见第十节。
 
 ---
 
@@ -204,13 +204,179 @@ curl -s http://127.0.0.1:13100/ready
 1. **429 的报错里带着「多少行、多少字节、限值多少」，可以直接反推需要把客户端拆成几批**。本机 11.97 MB / 4 MB/s ≈ 需要 3 秒摊开，或按 4 MB 一批分 3 批。
 2. **单行超限是 400 而不是 429**，客户端重试再多次也不会成功——这类日志必须**在采集端截断**（几十 KB 的堆栈或大 JSON 是常见来源），不要指望后端接收。
 
-⚠️ **保留期必须显式配**：本机默认配置里没有 `retention_period`，也就是「永不删除」。生产上要同时做三件事——`limits_config.retention_period` 设天数、`compactor` 的 `retention_enabled: true` 打开删除、`compactor.delete_request_store` 配好（单机 filesystem 可以省）。三者缺一个，日志就永远不删。
+⚠️ **保留期必须显式配**：本机默认配置里没有 `retention_period`，也就是「永不删除」。生产上要同时做三件事——`limits_config.retention_period` 设天数、`compactor` 的 `retention_enabled: true` 打开删除、`compactor.delete_request_store` 配好。
+
+⭐ 但这三件只是**必要条件，不是充分条件**。本机把三者全部配齐、`retention_period: 2m`、推了 15 行超期数据、观察 4 分钟，**一条都没删**，而且全程无任何报错。原因为什么，见下一节。
 
 ---
 
-## 八、验证与排查：三个反直觉行为
+## 八、使用四：retention 配好了为什么还不删——从配置到真正删除隔着五层
 
-### 8.1 坑一：日志查询不能用即时查询接口
+**本节要点**：`retention_period` 只回答「多久算旧」，不负责「到点就删」。从数据进来到真的被抹掉，Loki 要依次走过「chunk 关闭 → 写进索引 → 索引上传 → compactor 扫描 → 延迟删除」五步，任何一步没到位，外表现都是**一条都不少、一句报错也没有**。
+
+![retention 从配置到真正删除之间的五道闸门，每道闸门标注卡住时的现象与对应判据指标](images/retention的五道闸门.svg)
+
+五道闸门是串联的：上面任何一层没打开，下面几层的判据就永远是 0。本机卡在第三层——当天那张表的索引还没上传，compactor 遍历到的是空集。
+
+### 8.1 先把配置配到「理论上应该删」
+
+本机配置（只列相关项）：
+
+```yaml
+limits_config:
+  retention_period: 2m
+compactor:
+  compaction_interval: 30s
+  retention_enabled: true
+  retention_delete_delay: 5s
+  retention_delete_worker_count: 10
+  delete_request_store: filesystem
+```
+
+`retention_period: 2m` 已经是极端激进的取值——超过 2 分钟的数据都该消失。但光看自己的配置文件看不出问题，要让 Loki 把**生效配置**打出来（`-verify-config -print-config-stderr`），才知道真正决定节奏的是哪几个键：
+
+| 配置键 | 本机取值 | 来源 | 管什么 |
+| --- | --- | --- | --- |
+| `retention_period` | `2m` | 手写 | 多久算旧 |
+| `apply_retention_interval` | **`45s`** | 默认值 | **retention 的扫描节拍** |
+| `compaction_interval` | `30s` | 手写 | 只压实 index，不管 retention 频率 |
+| `retention_delete_delay` | `5s` | 手写 | 标记之后还要再等多久才真删 |
+| `retention_table_timeout` | `0s` | 默认值 | 表要空闲多久才允许处理（0 = 不等） |
+| `retention_deletes_enabled` | `false` | 默认值 | 这是 `/delete` 接口的开关，与 retention 无关 |
+| `retention_delete_worker_count` | `10` | 手写 | 删除并发 |
+
+⭐ 第一个反直觉点就在这张表里：**改 `compaction_interval` 不会改变 retention 的扫描频率**。本机设 30s，实测 compactor 的日志间隔稳定是 **45 秒**（10:36:40 → 10:37:25 → 10:38:10 → 10:38:55 → 10:39:40），因为 retention 走的是独立的 `apply_retention_interval`，默认 45s。想让它更快发现过期数据，该改的是这个键。
+
+### 8.2 日志里那个 `1792838080` 不是「期限」，是「边界时刻」
+
+compactor 每轮打一行：
+
+```text
+level=info caller=expiration.go:81 msg="overall smallest retention period 1792838080.21, default smallest retention period 1792838080.21"
+```
+
+第一眼会读成「保留期 = 17.9 亿秒（约 56 年）」，然后怀疑配置根本没生效。换算一下：
+
+```text
+$ date -u -d @1792838080 '+%Y-%m-%dT%H:%M:%SZ'
+2026-10-24T10:34:40Z
+```
+
+而这一行是 **10:36:40** 打出来的，正好「当前时刻 − 2 分钟」。所以它打的是**过期边界的绝对时间戳**：比这个时刻旧的数据就算过期，下一轮变成 `1792838125`（+45s），边界跟着时间往前走。
+
+⭐ 判据：**看小数位**。`1792838080.21` 的小数部分 `.210813299` 与日志时间 `10:36:40.210813299` 完全相同——它就是个 `time.Time` 的 Unix 秒，不是时长。
+
+### 8.3 第一层：chunk 还没关，compactor 就看不见
+
+Loki 的删除单位是 **chunk**，不是行。chunk 满足下面任一条件才关闭并落成文件：达到 `chunk_target_size`、空闲超过 `chunk_idle_period`、存活超过 `max_chunk_age`，或收到 `POST /flush`。
+
+本机把 `chunk_idle_period: 20s`、`max_chunk_age: 1m`（默认分别是 **30m** 和 **2h**）压到很短后，`chunks/` 目录的变化：
+
+| 时刻 | `chunks/` 文件数 | 说明 |
+| --- | --- | --- |
+| push 完成（t=7s） | **0** | 数据还在内存与 WAL |
+| t=22s | **0** | 未到关闭条件 |
+| t=37s | **3** | 三个 stream 各关一个 chunk |
+
+`flush_check_period` 默认 **30s**——ingester 每 30 秒才检查一次「有没有 chunk 该关」，所以即使 `chunk_idle_period` 设 20s，实际也要等到下一个检查点才动手。默认配置下 `chunk_idle_period` 是 30 分钟，意味着**写入后半小时内，retention 根本没有对象可看**。
+
+### 8.4 第二层：chunk 落了盘，不等于进了索引
+
+这一层最容易被忽略。chunk 文件出现在 `chunks/` 是一回事，**索引里出现指向它的 chunk entry 是另一回事**——而 compactor 只遍历索引。
+
+本机在同一时刻的五个读数：
+
+| 读数 | 值 | 说明 |
+| --- | --- | --- |
+| `chunks/` 下的 chunk 文件 | 3 个 | 数据确实落盘了 |
+| `data/index` 目录 | **不存在** | 索引一个文件都没上传到对象存储 |
+| `loki_tsdb_shipper_tables_upload_operation_total{status="success"}` | **5** | 上传操作「成功」跑了 5 次，传的是空表 |
+| 查询指标 `index_total_chunks` | **0** | 查询没从索引里读到任何 chunk |
+| 查询指标 `ingester_chunk_refs` | **1** | 数据是从 ingester 侧读出来的 |
+
+⭐ 五个读数放在一起，指向同一个结论：**数据在 ingester 和 chunk 存储里，但没进索引**。而 compactor 的 retention 就是「遍历索引里的 chunk entry，判断其结束时间是否早于边界」——索引空着，它就无事可做。
+
+本机 schema 是 `tsdb` + `period: 24h`，当天这张表（`index_20750`）**整天都在接收写入**，它的索引文件要等表退出写入、被压实并上传之后，才会出现在对象存储里。所以在单机 filesystem 上，**当天的数据天然不可能被 retention 处理**，无论 `retention_period` 配得多短。
+
+### 8.5 第三层：compactor 在跑，但标记数是 0
+
+![Compactor 启动的四个阶段与 compaction_interval、apply_retention_interval 两条独立循环](images/Compactor的启动四阶段与两条循环.svg)
+
+从启动到真正执行 retention 之间还有 35 秒的 ring 等待，而「压实索引」与「扫描过期」是两条各自独立的循环，节奏互不影响。
+
+判断 compactor 是否真干了活，不看它有没有启动，看这几个数：
+
+| 指标 | 本机读数 | 含义 |
+| --- | --- | --- |
+| `loki_compactor_apply_retention_operation_total{status="success"}` | **3**（4 分钟内） | retention 循环跑过 3 轮 |
+| `loki_compactor_apply_retention_operation_duration_seconds` | **0.00186**（1.86 ms） | 每轮只花 1.86 毫秒——几乎没有活干 |
+| `loki_boltdb_shipper_retention_sweeper_marker_files_current` | **0** | 从启动到现在没标记过任何 chunk |
+| `loki_compactor_pending_delete_requests_count` | **0** | 没有待删除请求 |
+| `compactor/retention/<store>/markers/` 目录 | **空** | 与上面一致 |
+
+「成功跑了 N 轮」和「真的删了东西」是两件事：**1.86 毫秒的 `success` 等价于空转**。
+
+### 8.6 实测时间线：15 行超期数据，4 分钟一条没少
+
+第一轮推三组，其中两组的时间戳超出 `retention_period: 2m`：
+
+| 组 | stream | 时间戳 | 行数 |
+| --- | --- | --- | --- |
+| A | `{job="lab", batch="old"}` | 10 分钟前 | 3 |
+| B | `{job="lab", batch="new"}` | 现在 | 3 |
+| C | `{job="lab"}` | 3 行 10 分钟前 + 3 行现在 | 6 |
+
+从 push 完成起每 15 秒查一次，连续 **247 秒**：
+
+```text
+t(s)   行数   分组                     chunks  index
+7      12     C=6 new=3 old=3          0       无
+37     12     C=6 new=3 old=3          3       无
+97     12     C=6 new=3 old=3          3       无
+247    12     C=6 new=3 old=3          3       无
+```
+
+第二轮在此基础上再推一组 `{job="lab", batch="yesterday"}`，时间戳 **25 小时前**（落在昨天那张已关闭的表上），3 行，总行数变 15。再连续观察 **243 秒**：
+
+```text
+t(s)   分组                                       index 表
+0      C=6 new:3 old:3                          无 index 目录
+46     C=6 new:3 old:3 yesterday:3               无 index 目录
+243    C=6 new:3 old:3 yesterday:3               无 index 目录
+```
+
+结论很硬：**A 组是独立 stream、整块 chunk 全是过期数据，一样没删；D 组落在 25 小时前那张表上，也没删**。`POST /flush` 返回 204 之后仍然如此。
+
+### 8.7 五个判据：卡在哪一层，看哪个数
+
+排查「配了不删」时按这个顺序看，从上往下，第一个不满足的就是卡点：
+
+| 层 | 检查什么 | 本机读数 | 不满足时的表现 |
+| --- | --- | --- | --- |
+| 1 | `apply_retention_interval` 是不是你以为的那个值 | 默认 45s | 改 `compaction_interval` 却毫无变化 |
+| 2 | `chunks/` 下有没有新文件 | 有（t=37s 起 3 个） | 数据还在内存与 WAL |
+| 3 | 对象存储里有没有 index 文件 | **没有** | compactor 遍历到空集 |
+| 4 | `marker_files_current` 是否大于 0 | **0** | 没有任何 chunk 被判过期 |
+| 5 | `pending_delete_requests_count` 是否大于 0 | **0** | 根本没进删除队列 |
+
+⭐ 一句话判据：**`apply_retention` 的成功计数在涨、但 `duration` 只有毫秒级、`markers` 是 0，说明 retention 在空转，问题不在 retention 配置，而在「索引里没有它能看见的数据」**。
+
+### 8.8 那生产上到底怎么让它删
+
+本机实测能确认的只有一条：**数据得先进入一张已经关闭的索引表**。落到操作上：
+
+1. **别用分钟级 retention 做验证**。想验证删除，要么把 `chunk_idle_period` 与 `max_chunk_age` 压到秒级再等索引上传，要么直接等「表的一个周期过去」（本机 `period: 24h`，即跨天）。用 2 分钟 retention 测 10 分钟前的数据、等 4 分钟看不到变化，是正常现象。
+2. **`retention_period` 的实际单位是天级**。生产上 7 天、30 天是常态，这个量级下「索引表跨天关闭 → compactor 下一轮扫描」的滞后完全可以接受，也不会产生「配了不删」的错觉。
+3. **`compaction_interval` 与 `apply_retention_interval` 分开调**：前者管索引压实（影响查询与上传），后者管 retention 扫描。把两者混为一谈，会一直调不到点上。
+4. **filesystem 后端下 `POST /flush` 只能强制 chunk 落盘，不能强制索引上传**——它解决的是第 2 层，不是第 3 层。
+
+⚠️ 跨天之后 compactor 是否真的删掉这些数据，本机**没有等到那一天**，属未实测。校验口径见篇末。
+
+---
+
+## 九、验证与排查：三个反直觉行为
+
+### 9.1 坑一：日志查询不能用即时查询接口
 
 ```text
 GET /loki/api/v1/query?query={service="svc-a"}
@@ -226,7 +392,7 @@ GET /loki/api/v1/query?query={service="svc-a"}
 | `count_over_time({env="lab"}[5m])` | ✅ vector | ✅ matrix |
 | `sum by (service) (...)` | ✅ vector | ✅ matrix |
 
-### 8.2 坑二：`detected_level` 看着像标签，却选不中
+### 9.2 坑二：`detected_level` 看着像标签，却选不中
 
 Loki 3.x 会自动从日志正文里**猜级别**，并在查询结果里附上 `detected_level` 字段：
 
@@ -243,13 +409,13 @@ labels = {'detected_level': 'info', 'env': 'lab', 'service': 'svc-repeat', 'serv
 
 原因：`detected_level` 是**查询结果上的展示字段**（给 Grafana 上色与筛选用的），不在索引里。要用它，只能写在管道后做结果过滤（`{env="lab"} | detected_level="error"` 这类），不能用它缩小扫描范围。**这是「展示标签 ≠ 索引标签」的一个具体例子，也是用 Loki 时最容易误判代价的地方。**
 
-### 8.3 坑三：`limit` 按总行数截断，不是按 stream
+### 9.3 坑三：`limit` 按总行数截断，不是按 stream
 
 本机 `limit=5000` 查 `{env="lab"}`，返回 4 个 stream 共 6 500 行里的 5 000 行——于是 `svc-bulk` 的两个分片各只返回 500 行，看起来像「这个 stream 只有 500 条」。实际它共有 6 000 条（`count_over_time` 读到 6 000）。
 
 ⭐ 判据：**要看真实条数就用 `count_over_time`，不要数 `query_range` 返回的行数**。后者永远 ≤ `limit`，且截断按时间/流顺序，不是均匀分配。
 
-### 8.4 语法错误的报错位置要看 `col`
+### 9.4 语法错误的报错位置要看 `col`
 
 ```text
 GET /loki/api/v1/query?query=count_over_time("foo"[5m])
@@ -260,7 +426,7 @@ Loki 的解析器报「期望 `{` 或 `(`」，说明**日志选择器必须以�
 
 ---
 
-## 九、校验口径
+## 十、校验口径
 
 | 结论 | 状态 | 依据 |
 | --- | --- | --- |
@@ -274,12 +440,21 @@ Loki 的解析器报「期望 `{` 或 `(`」，说明**日志选择器必须以�
 | 压缩比：随机 ≈2.8:1、重复 ≈25:1 | ⚠️ 粗算 | 按 `chunks/` 目录增量估算，含索引开销，非精确记账 |
 | 429 限流阈值 4 MB/s | ✅ 真跑 | 推 11.97 MB 得 429，报错含 `limit: 4194304 bytes/sec` |
 | 单行上限 256 KB | ✅ 真跑 | 推 307 200 字节得 400，报错含 `262144` 与 `307200` |
-| 保留期删除链路 | ⚠️ 未实测 | 默认配置无 `retention_period`；未配 compactor 与删除请求验证 |
+| 三者配齐后 4 分钟未删除任何数据（12 行基线不变） | ✅ 真跑 | `retention_period: 2m` + `retention_enabled: true` + `delete_request_store: filesystem`，247 秒内采样 17 次，A/B/C 组行数恒为 12 |
+| 25 小时前的数据（昨天表）同样未删 | ✅ 真跑 | 追加 `batch="yesterday"` 3 行，243 秒内采样 17 次，总行数恒为 15 |
+| `apply_retention_interval` 默认 45s，与 `compaction_interval` 无关 | ✅ 真跑 | `-print-config-stderr` 读到 `apply_retention_interval: 45s`；compactor 日志间隔实测 45s（10:36:40 → 10:39:40 共 4 次） |
+| `overall smallest retention period` 是绝对时间戳 | ✅ 真跑 | `date -u -d @1792838080` = 10:34:40，等于该行打印时刻 10:36:40 减 2 分钟 |
+| `apply_retention` 报成功但在空转 | ✅ 真跑 | `operation_total{status="success"}=3`、`duration=0.00186`、`marker_files_current=0`、`pending_delete_requests_count=0` |
+| chunk 到 t≈37s 才落盘 3 个 | ✅ 真跑 | `chunk_idle_period: 20s` + `flush_check_period: 30s`，`chunks/` 文件计数 0 → 0 → 3 |
+| chunk 已落盘但索引未上传 | ✅ 真跑 | `find data -maxdepth 4` 无 index 目录；`tsdb_shipper_tables_upload_operation_total{status="success"}=5` 却无索引文件 |
+| 保留期真正执行删除（跨天、表关闭之后） | ⚠️ 未实测 | 观察窗口仅 4 分钟，未跨天；对象存储为 filesystem |
 | 对象存储（S3/OSS）后端 | ⚠️ 未实测 | 本机只有 filesystem |
 | 多副本与 ingester 一致性 | ⚠️ 未实测 | 单机 `replication_factor: 1` |
 | 高基数标签的真实索引膨胀 | ⚠️ 未实测 | 未构造 `trace_id` 级基数的实验 |
 
 实验脚本在 `.workbuddy/tmp/es-lab/`（`loki_exp.sh` / `loki_q.py` / `loki_c.py` / `loki_ratio.py` / `loki_streams.py`），容器 `loki-lab`（`grafana/loki:3.5.0`，端口映射 `13100:3100`）。
+
+第八节的 retention 实验另建了一套：脚本在 `.workbuddy/tmp/loki-lab2/`（`restart.sh` / `restart2.sh` / `ret_split.py` / `ret_timeline.py` / `ret_yesterday.py`），配置为 `loki-retention.yaml` 与 `loki-retention2.yaml`，容器 `loki-ret`（端口映射 `13200:3100`）。每轮实验前的数据目录改名保留为 `data-bak-*` / `data-bak2-*`，没有直接删除。
 
 ---
 
@@ -305,7 +480,7 @@ WAL 是写入预写日志，**未压缩**且按「最近一段时间的写入」
 
 ## 关联
 
-- **上游/总纲**：[日志系统选型对比.md](../日志系统选型对比.md) — 索引模型决定「能查什么」，Loki 是「标签 + 暴力扫」这一格的代表
-- **对照**：[Elasticsearch_ILM与调优.md](Elasticsearch_ILM与调优.md) — 另一条路线：全文倒排 + ILM 分层，贵在索引与合并
-- **互补**：[日志查询语言与排障方法论.md](../查询与排障/日志查询语言与排障方法论.md)（LogQL 的用法与三种查询形态）、[日志风暴与限流降级策略.md](../治理与规范/日志风暴与限流降级策略.md)（429 之前应该在哪一层拦住）
-- **下游机制**：[日志采集管道.md](../日志采集管道.md) — 标签在采集端怎么提取，决定了本篇说的「stream 数量」
+- **上游/总纲**：[日志系统选型对比.md](../../日志系统选型对比.md) — 索引模型决定「能查什么」，Loki 是「标签 + 暴力扫」这一格的代表
+- **对照**：[ES_ILM与索引调优.md](../Elasticsearch/ES_ILM与索引调优.md) — 另一条路线：全文倒排 + ILM 分层，贵在索引与合并
+- **互补**：[LogQL查询与排障实战.md](LogQL查询与排障实战.md)（选择器与管道、四个静默行为）、[日志查询方法论.md](../../日志查询方法论.md)（四段收窄）、[日志风暴与限流降级策略.md](../../治理与规范/日志风暴与限流降级策略.md)（429 之前应该在哪一层拦住）
+- **下游机制**：[日志采集管道.md](../../日志采集管道.md) — 标签在采集端怎么提取，决定了本篇说的「stream 数量」

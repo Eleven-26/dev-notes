@@ -1,8 +1,8 @@
-# Fluent Bit 配置与缓冲
+# Fluent Bit 配置与调优
 
 > 覆盖：Fluent Bit 的配置到底由几段拼成、tag 与 `Match` 的路由是怎么生效的、缓冲的三层（memory / filesystem / `max_chunks_up`）分别管什么、以及 `Mem_Buf_Limit` 在什么情况下**根本不会生效**。本机 3.2.10 实测到三类静默行为：`Parsers_File` 路径写错只报 error 继续跑、`filesystem` 存储下内存上限被绕过、重试间隔不是固定值。
 >
-> 不覆盖：多行堆栈该怎么拼、JSON 解析为什么会静默只剩少数字段、K8s 下的三种采集形态，见 [日志采集管道.md](../日志采集管道.md)（本题材的机制主篇）；该选哪个采集器见 [日志系统选型对比.md](../日志系统选型对比.md)；与 Vector 的配置对照见 [Vector配置与转换.md](Vector配置与转换.md)。
+> 不覆盖：多行堆栈该怎么拼、JSON 解析为什么会静默只剩少数字段、K8s 下的三种采集形态，见 [日志采集管道.md](../日志采集管道.md)（本题材的机制主篇）；该选哪个采集器见 [日志系统选型对比.md](../日志系统选型对比.md)；与 Vector 的配置对照见 [Vector配置与VRL.md](Vector配置与VRL.md)。
 >
 > 内容整理自个人学习笔记。实测环境 Fluent Bit **3.2.10**（`fluent/fluent-bit:3.2`，distroless 镜像、无 shell），全部读数来自本轮容器实跑，口径见第九节。
 
@@ -125,9 +125,9 @@ docker logs fb-lab
 
 ---
 
-## 六、使用二：缓冲三层与背压的三个闸门
+## 六、使用二：缓冲三层与背压的四个闸门
 
-**本节要点**：背压发生在「output 写不出去」的时候。Fluent Bit 的应对顺序是：**先重试（chunk 留着）→ 内存到顶了暂停 input → 暂停也顶不住就丢**。三个闸门分别是 `Mem_Buf_Limit`、`Storage.type`、`max_chunks_up`，而**第一个在第二种存储模式下会被绕过**。
+**本节要点**：背压发生在「output 写不出去」的时候。Fluent Bit 的应对顺序是：**先重试（chunk 留着）→ 内存到顶了暂停 input → 暂停也顶不住就丢**。四个闸门分别是 `Mem_Buf_Limit`、`Storage.type`、`max_chunks_up`、`total_limit_size`，而**第一个在第二种存储模式下会被整个绕过**。
 
 ### 6.1 闸门一：output 失败后的重试
 
@@ -176,6 +176,54 @@ docker logs fb-lab
 - `queue memory limit: 95.4M` 是**自动创建的 `storage_backlog` 输入**的内存队列上限（约为容器可用内存的一定比例），它不是配置项，是运行时算出来的。
 
 ⚠️ `storage_backlog` 是 Fluent Bit 在 `filesystem` 模式下自动加的「第二级输入」：主 input 暂停后，backlog 会继续把已经落到磁盘的数据往 output 送。**它会让「input 已暂停」看起来仍然在发数据**，排查时容易误判。
+
+### 6.4 闸门四：`total_limit_size` 设成 2M，26 秒没等到任何触顶告警
+
+`filesystem` 模式下真正兜底的是 `Storage.total_limit_size`——它管的是「`Storage.path` 这个目录的总占用」。本机把上限压到极其激进的 **2 MB**，输入用 `dummy` 以 **5000 行/秒** 灌，output 指向不存在的端口并关掉重试上限：
+
+```ini
+[SERVICE]
+    Storage.path              /tmp/flb-storage/
+    Storage.total_limit_size  2M
+    Storage.metrics           on
+
+[INPUT]
+    Name          dummy
+    Rate          5000
+    Storage.type  filesystem
+
+[OUTPUT]
+    Name         http
+    Host         127.0.0.1
+    Port         19999
+    Retry_Limit  False
+```
+
+26 秒内读到的启动与运行日志：
+
+```text
+[storage] ver=1.5.2, type=memory+filesystem, sync=normal, checksum=off, max_chunks_up=128
+[storage] created root path /tmp/flb-storage/
+[storage] backlog input plugin: storage_backlog.1
+[input:storage_backlog:storage_backlog.1] queue memory limit: 95.4M
+[input:dummy:dummy.0] storage_strategy='filesystem' (memory + filesystem)
+```
+
+| 观察项 | 读数 |
+| --- | --- |
+| `max_chunks_up` | **128**（本机未配，这是默认值） |
+| 存储根目录 | `/tmp/flb-storage/` |
+| 自动创建的 backlog 输入 | `storage_backlog.1` |
+| backlog 内存队列上限 | `queue memory limit: 95.4M` |
+| output 失败次数 | `no upstream connections available to 127.0.0.1:19999` 共 **52 次** |
+| 与容量上限相关的告警 | **一条都没有** |
+
+⭐ 两个读数值得单独说明：
+
+1. **不配 `Storage.max_chunks_up` 时默认是 128**。同一镜像上配了 `Storage.max_chunks_up 20` 的那次读到 20，不配就变成 128。它决定「同时允许多少个 chunk 处于 up（在内存里待发）状态」，与 `total_limit_size`（磁盘总量）是两把不同的锁，调一个不会连带另一个。
+2. **`total_limit_size` 触顶的日志形态本机没等到**。按 5000 行/秒 × 26 秒估算已灌入约 13 万行，原始数据量远超 2 MB，但日志里没有出现任何 `limit reached` 字样。这与 6.2 里 `Mem_Buf_Limit` 在 `filesystem` 下失效是同一种形态：**配了不生效不会报错**。
+
+⚠️ 判断 `total_limit_size` 到底有没有生效，别等日志，直接看 `Storage.path` 目录的占用是否真的停在 2 MB 附近。本机没有在 26 秒窗口内做这个统计，这一条属未实测，校验口径里单独标出。
 
 ---
 
@@ -230,13 +278,14 @@ OCI runtime exec failed: exec: "sh": executable file not found in $PATH
 | `memory` 模式触发 `paused (mem buf overlimit)` | ✅ 真跑 | 1 条 warn 原文，`failed to flush` 15 次 |
 | `filesystem` 模式不触发暂停 | ✅ 真跑 | 同一配置仅改 `Storage.type`，`failed to flush` 92 次、无 paused |
 | 重试间隔带抖动 | ✅ 真跑 | 前 10 次间隔 6/7/9/9/10/13/16/19/20/21 秒，两次运行序列不同 |
-| `max_chunks_up` 默认值随存储模式变化 | ✅ 真跑 | `memory` 时启动日志 `max_chunks_up=128`；`filesystem` 且显式配 20 时为 20 |
+| `max_chunks_up` 不配时默认为 128 | ✅ 真跑 | `memory` 模式读到 128；`filesystem` 模式**未配**时同样读到 128，显式配 `Storage.max_chunks_up 20` 时才变 20 |
 | 多行拼接的三类失败形态 | ⚠️ 见管道篇 | 本篇只给配置位置，机制与读数在 [日志采集管道.md](../日志采集管道.md) |
 | 吞吐上限（每秒能处理多少条） | ⚠️ 未实测 | 本机只做了背压行为，没有做限速吞吐基准 |
-| `filesystem` 下的磁盘用量上限（`total_limit_size`） | ⚠️ 未实测 | 未构造磁盘打满场景 |
+| `total_limit_size 2M` 下 26 秒未出现触顶告警 | ✅ 真跑 | 5000 行/秒灌 26 秒，`no upstream connections available` 52 次，日志中无 `limit reached` 字样 |
+| `total_limit_size` 是否真把 `Storage.path` 卡在 2 MB | ⚠️ 未实测 | 未在该窗口内统计目录占用，只确认了「没有告警」这一面 |
 | K8s 下的采集形态 | ⚠️ 未实测 | 无集群，见管道篇 |
 
-实验脚本在 `.workbuddy/tmp/logs-lab/`（`fb_min.conf` / `fb_storm.conf`），容器名 `fb-lab`（`fluent/fluent-bit:3.2`，配置文件挂载到 `/cfg`）。
+实验脚本在 `.workbuddy/tmp/logs-lab/`（`fb_min.conf` / `fb_storm.conf` / `fb_limit.conf`），容器名 `fb-lab`（`fluent/fluent-bit:3.2`，配置文件挂载到 `/cfg`）。6.4 的容量实验单独起了一个容器 `fb-limit`，用的是同一镜像与同一份 `fb_limit.conf`。
 
 ---
 
@@ -263,6 +312,6 @@ OCI runtime exec failed: exec: "sh": executable file not found in $PATH
 ## 关联
 
 - **上游/总纲**：[日志采集管道.md](../日志采集管道.md) — 采集管道的机制主篇：五段管道、多行拼接、JSON 静默失效、背压形态
-- **对照**：[Vector配置与转换.md](Vector配置与转换.md) — 另一条路线：把转换做成有类型的 VRL 脚本，配置可编译期校验
+- **对照**：[Vector配置与VRL.md](Vector配置与VRL.md) — 另一条路线：把转换做成有类型的 VRL 脚本，配置可编译期校验
 - **互补**：[日志系统选型对比.md](../日志系统选型对比.md)（采集器怎么选）、[日志风暴与限流降级策略.md](../治理与规范/日志风暴与限流降级策略.md)（背压之前该在哪一层拦）
-- **下游机制**：[Elasticsearch_ILM与调优.md](../后端运维/Elasticsearch_ILM与调优.md)、[Loki_存储架构与调优.md](../后端运维/Loki_存储架构与调优.md) — 数据发出去之后落在谁手里
+- **下游机制**：[ES_ILM与索引调优.md](../日志后端/Elasticsearch/ES_ILM与索引调优.md)、[Loki_存储架构与Compactor调优.md](../日志后端/Loki/Loki_存储架构与Compactor调优.md) — 数据发出去之后落在谁手里

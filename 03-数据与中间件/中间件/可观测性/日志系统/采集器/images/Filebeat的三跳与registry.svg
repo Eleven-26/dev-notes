@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Filebeat 的三跳与 registry</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">input 声明读什么、registry 记住读到哪、模块决定怎么解析——三件事里只有第一件要你操心</text>
+
+  <rect x="20" y="76" width="960" height="230" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12.5" font-weight="bold" fill="#1e40af">① 一条日志从文件到 output 的三跳</text>
+
+  <rect x="30" y="116" width="290" height="132" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="44" y="138" font-size="10.5" font-weight="bold" fill="#0f172a">filestream 输入</text>
+  <text x="44" y="160" font-size="8.5" fill="#334155">扫 paths 下的文件，为每个文件开 harvester</text>
+  <text x="44" y="176" font-size="8.5" fill="#334155">逐行读，每行产出一条 event</text>
+  <text x="44" y="192" font-size="8.5" fill="#334155">读到的位置写进 registry，不是内存</text>
+  <text x="44" y="216" font-size="8.5" fill="#64748b">日志里找 Starting harvester for file</text>
+  <text x="44" y="236" font-size="8.5" fill="#b91c1c">出问题：文件不读，先看路径与 close 参数</text>
+
+  <line x1="324" y1="182" x2="340" y2="182" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="344,182 336,178 336,186" fill="#2563eb"/>
+
+  <rect x="352" y="116" width="290" height="132" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="366" y="138" font-size="10.5" font-weight="bold" fill="#0f172a">processors 解析</text>
+  <text x="366" y="160" font-size="8.5" fill="#334155">切字段、丢字段、加字段</text>
+  <text x="366" y="176" font-size="8.5" fill="#334155">模块就是预置好的一包 processors</text>
+  <text x="366" y="192" font-size="8.5" fill="#334155">输出 8 个顶层字段：log message input agent</text>
+  <text x="366" y="216" font-size="8.5" fill="#64748b">关键字段是 log.offset 与 log.file.inode</text>
+  <text x="366" y="236" font-size="8.5" fill="#b91c1c">出问题：字段少了，不报错，只是没匹配上</text>
+
+  <line x1="646" y1="182" x2="662" y2="182" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="666,182 658,178 658,186" fill="#f59e0b"/>
+
+  <rect x="674" y="116" width="296" height="132" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="688" y="138" font-size="10.5" font-weight="bold" fill="#0f172a">output 发送</text>
+  <text x="688" y="160" font-size="8.5" fill="#334155">console / Elasticsearch / Logstash 任选</text>
+  <text x="688" y="176" font-size="8.5" fill="#334155">失败时进内存队列，指数退避重试</text>
+  <text x="688" y="192" font-size="8.5" fill="#334155">重试期间 registry 的 offset 不前进</text>
+  <text x="688" y="216" font-size="8.5" fill="#64748b">实测首次连接在启动后 10.11 秒才发生</text>
+  <text x="688" y="236" font-size="8.5" fill="#b91c1c">出问题：前 10 秒零日志，看着像一切正常</text>
+
+  <rect x="20" y="316" width="960" height="224" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="10"/>
+  <text x="36" y="340" font-size="12.5" font-weight="bold" fill="#0f172a">② registry 是 Append-only 的事务日志，不是状态快照</text>
+
+  <rect x="30" y="354" width="460" height="172" fill="#ffffff" stroke="#64748b" stroke-width="1" rx="8"/>
+  <text x="44" y="376" font-size="10.5" font-weight="bold" fill="#0f172a">key 的四段：改了哪一段都会换身份</text>
+  <text x="44" y="400" font-size="8.5" fill="#334155">filestream::lab-app::native::</text>
+  <text x="44" y="414" font-size="8.5" fill="#334155">1125899907218039-72</text>
+  <text x="44" y="438" font-size="8.5" fill="#64748b">input 类型 | input 的 id | 识别方式 | inode-设备号</text>
+  <text x="44" y="462" font-size="8.5" fill="#334155">⚠️ 改了 input.id 等于换了 key，</text>
+  <text x="44" y="476" font-size="8.5" fill="#334155">整个文件会被当成新文件从头重读。</text>
+  <text x="44" y="500" font-size="8.5" fill="#64748b">native 模式靠 inode，轮转后要靠 fingerprint 才认得出。</text>
+  <text x="44" y="518" font-size="8.5" fill="#b91c1c">「配置改一行、日志重复入库」的根因就在这。</text>
+
+  <rect x="510" y="354" width="460" height="172" fill="#ffffff" stroke="#64748b" stroke-width="1" rx="8"/>
+  <text x="524" y="376" font-size="10.5" font-weight="bold" fill="#0f172a">一个事务占两行，同一 key 反复追加</text>
+  <text x="524" y="400" font-size="8.5" fill="#334155">{"op":"set","id":3}</text>
+  <text x="524" y="414" font-size="8.5" fill="#334155">{"k":"...","v":{"cursor":{"offset":9890}}}</text>
+  <text x="524" y="438" font-size="8.5" fill="#64748b">发现文件时 cursor 是 null，开始读时 ttl 变 -1，</text>
+  <text x="524" y="452" font-size="8.5" fill="#64748b">读完才写进 offset。所以要看当前位置，</text>
+  <text x="524" y="466" font-size="8.5" fill="#64748b">取最后一条，不要从头读。</text>
+  <text x="524" y="490" font-size="8.5" fill="#334155">实测续读：offset 9890 → 11912 → 12872，</text>
+  <text x="524" y="504" font-size="8.5" fill="#334155">只读新增的 10 行，逐条 offset 递增 96 字节。</text>
+  <text x="524" y="518" font-size="8.5" fill="#b91c1c">末条 12776 加 96 正好等于 12872，无重读无漏读。</text>
+</svg>
