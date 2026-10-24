@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一条 PromQL 的五段求值</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">自左向右，数据越算越少；前两段决定了绝大部分代价，后三段决定了结果对不对</text>
+
+  <rect x="18" y="92" width="172" height="212" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="30" y="114" font-size="10.5" font-weight="bold" fill="#0f172a">① 选择器</text>
+  <text x="30" y="136" font-size="8.5" fill="#334155">按指标名与标签</text>
+  <text x="30" y="152" font-size="8.5" fill="#334155">匹配出候选序列</text>
+  <text x="30" y="176" font-size="8.5" fill="#64748b">走倒排索引：</text>
+  <text x="30" y="192" font-size="8.5" fill="#64748b">标签条件求交集</text>
+  <text x="30" y="216" font-size="8.5" fill="#334155">{job="api", status="500"}</text>
+  <text x="30" y="244" font-size="8.5" font-weight="bold" fill="#b45309">宽选择器 = 慢的</text>
+  <text x="30" y="260" font-size="8.5" font-weight="bold" fill="#b45309">第一来源</text>
+  <text x="30" y="284" font-size="8" fill="#64748b">正则尤其贵：要枚举</text>
+  <text x="30" y="298" font-size="8" fill="#64748b">该标签的全部取值</text>
+
+  <line x1="190" y1="198" x2="210" y2="198" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="214,198 206,194 206,202" fill="#2563eb"/>
+
+  <rect x="214" y="92" width="172" height="212" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="226" y="114" font-size="10.5" font-weight="bold" fill="#0f172a">② 取点</text>
+  <text x="226" y="136" font-size="8.5" fill="#334155">瞬时：lookback 内</text>
+  <text x="226" y="152" font-size="8.5" fill="#334155">最近的那一个样本</text>
+  <text x="226" y="170" font-size="8.5" fill="#334155">区间：窗口内全部点</text>
+  <text x="226" y="194" font-size="8.5" fill="#64748b">区间是左开右闭</text>
+  <text x="226" y="210" font-size="8.5" fill="#64748b">[5m] 取 (t-5m, t]</text>
+  <text x="226" y="234" font-size="8.5" fill="#334155">[5m] 或默认瞬时</text>
+  <text x="226" y="262" font-size="8.5" font-weight="bold" fill="#b45309">窗口越长读放大</text>
+  <text x="226" y="278" font-size="8.5" font-weight="bold" fill="#b45309">越严重</text>
+  <text x="226" y="298" font-size="8" fill="#64748b">点数 = 序列数 × 窗口</text>
+
+  <line x1="386" y1="198" x2="406" y2="198" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="410,198 402,194 402,202" fill="#2563eb"/>
+
+  <rect x="410" y="92" width="172" height="212" fill="#fffbeb" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="422" y="114" font-size="10.5" font-weight="bold" fill="#78350f">③ 函数与运算</text>
+  <text x="422" y="136" font-size="8.5" fill="#334155">逐点作用到每条</text>
+  <text x="422" y="152" font-size="8.5" fill="#334155">序列上</text>
+  <text x="422" y="170" font-size="8.5" fill="#334155">跨序列时按标签</text>
+  <text x="422" y="186" font-size="8.5" fill="#334155">自动配对</text>
+  <text x="422" y="210" font-size="8.5" fill="#334155">rate(x[5m])</text>
+  <text x="422" y="238" font-size="8.5" font-weight="bold" fill="#b45309">配不上的序列</text>
+  <text x="422" y="254" font-size="8.5" font-weight="bold" fill="#b45309">直接从结果消失</text>
+  <text x="422" y="274" font-size="8" fill="#64748b">不报错、不补零，</text>
+  <text x="422" y="288" font-size="8" fill="#64748b">这是「曲线少几条」</text>
+  <text x="422" y="300" font-size="8" fill="#64748b">最常见的原因</text>
+
+  <line x1="582" y1="198" x2="602" y2="198" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="606,198 598,194 598,202" fill="#f59e0b"/>
+
+  <rect x="606" y="92" width="172" height="212" fill="#fffbeb" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="618" y="114" font-size="10.5" font-weight="bold" fill="#78350f">④ 聚合</text>
+  <text x="618" y="136" font-size="8.5" fill="#334155">按 by 或 without</text>
+  <text x="618" y="152" font-size="8.5" fill="#334155">分组后合并</text>
+  <text x="618" y="176" font-size="8.5" fill="#64748b">by 是白名单：</text>
+  <text x="618" y="192" font-size="8.5" fill="#64748b">只留列出的标签</text>
+  <text x="618" y="208" font-size="8.5" fill="#64748b">without 是黑名单</text>
+  <text x="618" y="232" font-size="8.5" fill="#334155">sum by (job) (...)</text>
+  <text x="618" y="260" font-size="8.5" font-weight="bold" fill="#b45309">漏写 by 会把全部</text>
+  <text x="618" y="276" font-size="8.5" font-weight="bold" fill="#b45309">序列压成一根线</text>
+  <text x="618" y="288" font-size="8" fill="#64748b">without 还会被未来</text>
+  <text x="618" y="300" font-size="8" fill="#64748b">新增的标签影响</text>
+
+  <line x1="778" y1="198" x2="798" y2="198" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="802,198 794,194 794,202" fill="#f59e0b"/>
+
+  <rect x="802" y="92" width="172" height="212" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="814" y="114" font-size="10.5" font-weight="bold" fill="#0f172a">⑤ 序列化</text>
+  <text x="814" y="136" font-size="8.5" fill="#334155">决定返回矩阵</text>
+  <text x="814" y="152" font-size="8.5" fill="#334155">还是向量</text>
+  <text x="814" y="176" font-size="8.5" fill="#64748b">区间向量不能</text>
+  <text x="814" y="192" font-size="8.5" fill="#64748b">直接作为结果</text>
+  <text x="814" y="216" font-size="8.5" fill="#334155">只能喂给 rate</text>
+  <text x="814" y="232" font-size="8.5" fill="#334155">increase 这类函数</text>
+  <text x="814" y="260" font-size="8.5" font-weight="bold" fill="#7f1d1d">这是唯一一个</text>
+  <text x="814" y="276" font-size="8.5" font-weight="bold" fill="#7f1d1d">会明确报错的</text>
+  <text x="814" y="288" font-size="8" fill="#64748b">前四段的错都是</text>
+  <text x="814" y="300" font-size="8" fill="#64748b">静默的</text>
+
+  <rect x="20" y="322" width="960" height="104" fill="#fef2f2" stroke="#fca5a5" stroke-width="1" rx="8"/>
+  <text x="38" y="346" font-size="10.5" font-weight="bold" fill="#7f1d1d">三个静默失败与一个显式报错，顺序按「容易误判」排</text>
+  <text x="38" y="368" font-size="9" fill="#475569">① 第 ③ 段的标签不匹配：结果少几条线，看起来像「某个服务没上报」，实际是匹配键不一致</text>
+  <text x="38" y="388" font-size="9" fill="#475569">② 第 ④ 段漏写 by：全部序列合并成一根线，看起来像「整体错误率很低」，实际是平均掉了</text>
+  <text x="38" y="408" font-size="9" fill="#475569">③ 第 ⑤ 段区间向量直接当结果：这一条会明确报错，反而最好发现——它不是坑，是护栏</text>
+
+  <rect x="20" y="440" width="960" height="96" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="38" y="464" font-size="10.5" font-weight="bold" fill="#0f172a">两处顺序不能反</text>
+  <text x="38" y="486" font-size="9" fill="#475569">rate 必须在聚合之前：sum(rate(x[5m])) 成立，rate(sum(x)) 不成立——后者拿到的是瞬时向量，而 rate 只吃区间向量</text>
+  <text x="38" y="506" font-size="9" fill="#475569">offset 必须紧跟选择器：sum(x offset 5m) 合法，sum(x) offset 5m 非法——后者是对整个表达式做偏移，语言不允许</text>
+  <text x="38" y="526" font-size="9" fill="#b45309">这两条都会直接报错，所以不算隐蔽；真正隐蔽的是「写法合法但语义错」，那就是上面三个静默失败</text>
+</svg>

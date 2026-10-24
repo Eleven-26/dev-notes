@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 630" width="1000" height="630" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="630" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次抓取的七步：两次失败是静默的</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">从「有个 target」到「样本躺在 head 里」，第 4、5 步失败不报错，只是安静地少一条数据</text>
+
+  <rect x="20" y="76" width="960" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#1e40af">抓取前：决定抓谁、怎么抓</text>
+
+  <rect x="40" y="114" width="200" height="146" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="54" y="136" font-size="10.5" font-weight="bold" fill="#0f172a">① 服务发现</text>
+  <text x="54" y="158" font-size="8.5" fill="#334155">static / file_sd / K8s SD</text>
+  <text x="54" y="176" font-size="8.5" fill="#334155">产出一批 target</text>
+  <text x="54" y="198" font-size="8.5" fill="#64748b">每个 target 带一组</text>
+  <text x="54" y="214" font-size="8.5" fill="#64748b">__meta_ 临时标签</text>
+  <text x="54" y="240" font-size="8.5" fill="#b45309">空集合也合法，不报错</text>
+
+  <line x1="244" y1="187" x2="266" y2="187" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="270,187 262,183 262,191" fill="#2563eb"/>
+
+  <rect x="274" y="114" width="200" height="146" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="288" y="136" font-size="10.5" font-weight="bold" fill="#0f172a">② 改「抓谁」</text>
+  <text x="288" y="158" font-size="8.5" fill="#334155">relabel_configs</text>
+  <text x="288" y="176" font-size="8.5" fill="#334155">keep / drop / replace</text>
+  <text x="288" y="198" font-size="8.5" fill="#64748b">作用在 target 与</text>
+  <text x="288" y="214" font-size="8.5" fill="#64748b">__meta_ 上</text>
+  <text x="288" y="240" font-size="8.5" fill="#b45309">drop 光了也不报错</text>
+
+  <line x1="478" y1="187" x2="500" y2="187" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="504,187 496,183 496,191" fill="#2563eb"/>
+
+  <rect x="508" y="114" width="200" height="146" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="522" y="136" font-size="10.5" font-weight="bold" fill="#0f172a">③ 组装抓取 URL</text>
+  <text x="522" y="158" font-size="8.5" fill="#334155">scheme + address</text>
+  <text x="522" y="176" font-size="8.5" fill="#334155">+ metrics_path</text>
+  <text x="522" y="194" font-size="8.5" fill="#334155">+ __param_*</text>
+  <text x="522" y="216" font-size="8.5" fill="#64748b">默认 http 与 /metrics</text>
+  <text x="522" y="240" font-size="8.5" fill="#b45309">地址拼错只会连不上</text>
+
+  <line x1="712" y1="187" x2="734" y2="187" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="738,187 730,183 730,191" fill="#2563eb"/>
+
+  <rect x="742" y="114" width="216" height="146" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+  <text x="756" y="136" font-size="10.5" font-weight="bold" fill="#7f1d1d">④ HTTP 抓取</text>
+  <text x="756" y="158" font-size="8.5" fill="#334155">GET，Accept 协商</text>
+  <text x="756" y="176" font-size="8.5" fill="#334155">受 scrape_timeout 约束</text>
+  <text x="756" y="198" font-size="8.5" fill="#64748b">连接 / 超时 / 非 2xx</text>
+  <text x="756" y="214" font-size="8.5" fill="#64748b">全部算这一次失败</text>
+  <text x="756" y="240" font-size="8.5" font-weight="bold" fill="#dc2626">静默点一：只留 up=0</text>
+
+  <line x1="850" y1="264" x2="850" y2="300" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <polygon points="850,304 846,296 854,296" fill="#dc2626"/>
+
+  <rect x="20" y="316" width="960" height="176" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="38" y="340" font-size="12" font-weight="bold" fill="#b45309">抓取后：决定存什么</text>
+
+  <rect x="742" y="354" width="216" height="126" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+  <text x="756" y="376" font-size="10.5" font-weight="bold" fill="#7f1d1d">⑤ 解析响应体</text>
+  <text x="756" y="398" font-size="8.5" fill="#334155">OpenMetrics 或文本格式</text>
+  <text x="756" y="416" font-size="8.5" fill="#334155">非法行导致整次失败</text>
+  <text x="756" y="440" font-size="8.5" font-weight="bold" fill="#dc2626">静默点二：up=0</text>
+  <text x="756" y="460" font-size="8.5" fill="#64748b">样本数指标也不更新</text>
+
+  <line x1="738" y1="417" x2="716" y2="417" stroke="#b45309" stroke-width="1.5"/>
+  <polygon points="712,417 720,413 720,421" fill="#b45309"/>
+
+  <rect x="498" y="354" width="210" height="126" fill="#fffbeb" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="512" y="376" font-size="10.5" font-weight="bold" fill="#78350f">⑥ 改「存什么」</text>
+  <text x="512" y="398" font-size="8.5" fill="#334155">metric_relabel_configs</text>
+  <text x="512" y="416" font-size="8.5" fill="#334155">丢指标 / 删标签 / 改名</text>
+  <text x="512" y="440" font-size="8.5" fill="#64748b">sample_limit 在此之后判</text>
+  <text x="512" y="460" font-size="8.5" fill="#64748b">第二道降基数闸</text>
+
+  <line x1="494" y1="417" x2="472" y2="417" stroke="#b45309" stroke-width="1.5"/>
+  <polygon points="468,417 476,413 476,421" fill="#b45309"/>
+
+  <rect x="254" y="354" width="210" height="126" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="268" y="376" font-size="10.5" font-weight="bold" fill="#0f172a">⑦ 附加与入库</text>
+  <text x="268" y="398" font-size="8.5" fill="#334155">补 job 与 instance 标签</text>
+  <text x="268" y="416" font-size="8.5" fill="#334155">追加进 head</text>
+  <text x="268" y="440" font-size="8.5" fill="#64748b">同时更新 up 与</text>
+  <text x="268" y="456" font-size="8.5" fill="#64748b">scrape_duration_seconds</text>
+
+  <rect x="40" y="354" width="196" height="126" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="54" y="376" font-size="10.5" font-weight="bold" fill="#0f172a">此后</text>
+  <text x="54" y="398" font-size="8.5" fill="#334155">样本属于哪条序列</text>
+  <text x="54" y="416" font-size="8.5" fill="#334155">由标签全集唯一确定</text>
+  <text x="54" y="440" font-size="8.5" fill="#64748b">再往下的机制见</text>
+  <text x="54" y="456" font-size="8.5" fill="#64748b">数据模型与存储篇</text>
+
+  <rect x="20" y="508" width="960" height="106" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="38" y="532" font-size="10.5" font-weight="bold" fill="#0f172a">这条链上的任何一步失败，Prometheus 都不会退出，它只是少一条数据</text>
+  <text x="38" y="554" font-size="9" fill="#475569">所以排查永远从 /targets 页的 last error 开始，而不是从查询开始；查询为空只能证明「没有数据」，不能证明「哪一步失败了」</text>
+  <text x="38" y="576" font-size="9" fill="#475569">两个静默点的区分办法：看 scrape_samples_scraped。它是 0 说明第 4 或第 5 步失败；它大于 0 而查询为空，问题在第 6 步的 relabel 或选择器本身</text>
+  <text x="38" y="598" font-size="9" fill="#b45309">还有一种更隐蔽的：抓取成功但入库被拒（乱序或重复时间戳），此时 up 仍是 1，只能从缺块现象倒推</text>
+</svg>

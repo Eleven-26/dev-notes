@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">倒排索引：查询就是把几个 ID 列表求交集</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">索引只解决「哪些序列可能相关」，真正的样本还在 chunks 里；正则贵在它要枚举该标签的全部取值</text>
+
+  <rect x="20" y="76" width="376" height="352" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="36" y="100" font-size="12" font-weight="bold" fill="#1e40af">① 索引：标签对 → posting list</text>
+
+  <rect x="36" y="112" width="344" height="66" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="6"/>
+  <text x="48" y="132" font-size="9" font-weight="bold" fill="#0f172a">job = "api"</text>
+  <text x="48" y="150" font-size="8.5" fill="#334155">posting list：[1, 3, 7, 9, 12, 15, 18]</text>
+  <text x="48" y="168" font-size="8" fill="#64748b">等值匹配最便宜，直接取这一行</text>
+
+  <rect x="36" y="186" width="344" height="66" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="6"/>
+  <text x="48" y="206" font-size="9" font-weight="bold" fill="#0f172a">__name__ = "http_requests_total"</text>
+  <text x="48" y="224" font-size="8.5" fill="#334155">posting list：[1, 3, 7, 9, 12, 18, 21]</text>
+  <text x="48" y="242" font-size="8" fill="#64748b">指标名和普通标签走同一套索引</text>
+
+  <rect x="36" y="260" width="344" height="76" fill="#fffbeb" stroke="#f59e0b" stroke-width="1" rx="6"/>
+  <text x="48" y="280" font-size="9" font-weight="bold" fill="#78350f">status =~ "5.."</text>
+  <text x="48" y="298" font-size="8.5" fill="#334155">先枚举所有匹配的取值：500, 502, 503 ...</text>
+  <text x="48" y="316" font-size="8.5" fill="#334155">再把各自的 list 并起来：[7, 9, 12, 30]</text>
+  <text x="48" y="332" font-size="8" font-weight="bold" fill="#b45309">代价与取值个数成正比，不是与命中数</text>
+
+  <rect x="36" y="348" width="344" height="62" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="48" y="368" font-size="9" font-weight="bold" fill="#0f172a">没有索引能帮上忙的写法</text>
+  <text x="48" y="386" font-size="8.5" fill="#334155">{__name__=~".+"} 或 path=~".*orders.*"</text>
+  <text x="48" y="402" font-size="8" fill="#b45309">前者全表扫，后者中间匹配无法利用有序性</text>
+
+  <line x1="400" y1="252" x2="424" y2="252" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="428,252 420,248 420,256" fill="#2563eb"/>
+
+  <rect x="432" y="76" width="212" height="352" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+  <text x="448" y="100" font-size="12" font-weight="bold" fill="#1e40af">② 集合运算</text>
+
+  <rect x="448" y="112" width="180" height="96" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+  <text x="460" y="132" font-size="9" font-weight="bold" fill="#1e3a8a">交集</text>
+  <text x="460" y="152" font-size="8.5" fill="#334155">[1,3,7,9,12,15,18]</text>
+  <text x="460" y="170" font-size="8.5" fill="#334155">∩ [1,3,7,9,12,18,21]</text>
+  <text x="460" y="188" font-size="8.5" fill="#334155">∩ [7,9,12,30]</text>
+  <text x="460" y="202" font-size="8" fill="#64748b">（示意，实际是位图或跳表）</text>
+
+  <rect x="448" y="220" width="180" height="72" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="6"/>
+  <text x="460" y="240" font-size="9" font-weight="bold" fill="#0f172a">候选序列</text>
+  <text x="460" y="260" font-size="8.5" fill="#334155">只剩 [7, 9, 12] 三条</text>
+  <text x="460" y="278" font-size="8" fill="#64748b">这一步只缩小范围，没读样本</text>
+
+  <rect x="448" y="304" width="180" height="108" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="6"/>
+  <text x="460" y="324" font-size="9" font-weight="bold" fill="#0f172a">交集之后还要做什么</text>
+  <text x="460" y="344" font-size="8.5" fill="#334155">① 按时间范围过滤</text>
+  <text x="460" y="362" font-size="8.5" fill="#334155">② 定位到具体 block</text>
+  <text x="460" y="380" font-size="8.5" fill="#334155">③ 解压 chunk 取样本</text>
+  <text x="460" y="400" font-size="8" fill="#b45309">真正的读放大都发生在第 ③ 步</text>
+
+  <line x1="648" y1="252" x2="672" y2="252" stroke="#b45309" stroke-width="1.5"/>
+  <polygon points="676,252 668,248 668,256" fill="#b45309"/>
+
+  <rect x="680" y="76" width="300" height="352" fill="#fffbeb" stroke="#f59e0b" stroke-width="1" rx="10"/>
+  <text x="696" y="100" font-size="12" font-weight="bold" fill="#b45309">③ 回 chunks 取样本</text>
+
+  <rect x="696" y="112" width="268" height="86" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="6"/>
+  <text x="708" y="132" font-size="9" font-weight="bold" fill="#78350f">序列 7</text>
+  <text x="708" y="150" font-size="8.5" fill="#334155">head 中：直接读内存块</text>
+  <text x="708" y="168" font-size="8.5" fill="#334155">block 中：定位 chunks/ 段文件</text>
+  <text x="708" y="186" font-size="8" fill="#64748b">时间范围决定读哪一层</text>
+
+  <rect x="696" y="210" width="268" height="86" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="6"/>
+  <text x="708" y="230" font-size="9" font-weight="bold" fill="#78350f">序列 9</text>
+  <text x="708" y="248" font-size="8.5" fill="#334155">每个序列在 chunk 里是连续存放</text>
+  <text x="708" y="266" font-size="8.5" fill="#334155">按 120 个样本一段切分</text>
+  <text x="708" y="284" font-size="8" fill="#64748b">所以同序列扫描很快</text>
+
+  <rect x="696" y="308" width="268" height="104" fill="#ffffff" stroke="#f59e0b" stroke-width="1" rx="6"/>
+  <text x="708" y="328" font-size="9" font-weight="bold" fill="#78350f">序列 12</text>
+  <text x="708" y="348" font-size="8.5" fill="#334155">三条序列各取一段 → 组成向量</text>
+  <text x="708" y="366" font-size="8.5" fill="#334155">再交给 PromQL 的第 ① 段之后</text>
+  <text x="708" y="392" font-size="8" fill="#b45309">读放大 = 候选序列数 × 时间窗内点数</text>
+  <text x="708" y="406" font-size="8" fill="#b45309">这是查询慢的本源，不是索引慢</text>
+
+  <rect x="20" y="446" width="960" height="96" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="38" y="470" font-size="10.5" font-weight="bold" fill="#0f172a">一句话记住两个后果</text>
+  <text x="38" y="492" font-size="9" fill="#475569">基数伤查询的方式是「让某个标签的取值个数变大」，于是等值查找仍快、正则查找变慢；同时序列元数据变多，内存也跟着涨</text>
+  <text x="38" y="514" font-size="9" fill="#475569">所以能用等值就不用正则，能用前缀就不用中间匹配；把 path 写成路由模板而不是真实 URL，本质是在压「取值个数」</text>
+  <text x="38" y="534" font-size="9" fill="#b45309">索引只回答「哪些序列可能相关」，它不会替你减少时间窗内的样本数——窗口长度只能靠缩短窗口或预聚合来解决</text>
+</svg>

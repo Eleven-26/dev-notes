@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">样本落地的四个阶段</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">越往下越不可变：内存里的头块可写，落成的块只能被合并与标记删除，不会被原地修改</text>
+
+  <rect x="40" y="96" width="600" height="86" fill="#eff6ff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="56" y="118" font-size="11.5" font-weight="bold" fill="#0f172a">① head：内存中的当前块</text>
+  <text x="56" y="140" font-size="9" fill="#334155">新样本先追加到这里；它同时是写入目标与查询来源之一</text>
+  <text x="56" y="158" font-size="9" fill="#334155">可写、可变；head 越大，重启时的回放越久</text>
+  <text x="56" y="174" font-size="8.5" fill="#64748b">序列的元数据与索引在内存里，样本主体会 mmap 到 chunks_head 目录</text>
+
+  <rect x="660" y="96" width="320" height="86" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="676" y="118" font-size="10" font-weight="bold" fill="#1e40af">关键常量</text>
+  <text x="676" y="140" font-size="9" fill="#334155">覆盖最近约 2 小时</text>
+  <text x="676" y="158" font-size="9" fill="#334155">chunks_head 目录 = mmap 的样本</text>
+  <text x="676" y="174" font-size="8.5" fill="#b45309">这块占盘，且算进磁盘最低要求</text>
+
+  <line x1="340" y1="186" x2="340" y2="198" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="340,202 336,194 344,194" fill="#2563eb"/>
+
+  <rect x="40" y="206" width="600" height="86" fill="#fffbeb" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="56" y="228" font-size="11.5" font-weight="bold" fill="#78350f">② WAL：崩溃后靠它回放</text>
+  <text x="56" y="250" font-size="9" fill="#334155">head 没有完整落盘，安全保证来自预写日志；重启先回放再就绪</text>
+  <text x="56" y="268" font-size="9" fill="#334155">存的是未压缩的原始数据，所以比正式块大得多</text>
+  <text x="56" y="284" font-size="8.5" fill="#64748b">备份时要排除它，否则拿到的是不一致快照</text>
+
+  <rect x="660" y="206" width="320" height="86" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="676" y="228" font-size="10" font-weight="bold" fill="#b45309">关键常量</text>
+  <text x="676" y="250" font-size="9" fill="#334155">每段 128MB，最少保留 3 个</text>
+  <text x="676" y="268" font-size="9" fill="#334155">高流量实例会留更多，以保住 2 小时</text>
+  <text x="676" y="284" font-size="8.5" fill="#b45309">压缩自 2.20 起默认开启</text>
+
+  <line x1="340" y1="296" x2="340" y2="308" stroke="#f59e0b" stroke-width="1.5"/>
+  <polygon points="340,312 336,304 344,304" fill="#f59e0b"/>
+
+  <rect x="40" y="316" width="600" height="86" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="8"/>
+  <text x="56" y="338" font-size="11.5" font-weight="bold" fill="#065f46">③ block：每 2 小时切一块</text>
+  <text x="56" y="360" font-size="9" fill="#334155">一个目录里有 chunks（样本主体）、index（标签到序列的映射）、meta.json</text>
+  <text x="56" y="378" font-size="9" fill="#334155">块一旦成型就不可变；删除写进 tombstones 而不是改 chunk</text>
+  <text x="56" y="394" font-size="8.5" fill="#64748b">所以删了序列磁盘不会立刻降，要等重写</text>
+
+  <rect x="660" y="316" width="320" height="86" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="676" y="338" font-size="10" font-weight="bold" fill="#065f46">关键常量</text>
+  <text x="676" y="360" font-size="9" fill="#334155">固定 2 小时一块</text>
+  <text x="676" y="378" font-size="9" fill="#334155">chunks 内段文件默认上限 512MB</text>
+  <text x="676" y="394" font-size="8.5" fill="#b45309">不要用 NFS 类文件系统</text>
+
+  <line x1="340" y1="406" x2="340" y2="418" stroke="#059669" stroke-width="1.5"/>
+  <polygon points="340,422 336,414 344,414" fill="#059669"/>
+
+  <rect x="40" y="426" width="600" height="86" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1" rx="8"/>
+  <text x="56" y="448" font-size="11.5" font-weight="bold" fill="#4c1d95">④ compaction：后台合并成大块</text>
+  <text x="56" y="470" font-size="9" fill="#334155">把多个 2 小时块合成更大块，减少文件数与查询时的块定位开销</text>
+  <text x="56" y="488" font-size="9" fill="#334155">合并期间源块与新块同时存在，所以磁盘峰值会短暂超过保留上限</text>
+  <text x="56" y="504" font-size="8.5" fill="#64748b">过期块必须整体过期才删，清理最长可能等 2 小时</text>
+
+  <rect x="660" y="426" width="320" height="86" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="676" y="448" font-size="10" font-weight="bold" fill="#4c1d95">关键常量</text>
+  <text x="676" y="470" font-size="9" fill="#334155">单块跨度 ≤ 保留期的 10% 或 31 天</text>
+  <text x="676" y="488" font-size="9" fill="#334155">两者取小</text>
+  <text x="676" y="504" font-size="8.5" fill="#b45309">容量规划要留 15~20% 余量</text>
+
+  <rect x="20" y="528" width="960" height="56" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="38" y="550" font-size="10.5" font-weight="bold" fill="#0f172a">为什么是 2 小时</text>
+  <text x="38" y="570" font-size="9" fill="#475569">它是「查询要同时打开的文件数」与「compaction 频率」之间的折中：块太碎则文件多、查询定位慢；块太大则每次合并要搬的数据多，且删一条老数据要连带保留整块</text>
+</svg>

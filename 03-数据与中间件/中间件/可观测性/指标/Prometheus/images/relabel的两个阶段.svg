@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">relabel 的两个阶段：只差一个前缀，作用对象完全不同</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">上半段改「抓谁」，下半段改「存什么」；写错位置不会报错，只会静默地什么都不发生</text>
+
+  <rect x="20" y="76" width="960" height="192" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" rx="10"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#1e40af">阶段一：抓取之前 —— relabel_configs</text>
+
+  <rect x="40" y="112" width="290" height="142" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="54" y="134" font-size="10" font-weight="bold" fill="#1e3a8a">手上有什么</text>
+  <text x="54" y="156" font-size="8.8" fill="#334155">target 及其全部标签</text>
+  <text x="54" y="176" font-size="8.8" fill="#334155">__address__（host:port）</text>
+  <text x="54" y="196" font-size="8.8" fill="#334155">__scheme__ / __metrics_path__</text>
+  <text x="54" y="216" font-size="8.8" fill="#334155">__param_* 与 __meta_* 元标签</text>
+  <text x="54" y="238" font-size="8.5" fill="#b45309">注意：此时还没有任何样本</text>
+
+  <line x1="334" y1="183" x2="356" y2="183" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="360,183 352,179 352,187" fill="#2563eb"/>
+
+  <rect x="364" y="112" width="180" height="142" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="378" y="134" font-size="10" font-weight="bold" fill="#0f172a">能做的动作</text>
+  <text x="378" y="156" font-size="8.8" fill="#334155">keep / drop</text>
+  <text x="378" y="174" font-size="8" fill="#64748b">整条 target 留不留</text>
+  <text x="378" y="194" font-size="8.8" fill="#334155">replace</text>
+  <text x="378" y="212" font-size="8" fill="#64748b">改地址、拼 instance</text>
+  <text x="378" y="232" font-size="8.8" fill="#334155">labelmap / labeldrop</text>
+  <text x="378" y="248" font-size="8" fill="#64748b">批量处理元标签</text>
+
+  <line x1="548" y1="183" x2="570" y2="183" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="574,183 566,179 566,187" fill="#2563eb"/>
+
+  <rect x="578" y="112" width="382" height="142" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="592" y="134" font-size="10" font-weight="bold" fill="#0f172a">这一阶段的产出</text>
+  <text x="592" y="156" font-size="8.8" fill="#334155">① 留下哪些 target：被 drop 的直接不抓</text>
+  <text x="592" y="176" font-size="8.8" fill="#334155">② 抓哪个地址：以 __address__ 为准</text>
+  <text x="592" y="196" font-size="8.8" fill="#334155">③ 带哪些普通标签进最终序列</text>
+  <text x="592" y="216" font-size="8.8" fill="#334155">④ target_limit 在这一阶段之后判</text>
+  <text x="592" y="238" font-size="8.5" fill="#b45309">__meta_ 是临时标签，不复制就不会入库</text>
+
+  <rect x="20" y="278" width="960" height="46" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="500" y="306" text-anchor="middle" font-size="11" font-weight="bold" fill="#0f172a">↓ 抓取动作：HTTP GET，受 scrape_timeout 约束，解析响应体 ↓</text>
+
+  <rect x="20" y="334" width="960" height="192" fill="#fffbeb" stroke="#fcd34d" stroke-width="1" rx="10"/>
+  <text x="38" y="358" font-size="12" font-weight="bold" fill="#b45309">阶段二：抓取之后 —— metric_relabel_configs</text>
+
+  <rect x="40" y="370" width="290" height="142" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="54" y="392" font-size="10" font-weight="bold" fill="#78350f">手上有什么</text>
+  <text x="54" y="414" font-size="8.8" fill="#334155">已经解析出的样本</text>
+  <text x="54" y="434" font-size="8.8" fill="#334155">__name__（指标名）</text>
+  <text x="54" y="454" font-size="8.8" fill="#334155">目标暴露的普通标签</text>
+  <text x="54" y="474" font-size="8.8" fill="#334155">job / instance（已附加）</text>
+  <text x="54" y="496" font-size="8.5" fill="#b45309">注意：__meta_ 到这里已经不存在</text>
+
+  <line x1="334" y1="441" x2="356" y2="441" stroke="#b45309" stroke-width="1.5"/>
+  <polygon points="360,441 352,437 352,445" fill="#b45309"/>
+
+  <rect x="364" y="370" width="180" height="142" fill="#ffffff" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="378" y="392" font-size="10" font-weight="bold" fill="#0f172a">能做的动作</text>
+  <text x="378" y="414" font-size="8.8" fill="#334155">丢弃整条样本</text>
+  <text x="378" y="432" font-size="8" fill="#64748b">按指标名或标签值</text>
+  <text x="378" y="452" font-size="8.8" fill="#334155">改指标名</text>
+  <text x="378" y="470" font-size="8" fill="#64748b">纠正命名、加前缀</text>
+  <text x="378" y="490" font-size="8.8" fill="#334155">删掉高基数标签</text>
+  <text x="378" y="506" font-size="8" fill="#64748b">⚠️ 删了就合并且拆不回</text>
+
+  <line x1="548" y1="441" x2="570" y2="441" stroke="#b45309" stroke-width="1.5"/>
+  <polygon points="574,441 566,437 566,445" fill="#b45309"/>
+
+  <rect x="578" y="370" width="382" height="142" fill="#ffffff" stroke="#f59e0b" stroke-width="1" rx="8"/>
+  <text x="592" y="392" font-size="10" font-weight="bold" fill="#0f172a">这一阶段的产出</text>
+  <text x="592" y="414" font-size="8.8" fill="#334155">① 哪些样本进 TSDB、叫什么名字</text>
+  <text x="592" y="434" font-size="8.8" fill="#334155">② 序列数在这里被第一次削减</text>
+  <text x="592" y="454" font-size="8.8" fill="#334155">③ sample_limit / label_limit 在此之后判</text>
+  <text x="592" y="474" font-size="8.8" fill="#334155">④ 超限则整次抓取失败</text>
+  <text x="592" y="496" font-size="8.5" fill="#b45309">这是降基数的第二道闸，第一道在应用侧</text>
+
+  <rect x="20" y="538" width="960" height="50" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="38" y="560" font-size="10.5" font-weight="bold" fill="#0f172a">判断方法只有一句：你要改的东西，在抓取之前存在吗</text>
+  <text x="38" y="580" font-size="9" fill="#475569">存在（地址、元标签、抓不抓）就走上面；不存在（指标名、样本标签、丢不丢）就走下面。写在错误的一侧时，两边都合法、都不报错，只是规则永远匹配不到东西</text>
+</svg>

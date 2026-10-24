@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">告警的三个状态：只有 firing 会发通知</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">pending 是可观察但不可通知的中间态，它的唯一职责就是去抖；下方弧线是条件不再满足时的回退</text>
+
+  <rect x="60" y="140" width="200" height="120" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2" rx="8"/>
+  <text x="76" y="164" font-size="12" font-weight="bold" fill="#0f172a">inactive</text>
+  <text x="76" y="188" font-size="9" fill="#334155">表达式不满足</text>
+  <text x="76" y="208" font-size="9" fill="#334155">默认状态</text>
+  <text x="76" y="234" font-size="8.5" font-weight="bold" fill="#b45309">ALERTS 里没有这条</text>
+  <text x="76" y="250" font-size="8.5" fill="#64748b">序列不存在，不是值为 0</text>
+
+  <line x1="264" y1="200" x2="372" y2="200" stroke="#2563eb" stroke-width="1.5"/>
+  <polygon points="376,200 368,196 368,204" fill="#2563eb"/>
+  <rect x="286" y="180" width="68" height="18" fill="#ffffff"/>
+  <text x="320" y="193" text-anchor="middle" font-size="8.5" fill="#1e40af">表达式满足</text>
+
+  <rect x="380" y="140" width="200" height="120" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2" rx="8"/>
+  <text x="396" y="164" font-size="12" font-weight="bold" fill="#78350f">pending</text>
+  <text x="396" y="188" font-size="9" fill="#334155">满足但未满 for</text>
+  <text x="396" y="208" font-size="9" fill="#334155">正在去抖</text>
+  <text x="396" y="234" font-size="8.5" font-weight="bold" fill="#b45309">ALERTS 里有，值为 1</text>
+  <text x="396" y="250" font-size="8.5" fill="#64748b">alertstate 标为 pending</text>
+
+  <line x1="584" y1="200" x2="692" y2="200" stroke="#dc2626" stroke-width="1.5"/>
+  <polygon points="696,200 688,196 688,204" fill="#dc2626"/>
+  <rect x="604" y="180" width="76" height="18" fill="#ffffff"/>
+  <text x="642" y="193" text-anchor="middle" font-size="8.5" fill="#b91c1c">连续满足满 for</text>
+
+  <rect x="700" y="140" width="200" height="120" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+  <text x="716" y="164" font-size="12" font-weight="bold" fill="#7f1d1d">firing</text>
+  <text x="716" y="188" font-size="9" fill="#334155">已满足 for 时长</text>
+  <text x="716" y="208" font-size="9" fill="#334155">推给 Alertmanager</text>
+  <text x="716" y="234" font-size="8.5" font-weight="bold" fill="#b91c1c">ALERTS 里有，值为 1</text>
+  <text x="716" y="250" font-size="8.5" fill="#64748b">alertstate 标为 firing</text>
+
+  <path d="M800,262 C800,306 160,306 160,262" fill="none" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="5 3"/>
+  <polygon points="160,258 156,266 164,266" fill="#94a3b8"/>
+
+  <rect x="20" y="320" width="960" height="102" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="8"/>
+  <text x="38" y="344" font-size="10.5" font-weight="bold" fill="#0f172a">下方虚线弧 = 条件不再满足，直接回 inactive</text>
+  <text x="38" y="366" font-size="9" fill="#475569">pending 期间中途不满足：for 的计时清零，下次满足时从头开始——不是「累计满足多久」</text>
+  <text x="38" y="386" font-size="9" fill="#475569">firing 后恢复：立即回 inactive，Alertmanager 会收到 resolved 通知（是否发送取决于其配置）</text>
+  <text x="38" y="406" font-size="9" fill="#b45309">最常被误判的一条：for: 10m 不是「10 分钟后发通知」，而是「连续满足 10 分钟才进入 firing」</text>
+
+  <rect x="20" y="436" width="960" height="72" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" rx="8"/>
+  <text x="38" y="460" font-size="10.5" font-weight="bold" fill="#0f172a">keep_firing_for 补的是回退这一侧</text>
+  <text x="38" y="482" font-size="9" fill="#475569">条件已经不再满足，但仍保持 firing 一段时间再回退，用于压掉抖动导致的反复 恢复-触发 循环</text>
+  <text x="38" y="500" font-size="9" fill="#64748b">不写它时，条件一松就回 inactive；写了它，恢复通知会晚一个 keep_firing_for</text>
+</svg>
