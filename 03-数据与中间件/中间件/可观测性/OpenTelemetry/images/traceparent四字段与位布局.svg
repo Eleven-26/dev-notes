@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" width="1000" height="440" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <rect x="0" y="64" width="1000" height="376" fill="#ffffff" fill-opacity="0"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">traceparent 的四个字段：跨进程只传这 55 个字符</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">没有服务名、没有采样率、没有时间戳——所以「链路断」几乎总是「头没传」或「头传坏」</text>
+
+  <rect x="130" y="120" width="70" height="58" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="165" y="146" text-anchor="middle" font-size="11" font-weight="bold" fill="#1e3a8a">version</text>
+  <text x="165" y="166" text-anchor="middle" font-size="13" fill="#1e3a8a">00</text>
+
+  <rect x="200" y="120" width="380" height="58" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="390" y="146" text-anchor="middle" font-size="11" font-weight="bold" fill="#14532d">trace-id（32 hex）</text>
+  <text x="390" y="166" text-anchor="middle" font-size="13" fill="#166534">4bf92f3577b34da6a3ce929d0e0e4736</text>
+
+  <rect x="580" y="120" width="210" height="58" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.4"/>
+  <text x="685" y="146" text-anchor="middle" font-size="11" font-weight="bold" fill="#78350f">parent-id（16 hex）</text>
+  <text x="685" y="166" text-anchor="middle" font-size="13" fill="#92400e">00f067aa0ba902b7</text>
+
+  <rect x="790" y="120" width="70" height="58" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="825" y="146" text-anchor="middle" font-size="11" font-weight="bold" fill="#7f1d1d">flags</text>
+  <text x="825" y="166" text-anchor="middle" font-size="13" fill="#b91c1c">01</text>
+
+  <text x="165" y="106" text-anchor="middle" font-size="11" fill="#64748b">2 字符</text>
+  <text x="390" y="106" text-anchor="middle" font-size="11" fill="#64748b">32 字符</text>
+  <text x="685" y="106" text-anchor="middle" font-size="11" fill="#64748b">16 字符</text>
+  <text x="825" y="106" text-anchor="middle" font-size="11" fill="#64748b">2 字符</text>
+
+  <text x="165" y="200" text-anchor="middle" font-size="11.5" fill="#1e3a8a">规范版本，当前只有 00</text>
+  <text x="165" y="220" text-anchor="middle" font-size="11.5" fill="#b91c1c">写成 ff 会被静默忽略</text>
+
+  <text x="390" y="200" text-anchor="middle" font-size="11.5" fill="#14532d">整条链路的 ID，父子共享</text>
+  <text x="390" y="220" text-anchor="middle" font-size="11.5" fill="#b91c1c">全 0 是无效值，不是未采样</text>
+
+  <text x="685" y="200" text-anchor="middle" font-size="11.5" fill="#78350f">上一跳的 span id</text>
+  <text x="685" y="220" text-anchor="middle" font-size="11.5" fill="#b91c1c">不是本跳自己的 id</text>
+
+  <text x="825" y="200" text-anchor="middle" font-size="11.5" fill="#7f1d1d">bit0=采样位</text>
+  <text x="825" y="220" text-anchor="middle" font-size="11.5" fill="#7f1d1d">01 留 / 00 丢</text>
+
+  <rect x="60" y="248" width="880" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="80" y="272" font-size="12.5" font-weight="bold" fill="#0f172a">另两个可选伴生头</text>
+  <text x="230" y="272" font-size="11.5" fill="#334155">tracestate：厂商间传各自状态（采样决策、租户）；有长度上限，超了整条被丢弃</text>
+  <text x="230" y="294" font-size="11.5" fill="#334155">baggage：业务键值对（tenant.id=42），随每一跳传；不落库，别塞敏感信息</text>
+  <text x="230" y="314" font-size="11.5" fill="#b91c1c">这两个头都不参与 trace 结构，删掉不影响链路是否连续</text>
+
+  <line x1="20" y1="344" x2="980" y2="344" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="368" font-size="13" fill="#0f172a">实测：四种非法头（全 0 的 trace-id、version=ff、缺 flags、非 hex）全部 valid=false，且下游各自新开一条链路。</text>
+  <text x="30" y="392" font-size="12" fill="#b91c1c">⚠️ 拒绝的方式是「静默」：不报错、不打日志，只在拓扑图上表现为「上游没有父节点」。</text>
+  <text x="30" y="414" font-size="12" fill="#64748b">判据：抽查一跳的 Parent ID 为空且 TraceID 与上游不同，就是头没传过来。</text>
+</svg>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 460" width="1000" height="460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">OTLP 的两条传输路径：同一个 receiver，两套协议栈</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">4317 只认 HTTP/2 + protobuf；4318 兼容三种组合，是唯一能用手写请求调试的入口</text>
+
+  <rect x="36" y="150" width="164" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="118" y="180" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">SDK</text>
+  <text x="118" y="204" text-anchor="middle" font-size="11.5" fill="#1d4ed8">exporter</text>
+  <text x="118" y="226" text-anchor="middle" font-size="11.5" fill="#1d4ed8">批量 + 压缩</text>
+  <text x="118" y="248" text-anchor="middle" font-size="11.5" fill="#1d4ed8">重试 + 队列</text>
+  <text x="118" y="274" text-anchor="middle" font-size="11.5" fill="#1d4ed8">进程内</text>
+
+  <line x1="200" y1="186" x2="612" y2="186" stroke="#16a34a" stroke-width="2.2"/>
+  <polygon points="612,186 602,181 602,191" fill="#16a34a"/>
+  <rect x="256" y="140" width="300" height="76" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="406" y="162" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">gRPC · 4317</text>
+  <text x="406" y="182" text-anchor="middle" font-size="11.5" fill="#166534">必须 HTTP/2，只有 protobuf</text>
+  <text x="406" y="202" text-anchor="middle" font-size="11.5" fill="#166534">单条长连接 + 多路复用</text>
+
+  <line x1="200" y1="286" x2="612" y2="286" stroke="#d97706" stroke-width="2.2"/>
+  <polygon points="612,286 602,281 602,291" fill="#d97706"/>
+  <rect x="256" y="240" width="300" height="76" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="406" y="262" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#78350f">HTTP · 4318</text>
+  <text x="406" y="282" text-anchor="middle" font-size="11.5" fill="#92400e">HTTP/1.1 或 2，protobuf 或 JSON</text>
+  <text x="406" y="302" text-anchor="middle" font-size="11.5" fill="#92400e">curl 可直接发，浏览器也能发</text>
+
+  <rect x="612" y="120" width="176" height="240" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.6"/>
+  <text x="700" y="150" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">Collector</text>
+  <text x="700" y="174" text-anchor="middle" font-size="11.5" fill="#334155">otlp receiver</text>
+  <text x="700" y="196" text-anchor="middle" font-size="11.5" fill="#334155">两个独立监听</text>
+  <text x="700" y="226" text-anchor="middle" font-size="11.5" fill="#334155">4317 起不来 ≠</text>
+  <text x="700" y="246" text-anchor="middle" font-size="11.5" fill="#334155">整体没起来</text>
+  <text x="700" y="276" text-anchor="middle" font-size="11.5" fill="#334155">日志里两行</text>
+  <text x="700" y="296" text-anchor="middle" font-size="11.5" fill="#334155">Starting GRPC/HTTP</text>
+
+  <line x1="788" y1="240" x2="836" y2="240" stroke="#64748b" stroke-width="2"/>
+  <polygon points="836,240 826,235 826,245" fill="#64748b"/>
+
+  <rect x="836" y="196" width="128" height="88" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="900" y="224" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">后端</text>
+  <text x="900" y="248" text-anchor="middle" font-size="11.5" fill="#64748b">存储与查询</text>
+  <text x="900" y="268" text-anchor="middle" font-size="11.5" fill="#64748b">不归 OTel 管</text>
+
+  <rect x="36" y="380" width="928" height="70" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="56" y="404" font-size="12.5" font-weight="bold" fill="#7f1d1d">实测：用 HTTP/1.1 打 4317 会得到什么</text>
+  <text x="56" y="426" font-size="11.5" fill="#b91c1c">http=000 err=Received HTTP/0.9 when not allowed —— 不是 4xx，是协议层不匹配；curl -v 里 TCP 已连上</text>
+  <text x="56" y="444" font-size="11.5" fill="#64748b">所以端口写错时看到的是「连上了但没响应」，容易被误判成防火墙或 Collector 没起</text>
+</svg>

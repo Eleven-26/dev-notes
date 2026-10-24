@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <rect x="0" y="64" width="1000" height="476" fill="#ffffff" fill-opacity="0"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">四种拓扑的对照：判据不是先进程度，而是「出口在哪、全局决策在哪」</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">同一个二进制，配置决定它是 Agent 还是 Gateway</text>
+
+  <rect x="28" y="82" width="460" height="200" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="48" y="108" font-size="14" font-weight="bold" fill="#0f172a">① Sidecar：每个 Pod 一个</text>
+  <rect x="48" y="122" width="72" height="34" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="84" y="144" text-anchor="middle" font-size="11" fill="#334155">Pod</text>
+  <text x="128" y="144" font-size="11" fill="#64748b">+</text>
+  <rect x="142" y="122" width="86" height="34" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="185" y="144" text-anchor="middle" font-size="11" fill="#1e3a8a">Collector</text>
+  <line x1="228" y1="139" x2="270" y2="139" stroke="#2563eb" stroke-width="1.6"/>
+  <text x="280" y="144" font-size="11" fill="#64748b">→ 出网</text>
+  <text x="48" y="184" font-size="11.5" fill="#166534">优点：隔离彻底、可按 Pod 配额、故障不扩散</text>
+  <text x="48" y="208" font-size="11.5" fill="#b91c1c">代价：Pod 数 × 资源；升级要重启全部 Pod</text>
+  <text x="48" y="232" font-size="11.5" fill="#334155">适用：多租户强隔离、单 Pod 需专属处理</text>
+  <text x="48" y="262" font-size="11.5" fill="#64748b">⚠️ 做不了尾采样（只看得到本 Pod 那段）</text>
+
+  <rect x="512" y="82" width="460" height="200" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="532" y="108" font-size="14" font-weight="bold" fill="#0f172a">② DaemonSet：每个节点一个</text>
+  <rect x="532" y="122" width="72" height="34" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="568" y="144" text-anchor="middle" font-size="11" fill="#334155">Node</text>
+  <text x="612" y="144" font-size="11" fill="#64748b">+</text>
+  <rect x="626" y="122" width="86" height="34" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="669" y="144" text-anchor="middle" font-size="11" fill="#14532d">Agent</text>
+  <text x="722" y="144" font-size="11" fill="#64748b">→ 收敛出网</text>
+  <text x="532" y="184" font-size="11.5" fill="#166534">优点：节点级收敛、少出网、资源可控</text>
+  <text x="532" y="208" font-size="11.5" fill="#b91c1c">代价：看不到跨节点全局，做不了尾采样</text>
+  <text x="532" y="232" font-size="11.5" fill="#334155">适用：K8s 集群的默认首选</text>
+  <text x="532" y="262" font-size="11.5" fill="#64748b">⚠️ 队列在本地，Pod 重建会丢队列内容</text>
+
+  <rect x="28" y="300" width="460" height="200" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="48" y="326" font-size="14" font-weight="bold" fill="#0f172a">③ Gateway：中心一组副本</text>
+  <rect x="48" y="340" width="86" height="34" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="91" y="362" text-anchor="middle" font-size="11" fill="#78350f">Gateway</text>
+  <line x1="134" y1="357" x2="176" y2="357" stroke="#d97706" stroke-width="1.6"/>
+  <text x="186" y="362" font-size="11" fill="#64748b">→ 多后端</text>
+  <text x="48" y="402" font-size="11.5" fill="#166534">优点：全局决策、证书集中、后端可换</text>
+  <text x="48" y="426" font-size="11.5" fill="#b91c1c">代价：多一跳；自身要 HA；单点风险</text>
+  <text x="48" y="450" font-size="11.5" fill="#334155">适用：所有生产环境的下游</text>
+  <text x="48" y="480" font-size="11.5" fill="#64748b">⚠️ 节点级属性（k8s.pod.name）要 SDK 自己带</text>
+
+  <rect x="512" y="300" width="460" height="200" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.8"/>
+  <text x="532" y="326" font-size="14" font-weight="bold" fill="#1e3a8a">④ 两级：Agent → Gateway（推荐）</text>
+  <rect x="532" y="340" width="72" height="34" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="568" y="362" text-anchor="middle" font-size="11" fill="#14532d">Agent</text>
+  <line x1="604" y1="357" x2="640" y2="357" stroke="#16a34a" stroke-width="1.6"/>
+  <rect x="640" y="340" width="86" height="34" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="683" y="362" text-anchor="middle" font-size="11" fill="#78350f">Gateway</text>
+  <text x="736" y="362" font-size="11" fill="#64748b">→ 后端</text>
+  <text x="532" y="402" font-size="11.5" fill="#166534">优点：就近缓冲 + 全局决策，两者不重叠</text>
+  <text x="532" y="426" font-size="11.5" fill="#b91c1c">代价：两处配置要一致，排障链路变长</text>
+  <text x="532" y="450" font-size="11.5" fill="#334155">适用：中等以上规模，生产基本形态</text>
+  <text x="532" y="480" font-size="11.5" fill="#64748b">⚠️ 决策类配置必须只在 Gateway 一份</text>
+
+  <line x1="20" y1="516" x2="980" y2="516" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="534" font-size="12.5" fill="#0f172a">基线对照：完全不用 Collector（SDK 直连后端）少一跳，但采样、清洗、换后端全部要改代码——只在单服务或实验期成立。</text>
+</svg>

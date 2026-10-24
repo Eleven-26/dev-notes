@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <rect x="0" y="64" width="1000" height="456" fill="#ffffff" fill-opacity="0"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">上下文传播的三条路径：只有中间那条有标准，另两条靠自己</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">进程内靠 context 对象、跨进程靠 traceparent 头、异步边界两条都不管</text>
+
+  <rect x="36" y="84" width="480" height="250" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="276" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">服务 A 进程（进程内）</text>
+
+  <rect x="62" y="128" width="200" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="162" y="150" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">handle-request</text>
+  <text x="162" y="170" text-anchor="middle" font-size="11" fill="#166534">traceID=30b2edd3…</text>
+
+  <line x1="162" y1="180" x2="162" y2="206" stroke="#16a34a" stroke-width="2"/>
+  <text x="172" y="198" font-size="10.5" fill="#166534">传 rootCtx</text>
+
+  <rect x="62" y="206" width="200" height="52" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="162" y="228" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">SELECT orders</text>
+  <text x="162" y="248" text-anchor="middle" font-size="11" fill="#166534">同一 traceID，父指针在</text>
+
+  <path d="M262 154 L440 154 L440 206" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <text x="352" y="146" text-anchor="middle" font-size="10.5" fill="#b91c1c">go func()</text>
+
+  <rect x="330" y="206" width="170" height="52" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="415" y="228" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">goroutine</text>
+  <text x="415" y="248" text-anchor="middle" font-size="11" fill="#b91c1c">新 traceID=6d49640f…</text>
+
+  <text x="276" y="292" text-anchor="middle" font-size="11.5" fill="#b91c1c">丢 ctx 的那条不是「没有链路」，而是一条看起来完全正常的新链路</text>
+  <text x="276" y="314" text-anchor="middle" font-size="11.5" fill="#64748b">isRecording=true、有 ID、能进后端——只有对比 traceID 才能发现</text>
+
+  <rect x="590" y="84" width="374" height="120" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="777" y="110" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">服务 B 进程（跨进程）</text>
+  <rect x="620" y="128" width="300" height="56" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="770" y="152" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">Extract → Start</text>
+  <text x="770" y="172" text-anchor="middle" font-size="11" fill="#1d4ed8">valid=true remote=true 才算成功</text>
+
+  <line x1="516" y1="144" x2="590" y2="144" stroke="#2563eb" stroke-width="2"/>
+  <text x="553" y="136" text-anchor="middle" font-size="10.5" fill="#1d4ed8">traceparent</text>
+
+  <rect x="36" y="350" width="928" height="50" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="56" y="372" font-size="12.5" font-weight="bold" fill="#14532d">路径一 · 进程内</text>
+  <text x="180" y="372" font-size="11.5" fill="#166534">机制：context / ThreadLocal 显式传递　→　断点：goroutine、线程池、初始化阶段（拿不到当前 ctx）</text>
+  <text x="180" y="392" font-size="11.5" fill="#166534">判据：父 span 的 traceID 与子 span 相同，但子的 traceID 变成新的 → 中间丢了 ctx</text>
+
+  <rect x="36" y="408" width="928" height="50" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="56" y="430" font-size="12.5" font-weight="bold" fill="#1e3a8a">路径二 · 跨进程</text>
+  <text x="180" y="430" font-size="11.5" fill="#1d4ed8">机制：W3C traceparent 头（55 字符）　→　断点：头没设、头被中间件删、格式非法</text>
+  <text x="180" y="450" font-size="11.5" fill="#1d4ed8">判据：Extract 后 valid=false 或 remote=false → 头没解析成功，下游必然新开链路</text>
+
+  <rect x="36" y="466" width="928" height="50" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="56" y="488" font-size="12.5" font-weight="bold" fill="#7f1d1d">路径三 · 异步边界</text>
+  <text x="180" y="488" font-size="11.5" fill="#b91c1c">机制：没有标准，必须手工把 ctx 或消息头带过去　→　断点：MQ 消费端、定时任务、回调</text>
+  <text x="180" y="508" font-size="11.5" fill="#b91c1c">⚠️ 这里断了不报错，只会「多出一条链路」，这是排障时最容易被放过的一种</text>
+</svg>

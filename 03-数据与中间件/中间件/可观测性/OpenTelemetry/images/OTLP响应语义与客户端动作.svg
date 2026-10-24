@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <rect x="0" y="64" width="1000" height="366" fill="#ffffff" fill-opacity="0"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">OTLP 的响应语义与客户端动作：状态码只说了第一层</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">200 不等于全成功，200 也可能丢了一部分——真正要看的是响应体里有没有 rejected 字段</text>
+
+  <rect x="36" y="88" width="212" height="128" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="142" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14532d">200 + 空对象</text>
+  <text x="142" y="140" text-anchor="middle" font-size="11.5" fill="#166534">{ "partialSuccess": {} }</text>
+  <text x="142" y="166" text-anchor="middle" font-size="11.5" fill="#166534">空对象 = 零条被拒</text>
+  <text x="142" y="190" text-anchor="middle" font-size="11.5" fill="#b91c1c">字面意思与语义相反</text>
+
+  <rect x="36" y="248" width="212" height="86" rx="8" fill="#f8fafc" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="142" y="272" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#14532d">动作：正常继续</text>
+  <text x="142" y="296" text-anchor="middle" font-size="11.5" fill="#166534">全部落库，无需处理</text>
+  <text x="142" y="318" text-anchor="middle" font-size="11.5" fill="#64748b">实测 549 B → 200</text>
+  <line x1="142" y1="216" x2="142" y2="248" stroke="#16a34a" stroke-width="2"/>
+
+  <rect x="272" y="88" width="212" height="128" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="378" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#78350f">200 + rejected</text>
+  <text x="378" y="140" text-anchor="middle" font-size="11.5" fill="#92400e">rejectedSpans / rejectedDataPoints</text>
+  <text x="378" y="166" text-anchor="middle" font-size="11.5" fill="#92400e">收到了一部分，丢了一部分</text>
+  <text x="378" y="190" text-anchor="middle" font-size="11.5" fill="#b91c1c">客户端不会自动重试</text>
+
+  <rect x="272" y="248" width="212" height="86" rx="8" fill="#f8fafc" stroke="#d97706" stroke-width="1.2"/>
+  <text x="378" y="272" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#78350f">动作：不重试，计数</text>
+  <text x="378" y="296" text-anchor="middle" font-size="11.5" fill="#92400e">重发同样的数据仍会被拒</text>
+  <text x="378" y="318" text-anchor="middle" font-size="11.5" fill="#64748b">被拒条数要进告警</text>
+  <line x1="378" y1="216" x2="378" y2="248" stroke="#d97706" stroke-width="2"/>
+
+  <rect x="508" y="88" width="212" height="128" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="614" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#7f1d1d">400 / 413</text>
+  <text x="614" y="140" text-anchor="middle" font-size="11.5" fill="#b91c1c">ReadObject: expect { or ,</text>
+  <text x="614" y="166" text-anchor="middle" font-size="11.5" fill="#b91c1c">请求本身有问题</text>
+  <text x="614" y="190" text-anchor="middle" font-size="11.5" fill="#64748b">错误信息是解析器原文</text>
+
+  <rect x="508" y="248" width="212" height="86" rx="8" fill="#f8fafc" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="614" y="272" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#7f1d1d">动作：丢弃 + 告警</text>
+  <text x="614" y="296" text-anchor="middle" font-size="11.5" fill="#b91c1c">重发无意义，越重试越堵</text>
+  <text x="614" y="318" text-anchor="middle" font-size="11.5" fill="#64748b">实测空 body → 400</text>
+  <line x1="614" y1="216" x2="614" y2="248" stroke="#dc2626" stroke-width="2"/>
+
+  <rect x="744" y="88" width="220" height="128" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="854" y="114" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#1e3a8a">429 / 503</text>
+  <text x="854" y="140" text-anchor="middle" font-size="11.5" fill="#1d4ed8">限流或下游不可用</text>
+  <text x="854" y="166" text-anchor="middle" font-size="11.5" fill="#1d4ed8">读 Retry-After 再等</text>
+  <text x="854" y="190" text-anchor="middle" font-size="11.5" fill="#64748b">本篇未构造此场景</text>
+
+  <rect x="744" y="248" width="220" height="86" rx="8" fill="#f8fafc" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="854" y="272" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#1e3a8a">动作：退避重试</text>
+  <text x="854" y="296" text-anchor="middle" font-size="11.5" fill="#1d4ed8">指数退避 + 上限次数</text>
+  <text x="854" y="318" text-anchor="middle" font-size="11.5" fill="#b91c1c">⚠️ 重试不幂等</text>
+  <line x1="854" y1="216" x2="854" y2="248" stroke="#2563eb" stroke-width="2"/>
+
+  <line x1="20" y1="352" x2="980" y2="352" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="30" y="376" font-size="13" fill="#0f172a">关键判断：只有 429 / 503 / 网络错误才该重试；200 带 rejected 与 400 都不该重试。</text>
+  <text x="30" y="398" font-size="12" fill="#b91c1c">⚠️ 重试可能让同一条 span 进后端两次（同 span_id 出现两条）——重复不是「多收」，而是「看起来数据变多了」。</text>
+  <text x="30" y="420" font-size="12" fill="#64748b">实测环境只覆盖 200 / 400 / 404 三种；429 与 503 按规范语义陈述。</text>
+</svg>
