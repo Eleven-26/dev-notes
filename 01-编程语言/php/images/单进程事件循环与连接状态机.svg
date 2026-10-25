@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">单进程事件循环与每条连接的状态机</text>
+  <text x="500" y="58" font-size="12" fill="#64748b" text-anchor="middle">控制流只有一条，状态只能外置：一次 select 返回之后，函数栈就没了</text>
+
+  <rect x="24" y="92" width="440" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="120" font-size="15" fill="#1e40af" font-weight="bold">一个进程 = 一条控制流</text>
+  <text x="44" y="142" font-size="11" fill="#64748b">非阻塞 socket，没有任何 fork 或线程</text>
+
+  <rect x="44" y="156" width="400" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="56" y="177" font-size="11" fill="#1e40af" font-weight="bold">读集合</text>
+  <text x="56" y="196" font-size="10" fill="#334155">[listen] + 每条连接的 sock</text>
+
+  <rect x="44" y="218" width="400" height="40" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="56" y="243" font-size="11" fill="#1e40af" font-weight="bold">写集合</text>
+  <text x="176" y="243" font-size="10" fill="#334155">$out 非空的连接</text>
+
+  <rect x="44" y="268" width="400" height="40" rx="6" fill="#fffbeb" stroke="#fcd34d" stroke-width="1"/>
+  <text x="56" y="293" font-size="11" fill="#b45309" font-weight="bold">等待</text>
+  <text x="176" y="293" font-size="10" fill="#334155">min(1.0 秒, 最近的一条 deadline)</text>
+
+  <text x="44" y="332" font-size="11" fill="#334155" font-weight="bold">select 返回后按事件分派：</text>
+  <text x="44" y="352" font-size="10" fill="#334155">listen 可读 → accept 循环，全部设为非阻塞</text>
+  <text x="44" y="372" font-size="10" fill="#334155">连接可读 → fread 64 KB → 追加 buf → pump()</text>
+  <text x="44" y="392" font-size="10" fill="#334155">连接可写 → fwrite 一次，剩余截断回 $out</text>
+  <text x="44" y="412" font-size="10" fill="#b91c1c">已过 deadline → 408 后关闭</text>
+
+  <text x="545" y="110" font-size="14" fill="#1e40af" font-weight="bold">每条连接 = 一个状态机（状态全挂在 Conn 上）</text>
+
+  <rect x="660" y="130" width="200" height="52" rx="8" fill="#eff6ff" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="760" y="154" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">head</text>
+  <text x="760" y="172" font-size="10" fill="#334155" text-anchor="middle">找 CRLF CRLF，解析首部</text>
+
+  <rect x="560" y="240" width="160" height="52" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="640" y="264" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">body</text>
+  <text x="640" y="282" font-size="10" fill="#334155" text-anchor="middle">等满 need 字节</text>
+
+  <rect x="800" y="240" width="160" height="52" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="880" y="264" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">chunked</text>
+  <text x="880" y="282" font-size="10" fill="#334155" text-anchor="middle">解块直到末块 0</text>
+
+  <rect x="660" y="340" width="200" height="52" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5"/>
+  <text x="760" y="364" font-size="13" fill="#047857" text-anchor="middle" font-weight="bold">dispatch()</text>
+  <text x="760" y="382" font-size="10" fill="#334155" text-anchor="middle">路由 + 拼响应进 out</text>
+
+  <rect x="820" y="440" width="140" height="46" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="890" y="468" font-size="12" fill="#b91c1c" text-anchor="middle" font-weight="bold">done（关闭）</text>
+
+  <path d="M 700 182 L 645 236" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="628" y="212" font-size="10" fill="#1e40af">cl &gt; 0</text>
+  <path d="M 820 182 L 875 236" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="836" y="212" font-size="10" fill="#1e40af">chunked</text>
+
+  <path d="M 860 182 L 940 182 L 940 366 L 866 366" fill="none" stroke="#1e40af" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#a1)"/>
+  <text x="868" y="330" font-size="10" fill="#1e40af">无 body</text>
+
+  <path d="M 640 292 L 700 336" fill="none" stroke="#10b981" stroke-width="1.6" marker-end="url(#a2)"/>
+  <text x="596" y="320" font-size="10" fill="#047857">收齐</text>
+  <path d="M 880 292 L 830 336" fill="none" stroke="#10b981" stroke-width="1.6" marker-end="url(#a2)"/>
+  <text x="886" y="320" font-size="10" fill="#047857">末块</text>
+
+  <path d="M 820 392 L 860 436" fill="none" stroke="#ef4444" stroke-width="1.6" marker-end="url(#a3)"/>
+  <text x="872" y="416" font-size="10" fill="#b91c1c">close</text>
+
+  <path d="M 658 366 L 520 366 L 520 156 L 656 156" fill="none" stroke="#10b981" stroke-width="1.4" marker-end="url(#a2)"/>
+  <text x="528" y="310" font-size="10" fill="#047857">keep-alive</text>
+
+  <rect x="24" y="505" width="952" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="531" font-size="12.5" fill="#334155" font-weight="bold">事件循环只并行 I/O，不并行 handler：usleep 期间进程什么都没干</text>
+  <text x="44" y="553" font-size="11" fill="#475569">head 解析完若带 body，就落到 body / chunked 等数据到齐；dispatch 之后回 head 或 done。</text>
+  <text x="44" y="573" font-size="11" fill="#475569">实测：慢首部 0.4 ms、50 条空闲连接 0.3 ms、handler 睡 1.5 秒则后续请求等 1320.1 ms。</text>
+
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e40af"/>
+    </marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+    </marker>
+    <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
+    </marker>
+  </defs>
+</svg>

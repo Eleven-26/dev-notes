@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">排空与不排空：同一个字节序列，两种解析结果</text>
+  <text x="500" y="58" font-size="12" fill="#64748b" text-anchor="middle">差别只有一个：body 那 5 个字节有没有被消费掉；而客户端两边都收到 200</text>
+
+  <rect x="24" y="88" width="952" height="164" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="44" y="116" font-size="14" fill="#047857" font-weight="bold">drain=true：先消费 body，再读下一个请求</text>
+
+  <rect x="44" y="130" width="252" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="56" y="153" font-size="10" fill="#334155">首部 56 B</text>
+  <rect x="296" y="130" width="23" height="36" rx="3" fill="#d1fae5" stroke="#10b981" stroke-width="1"/>
+  <rect x="319" y="130" width="162" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="330" y="153" font-size="10" fill="#334155">下一个 GET /hello（36 B）</text>
+  <text x="296" y="182" font-size="9.5" fill="#047857">body：hello（5 B）</text>
+
+  <path d="M 487 152 L 558 152" fill="none" stroke="#10b981" stroke-width="1.6" marker-end="url(#d1)"/>
+  <text x="490" y="142" font-size="9.5" fill="#047857">消费 5 字节</text>
+
+  <rect x="566" y="120" width="394" height="62" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1"/>
+  <text x="578" y="143" font-size="10" fill="#334155">conn#1 req#2 GET /hello HTTP/1.1</text>
+  <text x="578" y="163" font-size="10" fill="#047857" font-weight="bold">hdrBytes=36 → 200（5 B）</text>
+
+  <text x="44" y="206" font-size="10.5" fill="#475569">body 被消费后，下一个请求从「G」开始，hdrBytes 正好 36</text>
+  <text x="44" y="228" font-size="10.5" fill="#475569">客户端收到 200 + hello —— 与下面那条路径完全一样</text>
+
+  <rect x="24" y="268" width="952" height="164" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="44" y="296" font-size="14" fill="#b91c1c" font-weight="bold">drain=false：不消费 body，直接把 cl 置 0</text>
+
+  <rect x="44" y="310" width="252" height="36" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="56" y="333" font-size="10" fill="#334155">首部 56 B</text>
+  <rect x="296" y="310" width="185" height="36" rx="5" fill="#fef2f2" stroke="#ef4444" stroke-width="1.2"/>
+  <text x="306" y="333" font-size="9.5" fill="#b91c1c">helloGET /hello HTTP/1.1（41 B）</text>
+  <text x="296" y="366" font-size="9.5" fill="#b91c1c">body 的 hello 与下一个请求行粘在一起</text>
+
+  <path d="M 487 332 L 558 332" fill="none" stroke="#ef4444" stroke-width="1.6" marker-end="url(#d2)"/>
+  <text x="490" y="352" font-size="9.5" fill="#b91c1c">cl=0</text>
+
+  <rect x="566" y="312" width="394" height="62" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1"/>
+  <text x="578" y="335" font-size="10" fill="#334155">conn#1 req#2 helloGET /hello HTTP/1.1</text>
+  <text x="578" y="355" font-size="10" fill="#b91c1c" font-weight="bold">hdrBytes=41 → 200（5 B）</text>
+
+  <text x="44" y="388" font-size="10.5" fill="#475569">粘出来的「helloGET」恰好是合法 token，所以解析成功、语义全错</text>
+  <text x="44" y="410" font-size="10.5" fill="#475569">客户端同样收到 200 + hello —— 这正是它「静默」的原因</text>
+
+  <rect x="24" y="448" width="952" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="474" font-size="12.5" fill="#334155" font-weight="bold">唯一的差别是一个数字：hdrBytes 从 36 变成 41，多出来的 5 正是上一个请求体的长度</text>
+  <text x="44" y="498" font-size="11" fill="#475569">判据：access log 里出现拼接的方法名（GETPOST、helloGET），先查 body 有没有读完。</text>
+
+  <defs>
+    <marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"/>
+    </marker>
+    <marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
+    </marker>
+  </defs>
+</svg>

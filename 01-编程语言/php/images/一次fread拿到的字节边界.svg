@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">一次 fread 返回什么，取决于对端怎么切</text>
+  <text x="500" y="58" font-size="12" fill="#64748b" text-anchor="middle">同一份协议、同一台服务端，三次读分别拿到 83 / 108 / 20 字节</text>
+
+  <text x="24" y="112" font-size="14" fill="#1e40af" font-weight="bold">① 一个请求：83 字节</text>
+  <text x="24" y="132" font-size="11" fill="#64748b">curl 发 GET /hello</text>
+  <rect x="280" y="96" width="456" height="44" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="292" y="123" font-size="10" fill="#334155">请求行 21 + 首部 60 + 空行 2</text>
+  <text x="748" y="123" font-size="10" fill="#1e40af" font-weight="bold">83 B</text>
+  <text x="24" y="166" font-size="10" fill="#b45309">最理想的情况，也最容易被当成普遍规律</text>
+
+  <text x="24" y="218" font-size="14" fill="#1e40af" font-weight="bold">② 三个请求：108 字节</text>
+  <text x="24" y="238" font-size="11" fill="#64748b">探针一次写三个</text>
+  <rect x="280" y="196" width="198" height="44" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="292" y="223" font-size="10" fill="#334155">请求 1（36 B）</text>
+  <rect x="482" y="196" width="198" height="44" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="494" y="223" font-size="10" fill="#334155">请求 2（36 B）</text>
+  <rect x="684" y="196" width="198" height="44" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="696" y="223" font-size="10" fill="#334155">请求 3（36 B）</text>
+  <text x="892" y="223" font-size="10" fill="#1e40af" font-weight="bold">108 B</text>
+  <text x="24" y="266" font-size="10" fill="#b45309">客户端连写三个：一次读就是三个完整请求（粘包）</text>
+
+  <text x="24" y="324" font-size="14" fill="#b91c1c" font-weight="bold">③ 半个请求：20 字节</text>
+  <text x="24" y="344" font-size="11" fill="#64748b">分两次写，间隔 200ms</text>
+  <rect x="280" y="302" width="110" height="44" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="292" y="329" font-size="10" fill="#b91c1c" font-weight="bold">20 B</text>
+  <text x="404" y="329" font-size="10" fill="#b91c1c">断在 HTTP/1.1 的 CR 中间，连请求行都没收全</text>
+  <text x="24" y="372" font-size="10" fill="#b45309">半包：服务端必须把状态留到下一次读</text>
+
+  <rect x="24" y="404" width="952" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="430" font-size="13" fill="#334155" font-weight="bold">所以「一次读 = 一个请求」是错觉，报文边界只能从内容里找</text>
+  <text x="44" y="454" font-size="11" fill="#475569">首部区看空行 CRLF CRLF；请求体看 Content-Length 或 chunked 的末块。</text>
+  <text x="44" y="476" font-size="11" fill="#475569">读到半个请求时必须保留状态 —— 单进程没有 goroutine 栈，状态只能挂在连接对象上。</text>
+</svg>

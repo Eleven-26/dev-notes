@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">首部区的两道闸门：总量先拦，单行后拦</text>
+  <text x="500" y="58" font-size="12" fill="#64748b" text-anchor="middle">两道闸门卡的不是同一件事，而且顺序会决定你看到哪一条错误消息</text>
+
+  <rect x="24" y="96" width="540" height="150" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="44" y="124" font-size="14" fill="#1e40af" font-weight="bold">闸门一：整个首部区 ≤ 16384 字节</text>
+  <text x="44" y="152" font-size="10.5" fill="#334155">· 判点 A：找到 CRLF CRLF 后，$end + 4 &gt; maxhdr</text>
+  <text x="44" y="174" font-size="10.5" fill="#334155">· 判点 B：还没找到空行时，strlen(buf) &gt; maxhdr</text>
+  <text x="44" y="196" font-size="10.5" fill="#334155">· 触发：431 Request Header Fields Too Large</text>
+  <text x="44" y="218" font-size="10.5" fill="#334155">· 拦的是：一万行小首部、以及整段超长的单行</text>
+
+  <path d="M 294 248 L 294 268" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#g1)"/>
+  <text x="304" y="264" font-size="10" fill="#1e40af">放行</text>
+
+  <rect x="24" y="272" width="540" height="150" rx="10" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="44" y="300" font-size="14" fill="#b45309" font-weight="bold">闸门二：单行 ≤ 8192 字节</text>
+  <text x="44" y="328" font-size="10.5" fill="#334155">· 超的是请求行 → 414 URI Too Long（request line too long）</text>
+  <text x="44" y="350" font-size="10.5" fill="#334155">· 超的是其他首部行 → 431（header line too long）</text>
+  <text x="44" y="372" font-size="10.5" fill="#334155">· 只有闸门一放行之后，才会走到逐行检查</text>
+  <text x="44" y="394" font-size="10.5" fill="#334155">· 拦的是：一条巨大的 Cookie 或自定义首部</text>
+
+  <rect x="590" y="96" width="386" height="326" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="610" y="124" font-size="14" fill="#334155" font-weight="bold">实测：三种请求落在哪一级</text>
+
+  <rect x="606" y="140" width="354" height="72" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="618" y="162" font-size="11" fill="#b91c1c" font-weight="bold">单行 12 KB（12000 字节）</text>
+  <text x="618" y="182" font-size="10" fill="#475569">8192 &lt; 12000 &lt; 16384：总量没超，单行超了</text>
+  <text x="618" y="200" font-size="10" fill="#b91c1c">→ 闸门二：431 line too long（186 字节）</text>
+
+  <rect x="606" y="222" width="354" height="72" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="618" y="244" font-size="11" fill="#b91c1c" font-weight="bold">单行 20 KB（20000 字节）</text>
+  <text x="618" y="264" font-size="10" fill="#475569">20000 &gt; 16384：总量先超，逐行检查没轮到</text>
+  <text x="618" y="282" font-size="10" fill="#b91c1c">→ 闸门一：431 section too large（190 字节）</text>
+
+  <rect x="606" y="304" width="354" height="72" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="618" y="326" font-size="11" fill="#b91c1c" font-weight="bold">2000 行小首部（34926 字节）</text>
+  <text x="618" y="346" font-size="10" fill="#475569">每行都远小于 8192，但合计早就超了</text>
+  <text x="618" y="364" font-size="10" fill="#b91c1c">→ 闸门一：431 section too large（190 字节）</text>
+
+  <rect x="24" y="444" width="952" height="92" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="470" font-size="13" fill="#1e40af" font-weight="bold">为什么 20 KB 单行报的是 section，而不是 line？</text>
+  <text x="44" y="494" font-size="11" fill="#334155">因为空行一找到，$end + 4 &gt; maxhdr 就先被判掉了，逐行检查根本没轮到。</text>
+  <text x="44" y="516" font-size="11" fill="#334155">闸门的顺序会写进错误消息里 —— 排障时按消息反推是哪一级先动的手。</text>
+
+  <defs>
+    <marker id="g1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e40af"/>
+    </marker>
+  </defs>
+</svg>
