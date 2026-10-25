@@ -84,10 +84,18 @@ dev-notes/
 │   ├── 向量数据库/          占位目录（空壳）
 │   ├── 对象存储/            README + 对象存储选型对比.md
 │   ├── 数据同步/            CDC / 定时同步 / 数据对比与对账 + 数据同步方式选型对比.md
-│   ├── 数据湖/              仅 README 导读，正文待补
 │   ├── 并发控制/            跨产品的通论：锁粒度与模式、隔离级别、MVCC、死锁防治
 │   ├── 存储架构与场景/      README + 存储选型与组合 + 形态篇/ 横切篇/
 │   └── 数据库选型对比.md
+├── 大数据组件/              第一层按职责、第二层按产品：同目录的产品可互相替换
+│   ├── 数据集成与采集/      待补：Canal / DataX / Sqoop / Flume
+│   ├── 文件系统/            HDFS.md（能不能追加写）；待补对象存储与 S3
+│   ├── 表格式/              Iceberg.md（元数据在表内 vs 表外）；待补 Paimon / Hudi
+│   ├── Catalog/             HiveMetastore.md（三种形态、9083）；待补 Iceberg REST / Nessie
+│   ├── 计算引擎/            Hive.md（HQL 编译链路）；待补 Spark / Flink / Trino
+│   ├── 资源调度/            待补：YARN 资源调度
+│   ├── 作业编排/            待补：DolphinScheduler 任务编排
+│   └── 大数据选型对比.md    ⭐ 总纲：四层分工 + 四根接口 + 与 04 的边界
 └── 中间件/                  根下 中间件选型.md 是全仓组件选型总纲
     ├── 消息队列/            Kafka/、RocketMQ/、RabbitMQ/、NATS/、ActiveMQ/、Pulsar/ 六册；根下 消息队列选型对比.md / 消息模型与存储代价.md / JMS规范.md
     ├── 注册与配置中心/      Nacos.md（产品级横向对比以该篇为单一来源）

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 577" width="1000" height="577" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="577" fill="#ffffff"/>
+<title>大数据组件的四层与四根接口</title>
+<desc>自上而下是引擎层 Spark、Flink、Trino、Hive，Catalog 层 Hive Metastore 与 Iceberg REST，表格式层 Iceberg、Paimon、Hudi、Delta，文件系统层 HDFS、S3、OSS、MinIO。中间三根实线箭头依次连接相邻两层，左侧一根虚线箭头表示引擎绕过 Catalog 与表格式直读文件。</desc>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+<g transform="scale(1.470588)">
+
+<rect x="90" y="46" width="380" height="46" rx="8" fill="#0C447C" stroke="#85B7EB" stroke-width="0.5"/>
+<text x="280" y="69" font-family="var(--font-sans)" font-size="13" fill="#E6F1FB" text-anchor="middle" dominant-baseline="central">Spark 批 · Flink 流 · Trino 联邦 · Hive HQL</text>
+
+<line x1="280" y1="92" x2="280" y2="120" stroke="#85B7EB" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="292" y="106" font-family="var(--font-sans)" font-size="12" fill="#888780" dominant-baseline="central">① metastore.uris</text>
+
+<rect x="90" y="120" width="380" height="46" rx="8" fill="#0C447C" stroke="#85B7EB" stroke-width="0.5"/>
+<text x="280" y="143" font-family="var(--font-sans)" font-size="13" fill="#E6F1FB" text-anchor="middle" dominant-baseline="central">Hive Metastore · Iceberg REST · Nessie · Glue</text>
+
+<line x1="280" y1="166" x2="280" y2="194" stroke="#85B7EB" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="292" y="180" font-family="var(--font-sans)" font-size="12" fill="#888780" dominant-baseline="central">② warehouse 与 type</text>
+
+<rect x="90" y="194" width="380" height="46" rx="8" fill="#085041" stroke="#5DCAA5" stroke-width="0.5"/>
+<text x="280" y="217" font-family="var(--font-sans)" font-size="13" fill="#E1F5EE" text-anchor="middle" dominant-baseline="central">Iceberg · Paimon · Hudi · Delta</text>
+
+<line x1="280" y1="240" x2="280" y2="268" stroke="#5DCAA5" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="292" y="254" font-family="var(--font-sans)" font-size="12" fill="#888780" dominant-baseline="central">③ fs.s3a / fs.defaultFS</text>
+
+<rect x="90" y="268" width="380" height="46" rx="8" fill="#085041" stroke="#5DCAA5" stroke-width="0.5"/>
+<text x="280" y="291" font-family="var(--font-sans)" font-size="13" fill="#E1F5EE" text-anchor="middle" dominant-baseline="central">HDFS · S3 · OSS · MinIO</text>
+
+<line x1="70" y1="69" x2="70" y2="291" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+<text x="76" y="60" font-family="var(--font-sans)" font-size="12" fill="#EF9F27" dominant-baseline="central">④</text>
+
+<line x1="40" y1="336" x2="640" y2="336" stroke="#888780" stroke-width="0.5" stroke-dasharray="2 4"/>
+
+<text x="40" y="354" font-family="var(--font-sans)" font-size="12" fill="#B4B2A9" dominant-baseline="central">①②③ 是三根实线接口，配置项在各个引擎与 Catalog 的配置文件里</text>
+<text x="40" y="372" font-family="var(--font-sans)" font-size="12" fill="#FAC775" dominant-baseline="central">④ 是旁路：绕过 Catalog 与表格式直读文件，拿不到分区裁剪与快照隔离</text>
+</g>
+</svg>

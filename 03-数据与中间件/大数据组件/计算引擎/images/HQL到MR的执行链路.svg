@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="20" width="920" height="64" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="500" y="48" font-size="17" font-weight="bold" fill="#0f172a" text-anchor="middle">一条 HQL 变成作业的六步</text>
+  <text x="500" y="70" font-size="12" fill="#475569" text-anchor="middle">② 查 HMS，④ 决定分区裁剪，⑥ 才产生作业启动开销</text>
+
+  <rect x="40" y="120" width="138" height="104" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="52" y="144" font-size="13" fill="#64748b">①</text>
+  <text x="109" y="172" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">解析</text>
+  <text x="109" y="196" font-size="10.5" fill="#475569" text-anchor="middle">SQL 转成 AST</text>
+  <text x="109" y="212" font-size="10.5" fill="#475569" text-anchor="middle">语法错在这一步</text>
+
+  <line x1="180" y1="172" x2="196" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="200" y="120" width="138" height="104" rx="6" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="212" y="144" font-size="13" fill="#0369a1">②</text>
+  <text x="269" y="172" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">语义分析</text>
+  <text x="269" y="196" font-size="10.5" fill="#334155" text-anchor="middle">查 HMS 拿 schema</text>
+  <text x="269" y="212" font-size="10.5" fill="#334155" text-anchor="middle">与分区列表</text>
+
+  <line x1="340" y1="172" x2="356" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="360" y="120" width="138" height="104" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="372" y="144" font-size="13" fill="#64748b">③</text>
+  <text x="429" y="172" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">逻辑计划</text>
+  <text x="429" y="196" font-size="10.5" fill="#475569" text-anchor="middle">关系代数树</text>
+  <text x="429" y="212" font-size="10.5" fill="#475569" text-anchor="middle">EXPLAIN 第一段</text>
+
+  <line x1="500" y1="172" x2="516" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="520" y="120" width="138" height="104" rx="6" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="532" y="144" font-size="13" fill="#0369a1">④</text>
+  <text x="589" y="172" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">优化</text>
+  <text x="589" y="196" font-size="10.5" fill="#334155" text-anchor="middle">谓词下推</text>
+  <text x="589" y="212" font-size="10.5" fill="#334155" text-anchor="middle">分区裁剪在这里</text>
+
+  <line x1="660" y1="172" x2="676" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="680" y="120" width="138" height="104" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="692" y="144" font-size="13" fill="#64748b">⑤</text>
+  <text x="749" y="172" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">物理计划</text>
+  <text x="749" y="196" font-size="10.5" fill="#475569" text-anchor="middle">切成 MR 或 Tez</text>
+  <text x="749" y="212" font-size="10.5" fill="#475569" text-anchor="middle">作业与算子</text>
+
+  <line x1="820" y1="172" x2="836" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="840" y="120" width="138" height="104" rx="6" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="852" y="144" font-size="13" fill="#0369a1">⑥</text>
+  <text x="909" y="172" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="middle">执行</text>
+  <text x="909" y="196" font-size="10.5" fill="#334155" text-anchor="middle">提交作业</text>
+  <text x="909" y="212" font-size="10.5" fill="#334155" text-anchor="middle">作业启动开销</text>
+
+  <line x1="269" y1="268" x2="269" y2="230" stroke="#d97706" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="200" y="276" width="338" height="88" rx="6" fill="#fef3c7" stroke="#d97706"/>
+  <text x="369" y="302" font-size="14" font-weight="bold" fill="#78350f" text-anchor="middle">Hive Metastore</text>
+  <text x="369" y="324" font-size="11" fill="#78350f" text-anchor="middle">schema 与列定义、分区列表、SerDe 描述</text>
+  <text x="369" y="344" font-size="11" fill="#78350f" text-anchor="middle">第 2 步读的就是这三样，第 4 步用其中的分区列表做裁剪</text>
+
+  <rect x="40" y="394" width="920" height="76" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="500" y="420" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="middle">判据：EXPLAIN 里 Partition 段列出的分区数，就是运行时真正会读的目录数</text>
+  <text x="500" y="444" font-size="12" fill="#475569" text-anchor="middle">分区列被当成普通列时，裁剪在编译期就已经失效 —— 不报错，只是慢</text>
+</svg>
