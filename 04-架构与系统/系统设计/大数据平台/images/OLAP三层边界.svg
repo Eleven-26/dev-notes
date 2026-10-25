@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">OLAP 只存可重建的 ADS 与近 30 天明细</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">湖表存全量历史，发布任务按分区推进，OLAP 只服务聚合与点查</text>
+
+  <rect x="24" y="88" width="280" height="244" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="164" y="116" font-size="12" fill="#1e40af" text-anchor="middle" font-weight="bold">湖表（Iceberg）</text>
+  <text x="44" y="148" font-size="10" fill="#1e40af">全量历史，按天分区</text>
+  <text x="44" y="172" font-size="10" fill="#1e40af">快照可回滚、可重放</text>
+  <text x="44" y="196" font-size="10" fill="#1e40af">查询慢，但存得下</text>
+  <text x="44" y="232" font-size="10" fill="#b91c1c">重算 ADS 的唯一基准</text>
+  <text x="44" y="256" font-size="10" fill="#1e40af">回溯一年前的明细走这里</text>
+  <text x="44" y="296" font-size="9.5" fill="#64748b">判据：丢了的 ADS 能不能在这里算回来</text>
+
+  <rect x="336" y="88" width="288" height="244" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="480" y="116" font-size="12" fill="#0f172a" text-anchor="middle" font-weight="bold">发布任务</text>
+  <text x="356" y="148" font-size="10" fill="#334155">日常增量：按分区覆盖</text>
+  <text x="356" y="172" font-size="10" fill="#334155">口径变更：全量覆盖</text>
+  <text x="356" y="196" font-size="10" fill="#334155">同一分区重发两次结果一致</text>
+  <text x="356" y="232" font-size="10" fill="#b91c1c">发布前必须过对账与质量门禁</text>
+  <text x="356" y="256" font-size="10" fill="#334155">只从湖表读，不读 OLAP 自身</text>
+  <text x="356" y="296" font-size="9.5" fill="#64748b">判据：发布能不能幂等重放</text>
+
+  <rect x="656" y="88" width="320" height="244" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="816" y="116" font-size="12" fill="#047857" text-anchor="middle" font-weight="bold">OLAP（ADS + 近 30 天明细）</text>
+  <text x="676" y="148" font-size="10" fill="#047857">只存可重建数据</text>
+  <text x="676" y="172" font-size="10" fill="#047857">只服务聚合与点查</text>
+  <text x="676" y="196" font-size="10" fill="#047857">按天分区，保留 30 天</text>
+  <text x="676" y="232" font-size="10" fill="#b91c1c">业务数据不直接写进来</text>
+  <text x="676" y="256" font-size="10" fill="#047857">排序键按看板的过滤列定</text>
+  <text x="676" y="296" font-size="9.5" fill="#64748b">判据：查询成本是否只随维度基数涨</text>
+
+  <path d="M 308 210 L 330 210" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M 628 210 L 650 210" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+
+  <rect x="24" y="352" width="952" height="58" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="376" font-size="10" fill="#334155">边界：OLAP 里的每一行都必须能从湖表重算出来；这条不成立时，对账与回滚都没有基准。</text>
+  <text x="44" y="398" font-size="10" fill="#b91c1c">常见越界：把人工修正直接改在 OLAP 里 —— 湖表重算一次就没了，下一版发布也带不出来。</text>
+
+  <defs>
+    <marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

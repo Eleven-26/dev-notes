@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">总数差 30 行，逐窗比对后差额只落在一个窗口</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">同一份 2020 行事件，Spark 批与 Flink 流各算一遍，再按 15 分钟窗口对齐</text>
+
+  <rect x="24" y="80" width="952" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="44" y="108" font-size="11" fill="#1e40af" font-weight="bold">批链路：Spark 全量扫 CSV</text>
+  <rect x="44" y="118" width="400" height="88" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="64" y="144" font-size="11" fill="#1e40af">96 个窗口</text>
+  <text x="64" y="168" font-size="11" fill="#1e40af">2,020 行</text>
+  <text x="64" y="192" font-size="11" fill="#1e40af">99,000.0 元</text>
+
+  <text x="44" y="236" font-size="11" fill="#047857" font-weight="bold">流链路：Kafka → 15 分钟 TUMBLE → Kafka</text>
+  <rect x="44" y="246" width="400" height="88" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="64" y="272" font-size="11" fill="#047857">95 个窗口</text>
+  <text x="64" y="296" font-size="11" fill="#047857">1,990 行</text>
+  <text x="64" y="320" font-size="11" fill="#047857">97,500.0 元</text>
+
+  <path d="M 448 162 L 494 162" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M 448 290 L 494 290" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+  <text x="471" y="126" font-size="9.5" fill="#64748b" text-anchor="middle">逐窗对齐</text>
+
+  <rect x="500" y="112" width="452" height="206" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="520" y="138" font-size="11" fill="#0f172a" font-weight="bold">对齐后的差额</text>
+
+  <rect x="516" y="150" width="420" height="52" rx="4" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="534" y="172" font-size="10" fill="#047857">其余 95 个窗口：完全一致</text>
+  <text x="534" y="192" font-size="10" fill="#047857">行数与金额差额均为 0</text>
+
+  <rect x="516" y="214" width="420" height="86" rx="4" fill="#fee2e2" stroke="#f87171" stroke-width="1"/>
+  <text x="534" y="236" font-size="10" fill="#991b1b">[23:45, 24:00)：流侧无输出</text>
+  <text x="534" y="258" font-size="10" fill="#991b1b">批 30 行 / 1,500.0 元</text>
+  <text x="534" y="280" font-size="10" fill="#991b1b">水位线停在 23:47，窗口未关闭</text>
+
+  <rect x="24" y="348" width="952" height="80" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="372" font-size="10" fill="#334155">结论一：差额先落到窗口 —— 30 行全部属于一个未关闭窗口，不是丢数据，也不是重复写入。</text>
+  <text x="44" y="394" font-size="10" fill="#334155">结论二：对账只比两侧都已完成的窗口；把未关闭窗口算进来，任何差额都无法归因。</text>
+  <text x="44" y="416" font-size="10" fill="#b91c1c">注意：filesystem sink 在作业重启时会留下半份输出（实测 45 窗 / 458 行），对账前必须先清目录。</text>
+
+  <defs>
+    <marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

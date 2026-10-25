@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">保留以段为单位：旧段变 .deleted，起点位点随之前移</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">同一个 topic 在保留检查前后的目录状态；检查周期本篇调成 5 秒，20 秒后取样</text>
+
+  <rect x="24" y="84" width="440" height="300" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="112" font-size="12.5" fill="#0f172a" font-weight="bold">保留检查前</text>
+
+  <rect x="44" y="132" width="396" height="44" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+  <text x="58" y="158" font-size="10.5" fill="#334155">段 0（已关闭，最早）</text>
+  <rect x="44" y="184" width="396" height="44" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+  <text x="58" y="210" font-size="10.5" fill="#334155">段 1（已关闭）</text>
+  <rect x="44" y="236" width="396" height="44" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+  <text x="58" y="262" font-size="10.5" fill="#334155">段 2（已关闭）</text>
+  <rect x="44" y="288" width="396" height="44" rx="6" fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="58" y="314" font-size="10.5" fill="#1e40af" font-weight="bold">活动段（未满 segment.bytes，正在写）</text>
+
+  <text x="44" y="362" font-size="10.5" fill="#1e40af">可读区间：earliest=0 → latest=3000（3000 条可读）</text>
+
+  <rect x="512" y="84" width="464" height="300" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="532" y="112" font-size="12.5" fill="#0f172a" font-weight="bold">保留检查后</text>
+
+  <rect x="532" y="132" width="420" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4"/>
+  <text x="546" y="158" font-size="10.5" fill="#94a3b8">段 0 → .deleted</text>
+  <rect x="532" y="184" width="420" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4"/>
+  <text x="546" y="210" font-size="10.5" fill="#94a3b8">段 1 → .deleted</text>
+  <rect x="532" y="236" width="420" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5 4"/>
+  <text x="546" y="262" font-size="10.5" fill="#94a3b8">段 2 → .deleted（连同 .index / .timeindex）</text>
+  <rect x="532" y="288" width="420" height="44" rx="6" fill="#dbeafe" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="546" y="314" font-size="10.5" fill="#1e40af" font-weight="bold">新活动段 baseOffset=3000，从 3000 继续写</text>
+
+  <text x="532" y="340" font-size="10" fill="#475569">活动段先被滚成一个新段，旧段才具备被删的条件</text>
+  <text x="532" y="362" font-size="10.5" fill="#b91c1c">可读区间：earliest=latest=3000（0 条可读）</text>
+
+  <rect x="24" y="404" width="952" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="430" font-size="12" fill="#0f172a" font-weight="bold">三组对照（检查周期都调成 5 秒，20 秒后取样）</text>
+  <text x="44" y="462" font-size="10.5" fill="#334155">seg_ret　段 1 MB · retention 5000 · 12000 条　→　earliest=latest=12000（全删）</text>
+  <text x="44" y="490" font-size="10.5" fill="#334155">seg_active　段默认 1 GB · retention 5000 · 3000 条　→　earliest=latest=3000（全删，新段从 3000 起）</text>
+  <text x="44" y="518" font-size="10.5" fill="#334155">seg_5min　段默认 1 GB · retention 300000 · 3000 条　→　earliest=0 / latest=3000（原样保留）</text>
+
+  <rect x="24" y="564" width="952" height="76" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="590" font-size="10.5" fill="#1e40af">段越大越晚滚段，磁盘峰值越高；段越小滚动与索引维护越频繁 —— 删除粒度是段，不是逐条过期</text>
+  <text x="44" y="612" font-size="10.5" fill="#334155">earliest offset 会随删除前移，所以「保留 7 天」不等于「7 天前的数据一定还在」；磁盘释放还要滞后一个检查周期</text>
+  <text x="44" y="632" font-size="10.5" fill="#b91c1c">保留期的判据：保留期 ≥ 最长不可用时间 + 重放耗时</text>
+</svg>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">四层各放什么：粒度逐级变粗，可重放范围逐级收窄</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">只有 ODS 不可再生，所以它保留最久；DWS 与 ADS 都能从上游重算，保留短是省成本</text>
+
+  <rect x="24" y="76" width="952" height="34" rx="6" fill="#e2e8f0"/>
+  <text x="44" y="98" font-size="11.5" fill="#334155" font-weight="bold">层</text>
+  <text x="192" y="98" font-size="11.5" fill="#334155" font-weight="bold">一行是什么（粒度）</text>
+  <text x="640" y="98" font-size="11.5" fill="#334155" font-weight="bold">谁写</text>
+  <text x="828" y="98" font-size="11.5" fill="#334155" font-weight="bold">可重放 / 保留</text>
+
+  <rect x="24" y="118" width="952" height="80" rx="6" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="148" font-size="13" fill="#92400e" font-weight="bold">ODS</text>
+  <text x="44" y="172" font-size="9.5" fill="#78350f">原始层</text>
+  <text x="192" y="145" font-size="10.5" fill="#334155">上游原样落地的一条消息 / 一次变更</text>
+  <text x="192" y="169" font-size="9.5" fill="#64748b">不去重、不清洗、不补字段，只搬运</text>
+  <text x="640" y="145" font-size="10" fill="#334155">采集与 CDC</text>
+  <text x="640" y="169" font-size="10" fill="#b45309">只搬运，不改写</text>
+  <text x="828" y="145" font-size="10.5" fill="#b91c1c">不可重算（唯一原始副本）</text>
+  <text x="828" y="169" font-size="10" fill="#334155">保留 90 天</text>
+
+  <path d="M 500 198 L 500 210" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="512" y="210" font-size="9.5" fill="#64748b">清洗 · 去重 · 规范化</text>
+
+  <rect x="24" y="214" width="952" height="80" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="244" font-size="13" fill="#1e40af" font-weight="bold">DWD</text>
+  <text x="44" y="268" font-size="9.5" fill="#1e3a8a">明细层</text>
+  <text x="192" y="241" font-size="10.5" fill="#334155">一条事实：一个订单的一次状态变更</text>
+  <text x="192" y="265" font-size="9.5" fill="#64748b">能反推出个体，主键 + 事件时间齐全</text>
+  <text x="640" y="241" font-size="10" fill="#334155">Flink 常驻 +</text>
+  <text x="640" y="265" font-size="10" fill="#334155">Spark 回填</text>
+  <text x="828" y="241" font-size="10.5" fill="#15803d">能，从 ODS 重放</text>
+  <text x="828" y="265" font-size="10" fill="#334155">保留 1 年</text>
+
+  <path d="M 500 294 L 500 306" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="512" y="306" font-size="9.5" fill="#64748b">按维度组合 + 统计周期聚合</text>
+
+  <rect x="24" y="310" width="952" height="80" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="44" y="340" font-size="13" fill="#047857" font-weight="bold">DWS</text>
+  <text x="44" y="364" font-size="9.5" fill="#065f46">汇总层</text>
+  <text x="192" y="337" font-size="10.5" fill="#334155">一个维度组合在一个统计周期内的度量</text>
+  <text x="192" y="361" font-size="9.5" fill="#64748b">反推不出个体：96 个窗口 × 渠道 × 地区</text>
+  <text x="640" y="337" font-size="10" fill="#334155">两条链路都写</text>
+  <text x="640" y="361" font-size="10" fill="#b45309">写入需幂等</text>
+  <text x="828" y="337" font-size="10.5" fill="#15803d">能，从 DWD 聚合</text>
+  <text x="828" y="361" font-size="10" fill="#334155">保留 1 年（可更短）</text>
+
+  <path d="M 500 390 L 500 402" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="512" y="402" font-size="9.5" fill="#64748b">只留看板要用的指标</text>
+
+  <rect x="24" y="406" width="952" height="80" rx="6" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="44" y="436" font-size="13" fill="#6d28d9" font-weight="bold">ADS</text>
+  <text x="44" y="460" font-size="9.5" fill="#5b21b6">服务层</text>
+  <text x="192" y="433" font-size="10.5" fill="#334155">看板直接要的一行：指标 + 维度 + 时间</text>
+  <text x="192" y="457" font-size="9.5" fill="#64748b">落在 OLAP 里，可按查询重排</text>
+  <text x="640" y="433" font-size="10" fill="#334155">Flink 汇总或</text>
+  <text x="640" y="457" font-size="10" fill="#334155">Spark 重建</text>
+  <text x="828" y="433" font-size="10.5" fill="#15803d">能，从 DWS 聚合</text>
+  <text x="828" y="457" font-size="10" fill="#334155">保留 30 天</text>
+
+  <rect x="24" y="500" width="952" height="46" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="519" font-size="10" fill="#334155">粒度定错 → 数字错（重复上报直接放大求和）；分区选错 → 只是扫得多。两者不在一个层面上，先定粒度再谈分区。</text>
+  <text x="44" y="538" font-size="10" fill="#b91c1c">判断一层能否重算，看它有没有唯一上游：ODS 没有，所以它是唯一必须做长期保留的层。</text>
+
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

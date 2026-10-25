@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">静态覆盖与动态覆盖：同一句 INSERT OVERWRITE，结果差一半</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">初始都是 5 行跨 2 个分区；覆盖写都只带 dt=2026-10-23 的 2 行</text>
+
+  <rect x="24" y="88" width="456" height="360" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="42" y="116" font-size="13" fill="#b91c1c" font-weight="bold">静态覆盖（Spark 默认）</text>
+  <text x="42" y="144" font-size="10" fill="#64748b">覆盖写前</text>
+  <rect x="42" y="154" width="420" height="30" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="54" y="174" font-size="10.5" fill="#334155">dt=2026-10-23：3 行</text>
+  <rect x="42" y="190" width="420" height="30" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="54" y="210" font-size="10.5" fill="#334155">dt=2026-10-24：2 行</text>
+  <rect x="42" y="226" width="420" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="54" y="246" font-size="10.5" fill="#0f172a" font-weight="bold">合计 5 行 / 2 个文件 / 1 个快照</text>
+
+  <path d="M 66 266 L 66 298" fill="none" stroke="#b91c1c" stroke-width="1.5" marker-end="url(#d1)"/>
+  <text x="82" y="288" font-size="10" fill="#b91c1c">INSERT OVERWRITE 只给 dt=2026-10-23 的 2 行</text>
+
+  <text x="42" y="326" font-size="10" fill="#64748b">覆盖写后</text>
+  <rect x="42" y="336" width="420" height="30" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="54" y="356" font-size="10.5" fill="#334155">dt=2026-10-23：2 行</text>
+  <rect x="42" y="372" width="420" height="30" rx="5" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="54" y="392" font-size="10.5" fill="#b91c1c">dt=2026-10-24：0 行（没写它，却一起被删掉）</text>
+  <rect x="42" y="408" width="420" height="30" rx="5" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="54" y="428" font-size="10.5" fill="#b91c1c" font-weight="bold">合计 2 行 / 1 个文件（另一分区没了）</text>
+
+  <rect x="520" y="88" width="456" height="360" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="538" y="116" font-size="13" fill="#1e40af" font-weight="bold">动态覆盖（partitionOverwriteMode=dynamic）</text>
+  <text x="538" y="144" font-size="10" fill="#64748b">覆盖写前</text>
+  <rect x="538" y="154" width="420" height="30" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="550" y="174" font-size="10.5" fill="#334155">dt=2026-10-23：3 行</text>
+  <rect x="538" y="190" width="420" height="30" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="550" y="210" font-size="10.5" fill="#334155">dt=2026-10-24：2 行</text>
+  <rect x="538" y="226" width="420" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="550" y="246" font-size="10.5" fill="#0f172a" font-weight="bold">合计 5 行 / 2 个文件 / 1 个快照</text>
+
+  <path d="M 562 266 L 562 298" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#d2)"/>
+  <text x="578" y="288" font-size="10" fill="#1e40af">同一条 INSERT OVERWRITE，只多了这个开关</text>
+
+  <text x="538" y="326" font-size="10" fill="#64748b">覆盖写后</text>
+  <rect x="538" y="336" width="420" height="30" rx="5" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="550" y="356" font-size="10.5" fill="#334155">dt=2026-10-23：2 行（命中，整体替换）</text>
+  <rect x="538" y="372" width="420" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="550" y="392" font-size="10.5" fill="#1e40af">dt=2026-10-24：2 行（没命中，原样保留）</text>
+  <rect x="538" y="408" width="420" height="30" rx="5" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="550" y="428" font-size="10.5" fill="#1e40af" font-weight="bold">合计 4 行 / 2 个文件</text>
+
+  <rect x="24" y="468" width="952" height="76" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="494" font-size="11" fill="#1e40af" font-weight="bold">判据两条：有没有开 dynamic 覆盖，以及新数据实际命中了哪些分区值</text>
+  <text x="44" y="518" font-size="10.5" fill="#334155">命中分区内仍是整体替换 —— 只想补几行时用 MERGE INTO，别用覆盖写；两种写法都不报错，只能靠行数核对</text>
+  <text x="44" y="538" font-size="10" fill="#b91c1c">上线前用一个小分区做一次「先写两行、再覆盖写一行」的演练，比在文档里约定更可靠</text>
+
+  <defs>
+    <marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b91c1c"/>
+    </marker>
+    <marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e40af"/>
+    </marker>
+  </defs>
+</svg>

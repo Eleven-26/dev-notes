@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">采集三通道：谁在哪一层校验，位点各是什么</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">三条通道在 Kafka 之后才汇合；schema 校验位置与回放粒度各不相同</text>
+
+  <rect x="24" y="84" width="300" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="108" font-size="12.5" fill="#334155" font-weight="bold">应用日志（文本行）</text>
+  <text x="40" y="130" font-size="9.5" fill="#475569">单机内大致有序，跨机无关</text>
+  <text x="40" y="150" font-size="9.5" fill="#475569">schema 由应用决定，随发版漂移</text>
+
+  <rect x="340" y="84" width="300" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="356" y="108" font-size="12.5" fill="#334155" font-weight="bold">埋点事件（半结构化 JSON）</text>
+  <text x="356" y="130" font-size="9.5" fill="#475569">不要求跨用户有序，突发尖峰明显</text>
+  <text x="356" y="150" font-size="9.5" fill="#475569">schema 由客户端 SDK 版本决定</text>
+
+  <rect x="656" y="84" width="320" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="672" y="108" font-size="12.5" fill="#334155" font-weight="bold">业务库变更（行级 before/after）</text>
+  <text x="672" y="130" font-size="9.5" fill="#475569">按主键严格有序，带事务边界</text>
+  <text x="672" y="150" font-size="9.5" fill="#475569">schema 由 DDL 决定，改一次影响全下游</text>
+
+  <path d="M 174 164 L 174 184" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#s1)"/>
+  <path d="M 490 164 L 490 184" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#s1)"/>
+  <path d="M 816 164 L 816 184" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#s1)"/>
+
+  <rect x="24" y="188" width="300" height="96" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="40" y="212" font-size="12" fill="#1e40af" font-weight="bold">通道：Filebeat / Vector</text>
+  <text x="40" y="234" font-size="9.5" fill="#334155">本地磁盘队列做缓冲（代理侧保留窗口）</text>
+  <text x="40" y="254" font-size="9.5" fill="#334155">入口不做 schema 校验</text>
+  <text x="40" y="274" font-size="9.5" fill="#b45309">整行文本进 Kafka，清洗留在下游</text>
+
+  <rect x="340" y="188" width="300" height="96" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="356" y="212" font-size="12" fill="#1e40af" font-weight="bold">通道：SDK → 采集网关</text>
+  <text x="356" y="234" font-size="9.5" fill="#334155">网关做校验、令牌桶限流、按比例采样</text>
+  <text x="356" y="254" font-size="9.5" fill="#334155">关键事件走保底队列，不采样</text>
+  <text x="356" y="274" font-size="9.5" fill="#b45309">采样必须打标，否则下游无法加权</text>
+
+  <rect x="656" y="188" width="320" height="96" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="672" y="212" font-size="12" fill="#1e40af" font-weight="bold">通道：Debezium / Flink CDC</text>
+  <text x="672" y="234" font-size="9.5" fill="#334155">一致性快照 + 增量追位点</text>
+  <text x="672" y="254" font-size="9.5" fill="#334155">key = 主键，保证同键落同一分区</text>
+  <text x="672" y="274" font-size="9.5" fill="#b45309">入口不校验，兼容性放到消费侧做</text>
+
+  <path d="M 174 284 L 174 336" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#s2)"/>
+  <path d="M 490 284 L 490 336" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#s2)"/>
+  <path d="M 816 284 L 816 336" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#s2)"/>
+
+  <rect x="24" y="340" width="952" height="72" rx="8" fill="#1e40af"/>
+  <text x="44" y="366" font-size="13" fill="#ffffff" font-weight="bold">Kafka：log.app（key 留空）· event.app（key = event_id 或 user_id）· cdc.shop.*（key = 主键）</text>
+  <text x="44" y="392" font-size="10.5" fill="#dbeafe">三条通道分区不混用；保留期按各自的回放需求分别设，CDC 的保留期要覆盖最长不可用时间</text>
+
+  <rect x="24" y="428" width="952" height="106" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="452" font-size="12" fill="#334155" font-weight="bold">位点语义：回放能从哪开始，由这一段决定</text>
+  <text x="44" y="476" font-size="10" fill="#334155">日志：文件 inode + offset（文件被轮转后旧段可能已删）　｜　埋点：event_id 去重（重复靠幂等挡）</text>
+  <text x="44" y="498" font-size="10" fill="#334155">CDC：binlog 位点（能重放的窗口 = min(binlog 保留期, Kafka 保留期)）</text>
+  <text x="44" y="520" font-size="10" fill="#b91c1c">整条链的可恢复能力，取决于最窄的那一段窗口，而不是 Kafka 上那个最大的数字</text>
+
+  <defs>
+    <marker id="s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="s2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e40af"/>
+    </marker>
+  </defs>
+</svg>

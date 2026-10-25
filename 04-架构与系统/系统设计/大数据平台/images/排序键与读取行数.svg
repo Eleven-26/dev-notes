@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="480" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">排序键决定读多少行：同一份 500 万行数据</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">两张表只有排序键不同，同样的两个查询，读取行数相差两个数量级</text>
+
+  <rect x="24" y="80" width="952" height="300" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="460" y="108" font-size="11" fill="#1e40af" text-anchor="middle" font-weight="bold">表 A：ORDER BY (dt, user_id)</text>
+  <text x="780" y="108" font-size="11" fill="#047857" text-anchor="middle" font-weight="bold">表 B：ORDER BY event_time</text>
+
+  <text x="44" y="154" font-size="11" fill="#0f172a" font-weight="bold">按用户查</text>
+  <text x="44" y="176" font-size="9.5" fill="#334155">dt='2026-10-24'</text>
+  <text x="44" y="196" font-size="9.5" fill="#334155">AND user_id=12345</text>
+
+  <rect x="300" y="130" width="320" height="110" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="460" y="160" font-size="14" fill="#047857" text-anchor="middle" font-weight="bold">32,768 行</text>
+  <text x="460" y="184" font-size="10" fill="#047857" text-anchor="middle">448.00 KiB</text>
+  <text x="460" y="206" font-size="10" fill="#047857" text-anchor="middle">11 ms</text>
+  <text x="460" y="228" font-size="9.5" fill="#047857" text-anchor="middle">命中排序键</text>
+
+  <rect x="620" y="130" width="320" height="110" rx="6" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="780" y="160" font-size="14" fill="#b45309" text-anchor="middle" font-weight="bold">262,144 行</text>
+  <text x="780" y="184" font-size="10" fill="#b45309" text-anchor="middle">1.75 MiB</text>
+  <text x="780" y="206" font-size="10" fill="#b45309" text-anchor="middle">9 ms</text>
+  <text x="780" y="228" font-size="9.5" fill="#b91c1c" text-anchor="middle">多读 8 倍</text>
+
+  <text x="44" y="276" font-size="11" fill="#0f172a" font-weight="bold">按时间查</text>
+  <text x="44" y="298" font-size="9.5" fill="#334155">event_time 落在</text>
+  <text x="44" y="318" font-size="9.5" fill="#334155">一个 10 分钟区间</text>
+
+  <rect x="300" y="252" width="320" height="110" rx="6" fill="#fee2e2" stroke="#f87171" stroke-width="1"/>
+  <text x="460" y="282" font-size="14" fill="#991b1b" text-anchor="middle" font-weight="bold">5,000,000 行</text>
+  <text x="460" y="306" font-size="10" fill="#991b1b" text-anchor="middle">19.07 MiB</text>
+  <text x="460" y="328" font-size="10" fill="#991b1b" text-anchor="middle">36 ms</text>
+  <text x="460" y="350" font-size="9.5" fill="#b91c1c" text-anchor="middle">多读 203 倍：整表扫描</text>
+
+  <rect x="620" y="252" width="320" height="110" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="780" y="282" font-size="14" fill="#047857" text-anchor="middle" font-weight="bold">24,576 行</text>
+  <text x="780" y="306" font-size="10" fill="#047857" text-anchor="middle">96.00 KiB</text>
+  <text x="780" y="328" font-size="10" fill="#047857" text-anchor="middle">11 ms</text>
+  <text x="780" y="350" font-size="9.5" fill="#047857" text-anchor="middle">命中排序键</text>
+
+  <rect x="24" y="396" width="952" height="68" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="420" font-size="10" fill="#334155">结论一：排序键按查询的过滤列排 —— 放错就读整表，两个查询的读取行数在 24,576 与 5,000,000 之间摆动。</text>
+  <text x="44" y="442" font-size="10" fill="#b91c1c">结论二：耗时不一定跟着行数走 —— 少读 203 倍只从 36 ms 降到 11 ms，所以优化要看 read_rows，不能只看时间。</text>
+</svg>

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 596" width="1000" height="596" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="596" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">同一批事件的三种口径：数据没变，金额差 11 倍</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">口径 = 时间范围 + 去重键 + 状态规则；三条路径都跑得通，也都不报错</text>
+
+  <rect x="24" y="84" width="240" height="352" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="110" font-size="12.5" fill="#0f172a" font-weight="bold">原始事件 2020 行</text>
+  <text x="44" y="136" font-size="10" fill="#334155">200 个订单，每单重复上报 10 次 pay</text>
+  <text x="44" y="158" font-size="10" fill="#334155">另有 20 条 refund，各 −50.00</text>
+  <text x="44" y="180" font-size="10" fill="#334155">pay 金额均为 50.00</text>
+  <rect x="40" y="198" width="208" height="1" fill="#cbd5e1"/>
+  <text x="44" y="222" font-size="10" fill="#b45309">三要素都还没决策：</text>
+  <text x="44" y="244" font-size="10" fill="#334155">时间按哪个字段归属？</text>
+  <text x="44" y="266" font-size="10" fill="#334155">用什么键去重？</text>
+  <text x="44" y="288" font-size="10" fill="#334155">退款算不算进 GMV？</text>
+  <rect x="40" y="306" width="208" height="1" fill="#cbd5e1"/>
+  <text x="44" y="330" font-size="10" fill="#b91c1c">同一份数据，三种决策</text>
+  <text x="44" y="352" font-size="10" fill="#b91c1c">得到三个都能叫 GMV 的数</text>
+  <text x="44" y="380" font-size="9.5" fill="#64748b">实测环境：Spark local[2]</text>
+  <text x="44" y="400" font-size="9.5" fill="#64748b">Iceberg 1.6.1</text>
+  <text x="44" y="420" font-size="9.5" fill="#64748b">固定脚本生成，跑两次一致</text>
+
+  <path d="M 268 160 L 300 160" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#b1)"/>
+  <path d="M 268 260 L 300 260" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#b1)"/>
+  <path d="M 268 360 L 300 360" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#b1)"/>
+
+  <rect x="308" y="108" width="316" height="104" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="328" y="132" font-size="11.5" fill="#991b1b" font-weight="bold">路径一：不去重（按上报次数）</text>
+  <text x="328" y="156" font-size="10" fill="#334155">COUNT(*) 直接计数</text>
+  <text x="328" y="178" font-size="10" fill="#334155">SUM(amount) 不区分 event_id</text>
+  <text x="328" y="200" font-size="10" fill="#b45309">等于「按上报次数计费」，不是 GMV</text>
+
+  <rect x="308" y="228" width="316" height="104" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="328" y="252" font-size="11.5" fill="#1e40af" font-weight="bold">路径二：按订单去重 + 整单剔除</text>
+  <text x="328" y="276" font-size="10" fill="#334155">DISTINCT order_id，只算 pay</text>
+  <text x="328" y="298" font-size="10" fill="#334155">NOT IN (SELECT order_id ... refund)</text>
+  <text x="328" y="320" font-size="10" fill="#b45309">有退款的订单整单不计入</text>
+
+  <rect x="308" y="348" width="316" height="104" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="328" y="372" font-size="11.5" fill="#047857" font-weight="bold">路径三：去重 + 按最新状态冲减</text>
+  <text x="328" y="396" font-size="10" fill="#334155">ROW_NUMBER() 取每单最新一条</text>
+  <text x="328" y="418" font-size="10" fill="#334155">退款单的最新事件是 −50.00</text>
+  <text x="328" y="440" font-size="10" fill="#b45309">保留负值，净额冲减</text>
+
+  <path d="M 632 160 L 664 160" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#b1)"/>
+  <path d="M 632 280 L 664 280" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#b1)"/>
+  <path d="M 632 400 L 664 400" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#b1)"/>
+
+  <rect x="672" y="108" width="304" height="104" rx="8" fill="#ffffff" stroke="#fca5a5" stroke-width="1.5"/>
+  <text x="692" y="134" font-size="10.5" fill="#64748b">行数 2020 · 订单 200</text>
+  <text x="692" y="170" font-size="22" fill="#991b1b" font-weight="bold">99,000.00</text>
+  <text x="692" y="196" font-size="10" fill="#334155">= 2020 × 50 − 20 × 50</text>
+
+  <rect x="672" y="228" width="304" height="104" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="692" y="254" font-size="10.5" fill="#64748b">行数 200 · 订单 200</text>
+  <text x="692" y="290" font-size="22" fill="#1e40af" font-weight="bold">9,000.00</text>
+  <text x="692" y="316" font-size="10" fill="#334155">= 180 × 50（20 单整单剔除）</text>
+
+  <rect x="672" y="348" width="304" height="104" rx="8" fill="#ffffff" stroke="#6ee7b7" stroke-width="1.5"/>
+  <text x="692" y="374" font-size="10.5" fill="#64748b">行数 200 · 订单 200</text>
+  <text x="692" y="410" font-size="22" fill="#047857" font-weight="bold">8,000.00</text>
+  <text x="692" y="436" font-size="10" fill="#334155">= 180 × 50 − 20 × 50（保留负值）</text>
+
+  <rect x="24" y="456" width="952" height="120" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="480" font-size="11.5" fill="#334155" font-weight="bold">三条结论</text>
+  <text x="44" y="504" font-size="10" fill="#334155">1. 99,000 与 9,000 差 11 倍，9,000 与 8,000 差 1,000：前者来自去重键，后者来自状态规则，都是口径问题，不是数据问题。</text>
+  <text x="44" y="528" font-size="10" fill="#334155">2. 行数口径同样要写清：事件级 2020 行、订单级 200 行；「订单数」不加限定就有两个答案。</text>
+  <text x="44" y="552" font-size="10" fill="#b91c1c">3. 口径必须进字典（时间字段 / 去重键 / 状态过滤 / SQL / 版本），留在人脑里的口径迟早会分叉。</text>
+
+  <defs>
+    <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

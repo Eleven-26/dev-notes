@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">权限每降一级多一分成本，脱敏只在用户只能经过视图时成立</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">ClickHouse 26.3.29 实测：列级授权连 WHERE 一起拦；把基表权限授出去，脱敏当场失效</text>
+
+  <rect x="24" y="80" width="576" height="370" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="24" y="80" width="576" height="36" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="312" y="104" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">权限的四级落点：越往下越贵，也越精确</text>
+
+  <rect x="32" y="126" width="560" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="36" y="134" width="56" height="24" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+  <text x="64" y="151" font-size="12" fill="#334155" text-anchor="middle" font-weight="bold">库</text>
+  <text x="104" y="150" font-size="11" fill="#0f172a">GRANT SELECT ON gov.*</text>
+  <text x="104" y="174" font-size="10.5" fill="#475569">效果：团队级隔离，粒度最粗</text>
+
+  <rect x="32" y="198" width="560" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="36" y="206" width="56" height="24" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+  <text x="64" y="223" font-size="12" fill="#334155" text-anchor="middle" font-weight="bold">表</text>
+  <text x="104" y="222" font-size="11" fill="#0f172a">GRANT SELECT ON gov.orders</text>
+  <text x="104" y="246" font-size="10.5" fill="#475569">效果：常规授权，能读整表全部列</text>
+
+  <rect x="32" y="270" width="560" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="36" y="278" width="56" height="24" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+  <text x="64" y="295" font-size="12" fill="#334155" text-anchor="middle" font-weight="bold">行</text>
+  <text x="104" y="294" font-size="11" fill="#0f172a">CREATE ROW POLICY ... USING city = 'Shenzhen'</text>
+  <text x="104" y="318" font-size="10.5" fill="#b91c1c">效果：count() = 2，表内实际 4 行（深圳 2、广州 1、东莞 1）</text>
+
+  <rect x="32" y="342" width="560" height="64" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="36" y="350" width="56" height="24" rx="4" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+  <text x="64" y="367" font-size="12" fill="#334155" text-anchor="middle" font-weight="bold">列</text>
+  <text x="104" y="366" font-size="11" fill="#0f172a">GRANT SELECT(order_id, amount) ON gov.orders</text>
+  <text x="104" y="390" font-size="10.5" fill="#b91c1c">效果：SELECT * 报 497；WHERE phone 同样报 497（退出码 241）</text>
+
+  <text x="40" y="430" font-size="10.5" fill="#64748b">先有敏感列清单，再谈列级授权；否则根本不知道要保护哪一列。</text>
+
+  <rect x="616" y="80" width="360" height="370" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="616" y="80" width="360" height="36" rx="8" fill="#d1fae5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="796" y="104" font-size="13" fill="#047857" text-anchor="middle" font-weight="bold">脱敏：能成，但有两个坑</text>
+
+  <rect x="624" y="126" width="344" height="126" rx="6" fill="#ffffff" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="636" y="148" font-size="11.5" fill="#047857" font-weight="bold">路径 A：definer 视图（成立）</text>
+  <text x="636" y="170" font-size="10.5" fill="#334155">u_definer 有基表 SELECT，u_view 只有视图权限</text>
+  <text x="636" y="192" font-size="10.5" fill="#334155">u_view 查询返回 4 行，手机号中四位已打码</text>
+  <text x="636" y="214" font-size="10.5" fill="#334155">u_view 直接查基表：497 拒绝</text>
+  <text x="636" y="236" font-size="10.5" fill="#047857">判据：脱敏成立的前提是「没有第二条路」</text>
+
+  <rect x="624" y="266" width="344" height="126" rx="6" fill="#fef2f2" stroke="#f87171" stroke-width="1"/>
+  <text x="636" y="288" font-size="11.5" fill="#b91c1c" font-weight="bold">路径 B：顺手授基表（失效）</text>
+  <text x="636" y="310" font-size="10.5" fill="#334155">为了让视图能跑，给 u_view 授基表权限</text>
+  <text x="636" y="332" font-size="10.5" fill="#334155">视图确实能跑了，但用户还能直接查基表</text>
+  <text x="636" y="354" font-size="10.5" fill="#b91c1c">读到 13800001111、13900002222 原文</text>
+  <text x="636" y="376" font-size="10.5" fill="#b91c1c">结论：授基表的那一步，脱敏就失效了</text>
+
+  <text x="628" y="430" font-size="10.5" fill="#64748b">问题不在视图，在权限模型允许了「绕过视图」这条路。</text>
+
+  <rect x="24" y="468" width="952" height="88" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="490" font-size="10.5" fill="#334155">审计（实测）：system.query_log 里成功查询是 QueryFinish，read_rows = 4；被拒查询是 ExceptionBeforeStart，exception_code = 497，read_rows = 0。</text>
+  <text x="44" y="510" font-size="10.5" fill="#334155">同一用户连续出现 497 比偶尔一次更值得看 —— 那通常不是写错 SQL，是在试哪一列能读。</text>
+  <text x="44" y="532" font-size="10.5" fill="#b91c1c">判据：先权限后审计 —— 权限决定能看什么，审计记录谁看了什么；只有审计，等于门都开着装摄像头。</text>
+  <text x="44" y="550" font-size="9.5" fill="#64748b">本图读数来自 clickhouse/clickhouse-server:26.3-alpine（26.3.29.7）单容器，表 gov.orders 共 4 行。</text>
+</svg>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+  <text x="500" y="34" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">数据面四层加一个控制面</text>
+  <text x="500" y="58" font-size="12" fill="#64748b" text-anchor="middle">采集 → 传输 → 存储 → 计算 → 服务；控制面只发指令，不搬数据</text>
+
+  <rect x="24" y="88" width="700" height="470" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="116" font-size="14" fill="#1e40af" font-weight="bold">数据面：每一层改变的是数据形态</text>
+
+  <text x="40" y="170" font-size="12" fill="#1e40af" font-weight="bold">服务层</text>
+  <rect x="150" y="136" width="250" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="164" y="158" font-size="11" fill="#1e40af" font-weight="bold">OLAP：ADS 与近 7 天明细</text>
+  <text x="164" y="178" font-size="10" fill="#334155">可重建，30–90 天</text>
+  <rect x="420" y="136" width="280" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="434" y="158" font-size="11" fill="#1e40af" font-weight="bold">Trino：湖上 ad-hoc</text>
+  <text x="434" y="178" font-size="10" fill="#334155">不搬数，直查湖表</text>
+
+  <text x="40" y="248" font-size="12" fill="#1e40af" font-weight="bold">计算层</text>
+  <rect x="150" y="214" width="250" height="52" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1"/>
+  <text x="164" y="236" font-size="11" fill="#047857" font-weight="bold">Flink：持续修正</text>
+  <text x="164" y="256" font-size="10" fill="#334155">清洗 / CDC merge / 窗口</text>
+  <rect x="420" y="214" width="280" height="52" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1"/>
+  <text x="434" y="236" font-size="11" fill="#047857" font-weight="bold">Spark：扫历史</text>
+  <text x="434" y="256" font-size="10" fill="#334155">回填 / 重建 / 对账 / 合并</text>
+
+  <text x="40" y="326" font-size="12" fill="#1e40af" font-weight="bold">存储层</text>
+  <rect x="150" y="292" width="550" height="52" rx="6" fill="#fffbeb" stroke="#fcd34d" stroke-width="1"/>
+  <text x="164" y="314" font-size="11" fill="#b45309" font-weight="bold">Iceberg 湖表：ODS / DWD / DWS / ADS</text>
+  <text x="164" y="334" font-size="10" fill="#334155">对象存储上的列式文件 + 元数据快照，不可变、可回滚</text>
+
+  <text x="40" y="404" font-size="12" fill="#1e40af" font-weight="bold">传输层</text>
+  <rect x="150" y="370" width="550" height="52" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="164" y="392" font-size="11" fill="#1e40af" font-weight="bold">Kafka：raw / cleaned / DLQ</text>
+  <text x="164" y="412" font-size="10" fill="#334155">保留 7 天，只做缓冲与重放，不做长期存储</text>
+
+  <text x="40" y="482" font-size="12" fill="#1e40af" font-weight="bold">采集层</text>
+  <rect x="150" y="448" width="160" height="52" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
+  <text x="162" y="470" font-size="11" fill="#334155">日志代理</text>
+  <text x="162" y="490" font-size="10" fill="#64748b">Vector / Filebeat</text>
+  <rect x="330" y="448" width="170" height="52" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
+  <text x="342" y="470" font-size="11" fill="#334155">埋点网关</text>
+  <text x="342" y="490" font-size="10" fill="#64748b">校验 / 限流 / 落 Kafka</text>
+  <rect x="520" y="448" width="180" height="52" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
+  <text x="532" y="470" font-size="11" fill="#334155">CDC</text>
+  <text x="532" y="490" font-size="10" fill="#64748b">Debezium / Flink CDC</text>
+
+  <path d="M 425 448 L 425 426" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#p1)"/>
+  <path d="M 425 370 L 425 348" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#p1)"/>
+  <path d="M 425 292 L 425 270" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#p1)"/>
+  <path d="M 275 214 L 275 192" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#p1)"/>
+  <path d="M 560 214 L 560 192" fill="none" stroke="#1e40af" stroke-width="1.6" marker-end="url(#p1)"/>
+  <text x="440" y="532" font-size="10" fill="#64748b">箭头方向即数据流向；同一张湖表被两条计算链路读写</text>
+
+  <rect x="740" y="88" width="236" height="470" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="858" y="116" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="bold">控制面</text>
+  <rect x="756" y="132" width="204" height="56" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="768" y="154" font-size="11" fill="#334155" font-weight="bold">调度</text>
+  <text x="768" y="174" font-size="10" fill="#64748b">分区级 DAG / 补数</text>
+  <rect x="756" y="200" width="204" height="56" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="768" y="222" font-size="11" fill="#334155" font-weight="bold">元数据与血缘</text>
+  <text x="768" y="242" font-size="10" fill="#64748b">Catalog / 字段级</text>
+  <rect x="756" y="268" width="204" height="56" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="768" y="290" font-size="11" fill="#334155" font-weight="bold">质量</text>
+  <text x="768" y="310" font-size="10" fill="#64748b">落库前四类断言</text>
+  <rect x="756" y="336" width="204" height="56" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="768" y="358" font-size="11" fill="#334155" font-weight="bold">权限与审计</text>
+  <text x="768" y="378" font-size="10" fill="#64748b">表 / 列 / 行三级</text>
+  <text x="756" y="428" font-size="10" fill="#475569">它不搬数据：只决定</text>
+  <text x="756" y="446" font-size="10" fill="#475569">谁在何时跑、结果能</text>
+  <text x="756" y="464" font-size="10" fill="#475569">不能发出去。</text>
+  <text x="756" y="500" font-size="10" fill="#b45309">缺任一项，都会在</text>
+  <text x="756" y="518" font-size="10" fill="#b45309">补数或排障时暴露</text>
+
+  <rect x="24" y="580" width="952" height="92" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="606" font-size="12.5" fill="#1e40af" font-weight="bold">判据一句话：数据穿过一层，粒度、可变性、使用者有没有变？变了才值得加一层。</text>
+  <text x="44" y="630" font-size="11" fill="#334155">只换查询入口 → 属于服务层；要一行一个订单而不是一行一个事件 → 粒度变了，必须加 DWD。</text>
+  <text x="44" y="652" font-size="11" fill="#334155">按产品分层会把同一件事写两遍：Flink 既能在传输后清洗，也能在服务层预聚合，但只该选一边。</text>
+
+  <defs>
+    <marker id="p1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e40af"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">命名空间分的是配额，节点池分的是存储</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">有状态组件靠污点钉在存储池，无状态作业靠配额约束在计算池</text>
+
+  <rect x="24" y="84" width="470" height="256" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="112" font-size="12" fill="#0f172a" font-weight="bold">命名空间：按平台 / 流 / 批 / 临时分</text>
+
+  <rect x="44" y="126" width="430" height="44" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="60" y="146" font-size="10" fill="#1e40af" font-weight="bold">bdp-platform</text>
+  <text x="60" y="162" font-size="9.5" fill="#1e40af">Kafka、MinIO、OLAP、调度器：固定规格，不弹性</text>
+
+  <rect x="44" y="178" width="430" height="44" rx="5" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="60" y="198" font-size="10" fill="#047857" font-weight="bold">bdp-stream</text>
+  <text x="60" y="214" font-size="9.5" fill="#047857">Flink 作业：按 slot 总量配额，高优先级</text>
+
+  <rect x="44" y="230" width="430" height="44" rx="5" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="60" y="250" font-size="10" fill="#b45309" font-weight="bold">bdp-batch</text>
+  <text x="60" y="266" font-size="9.5" fill="#b45309">Spark 作业：按核时配额，允许突发</text>
+
+  <rect x="44" y="282" width="430" height="44" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="60" y="302" font-size="10" fill="#334155" font-weight="bold">bdp-tools</text>
+  <text x="60" y="318" font-size="9.5" fill="#475569">临时排查：低优先级，可被抢占</text>
+
+  <rect x="506" y="84" width="470" height="256" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="526" y="112" font-size="12" fill="#0f172a" font-weight="bold">节点池：按有没有本地盘分</text>
+
+  <rect x="526" y="126" width="430" height="52" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="542" y="146" font-size="10" fill="#334155" font-weight="bold">控制面池</text>
+  <text x="542" y="164" font-size="9.5" fill="#475569">污点 workload=platform：调度器、Operator、监控</text>
+
+  <rect x="526" y="188" width="430" height="66" rx="5" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="542" y="208" font-size="10" fill="#1e40af" font-weight="bold">计算池（无状态）</text>
+  <text x="542" y="226" font-size="9.5" fill="#1e40af">污点 workload=compute：Flink TM、Spark executor</text>
+  <text x="542" y="244" font-size="9.5" fill="#1e40af">本地盘只放 shuffle 与临时文件，丢了重算</text>
+
+  <rect x="526" y="264" width="430" height="66" rx="5" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="542" y="284" font-size="10" fill="#047857" font-weight="bold">存储池（有状态）</text>
+  <text x="542" y="302" font-size="9.5" fill="#047857">污点 workload=storage：Kafka、MinIO、OLAP</text>
+  <text x="542" y="320" font-size="9.5" fill="#b91c1c">Pod 漂移就找不到本地数据，必须用污点钉住</text>
+
+  <rect x="24" y="358" width="952" height="96" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="384" font-size="11" fill="#0f172a" font-weight="bold">对象存储：checkpoint 与湖表的唯一落点</text>
+  <text x="44" y="408" font-size="10" fill="#334155">s3://bdp-flink/ckp、s3://bdp-flink/savepoints —— 状态 19 GB，按两份保留约 46 GB</text>
+  <text x="44" y="430" font-size="10" fill="#334155">s3://bdp-lake —— 湖表全量历史，MinIO 纠删码，是唯一不可重建的数据</text>
+  <text x="590" y="384" font-size="10" fill="#b91c1c">计算池的 Pod 漂移后，checkpoint 仍可达</text>
+  <text x="590" y="408" font-size="10" fill="#b91c1c">存储池的 Pod 漂移后，本地数据不可达</text>
+
+  <rect x="24" y="472" width="952" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="496" font-size="10" fill="#334155">判断顺序：先定「状态存在哪」，再定部署形态（Operator / StatefulSet / Deployment）。</text>
+  <text x="44" y="518" font-size="10" fill="#b91c1c">本机集群：单节点 4 CPU / 5,968,464 KiB，只有 hostpath 存储类 —— 连一个满配 TaskManager 都放不下。</text>
+
+  <path d="M 259 340 L 259 352" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <path d="M 741 340 L 741 352" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+</svg>

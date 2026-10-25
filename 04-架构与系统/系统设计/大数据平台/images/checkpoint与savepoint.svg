@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">checkpoint 自动救故障，savepoint 手动救变更</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">两者存的状态格式相同，差别全在触发者、保留策略与恢复时的兼容性</text>
+
+  <rect x="24" y="80" width="952" height="236" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="106" font-size="12" fill="#1e40af" font-weight="bold">上半：自动 checkpoint —— 间隔触发、只留最近一份、故障时自动恢复</text>
+
+  <rect x="44" y="126" width="168" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="128" y="148" font-size="10" fill="#1e40af" text-anchor="middle">运行中的作业</text>
+  <text x="128" y="168" font-size="10" fill="#1e40af" text-anchor="middle">每 5 秒触发一次</text>
+
+  <rect x="248" y="126" width="190" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="343" y="148" font-size="10" fill="#1e40af" text-anchor="middle">写入 state.checkpoints.dir</text>
+  <text x="343" y="168" font-size="10" fill="#1e40af" text-anchor="middle">本机 file:///tmp/chk</text>
+
+  <rect x="474" y="126" width="170" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="559" y="148" font-size="10" fill="#1e40af" text-anchor="middle">只保留最近 1 份</text>
+  <text x="559" y="168" font-size="10" fill="#1e40af" text-anchor="middle">更早的标 discarded</text>
+
+  <rect x="680" y="126" width="180" height="56" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="770" y="148" font-size="10" fill="#1e40af" text-anchor="middle">作业失败自动回滚到</text>
+  <text x="770" y="168" font-size="10" fill="#1e40af" text-anchor="middle">最近一次完成的 checkpoint</text>
+
+  <path d="M 212 154 L 242 154" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M 438 154 L 468 154" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M 644 154 L 674 154" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+
+  <text x="44" y="214" font-size="10" fill="#334155">读数：无数据时 state 5,825 B，200 个 key 时 14,025 B —— 状态随 key 数涨，不随消息数涨</text>
+  <text x="44" y="236" font-size="10" fill="#334155">完成 6 次 / 失败 1 次，单次耗时 10～147 ms，alignment_buffered = 0</text>
+  <text x="44" y="258" font-size="10" fill="#94a3b8">前 5 份 checkpoint 的磁盘目录仍在，但元数据里标成 discarded —— 「只留一份」指可恢复的那一份</text>
+  <text x="44" y="292" font-size="10" fill="#334155">适用：进程崩溃、TaskManager 掉线、发布回滚。不适用：改代码、换并行度、迁移集群。</text>
+
+  <rect x="24" y="340" width="952" height="210" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="366" font-size="12" fill="#047857" font-weight="bold">下半：人工 savepoint —— 先停后存、长期留档、升级或迁移时指回去</text>
+
+  <rect x="44" y="386" width="176" height="56" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="132" y="408" font-size="10" fill="#047857" text-anchor="middle">flink stop -p /tmp/sp</text>
+  <text x="132" y="428" font-size="10" fill="#047857" text-anchor="middle">先停作业，再存状态</text>
+
+  <rect x="256" y="386" width="196" height="56" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="354" y="408" font-size="9" fill="#047857" text-anchor="middle">savepoint-73468f-715a07028a80</text>
+  <text x="354" y="428" font-size="10" fill="#047857" text-anchor="middle">19,829 B，只有一个 _metadata</text>
+
+  <rect x="488" y="386" width="180" height="56" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="578" y="408" font-size="10" fill="#047857" text-anchor="middle">设 execution.savepoint.path</text>
+  <text x="578" y="428" font-size="10" fill="#047857" text-anchor="middle">按原 SQL 重新提交</text>
+
+  <rect x="704" y="386" width="200" height="56" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1"/>
+  <text x="804" y="408" font-size="10" fill="#047857" text-anchor="middle">restored = 1，state 仍 14,025 B</text>
+  <text x="804" y="428" font-size="10" fill="#047857" text-anchor="middle">print sink 的 +I 行数不变</text>
+
+  <path d="M 220 414 L 250 414" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M 452 414 L 482 414" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+  <path d="M 668 414 L 698 414" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+
+  <text x="44" y="474" font-size="10" fill="#334155">恢复后第一个 checkpoint 的 checkpointed_size 仍是 14,025 B，Kafka 位点一并接上</text>
+  <text x="44" y="496" font-size="10" fill="#334155">作业 ID 73468f09583fc5594411961b63b7b2c9，恢复前后 print 输出都是 200 行 +I，没有重放</text>
+  <text x="44" y="524" font-size="10" fill="#334155">适用：改 SQL、改并行度、换集群、版本升级。需要停作业，且拓扑要与存档时一致。</text>
+
+  <rect x="24" y="566" width="952" height="58" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="588" font-size="10" fill="#334155">共同终点：把状态装回去 → 把 Kafka 位点接回去 → 从那里继续算。</text>
+  <text x="44" y="610" font-size="10" fill="#b91c1c">注意：checkpoint 只留一份且与代码绑定，不能当备份；要留档用 savepoint，要长期留用湖表快照。</text>
+
+  <defs>
+    <marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

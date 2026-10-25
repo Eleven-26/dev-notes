@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">湖表的四层文件：读要先过元数据，写只追加不覆盖</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">快照是「一次提交」，它指向一个 manifest list；数据文件写完即不可变</text>
+
+  <rect x="40" y="92" width="440" height="66" rx="8" fill="#eff6ff" stroke="#1e40af" stroke-width="1.5"/>
+  <text x="54" y="118" font-size="12.5" fill="#1e40af" font-weight="bold">metadata.json（第 N 版）</text>
+  <text x="54" y="140" font-size="10" fill="#334155">表级：schema · 分区规格 · 快照列表 · 当前快照</text>
+
+  <rect x="40" y="180" width="440" height="66" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="54" y="206" font-size="12.5" fill="#1e40af" font-weight="bold">manifest list（每个快照一份）</text>
+  <text x="54" y="228" font-size="10" fill="#334155">列出该快照引用的 manifest，以及每个分区的行数范围</text>
+
+  <rect x="40" y="268" width="440" height="66" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="54" y="294" font-size="12.5" fill="#1e40af" font-weight="bold">manifest（数据文件的清单）</text>
+  <text x="54" y="316" font-size="10" fill="#334155">每个数据文件一行，带列级 min/max，查询靠它跳过文件</text>
+
+  <rect x="40" y="356" width="440" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="54" y="382" font-size="12.5" fill="#0f172a" font-weight="bold">数据文件（Parquet）</text>
+  <text x="54" y="404" font-size="10" fill="#334155">写完即不可变：改一行也要写一批新文件，旧文件留给快照</text>
+
+  <path d="M 240 176 L 240 160" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#u1)"/>
+  <path d="M 300 160 L 300 176" fill="none" stroke="#b45309" stroke-width="1.5" marker-end="url(#u2)"/>
+  <path d="M 240 264 L 240 248" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#u1)"/>
+  <path d="M 300 248 L 300 264" fill="none" stroke="#b45309" stroke-width="1.5" marker-end="url(#u2)"/>
+  <path d="M 240 352 L 240 336" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#u1)"/>
+  <path d="M 300 336 L 300 352" fill="none" stroke="#b45309" stroke-width="1.5" marker-end="url(#u2)"/>
+  <text x="250" y="170" font-size="9.5" fill="#1e40af">读</text>
+  <text x="310" y="170" font-size="9.5" fill="#b45309">写</text>
+  <text x="250" y="258" font-size="9.5" fill="#1e40af">读</text>
+  <text x="310" y="258" font-size="9.5" fill="#b45309">写</text>
+  <text x="250" y="346" font-size="9.5" fill="#1e40af">读</text>
+  <text x="310" y="346" font-size="9.5" fill="#b45309">写</text>
+
+  <rect x="520" y="92" width="456" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="538" y="118" font-size="12" fill="#0f172a" font-weight="bold">实测：一条 INSERT 写 5 行（跨 2 个 dt 分区）</text>
+  <text x="538" y="146" font-size="10.5" fill="#334155">数据文件：2 个（每个分区一个）</text>
+  <text x="538" y="172" font-size="10.5" fill="#334155">快照：1 个（一次提交只产生一个快照）</text>
+  <text x="538" y="198" font-size="10.5" fill="#334155">metadata.json：换一版，旧版本不删</text>
+  <text x="538" y="220" font-size="10" fill="#b45309">行数 5 · 文件 2 · 快照 1 —— 三者不是一回事</text>
+
+  <rect x="520" y="248" width="456" height="174" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="538" y="274" font-size="12" fill="#1e40af" font-weight="bold">为什么文件数与快照数对不上</text>
+  <text x="538" y="302" font-size="10.5" fill="#334155">一次写多个分区 → 1 个快照，N 个文件</text>
+  <text x="538" y="328" font-size="10.5" fill="#334155">增量追加 → 旧文件不动，新快照多引用一批</text>
+  <text x="538" y="354" font-size="10.5" fill="#334155">合并 → 文件 5 个变 1 个，行数不变，快照多一条 replace</text>
+  <text x="538" y="380" font-size="10.5" fill="#334155">回滚 → 只换「当前快照」指针，既不删文件也不删快照</text>
+  <text x="538" y="406" font-size="10" fill="#b91c1c">所以「文件多」与「历史长」是两个独立的治理问题</text>
+
+  <rect x="40" y="444" width="936" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="58" y="470" font-size="10.5" fill="#334155">读放大：一条查询至少打开 metadata.json、manifest list、manifest 各一层，才碰到第一行数据</text>
+  <text x="58" y="494" font-size="10.5" fill="#334155">写放大：一次写入只追加文件与元数据；但覆盖写、合并、MERGE 会重写命中的整文件</text>
+  <text x="58" y="512" font-size="10" fill="#b45309">规划耗时随文件数与快照数一起涨，这两件事都要靠「合并 + 过期」压住</text>
+
+  <defs>
+    <marker id="u1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e40af"/>
+    </marker>
+    <marker id="u2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b45309"/>
+    </marker>
+  </defs>
+</svg>

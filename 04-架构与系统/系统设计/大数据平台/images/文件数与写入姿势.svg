@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">文件数由什么决定：先看分区数，再看分区内的任务数</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">同一套写入写法，数据只落一个分区时得到 1 个文件，落七个分区时得到 7 个文件</text>
+
+  <rect x="24" y="84" width="460" height="350" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="112" font-size="13" fill="#0f172a" font-weight="bold">单日分区：2020 行全落在 1 天</text>
+  <text x="44" y="136" font-size="10" fill="#475569">表按 days(ts) 分区，只有一个分区 dt=2026-10-24</text>
+
+  <g fill="#e2e8f0" stroke="#94a3b8" stroke-width="1">
+    <rect x="44" y="158" width="26" height="26" rx="3"/>
+    <rect x="78" y="158" width="26" height="26" rx="3"/>
+    <rect x="112" y="158" width="26" height="26" rx="3"/>
+    <rect x="146" y="158" width="26" height="26" rx="3"/>
+    <rect x="180" y="158" width="26" height="26" rx="3"/>
+    <rect x="214" y="158" width="26" height="26" rx="3"/>
+    <rect x="248" y="158" width="26" height="26" rx="3"/>
+    <rect x="282" y="158" width="26" height="26" rx="3"/>
+    <rect x="316" y="158" width="26" height="26" rx="3"/>
+    <rect x="350" y="158" width="26" height="26" rx="3"/>
+    <rect x="44" y="192" width="26" height="26" rx="3"/>
+    <rect x="78" y="192" width="26" height="26" rx="3"/>
+    <rect x="112" y="192" width="26" height="26" rx="3"/>
+    <rect x="146" y="192" width="26" height="26" rx="3"/>
+    <rect x="180" y="192" width="26" height="26" rx="3"/>
+    <rect x="214" y="192" width="26" height="26" rx="3"/>
+    <rect x="248" y="192" width="26" height="26" rx="3"/>
+    <rect x="282" y="192" width="26" height="26" rx="3"/>
+    <rect x="316" y="192" width="26" height="26" rx="3"/>
+    <rect x="350" y="192" width="26" height="26" rx="3"/>
+  </g>
+  <rect x="44" y="158" width="26" height="26" rx="3" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
+  <text x="44" y="242" font-size="10" fill="#475569">示意：一次写入 200 个任务（REPARTITION(200)）</text>
+  <text x="44" y="264" font-size="10" fill="#15803d">只有 1 个任务拿到了行，其余 199 个写完 0 行、不产出文件</text>
+
+  <path d="M 200 278 L 200 300" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1)"/>
+
+  <rect x="44" y="306" width="300" height="42" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="60" y="332" font-size="11" fill="#1e40af">dt=2026-10-24／part-00000（14,399 B）</text>
+
+  <text x="44" y="378" font-size="14" fill="#0f172a" font-weight="bold">numFiles = 1</text>
+  <text x="180" y="378" font-size="10" fill="#475569">AQE 开关、任务数 20 / 200 都试过，结果相同</text>
+
+  <rect x="516" y="84" width="460" height="350" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="536" y="112" font-size="13" fill="#0f172a" font-weight="bold">七个日分区：100 万行跨 7 天</text>
+  <text x="536" y="136" font-size="10" fill="#475569">每个分区至少有一个任务负责落盘，文件数下界等于分区数</text>
+
+  <g font-size="10" fill="#334155">
+    <rect x="536" y="152" width="130" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="548" y="167">dt=2026-10-18</text>
+    <path d="M 674 163 L 694 163" fill="none" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#c1)"/>
+    <rect x="700" y="152" width="120" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="712" y="167">part-00000</text>
+
+    <rect x="536" y="182" width="130" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="548" y="197">dt=2026-10-19</text>
+    <path d="M 674 193 L 694 193" fill="none" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#c1)"/>
+    <rect x="700" y="182" width="120" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="712" y="197">part-00001</text>
+
+    <rect x="536" y="212" width="130" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="548" y="227">dt=2026-10-20</text>
+    <path d="M 674 223 L 694 223" fill="none" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#c1)"/>
+    <rect x="700" y="212" width="120" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="712" y="227">part-00002</text>
+
+    <rect x="536" y="242" width="130" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="548" y="257">dt=2026-10-21</text>
+    <path d="M 674 253 L 694 253" fill="none" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#c1)"/>
+    <rect x="700" y="242" width="120" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="712" y="257">part-00003</text>
+
+    <rect x="536" y="272" width="130" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="548" y="287">dt=2026-10-22</text>
+    <path d="M 674 283 L 694 283" fill="none" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#c1)"/>
+    <rect x="700" y="272" width="120" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="712" y="287">part-00004</text>
+
+    <rect x="536" y="302" width="130" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="548" y="317">dt=2026-10-23</text>
+    <path d="M 674 313 L 694 313" fill="none" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#c1)"/>
+    <rect x="700" y="302" width="120" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="712" y="317">part-00005</text>
+
+    <rect x="536" y="332" width="130" height="22" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="548" y="347">dt=2026-10-24</text>
+    <path d="M 674 343 L 694 343" fill="none" stroke="#94a3b8" stroke-width="1.2" marker-end="url(#c1)"/>
+    <rect x="700" y="332" width="120" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+    <text x="712" y="347">part-00006</text>
+  </g>
+
+  <text x="536" y="378" font-size="14" fill="#0f172a" font-weight="bold">numFiles = 7</text>
+  <text x="672" y="378" font-size="10" fill="#475569">REPARTITION(100) / COALESCE(1) / 不加 hint 都是 7</text>
+
+  <rect x="24" y="452" width="952" height="146" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="476" font-size="11.5" fill="#92400e" font-weight="bold">同一个 100 万行表，落盘字节差 7.7 倍，原因在行序</text>
+  <text x="44" y="500" font-size="10" fill="#334155">REPARTITION(100)：7 个文件共 7,476,506 B（平均 1,068,072 B）；COALESCE(1)：7 个文件共 965,219 B（平均 137,888 B）。</text>
+  <text x="44" y="522" font-size="10" fill="#334155">随机 shuffle 打乱了同分区内的行序，字典与游程压缩失效；保留源序（按订单号递增）时压缩效果最好。</text>
+  <text x="44" y="548" font-size="10" fill="#b91c1c">要点：压缩比不是常数，容量估算要用自己数据的实测值；排序本身也是一种压缩手段。</text>
+  <text x="44" y="572" font-size="10" fill="#475569">判据：文件数 = 有数据的分区数 × 分区内并发写任务数；先调分区粒度，再调目标文件大小，最后靠合并兜底。</text>
+
+  <defs>
+    <marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

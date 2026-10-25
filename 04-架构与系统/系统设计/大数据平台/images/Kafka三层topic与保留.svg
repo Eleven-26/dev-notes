@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">Kafka 三层 topic：key 与保留期在哪一层被决定</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">同一份数据通常存两遍（raw 与 cleaned），磁盘按两倍算；死信单独托管，不跟着主线保留</text>
+
+  <rect x="24" y="84" width="290" height="326" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="40" y="112" font-size="12.5" fill="#0f172a" font-weight="bold">接入层：原样落地</text>
+  <rect x="40" y="124" width="120" height="30" rx="6" fill="#1e40af"/>
+  <text x="54" y="144" font-size="13" fill="#ffffff" font-weight="bold">*.raw</text>
+
+  <text x="40" y="178" font-size="9.5" fill="#64748b">谁写</text>
+  <text x="40" y="196" font-size="10.5" fill="#334155">采集代理 · 埋点网关 · CDC</text>
+  <text x="40" y="222" font-size="9.5" fill="#64748b">谁读</text>
+  <text x="40" y="240" font-size="10.5" fill="#334155">Flink 清洗 · 回填任务</text>
+  <text x="40" y="266" font-size="9.5" fill="#64748b">key</text>
+  <text x="40" y="284" font-size="10.5" fill="#334155">日志留空 · 埋点 event_id</text>
+  <text x="40" y="302" font-size="10.5" fill="#334155">CDC 用主键</text>
+  <text x="40" y="326" font-size="9.5" fill="#64748b">保留期</text>
+  <text x="40" y="344" font-size="10.5" fill="#334155">日志 3 天 · 埋点与 CDC 7 天</text>
+  <text x="40" y="362" font-size="10.5" fill="#334155">（cleaned 取同值或更短）</text>
+  <text x="40" y="392" font-size="10" fill="#b45309">只搬运不转换 → 整层可重放</text>
+
+  <rect x="349" y="84" width="290" height="326" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="365" y="112" font-size="12.5" fill="#0f172a" font-weight="bold">清洗层：二次加工</text>
+  <rect x="365" y="124" width="140" height="30" rx="6" fill="#1e40af"/>
+  <text x="379" y="144" font-size="13" fill="#ffffff" font-weight="bold">cleaned.*</text>
+
+  <text x="365" y="178" font-size="9.5" fill="#64748b">谁写</text>
+  <text x="365" y="196" font-size="10.5" fill="#334155">Flink 清洗 · CDC merge</text>
+  <text x="365" y="222" font-size="9.5" fill="#64748b">谁读</text>
+  <text x="365" y="240" font-size="10.5" fill="#334155">Spark 宽表 · 对账</text>
+  <text x="365" y="266" font-size="9.5" fill="#64748b">key</text>
+  <text x="365" y="284" font-size="10.5" fill="#334155">与 raw 一致</text>
+  <text x="365" y="302" font-size="10.5" fill="#475569">顺序只到分区为止</text>
+  <text x="365" y="326" font-size="9.5" fill="#64748b">保留期</text>
+  <text x="365" y="344" font-size="10.5" fill="#334155">与 raw 一致或更短</text>
+  <text x="365" y="362" font-size="10.5" fill="#475569">（按回填一次宽表要多久）</text>
+  <text x="365" y="392" font-size="10" fill="#b45309">可重算 → 丢了从 raw 重建</text>
+
+  <rect x="674" y="84" width="302" height="326" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="690" y="112" font-size="12.5" fill="#0f172a" font-weight="bold">服务层：对外可读</text>
+  <rect x="690" y="124" width="130" height="30" rx="6" fill="#1e40af"/>
+  <text x="704" y="144" font-size="13" fill="#ffffff" font-weight="bold">rt.ads.*</text>
+
+  <text x="690" y="178" font-size="9.5" fill="#64748b">谁写</text>
+  <text x="690" y="196" font-size="10.5" fill="#334155">Flink 汇总作业</text>
+  <text x="690" y="222" font-size="9.5" fill="#64748b">谁读</text>
+  <text x="690" y="240" font-size="10.5" fill="#334155">实时看板推送</text>
+  <text x="690" y="266" font-size="9.5" fill="#64748b">key</text>
+  <text x="690" y="284" font-size="10.5" fill="#334155">指标 + 维度</text>
+  <text x="690" y="302" font-size="10.5" fill="#475569">同指标同维度同分区</text>
+  <text x="690" y="326" font-size="9.5" fill="#64748b">保留期</text>
+  <text x="690" y="344" font-size="10.5" fill="#334155">1 天</text>
+  <text x="690" y="362" font-size="10.5" fill="#475569">（可从湖表重建）</text>
+  <text x="690" y="392" font-size="10" fill="#b45309">可重建 → 保留期最短</text>
+
+  <path d="M 318 247 L 344 247" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#a1)"/>
+  <path d="M 643 247 L 669 247" fill="none" stroke="#1e40af" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <rect x="24" y="430" width="952" height="58" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="456" font-size="11" fill="#1e40af" font-weight="bold">磁盘要按两倍算：raw 与 cleaned 各存一份</text>
+  <text x="44" y="478" font-size="10.5" fill="#334155">分层之后 raw 用长保留、cleaned 用短保留；批与流不复用同一 topic，正是为了不让回填需求抬高流的保留期</text>
+
+  <rect x="24" y="508" width="952" height="104" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="534" font-size="12" fill="#0f172a" font-weight="bold">死信层：dlq.*（独立托管，保留 14 天）</text>
+  <text x="44" y="558" font-size="10.5" fill="#334155">谁写：三次重试（含退避）仍失败的作业　｜　key：原 key　｜　内容：原 topic / partition / offset / 异常栈</text>
+  <text x="44" y="580" font-size="10.5" fill="#334155">谁读：人工排查与补偿任务，补偿完再按主键回灌</text>
+  <text x="44" y="602" font-size="10.5" fill="#b91c1c">它不是垃圾桶：14 天没人处理就该转工单，而不是把保留期继续加大</text>
+
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e40af"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 630" width="1000" height="630" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="630" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">schema 变更的处置决策树</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">同一句 ALTER TABLE，在 Iceberg 表上是加字段，在裸 Parquet 表上可能是整列错位</text>
+
+  <rect x="350" y="78" width="300" height="46" rx="8" fill="#1e40af"/>
+  <text x="500" y="107" font-size="13" fill="#ffffff" text-anchor="middle" font-weight="bold">这次 DDL 改了什么？</text>
+
+  <path d="M 500 124 L 500 140" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+  <path d="M 124 140 L 874 140" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+  <path d="M 124 140 L 124 158" fill="none" stroke="#cbd5e1" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 374 140 L 374 158" fill="none" stroke="#cbd5e1" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 624 140 L 624 158" fill="none" stroke="#cbd5e1" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 874 140 L 874 158" fill="none" stroke="#cbd5e1" stroke-width="1.4" marker-end="url(#t1)"/>
+
+  <rect x="24" y="162" width="200" height="50" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="124" y="193" font-size="12" fill="#1e40af" text-anchor="middle" font-weight="bold">加列</text>
+  <rect x="274" y="162" width="200" height="50" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="374" y="193" font-size="12" fill="#1e40af" text-anchor="middle" font-weight="bold">删列</text>
+  <rect x="524" y="162" width="200" height="50" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="624" y="193" font-size="12" fill="#1e40af" text-anchor="middle" font-weight="bold">改类型</text>
+  <rect x="774" y="162" width="200" height="50" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="874" y="193" font-size="12" fill="#1e40af" text-anchor="middle" font-weight="bold">重命名</text>
+
+  <path d="M 124 212 L 124 234" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 374 212 L 374 234" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 624 212 L 624 234" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 874 212 L 874 234" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+
+  <rect x="24" y="238" width="200" height="56" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="124" y="261" font-size="10.5" fill="#b45309" text-anchor="middle" font-weight="bold">可空，或有默认值？</text>
+  <text x="124" y="282" font-size="9" fill="#475569" text-anchor="middle">非空无默认会让历史行失真</text>
+
+  <rect x="274" y="238" width="200" height="56" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="374" y="261" font-size="10.5" fill="#b45309" text-anchor="middle" font-weight="bold">下游还在读这一列？</text>
+  <text x="374" y="282" font-size="9" fill="#475569" text-anchor="middle">报表与任务都要问一遍</text>
+
+  <rect x="524" y="238" width="200" height="56" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="624" y="261" font-size="10.5" fill="#b45309" text-anchor="middle" font-weight="bold">是拓宽（int → long）？</text>
+  <text x="624" y="282" font-size="9" fill="#475569" text-anchor="middle">收窄与跨类都会读坏旧文件</text>
+
+  <rect x="774" y="238" width="200" height="56" rx="7" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="874" y="261" font-size="10.5" fill="#b45309" text-anchor="middle" font-weight="bold">能先加新列双写？</text>
+  <text x="874" y="282" font-size="9" fill="#475569" text-anchor="middle">直接改名等价于删 + 加</text>
+
+  <path d="M 124 294 L 124 316" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 374 294 L 374 316" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 624 294 L 624 316" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M 874 294 L 874 316" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#t1)"/>
+
+  <rect x="24" y="320" width="200" height="96" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="36" y="342" font-size="9.5" fill="#047857" font-weight="bold">是 → 直接放行</text>
+  <text x="36" y="362" font-size="9" fill="#334155">历史行读成 null，下游需</text>
+  <text x="36" y="378" font-size="9" fill="#334155">容忍空值</text>
+  <text x="36" y="400" font-size="9.5" fill="#b45309" font-weight="bold">否 → 先可空 + 回填</text>
+
+  <rect x="274" y="320" width="200" height="96" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="286" y="342" font-size="9.5" fill="#047857" font-weight="bold">否 → 放行，保留 field id</text>
+  <text x="286" y="362" font-size="9" fill="#334155">旧文件仍可读，只是不再</text>
+  <text x="286" y="378" font-size="9" fill="#334155">产出该列</text>
+  <text x="286" y="400" font-size="9.5" fill="#b45309" font-weight="bold">是 → 双写迁移后删</text>
+
+  <rect x="524" y="320" width="200" height="96" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="536" y="342" font-size="9.5" fill="#047857" font-weight="bold">是 → 直接放行</text>
+  <text x="536" y="362" font-size="9" fill="#334155">Iceberg 与 Parquet 都</text>
+  <text x="536" y="378" font-size="9" fill="#334155">向后兼容拓宽</text>
+  <text x="536" y="400" font-size="9.5" fill="#b91c1c" font-weight="bold">否 → 停机窗口 + 重写</text>
+
+  <rect x="774" y="320" width="200" height="96" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="786" y="342" font-size="9.5" fill="#047857" font-weight="bold">能 → 双写后切读</text>
+  <text x="786" y="362" font-size="9" fill="#334155">新列先写、回填、切读，</text>
+  <text x="786" y="378" font-size="9" fill="#334155">旧列留一个保留周期</text>
+  <text x="786" y="400" font-size="9.5" fill="#b91c1c" font-weight="bold">不能 → 按停机处理</text>
+
+  <rect x="24" y="438" width="952" height="106" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="44" y="462" font-size="12" fill="#334155" font-weight="bold">三个动作的边界</text>
+  <text x="44" y="486" font-size="9.8" fill="#475569">直接放行：下游当日可用，但要在 24 小时内确认新字段真的能读到　｜　双写迁移：新旧并存至少一个保留周期，回填完成后再切读</text>
+  <text x="44" y="508" font-size="9.8" fill="#475569">停机窗口：只在类型收窄、无法双写时使用；先备份、再改 schema、最后重写受影响分区</text>
+  <text x="44" y="530" font-size="9.8" fill="#b91c1c">判据：Iceberg 按 field id 对齐，调序与改名都安全；裸 Parquet 按位置对齐，任何列序变化都按「停机窗口」处理</text>
+
+  <rect x="24" y="560" width="952" height="50" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="44" y="590" font-size="11" fill="#1e40af">落地纪律：DDL 进变更单、采集侧做 schema 漂移告警、新列先可空写入并回填，确认下游非空后再收紧 —— 顺序反了就得重写历史分区</text>
+
+  <defs>
+    <marker id="t1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>

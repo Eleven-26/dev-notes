@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" fill="#0f172a" text-anchor="middle" font-weight="bold">四个阶段都能停住：不丢 → 对得上 → 够快 → 省得下来</text>
+  <text x="500" y="56" font-size="12" fill="#64748b" text-anchor="middle">每张卡给交付、验收读数、刻意不做的与回退动作；上一阶段三条验收不达标，就不进下一阶段</text>
+
+  <line x1="24" y1="96" x2="970" y2="96" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <circle cx="143" cy="96" r="5" fill="#1e40af"/>
+  <circle cx="387" cy="96" r="5" fill="#1e40af"/>
+  <circle cx="631" cy="96" r="5" fill="#1e40af"/>
+  <circle cx="875" cy="96" r="5" fill="#1e40af"/>
+
+  <rect x="24" y="112" width="238" height="318" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="24" y="112" width="238" height="44" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="143" y="132" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">A 采集与原始层</text>
+  <text x="143" y="149" font-size="10.5" fill="#1e40af" text-anchor="middle">第 1–4 周</text>
+  <text x="36" y="176" font-size="10.5" fill="#0f172a" font-weight="bold">交付</text>
+  <text x="36" y="196" font-size="10.5" fill="#334155">三类源接入（CDC / 埋点 / 日志）</text>
+  <text x="36" y="214" font-size="10.5" fill="#334155">Kafka 24 分区 / 7 天保留</text>
+  <text x="36" y="232" font-size="10.5" fill="#334155">raw 按 dt 分区，原样保留</text>
+  <text x="36" y="258" font-size="10.5" fill="#0f172a" font-weight="bold">验收</text>
+  <text x="36" y="278" font-size="10.5" fill="#334155">24 分区、3 副本、ISR 至少 2</text>
+  <text x="36" y="296" font-size="10.5" fill="#334155">重放两次，raw 行数不变</text>
+  <text x="36" y="314" font-size="10.5" fill="#334155">7 天前的位点可重置</text>
+  <text x="36" y="340" font-size="10.5" fill="#64748b">不做：DWD 建模、看板、Flink</text>
+  <text x="36" y="362" font-size="10.5" fill="#b91c1c">回退：停采集，raw 保留</text>
+  <rect x="24" y="398" width="238" height="32" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="143" y="419" font-size="10.5" fill="#334155" text-anchor="middle">停下时：数据不丢，但没有报表</text>
+
+  <rect x="268" y="112" width="238" height="318" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="268" y="112" width="238" height="44" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="387" y="132" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">B 湖表与批链路</text>
+  <text x="387" y="149" font-size="10.5" fill="#1e40af" text-anchor="middle">第 5–10 周</text>
+  <text x="280" y="176" font-size="10.5" fill="#0f172a" font-weight="bold">交付</text>
+  <text x="280" y="196" font-size="10.5" fill="#334155">Catalog + 四层表</text>
+  <text x="280" y="214" font-size="10.5" fill="#334155">Spark 日批 + 5 个核心指标</text>
+  <text x="280" y="232" font-size="10.5" fill="#334155">3 条质量规则</text>
+  <text x="280" y="258" font-size="10.5" fill="#0f172a" font-weight="bold">验收</text>
+  <text x="280" y="278" font-size="10.5" fill="#334155">日批 ≤ 23 core·h，4 小时完成</text>
+  <text x="280" y="296" font-size="10.5" fill="#334155">抽样重算差额为 0</text>
+  <text x="280" y="314" font-size="10.5" fill="#334155">坏数据在发布前被拦</text>
+  <text x="280" y="340" font-size="10.5" fill="#64748b">不做：实时链路、列级权限</text>
+  <text x="280" y="362" font-size="10.5" fill="#b91c1c">回退：停 DAG，ADS 停更</text>
+  <rect x="268" y="398" width="238" height="32" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="387" y="419" font-size="10.5" fill="#334155" text-anchor="middle">停下时：T+1 出数，口径有人认</text>
+
+  <rect x="512" y="112" width="238" height="318" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="512" y="112" width="238" height="44" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="631" y="132" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">C 流与对账</text>
+  <text x="631" y="149" font-size="10.5" fill="#1e40af" text-anchor="middle">第 11–18 周</text>
+  <text x="524" y="176" font-size="10.5" fill="#0f172a" font-weight="bold">交付</text>
+  <text x="524" y="196" font-size="10.5" fill="#334155">Flink 清洗 + CDC upsert</text>
+  <text x="524" y="214" font-size="10.5" fill="#334155">15 分钟窗口 + ADS 双写</text>
+  <text x="524" y="232" font-size="10.5" fill="#334155">每日对账 + 死信 topic</text>
+  <text x="524" y="258" font-size="10.5" fill="#0f172a" font-weight="bold">验收</text>
+  <text x="524" y="278" font-size="10.5" fill="#334155">P95 ≤ 15 分钟</text>
+  <text x="524" y="296" font-size="10.5" fill="#334155">96 窗逐窗差额可归因</text>
+  <text x="524" y="314" font-size="10.5" fill="#334155">迟到丢弃 = 0（延迟 60 秒）</text>
+  <text x="524" y="340" font-size="10.5" fill="#64748b">不做：多租户、回填优化</text>
+  <text x="524" y="362" font-size="10.5" fill="#b91c1c">回退：savepoint + 批覆盖</text>
+  <rect x="512" y="398" width="238" height="32" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="631" y="419" font-size="10.5" fill="#334155" text-anchor="middle">停下时：15 分钟出数，差额可解释</text>
+
+  <rect x="756" y="112" width="238" height="318" rx="8" fill="#f8fafc" stroke="#93c5fd" stroke-width="1"/>
+  <rect x="756" y="112" width="238" height="44" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="875" y="132" font-size="13" fill="#1e40af" text-anchor="middle" font-weight="bold">D 治理与降本</text>
+  <text x="875" y="149" font-size="10.5" fill="#1e40af" text-anchor="middle">第 19–26 周</text>
+  <text x="768" y="176" font-size="10.5" fill="#0f172a" font-weight="bold">交付</text>
+  <text x="768" y="196" font-size="10.5" fill="#334155">血缘 + 列级权限 + 审计</text>
+  <text x="768" y="214" font-size="10.5" fill="#334155">生命周期 + 小文件合并</text>
+  <text x="768" y="232" font-size="10.5" fill="#334155">批池弹性 + 恢复演练</text>
+  <text x="768" y="258" font-size="10.5" fill="#0f172a" font-weight="bold">验收</text>
+  <text x="768" y="278" font-size="10.5" fill="#334155">owner ≥ 95%，ADS 血缘 100%</text>
+  <text x="768" y="296" font-size="10.5" fill="#334155">批池利用率 ≥ 40%</text>
+  <text x="768" y="314" font-size="10.5" fill="#334155">存储下降 25% 到 40%</text>
+  <text x="768" y="340" font-size="10.5" fill="#64748b">不做：跨机房、ML 平台</text>
+  <text x="768" y="362" font-size="10.5" fill="#b91c1c">回退：策略改回、权限回滚</text>
+  <rect x="756" y="398" width="238" height="32" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="875" y="419" font-size="10.5" fill="#334155" text-anchor="middle">停下时：出数不变，成本与风险受控</text>
+
+  <rect x="24" y="448" width="970" height="112" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="44" y="470" font-size="10.5" fill="#334155">阶段门槛：上一阶段三条验收全部达标才进下一阶段；任一未达标，先补齐，不加新组件。</text>
+  <text x="44" y="492" font-size="10.5" fill="#b91c1c">C 阶段的对账门槛写成「差额可归因」而不是「差额为 0」：单容器实测 96 对 95 窗，差的 1 窗尚未关闭，不是丢数。</text>
+  <text x="44" y="514" font-size="10.5" fill="#334155">回退都不回滚代码：批按分区覆盖写、流按主键 upsert，事实始终在湖表；停的是链路，不是版本。</text>
+  <text x="44" y="536" font-size="9.5" fill="#64748b">周期按 1–2 人平台团队估算；验收读数中的 23 core·h、24 分区、30 slot 来自容量篇算式，非集群实测。</text>
+</svg>
