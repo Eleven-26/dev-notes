@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">统一内存模型：一个堆、两个池、可以互相借</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">下面按默认配置（fraction 0.6、storageFraction 0.5）与 1 GB 堆画，尺寸按比例示意</text>
+
+  <rect x="30" y="92" width="940" height="204" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="118" font-size="13" font-weight="bold" fill="#0f172a">JVM 堆 1,024 MB</text>
+
+  <rect x="46" y="140" width="258" height="80" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="60" y="176" font-size="12" font-weight="bold" fill="#334155">300 MB 预留</text>
+  <text x="60" y="196" font-size="10" fill="#475569">用户对象、Spark 内部结构</text>
+
+  <rect x="308" y="140" width="301" height="80" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="322" y="170" font-size="12" font-weight="bold" fill="#78350f">storage 内存</text>
+  <text x="322" y="190" font-size="10" fill="#92400e">cache 的 block、广播变量</text>
+  <text x="322" y="208" font-size="10" fill="#92400e">约占统一池的一半</text>
+
+  <rect x="613" y="140" width="301" height="80" rx="4" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="627" y="170" font-size="12" font-weight="bold" fill="#1e3a8a">execution 内存</text>
+  <text x="627" y="190" font-size="10" fill="#1d4ed8">shuffle、join、sort、聚合的缓冲</text>
+  <text x="627" y="208" font-size="10" fill="#1d4ed8">另一半，不够时可占用 storage</text>
+
+  <line x1="613" y1="232" x2="470" y2="232" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#m1)"/>
+  <text x="470" y="248" font-size="10" fill="#92400e">execution 可借走 storage 的空闲部分；storage 只有在 execution 空闲时才能借回</text>
+  <line x1="308" y1="266" x2="440" y2="266" stroke="#64748b" stroke-width="1.4" marker-end="url(#m2)"/>
+  <text x="452" y="270" font-size="10" fill="#475569">统一池 = (堆 − 300 MB) × spark.memory.fraction，默认 0.6</text>
+
+  <rect x="30" y="312" width="460" height="152" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="46" y="338" font-size="13" font-weight="bold" fill="#1e3a8a">execution 里装什么</text>
+  <text x="46" y="364" font-size="11" fill="#1e293b">shuffle 的写缓冲与读缓冲</text>
+  <text x="46" y="386" font-size="11" fill="#1e293b">join 的哈希表（广播端）与排序缓冲（合并端）</text>
+  <text x="46" y="408" font-size="11" fill="#1e293b">聚合时的哈希表（groupByKey / reduceByKey）</text>
+  <text x="46" y="430" font-size="11" fill="#1e293b">不够就溢写到磁盘，任务继续，只是变慢</text>
+  <text x="46" y="452" font-size="10" fill="#475569">这类内存按 task 申请、按 task 释放，随作业结束消失</text>
+
+  <rect x="510" y="312" width="460" height="152" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="526" y="338" font-size="13" font-weight="bold" fill="#78350f">storage 里装什么</text>
+  <text x="526" y="364" font-size="11" fill="#1e293b">cache / persist 的分区数据（跨 action 长活）</text>
+  <text x="526" y="386" font-size="11" fill="#1e293b">广播变量的本地副本</text>
+  <text x="526" y="408" font-size="11" fill="#1e293b">不够按存储级别处理：MEMORY_ONLY 直接丢，</text>
+  <text x="526" y="430" font-size="11" fill="#1e293b">MEMORY_AND_DISK 落到本地盘</text>
+  <text x="526" y="452" font-size="10" fill="#475569">这类内存跟着 RDD 与 executor 的生命周期走</text>
+
+  <rect x="30" y="480" width="940" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="504" font-size="11.5" fill="#0f172a">本机实测（1 GB 堆、fraction 0.2、storageFraction 0.5）：统一池约 145 MB，200k × 200 B 缓存第二次 count 0.55 s</text>
+  <text x="46" y="526" font-size="10.5" fill="#475569">同一批配置下 5 组用例的 memoryBytesSpilled 全为 0：数据量没到水位，溢写路径本篇未触发</text>
+
+  <defs>
+    <marker id="m1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#b45309"/></marker>
+    <marker id="m2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/></marker>
+  </defs>
+</svg>

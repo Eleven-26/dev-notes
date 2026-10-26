@@ -336,6 +336,7 @@ FROM lake.dws.trade_15m.snapshots ORDER BY committed_at DESC LIMIT 5;
 ## 关联
 
 - **上游存储**：[数据湖与Iceberg表设计.md](数据湖与Iceberg表设计.md) — 覆盖写、`MERGE`、小文件合并的实际命令与读数
+- **上游机制**：[计算引擎/Spark/README.md](../../../03-数据与中间件/大数据组件/计算引擎/Spark/README.md) — 同一套作业的机制侧：血缘与 stage 切分、shuffle 落盘、内存池、参数与排障顺序
 - **上游建模**：[分层建模与指标口径.md](分层建模与指标口径.md) — 批重建的 DWS / ADS 一行代表什么
 - **对照链路**：[Flink实时链路.md](Flink实时链路.md) — 同一条计算的流式版本，以及为什么它不做回填
 - **下游验证**：[流批对账与数据质量.md](流批对账与数据质量.md) — 批结果与流结果的比对规则

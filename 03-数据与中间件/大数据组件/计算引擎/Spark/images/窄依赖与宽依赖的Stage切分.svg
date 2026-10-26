@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="680" viewBox="0 0 1000 680" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">窄依赖与宽依赖：stage 在哪里被切开</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">切点只有一个判据：子分区要不要等别的父分区 —— 要等，就是 shuffle，就是 stage 边界</text>
+
+  <rect x="30" y="92" width="940" height="140" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+  <text x="46" y="118" font-size="13" font-weight="bold" fill="#14532d">窄依赖链路：map → filter → count</text>
+  <rect x="40" y="124" width="640" height="60" rx="6" fill="none" stroke="#16a34a" stroke-dasharray="6 4"/>
+  <rect x="52" y="132" width="170" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="66" y="159" font-size="12" fill="#14532d">map（x × 2）</text>
+  <rect x="266" y="132" width="170" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="280" y="159" font-size="12" fill="#14532d">filter（x % 3 == 0）</text>
+  <rect x="486" y="132" width="170" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="500" y="159" font-size="12" fill="#14532d">count（action）</text>
+  <line x1="224" y1="154" x2="262" y2="154" stroke="#16a34a" stroke-width="1.8"/>
+  <line x1="438" y1="154" x2="482" y2="154" stroke="#16a34a" stroke-width="1.8"/>
+  <rect x="700" y="132" width="250" height="44" rx="6" fill="#ffffff" stroke="#86efac"/>
+  <text x="714" y="151" font-size="11.5" font-weight="bold" fill="#14532d">stage 0（只有这一个）</text>
+  <text x="714" y="169" font-size="10.5" fill="#475569">实测：8 个 task，shuffle 0 B</text>
+  <text x="46" y="208" font-size="11" fill="#14532d">父分区只被子分区之一消费，不需要同步；整条链路合成一个 stage，一次流水跑完</text>
+  <text x="46" y="226" font-size="10.5" fill="#475569">实测 toDebugString：PythonRDD → ParallelCollectionRDD，日志里没有 ShuffledRDD</text>
+
+  <rect x="30" y="246" width="940" height="190" rx="10" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="46" y="272" font-size="13" font-weight="bold" fill="#1e3a8a">宽依赖：map → groupByKey → count</text>
+  <rect x="40" y="278" width="400" height="60" rx="6" fill="none" stroke="#3b82f6" stroke-dasharray="6 4"/>
+  <rect x="486" y="278" width="200" height="60" rx="6" fill="none" stroke="#3b82f6" stroke-dasharray="6 4"/>
+  <rect x="52" y="286" width="160" height="44" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="66" y="313" font-size="12" fill="#1e3a8a">map（转成键值对）</text>
+  <rect x="246" y="286" width="180" height="44" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="260" y="313" font-size="12" fill="#1e3a8a">groupByKey(8)</text>
+  <rect x="498" y="286" width="176" height="44" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="512" y="313" font-size="12" fill="#1e3a8a">mapValues(len)</text>
+  <line x1="214" y1="308" x2="242" y2="308" stroke="#3b82f6" stroke-width="1.8"/>
+  <line x1="428" y1="308" x2="494" y2="308" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="440" y="300" font-size="10" fill="#b91c1c">shuffle</text>
+  <rect x="700" y="286" width="250" height="44" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="714" y="305" font-size="11.5" font-weight="bold" fill="#1e3a8a">shuffle 边界</text>
+  <text x="714" y="323" font-size="10.5" fill="#475569">写 3,348 B → 读 3,348 B（实测）</text>
+  <text x="46" y="360" font-size="11" fill="#1e3a8a">stage 0：8 个 task，各自把 (k, v) 写到 shuffle 文件</text>
+  <text x="46" y="382" font-size="11" fill="#1e3a8a">stage 1：8 个 task，必须等 stage 0 的 8 个 task 全部写完才能开始读</text>
+  <text x="46" y="404" font-size="10.5" fill="#b91c1c">一个 map 输出没写好，下游整批等待 —— 这就是宽依赖比窄依赖贵的地方</text>
+  <text x="46" y="424" font-size="10.5" fill="#475569">实测事件日志：job 0 的 Stage IDs = [2, 3]，stage 2 写、stage 3 读</text>
+
+  <rect x="30" y="450" width="940" height="120" rx="10" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="46" y="476" font-size="13" font-weight="bold" fill="#78350f">shuffle join：两侧各切一段 stage</text>
+  <text x="46" y="500" font-size="11" fill="#78350f">物理计划实测：SortMergeJoin [k], [k]，两侧各一个 Exchange hashpartitioning(k, 8)</text>
+  <text x="46" y="522" font-size="11" fill="#78350f">触发条件：广播阈值设为 -1，小表也不许广播，只能走 shuffle join</text>
+  <text x="46" y="544" font-size="10.5" fill="#78350f">事件日志里这个 join 相关 stage id 共 6 个：3 个真正提交，3 个被 AQE 复用</text>
+  <text x="46" y="564" font-size="10.5" fill="#78350f">所以「join 至少 3 个 stage」只是下限，实际数量还受自适应执行影响</text>
+
+  <rect x="30" y="586" width="940" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="610" font-size="11.5" fill="#0f172a">小结：单条链路上 stage 数 = 宽依赖个数 + 1；每个 stage 的 task 数 = 该 stage 末端 RDD 的分区数</text>
+  <text x="46" y="632" font-size="11" fill="#475569">task 数由分区决定，同时跑几个由核数决定 —— 这两件事分开看，见「运行模型」第四节</text>
+</svg>

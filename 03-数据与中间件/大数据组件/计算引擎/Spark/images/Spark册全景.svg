@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">Spark 册全景：一条流水线，五段各管一层</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">五篇均已落盘；上图按执行顺序标出每个阶段由哪一篇负责解释</text>
+
+  <rect x="30" y="92" width="940" height="240" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="118" font-size="13" font-weight="bold" fill="#0f172a">一次 groupByKey 的执行流水线（local[2]、8 分区，实测读数）</text>
+
+  <rect x="46" y="150" width="150" height="64" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="58" y="172" font-size="12" font-weight="bold" fill="#1e3a8a">读入</text>
+  <text x="58" y="190" font-size="10" fill="#475569">8 个分区 → 8 个 task</text>
+  <text x="58" y="206" font-size="9.5" fill="#64748b">运行模型 §四</text>
+
+  <rect x="226" y="150" width="170" height="64" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="240" y="172" font-size="12" font-weight="bold" fill="#1e3a8a">stage 0：窄依赖链</text>
+  <text x="240" y="190" font-size="10" fill="#475569">写 0 B，算子全 pipeline</text>
+  <text x="240" y="206" font-size="9.5" fill="#64748b">血缘与DAG §三</text>
+
+  <rect x="426" y="150" width="170" height="64" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.4"/>
+  <text x="440" y="172" font-size="12" font-weight="bold" fill="#78350f">shuffle：落盘</text>
+  <text x="440" y="190" font-size="10" fill="#475569">写 3,348 B / 32 条记录</text>
+  <text x="440" y="206" font-size="9.5" fill="#92400e">Shuffle机制 §二~三</text>
+
+  <rect x="626" y="150" width="170" height="64" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="640" y="172" font-size="12" font-weight="bold" fill="#1e3a8a">stage 1：reduce</text>
+  <text x="640" y="190" font-size="10" fill="#475569">8 个 task，其中 4 个空跑</text>
+  <text x="640" y="206" font-size="9.5" fill="#64748b">内存与执行 §四</text>
+
+  <rect x="826" y="150" width="130" height="64" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="840" y="172" font-size="12" font-weight="bold" fill="#14532d">结果</text>
+  <text x="840" y="190" font-size="10" fill="#475569">count = 5</text>
+  <text x="840" y="206" font-size="9.5" fill="#64748b">调优与排障 §一</text>
+
+  <line x1="198" y1="182" x2="222" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+  <line x1="398" y1="182" x2="422" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+  <line x1="598" y1="182" x2="622" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+  <line x1="798" y1="182" x2="822" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+
+  <text x="46" y="244" font-size="11" fill="#0f172a">stage 边界只看一件事：这一步要不要把数据按 key 重新分布。要，就切一刀、落一次盘；不要，就在同一个 task 里连着算</text>
+  <text x="46" y="266" font-size="11" fill="#0f172a">reduce 端 8 个 task 里 4 个读到 0 条：5 个 key 哈希进 8 个分区时只落在 4 个桶上，空 task 照样被调度</text>
+  <text x="46" y="288" font-size="11" fill="#0f172a">map 端 8 个 task 各写 4 条记录（380~425 B），合计 3,348 B；reduce 端读回 3,348 B，写读完全对称</text>
+  <text x="46" y="314" font-size="10.5" fill="#475569">注意：上图的字节数与任务数都来自本机 local[2] 实测，只反映单 JVM 内的路径，不含跨机传输</text>
+
+  <rect x="30" y="352" width="180" height="190" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="44" y="376" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 运行模型</text>
+  <text x="44" y="400" font-size="10.5" fill="#1e293b">driver 做决策</text>
+  <text x="44" y="420" font-size="10.5" fill="#1e293b">executor 碰数据</text>
+  <text x="44" y="440" font-size="10.5" fill="#1e293b">代码到 task 的五步</text>
+  <text x="44" y="460" font-size="10.5" fill="#1e293b">分区数定任务数</text>
+  <text x="44" y="480" font-size="10.5" fill="#1e293b">核数只定并发</text>
+  <text x="44" y="500" font-size="10.5" fill="#1e293b">三种提交模式</text>
+  <text x="44" y="526" font-size="9.5" fill="#64748b">读序：第 1 读</text>
+
+  <rect x="220" y="352" width="180" height="190" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="234" y="376" font-size="12.5" font-weight="bold" fill="#1e3a8a">② 血缘与DAG</text>
+  <text x="234" y="400" font-size="10.5" fill="#1e293b">RDD 只记怎么算</text>
+  <text x="234" y="420" font-size="10.5" fill="#1e293b">窄依赖 vs 宽依赖</text>
+  <text x="234" y="440" font-size="10.5" fill="#1e293b">stage 切点</text>
+  <text x="234" y="460" font-size="10.5" fill="#1e293b">失败重算范围</text>
+  <text x="234" y="480" font-size="10.5" fill="#1e293b">cache 与 checkpoint</text>
+  <text x="234" y="500" font-size="10.5" fill="#1e293b">三处看 DAG</text>
+  <text x="234" y="526" font-size="9.5" fill="#64748b">读序：第 2 读</text>
+
+  <rect x="410" y="352" width="180" height="190" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.6"/>
+  <text x="424" y="376" font-size="12.5" font-weight="bold" fill="#78350f">③ Shuffle机制</text>
+  <text x="424" y="400" font-size="10.5" fill="#78350f">map 端写文件与索引</text>
+  <text x="424" y="420" font-size="10.5" fill="#78350f">reduce 端拉取合并</text>
+  <text x="424" y="440" font-size="10.5" fill="#78350f">文件数不随分区数涨</text>
+  <text x="424" y="460" font-size="10.5" fill="#78350f">bypass 与 sort 两条路径</text>
+  <text x="424" y="480" font-size="10.5" fill="#78350f">index 每分区 8 字节</text>
+  <text x="424" y="500" font-size="10.5" fill="#78350f">元数据随分区线性长</text>
+  <text x="424" y="526" font-size="9.5" fill="#92400e">读序：第 3 读</text>
+
+  <rect x="600" y="352" width="180" height="190" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="614" y="376" font-size="12.5" font-weight="bold" fill="#14532d">④ 内存与执行</text>
+  <text x="614" y="400" font-size="10.5" fill="#14532d">统一内存池</text>
+  <text x="614" y="420" font-size="10.5" fill="#14532d">storage 与 execution</text>
+  <text x="614" y="440" font-size="10.5" fill="#14532d">溢写与序列化</text>
+  <text x="614" y="460" font-size="10.5" fill="#14532d">cache 的六个级别</text>
+  <text x="614" y="480" font-size="10.5" fill="#14532d">广播 join 免一次 shuffle</text>
+  <text x="614" y="500" font-size="10.5" fill="#14532d">三个参数的取舍</text>
+  <text x="614" y="526" font-size="9.5" fill="#166534">读序：第 4 读</text>
+
+  <rect x="790" y="352" width="180" height="190" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="804" y="376" font-size="12.5" font-weight="bold" fill="#1e3a8a">⑤ 调优与排障</text>
+  <text x="804" y="400" font-size="10.5" fill="#1e293b">先看 task 分布</text>
+  <text x="804" y="420" font-size="10.5" fill="#1e293b">分区数 / 核数两个旋钮</text>
+  <text x="804" y="440" font-size="10.5" fill="#1e293b">join 策略决定有无 shuffle</text>
+  <text x="804" y="460" font-size="10.5" fill="#1e293b">倾斜只看耗时</text>
+  <text x="804" y="480" font-size="10.5" fill="#1e293b">四类报错定位</text>
+  <text x="804" y="500" font-size="10.5" fill="#1e293b">故障速查双表</text>
+  <text x="804" y="526" font-size="9.5" fill="#64748b">读序：第 5 读</text>
+
+  <rect x="30" y="558" width="940" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="582" font-size="11.5" fill="#0f172a">读法：①② 建起「谁在算什么」的模型，③④ 钻到磁盘与内存看代价，⑤ 才回到参数与故障——顺序反了容易背参数却不知道在调什么</text>
+  <text x="46" y="604" font-size="10.5" fill="#475569">本册与大数据选型对比篇的分工：选型篇回答「为什么选 Spark」，本册回答「Spark 自己怎么跑」</text>
+
+  <defs>
+    <marker id="s1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">Flink 册全景：一条流的一生，四段各管一层</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">四篇均已落盘；上图按数据流动顺序标出每段由哪一篇负责解释</text>
+
+  <rect x="30" y="92" width="940" height="240" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="118" font-size="13" font-weight="bold" fill="#0f172a">一条 keyBy + 窗口聚合的流：从提交到落盘（Flink 1.20.5、单容器、4 slot、并行度 2）</text>
+
+  <rect x="46" y="150" width="160" height="64" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="58" y="171" font-size="12" font-weight="bold" fill="#1e3a8a">提交：四张图</text>
+  <text x="58" y="189" font-size="10" fill="#475569">客户端出前两张</text>
+  <text x="58" y="205" font-size="9.5" fill="#64748b">运行模型 §三</text>
+
+  <rect x="236" y="150" width="160" height="64" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="248" y="171" font-size="12" font-weight="bold" fill="#1e3a8a">并行度与 slot</text>
+  <text x="248" y="189" font-size="10" fill="#475569">同算子子任务独占</text>
+  <text x="248" y="205" font-size="9.5" fill="#64748b">运行模型 §四</text>
+
+  <rect x="426" y="150" width="160" height="64" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.4"/>
+  <text x="438" y="171" font-size="12" font-weight="bold" fill="#78350f">跨 task 传输</text>
+  <text x="438" y="189" font-size="10" fill="#475569">分区 → 缓冲池</text>
+  <text x="438" y="205" font-size="9.5" fill="#92400e">网络栈与反压 §二</text>
+
+  <rect x="616" y="150" width="160" height="64" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="628" y="171" font-size="12" font-weight="bold" fill="#1e3a8a">窗口按水位线触发</text>
+  <text x="628" y="189" font-size="10" fill="#475569">水位线 ≥ 右边界 − 1 ms</text>
+  <text x="628" y="205" font-size="9.5" fill="#64748b">时间与水位线 §三</text>
+
+  <rect x="806" y="150" width="160" height="64" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="818" y="171" font-size="12" font-weight="bold" fill="#14532d">状态拍成快照</text>
+  <text x="818" y="189" font-size="10" fill="#475569">barrier 流过所有算子</text>
+  <text x="818" y="205" font-size="9.5" fill="#166534">状态与检查点 §三</text>
+
+  <line x1="208" y1="182" x2="232" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+  <line x1="398" y1="182" x2="422" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+  <line x1="588" y1="182" x2="612" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+  <line x1="778" y1="182" x2="802" y2="182" stroke="#475569" stroke-width="1.6" marker-end="url(#s1)"/>
+
+  <text x="46" y="244" font-size="11" fill="#0f172a">前两段是「能不能跑起来」：链化把相邻算子压成一个 task，slot 决定这些 task 有没有地方放，缺一个就提交失败</text>
+  <text x="46" y="266" font-size="11" fill="#0f172a">中间一段是「数据怎么走」：跨 task 的记录必须序列化、进缓冲池、经 netty 发出去，池满就是反压</text>
+  <text x="46" y="288" font-size="11" fill="#0f172a">后两段是「结果怎么算对」：窗口按事件时间归属、按水位线触发；状态被 barrier 拍成快照，故障时从快照回滚</text>
+  <text x="46" y="314" font-size="10.5" fill="#475569">注意：本册只有单容器（JM 与 TM 同进程）、无跨机网络，涉及分布式行为的部分逐篇标了未实测</text>
+
+  <rect x="30" y="344" width="220" height="190" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="44" y="368" font-size="12.5" font-weight="bold" fill="#1e3a8a">① 运行模型</text>
+  <text x="44" y="394" font-size="10.5" fill="#1e293b">JM / TM 四个角色</text>
+  <text x="44" y="414" font-size="10.5" fill="#1e293b">链化决定顶点数</text>
+  <text x="44" y="434" font-size="10.5" fill="#1e293b">slot 决定能否启动</text>
+  <text x="44" y="454" font-size="10.5" fill="#1e293b">p 1/2/4：12,310→3,430 ms</text>
+  <text x="44" y="474" font-size="10.5" fill="#1e293b">p=8 提交即失败</text>
+  <text x="44" y="508" font-size="9.5" fill="#64748b">读序：第 1 读</text>
+
+  <rect x="270" y="344" width="220" height="190" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="284" y="368" font-size="12.5" font-weight="bold" fill="#1e3a8a">② 时间与水位线</text>
+  <text x="284" y="394" font-size="10.5" fill="#1e293b">水位线 = 最大事件时间 − d</text>
+  <text x="284" y="414" font-size="10.5" fill="#1e293b">触发：水位线 ≥ 右边界</text>
+  <text x="284" y="434" font-size="10.5" fill="#1e293b">[0,10) 在 +1,923 ms</text>
+  <text x="284" y="454" font-size="10.5" fill="#1e293b">空闲源钉死全局水位线</text>
+  <text x="284" y="474" font-size="10.5" fill="#1e293b">输入结束靠 MAX 收尾</text>
+  <text x="284" y="508" font-size="9.5" fill="#64748b">读序：第 2 读</text>
+
+  <rect x="510" y="344" width="220" height="190" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="524" y="368" font-size="12.5" font-weight="bold" fill="#14532d">③ 状态与检查点</text>
+  <text x="524" y="394" font-size="10.5" fill="#14532d">keyed state 按 key 隔离</text>
+  <text x="524" y="414" font-size="10.5" fill="#14532d">barrier 三段路</text>
+  <text x="524" y="434" font-size="10.5" fill="#14532d">state_size 恒 202,722 B</text>
+  <text x="524" y="454" font-size="10.5" fill="#14532d">28 次完成 / 0 失败</text>
+  <text x="524" y="474" font-size="10.5" fill="#14532d">作业结束默认删 chk-N</text>
+  <text x="524" y="508" font-size="9.5" fill="#166534">读序：第 3 读</text>
+
+  <rect x="750" y="344" width="220" height="190" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.6"/>
+  <text x="764" y="368" font-size="12.5" font-weight="bold" fill="#78350f">④ 网络栈与反压</text>
+  <text x="764" y="394" font-size="10.5" fill="#78350f">结果分区 → 缓冲池 → netty</text>
+  <text x="764" y="414" font-size="10.5" fill="#78350f">outPoolUsage 1.0 即反压</text>
+  <text x="764" y="434" font-size="10.5" fill="#78350f">80 × 32 KB = 2,621,440 B</text>
+  <text x="764" y="454" font-size="10.5" fill="#78350f">链化后任务级 I/O 为 0</text>
+  <text x="764" y="474" font-size="10.5" fill="#78350f">指标约 10 s 才刷新</text>
+  <text x="764" y="508" font-size="9.5" fill="#92400e">读序：第 4 读</text>
+
+  <rect x="30" y="548" width="940" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="572" font-size="11.5" fill="#0f172a">读法：① 先弄清「作业怎么变成 task」，②③④ 才是这些 task 里发生的三件独立的事——时间怎么对齐、状态怎么保存、记录怎么流动</text>
+  <text x="46" y="594" font-size="10.5" fill="#475569">本册与大数据选型对比篇的分工：选型篇回答「为什么选 Flink」，本册回答「Flink 自己怎么跑」</text>
+  <text x="46" y="612" font-size="10.5" fill="#475569">四篇都按「机制 → 实测读数 → 校验口径」写，读数只来自本机单容器，跨机行为逐条标注未实测</text>
+
+  <defs>
+    <marker id="s1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

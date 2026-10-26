@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="17" fill="#0f172a">同一句 Hive DDL，在两边走向不同</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">左边一句 Hive 风格建表语句，右边四行对照：前两行直接报错，后两行不报错</text>
+
+  <rect x="30" y="88" width="300" height="472" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="114" font-size="11.5" font-weight="bold" fill="#334155">一句 Hive 风格的 DDL</text>
+  <text x="46" y="142" font-size="9.5" fill="#1e293b">CREATE TABLE orders (id INT,</text>
+  <text x="46" y="164" font-size="9.5" fill="#1e293b">  amt DOUBLE)</text>
+  <text x="46" y="186" font-size="9.5" fill="#1e293b">PARTITIONED BY (dt STRING)</text>
+  <text x="46" y="208" font-size="9.5" fill="#1e293b">ROW FORMAT SERDE</text>
+  <text x="46" y="230" font-size="9.5" fill="#1e293b">  'ParquetHiveSerDe'</text>
+  <text x="46" y="252" font-size="9.5" fill="#1e293b">STORED AS PARQUET;</text>
+
+  <text x="46" y="286" font-size="9.5" fill="#475569">四处会出问题的位置：</text>
+  <text x="46" y="310" font-size="9" fill="#1e293b">① 分区列 dt 的位置</text>
+  <text x="46" y="332" font-size="9" fill="#1e293b">② ROW FORMAT SERDE</text>
+  <text x="46" y="354" font-size="9" fill="#1e293b">③ STORED AS PARQUET</text>
+  <text x="46" y="376" font-size="9" fill="#1e293b">④ SerDe 在 DDL 里可不可见</text>
+
+  <text x="46" y="414" font-size="9.5" fill="#065f46">Hive 4.0.0：四处全部接受</text>
+  <text x="46" y="436" font-size="9.5" fill="#991b1b">Spark 3.5.5：两处报错、两处静默</text>
+  <text x="46" y="466" font-size="9" fill="#64748b">报错的两处好查</text>
+  <text x="46" y="488" font-size="9" fill="#64748b">不报错的两处才是迁移的坑</text>
+
+  <rect x="350" y="88" width="310" height="40" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="505" y="113" font-size="11" font-weight="bold" text-anchor="middle" fill="#1e3a8a">Hive 4.0.0</text>
+  <rect x="660" y="88" width="310" height="40" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="815" y="113" font-size="11" font-weight="bold" text-anchor="middle" fill="#991b1b">Spark 3.5.5</text>
+
+  <rect x="350" y="136" width="310" height="100" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="364" y="160" font-size="10" font-weight="bold" fill="#1e3a8a">① 分区列只在 PARTITIONED BY 里</text>
+  <text x="364" y="182" font-size="9" fill="#1e293b">Hive 语义：dt 是分区列</text>
+  <text x="364" y="202" font-size="9" fill="#1e293b">不进列定义、不落在行里</text>
+  <text x="364" y="222" font-size="9" fill="#1d4ed8">结果：正常</text>
+
+  <rect x="660" y="136" width="310" height="100" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="674" y="160" font-size="10" font-weight="bold" fill="#991b1b">① 分区列必须在列定义里</text>
+  <text x="674" y="182" font-size="9" fill="#7f1d1d">报错 COLUMN_NOT_DEFINED_IN_TABLE</text>
+  <text x="674" y="202" font-size="9" fill="#7f1d1d">partition column dt is not</text>
+  <text x="674" y="222" font-size="9" fill="#7f1d1d">defined in table ...</text>
+
+  <rect x="350" y="244" width="310" height="100" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="364" y="268" font-size="10" font-weight="bold" fill="#1e3a8a">② SERDE 与 STORED AS 共存</text>
+  <text x="364" y="290" font-size="9" fill="#1e293b">Hive：两者共存，SerDe 以显式为准</text>
+  <text x="364" y="310" font-size="9" fill="#1e293b">STORED AS 定 InputFormat 等</text>
+  <text x="364" y="330" font-size="9" fill="#1d4ed8">结果：正常</text>
+
+  <rect x="660" y="244" width="310" height="100" fill="#fef2f2" stroke="#dc2626"/>
+  <text x="674" y="268" font-size="10" font-weight="bold" fill="#991b1b">② 两者不能同时写</text>
+  <text x="674" y="290" font-size="9" fill="#7f1d1d">Operation not allowed:</text>
+  <text x="674" y="310" font-size="9" fill="#7f1d1d">ROW FORMAT SERDE is incompatible</text>
+  <text x="674" y="330" font-size="9" fill="#7f1d1d">with format 'parquet'</text>
+
+  <rect x="350" y="352" width="310" height="100" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="364" y="376" font-size="10" font-weight="bold" fill="#1e3a8a">③ STORED AS PARQUET</text>
+  <text x="364" y="398" font-size="9" fill="#1e293b">SHOW CREATE TABLE 输出 Hive 方言</text>
+  <text x="364" y="418" font-size="9" fill="#1e293b">带 INPUTFORMAT / OUTPUTFORMAT</text>
+  <text x="364" y="438" font-size="9" fill="#1d4ed8">结果：正常</text>
+
+  <rect x="660" y="352" width="310" height="100" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="674" y="376" font-size="10" font-weight="bold" fill="#78350f">③ 被规范化成 USING parquet</text>
+  <text x="674" y="398" font-size="9" fill="#78350f">不报错，输出换成 Spark 方言</text>
+  <text x="674" y="418" font-size="9" fill="#78350f">SHOW CREATE TABLE 看不到 SerDe</text>
+  <text x="674" y="438" font-size="9" fill="#92400e">静默：语义没丢、只是不展示</text>
+
+  <rect x="350" y="460" width="310" height="100" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="364" y="484" font-size="10" font-weight="bold" fill="#1e3a8a">④ SerDe 写在元数据里</text>
+  <text x="364" y="506" font-size="9" fill="#1e293b">DESCRIBE FORMATTED 直接列</text>
+  <text x="364" y="526" font-size="9" fill="#1e293b">SerDe Library / InputFormat</text>
+  <text x="364" y="546" font-size="9" fill="#1d4ed8">结果：一眼可见</text>
+
+  <rect x="660" y="460" width="310" height="100" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="674" y="484" font-size="10" font-weight="bold" fill="#78350f">④ DDL 里看不到</text>
+  <text x="674" y="506" font-size="9" fill="#78350f">元数据里 SerDe 仍在</text>
+  <text x="674" y="526" font-size="9" fill="#78350f">改用 DESCRIBE FORMATTED 才看得到</text>
+  <text x="674" y="546" font-size="9" fill="#92400e">静默：据此判断表类型会误判</text>
+
+  <rect x="30" y="572" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="596" font-size="10.5" fill="#0f172a">前两行报错，后两行不报错：报错的两处好查，不报错的两处才是迁移时真正的坑</text>
+  <text x="46" y="618" font-size="10.5" fill="#0f172a">验的办法不是看「建成了吗」，而是看分区数与文件数（见 分区分桶与SerDe.md 第四、五节）</text>
+</svg>

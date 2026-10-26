@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">一条查询的六段路：前四段与数据量无关</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">实测环境：Trino 475、单容器，两条查询前后相隔几分钟，同一份 tpch.sf1</text>
+
+  <rect x="30" y="84" width="940" height="320" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="112" font-size="12" font-weight="bold" fill="#0f172a">六段耗时：提交与排队在两侧，解析与规划随 SQL 形状变，执行随数据量变</text>
+
+  <rect x="180" y="124" width="110" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="235" y="142" font-size="10" text-anchor="middle" fill="#334155">提交</text>
+  <rect x="290" y="124" width="110" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="345" y="142" font-size="10" text-anchor="middle" fill="#334155">排队</text>
+  <rect x="400" y="124" width="110" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="455" y="142" font-size="10" text-anchor="middle" fill="#334155">解析</text>
+  <rect x="510" y="124" width="130" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="575" y="142" font-size="10" text-anchor="middle" fill="#334155">规划</text>
+  <rect x="640" y="124" width="200" height="26" rx="4" fill="#fde68a" stroke="#d97706"/>
+  <text x="740" y="142" font-size="10" text-anchor="middle" fill="#78350f">执行</text>
+  <rect x="840" y="124" width="110" height="26" rx="4" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="895" y="142" font-size="10" text-anchor="middle" fill="#334155">输出</text>
+
+  <text x="46" y="174" font-size="11" font-weight="bold" fill="#0f172a">count(*)</text>
+  <text x="46" y="194" font-size="10" fill="#475569">结果 1 行 / 9 B</text>
+
+  <rect x="180" y="158" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="235" y="188" font-size="10" text-anchor="middle" fill="#64748b">未计时</text>
+  <rect x="290" y="158" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="345" y="188" font-size="10" text-anchor="middle" fill="#0f172a">2 ms</text>
+  <rect x="400" y="158" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="455" y="188" font-size="10" text-anchor="middle" fill="#0f172a">2 ms</text>
+  <rect x="510" y="158" width="130" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="575" y="188" font-size="10" text-anchor="middle" fill="#0f172a">25 ms</text>
+  <rect x="640" y="158" width="200" height="50" rx="4" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="740" y="188" font-size="10" text-anchor="middle" fill="#78350f">约 1.37 s</text>
+  <rect x="840" y="158" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="895" y="188" font-size="10" text-anchor="middle" fill="#0f172a">9 B / 1 行</text>
+
+  <text x="46" y="234" font-size="11" font-weight="bold" fill="#0f172a">GROUP BY</text>
+  <text x="46" y="254" font-size="10" fill="#475569">结果 3 行 / 45 B</text>
+
+  <rect x="180" y="218" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="235" y="248" font-size="10" text-anchor="middle" fill="#64748b">未计时</text>
+  <rect x="290" y="218" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="345" y="248" font-size="10" text-anchor="middle" fill="#0f172a">1.73 ms</text>
+  <rect x="400" y="218" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="455" y="248" font-size="10" text-anchor="middle" fill="#0f172a">11.39 ms</text>
+  <rect x="510" y="218" width="130" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="575" y="248" font-size="10" text-anchor="middle" fill="#0f172a">284.06 ms</text>
+  <rect x="640" y="218" width="200" height="50" rx="4" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="740" y="248" font-size="10" text-anchor="middle" fill="#78350f">4.16 s</text>
+  <rect x="840" y="218" width="110" height="50" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="895" y="248" font-size="10" text-anchor="middle" fill="#0f172a">45 B / 3 行</text>
+
+  <text x="46" y="302" font-size="10.5" fill="#0f172a">规划段 284 ms 里，优化器跑了 219 条规则、44,376 次调用、2,138 次匹配（optimizer_rule_stats）</text>
+  <text x="46" y="326" font-size="10.5" fill="#0f172a">排队 0 ~ 2 ms：本机只有一个 [global] 资源组，等于没有排队，这段在生产上可能很长</text>
+  <text x="46" y="350" font-size="10.5" fill="#0f172a">执行段是唯一扫数据的段：count(*) 也要扫 6,001,215 行，所以结果只有 9 B 仍要 1.37 s</text>
+  <text x="46" y="374" font-size="10" fill="#475569">格宽为示意，不代表时间比例；同一列上下两行才是同一段的两条查询读数</text>
+
+  <rect x="30" y="420" width="940" height="120" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="446" font-size="10.5" fill="#0f172a">「小结果集也慢」通常慢在执行段：先看扫了多少行，再看返回了几行，两者没有关系</text>
+  <text x="46" y="470" font-size="10.5" fill="#0f172a">前四段里解析与规划随 SQL 形状变：join、窗口、聚合越多，优化器要跑的规则越多</text>
+  <text x="46" y="494" font-size="10.5" fill="#0f172a">提交段不单独计时：CLI 从 POST 到拿到首个 queryId 的网络往返被算在排队之前</text>
+  <text x="46" y="518" font-size="10" fill="#475569">两条查询的结果大小差 5 倍，执行段只差 3 倍——执行段的成本在扫描与聚合，不在返回</text>
+</svg>

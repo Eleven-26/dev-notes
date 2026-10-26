@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">shuffle 的磁盘形态：一个 task 三个文件，一段数据一个偏移</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">本地目录实测（groupByKey，4 个 map task）：文件数只跟 map 数有关，index 与 checksum 才随分区数增长</text>
+
+  <rect x="30" y="92" width="470" height="300" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="46" y="118" font-size="13" font-weight="bold" fill="#1e3a8a">map 端：4 个 task × 3 个文件 = 12 个文件</text>
+
+  <text x="46" y="152" font-size="11" fill="#1e293b">task 0</text>
+  <rect x="106" y="132" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="116" y="154" font-size="10.5" fill="#1e293b">.data 30,072 B</text>
+  <rect x="310" y="132" width="88" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="320" y="154" font-size="10.5" fill="#1e293b">.index 40 B</text>
+  <rect x="406" y="132" width="78" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="414" y="154" font-size="10" fill="#1e293b">sum 32 B</text>
+
+  <text x="46" y="200" font-size="11" fill="#1e293b">task 1</text>
+  <rect x="106" y="180" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="116" y="202" font-size="10.5" fill="#1e293b">.data 30,328 B</text>
+  <rect x="310" y="180" width="88" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="320" y="202" font-size="10.5" fill="#1e293b">.index 40 B</text>
+  <rect x="406" y="180" width="78" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="414" y="202" font-size="10" fill="#1e293b">sum 32 B</text>
+
+  <text x="46" y="248" font-size="11" fill="#1e293b">task 2</text>
+  <rect x="106" y="228" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="116" y="250" font-size="10.5" fill="#1e293b">.data 30,328 B</text>
+  <rect x="310" y="228" width="88" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="320" y="250" font-size="10.5" fill="#1e293b">.index 40 B</text>
+  <rect x="406" y="228" width="78" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="414" y="250" font-size="10" fill="#1e293b">sum 32 B</text>
+
+  <text x="46" y="296" font-size="11" fill="#1e293b">task 3</text>
+  <rect x="106" y="276" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="116" y="298" font-size="10.5" fill="#1e293b">.data 30,328 B</text>
+  <rect x="310" y="276" width="88" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="320" y="298" font-size="10.5" fill="#1e293b">.index 40 B</text>
+  <rect x="406" y="276" width="78" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="414" y="298" font-size="10" fill="#1e293b">sum 32 B</text>
+
+  <text x="46" y="340" font-size="10.5" fill="#475569">文件名 = shuffle_&lt;shuffleId&gt;_&lt;mapId&gt;_&lt;attemptId&gt;</text>
+  <text x="46" y="362" font-size="10.5" fill="#475569">.data 是压缩后的；.checksum 需要 spark.shuffle.checksum.enabled 为真</text>
+  <text x="46" y="384" font-size="10.5" fill="#1e3a8a">要点：数据文件数 = map 数，与 reduce 分区数无关</text>
+
+  <rect x="520" y="92" width="450" height="300" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="536" y="118" font-size="13" font-weight="bold" fill="#78350f">index 里存什么：每个分区的起始偏移</text>
+
+  <rect x="536" y="134" width="418" height="34" rx="5" fill="#ffffff" stroke="#fbbf24"/>
+  <text x="548" y="156" font-size="10.5" fill="#1e293b">第 0 段偏移 · 第 1 段偏移 · 第 2 段偏移 · 第 3 段偏移 · 总长度</text>
+
+  <text x="536" y="196" font-size="11.5" fill="#78350f">4 个分区：(4 + 1) × 8 = 40 B（实测 40 B）</text>
+  <text x="536" y="222" font-size="11.5" fill="#78350f">16 个分区：(16 + 1) × 8 = 136 B（实测 136 B）</text>
+  <text x="536" y="248" font-size="11.5" fill="#78350f">checksum：分区数 × 8，即 32 B → 128 B</text>
+
+  <text x="536" y="284" font-size="11" fill="#1e293b">同一份 40,000 条数据、同样 4 个 map task：</text>
+  <text x="536" y="306" font-size="11" fill="#1e293b">分区数 4 → 16，文件数 12 → 12，只有 index 与 checksum 变大</text>
+  <text x="536" y="334" font-size="10.5" fill="#92400e">推论：分区数给大，涨的是元数据；给多，涨的是空转 task</text>
+  <text x="536" y="356" font-size="10.5" fill="#92400e">两者都不改变数据文件的数量</text>
+  <text x="536" y="382" font-size="10.5" fill="#78350f">注意：这是单机本地磁盘的读数，不含跨机拉取</text>
+
+  <rect x="30" y="412" width="940" height="170" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="46" y="438" font-size="13" font-weight="bold" fill="#14532d">reduce 端：拿着 (shuffleId, mapId, reduceId) 去找每一段</text>
+
+  <rect x="46" y="452" width="150" height="76" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="58" y="482" font-size="10.5" fill="#1e293b">reduce task 3</text>
+  <text x="58" y="500" font-size="10" fill="#475569">只要第 3 段</text>
+
+  <line x1="198" y1="466" x2="240" y2="466" stroke="#16a34a" stroke-width="1.5" marker-end="url(#f1)"/>
+  <line x1="198" y1="490" x2="240" y2="490" stroke="#16a34a" stroke-width="1.5" marker-end="url(#f1)"/>
+  <line x1="198" y1="514" x2="240" y2="514" stroke="#16a34a" stroke-width="1.5" marker-end="url(#f1)"/>
+
+  <rect x="244" y="452" width="200" height="30" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="256" y="472" font-size="10.5" fill="#1e293b">map 0 的 index[3..4]</text>
+  <rect x="244" y="490" width="200" height="30" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="256" y="510" font-size="10.5" fill="#1e293b">map 1 的 index[3..4]</text>
+  <rect x="244" y="528" width="200" height="30" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="256" y="548" font-size="10.5" fill="#1e293b">map 2、map 3 同理</text>
+
+  <text x="466" y="470" font-size="10.5" fill="#14532d">每块都发一次请求，空分区也要发</text>
+  <text x="466" y="490" font-size="10.5" fill="#14532d">实测 localBlocksFetched = 8（8 个 map 各一块）</text>
+  <text x="466" y="510" font-size="10.5" fill="#14532d">实测 fetchWaitTime = 0 ms（local 全在本机）</text>
+  <text x="466" y="530" font-size="10.5" fill="#14532d">写 3,348 B、读回 3,348 B，中间没有额外拷贝</text>
+  <text x="466" y="550" font-size="10.5" fill="#14532d">8 个 reduce task 里 4 个读到 0 条，请求照付</text>
+
+  <rect x="30" y="596" width="940" height="48" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="626" font-size="11.5" fill="#0f172a">一句话：shuffle 把「按 key 重分布」变成「一个文件 + 一张偏移表」，代价从「文件数爆炸」转成了「索引随分区数增长 + task 启动开销」</text>
+
+  <defs>
+    <marker id="f1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/></marker>
+  </defs>
+</svg>

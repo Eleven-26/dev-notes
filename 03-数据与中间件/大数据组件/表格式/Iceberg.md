@@ -284,11 +284,11 @@ SELECT * FROM lake.db.orders.metadata_log_entries ORDER BY timestamp;
 
 - **上游/总纲**：[大数据选型对比.md](../大数据选型对比.md) — 四层分工、四根接口，以及「表格式与文件系统不是同一层」这条判据
 - **对照/互补**：[HiveMetastore.md](../Catalog/HiveMetastore.md) — 元数据放在 HMS 的做法，与「元数据放在表目录」形成全篇对照
-- **对照/互补**：[Hive.md](../计算引擎/Hive.md) — 分区靠目录 + HMS 行双份记录，与「分区值写在 manifest 里」是两条路
+- **对照/互补**：[Hive 册](../计算引擎/Hive/README.md) — 分区靠目录 + HMS 行双份记录，与「分区值写在 manifest 里」是两条路
 - **对照/互补**：[HDFS.md](../文件系统/HDFS.md) — 表格式的数据文件就落在它上面；HDFS 的追加写与对象存储的全量覆盖直接影响提交策略
 - **下游机制**：[数据湖与Iceberg表设计.md](../../../04-架构与系统/系统设计/大数据平台/数据湖与Iceberg表设计.md) — 分区怎么选、15 分钟微批怎么写不坏、小文件什么时候合
 - **下游机制**：[流批对账与数据质量.md](../../../04-架构与系统/系统设计/大数据平台/流批对账与数据质量.md) — 快照隔离对「两条链路结果对不上」的影响
 - **对照/互补**：[列式数据库选型对比.md](../../数据存储/列式数据库/列式数据库选型对比.md) — 列式库自带存储引擎，表格式没有；这是两者的分水岭
 - **素材来源**：[素材清单.md](../../../素材清单.md) — 素材来源登记
 
-> 反向引用（本篇被下列文档引到）：[大数据选型对比.md](../大数据选型对比.md)、[HiveMetastore.md](../Catalog/HiveMetastore.md)、[Hive.md](../计算引擎/Hive.md)、[HDFS.md](../文件系统/HDFS.md)
+> 反向引用（本篇被下列文档引到）：[大数据选型对比.md](../大数据选型对比.md)、[HiveMetastore.md](../Catalog/HiveMetastore.md)、[Hive 册](../计算引擎/Hive/README.md)、[HDFS.md](../文件系统/HDFS.md)

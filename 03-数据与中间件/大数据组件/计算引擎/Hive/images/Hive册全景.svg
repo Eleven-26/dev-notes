@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">Hive 册全景：一条 HQL 的一生与四篇分工</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">Hive 4.0.0 单容器（HS2 + 内嵌 Derby）+ Spark 3.5.5 读写同一份表</text>
+
+  <rect x="30" y="84" width="940" height="250" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="106" font-size="11" font-weight="bold" fill="#0f172a">一条 HQL 的路径：提交、编译、成作业、读写表</text>
+
+  <rect x="50" y="116" width="150" height="76" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+  <text x="125" y="140" font-size="11.5" font-weight="bold" text-anchor="middle" fill="#0f172a">客户端</text>
+  <text x="125" y="162" font-size="9.5" text-anchor="middle" fill="#475569">beeline / JDBC</text>
+  <text x="125" y="180" font-size="9.5" text-anchor="middle" fill="#475569">提交 SQL</text>
+
+  <rect x="230" y="116" width="170" height="76" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="315" y="140" font-size="11.5" font-weight="bold" text-anchor="middle" fill="#1e3a8a">HS2 :10000 / :10002</text>
+  <text x="315" y="162" font-size="9.5" text-anchor="middle" fill="#1e3a8a">六步编译</text>
+  <text x="315" y="180" font-size="9.5" text-anchor="middle" fill="#1e3a8a">只出计划与作业</text>
+
+  <rect x="430" y="116" width="180" height="76" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="520" y="140" font-size="11.5" font-weight="bold" text-anchor="middle" fill="#1e3a8a">MR / Tez 作业</text>
+  <text x="520" y="162" font-size="9.5" text-anchor="middle" fill="#1e3a8a">真正的执行者</text>
+  <text x="520" y="180" font-size="9.5" text-anchor="middle" fill="#1e3a8a">固定启动开销</text>
+
+  <rect x="640" y="116" width="300" height="76" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="790" y="140" font-size="11.5" font-weight="bold" text-anchor="middle" fill="#14532d">表 = HMS 一行 + 目录 + 文件名</text>
+  <text x="790" y="162" font-size="9.5" text-anchor="middle" fill="#14532d">dt=2026-10-25/000000_0</text>
+  <text x="790" y="180" font-size="9.5" text-anchor="middle" fill="#14532d">语义不在数据文件里</text>
+
+  <line x1="202" y1="154" x2="226" y2="154" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="402" y1="154" x2="426" y2="154" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="612" y1="154" x2="636" y2="154" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="50" y="204" width="150" height="24" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="125" y="220" font-size="9.5" text-anchor="middle" fill="#334155">④ 部署与排查</text>
+  <rect x="230" y="204" width="170" height="24" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="315" y="220" font-size="9.5" text-anchor="middle" fill="#334155">① 编译与执行链路</text>
+  <rect x="430" y="204" width="180" height="24" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="520" y="220" font-size="9.5" text-anchor="middle" fill="#334155">① 编译与执行链路</text>
+  <rect x="640" y="204" width="300" height="24" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="790" y="220" font-size="9.5" text-anchor="middle" fill="#334155">② 分区分桶与 SerDe　③ 与 Spark SQL 的差异</text>
+
+  <text x="50" y="258" font-size="10.5" fill="#0f172a">读法：先看一条 SQL 经过谁（①④），再看表靠什么组织（②），最后看换引擎为什么变味（③）</text>
+  <text x="50" y="282" font-size="10.5" fill="#0f172a">本册读数：裁剪 3 文件 → 1 文件；4 BUCKETS 写 5 行 → 5 个文件；端口 [10000, 10002]</text>
+  <text x="50" y="306" font-size="10" fill="#475569">注意：③ 不在路径上，它是「同一句 DDL 在两边走向不同」的横向对照；② 的细节也不在路径上，而是表的三种落地形态</text>
+
+  <rect x="30" y="348" width="220" height="186" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="44" y="374" font-size="12" font-weight="bold" fill="#1e3a8a">① 编译与执行链路</text>
+  <text x="44" y="400" font-size="9.5" fill="#1e293b">六步编译，第二步查 HMS</text>
+  <text x="44" y="422" font-size="9.5" fill="#1e293b">第四步定分区裁剪</text>
+  <text x="44" y="444" font-size="9.5" fill="#1e293b">第六步才产生作业开销</text>
+  <text x="44" y="466" font-size="9.5" fill="#1e293b">mr / tez / spark 三档</text>
+  <text x="44" y="506" font-size="9" fill="#64748b">EXPLAIN 三段读法</text>
+
+  <rect x="270" y="348" width="220" height="186" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="284" y="374" font-size="12" font-weight="bold" fill="#14532d">② 分区分桶与 SerDe</text>
+  <text x="284" y="400" font-size="9.5" fill="#14532d">分区靠目录名</text>
+  <text x="284" y="422" font-size="9.5" fill="#14532d">分桶靠文件名</text>
+  <text x="284" y="444" font-size="9.5" fill="#14532d">SerDe 靠 HMS 一行</text>
+  <text x="284" y="466" font-size="9.5" fill="#14532d">三样都不在数据文件里</text>
+  <text x="284" y="506" font-size="9" fill="#166534">裁剪 3 → 1；5 行 → 5 文件</text>
+
+  <rect x="510" y="348" width="220" height="186" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.6"/>
+  <text x="524" y="374" font-size="12" font-weight="bold" fill="#78350f">③ 与 Spark SQL 的差异</text>
+  <text x="524" y="400" font-size="9.5" fill="#78350f">分区列位置相反</text>
+  <text x="524" y="422" font-size="9.5" fill="#78350f">SERDE 与 STORED AS 冲突</text>
+  <text x="524" y="444" font-size="9.5" fill="#78350f">两处不报错，只是慢</text>
+  <text x="524" y="466" font-size="9.5" fill="#78350f">Table Type 会「看起来变了」</text>
+  <text x="524" y="506" font-size="9" fill="#92400e">四处报错原文逐条给</text>
+
+  <rect x="750" y="348" width="220" height="186" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="764" y="374" font-size="12" font-weight="bold" fill="#334155">④ 部署与排查</text>
+  <text x="764" y="400" font-size="9.5" fill="#334155">HS2 是网关不是引擎</text>
+  <text x="764" y="422" font-size="9.5" fill="#334155">10000 / 10002，9083 不在</text>
+  <text x="764" y="444" font-size="9.5" fill="#334155">三段确认：语法 / 计划 / 写入</text>
+  <text x="764" y="466" font-size="9.5" fill="#334155">HS2 与 HMS 影响面不同</text>
+  <text x="764" y="506" font-size="9" fill="#475569">HS2 进程 1、Metastore 0</text>
+
+  <rect x="30" y="548" width="940" height="64" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="574" font-size="10.5" fill="#0f172a">与选型篇的分工：选型篇回答「为什么只留 Hive 的元数据」，本册回答「这条 HQL 自己怎么跑、表靠什么组织」</text>
+  <text x="46" y="596" font-size="10.5" fill="#475569">读数只来自两个单容器；MR / Tez 的作业耗时、动态分区报错原文、远程 HMS 高可用均未实测</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

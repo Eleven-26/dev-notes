@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">分区数决定 task 数，核数只决定同时跑几个</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">同一段 8 分区的代码，在 local[2] 与 local[4] 上的差别只是「波数」，不是「任务数」</text>
+
+  <rect x="30" y="92" width="460" height="250" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="46" y="118" font-size="13" font-weight="bold" fill="#1e3a8a">local[2]：8 个 task，4 波</text>
+  <text x="46" y="138" font-size="10.5" fill="#475569">并发上限 = 空闲核数 2，多出来的排队等核</text>
+
+  <rect x="46" y="152" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="58" y="174" font-size="11" fill="#1e293b">task 0 / task 1</text>
+  <rect x="46" y="194" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="58" y="216" font-size="11" fill="#1e293b">task 2 / task 3</text>
+  <rect x="46" y="236" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="58" y="258" font-size="11" fill="#1e293b">task 4 / task 5</text>
+  <rect x="46" y="278" width="196" height="34" rx="5" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="58" y="300" font-size="11" fill="#1e293b">task 6 / task 7</text>
+
+  <text x="262" y="174" font-size="10.5" fill="#475569">第 1 波</text>
+  <text x="262" y="216" font-size="10.5" fill="#475569">第 2 波</text>
+  <text x="262" y="258" font-size="10.5" fill="#475569">第 3 波</text>
+  <text x="262" y="300" font-size="10.5" fill="#475569">第 4 波</text>
+
+  <text x="46" y="332" font-size="12" fill="#1e3a8a">4 波 × 0.8 s ≈ 5.54 s（实测）</text>
+
+  <rect x="510" y="92" width="460" height="250" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="526" y="118" font-size="13" font-weight="bold" fill="#14532d">local[4]：还是 8 个 task，2 波</text>
+  <text x="526" y="138" font-size="10.5" fill="#475569">分区数没变，任务数就不变；变的只是被压成两行</text>
+
+  <rect x="526" y="152" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="540" y="174" font-size="11" fill="#1e293b">task 0</text>
+  <rect x="636" y="152" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="650" y="174" font-size="11" fill="#1e293b">task 1</text>
+  <rect x="746" y="152" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="760" y="174" font-size="11" fill="#1e293b">task 2</text>
+  <rect x="856" y="152" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="870" y="174" font-size="11" fill="#1e293b">task 3</text>
+
+  <rect x="526" y="194" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="540" y="216" font-size="11" fill="#1e293b">task 4</text>
+  <rect x="636" y="194" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="650" y="216" font-size="11" fill="#1e293b">task 5</text>
+  <rect x="746" y="194" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="760" y="216" font-size="11" fill="#1e293b">task 6</text>
+  <rect x="856" y="194" width="100" height="34" rx="5" fill="#ffffff" stroke="#86efac"/>
+  <text x="870" y="216" font-size="11" fill="#1e293b">task 7</text>
+
+  <text x="526" y="258" font-size="11" fill="#14532d">defaultParallelism 实测：local[2] 为 2，local[4] 为 4</text>
+  <text x="526" y="280" font-size="10.5" fill="#475569">它只决定 parallelize 这类操作的默认分区数</text>
+  <text x="526" y="302" font-size="10.5" fill="#475569">读文件时的分区数由文件切分决定，与核数无关</text>
+  <text x="526" y="332" font-size="12" fill="#14532d">2 波 × 0.8 s ≈ 4.17 s（实测）</text>
+
+  <rect x="30" y="358" width="940" height="210" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="46" y="384" font-size="13" font-weight="bold" fill="#78350f">同一个 groupBy，shuffle 分区数决定 reduce 端任务数</text>
+
+  <text x="46" y="412" font-size="11" fill="#78350f">AQE 关</text>
+  <rect x="110" y="394" width="190" height="48" rx="6" fill="#ffffff" stroke="#fbbf24"/>
+  <text x="124" y="415" font-size="11" font-weight="bold" fill="#1e293b">stage 0</text>
+  <text x="124" y="433" font-size="10.5" fill="#475569">8 个 map task</text>
+  <line x1="302" y1="418" x2="330" y2="418" stroke="#b45309" stroke-width="1.6" marker-end="url(#a3)"/>
+  <rect x="332" y="394" width="190" height="48" rx="6" fill="#ffffff" stroke="#fbbf24"/>
+  <text x="346" y="415" font-size="11" font-weight="bold" fill="#1e293b">stage 1</text>
+  <text x="346" y="433" font-size="10.5" fill="#475569">200 个 reduce task</text>
+  <line x1="524" y1="418" x2="552" y2="418" stroke="#b45309" stroke-width="1.6" marker-end="url(#a3)"/>
+  <rect x="554" y="394" width="150" height="48" rx="6" fill="#ffffff" stroke="#fbbf24"/>
+  <text x="568" y="415" font-size="11" font-weight="bold" fill="#1e293b">stage 2</text>
+  <text x="568" y="433" font-size="10.5" fill="#475569">1 个 task</text>
+  <text x="722" y="415" font-size="10.5" fill="#78350f">来源：spark.sql.shuffle.partitions</text>
+  <text x="722" y="433" font-size="10.5" fill="#78350f">默认 200，实测 stage 1 = 200 个 task</text>
+
+  <text x="46" y="490" font-size="11" fill="#78350f">AQE 开</text>
+  <rect x="110" y="472" width="190" height="48" rx="6" fill="#ffffff" stroke="#fbbf24"/>
+  <text x="124" y="493" font-size="11" font-weight="bold" fill="#1e293b">stage 0</text>
+  <text x="124" y="511" font-size="10.5" fill="#475569">8 个 map task</text>
+  <line x1="302" y1="496" x2="330" y2="496" stroke="#b45309" stroke-width="1.6" marker-end="url(#a3)"/>
+  <rect x="332" y="472" width="190" height="48" rx="6" fill="#ffffff" stroke="#fbbf24"/>
+  <text x="346" y="493" font-size="11" font-weight="bold" fill="#1e293b">stage 1</text>
+  <text x="346" y="511" font-size="10.5" fill="#475569">计划 200，实际 1 个</text>
+  <line x1="524" y1="496" x2="552" y2="496" stroke="#b45309" stroke-width="1.6" marker-end="url(#a3)"/>
+  <rect x="554" y="472" width="150" height="48" rx="6" fill="#ffffff" stroke="#fbbf24"/>
+  <text x="568" y="493" font-size="11" font-weight="bold" fill="#1e293b">stage 2</text>
+  <text x="568" y="511" font-size="10.5" fill="#475569">1 个 task</text>
+  <text x="722" y="493" font-size="10.5" fill="#78350f">合并发生在运行期，配置值仍是 200</text>
+  <text x="722" y="511" font-size="10.5" fill="#78350f">只有 8 个 map 输出，200 个分区大多为空</text>
+
+  <text x="46" y="548" font-size="10.5" fill="#78350f">两行对照说明：配置项写的是「计划切几份」，日志里看到的是「实际起几个 task」，中间隔着 AQE 这一步</text>
+
+  <defs>
+    <marker id="a3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#b45309"/></marker>
+  </defs>
+
+  <rect x="30" y="584" width="940" height="60" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="608" font-size="11.5" fill="#0f172a">要点：核数换来的是「同时能干几件事」，分区数决定的是「一共有几件事」——扩容只能缩短等待，不能变出任务</text>
+  <text x="46" y="630" font-size="10.5" fill="#475569">分区太碎：每个 task 都有启动、序列化与调度开销；分区太粗：长尾 task 拖住整个 stage</text>
+</svg>

@@ -296,4 +296,4 @@ ls -l /tmp/hadoop/dfs/name/current/     # fsimage 与 edits 是否在长大
 - **运维/配置**：[K8s部署与运维.md](../../../04-架构与系统/系统设计/大数据平台/K8s部署与运维.md) — 这类有状态组件在 K8s 上怎么摆
 - **素材来源**：[素材清单.md](../../../素材清单.md) — 素材来源登记
 
-> 反向引用（本篇被下列文档引到）：[大数据选型对比.md](../大数据选型对比.md)、[Iceberg.md](../表格式/Iceberg.md)、[HiveMetastore.md](../Catalog/HiveMetastore.md)、[Hive.md](../计算引擎/Hive.md)
+> 反向引用（本篇被下列文档引到）：[大数据选型对比.md](../大数据选型对比.md)、[Iceberg.md](../表格式/Iceberg.md)、[HiveMetastore.md](../Catalog/HiveMetastore.md)、[Hive 册](../计算引擎/Hive/README.md)

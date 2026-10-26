@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">连接器对引擎只回答三件事</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">实测环境：Trino 475、单容器，5 个 catalog，tpch.sf1 + memory.default</text>
+
+  <rect x="30" y="84" width="940" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">引擎按接口问，不假设对方是不是数据库；三件事答完，一次扫描的形状就定了</text>
+  <text x="46" y="140" font-size="10.5" fill="#1e293b">同一个 SQL 换连接器，元数据从哪来、数据切成几份、哪些算子能推下去，全都跟着换</text>
+
+  <rect x="30" y="180" width="296" height="330" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="44" y="208" font-size="11.5" font-weight="bold" fill="#1e3a8a">① 元数据：有哪些库、表、列</text>
+  <text x="44" y="238" font-size="10" fill="#1e293b">引擎拿它做解析与校验</text>
+  <text x="44" y="264" font-size="10" fill="#1e293b">缺表 → TABLE_NOT_FOUND</text>
+  <text x="44" y="290" font-size="10" fill="#1e293b">缺列 → COLUMN_NOT_FOUND</text>
+  <text x="44" y="316" font-size="10" fill="#1e293b">实测：5 个 catalog</text>
+  <text x="44" y="342" font-size="10" fill="#1e293b">10 个 schema / 8 张表</text>
+  <text x="44" y="368" font-size="10" fill="#1e293b">etc/catalog/*.properties</text>
+  <text x="44" y="394" font-size="10" fill="#1e293b">一个文件就是一个 catalog</text>
+  <text x="44" y="428" font-size="9.5" fill="#64748b">catalog 名 = SQL 里的第一段</text>
+  <text x="44" y="452" font-size="9.5" fill="#64748b">tpch / memory / jmx / tpcds</text>
+  <text x="44" y="476" font-size="9.5" fill="#64748b">system 由引擎内建，不占文件</text>
+
+  <rect x="352" y="180" width="296" height="330" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.6"/>
+  <text x="366" y="208" font-size="11.5" font-weight="bold" fill="#14532d">② split：这段数据怎么切</text>
+  <text x="366" y="238" font-size="10" fill="#166534">引擎拿它决定 driver 数</text>
+  <text x="366" y="264" font-size="10" fill="#166534">split 由连接器切，引擎只分发</text>
+  <text x="366" y="290" font-size="10" fill="#166534">lineitem 4 split → 4 driver</text>
+  <text x="366" y="316" font-size="10" fill="#166534">region 只有 5 行也切 4 份</text>
+  <text x="366" y="342" font-size="10" fill="#166534">memory 3 行照样切 4 份</text>
+  <text x="366" y="368" font-size="10" fill="#166534">tpch.splits_per_node = 4</text>
+  <text x="366" y="394" font-size="10" fill="#166534">能不能切细，在连接器手里</text>
+  <text x="366" y="428" font-size="9.5" fill="#4d7c0f">切得太粗：driver 闲着</text>
+  <text x="366" y="452" font-size="9.5" fill="#4d7c0f">切得太细：调度开销涨</text>
+  <text x="366" y="476" font-size="9.5" fill="#4d7c0f">引擎不替连接器重切</text>
+
+  <rect x="674" y="180" width="296" height="330" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.6"/>
+  <text x="688" y="208" font-size="11.5" font-weight="bold" fill="#78350f">③ 下推：哪些算子交给它做</text>
+  <text x="688" y="238" font-size="10" fill="#78350f">filter → ScanFilter 生效</text>
+  <text x="688" y="264" font-size="10" fill="#78350f">limit → LimitPartial 生效</text>
+  <text x="688" y="290" font-size="10" fill="#78350f">聚合 → 不推，引擎里 PARTIAL</text>
+  <text x="688" y="316" font-size="10" fill="#78350f">估算 6,001,215 → 2,000,405 行</text>
+  <text x="688" y="342" font-size="10" fill="#78350f">只是把条件交出去</text>
+  <text x="688" y="368" font-size="10" fill="#78350f">不等于真的少读数据</text>
+  <text x="688" y="394" font-size="10" fill="#78350f">能力不支持，就在引擎里算</text>
+  <text x="688" y="428" font-size="9.5" fill="#92400e">ScanFilter ≠ 读得少</text>
+  <text x="688" y="452" font-size="9.5" fill="#92400e">分区裁剪依赖连接器能力</text>
+  <text x="688" y="476" font-size="9.5" fill="#92400e">本机 tpch 无可裁剪分区</text>
+
+  <rect x="30" y="530" width="940" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="556" font-size="10.5" fill="#0f172a">三类下推里只有两类生效：filter 与 limit；聚合一律由引擎自己做局部聚合，再按 key 交换</text>
+  <text x="46" y="578" font-size="10.5" fill="#0f172a">下推生效不等于读得少：ScanFilter 只代表条件交出去了，实际读入行数要看连接器怎么实现</text>
+  <text x="46" y="600" font-size="10" fill="#475569">5 个 catalog：jmx / memory / tpcds / tpch 各一个 properties 文件，system 由引擎内建</text>
+</svg>

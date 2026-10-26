@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">Spark 排障决策树：先分「慢」与「失败」，再按分布定位</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">左边四个判据按顺序走，命中即止；右边的三条对应三类最常见报错。读数均为本机 local[4] 实测</text>
+
+  <rect x="380" y="92" width="240" height="44" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.6"/>
+  <text x="430" y="120" font-size="13" font-weight="bold" fill="#1e3a8a">作业慢，或者失败</text>
+
+  <line x1="440" y1="138" x2="300" y2="170" stroke="#475569" stroke-width="1.6" marker-end="url(#d1)"/>
+  <line x1="560" y1="138" x2="760" y2="170" stroke="#475569" stroke-width="1.6" marker-end="url(#d1)"/>
+
+  <rect x="30" y="170" width="560" height="400" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="46" y="196" font-size="13" font-weight="bold" fill="#1e3a8a">慢：看 task 的分布，不看总耗时</text>
+
+  <rect x="46" y="210" width="528" height="78" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="60" y="234" font-size="11.5" font-weight="bold" fill="#1e293b">判据一：task 数远大于核数</text>
+  <text x="60" y="254" font-size="10.5" fill="#475569">400 个 reduce task、每个只读 147,888 B 中的一小段，中位耗时约 450 ms，</text>
+  <text x="60" y="272" font-size="10.5" fill="#475569">总 43.63 s —— 时间花在启动上，先降分区（AQE 可自动合并）</text>
+
+  <rect x="46" y="296" width="528" height="78" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="60" y="320" font-size="11.5" font-weight="bold" fill="#1e293b">判据二：少数 task 明显慢于中位数</text>
+  <text x="60" y="340" font-size="10.5" fill="#475569">热点 key 占 90%：groupByKey 的 reduce 端 428~1,091 ms，字节差 3.2 倍；</text>
+  <text x="60" y="358" font-size="10.5" fill="#475569">改用 reduceByKey：字节只差 1.3 倍，map 端耗时仍差 3.7 倍 —— 只看字节会漏</text>
+
+  <rect x="46" y="382" width="528" height="78" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="60" y="406" font-size="11.5" font-weight="bold" fill="#1e293b">判据三：所有 task 均匀地慢</text>
+  <text x="60" y="426" font-size="10.5" fill="#475569">看单 task 的数据量与算子成本；加核只在 task 数大于核数时才有收益</text>
+  <text x="60" y="444" font-size="10.5" fill="#475569">8 个 task：2 核 5.54 s、4 核 4.17 s，剩下的是单 task 自身的耗时</text>
+
+  <rect x="46" y="468" width="528" height="78" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="60" y="492" font-size="11.5" font-weight="bold" fill="#1e293b">判据四：日志里出现 spill</text>
+  <text x="60" y="512" font-size="10.5" fill="#475569">execution 内存不足：先减 shuffle 分区数、用 reduceByKey 代替 groupByKey，</text>
+  <text x="60" y="530" font-size="10.5" fill="#475569">再考虑提内存；溢写只影响速度，不改变结果</text>
+
+  <rect x="610" y="170" width="360" height="400" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="626" y="196" font-size="13" font-weight="bold" fill="#7f1d1d">失败：按报错定位</text>
+
+  <rect x="626" y="210" width="328" height="78" rx="6" fill="#ffffff" stroke="#fca5a5"/>
+  <text x="640" y="234" font-size="11.5" font-weight="bold" fill="#1e293b">driver 侧 OutOfMemory</text>
+  <text x="640" y="254" font-size="10.5" fill="#475569">collect / toPandas 回传过大，</text>
+  <text x="640" y="272" font-size="10.5" fill="#475569">或广播源数据太大</text>
+
+  <rect x="626" y="296" width="328" height="78" rx="6" fill="#ffffff" stroke="#fca5a5"/>
+  <text x="640" y="320" font-size="11.5" font-weight="bold" fill="#1e293b">executor 侧 OutOfMemory</text>
+  <text x="640" y="340" font-size="10.5" fill="#475569">单分区过大、join 哈希表、</text>
+  <text x="640" y="358" font-size="10.5" fill="#475569">热点 key 让一个 task 撑爆</text>
+
+  <rect x="626" y="382" width="328" height="78" rx="6" fill="#ffffff" stroke="#fca5a5"/>
+  <text x="640" y="406" font-size="11.5" font-weight="bold" fill="#1e293b">fetch failed / 重试耗尽</text>
+  <text x="640" y="426" font-size="10.5" fill="#475569">executor 掉线导致 shuffle 文件</text>
+  <text x="640" y="444" font-size="10.5" fill="#475569">消失，下游要重算上游</text>
+
+  <rect x="626" y="468" width="328" height="78" rx="6" fill="#ffffff" stroke="#fca5a5"/>
+  <text x="640" y="492" font-size="11.5" font-weight="bold" fill="#1e293b">重试次数与超时</text>
+  <text x="640" y="512" font-size="10.5" fill="#475569">spark.task.maxFailures 默认 4；</text>
+  <text x="640" y="530" font-size="10.5" fill="#475569">某 task 能稳定跑完 → 先查倾斜</text>
+
+  <rect x="30" y="586" width="940" height="58" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="610" font-size="11.5" fill="#0f172a">顺序不能反：先看「task 数 × 单 task 时长」这两个分布，再看参数；直接调内存或加机器，多数时候调的是不相关的那个旋钮</text>
+  <text x="46" y="632" font-size="10.5" fill="#475569">本机只有 local 模式，多 executor、资源申请失败、YARN / K8s 队列排队这几类未实测</text>
+
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

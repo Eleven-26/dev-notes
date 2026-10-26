@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="650" viewBox="0 0 1000 650" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">查询对象五层：一条 SQL 怎么落到算子流水线</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">实测环境：Trino 475、单容器、coordinator 兼 worker，group-by 查询</text>
+
+  <rect x="30" y="84" width="940" height="434" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="110" font-size="12.5" font-weight="bold" fill="#0f172a">从外到内是包含关系：下一层由上一层创建并持有</text>
+
+  <rect x="46" y="124" width="908" height="376" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="60" y="146" font-size="11" font-weight="bold" fill="#1e3a8a">① query：客户端提交的一条 SQL，本例 1 个</text>
+
+  <rect x="66" y="160" width="868" height="324" rx="6" fill="#ffffff" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="80" y="182" font-size="10.5" font-weight="bold" fill="#1e40af">② stage：中间有交换就断开，本例 2 个（根 0 + 扫描 1）</text>
+
+  <rect x="86" y="196" width="828" height="272" rx="6" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="100" y="218" font-size="10.5" font-weight="bold" fill="#1e40af">③ task：stage 在每台节点上的一份，本例 2 个（每 stage 1 个）</text>
+
+  <rect x="106" y="232" width="788" height="220" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.2"/>
+  <text x="120" y="254" font-size="10.5" font-weight="bold" fill="#1e3a8a">④ driver：task 内按分区并发，本例 8 个（扫描 4 + 聚合 4）</text>
+
+  <rect x="126" y="268" width="748" height="168" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="140" y="290" font-size="10.5" font-weight="bold" fill="#14532d">⑤ operator：driver 里的算子流水线，一个 driver 独占一条</text>
+
+  <rect x="146" y="308" width="210" height="62" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="158" y="330" font-size="10.5" font-weight="bold" fill="#14532d">TableScan</text>
+  <text x="158" y="350" font-size="9.5" fill="#166534">读连接器给的 split</text>
+
+  <rect x="386" y="308" width="210" height="62" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="398" y="330" font-size="10.5" font-weight="bold" fill="#14532d">Filter</text>
+  <text x="398" y="350" font-size="9.5" fill="#166534">按谓词丢行</text>
+
+  <rect x="626" y="308" width="210" height="62" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="638" y="330" font-size="10.5" font-weight="bold" fill="#14532d">Aggregation</text>
+  <text x="638" y="350" font-size="9.5" fill="#166534">本例先做局部聚合</text>
+
+  <line x1="358" y1="339" x2="382" y2="339" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="598" y1="339" x2="622" y2="339" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <text x="140" y="396" font-size="10" fill="#14532d">算子在 driver 内串联执行，不跨 driver 共享；driver 之间互不可见</text>
+  <text x="140" y="418" font-size="10" fill="#14532d">跨 driver 的数据一律经过交换，这就是 stage 的边界从哪里来的</text>
+
+  <rect x="30" y="534" width="940" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="558" font-size="10.5" fill="#0f172a">split 不是第五层：它由连接器切好交给扫描侧 driver，本例 4 份；region 只有 5 行也照切 4 份</text>
+  <text x="46" y="580" font-size="10.5" fill="#0f172a">数量对应：query 1 → stage 2 → task 2 → driver 8（4 + 4）→ 每个 driver 一条算子流水线</text>
+  <text x="46" y="602" font-size="10.5" fill="#475569">driver 级没有系统表：只能从 REST 的 stageStats.totalDrivers 读；queries 与 tasks 分别只到 query 级与 task 级</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

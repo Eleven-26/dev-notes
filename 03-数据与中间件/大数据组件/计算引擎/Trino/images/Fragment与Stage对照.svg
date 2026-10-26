@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <rect x="30" y="20" width="940" height="52" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="44" font-size="18" fill="#0f172a">Fragment 与 stage：同一套编号，两边对得上</text>
+  <text x="46" y="62" font-size="11.5" fill="#475569">实测查询：SELECT returnflag, count(*) FROM tpch.sf1.lineitem GROUP BY returnflag</text>
+
+  <rect x="30" y="84" width="440" height="400" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="46" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">EXPLAIN (TYPE DISTRIBUTED) 的输出</text>
+
+  <rect x="46" y="126" width="408" height="116" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="58" y="148" font-size="11" font-weight="bold" fill="#14532d">Fragment 0 [SINGLE]</text>
+  <text x="58" y="168" font-size="9.5" fill="#166534">Output ← Aggregate ← LocalExchange</text>
+  <text x="58" y="188" font-size="9.5" fill="#166534">等 stage 1 的数据到齐再汇总</text>
+  <text x="58" y="210" font-size="9.5" fill="#475569">REST 对应：stage .0 · 1 task · 4 driver</text>
+
+  <rect x="46" y="258" width="408" height="150" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="58" y="280" font-size="11" font-weight="bold" fill="#1e3a8a">Fragment 1 [tpch:orders:1500000]</text>
+  <text x="58" y="300" font-size="9.5" fill="#1e40af">TableScan[lineitem] ← Aggregate[PARTIAL]</text>
+  <text x="58" y="320" font-size="9.5" fill="#1e40af">4 split · 6,001,215 行 → 12 行</text>
+  <text x="58" y="342" font-size="9.5" fill="#475569">REST 对应：stage .1 · 1 task · 4 driver</text>
+  <text x="58" y="368" font-size="9.5" fill="#1e40af">号大的先跑：stage 1 扫完，stage 0 才出结果</text>
+  <text x="58" y="392" font-size="9.5" fill="#475569">句柄名里的 orders 不是被扫的表</text>
+
+  <text x="46" y="434" font-size="10.5" fill="#0f172a">编号是「离客户端有多远」，不是执行顺序</text>
+  <text x="46" y="458" font-size="10" fill="#475569">[SINGLE] 指输出只有一个分区，不代表只有一个 driver</text>
+
+  <rect x="490" y="84" width="480" height="400" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="506" y="112" font-size="11.5" font-weight="bold" fill="#0f172a">REST 返回的 stage 树</text>
+
+  <rect x="506" y="126" width="448" height="116" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="518" y="148" font-size="11" font-weight="bold" fill="#14532d">stage .0（根）</text>
+  <text x="518" y="168" font-size="9.5" fill="#166534">tasks 1 · drivers 4 · splits 0</text>
+  <text x="518" y="188" font-size="9.5" fill="#166534">内部交换 12 行 → 输出 3 行 / 45 B</text>
+  <text x="518" y="210" font-size="9.5" fill="#475569">plan: Output ← Aggregate ← LocalExchange</text>
+
+  <line x1="730" y1="310" x2="730" y2="250" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="746" y="284" font-size="9.5" fill="#475569">remoteSource 拉取</text>
+
+  <rect x="506" y="314" width="448" height="124" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.4"/>
+  <text x="518" y="336" font-size="11" font-weight="bold" fill="#1e3a8a">stage .1（子）</text>
+  <text x="518" y="356" font-size="9.5" fill="#1e40af">tasks 1 · drivers 4 · splits 4</text>
+  <text x="518" y="376" font-size="9.5" fill="#1e40af">6,001,215 行 → 12 行</text>
+  <text x="518" y="398" font-size="9.5" fill="#475569">plan: TableScan ← Aggregate[PARTIAL]</text>
+  <text x="518" y="420" font-size="9.5" fill="#1e40af">它出现在 stage .0 的 sources 里</text>
+
+  <text x="506" y="462" font-size="10.5" fill="#0f172a">两边编号一致：Fragment N 就是 stage .N</text>
+
+  <rect x="30" y="500" width="940" height="80" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="524" font-size="10.5" fill="#0f172a">交换在哪，stage 就断在哪：EXPLAIN 的 RemoteSource 与 REST 的 subStages 指同一个断点</text>
+  <text x="46" y="546" font-size="10.5" fill="#0f172a">EXPLAIN 只说形状，不给 driver 数；driver 数要去 stageStats 或 system.runtime.tasks 看</text>
+  <text x="46" y="568" font-size="10" fill="#475569">本机单节点每个 stage 恰好 1 个 task；多节点会按节点摊成多个 task，本机未实测</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>
