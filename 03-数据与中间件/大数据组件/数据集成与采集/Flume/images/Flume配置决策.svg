@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">Flume 的配置决策：source 定语义，channel 定可靠性，sink 定落点</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">三个选择按顺序定，前一步的结论会限制后一步——source 不能重放时，file channel 也救不回丢掉的那批</text>
+
+  <rect x="30" y="96" width="220" height="130" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="44" y="120" font-size="11.5" font-weight="bold" fill="#1e3a8a">第一问：源长什么样</text>
+  <text x="44" y="144" font-size="10.5" fill="#1e293b">判据是「丢了能不能重来」</text>
+  <text x="44" y="164" font-size="10.5" fill="#1e293b">不是「支持不支持」</text>
+  <text x="44" y="192" font-size="10" fill="#64748b">能重来 → 目录型</text>
+  <text x="44" y="210" font-size="10" fill="#64748b">不能重来 → 推型</text>
+
+  <rect x="270" y="96" width="224" height="130" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="284" y="120" font-size="11" font-weight="bold" fill="#14532d">spooldir</text>
+  <text x="284" y="142" font-size="10" fill="#1e293b">读目录里新出现的文件</text>
+  <text x="284" y="160" font-size="10" fill="#1e293b">读完改名 .COMPLETED</text>
+  <text x="284" y="182" font-size="10" fill="#15803d">满了阻塞重试 1000 ms</text>
+  <text x="284" y="200" font-size="10" fill="#15803d">不丢，但管道会卡住</text>
+
+  <rect x="514" y="96" width="224" height="130" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="528" y="120" font-size="11" font-weight="bold" fill="#14532d">taildir</text>
+  <text x="528" y="142" font-size="10" fill="#1e293b">跟追加写的日志文件</text>
+  <text x="528" y="160" font-size="10" fill="#1e293b">记每个文件读到哪一位</text>
+  <text x="528" y="182" font-size="10" fill="#15803d">能重放，适合日志</text>
+  <text x="528" y="200" font-size="9.5" fill="#64748b">本册未实测这一类</text>
+
+  <rect x="758" y="96" width="212" height="130" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="772" y="120" font-size="11" font-weight="bold" fill="#7f1d1d">netcat</text>
+  <text x="772" y="142" font-size="10" fill="#1e293b">对端推 TCP 行</text>
+  <text x="772" y="160" font-size="10" fill="#1e293b">Flume 只能收</text>
+  <text x="772" y="182" font-size="10" fill="#b91c1c">满了抛异常、整批丢</text>
+  <text x="772" y="200" font-size="10" fill="#b91c1c">对端不知道</text>
+
+  <rect x="30" y="242" width="220" height="130" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="44" y="266" font-size="11.5" font-weight="bold" fill="#1e3a8a">第二问：丢一批能接受吗</text>
+  <text x="44" y="290" font-size="10.5" fill="#1e293b">能 → memory，快</text>
+  <text x="44" y="310" font-size="10.5" fill="#1e293b">不能 → file，慢</text>
+  <text x="44" y="338" font-size="10" fill="#64748b">这是唯一影响</text>
+  <text x="44" y="356" font-size="10" fill="#64748b">「崩了丢不丢」的选项</text>
+
+  <rect x="270" y="242" width="340" height="130" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="284" y="266" font-size="11" font-weight="bold" fill="#7f1d1d">memory channel</text>
+  <text x="284" y="288" font-size="10" fill="#1e293b">在途只存在内存里，没有文件记着</text>
+  <text x="284" y="306" font-size="10" fill="#1e293b">capacity 10000 只是上限，不是持久化</text>
+  <text x="284" y="328" font-size="11" font-weight="bold" fill="#b91c1c">kill -9 后 0 / 1400</text>
+  <text x="284" y="348" font-size="9.5" fill="#64748b">事务只保证「不半写」，不保证「不丢」</text>
+
+  <rect x="630" y="242" width="340" height="130" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="644" y="266" font-size="11" font-weight="bold" fill="#14532d">file channel</text>
+  <text x="644" y="288" font-size="10" fill="#1e293b">log-1 1048576 B + checkpoint 88232 B</text>
+  <text x="644" y="306" font-size="10" fill="#1e293b">inflightputs / inflighttakes 记在途</text>
+  <text x="644" y="328" font-size="11" font-weight="bold" fill="#15803d">kill -9 后 1400 / 1400</text>
+  <text x="644" y="348" font-size="9.5" fill="#64748b">绑挂 43.35 s 对 volume 9.38 s，落盘位置差 4.6 倍</text>
+
+  <rect x="30" y="388" width="220" height="130" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="44" y="412" font-size="11.5" font-weight="bold" fill="#1e3a8a">第三问：写到哪</text>
+  <text x="44" y="436" font-size="10.5" fill="#1e293b">下一跳 agent → avro</text>
+  <text x="44" y="456" font-size="10.5" fill="#1e293b">HDFS → hdfs sink</text>
+  <text x="44" y="476" font-size="10.5" fill="#1e293b">滚动文件 → file_roll</text>
+  <text x="44" y="512" font-size="10" fill="#64748b">sink 决定「提交成功」的含义</text>
+
+  <rect x="270" y="388" width="340" height="130" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="284" y="412" font-size="11" font-weight="bold" fill="#334155">avro：把 agent 串成链</text>
+  <text x="284" y="434" font-size="10" fill="#1e293b">上一跳的 sink 是下一跳的 source</text>
+  <text x="284" y="452" font-size="10" fill="#1e293b">这是 Flume 唯一的「拓扑」能力</text>
+  <text x="284" y="474" font-size="10" fill="#1e293b">中间那一跳崩，前面积压、后面空转</text>
+  <text x="284" y="496" font-size="9.5" fill="#64748b">本机用指向死端口的 avro sink 造背压</text>
+
+  <rect x="630" y="388" width="340" height="130" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="644" y="412" font-size="11" font-weight="bold" fill="#334155">落到 HDFS / 本地文件</text>
+  <text x="644" y="434" font-size="10" fill="#1e293b">按时间或大小滚动</text>
+  <text x="644" y="452" font-size="10" fill="#1e293b">hdfs sink 需要 Hadoop 依赖与配置</text>
+  <text x="644" y="474" font-size="10" fill="#1e293b">file_roll 适合先落地再入湖</text>
+  <text x="644" y="496" font-size="9.5" fill="#64748b">本册只跑了 avro（死端口）这一类</text>
+
+  <rect x="30" y="534" width="940" height="62" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="558" font-size="11.5" fill="#0f172a">一句话：三步的顺序不能倒——先定「源能不能重放」，再定「channel 要不要持久化」，最后才轮到 sink 写哪</text>
+  <text x="46" y="580" font-size="10.5" fill="#64748b">倒过来配的典型后果：上了 file channel 却用 netcat 源，钱花了、丢还是照丢</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

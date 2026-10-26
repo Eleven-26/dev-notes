@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">DataX 的两道闸门：一个节流，一个否决</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">speed 决定跑多快，errorLimit 决定什么情况下停下；两者都不改变搬多少行，只改变「怎么停」</text>
+
+  <rect x="30" y="96" width="450" height="404" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="44" y="120" font-size="12.5" font-weight="bold" fill="#1e3a8a">闸门一：speed 节流（限制速率）</text>
+
+  <rect x="46" y="136" width="118" height="52" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="58" y="158" font-size="10.5" fill="#1e293b">reader 读出</text>
+  <text x="58" y="176" font-size="10.5" fill="#64748b">按 splitPk 切段</text>
+
+  <rect x="180" y="136" width="118" height="52" rx="6" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="192" y="158" font-size="10.5" fill="#1e3a8a">speed 节流</text>
+  <text x="192" y="176" font-size="10.5" fill="#1e3a8a">按 bps 卡住</text>
+
+  <rect x="314" y="136" width="118" height="52" rx="6" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="326" y="158" font-size="10.5" fill="#1e293b">channel</text>
+  <text x="326" y="176" font-size="10.5" fill="#64748b">并发槽位</text>
+
+  <line x1="164" y1="162" x2="176" y2="162" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="298" y1="162" x2="310" y2="162" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="46" y="206" width="418" height="66" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="58" y="228" font-size="10.5" font-weight="bold" fill="#7f1d1d">只写 job.setting.speed.byte → 直接失败</text>
+  <text x="58" y="248" font-size="10" fill="#1e293b">Framework-03：单个 channel 的 bps 不能为空</text>
+  <text x="58" y="264" font-size="10" fill="#64748b">检查点：JobContainer.adjustChannelNumber</text>
+
+  <rect x="46" y="286" width="418" height="96" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="58" y="308" font-size="10.5" font-weight="bold" fill="#1e3a8a">两处都要写，框架才反算 channel</text>
+  <text x="58" y="330" font-size="10" fill="#1e293b">总 bps 50 KB/s ÷ 单 channel 25 KB/s</text>
+  <text x="58" y="350" font-size="10" fill="#1e293b">→ 请求 channel=1，实际起 2 个</text>
+  <text x="58" y="370" font-size="10" fill="#64748b">日志：Channel set byte_speed_limit to 25000</text>
+
+  <rect x="46" y="396" width="418" height="88" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="58" y="418" font-size="10.5" font-weight="bold" fill="#1e3a8a">标称值不是吞吐</text>
+  <text x="58" y="440" font-size="10" fill="#1e293b">标称 50 KB/s → 上报 7.90 KB/s</text>
+  <text x="58" y="460" font-size="10" fill="#1e293b">标称 100 KB/s → 上报 15.81 KB/s</text>
+  <text x="58" y="478" font-size="10" fill="#64748b">小数据量下受固定开销支配</text>
+
+  <rect x="504" y="96" width="466" height="404" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="518" y="120" font-size="12.5" font-weight="bold" fill="#7f1d1d">闸门二：errorLimit 否决（决定成败）</text>
+
+  <rect x="520" y="136" width="200" height="52" rx="6" fill="#ffffff" stroke="#fca5a5"/>
+  <text x="532" y="158" font-size="10.5" fill="#1e293b">脏数据产生</text>
+  <text x="532" y="176" font-size="10.5" fill="#64748b">主键冲突 / 类型不符</text>
+
+  <rect x="754" y="136" width="200" height="52" rx="6" fill="#ffffff" stroke="#fca5a5"/>
+  <text x="766" y="158" font-size="10.5" fill="#1e293b">累计条数 vs 两个阈值</text>
+  <text x="766" y="176" font-size="10.5" fill="#64748b">record 与 percentage</text>
+
+  <line x1="720" y1="162" x2="750" y2="162" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="520" y="206" width="434" height="86" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="532" y="228" font-size="10.5" font-weight="bold" fill="#7f1d1d">阈值 0：立即中止</text>
+  <text x="532" y="250" font-size="10" fill="#1e293b">Framework-14：限制是 0 条，实际捕获 767 条</text>
+  <text x="532" y="270" font-size="10" fill="#1e293b">读到 2560 行即停，退出码 1，工程上「失败得对」</text>
+
+  <rect x="520" y="306" width="434" height="86" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="532" y="328" font-size="10.5" font-weight="bold" fill="#7f1d1d">阈值放大到 6000：退出码 0</text>
+  <text x="532" y="350" font-size="10" fill="#1e293b">Total 5000 records / Error 5000 records</text>
+  <text x="532" y="370" font-size="10" fill="#1e293b">目标表零新增，调度器却以为是成功</text>
+
+  <rect x="520" y="406" width="434" height="78" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="532" y="428" font-size="10.5" font-weight="bold" fill="#7f1d1d">判据：退出码 0 不等于写成功</text>
+  <text x="532" y="450" font-size="10" fill="#1e293b">必须核对 Total 与 Error 两个数，或回查目标表行数</text>
+  <text x="532" y="470" font-size="10" fill="#64748b">这是「作业成功但数据不对」最常见的来源</text>
+
+  <rect x="30" y="518" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="542" font-size="11.5" fill="#0f172a">一句话：节流失败会明确报错，否决失败却可能静默——所以 errorLimit 必须配一个「回查目标表」的动作</text>
+  <text x="46" y="562" font-size="10.5" fill="#64748b">本机读数：5000 行 / 161864 B，源与目标同一 mysql:8.0.46 实例</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

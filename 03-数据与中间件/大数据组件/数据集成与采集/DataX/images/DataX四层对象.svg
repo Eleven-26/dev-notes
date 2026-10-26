@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="580" viewBox="0 0 1000 580" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">DataX 的四层对象：谁决定数量，谁只是槽位</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">job 一次提交、taskGroup 一组调度、task 真正搬数、channel 是并发槽位；切分片由 splitPk 决定，channel 只是限流阀</text>
+
+  <rect x="36" y="94" width="556" height="356" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="50" y="118" font-size="11.5" font-weight="bold" fill="#334155">四层对象：从上到下被包含</text>
+
+  <rect x="52" y="132" width="524" height="58" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="66" y="154" font-size="12" font-weight="bold" fill="#1e3a8a">job</text>
+  <text x="66" y="176" font-size="10.5" fill="#1e293b">一次进程、一份 job.json，跑完退出</text>
+  <text x="404" y="176" font-size="9.5" fill="#64748b">谁决定：命令行</text>
+
+  <rect x="52" y="204" width="524" height="58" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="66" y="226" font-size="12" font-weight="bold" fill="#1e3a8a">taskGroup</text>
+  <text x="66" y="248" font-size="10.5" fill="#1e293b">一组被一起调度的 task；channel 达到 6 时起 2 个</text>
+  <text x="404" y="248" font-size="9.5" fill="#64748b">谁决定：channel 数</text>
+
+  <rect x="52" y="276" width="524" height="58" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="66" y="298" font-size="12" font-weight="bold" fill="#1e3a8a">task</text>
+  <text x="66" y="320" font-size="10.5" fill="#1e293b">真正读一段数据的单位，切分片数就是 task 数</text>
+  <text x="392" y="320" font-size="9.5" fill="#64748b">谁决定：splitPk</text>
+
+  <rect x="52" y="348" width="524" height="58" rx="6" fill="#ffffff" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="66" y="370" font-size="12" font-weight="bold" fill="#14532d">channel</text>
+  <text x="66" y="392" font-size="10.5" fill="#1e293b">task 之间的并发槽位，限的是同时在跑几个</text>
+  <text x="392" y="392" font-size="9.5" fill="#15803d">谁决定：setting.speed</text>
+
+  <rect x="612" y="94" width="358" height="356" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="626" y="118" font-size="11.5" font-weight="bold" fill="#1e3a8a">实测：channel 与 task 不成 1:1</text>
+
+  <rect x="626" y="130" width="330" height="26" rx="4" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="638" y="148" font-size="10" font-weight="bold" fill="#1e3a8a">channel</text>
+  <text x="716" y="148" font-size="10" font-weight="bold" fill="#1e3a8a">task 数</text>
+  <text x="790" y="148" font-size="10" font-weight="bold" fill="#1e3a8a">taskGroup</text>
+  <text x="884" y="148" font-size="10" font-weight="bold" fill="#1e3a8a">端到端</text>
+
+  <text x="638" y="176" font-size="10.5" fill="#1e293b">1</text>
+  <text x="716" y="176" font-size="10.5" fill="#1e293b">1</text>
+  <text x="790" y="176" font-size="10.5" fill="#1e293b">1</text>
+  <text x="884" y="176" font-size="10.5" fill="#1e293b">11~13 s</text>
+
+  <text x="638" y="204" font-size="10.5" fill="#1e293b">2</text>
+  <text x="716" y="204" font-size="10.5" fill="#1e293b">11</text>
+  <text x="790" y="204" font-size="10.5" fill="#1e293b">1</text>
+  <text x="884" y="204" font-size="10.5" fill="#1e293b">25 s</text>
+
+  <text x="638" y="232" font-size="10.5" fill="#1e293b">3</text>
+  <text x="716" y="232" font-size="10.5" fill="#1e293b">16</text>
+  <text x="790" y="232" font-size="10.5" fill="#1e293b">1</text>
+  <text x="884" y="232" font-size="10.5" fill="#1e293b">14~27 s</text>
+
+  <text x="638" y="260" font-size="10.5" fill="#1e293b">6</text>
+  <text x="716" y="260" font-size="10.5" fill="#1e293b">31</text>
+  <text x="790" y="260" font-size="10.5" fill="#dc2626">2</text>
+  <text x="884" y="260" font-size="10.5" fill="#1e293b">更慢</text>
+
+  <text x="626" y="292" font-size="10.5" fill="#1e293b">切的依据是 splitPk，不是 channel：</text>
+  <text x="626" y="312" font-size="10.5" fill="#1e293b">channel 每加一个，切分片会被重算一次，</text>
+  <text x="626" y="332" font-size="10.5" fill="#1e293b">于是 task 数跳变而不是线性增长。</text>
+  <text x="626" y="360" font-size="10.5" fill="#7f1d1d">5000 行、161864 B 这个小数据量下，</text>
+  <text x="626" y="380" font-size="10.5" fill="#7f1d1d">加 channel 只增加调度开销。</text>
+  <text x="626" y="410" font-size="10.5" fill="#1e293b">固定开销：JVM 2.1~3.4 s、收尾 8.8 s，</text>
+  <text x="626" y="430" font-size="10.5" fill="#1e293b">而搬数窗口只有 1.25~2.45 s。</text>
+
+  <rect x="30" y="468" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="492" font-size="11.5" fill="#0f172a">一句话：调 channel 是在调「同时跑几个」，调 splitPk 才是在调「切成几段」——两者不是同一个旋钮</text>
+  <text x="46" y="512" font-size="10.5" fill="#64748b">本机读数：container 内 eclipse-temurin:8-jdk 1.8.0_504，源与目标为同一 mysql:8.0.46 实例</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">Flume 的事务边界：两个事务，各自提交，中间夹着 channel</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">source 侧一个 put 事务、sink 侧一个 take 事务；channel 里的事件在「被取走但没提交」时处于第三种状态</text>
+
+  <rect x="30" y="96" width="940" height="236" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="44" y="120" font-size="11.5" font-weight="bold" fill="#334155">一条事件的三次状态变化</text>
+
+  <rect x="46" y="136" width="150" height="60" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="60" y="158" font-size="11" font-weight="bold" fill="#1e3a8a">source</text>
+  <text x="60" y="180" font-size="10" fill="#1e293b">读到一批事件</text>
+
+  <rect x="252" y="136" width="150" height="60" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="266" y="158" font-size="11" font-weight="bold" fill="#1e3a8a">put 事务</text>
+  <text x="266" y="180" font-size="10" fill="#1e293b">写入 channel</text>
+
+  <rect x="458" y="136" width="150" height="60" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.8"/>
+  <text x="472" y="158" font-size="11" font-weight="bold" fill="#78350f">channel</text>
+  <text x="472" y="180" font-size="10" fill="#78350f">容量上限在这里</text>
+
+  <rect x="664" y="136" width="150" height="60" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="678" y="158" font-size="11" font-weight="bold" fill="#1e3a8a">take 事务</text>
+  <text x="678" y="180" font-size="10" fill="#1e293b">取走并处理</text>
+
+  <rect x="844" y="136" width="110" height="60" rx="6" fill="#ffffff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="858" y="158" font-size="11" font-weight="bold" fill="#1e3a8a">sink</text>
+  <text x="858" y="180" font-size="10" fill="#1e293b">写出并提交</text>
+
+  <line x1="196" y1="166" x2="248" y2="166" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="402" y1="166" x2="454" y2="166" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="608" y1="166" x2="660" y2="166" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="814" y1="166" x2="840" y2="166" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="252" y="216" width="150" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="266" y="244" font-size="10" fill="#14532d">commit：事件入队</text>
+
+  <rect x="664" y="216" width="150" height="44" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="678" y="244" font-size="10" fill="#14532d">commit：channel 删事件</text>
+
+  <rect x="458" y="216" width="150" height="44" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+  <text x="472" y="244" font-size="10" fill="#7f1d1d">rollback：回 channel</text>
+
+  <line x1="327" y1="196" x2="327" y2="212" stroke="#16a34a" stroke-width="1.6" marker-end="url(#a2)"/>
+  <line x1="739" y1="196" x2="739" y2="212" stroke="#16a34a" stroke-width="1.6" marker-end="url(#a2)"/>
+  <line x1="664" y1="258" x2="612" y2="238" stroke="#dc2626" stroke-width="1.6" marker-end="url(#a3)" stroke-dasharray="5 3"/>
+
+  <text x="46" y="244" font-size="10" fill="#1e293b">① 事件从源读出</text>
+  <text x="46" y="264" font-size="10" fill="#64748b">此时只在本进程内存里</text>
+  <text x="46" y="292" font-size="10" fill="#1e293b">② sink 取走但没提交 → 事件</text>
+  <text x="46" y="310" font-size="10" fill="#1e293b">既不在 channel 里、也还没被删，</text>
+  <text x="46" y="328" font-size="10" fill="#7f1d1d">这一段是「重复投递」的唯一来源</text>
+
+  <rect x="30" y="344" width="470" height="196" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="44" y="368" font-size="12" font-weight="bold" fill="#1e3a8a">三个容量参数，各管一段</text>
+  <text x="44" y="392" font-size="10.5" fill="#1e293b">capacity 10000</text>
+  <text x="200" y="392" font-size="10.5" fill="#64748b">channel 里最多存多少条</text>
+  <text x="44" y="416" font-size="10.5" fill="#1e293b">transactionCapacity 1000</text>
+  <text x="200" y="416" font-size="10.5" fill="#64748b">一个事务最多带多少条</text>
+  <text x="44" y="440" font-size="10.5" fill="#1e293b">batchSize 10</text>
+  <text x="200" y="440" font-size="10.5" fill="#64748b">sink 一次取多少条</text>
+  <text x="44" y="472" font-size="10.5" fill="#7f1d1d">三者关系：batchSize ≤ transactionCapacity ≤ capacity</text>
+  <text x="44" y="494" font-size="10.5" fill="#1e293b">写反了会直接起不来：事务容量超过 channel 容量时</text>
+  <text x="44" y="512" font-size="10.5" fill="#1e293b">报的错指向配置项，不指向数据</text>
+  <text x="44" y="532" font-size="9.5" fill="#1d4ed8">本机：capacity 10000 / transactionCapacity 1000 / batchSize 10</text>
+
+  <rect x="530" y="344" width="440" height="196" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="544" y="368" font-size="12" font-weight="bold" fill="#14532d">file channel 在磁盘上留下什么</text>
+  <text x="544" y="392" font-size="10.5" fill="#1e293b">log-1</text>
+  <text x="700" y="392" font-size="10.5" fill="#64748b">1048576 B（1 MB，数据本体）</text>
+  <text x="544" y="414" font-size="10.5" fill="#1e293b">log-1.meta</text>
+  <text x="700" y="414" font-size="10.5" fill="#64748b">47 B</text>
+  <text x="544" y="436" font-size="10.5" fill="#1e293b">checkpoint/checkpoint</text>
+  <text x="700" y="436" font-size="10.5" fill="#64748b">88232 B（位点）</text>
+  <text x="544" y="458" font-size="10.5" fill="#1e293b">checkpoint.meta</text>
+  <text x="700" y="458" font-size="10.5" fill="#64748b">25 B</text>
+  <text x="544" y="480" font-size="10.5" fill="#1e293b">inflightputs / inflighttakes</text>
+  <text x="740" y="480" font-size="10.5" fill="#64748b">各 32 B</text>
+  <text x="544" y="506" font-size="10.5" fill="#15803d">「在途」就记在这两个文件里，</text>
+  <text x="544" y="526" font-size="10.5" fill="#15803d">所以崩了才知道哪些要回放</text>
+
+  <rect x="30" y="558" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="585" font-size="11.5" fill="#0f172a">一句话：channel 是事务边界，所以「不丢」的上限由它决定——换成 memory，这套事务就只剩内存里的一个数组</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/></marker>
+    <marker id="a3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#dc2626"/></marker>
+  </defs>
+</svg>

@@ -5,9 +5,11 @@
 >
 > 内容整理自个人学习笔记，并参考 Canal 官方文档；素材见 [素材清单](../../../../素材清单.md)。
 >
-> ⚠️ 实测口径：**本篇未做容器实测**。要真跑需要：一个开启 `ROW` 格式 binlog 的 MySQL、一个具备复制权限的账号、一套 canal-server + 下游消费端，再制造增删改并观察事件流 —— 属于多进程对接才有意义的实验。文中配置为**概念骨架**，具体字段名 **以官方文档为准**。
+> ⚠️ 实测口径：**「服务端 → 下游」这一段已补做容器实测**（`canal-server v1.1.8` + MySQL 8.0.46 + Kafka 3.9.0，三者共享 netns，`serverMode=kafka`，一次 UPDATE / INSERT / DELETE 投出 3 条 JSON）。仍未实测的是：**两套位点（server 侧与 client ack）的落盘格式与推进行为、HA 切换、与 Flink 组合的三段式**。未标读数的字段名与取值 **以官方文档为准**。
 >
-> ✅ 口径更新（2026-10-16）：本句现在只约束 **canal-server 与下游消费端**。2.4 节补做了**上游日志侧**的容器实测：自建单实例（`ROW` 日志 + GTID）与一个以复制身份连接的 Go 客户端，验证「伪装从库读日志」这一层的协议行为与事件体积；服务端自身的形态、两套位点与 HA **仍未实测**（本机无对应镜像，按纪律只拉取一次、180 秒超时即放弃）。
+> ✅ 口径更新（2026-10-16）：2.4 节补做了**上游日志侧**的容器实测：自建单实例（`ROW` 日志 + GTID）与一个以复制身份连接的 Go 客户端，验证「伪装从库读日志」这一层的协议行为与事件体积。
+>
+> ✅ 口径更新（2026-10-26）：**服务端形态也补上了**。`canal-server v1.1.8` 与 MySQL 8.0.46 共享 netns 起在 `serverMode=kafka`，启动日志打 `start the canal server[172.17.0.3:11111]` 与 `start successful....`，按 `^inventory\..*$` 过滤表，起始位点由服务端自己查（`find start position successfully, EntryPosition[included=false,journalName=mysql-bin.000003,position=1799]`，耗时 2 ms），一次 UPDATE / INSERT / DELETE 投出 3 条 JSON 到 `canal_topic`。两套位点的落盘格式、HA 与三段式**仍未实测**。
 
 ---
 
@@ -108,7 +110,7 @@ Canal 的位点管理分两层，这一点与「位点随 checkpoint 一起提�
 
 图注：上带与中带的位点、事件数与字节数为容器实测 —— 自建单实例 MySQL 8.0.46（`ROW` 日志、GTID 开启），Go 复制客户端 `go-mysql` v1.16.0，两个身份编号 301 / 302 并发各读一轮，读数一致；下带是独立服务端形态的位点机制示意，无读数。
 
-> ⚠️ **仍未实测**：服务端自身的配置装载、instance 与下游目的地、客户端 ack 与两套位点的落盘格式、HA 切换。本机没有对应镜像，按纪律只尝试拉取一次并在 180 秒超时后放弃。上表只验证了「Canal 依赖的那一层日志」，不能替代对 Canal 本身的验证。
+> ⚠️ **这里仍然只验证「Canal 依赖的那一层日志」**：上表是复制身份客户端直读的结果，不经过 canal-server，所以不能替代对 Canal 本身的验证。服务端形态与「它把事件投到哪」这两件事已另做实测（见篇首「口径更新 2026-10-26」与「使用」一节的观测表）；**仍未实测**的是客户端 ack 与两套位点的落盘格式、HA 切换。
 
 ---
 
@@ -234,7 +236,25 @@ Canal ──binlog──▶ Kafka ──topic──▶ Flink 作业 ──▶ �
 
 ## 使用：一份 canal-server 的概念骨架
 
-下面给出一份**概念骨架**——只写「有哪些块、块里大概有什么」，**不杜撰具体字段名**，键名与取值一律 **以官方文档为准**。⚠️ **未实测**：未在本仓运行。
+**本节要点**：下面分两段——**先说本轮实际跑通的形态与观测到的取值**，再给一份不写具体键名的概念骨架。骨架部分**刻意不杜撰字段名**，键名与取值一律 **以官方文档为准**。
+
+### 本轮跑通的形态（容器实测）
+
+三个容器共享同一 netns（`--network container:<mysql>`），canal-server 因此把 MySQL 当作本机地址；`serverMode=kafka`，一次 UPDATE / INSERT / DELETE 投出 3 条 JSON。
+
+| 观测项 | 读数 |
+| --- | --- |
+| 启动 | `start the canal server[172.17.0.3(172.17.0.3):11111]`，随后 `start successful....` |
+| 表过滤 | `init table filter : ^inventory\..*$` |
+| 起始位点 | `find start position successfully, EntryPosition[included=false,journalName=mysql-bin.000003,position=1799,...] cost : 2ms` |
+| 投递结果 | 3 条 JSON 到 `canal_topic`，字段 `data` / `old` / `database` / `es` / `gtid` / `isDdl` / `mysqlType` / `pkNames` / `sqlType` / `table` / `ts` / `type` |
+| UPDATE 的前后镜像 | `data.amount=109.0 status=PAID`，`old.amount=99.0 status=NEW`；`gtid=""`、`es=1793002342000` |
+| DELETE 的镜像 | `data` 带旧行值，`old=null` |
+| 端口 | server 11111、metrics 11112 |
+
+⭐ **起始位点那一行是这张表最有用的一条**：`included=false` 加服务端自己去查 `journalName` 与 `position`，说明**位点不是配置里写死的**——没配就从当前 binlog 位置起，这正是「服务端记住读到哪了」这个设计在日志里的样子。
+
+### 概念骨架（未实测部分）
 
 ```properties
 # canal-server 侧（概念结构，非真实字段名）
@@ -259,7 +279,7 @@ canal.serverMode              = <TCP 直连 / kafka / rocketmq>
   client 侧：消费到哪了（客户端 ack / MQ 消费组位点）
 ```
 
-⚠️ **未实测**：以上配置未在本仓运行，也**刻意不写具体键名**（避免版本差异误导）。要真跑需要：开启 `ROW` binlog 的 MySQL、复制权限账号、canal-server 实例、一个下游消费端。生产化还差：**HA 部署、位点持久化可靠性、全量快照衔接、监控与告警** —— 这几件才是 Canal 落地的真正工程量。
+⚠️ **仍未实测**：上面这份骨架除 `serverMode` 与过滤规则外**没有逐键运行过**，键名以官方文档为准。生产化还差：**HA 部署、位点持久化的可靠性、全量快照衔接、监控与告警** —— 这几件才是 Canal 落地的真正工程量。
 
 ---
 

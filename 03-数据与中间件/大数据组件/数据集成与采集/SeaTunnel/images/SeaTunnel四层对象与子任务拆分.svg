@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">四层对象与子任务拆分：切分器不并行，并行的只有它下游</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">job 一次提交、pipeline 一条链路、taskGroup 一组调度、task 真正读；parallelism=2 时是 1 个切分器 + 2 个 SourceTask</text>
+
+  <rect x="40" y="96" width="920" height="300" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="54" y="120" font-size="11.5" font-weight="bold" fill="#334155">job（一次命令 + 一份 conf，本机 jobId 1167062219289001985）</text>
+
+  <rect x="60" y="132" width="880" height="248" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="74" y="154" font-size="11" font-weight="bold" fill="#1e3a8a">pipeline-1（一条 source 到 sink 的链路）</text>
+
+  <rect x="80" y="170" width="256" height="186" rx="6" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="94" y="192" font-size="10.5" font-weight="bold" fill="#1e3a8a">taskGroup 1</text>
+  <text x="94" y="212" font-size="10" fill="#1e293b">切分器，全局只有一个</text>
+  <text x="94" y="232" font-size="9.5" fill="#64748b">Source[0]-FakeSource-</text>
+  <text x="94" y="248" font-size="9.5" fill="#64748b">SplitEnumerator (1/1)</text>
+  <text x="94" y="278" font-size="10" fill="#1e3a8a">只产出 split，不搬数据</text>
+  <text x="94" y="300" font-size="10" fill="#64748b">所以它的分母永远是 1</text>
+  <text x="94" y="330" font-size="9.5" fill="#1d4ed8">row.num 写在这里</text>
+
+  <rect x="360" y="170" width="272" height="186" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="374" y="192" font-size="10.5" font-weight="bold" fill="#14532d">taskGroup 2</text>
+  <text x="374" y="212" font-size="10" fill="#15803d">SourceTask (1/2)</text>
+  <text x="374" y="236" font-size="10" fill="#1e293b">subtaskIndex=0</text>
+  <text x="374" y="256" font-size="10" fill="#1e293b">rowIndex 1 ~ 1000</text>
+  <text x="374" y="280" font-size="10" font-weight="bold" fill="#14532d">1000 行</text>
+  <text x="374" y="310" font-size="9.5" fill="#64748b">rowIndex 是子任务内计数，</text>
+  <text x="374" y="326" font-size="9.5" fill="#64748b">不是全局序号</text>
+
+  <rect x="656" y="170" width="272" height="186" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="670" y="192" font-size="10.5" font-weight="bold" fill="#14532d">taskGroup 3</text>
+  <text x="670" y="212" font-size="10" fill="#15803d">SourceTask (2/2)</text>
+  <text x="670" y="236" font-size="10" fill="#1e293b">subtaskIndex=1</text>
+  <text x="670" y="256" font-size="10" fill="#1e293b">rowIndex 1 ~ 1000</text>
+  <text x="670" y="280" font-size="10" font-weight="bold" fill="#14532d">1000 行</text>
+  <text x="670" y="310" font-size="9.5" fill="#64748b">两个子任务都有 rowIndex=1，</text>
+  <text x="670" y="326" font-size="9.5" fill="#64748b">是两路并行不是重复投递</text>
+
+  <line x1="336" y1="230" x2="356" y2="230" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <line x1="336" y1="280" x2="356" y2="280" stroke="#475569" stroke-width="1.6" marker-end="url(#a1)"/>
+  <text x="256" y="372" font-size="9.5" fill="#475569">split 分给下游</text>
+
+  <rect x="30" y="412" width="470" height="130" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="44" y="436" font-size="11.5" font-weight="bold" fill="#1e3a8a">Console 打出来的两行（原文）</text>
+  <text x="44" y="460" font-size="9.5" fill="#1e293b">subtaskIndex=1  rowIndex=1:</text>
+  <text x="44" y="476" font-size="9.5" fill="#1e293b">SeaTunnelRow#tableId=fake ... : 1433823581, yqgPk</text>
+  <text x="44" y="500" font-size="10" fill="#1e293b">grep -c subtaskIndex= 的总行数 = 2000</text>
+  <text x="44" y="520" font-size="10" fill="#1e293b">tableId 来自 source 的 plugin_output</text>
+  <text x="44" y="538" font-size="9.5" fill="#64748b">1000 × 2 = 2000，不是 1000</text>
+
+  <rect x="514" y="412" width="456" height="130" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="528" y="436" font-size="11.5" font-weight="bold" fill="#78350f">这条边界决定两件事</text>
+  <text x="528" y="460" font-size="10.5" fill="#92400e">① 行数：row.num 是「每子任务」</text>
+  <text x="528" y="480" font-size="10.5" fill="#92400e">   总量 = row.num × parallelism</text>
+  <text x="528" y="504" font-size="10.5" fill="#92400e">② 快照：checkpoint 的单位是子任务，</text>
+  <text x="528" y="522" font-size="10.5" fill="#92400e">   每个子任务各存一份状态</text>
+  <text x="528" y="538" font-size="9.5" fill="#b45309">调 parallelism 是加消费者，源只有一个</text>
+
+  <rect x="30" y="556" width="940" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="583" font-size="11.5" fill="#0f172a">一句话：切分器 1 个、SourceTask N 个——「并行」发生在切分器之后，所以 parallelism 超过 split 数就是浪费线程</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker>
+  </defs>
+</svg>
