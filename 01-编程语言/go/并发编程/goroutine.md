@@ -107,6 +107,8 @@ fixedStack  = 向上取整到 2 的幂                       // → 8192
 
 ![goroutine 栈的扩容与缩容流程图：函数入口 morestack 检查 → 堆上分配两倍新栈 → 整体拷贝 → 修正指向旧栈的指针 → 释放旧栈继续执行；超过 MaxStack = 1 GB 直接 fatal error: stack overflow（不能 recover）；缩容只在 GC 时做，用量不到 1/4 就 shrinkstack 减半](images/goroutine栈扩容与缩容流程.svg)
 
+读法：扩容五步是「检查 → 分配两倍 → 整体拷贝 → 修正旧栈指针 → 释放旧栈」；第四步是关键，栈搬了而指针还指着旧址就会直接崩。
+
 ---
 
 ## 三、创建一个 goroutine 有多便宜？
@@ -210,6 +212,8 @@ goroutine 之间切换只换 `sp / pc / bp / lr / ctxt` 这几个字 —— 因�
 
 ![g 结构体的数据结构形态：左侧按四类字段分组（① 栈 stack / stackguard0 / stackguard1、② 现场 m 与 sched gobuf、③ 状态 atomicstatus / waitreason / goid / schedlink / waitsince / _panic / _defer、④ 控制位 preempt 系列），右侧展开 gobuf 的 sp / pc / g / ctxt / lr / bp 六个字段](images/goroutine-g结构体四类字段与gobuf.svg)
 
+读法：四类字段分别回答「栈在哪」「在哪个 M 上跑」「调度现场存哪」「状态是什么」；真正让 goroutine 能被挂起再恢复的是 sched 里那份 gobuf。
+
 ### 4.2 状态机
 
 源码里的常量（`runtime/runtime2.go`）：
@@ -230,6 +234,8 @@ _Gidle(0) ──分配好──→ _Grunnable(1) ──被 M 取走──→ _Gr
   所以运行时里真正的读法是 `readgstatus(gp) &^ _Gscan`。
 
 ![g 状态机与迁移：_Gidle → _Grunnable → _Grunning，阻塞与系统调用后回到 _Grunnable，执行结束进 _Gdead](images/g状态机与迁移.svg)
+
+读法：注意 _Gwaiting 与 _Gsyscall 是两条不同的回边 —— 前者由 goready 唤醒，后者等系统调用返回，两者的等待代价并不一样。
 
 ### 4.3 实测：状态与「为什么阻塞」在栈 dump 里都看得到
 
@@ -314,6 +320,8 @@ func ready(gp *g, traceskip int, next bool) {
 
 ![gopark 让出与 goready 唤醒的时序：mcall(park_m) 切到 g0，置 _Gwaiting 解绑 M；goready → ready() 改状态、进 runnext、wakep](images/gopark让出与goready唤醒时序.svg)
 
+读法：gopark 一侧是「切到 g0 → 置 _Gwaiting → 解绑 M」，goready 一侧是把 g 放回可运行队列；中间 M 已经去干别的活了，这才是不占线程的原因。
+
 ### 5.3 实测：1 万个阻塞协程，线程只有 10 条
 
 ```bash
@@ -344,6 +352,8 @@ Go 把 socket 设成非阻塞并交给 **`netpoller`**（Linux epoll / Windows I
 | **没有函数调用的死循环** | 1.14 起有异步抢占兜底，但抢占有延迟（实测见 [GMP调度.md](../运行时/GMP调度.md)） |
 
 ![netpoller 的数据流转闭环：上半环 ① 读 socket（非阻塞）→ ② 读不 ready 就 gopark、M 不被拖住 → ③ _Gwaiting 躺在内存里等信号；下半环 ④ 数据到了 → ⑤ netpoller（Linux epoll / Windows IOCP）poll 到 fd → ⑥ goready 把 _Gwaiting 改成 _Grunnable、进 runnext 等被 M 取走；右下另列三个真占住 M 的例外](images/netpoll网络轮询器数据流转.svg)
+
+读法：上半环是「读 socket 不 ready 就 gopark」，下半环是「epoll 通知后 goready」；两个半环合起来说明网络 IO 为什么不必一个协程守一个线程。
 
 ---
 

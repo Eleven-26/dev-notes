@@ -179,6 +179,8 @@ Put 顺序：private 空就放 private；否则把它原来的对象推到 share
 
 ![Pool 按 P 分片：每个 P 一份 private + shared，Get 依次走本 P private → 本 P shared → 偷其他 P → victim → New](images/Pool按P分片与Get顺序.svg)
 
+读法：Get 的查找顺序是有代价阶梯的 —— 私有槽最便宜、偷别的 P 最贵，所以真正决定命中率的是「对象有没有落回同一个 P」，而不是池有多大。
+
 | 设计 | 解决的问题 |
 |---|---|
 | **按 P 分片** | 绝大多数场景下**根本不用加锁**，不成为并发瓶颈 |

@@ -154,6 +154,8 @@ type entry struct {
 
 ![经典版 entry.p 状态机：正常（持实值）经 Delete 原子换 nil 到「p == nil」，重建 dirty 时 nil 换成 expunged 成墓碑；Store 命中墓碑键须持 mu 把 entry 复制进 dirty 并 unexpunge 恢复实值](images/syncMap-entryp状态机.svg)
 
+读法：三个状态之间只有两条边 —— Delete 把持实值换成 nil，重建 dirty 时把 nil 换成 expunged；expunged 是终态，再 Store 会走「先提升再写」的慢路。
+
 ### 2.2 现行版（Go 1.26+，含本机 go1.26.8）：无锁哈希前缀树
 
 go1.26.8 的 `sync.Map` 只剩一个字段，把活全交给 `internal/sync.HashTrieMap`。`sync/map.go` 里 `Map` 结构原样：

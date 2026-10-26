@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="446" viewBox="0 0 1000 446" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="446" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">三档执行流的成本：进程按毫秒计、协程按微秒计</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">同一台机器上量出来的三个维度——创建、切换、栈内存；空着的是本篇没测，不是「一样」</text>
+
+  <rect x="30" y="96" width="300" height="196" rx="8" fill="#fef2f2" stroke="#fca5a5"/>
+  <rect x="44" y="108" width="272" height="26" fill="#fef2f2"/>
+  <text x="48" y="126" font-size="14" fill="#b91c1c">进程</text>
+  <rect x="44" y="146" width="272" height="22" fill="#fef2f2"/>
+  <text x="48" y="161" font-size="11" fill="#7f1d1d">创建 + 回收</text>
+  <text x="200" y="161" font-size="12" fill="#0f172a">25.3 ~ 25.9 ms</text>
+  <rect x="44" y="176" width="272" height="34" fill="#fef2f2"/>
+  <text x="48" y="191" font-size="11" fill="#7f1d1d">口径</text>
+  <text x="200" y="191" font-size="11" fill="#334155">含 Run 里的 Wait</text>
+  <text x="200" y="205" font-size="10.5" fill="#64748b">只 Start 不等，数字会小很多</text>
+  <rect x="44" y="218" width="272" height="22" fill="#fef2f2"/>
+  <text x="48" y="233" font-size="11" fill="#7f1d1d">切换</text>
+  <text x="200" y="233" font-size="11.5" fill="#64748b">本篇未测</text>
+  <rect x="44" y="248" width="272" height="34" fill="#fef2f2"/>
+  <text x="48" y="263" font-size="11" fill="#7f1d1d">地址空间</text>
+  <text x="200" y="263" font-size="11.5" fill="#334155">各自独立</text>
+  <text x="200" y="277" font-size="10.5" fill="#64748b">各自独立，切换要换页表</text>
+
+  <rect x="350" y="96" width="300" height="196" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+  <rect x="364" y="108" width="272" height="26" fill="#fffbeb"/>
+  <text x="368" y="126" font-size="14" fill="#b45309">内核线程</text>
+  <rect x="364" y="146" width="272" height="22" fill="#fffbeb"/>
+  <text x="368" y="161" font-size="11" fill="#78350f">创建</text>
+  <text x="520" y="161" font-size="11.5" fill="#64748b">本篇未测（见 Java 篇）</text>
+  <rect x="364" y="176" width="272" height="34" fill="#fffbeb"/>
+  <text x="368" y="191" font-size="11" fill="#78350f">切换</text>
+  <text x="520" y="191" font-size="11.5" fill="#64748b">要陷入内核，本篇未测</text>
+  <text x="520" y="205" font-size="10.5" fill="#64748b">不陷内核，不可比</text>
+  <rect x="364" y="218" width="272" height="22" fill="#fffbeb"/>
+  <text x="368" y="233" font-size="11" fill="#78350f">栈</text>
+  <text x="520" y="233" font-size="11.5" fill="#334155">默认 8 MB，预留不提交</text>
+  <rect x="364" y="248" width="272" height="34" fill="#fffbeb"/>
+  <text x="368" y="263" font-size="11" fill="#78350f">100 万个</text>
+  <text x="520" y="263" font-size="11.5" fill="#334155">7812 GB 地址空间</text>
+  <text x="520" y="277" font-size="10.5" fill="#64748b">这是地址空间账</text>
+
+  <rect x="670" y="96" width="300" height="196" rx="8" fill="#f0fdf4" stroke="#86efac"/>
+  <rect x="684" y="108" width="272" height="26" fill="#f0fdf4"/>
+  <text x="688" y="126" font-size="14" fill="#15803d">goroutine</text>
+  <rect x="684" y="146" width="272" height="22" fill="#f0fdf4"/>
+  <text x="688" y="161" font-size="11" fill="#14532d">创建</text>
+  <text x="840" y="161" font-size="12" fill="#0f172a">5.0 ~ 5.7 µs</text>
+  <rect x="684" y="176" width="272" height="34" fill="#f0fdf4"/>
+  <text x="688" y="191" font-size="11" fill="#14532d">切换（乒乓）</text>
+  <text x="840" y="191" font-size="12" fill="#0f172a">830 ns ~ 1.0 µs</text>
+  <text x="840" y="205" font-size="10.5" fill="#64748b">用户态调度，不陷内核</text>
+  <rect x="684" y="218" width="272" height="22" fill="#f0fdf4"/>
+  <text x="688" y="233" font-size="11" fill="#14532d">栈</text>
+  <text x="840" y="233" font-size="12" fill="#0f172a">7.96 KB/个</text>
+  <rect x="684" y="248" width="272" height="34" fill="#f0fdf4"/>
+  <text x="688" y="263" font-size="11" fill="#14532d">100 万个</text>
+  <text x="840" y="263" font-size="12" fill="#0f172a">约 7.6 GB</text>
+  <text x="840" y="277" font-size="10.5" fill="#64748b">分配粒度，非实际用量</text>
+
+  <rect x="30" y="308" width="940" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="44" y="318" width="912" height="20" fill="#f8fafc"/>
+  <text x="48" y="332" font-size="12" fill="#0f172a">比值：进程 25.3 ms ÷ 协程 5.4 µs ≈ 4500 ~ 5000 倍</text>
+  <rect x="44" y="342" width="912" height="20" fill="#f8fafc"/>
+  <text x="48" y="356" font-size="11.5" fill="#334155">量级：协程按 KB 计、内核线程按 MB 计，中间差三个数量级 —— 所以「百万协程」可行，「百万线程」连地址空间都不够。</text>
+  <rect x="44" y="362" width="912" height="24" fill="#f8fafc"/>
+  <text x="48" y="376" font-size="11" fill="#b45309">别拿 2 KB 做容量规划：那是栈的初始大小；真要开 100 万个，按 7.96 KB/个 估内存，约 7.6 GB。</text>
+
+  <rect x="36" y="404" width="932" height="32" fill="#ffffff"/>
+  <text x="40" y="418" font-size="10.5" fill="#64748b">口径：go1.26.5 / Windows / 8 逻辑核；进程那一项是本机编译的测试二进制（启动即退出），线程的数字在 Java 侧别的篇里，两边绝对值不可比。</text>
+  <text x="40" y="432" font-size="10.5" fill="#64748b">「切换」测的是 Go 用户态调度 + 唤醒，不是内核线程切换；三列空着的格表示本篇没有该维度的读数。</text>
+</svg>

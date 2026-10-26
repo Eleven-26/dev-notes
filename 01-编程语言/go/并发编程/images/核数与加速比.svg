@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="452" viewBox="0 0 1000 452" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="452" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">总工作量固定，只变并发度：加速到逻辑核数附近就到顶</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">同一批 BusyN 4000 份的活，worker 从 1 加到 64 —— 柱子是耗时，越短越快</text>
+
+  <rect x="30" y="96" width="940" height="228" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="44" y="104" width="912" height="20" fill="#f8fafc"/>
+  <text x="48" y="118" font-size="11" fill="#64748b">worker</text>
+  <text x="110" y="118" font-size="11" fill="#64748b">耗时（goroutine）</text>
+  <text x="760" y="118" font-size="11" fill="#64748b">加速比（对 1 worker）</text>
+
+  <rect x="100" y="126" width="580" height="30" fill="#eff6ff"/>
+  <text x="48" y="145" font-size="12.5" fill="#0f172a">1</text>
+  <rect x="110" y="131" width="520" height="22" rx="3" fill="#93c5fd"/>
+  <text x="640" y="146" font-size="11.5" fill="#1e3a8a">1.311 ~ 1.321 s</text>
+  <text x="760" y="146" font-size="12" fill="#475569">1.0x</text>
+
+  <rect x="100" y="160" width="580" height="30" fill="#ffffff"/>
+  <text x="48" y="179" font-size="12.5" fill="#0f172a">2</text>
+  <rect x="110" y="165" width="259" height="22" rx="3" fill="#93c5fd"/>
+  <text x="379" y="180" font-size="11.5" fill="#1e3a8a">656 ~ 657 ms</text>
+  <text x="760" y="180" font-size="12" fill="#475569">2.0x</text>
+
+  <rect x="100" y="194" width="580" height="30" fill="#eff6ff"/>
+  <text x="48" y="213" font-size="12.5" fill="#0f172a">8</text>
+  <rect x="110" y="199" width="91" height="22" rx="3" fill="#1d4ed8"/>
+  <text x="211" y="214" font-size="11.5" fill="#1e3a8a">217 ~ 244 ms</text>
+  <text x="760" y="214" font-size="12.5" fill="#0f172a">5.5x</text>
+  <text x="810" y="214" font-size="10.5" fill="#b45309">逻辑核数，从这里不再涨</text>
+
+  <rect x="100" y="228" width="580" height="30" fill="#ffffff"/>
+  <text x="48" y="247" font-size="12.5" fill="#0f172a">16</text>
+  <rect x="110" y="233" width="94" height="22" rx="3" fill="#bfdbfe"/>
+  <text x="214" y="248" font-size="11.5" fill="#1e3a8a">223 ~ 254 ms</text>
+  <text x="760" y="248" font-size="12" fill="#475569">5.7x</text>
+
+  <rect x="100" y="262" width="580" height="30" fill="#eff6ff"/>
+  <text x="48" y="281" font-size="12.5" fill="#0f172a">32</text>
+  <rect x="110" y="267" width="87" height="22" rx="3" fill="#bfdbfe"/>
+  <text x="207" y="282" font-size="11.5" fill="#1e3a8a">211 ~ 232 ms</text>
+  <text x="760" y="282" font-size="12" fill="#475569">5.9x</text>
+
+  <rect x="100" y="296" width="580" height="30" fill="#ffffff"/>
+  <text x="48" y="315" font-size="12.5" fill="#0f172a">64</text>
+  <rect x="110" y="301" width="92" height="22" rx="3" fill="#bfdbfe"/>
+  <text x="212" y="316" font-size="11.5" fill="#1e3a8a">201 ~ 265 ms</text>
+  <text x="760" y="316" font-size="12" fill="#475569">6.0x</text>
+
+  <rect x="30" y="336" width="940" height="76" rx="8" fill="#fefce8" stroke="#fde047"/>
+  <rect x="44" y="344" width="912" height="20" fill="#fefce8"/>
+  <text x="48" y="358" font-size="11.5" fill="#713f12">两句成立、一句不成立：① 2→8 近似线性（2.0x→5.5x）、8→64 几乎不动 ——「线程数取核数」这条经验就是这张表；</text>
+  <rect x="44" y="366" width="912" height="20" fill="#fefce8"/>
+  <text x="48" y="380" font-size="11.5" fill="#713f12">② 「开太多反而明显变慢」在本机没稳定复现：总工作量固定，多出来的 worker 只是换着手上 CPU，不产生额外功。</text>
+  <rect x="44" y="386" width="912" height="20" fill="#fefce8"/>
+  <text x="48" y="400" font-size="11.5" fill="#b45309">为什么是 5.5x 而不是 8x：NumCPU 的 8 是逻辑 CPU，P 核 + E 核与超线程都不等于 8 个同等吞吐的核。</text>
+
+  <rect x="36" y="420" width="932" height="24" fill="#ffffff"/>
+  <text x="40" y="434" font-size="10.5" fill="#64748b">口径：go1.26.5 / Windows / 8 逻辑核，BusyN 固定 4000 份纯 CPU 任务；同表另有一列 runtime.LockOSThread 钉住的内核线程，读数几乎相同。</text>
+</svg>

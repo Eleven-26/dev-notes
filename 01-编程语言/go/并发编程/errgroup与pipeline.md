@@ -43,6 +43,8 @@ returning errors.
 
 ![errgroup.Group 的三合一内部结构架构图：wg 等齐、err+errOnce 只留首错、sem 限并发（ chan struct{} ）、WithContext 派生的 gctx 首错即 cancel；Go 1.20 起有 WithCancelCause，SetLimit 改上限时若仍有活跃协程会 panic](images/errgroup三合一内部结构.svg)
 
+三个部件各管一件事：`wg` 负责等齐、`err` 加 `errOnce` 只留第一条错误、`sem` 把在飞协程数卡在 `SetLimit` 上；`WithContext` 派生的 `gctx` 在首错时取消其余任务。
+
 ### 1.3 一个最常见的落地形态：请求入口的多段独立查询
 
 一个详情接口要拼汇总 / 流水 / 标签三段互不依赖的查询，串行跑就是多次 RTT 相加：
@@ -60,14 +62,6 @@ if err := g.Wait(); err != nil {
 ⚠️ `gctx` 必须派生自请求 ctx，否则客户端已断开、后端还在空跑（取消与超时的语义见
 [context.md](../工程实践/context.md) 第五节）。各段耗时之和要明显大于最慢那段，并发才有意义 ——
 三段各 10ms 的查询并发起来只会更慢。
-
-### 延伸追问
-
-- **errgroup 能替代 WaitGroup 吗？** → 单向可以：errgroup 内部含 WaitGroup；但纯"等齐"用 errgroup 是过度设计。
-- **errgroup 会等所有任务返回才取消吗？** → 不会。首错一出现就 `cancel`，其余任务只要检查 ctx 就能提前收工。
-- **一个 Group 能复用给下一批任务吗？** → 不能。包注释明确「A Group should not be reused for different tasks」。
-
----
 
 ## 二、三个 API 的硬约束是什么？
 
@@ -154,14 +148,6 @@ exit status 2
 > ⚠️ 顺带一个反直觉细节：对**零值 Group** 直接 `SetLimit` 不会 panic —— 因为 `g.sem` 还是 nil，
 > `len(nil)==0` 检不到 active。必须"先设过 limit 又跑起来了"才落入误用窗口。
 
-### 延伸追问
-
-- **`g.Go` 里能直接 `return nil` 然后靠别处判错吗？** → 能，但错误就丢了；要收敛就 `return` 出去。
-- **能在任务运行中调 `SetLimit` 吗？** → 不能（见 2.3），只能在还没有 active 协程时设。
-- **`Wait` 之后还能 `Go` 吗？** → 不能，违反「first call to Go before a Wait」，Group 也不该复用。
-
----
-
 ## 三、SetLimit 怎么把"并发上限"与"任务总数"解耦？
 
 **本节要点**：`SetLimit(n)` 让 `Go` 在协程数达到 n 时**阻塞在提交处**，
@@ -188,6 +174,10 @@ goroutine without exceeding the configured limit.
 10 个任务、SetLimit(3) → 实测同时在飞的最大任务数 = 3
 ```
 
+![SetLimit 的在飞峰值：不设上限时 10 个任务同时起、30 毫秒跑完，设成 3 之后峰值 3、分四批共 120 毫秒](images/SetLimit的在飞峰值.svg)
+
+限并发不减少工作量，只把峰值压住；关键在于阻塞发生在投递侧的 `g.Go`，而不是协程起来之后再排队 —— 这正是它能压住峰值、而「先起后限」压不住的原因。
+
 ### 3.1 SetLimit vs 手写 worker 池：取舍
 
 | 维度 | `errgroup` + `SetLimit` | 手写 worker 池（`jobs` / `results` 双 channel） |
@@ -201,14 +191,6 @@ goroutine without exceeding the configured limit.
 > 判据：**"固定一组任务、跑完就完"用 `SetLimit`；任务持续产生、需要长期限流或复用协程用 worker 池**。
 > 池的写法、以及"令牌拿在 go 之前 vs 里面"的实测差 60~70 倍，都在
 > [goroutine实战模式.md](goroutine实战模式.md) 案例 5 与用法三，本篇不重讲。
-
-### 延伸追问
-
-- **`SetLimit(0)` 是什么意思？** → 阻止任何新协程加入（`Go` 会永久阻塞），文档明确写了这条语义。
-- **SetLimit 和信号量 channel 是一回事吗？** → 底层都是令牌桶，`SetLimit` 帮你把它包进 `Go` 的阻塞点，省了手写 `sem <- struct{}{}`。
-- **要限"每秒请求数"能用 SetLimit 吗？** → 不能，它限的是**同时在飞数量**不是**速率**；速率控制见 [限流器.md](限流器.md)。
-
----
 
 ## 四、首错语义：cancel 之后到底会发生什么？
 
@@ -299,14 +281,6 @@ err := g.Wait()
 > ⚠️ 看清楚了：`Wait` 返回的是**首错**（"任务 1 失败"），不是你想要的"凑够了"信号 ——
 > 所以"取 N 个成功"这套**语义上很别扭**，`errgroup` 并不是它的理想工具。
 > 真要"取够即停"，用 `select` + 结果 channel + `context.WithCancel` 手写更直白（见 4.2 的教训：别指望它替你筛成功数）。
-
-### 延伸追问
-
-- **首错之后 `Wait` 会立刻返回吗？** → 不会，它等**所有已提交的 `g.Go` 任务**都返回（含不检查 ctx 的）才返回。
-- **能拿到"所有"错误吗？** → `Wait` 只给首错；全量要靠自己在任务里收集 + `errors.Join`（Go 1.20+）。
-- **"取 N 个成功"为什么用 errgroup 别扭？** → 它只有"首错即取消"的原语，没有"够数即停"的原语，只能拿哨兵错误硬凑。
-
----
 
 ## 五、pipeline：扇出 / 扇入 / 分阶段与 channel 生命周期
 
@@ -416,14 +390,6 @@ case <-ctx.Done():     // ★ 取消 → 撒手退出，不卡发送
 抓取多 worker 全退后由协调协程单点 `close(rawCh)`；下半区（②）是抓取某个 worker 返回 error 后，
 首错交给 errgroup（errOnce）→ errgroup `cancel(ctx)` 广播 → 解析、落库 worker 的 `select ctx.Done()` 命中并 return，
 最后 `g.Wait()` 返回首错、本批只落了部分行。红线是取消传播方向，与蓝/绿的数据流方向相反。
-
-### 延伸追问
-
-- **扇出后各级 worker 数量要一致吗？** → 不必；抓取 CPU/IO 密集可多开 worker，落库是单一有序流就只能 1 个（并发写出会乱序）。
-- **中间 channel 满了会怎样？** → 上游发送阻塞 —— 这就是背压；要么加大缓冲（堆内存）要么让上游慢下来。
-- **谁能接收已 close 的 channel？** → 所有人；读到零值 + `ok=false`，`for range` 自然结束（"关闭后仍可读"，见 [channel使用陷阱.md](channel使用陷阱.md)）。
-
----
 
 ## 使用：三段式 pipeline（抓取 → 解析 → 落库）+ errgroup 收敛
 
@@ -576,6 +542,17 @@ if err := eg.Wait(); err != nil {
 
 ## 延伸追问
 
+- **errgroup 会等所有任务返回才取消吗？** → 不会。首错一出现就 `cancel`，其余任务只要检查 ctx 就能提前收工。
+- **一个 Group 能复用给下一批任务吗？** → 不能。包注释明确「A Group should not be reused for different tasks」。
+- **`g.Go` 里能直接 `return nil` 然后靠别处判错吗？** → 能，但错误就丢了；要收敛就 `return` 出去。
+- **`Wait` 之后还能 `Go` 吗？** → 不能，违反「first call to Go before a Wait」，Group 也不该复用。
+- **`SetLimit(0)` 是什么意思？** → 阻止任何新协程加入（`Go` 会永久阻塞），文档明确写了这条语义。
+- **SetLimit 和信号量 channel 是一回事吗？** → 底层都是令牌桶，`SetLimit` 帮你把它包进 `Go` 的阻塞点，省了手写 `sem <- struct{}{}`。
+- **要限"每秒请求数"能用 SetLimit 吗？** → 不能，它限的是**同时在飞数量**不是**速率**；速率控制见 [限流器.md](限流器.md)。
+- **首错之后 `Wait` 会立刻返回吗？** → 不会，它等**所有已提交的 `g.Go` 任务**都返回（含不检查 ctx 的）才返回。
+- **扇出后各级 worker 数量要一致吗？** → 不必；抓取 CPU/IO 密集可多开 worker，落库是单一有序流就只能 1 个（并发写出会乱序）。
+- **中间 channel 满了会怎样？** → 上游发送阻塞 —— 这就是背压；要么加大缓冲（堆内存）要么让上游慢下来。
+- **谁能接收已 close 的 channel？** → 所有人；读到零值 + `ok=false`，`for range` 自然结束（"关闭后仍可读"，见 [channel使用陷阱.md](channel使用陷阱.md)）。
 - **errgroup 和 WaitGroup 到底怎么选？** → 只要"等齐"用 WaitGroup + 按下标写切片；
   要"一错全停 + 收敛错误 + 级联取消"才上 `errgroup.WithContext`。
 - **`Go` 为什么必须早于 `Wait`？** → `Go` 内部第一步是 `wg.Add(1)`，而 WaitGroup 契约要求计数 0→正 的 Add
@@ -587,8 +564,6 @@ if err := eg.Wait(); err != nil {
 - **pipeline 里多个生产者能各自 close 吗？** → 不能，会 panic；必须等齐后由一个协调协程单点 close（WaitGroup 或 `g.Wait()` 之后）。
 - **取消时怎么保证不泄漏 goroutine？** → 发送处 `select ctx.Done()`、worker 退出 `wg.Done()`；
   实测泄漏版协程 2→4、取消版 4→4 不涨（判据见 [协程泄漏与死锁.md](协程泄漏与死锁.md)）。
-
----
 
 ## 关联
 

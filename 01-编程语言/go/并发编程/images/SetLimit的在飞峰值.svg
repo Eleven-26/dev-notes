@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="452" viewBox="0 0 1000 452" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="452" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">SetLimit 把「同时在跑几个」和「总共多少任务」拆成两个旋钮</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">同一批 10 个任务、每个睡 30ms；纵轴是「在飞任务数」，横轴是时间</text>
+
+  <rect x="30" y="96" width="940" height="234" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+
+  <text x="88" y="134" font-size="10.5" fill="#64748b" text-anchor="end">10</text>
+  <text x="88" y="170" font-size="10.5" fill="#64748b" text-anchor="end">8</text>
+  <text x="88" y="206" font-size="10.5" fill="#64748b" text-anchor="end">6</text>
+  <text x="88" y="242" font-size="10.5" fill="#64748b" text-anchor="end">4</text>
+  <text x="88" y="278" font-size="10.5" fill="#64748b" text-anchor="end">2</text>
+  <text x="88" y="314" font-size="10.5" fill="#64748b" text-anchor="end">0</text>
+
+  <rect x="100" y="130" width="840" height="1" fill="#e2e8f0"/>
+  <rect x="100" y="166" width="840" height="1" fill="#e2e8f0"/>
+  <rect x="100" y="202" width="840" height="1" fill="#e2e8f0"/>
+  <rect x="100" y="238" width="840" height="1" fill="#e2e8f0"/>
+  <rect x="100" y="274" width="840" height="1" fill="#e2e8f0"/>
+  <rect x="100" y="310" width="840" height="1" fill="#94a3b8"/>
+
+  <polyline points="100,130 268,130 268,310 940,310" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+  <polyline points="100,256 604,256 604,292 772,292 772,310 940,310" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+
+  <rect x="112" y="112" width="120" height="16" fill="#fef2f2"/>
+  <text x="116" y="124" font-size="10.5" fill="#b91c1c">不设上限：在飞 10</text>
+  <rect x="300" y="238" width="150" height="16" fill="#eff6ff"/>
+  <text x="304" y="250" font-size="10.5" fill="#1d4ed8">SetLimit(3)：在飞最多 3</text>
+
+  <rect x="100" y="334" width="840" height="16" fill="#f8fafc"/>
+  <text x="100" y="346" font-size="10" fill="#64748b" text-anchor="start">0</text>
+  <text x="268" y="346" font-size="10" fill="#64748b" text-anchor="middle">30ms</text>
+  <text x="436" y="346" font-size="10" fill="#64748b" text-anchor="middle">60ms</text>
+  <text x="604" y="346" font-size="10" fill="#64748b" text-anchor="middle">90ms</text>
+  <text x="772" y="346" font-size="10" fill="#64748b" text-anchor="middle">120ms</text>
+  <text x="940" y="346" font-size="10" fill="#64748b" text-anchor="end">150ms</text>
+
+  <rect x="700" y="108" width="256" height="52" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <rect x="712" y="116" width="10" height="10" fill="#dc2626"/>
+  <text x="730" y="125" font-size="10.5" fill="#334155">无 SetLimit：峰值 10，总耗时 30ms</text>
+  <rect x="712" y="136" width="10" height="10" fill="#1d4ed8"/>
+  <text x="730" y="145" font-size="10.5" fill="#334155">SetLimit(3)：峰值 3，总耗时 120ms</text>
+
+  <rect x="30" y="346" width="940" height="72" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <rect x="44" y="354" width="912" height="20" fill="#eff6ff"/>
+  <text x="48" y="368" font-size="11.5" fill="#1e3a8a">限并发不减少工作量，只把峰值压住 —— 代价是总耗时从 30ms 变 120ms（10 个任务分四批：3 + 3 + 3 + 1）。</text>
+  <rect x="44" y="376" width="912" height="20" fill="#eff6ff"/>
+  <text x="48" y="390" font-size="11.5" fill="#1e3a8a">关键是阻塞点在投递侧：任务数到 n 后，后面的 g.Go 自己会阻塞，而不是让协程起来再排队。</text>
+  <rect x="44" y="396" width="912" height="18" fill="#eff6ff"/>
+  <text x="48" y="410" font-size="11.5" fill="#b45309">这也是「令牌要拿在 go 之前」的同一条道理：背压必须作用在「创建」这一步，才压得住峰值。</text>
+
+  <rect x="36" y="426" width="932" height="22" fill="#ffffff"/>
+  <text x="40" y="440" font-size="10.5" fill="#64748b">口径：容器实测，10 个任务各睡 30ms、SetLimit(3)，用原子计数每轮取在飞峰值；实测峰值 = 3。时间轴为示意，不是逐毫秒采样。</text>
+</svg>

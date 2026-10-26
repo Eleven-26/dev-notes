@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="444" viewBox="0 0 1000 444" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="444" fill="#ffffff"/>
+
+  <rect x="30" y="20" width="940" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="46" y="45" font-size="17" fill="#0f172a">跑一遍没问题，证明不了代码是对的</text>
+  <text x="46" y="65" font-size="11.5" fill="#475569">8 个 goroutine 各加 1000 次，期望 8000；同一份逻辑连跑五轮，两轮恰好正确</text>
+
+  <rect x="30" y="96" width="940" height="212" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="44" y="104" width="912" height="20" fill="#f8fafc"/>
+  <text x="48" y="118" font-size="11" fill="#64748b">轮次</text>
+  <text x="130" y="118" font-size="11" fill="#64748b">不加锁的结果</text>
+  <text x="270" y="118" font-size="11" fill="#64748b">加 Mutex 的对照</text>
+  <text x="390" y="118" font-size="11" fill="#64748b">丢了多少（条长 = 差值）</text>
+  <text x="770" y="118" font-size="11" fill="#64748b">判断</text>
+
+  <rect x="44" y="126" width="912" height="34" fill="#f0fdf4"/>
+  <text x="48" y="148" font-size="12.5" fill="#0f172a">1</text>
+  <text x="130" y="148" font-size="12.5" fill="#15803d">8000</text>
+  <text x="270" y="148" font-size="12" fill="#475569">8000</text>
+  <text x="390" y="148" font-size="11" fill="#64748b">差值为 0，条长为空</text>
+  <text x="770" y="148" font-size="11.5" fill="#15803d">恰好对，是运气</text>
+
+  <rect x="44" y="160" width="912" height="34" fill="#fef2f2"/>
+  <text x="48" y="182" font-size="12.5" fill="#0f172a">2</text>
+  <text x="130" y="182" font-size="12.5" fill="#b91c1c">7194</text>
+  <text x="270" y="182" font-size="12" fill="#475569">8000</text>
+  <rect x="390" y="167" width="103" height="20" rx="3" fill="#f87171"/>
+  <text x="499" y="182" font-size="11" fill="#b91c1c">806，约 10.1 pp</text>
+  <text x="770" y="182" font-size="11.5" fill="#b91c1c">丢了</text>
+
+  <rect x="44" y="194" width="912" height="34" fill="#fef2f2"/>
+  <text x="48" y="216" font-size="12.5" fill="#0f172a">3</text>
+  <text x="130" y="216" font-size="12.5" fill="#b91c1c">7482</text>
+  <text x="270" y="216" font-size="12" fill="#475569">8000</text>
+  <rect x="390" y="201" width="66" height="20" rx="3" fill="#f87171"/>
+  <text x="462" y="216" font-size="11" fill="#b91c1c">518，约 6.5 pp</text>
+  <text x="770" y="216" font-size="11.5" fill="#b91c1c">丢了</text>
+
+  <rect x="44" y="228" width="912" height="34" fill="#fef2f2"/>
+  <text x="48" y="250" font-size="12.5" fill="#0f172a">4</text>
+  <text x="130" y="250" font-size="12.5" fill="#b91c1c">6050</text>
+  <text x="270" y="250" font-size="12" fill="#475569">8000</text>
+  <rect x="390" y="235" width="250" height="20" rx="3" fill="#dc2626"/>
+  <text x="646" y="250" font-size="11" fill="#b91c1c">1950，约 24.4 pp</text>
+  <text x="770" y="250" font-size="11.5" fill="#b91c1c">丢得最多</text>
+
+  <rect x="44" y="262" width="912" height="34" fill="#f0fdf4"/>
+  <text x="48" y="284" font-size="12.5" fill="#0f172a">5</text>
+  <text x="130" y="284" font-size="12.5" fill="#15803d">8000</text>
+  <text x="270" y="284" font-size="12" fill="#475569">8000</text>
+  <text x="390" y="284" font-size="11" fill="#64748b">差值为 0，条长为空</text>
+  <text x="770" y="284" font-size="11.5" fill="#15803d">恰好对，是运气</text>
+
+  <rect x="30" y="320" width="940" height="72" rx="8" fill="#fffbeb" stroke="#fcd34d"/>
+  <rect x="44" y="328" width="912" height="20" fill="#fffbeb"/>
+  <text x="48" y="342" font-size="11.5" fill="#713f12">① 五轮里两轮完全正确 —— 所以「我这跑了一遍没问题」什么也证明不了，它只是一个样本。</text>
+  <rect x="44" y="350" width="912" height="20" fill="#fffbeb"/>
+  <text x="48" y="364" font-size="11.5" fill="#713f12">② 对照组也是 8 个 goroutine 各加 1000 次，只是加了 Mutex：每轮都是 8000 —— 证明「数字变小」是竞态造成的，不是工作量变了。</text>
+  <rect x="44" y="370" width="912" height="18" fill="#fffbeb"/>
+  <text x="48" y="384" font-size="11.5" fill="#b45309">③ 规范层面不保证任何结果：既可能偏离，也可能偶然相等 —— 判据只能是 -race，不是这一次的读数。</text>
+
+  <rect x="36" y="406" width="932" height="30" fill="#ffffff"/>
+  <text x="40" y="420" font-size="10.5" fill="#64748b">口径：go1.26.5 / Windows / 8 逻辑核；每轮 = 8 个 goroutine 各 1000 次 counter++，五轮各自独立进程，读数取当轮打印值。</text>
+  <text x="40" y="433" font-size="10.5" fill="#64748b">「pp」是百分点：8000 为满值，806 / 8000 = 10.1%。</text>
+</svg>
