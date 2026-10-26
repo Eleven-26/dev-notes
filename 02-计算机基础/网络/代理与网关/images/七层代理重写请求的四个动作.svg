@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+  <defs>
+    <marker id="arF2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L7 4.5 L0 9 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="70" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">七层代理的「解析」等于把请求重建一遍</text>
+  <text x="500" y="57" text-anchor="middle" font-size="12.5" fill="#64748b">下面四个动作里，任何一个都能改变后端看到的东西；四层代理一个都不做</text>
+
+  <rect x="24" y="92" width="226" height="58" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="40" y="115" font-size="12" font-weight="bold" fill="#5b21b6">① 读完请求头</text>
+  <text x="40" y="137" font-size="10.5" fill="#5b21b6">读到空行为止，一个请求才算完整</text>
+
+  <rect x="268" y="92" width="226" height="58" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="284" y="115" font-size="12" font-weight="bold" fill="#5b21b6">② 按自己的规则改头</text>
+  <text x="284" y="137" font-size="10.5" fill="#5b21b6">Host 换成 upstream 名，逐跳头吃掉</text>
+
+  <rect x="512" y="92" width="226" height="58" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="528" y="115" font-size="12" font-weight="bold" fill="#5b21b6">③ 换一条连接重发</text>
+  <text x="528" y="137" font-size="10.5" fill="#5b21b6">后端那条连接由代理建、也由代理关</text>
+
+  <rect x="756" y="92" width="226" height="58" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="772" y="115" font-size="12" font-weight="bold" fill="#5b21b6">④ 响应重新分帧</text>
+  <text x="772" y="137" font-size="10.5" fill="#5b21b6">Content-Length 与 chunked 重算后再回</text>
+
+  <line x1="250" y1="121" x2="262" y2="121" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#arF2)"/>
+  <line x1="494" y1="121" x2="506" y2="121" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#arF2)"/>
+  <line x1="738" y1="121" x2="750" y2="121" stroke="#7c3aed" stroke-width="1.6" marker-end="url(#arF2)"/>
+
+  <rect x="24" y="186" width="460" height="176" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="44" y="212" font-size="12" font-weight="bold" fill="#334155">客户端发出的请求（经 L4 时后端逐字节收到）</text>
+  <text x="44" y="238" font-size="11.5" fill="#0f172a">GET /echo HTTP/1.1</text>
+  <text x="44" y="260" font-size="11.5" fill="#0f172a">Host: lblab</text>
+  <text x="44" y="282" font-size="11.5" fill="#0f172a">X-Trace: lblab-1</text>
+  <text x="44" y="304" font-size="11.5" fill="#0f172a">X_Under: 1</text>
+  <text x="44" y="326" font-size="11.5" fill="#0f172a">Proxy-Connection: keep-alive</text>
+  <text x="44" y="348" font-size="11.5" fill="#0f172a">Connection: close</text>
+
+  <rect x="516" y="186" width="460" height="176" rx="8" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="536" y="212" font-size="12" font-weight="bold" fill="#5b21b6">后端实际收到的请求（经 L7）</text>
+  <text x="536" y="238" font-size="11.5" fill="#0f172a">GET /echo HTTP/1.1</text>
+  <text x="536" y="260" font-size="11.5" fill="#dc2626">Host: l7_echo</text>
+  <text x="536" y="282" font-size="11.5" fill="#0f172a">X-Trace: lblab-1</text>
+  <text x="536" y="310" font-size="11" fill="#b45309">X_Under / Proxy-Connection / Connection 消失</text>
+  <text x="536" y="336" font-size="11" fill="#64748b">请求行这次一致，版本由 proxy_http_version 决定</text>
+
+  <rect x="24" y="382" width="952" height="100" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.2"/>
+  <text x="44" y="408" font-size="12" font-weight="bold" fill="#92400e">实测：L4 侧一个字节没多；L7 侧改了 1 个头（Host）、丢了 3 个头（两个逐跳头 + 一个含下划线的非法头）</text>
+  <text x="44" y="434" font-size="11.5" fill="#92400e">改 Host 是生产上最常见的事故：后端按 Host 做虚拟主机或签名校验，一过七层就全错，修法只有一行 proxy_set_header Host $host</text>
+  <text x="44" y="460" font-size="11.5" fill="#92400e">丢掉的那三个都「合理」——它们本来就是逐跳的；但含下划线的自定义头被静默丢弃，是很多老系统接网关时踩的坑</text>
+</svg>
