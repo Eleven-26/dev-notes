@@ -625,6 +625,45 @@ read(2)
 
 ⚠️ 本轮只验到两头：`strace` 能看见 syscall 边界，`wchan` 能看见栈底的 `wait_woken`（2.8）。**中间那几层的函数名取自源码，没有逐帧验证**——要拿完整调用栈得靠 `perf` 或 `bpftrace`，容器里没有跑。
 
+### 3.5 一次 `write` 在内核里走了哪几段
+
+3.4 那条链是收方向，发方向是它的镜像，但**入口不同**：`read` 走 `sock_read_iter`，`write` 走 `sock_write_iter`，两者是 `file_operations` 里并列的两个函数指针。
+
+```text
+write(2)
+└─ ksys_write
+   └─ vfs_write                     ← 与 read 共用这一层
+      └─ sock_write_iter            ← f_op->write_iter，socket 专有
+         └─ sock_sendmsg
+            └─ inet_sendmsg
+               └─ tcp_sendmsg       ← 把用户缓冲拷进 sk_write_queue 上的 sk_buff
+                  └─ sk_stream_wait_memory   ← 发送队列装不下时才走到这里
+                     └─ schedule()
+```
+
+与 3.4 对照，差别只落在三格：
+
+| 环节 | `read` | `write` |
+|---|---|---|
+| `f_op` 里的入口 | `sock_read_iter` | `sock_write_iter` |
+| 真正搬字节的函数 | `tcp_recvmsg`（`copy_to_user`） | `tcp_sendmsg`（`copy_from_user`） |
+| 装不下时等在哪 | `sk_wait_data` | `sk_stream_wait_memory` |
+
+**`sk_stream_wait_memory` 是全篇排障价值最高的一格**：它一旦出现，说明卡的**不是对端慢，是本机发送队列满**。队列满的直接证据是 `ss -tnm` 的三列：
+
+```text
+ESTAB 0  706624  172.30.0.4:57116  172.30.0.3:9201
+  skmem:(r0,rb131072,t0,tb705024,...)  ... rwnd_limited:5112ms(99.1%) notsent:706624
+```
+
+三个数字连起来读：`Send-Q = 706624` 是卡在队列里的字节数；`notsent:706624` 说明它们**一个都没发出去**；`rwnd_limited` 占 **99.1%** 指出卡它的是**对端接收窗口**——对端应用不读，窗口开到 0。这三条互不重复：第一条说「有多少」，第二条说「发没发」，第三条说「谁卡的」。
+
+⚠️ **`wchan` 在 Go 程序里看不到这一格**。同一个阻塞写，用裸 `syscall.Write`，`wchan` 是 `wait_woken`；换成 `net.Conn.Write`，`wchan` 变成 `do_epoll_wait`——runtime 把阻塞写转成「非阻塞 + netpoll 等事件」，线程压根没停在 `sk_stream_wait_memory` 上。**所以 wchan 看不到写阻塞，不是因为没阻塞，是被 runtime 换了形状**（与 2.8 里 `read` 的 `wchan` 是 `wait_woken` 同理）。
+
+这也解释了 3.3 的部分写：非阻塞下 `write(65536)` 会返回「内核这次装得下多少」，实测第 3 次只写回 **15552** 字节，第 4 次直接 `EAGAIN`（累计 146624）——`tcp_sendmsg` 只拷装得下的部分，装不下的不拷、也不等。
+
+⚠️ 中间几层函数名取自源码；本轮验到的是两头：`strace` 的 syscall 边界与 `wchan` 的栈底函数名。
+
 
 ---
 

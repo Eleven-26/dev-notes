@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="640" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一次 3 KB 的发送，在进程里走过五段</text>
+  <text x="500" y="58" text-anchor="middle" font-size="12.5" fill="#64748b">应用只写了 read 和 write 两个调用，中间是两次内存拷贝、两次态切换，最后一段由网卡 DMA 完成</text>
+
+  <rect x="30" y="82" width="940" height="84" rx="8" fill="#fff7ed" stroke="#c2410c"/>
+  <text x="50" y="108" font-size="13" font-weight="bold" fill="#9a3412">① 数据来源</text>
+  <text x="50" y="130" font-size="11" fill="#9a3412">磁盘 / 数据库 / 内存 / 上游 socket</text>
+  <text x="50" y="150" font-size="11" fill="#9a3412">这一段可替换，也可能根本没有</text>
+  <text x="270" y="108" font-size="12" fill="#7c2d12">块设备 DMA 把页读进 page cache —— 只有「页不在缓存」时才发生</text>
+  <text x="270" y="130" font-size="11" fill="#9a3412">read() 返回了，不等于这次真读了盘：脏页与已缓存页都在内存里</text>
+  <text x="270" y="150" font-size="11" fill="#9a3412">O_DIRECT 打开才每次都读，代价是绕过缓存</text>
+  <text x="700" y="108" font-size="12" font-weight="bold" fill="#9a3412">冷读 376~581 μs</text>
+  <text x="700" y="130" font-size="11" fill="#9a3412">热读 6~9 μs（差 50~100 倍）</text>
+  <text x="700" y="150" font-size="11" fill="#9a3412">判据只有耗时，majflt 不动</text>
+
+  <rect x="30" y="178" width="940" height="84" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="50" y="204" font-size="13" font-weight="bold" fill="#075985">② 进用户态</text>
+  <text x="50" y="226" font-size="11" fill="#075985">内核态 page cache</text>
+  <text x="50" y="246" font-size="11" fill="#075985">→ 用户态 buffer</text>
+  <text x="270" y="204" font-size="12" fill="#0c4a6e">read() 里的一次 memcpy，3072 字节从页拷进你申请的 buffer</text>
+  <text x="270" y="226" font-size="11" fill="#075985">不换态（已经在 read 的系统调用里），不产生 major fault</text>
+  <text x="270" y="246" font-size="11" fill="#075985">应用还要在这一层拼协议头：3 KB 正文可能只是消息的一部分</text>
+  <text x="700" y="204" font-size="12" font-weight="bold" fill="#075985">p50 2.2 μs</text>
+  <text x="700" y="226" font-size="11" fill="#075985">300 次热读，p99 3.6 μs</text>
+  <text x="700" y="246" font-size="11" fill="#075985">最便宜的一段</text>
+
+  <rect x="30" y="274" width="940" height="84" rx="8" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="50" y="300" font-size="13" font-weight="bold" fill="#5b21b6">③ 进 socket 缓冲</text>
+  <text x="50" y="322" font-size="11" fill="#5b21b6">用户态 → 内核态</text>
+  <text x="50" y="342" font-size="11" fill="#5b21b6">这一次要换态</text>
+  <text x="270" y="300" font-size="12" fill="#4c1d95">write() 把 3072 字节拷进 sk_write_queue，同时按 MSS 切段</text>
+  <text x="270" y="322" font-size="11" fill="#5b21b6">返回的是「拷了多少字节」，不是「发出去了多少」</text>
+  <text x="270" y="342" font-size="11" fill="#5b21b6">缓冲上限由 SO_SNDBUF 记账，满了 write 会阻塞或返回 EAGAIN</text>
+  <text x="700" y="300" font-size="12" font-weight="bold" fill="#5b21b6">p50 21.4 μs</text>
+  <text x="700" y="322" font-size="11" fill="#5b21b6">300 次写入，p99 103 μs</text>
+  <text x="700" y="342" font-size="11" fill="#5b21b6">比 ② 贵 10 倍：要过 TCP 输出</text>
+
+  <rect x="30" y="370" width="940" height="84" rx="8" fill="#e0f2fe" stroke="#0284c7"/>
+  <text x="50" y="396" font-size="13" font-weight="bold" fill="#075985">④ 加头成帧</text>
+  <text x="50" y="418" font-size="11" fill="#075985">仍在进程上下文</text>
+  <text x="50" y="438" font-size="11" fill="#075985">tcp_write_xmit 往下</text>
+  <text x="270" y="396" font-size="12" fill="#0c4a6e">TCP 头 20 + 时间戳 12，IP 头 20，以太头 14 —— 逐层套上</text>
+  <text x="270" y="418" font-size="11" fill="#075985">再经 qdisc 排队（fq_codel / pfifo_fast），超限就丢</text>
+  <text x="270" y="438" font-size="11" fill="#075985">GSO 开时这一步不切段，整个 3072 一个 skb 交给网卡</text>
+  <text x="700" y="396" font-size="12" font-weight="bold" fill="#075985">每段 1514 字节</text>
+  <text x="700" y="418" font-size="11" fill="#075985">1448 载荷 + 66 头（关 GSO）</text>
+  <text x="700" y="438" font-size="11" fill="#075985">GSO 开则是 1 个 3138 的帧</text>
+
+  <rect x="30" y="466" width="940" height="84" rx="8" fill="#dcfce7" stroke="#15803d"/>
+  <text x="50" y="492" font-size="13" font-weight="bold" fill="#166534">⑤ 出网卡</text>
+  <text x="50" y="514" font-size="11" fill="#166534">驱动 TX ring</text>
+  <text x="50" y="534" font-size="11" fill="#166534">→ 网卡 → 线缆</text>
+  <text x="270" y="492" font-size="12" fill="#14532d">CPU 只填描述符；网卡按描述符 DMA 从内存取数据，加 FCS 上线</text>
+  <text x="270" y="514" font-size="11" fill="#166534">校验和也由网卡算：抓包里 cksum 显示 incorrect 是正常的</text>
+  <text x="270" y="534" font-size="11" fill="#166534">ring 满了直接丢，计入 tx_dropped，应用侧永远不知道</text>
+  <text x="700" y="492" font-size="12" font-weight="bold" fill="#166534">3 段共 3270 字节</text>
+  <text x="700" y="514" font-size="11" fill="#166534">应用数据 3072 + 3×66 头</text>
+  <text x="700" y="534" font-size="11" fill="#166534">GSO 开时只报 1 个包</text>
+
+  <line x1="500" y1="168" x2="500" y2="176" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="500" y1="264" x2="500" y2="272" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="500" y1="360" x2="500" y2="368" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+  <line x1="500" y1="456" x2="500" y2="464" stroke="#64748b" stroke-width="1.6" marker-end="url(#arw)"/>
+
+  <rect x="30" y="564" width="940" height="68" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="500" y="588" text-anchor="middle" font-size="13" font-weight="bold" fill="#0f172a">最贵的一段在最前面：冷读一次 3 KB 要 376~581 μs，把它送进 socket 只要 21 μs</text>
+  <text x="500" y="610" text-anchor="middle" font-size="11.5" fill="#64748b">所以「发一个小请求很慢」的第一嫌疑人常常不是网络，而是这份数据是不是第一次被读</text>
+  <text x="500" y="626" text-anchor="middle" font-size="11" fill="#94a3b8">读数口径：Alpine 容器 / 内核 6.18 / veth MTU 1500 / Go 程序 sendpath，各段取样见正文 3.1 与 3.2</text>
+</svg>
