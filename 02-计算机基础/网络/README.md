@@ -190,7 +190,7 @@
 | [QUIC底层传输机制.md](传输层/udp/QUIC底层传输机制.md) | 三个包号空间、ACK 帧范围编码、流与两层流控、丢失检测两阈值、0-RTT 的包号位置、版本协商包；⭐ 四组本机实测 |
 | [UDP打洞与NAT穿透.md](传输层/udp/UDP打洞与NAT穿透.md) | NAT 的映射与过滤两张表、STUN 的答案为什么用不上、打洞四步时序、对称型为什么必然失败、ICE 的候选对；⭐ 五组 conntrack 与抓包实测 |
 | [组播与广播机制.md](传输层/udp/组播与广播机制.md) | D 类地址与 32:1 的 MAC 冲突、IGMPv3 report、membership 决定可达性、snooping 为什么常等于没开、TTL 与作用域；⭐ 九组本机实测 |
-| [Socket接口与连接生命周期.md](传输层/Socket接口与连接生命周期.md) | ⭐ **应用与传输层之间那道接口**：socket 的三层表示（fd 表 / 打开文件表 / sockfs 对象）、七个调用与 TCP 状态机怎么对应（`accept` 之前握手已完成）、`read` 的三种返回、`close` 发 RST 的两条独立成因、选项按层归位、`fork` 引用计数、UDS；含 9 组本机实测 |
+| [Socket接口与连接生命周期.md](传输层/Socket接口与连接生命周期.md) | ⭐ **应用与传输层之间那道接口**：一次收发的最小代码闭环、socket 的三层表示（fd 表 / 打开文件表 / sockfs 对象）、阻塞与非阻塞差在哪个位、客户端端口什么时候会用光、七个调用与 TCP 状态机怎么对应（`accept` 之前握手已完成）、阻塞时进程在哪个等待队列上、`read` 的三种返回、`close` 发 RST 的两条独立成因、选项按层归位、`fork` 引用计数、UDS（含抽象命名空间）、`accept` 的六条出口与 `EMFILE` 空转；含 24 组本机实测 |
 | [IO多路复用.md](传输层/IO多路复用.md) | 五种 I/O 模型、select/poll/epoll、LT vs ET、Reactor、`io_uring`、fd 上限 |
 
 ### 应用层（9 篇）

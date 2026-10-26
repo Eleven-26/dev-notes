@@ -92,7 +92,7 @@ dev-notes/
 │   ├── 文件系统/            HDFS.md（能不能追加写）；待补对象存储与 S3
 │   ├── 表格式/              Iceberg.md（元数据在表内 vs 表外）；待补 Paimon / Hudi
 │   ├── Catalog/             HiveMetastore.md（三种形态、9083）；待补 Iceberg REST / Nessie
-│   ├── 计算引擎/            Hive.md（HQL 编译链路）；待补 Spark / Flink / Trino
+│   ├── 计算引擎/            Hive/、Spark/、Flink/、Trino/ 四册；根下 计算引擎选型对比.md
 │   ├── 资源调度/            待补：YARN 资源调度
 │   ├── 作业编排/            待补：DolphinScheduler 任务编排
 │   └── 大数据选型对比.md    ⭐ 总纲：四层分工 + 四根接口 + 与 04 的边界

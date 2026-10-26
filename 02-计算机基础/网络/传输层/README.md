@@ -107,7 +107,7 @@ QUIC 讲「把连接身份、加密、多流一起重做」——前者简单可
 
 | 文件 | 维度 | 一句话职责 |
 |---|---|---|
-| [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) | 换边界：协议 ↔ 程序 | **程序怎么让内核替它收发数据**：socket 的三层表示（fd 表 → 打开文件表 → socket 对象）、七个调用与 TCP 状态机怎么对应（⭐ `accept` 之前握手就已经完成）、`read` 的三种返回怎么区分、`close` 为什么有时发 RST 而不发 FIN、选项按层归位、`fork` 之后的引用计数、UDS 换的是什么；含 9 组本机实测 |
+| [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) | 换边界：协议 ↔ 程序 | **程序怎么让内核替它收发数据**：一次收发的最小代码闭环、socket 的三层表示（fd 表 → 打开文件表 → socket 对象）、阻塞与非阻塞差在哪个位、客户端端口什么时候会用光、七个调用与 TCP 状态机怎么对应（⭐ `accept` 之前握手就已经完成）、阻塞时进程在哪个等待队列上、`read` 的三种返回怎么区分、`close` 为什么有时发 RST 而不发 FIN、选项按层归位、`fork` 之后的引用计数、UDS 换的是什么（含抽象命名空间与 `SOCK_SEQPACKET`）、`accept` 的六条出口与 `EMFILE` 空转、一条连接不通的排查顺序；含 24 组本机实测 |
 
 ### 3.5 根目录之二：IO 多路复用（换视角）
 
@@ -137,7 +137,9 @@ QUIC 讲「把连接身份、加密、多流一起重做」——前者简单可
 |---|---|
 | **第一次系统学 TCP** | [TCP协议基础与报文结构.md](tcp/TCP协议基础与报文结构.md) → [TCP三次握手.md](tcp/TCP三次握手.md) → [TCP滑动窗口.md](tcp/TCP滑动窗口.md) → [TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md) → [TCP拥塞控制算法.md](tcp/TCP拥塞控制算法.md) → [TCP四次挥手.md](tcp/TCP四次挥手.md)，按 ①~⑥ 一路读 |
 | **吞吐上不去** | [TCP滑动窗口.md](tcp/TCP滑动窗口.md)（`min(rwnd, cwnd)` 先分清是接收窗口还是拥塞窗口限制）→ [TCP拥塞控制算法.md](tcp/TCP拥塞控制算法.md)（算法与 BBR 换不换） |
-| **服务端 `accept` 队列满 / 连接超时** | [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) 2.2、2.6（`ss` 的 `Recv-Q` / `Send-Q` 各是什么、`backlog + 1`、打满后「不报错只是卡住」）→ [TCP三次握手.md](tcp/TCP三次握手.md) 第二节（两个队列的机制）→ [IO多路复用.md](IO多路复用.md)（epoll 侧怎么接） |
+| **服务端 `accept` 队列满 / 连接超时** | [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) 2.2、2.6、2.7（半连接与全连接两个队列、`ss` 的 `Recv-Q` / `Send-Q` 各是什么、`backlog + 1`、打满后「不报错只是卡住」）→ [TCP三次握手.md](tcp/TCP三次握手.md) 第二节（两个队列的机制）→ [IO多路复用.md](IO多路复用.md)（epoll 侧怎么接） |
+| **服务端 CPU 被打满、`sys` 特别高，日志里什么都没有** | [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) 8.2（`EMFILE` 时 `accept` 空转，实测每秒 36~62 万次、CPU 时间几乎等于墙钟时间；此时 `ss -ltn` 的 `Recv-Q` 还在涨，连接并没有丢）→ [IO多路复用.md](IO多路复用.md) 9.1（fd 上限怎么查） |
+| **客户端报 cannot assign requested address（连不上，可机器很闲）** | [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) 1.6（源端口区间只有 28232 个，用光后 errno 是 `EADDRNOTAVAIL`，不是 `EMFILE`、也不是 `ECONNREFUSED`；这时 fd 一个都没少） |
 | **`TIME_WAIT` / `CLOSE_WAIT` 堆积** | [TCP四次挥手.md](tcp/TCP四次挥手.md) 第二、三节（两种状态成因完全不同）→ 第四节（四种状态的实测对照） |
 | **接口偶发变慢、小包特别多** | [TCP的Nagle与延迟确认.md](tcp/TCP的Nagle与延迟确认.md)（全篇）→ [TCP滑动窗口.md](tcp/TCP滑动窗口.md)（socket 选项） |
 | **长连接过一阵就断** | [TCP保活与连接存活.md](tcp/TCP保活与连接存活.md)（四层保活分工与心跳定多少）→ [NAT与连接跟踪.md](../网络层与寻址/NAT与连接跟踪.md) 第五节（各段空闲超时的量级） |
@@ -201,6 +203,7 @@ QUIC 讲「把连接身份、加密、多流一起重做」——前者简单可
 | **KCP 的 FEC 与「同链路 KCP vs TCP」公平对照** | [KCP协议与可靠传输.md](udp/KCP协议与可靠传输.md) 只在纯用户态测了参数矩阵，FEC 模式未测；也没有与 TCP 跑同一条注入丢包的链路 | **待定**：公平对照要求能对 TCP 也注入定点丢包（netem + 固定 IP 的 upstream），单容器做不出 |
 | **拥塞控制的内核落地**（各算法的 sysctl 开关与实测对比） | [TCP拥塞控制算法.md](tcp/TCP拥塞控制算法.md) 有 Go 模拟实测，无内核侧 `net.ipv4.tcp_congestion_control` 的真机对比 | **待定**：需要两台跨公网机器或 netem 才有意义，单机测不出算法差异 |
 | **`sendfile` / `splice` 与 `SCM_RIGHTS` 传 fd** | [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) 第六节只测了 `fork` 的引用计数 | **暂不补**：属零拷贝与「进程间传 fd」的专题；真要上时再测，届时应与 [零拷贝.md](../../linux/零拷贝.md) 一起看 |
+| **`accept` 的 `ECONNABORTED` 竞态窗口** | [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) 8.1 已标明「本轮没造出来」：8.3 发 RST 的那组实验里，`accept` 照样返回了 fd 与 errno 0 | **待补**：要在「RST 到达」与「accept 取出队头」之间对齐到微秒级，单进程脚本控制不到；现在按内核源码写成「少数路径，不能漏」 |
 
 ---
 
