@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="720" height="24" fill="#ffffff"/>
+  <text x="40" y="34" font-size="17" font-weight="700" fill="#0f172a">execve 里的五步，每一步都留了一张可核对的收据</text>
+  <rect x="40" y="40" width="920" height="20" fill="#ffffff"/>
+  <text x="40" y="55" font-size="12.5" fill="#64748b">中间三步都在内核里完成，用户态看不到过程，只能看结果</text>
+
+  <rect x="380" y="80" width="240" height="30" rx="6" fill="#0f172a"/>
+  <text x="500" y="100" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">sys_execve(path, argv, envp)</text>
+
+  <line x1="500" y1="110" x2="500" y2="134" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="500,140 496,132 504,132" fill="#94a3b8"/>
+
+  <rect x="40" y="144" width="330" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="166" font-size="13" font-weight="700" fill="#0f172a">① 打开文件，认前 128 字节</text>
+  <text x="56" y="186" font-size="11.5" fill="#475569">读 e_ident，核魔数 7f 45 4c 46 与 64 位标记</text>
+  <text x="56" y="202" font-size="11.5" fill="#475569">不是 ELF 就交给别的 binfmt 处理器</text>
+
+  <rect x="40" y="222" width="330" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="244" font-size="13" font-weight="700" fill="#0f172a">② 按程序头映射 PT_LOAD 段</text>
+  <text x="56" y="264" font-size="11.5" fill="#475569">建新的 mm_struct，逐段映射</text>
+  <text x="56" y="280" font-size="11.5" fill="#475569">此时只建 VMA，不读页面内容</text>
+
+  <rect x="40" y="300" width="330" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="322" font-size="13" font-weight="700" fill="#0f172a">③ 有 PT_INTERP 就先打它的主意</text>
+  <text x="56" y="342" font-size="11.5" fill="#475569">打开解释器，把它的 PT_LOAD 也映射</text>
+  <text x="56" y="358" font-size="11.5" fill="#475569">打开失败 → execve 直接返回 ENOENT</text>
+
+  <rect x="40" y="378" width="330" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="400" font-size="13" font-weight="700" fill="#0f172a">④ 在新栈顶摆好四样东西</text>
+  <text x="56" y="420" font-size="11.5" fill="#475569">argc ｜ argv 指针数组 ｜ envp ｜ auxv</text>
+  <text x="56" y="436" font-size="11.5" fill="#475569">顺序固定，_start 就是靠这个顺序取值</text>
+
+  <rect x="40" y="456" width="330" height="66" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="478" font-size="13" font-weight="700" fill="#0f172a">⑤ 把 PC 设成 e_entry，返回用户态</text>
+  <text x="56" y="498" font-size="11.5" fill="#475569">落点是 _start（C）或 _rt0_amd64_linux（Go）</text>
+  <text x="56" y="514" font-size="11.5" fill="#b91c1c" font-weight="700">不是 main</text>
+
+  <line x1="370" y1="177" x2="452" y2="177" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="370" y1="255" x2="452" y2="255" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="370" y1="333" x2="452" y2="333" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="370" y1="411" x2="452" y2="411" stroke="#cbd5e1" stroke-width="1.2"/>
+  <line x1="370" y1="489" x2="452" y2="489" stroke="#cbd5e1" stroke-width="1.2"/>
+  <polygon points="458,177 450,173 450,181" fill="#cbd5e1"/>
+  <polygon points="458,255 450,251 450,259" fill="#cbd5e1"/>
+  <polygon points="458,333 450,329 450,337" fill="#cbd5e1"/>
+  <polygon points="458,411 450,407 450,415" fill="#cbd5e1"/>
+  <polygon points="458,489 450,485 450,493" fill="#cbd5e1"/>
+
+  <rect x="462" y="144" width="498" height="66" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="478" y="164" font-size="12" font-weight="700" fill="#1d4ed8">file ./prog ｜ readelf -h</text>
+  <text x="478" y="184" font-size="11.5" fill="#334155">"ELF 64-bit LSB pie executable" / "Type: DYN"</text>
+  <text x="478" y="200" font-size="11.5" fill="#334155">"statically linked" 与 "interpreter /lib64/…" 的区别</text>
+
+  <rect x="462" y="222" width="498" height="66" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="478" y="242" font-size="12" font-weight="700" fill="#1d4ed8">cat /proc/PID/maps</text>
+  <text x="478" y="262" font-size="11.5" fill="#334155">一个 READ 段变成 r--p / r-xp / rw-p 多条 VMA</text>
+  <text x="478" y="278" font-size="11.5" fill="#334155">条数由页对齐与 RELRO 决定，不等段数</text>
+
+  <rect x="462" y="300" width="498" height="66" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="478" y="320" font-size="12" font-weight="700" fill="#1d4ed8">readelf -l ｜ strace -e trace=execve</text>
+  <text x="478" y="340" font-size="11.5" fill="#334155">"Requesting program interpreter: /lib64/ld-linux…"</text>
+  <text x="478" y="356" font-size="11.5" fill="#b91c1c">失败时报的是 ENOENT，但文件明明存在</text>
+
+  <rect x="462" y="378" width="498" height="66" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="478" y="398" font-size="12" font-weight="700" fill="#1d4ed8">LD_SHOW_AUXV=1 ｜ cat /proc/self/auxv</text>
+  <text x="478" y="418" font-size="11.5" fill="#334155">AT_PHDR / AT_PHNUM / AT_ENTRY / AT_BASE</text>
+  <text x="478" y="434" font-size="11.5" fill="#334155">动态才有的字段，静态程序里 AT_BASE = 0</text>
+
+  <rect x="462" y="456" width="498" height="66" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="478" y="476" font-size="12" font-weight="700" fill="#1d4ed8">readelf -h 的 Entry ｜ go tool nm</text>
+  <text x="478" y="496" font-size="11.5" fill="#334155">e_entry 与 _start 的地址逐位对上</text>
+  <text x="478" y="512" font-size="11.5" fill="#334155">Go 里 e_entry = _rt0_amd64_linux，离 main 还有 119 KB</text>
+
+  <rect x="40" y="546" width="920" height="36" rx="6" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="56" y="569" font-size="12" fill="#9a3412">判据：execve 返回 0 只代表「装载完成、入口地址已设好」，第一条指令还没执行过一次</text>
+</svg>

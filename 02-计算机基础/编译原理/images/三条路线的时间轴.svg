@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="900" height="26" fill="#ffffff"/>
+  <text x="40" y="35" font-size="17" font-weight="700" fill="#0f172a">编译发生在哪一刻，决定了这条路线的全部取舍</text>
+  <rect x="40" y="42" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="58" font-size="12.5" fill="#64748b">三段横轴：构建期、进程启动、请求处理。三条路线把「编译」放在不同的格子里</text>
+
+  <rect x="60" y="76" width="230" height="24" fill="#ffffff"/>
+  <text x="175" y="93" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">构建期</text>
+  <rect x="290" y="76" width="200" height="24" fill="#ffffff"/>
+  <text x="390" y="93" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">进程启动</text>
+  <rect x="490" y="76" width="450" height="24" fill="#ffffff"/>
+  <text x="715" y="93" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">请求处理（运行期）</text>
+
+  <line x1="290" y1="104" x2="290" y2="368" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+  <line x1="490" y1="104" x2="490" y2="368" stroke="#cbd5e1" stroke-dasharray="4 4"/>
+
+  <rect x="40" y="110" width="200" height="22" fill="#ffffff"/>
+  <text x="40" y="126" font-size="12.5" font-weight="700" fill="#0f172a">Go（AOT）</text>
+
+  <rect x="60" y="136" width="230" height="56" rx="4" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="175" y="158" text-anchor="middle" font-size="11.5" font-weight="700" fill="#166534">go build → 机器码</text>
+  <text x="175" y="177" text-anchor="middle" font-size="10.5" fill="#166534">编译 + 链接，一次完成</text>
+
+  <rect x="290" y="136" width="200" height="56" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="390" y="158" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">装载 + runtime 初始化</text>
+  <text x="390" y="177" text-anchor="middle" font-size="10.5" fill="#475569">4.5 ～ 7.0 ms</text>
+
+  <rect x="490" y="136" width="450" height="56" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="715" y="158" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e40af">直接执行机器码</text>
+  <text x="715" y="177" text-anchor="middle" font-size="10.5" fill="#1e40af">无解释器、无编译线程、行为可复现</text>
+
+  <rect x="40" y="204" width="200" height="22" fill="#ffffff"/>
+  <text x="40" y="220" font-size="12.5" font-weight="700" fill="#0f172a">Java（分层 JIT）</text>
+
+  <rect x="60" y="230" width="230" height="56" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="175" y="252" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">javac → 字节码</text>
+  <text x="175" y="271" text-anchor="middle" font-size="10.5" fill="#92400e">不针对任何 CPU</text>
+
+  <rect x="290" y="230" width="200" height="56" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="390" y="252" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">JVM 启动</text>
+  <text x="390" y="271" text-anchor="middle" font-size="10.5" fill="#475569">85.6 ～ 105.4 ms</text>
+
+  <rect x="490" y="230" width="130" height="56" rx="4" fill="#e9d5ff" stroke="#a855f7"/>
+  <text x="555" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="#6b21a8">先解释</text>
+  <text x="555" y="271" text-anchor="middle" font-size="10.5" fill="#6b21a8">同时收 profile</text>
+  <rect x="628" y="230" width="130" height="56" rx="4" fill="#c7d2fe" stroke="#6366f1"/>
+  <text x="693" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">C1 编译</text>
+  <text x="693" y="271" text-anchor="middle" font-size="10.5" fill="#3730a3">40 ms 时的 fib</text>
+  <rect x="766" y="230" width="174" height="56" rx="4" fill="#bfdbfe" stroke="#3b82f6"/>
+  <text x="853" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">C2 更深优化</text>
+  <text x="853" y="271" text-anchor="middle" font-size="10.5" fill="#1e40af">41 ms，旧版退役</text>
+
+  <rect x="40" y="298" width="200" height="22" fill="#ffffff"/>
+  <text x="40" y="314" font-size="12.5" font-weight="700" fill="#0f172a">PHP（每请求编译）</text>
+
+  <rect x="60" y="324" width="230" height="56" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="5 4"/>
+  <text x="175" y="346" text-anchor="middle" font-size="11.5" fill="#94a3b8">没有构建期</text>
+  <text x="175" y="365" text-anchor="middle" font-size="10.5" fill="#94a3b8">源码就是交付物</text>
+
+  <rect x="290" y="324" width="200" height="56" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="390" y="346" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">FPM 进程常驻</text>
+  <text x="390" y="365" text-anchor="middle" font-size="10.5" fill="#475569">每请求固定开销 0.43 ms</text>
+
+  <rect x="490" y="324" width="200" height="56" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="590" y="346" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">编译成 opcode</text>
+  <text x="590" y="365" text-anchor="middle" font-size="10.5" fill="#92400e">首次请求，存共享内存</text>
+  <rect x="698" y="324" width="242" height="56" rx="4" fill="#e9d5ff" stroke="#a855f7"/>
+  <text x="819" y="346" text-anchor="middle" font-size="11" font-weight="700" fill="#6b21a8">Zend VM 解释执行</text>
+  <text x="819" y="365" text-anchor="middle" font-size="10.5" fill="#6b21a8">JIT 打开后热点轨迹编成机器码</text>
+
+  <rect x="40" y="392" width="920" height="20" fill="#ffffff"/>
+  <text x="40" y="406" font-size="11.5" fill="#334155">三条轴的关键差别不是先后，而是「编译时能看到什么」：AOT 看不到运行期类型，JIT 能看到，PHP 连类型信息都在 opcode 层丢掉了</text>
+</svg>

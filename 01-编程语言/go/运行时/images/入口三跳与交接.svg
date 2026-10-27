@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="530" viewBox="0 0 1000 530" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="530" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="900" height="26" fill="#ffffff"/>
+  <text x="40" y="35" font-size="17" font-weight="700" fill="#0f172a">从 e_entry 到 main.main：三跳、七步、一个间接</text>
+  <rect x="40" y="42" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="58" font-size="12.5" fill="#64748b">地址全部来自同一个二进制 hello_go_static，可与 readelf -h / go tool nm 逐条对照</text>
+
+  <rect x="40" y="76" width="620" height="46" rx="5" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="56" y="96" font-size="12.5" font-weight="700" fill="#0f172a">ELF 头 e_entry = 0x4805a0</text>
+  <text x="56" y="114" font-size="11" fill="#475569">内核做完映射后，把 PC 设成这个值</text>
+  <rect x="676" y="86" width="290" height="22" fill="#ffffff"/>
+  <text x="676" y="102" font-size="11" fill="#64748b">readelf -h 的 Entry point</text>
+
+  <line x1="90" y1="122" x2="90" y2="132" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="86,132 94,132 90,139" fill="#94a3b8"/>
+
+  <rect x="56" y="140" width="604" height="46" rx="5" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="72" y="160" font-size="12.5" font-weight="700" fill="#1e3a8a">_rt0_amd64_linux　@0x4805a0</text>
+  <text x="72" y="178" font-size="11" fill="#1e40af">1 条指令：jmp _rt0_amd64</text>
+  <rect x="676" y="150" width="290" height="22" fill="#ffffff"/>
+  <text x="676" y="166" font-size="11" fill="#64748b">Linux 专用，其他平台各有同名兄弟</text>
+
+  <line x1="106" y1="186" x2="106" y2="196" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="102,196 110,196 106,203" fill="#94a3b8"/>
+
+  <rect x="72" y="204" width="588" height="52" rx="5" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="88" y="224" font-size="12.5" font-weight="700" fill="#1e3a8a">_rt0_amd64　@0x47d4c0</text>
+  <text x="88" y="242" font-size="11" fill="#1e40af">3 条：mov (%rsp),%rdi　lea 0x8(%rsp),%rsi　jmp rt0_go</text>
+
+  <line x1="122" y1="256" x2="122" y2="266" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="118,266 126,266 122,273" fill="#94a3b8"/>
+
+  <rect x="88" y="274" width="572" height="60" rx="5" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="104" y="294" font-size="12.5" font-weight="700" fill="#92400e">runtime.rt0_go　@0x47d4e0　（七步）</text>
+  <text x="104" y="313" font-size="11" fill="#92400e">settls → check → args → osinit → schedinit → newproc → mstart</text>
+  <text x="104" y="329" font-size="10.5" fill="#92400e">第 7 步之后跟一条 call abort，因为 mstart 不该返回</text>
+
+  <line x1="138" y1="334" x2="138" y2="344" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="134,344 142,344 138,351" fill="#94a3b8"/>
+
+  <rect x="104" y="352" width="556" height="52" rx="5" fill="#fce7f3" stroke="#ec4899"/>
+  <text x="120" y="372" font-size="12.5" font-weight="700" fill="#9d174d">newproc(runtime.mainPC)</text>
+  <text x="120" y="390" font-size="11" fill="#9d174d">压栈的是变量地址 0x4cf2e8，不是函数地址</text>
+  <rect x="676" y="366" width="290" height="22" fill="#ffffff"/>
+  <text x="676" y="382" font-size="11" font-weight="700" fill="#9d174d">变量里的值 = 0x448fa0</text>
+
+  <line x1="154" y1="404" x2="154" y2="414" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="150,414 158,414 154,421" fill="#94a3b8"/>
+
+  <rect x="120" y="422" width="540" height="46" rx="5" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="136" y="442" font-size="12.5" font-weight="700" fill="#166534">runtime.main　@0x448fa0</text>
+  <text x="136" y="460" font-size="11" fill="#166534">跑所有包的 init、启动 GC、设 defer 栈边界，最后调 main.main</text>
+  <rect x="676" y="432" width="290" height="22" fill="#ffffff"/>
+  <text x="676" y="448" font-size="11" fill="#166534">不是 main.main，差 348,576 字节</text>
+
+  <rect x="40" y="480" width="920" height="22" fill="#fffbeb"/>
+  <text x="40" y="495" font-size="11.5" fill="#78350f">前两跳加起来只有 4 条指令，只做一件事：把内核摆在新栈顶的 argc / argv 搬进寄存器，与 C 的 _start 是同一个动作</text>
+  <rect x="40" y="502" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="517" font-size="11.5" fill="#334155">第 4 步到第 6 步之间隔着一个 funcval 间接层，这就是「main goroutine 的入口是 runtime.main」的实现方式</text>
+</svg>

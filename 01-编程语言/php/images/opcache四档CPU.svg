@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="900" height="26" fill="#ffffff"/>
+  <text x="40" y="35" font-size="17" font-weight="700" fill="#0f172a">把每请求 CPU 时间拆成三段，编译占了多宽一目了然</text>
+  <rect x="40" y="42" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="58" font-size="12.5" fill="#64748b">同一个机器、同一轮实验，每档连跑 3 轮，n=2000（big 关闭档 n=1000），单位微秒</text>
+
+  <rect x="270" y="78" width="120" height="20" fill="#ffffff"/>
+  <text x="270" y="93" font-size="11" fill="#64748b">0</text>
+  <rect x="560" y="78" width="120" height="20" fill="#ffffff"/>
+  <text x="560" y="93" font-size="11" fill="#64748b">≈ 900 µs</text>
+
+  <rect x="40" y="108" width="220" height="46" fill="#ffffff"/>
+  <text x="40" y="130" font-size="12" font-weight="700" fill="#0f172a">index.php（11 行）</text>
+  <text x="40" y="147" font-size="11" fill="#64748b">opcache 关</text>
+
+  <rect x="270" y="108" width="143" height="46" fill="#cbd5e1"/>
+  <rect x="413" y="108" width="206" height="46" fill="#f59e0b"/>
+  <rect x="619" y="108" width="229" height="46" fill="#3b82f6"/>
+  <rect x="270" y="132" width="143" height="18" fill="#cbd5e1" opacity="0.01"/>
+  <rect x="413" y="132" width="206" height="18" fill="#f59e0b" opacity="0.01"/>
+  <text x="496" y="130" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="700">编译 625</text>
+  <text x="733" y="130" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="700">执行 693</text>
+  <rect x="856" y="112" width="120" height="22" fill="#ffffff"/>
+  <text x="856" y="128" font-size="12.5" font-weight="700" fill="#0f172a">1750 µs</text>
+
+  <rect x="40" y="176" width="220" height="46" fill="#ffffff"/>
+  <text x="40" y="198" font-size="12" font-weight="700" fill="#0f172a">index.php（11 行）</text>
+  <text x="40" y="215" font-size="11" fill="#64748b">opcache 开</text>
+
+  <rect x="270" y="176" width="143" height="46" fill="#cbd5e1"/>
+  <rect x="413" y="176" width="229" height="46" fill="#3b82f6"/>
+  <text x="527" y="198" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="700">执行 693</text>
+  <rect x="413" y="204" width="229" height="18" fill="#ffffff"/>
+  <text x="527" y="218" text-anchor="middle" font-size="10.5" fill="#1e40af">编译段整段消失</text>
+  <rect x="856" y="180" width="120" height="22" fill="#ffffff"/>
+  <text x="856" y="196" font-size="12.5" font-weight="700" fill="#0f172a">1125 µs</text>
+
+  <rect x="40" y="244" width="220" height="46" fill="#ffffff"/>
+  <text x="40" y="266" font-size="12" font-weight="700" fill="#0f172a">big.php（333 行）</text>
+  <text x="40" y="283" font-size="11" fill="#64748b">opcache 关</text>
+
+  <rect x="270" y="244" width="143" height="46" fill="#cbd5e1"/>
+  <rect x="413" y="244" width="427" height="46" fill="#f59e0b"/>
+  <text x="626" y="266" text-anchor="middle" font-size="11" fill="#ffffff" font-weight="700">编译 1293</text>
+  <rect x="413" y="272" width="427" height="18" fill="#ffffff"/>
+  <text x="626" y="286" text-anchor="middle" font-size="10.5" fill="#92400e">30 倍行数，编译只贵 2.1 倍</text>
+  <rect x="856" y="248" width="120" height="22" fill="#ffffff"/>
+  <text x="856" y="264" font-size="12.5" font-weight="700" fill="#0f172a">1725 µs</text>
+
+  <rect x="40" y="312" width="220" height="46" fill="#ffffff"/>
+  <text x="40" y="334" font-size="12" font-weight="700" fill="#0f172a">big.php（333 行）</text>
+  <text x="40" y="351" font-size="11" fill="#64748b">opcache 开</text>
+
+  <rect x="270" y="312" width="143" height="46" fill="#cbd5e1"/>
+  <rect x="413" y="312" width="330" height="46" fill="#ffffff"/>
+  <text x="578" y="334" text-anchor="middle" font-size="11" fill="#475569">只剩请求本身的固定开销</text>
+  <rect x="856" y="316" width="120" height="22" fill="#ffffff"/>
+  <text x="856" y="332" font-size="12.5" font-weight="700" fill="#0f172a">432 µs</text>
+
+  <rect x="40" y="372" width="920" height="22" fill="#f1f5f9"/>
+  <text x="40" y="387" font-size="11.5" fill="#334155">灰 = 请求初始化 / 关闭 / FastCGI 往返（固定 432 µs）　橙 = 编译　蓝 = 业务代码执行</text>
+  <rect x="40" y="396" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="411" font-size="11.5" fill="#334155">第四档证明 432 µs 这一段的宽度：333 行脚本全部命中缓存、只调一个函数时，就是它自己的成本</text>
+</svg>

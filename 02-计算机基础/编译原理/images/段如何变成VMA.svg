@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="820" height="24" fill="#ffffff"/>
+  <text x="40" y="34" font-size="17" font-weight="700" fill="#0f172a">4 个 PT_LOAD 变成 5 条 VMA，多出来的那条来自页对齐</text>
+  <rect x="40" y="40" width="920" height="20" fill="#ffffff"/>
+  <text x="40" y="55" font-size="12.5" fill="#64748b">左边是链接器写在文件里的段，右边是内核按页切开后进程看到的样子</text>
+
+  <rect x="40" y="72" width="180" height="22" fill="#ffffff"/>
+  <text x="40" y="88" font-size="12.5" font-weight="700" fill="#475569">程序头里的 4 个 LOAD（文件）</text>
+  <rect x="560" y="72" width="180" height="22" fill="#ffffff"/>
+  <text x="560" y="88" font-size="12.5" font-weight="700" fill="#475569">maps 里的 5 条 VMA（进程）</text>
+
+  <rect x="40" y="100" width="440" height="34" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="54" y="122" font-size="11.5" fill="#334155">LOAD ①  off 0x0  vaddr 0x0  0x618  R</text>
+
+  <rect x="40" y="140" width="440" height="34" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="54" y="162" font-size="11.5" fill="#334155">LOAD ②  off 0x1000  vaddr 0x1000  0x165  R E</text>
+
+  <rect x="40" y="180" width="440" height="34" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="54" y="202" font-size="11.5" fill="#334155">LOAD ③  off 0x2000  vaddr 0x2000  0x0dc  R</text>
+
+  <rect x="40" y="220" width="440" height="34" rx="5" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="54" y="242" font-size="11.5" fill="#78350f">LOAD ④  off 0x2dd0  vaddr 0x3dd0  0x248  RW  ← 与偏移差一整页</text>
+
+  <rect x="560" y="100" width="400" height="34" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="574" y="122" font-size="11.5" fill="#334155">vaddr +0x0     r--p  off 0x0</text>
+
+  <rect x="560" y="140" width="400" height="34" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="574" y="162" font-size="11.5" fill="#334155">vaddr +0x1000  r-xp  off 0x1000</text>
+
+  <rect x="560" y="180" width="400" height="34" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="574" y="202" font-size="11.5" fill="#334155">vaddr +0x2000  r--p  off 0x2000</text>
+
+  <rect x="560" y="220" width="400" height="34" rx="5" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="574" y="242" font-size="11.5" fill="#78350f">vaddr +0x3000  r--p  off 0x2000  ← 同一文件页</text>
+
+  <rect x="560" y="260" width="400" height="34" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="574" y="282" font-size="11.5" fill="#334155">vaddr +0x4000  rw-p  off 0x3000</text>
+
+  <line x1="480" y1="117" x2="556" y2="117" stroke="#94a3b8" stroke-width="1.2"/>
+  <polygon points="560,117 552,113 552,121" fill="#94a3b8"/>
+  <line x1="480" y1="157" x2="556" y2="157" stroke="#94a3b8" stroke-width="1.2"/>
+  <polygon points="560,157 552,153 552,161" fill="#94a3b8"/>
+  <line x1="480" y1="197" x2="556" y2="197" stroke="#94a3b8" stroke-width="1.2"/>
+  <polygon points="560,197 552,193 552,201" fill="#94a3b8"/>
+  <line x1="480" y1="232" x2="556" y2="232" stroke="#f59e0b" stroke-width="1.4"/>
+  <polygon points="560,232 552,228 552,236" fill="#f59e0b"/>
+  <line x1="480" y1="242" x2="540" y2="242" stroke="#f59e0b" stroke-width="1.4"/>
+  <line x1="540" y1="242" x2="540" y2="277" stroke="#f59e0b" stroke-width="1.4"/>
+  <line x1="540" y1="277" x2="556" y2="277" stroke="#f59e0b" stroke-width="1.4"/>
+  <polygon points="560,277 552,273 552,281" fill="#f59e0b"/>
+
+  <rect x="40" y="312" width="920" height="88" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="56" y="324" width="240" height="20" fill="#f8fafc"/>
+  <text x="56" y="339" font-size="12.5" font-weight="700" fill="#0f172a">两个原因，缺一不会有第 5 条</text>
+  <rect x="56" y="348" width="880" height="20" fill="#f8fafc"/>
+  <text x="56" y="363" font-size="11.5" fill="#334155">① LOAD ③ 只有 0xdc 字节，不到一页：链接器把 LOAD ④ 的 vaddr 抬到 0x3dd0，与文件偏移 0x2dd0 错开一页</text>
+  <rect x="56" y="368" width="880" height="20" fill="#f8fafc"/>
+  <text x="56" y="383" font-size="11.5" fill="#334155">② GNU_RELRO 把 LOAD ④ 落在 0x3000 那一页先设成只读，等重定位做完再放开——所以它比 rw-p 早出现一行</text>
+
+  <rect x="40" y="414" width="450" height="90" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <rect x="56" y="426" width="300" height="20" fill="#eff6ff"/>
+  <text x="56" y="441" font-size="12.5" font-weight="700" fill="#1d4ed8">Go 静态：3 个 LOAD → 3 条 VMA</text>
+  <rect x="56" y="450" width="420" height="20" fill="#eff6ff"/>
+  <text x="56" y="465" font-size="11.5" fill="#334155">vaddr 与 offset 恒等、每段占整页、没有 GNU_RELRO</text>
+  <rect x="56" y="470" width="420" height="20" fill="#eff6ff"/>
+  <text x="56" y="485" font-size="11.5" fill="#334155">所以「段数 ≠ VMA 数」只在动态 + RELRO 时才成立</text>
+
+  <rect x="510" y="414" width="450" height="90" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+  <rect x="526" y="426" width="380" height="20" fill="#fff7ed"/>
+  <text x="526" y="441" font-size="12.5" font-weight="700" fill="#9a3412">为什么不能按 VMA 数判断程序大小</text>
+  <rect x="526" y="450" width="420" height="20" fill="#fff7ed"/>
+  <text x="526" y="465" font-size="11.5" fill="#334155">Go 静态 33 条 VMA 里只有 3 条映射文件，其余是运行时预留</text>
+  <rect x="526" y="470" width="420" height="20" fill="#fff7ed"/>
+  <text x="526" y="485" font-size="11.5" fill="#334155">要算真实占用只能看 smaps 的 Rss，不能看条数</text>
+</svg>

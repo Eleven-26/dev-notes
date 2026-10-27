@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" viewBox="0 0 1000 400" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="900" height="26" fill="#ffffff"/>
+  <text x="40" y="35" font-size="17" font-weight="700" fill="#0f172a">同一个 fib，40 ms 被 C1 编、41 ms 被 C2 编、42 ms 旧版退役</text>
+  <rect x="40" y="42" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="58" font-size="12.5" fill="#64748b">-XX:+PrintCompilation 的日志原文三行，横轴按事件顺序展开（真实时刻标在节点上方）</text>
+
+  <rect x="60" y="120" width="170" height="90" rx="6" fill="#e9d5ff" stroke="#a855f7"/>
+  <text x="145" y="146" text-anchor="middle" font-size="12" font-weight="700" fill="#6b21a8">解释执行</text>
+  <text x="145" y="166" text-anchor="middle" font-size="10.5" fill="#6b21a8">tier 0</text>
+  <text x="145" y="185" text-anchor="middle" font-size="10.5" fill="#6b21a8">同时在收 profile</text>
+  <text x="145" y="201" text-anchor="middle" font-size="10.5" fill="#6b21a8">（类型、分支走向）</text>
+
+  <line x1="234" y1="165" x2="258" y2="165" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="258,160 258,170 266,165" fill="#94a3b8"/>
+
+  <rect x="270" y="120" width="170" height="90" rx="6" fill="#c7d2fe" stroke="#6366f1"/>
+  <text x="355" y="143" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">C1 编译</text>
+  <text x="355" y="162" text-anchor="middle" font-size="10.5" fill="#3730a3">tier 3，带插桩</text>
+  <text x="355" y="181" text-anchor="middle" font-size="10.5" fill="#3730a3">编译只要几毫秒</text>
+  <text x="355" y="199" text-anchor="middle" font-size="10.5" fill="#3730a3">代码质量中等</text>
+  <rect x="316" y="92" width="78" height="20" fill="#ffffff"/>
+  <text x="355" y="106" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">40 ms</text>
+
+  <line x1="444" y1="165" x2="468" y2="165" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="468,160 468,170 476,165" fill="#94a3b8"/>
+
+  <rect x="480" y="120" width="170" height="90" rx="6" fill="#bfdbfe" stroke="#3b82f6"/>
+  <text x="565" y="143" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af">C2 编译</text>
+  <text x="565" y="162" text-anchor="middle" font-size="10.5" fill="#1e40af">tier 4，激进优化</text>
+  <text x="565" y="181" text-anchor="middle" font-size="10.5" fill="#1e40af">内联 / 循环展开 / 逃逸</text>
+  <text x="565" y="199" text-anchor="middle" font-size="10.5" fill="#1e40af">编译要几十毫秒</text>
+  <rect x="526" y="92" width="78" height="20" fill="#ffffff"/>
+  <text x="565" y="106" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">41 ms</text>
+
+  <line x1="654" y1="165" x2="678" y2="165" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="678,160 678,170 686,165" fill="#94a3b8"/>
+
+  <rect x="690" y="120" width="180" height="90" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="780" y="143" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">旧版退役</text>
+  <text x="780" y="162" text-anchor="middle" font-size="10.5" fill="#475569">made not entrant</text>
+  <text x="780" y="181" text-anchor="middle" font-size="10.5" fill="#475569">已在跑的调用跑完</text>
+  <text x="780" y="199" text-anchor="middle" font-size="10.5" fill="#475569">跑完即回收</text>
+  <rect x="741" y="92" width="78" height="20" fill="#ffffff"/>
+  <text x="780" y="106" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">42 ms</text>
+
+  <rect x="60" y="232" width="810" height="52" rx="6" fill="#fef3c7"/>
+  <text x="76" y="253" font-size="12" font-weight="700" fill="#92400e">为什么不等 C2 直接编？</text>
+  <text x="76" y="273" font-size="11.5" fill="#92400e">C2 编一次要几十到几百毫秒；很多方法只跑几次就再也不跑。先让 C1 出一份「能跑的快的」，C2 在后台慢慢优化</text>
+
+  <rect x="60" y="294" width="810" height="52" rx="6" fill="#eff6ff"/>
+  <text x="76" y="315" font-size="12" font-weight="700" fill="#1e3a8a">为什么要有 tier 3 这个中间档？</text>
+  <text x="76" y="335" font-size="11.5" fill="#1e3a8a">C1 在 tier 3 下插桩，记录「这个虚调用实际是哪个类」「这个分支走了几次」——C2 全靠这份 profile 才敢做激进内联</text>
+
+  <rect x="60" y="356" width="900" height="22" fill="#ffffff"/>
+  <text x="60" y="371" font-size="11.5" fill="#334155">Go 的二进制里没有对应机制：一个函数在 .text 里只有一份，地址固定，从第一次调用到最后一次都是同一段指令</text>
+  <rect x="60" y="378" width="900" height="20" fill="#ffffff"/>
+  <text x="60" y="392" font-size="11.5" fill="#334155">这就是「启动 4.5 ms、行为可复现」与「能按真实类型内联虚调用」不能同时拥有的原因</text>
+</svg>

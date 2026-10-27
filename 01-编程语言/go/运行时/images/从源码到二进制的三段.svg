@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" viewBox="0 0 1000 400" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="900" height="26" fill="#ffffff"/>
+  <text x="40" y="35" font-size="17" font-weight="700" fill="#0f172a">62 个包编出 32.7 MB，链接器只留下 2.4 MB</text>
+  <rect x="40" y="42" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="58" font-size="12.5" fill="#64748b">一个打印 Hello 的程序，中间产物是最终二进制的 13.6 倍——差额是去重与未被引用的符号</text>
+
+  <rect x="40" y="96" width="190" height="96" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="135" y="122" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">hello.go</text>
+  <text x="135" y="143" text-anchor="middle" font-size="11" fill="#475569">1 个文件</text>
+  <text x="135" y="162" text-anchor="middle" font-size="11" fill="#475569">11 行</text>
+  <text x="135" y="181" text-anchor="middle" font-size="11" fill="#94a3b8">约 200 字节</text>
+
+  <rect x="270" y="96" width="190" height="96" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="365" y="122" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a8a">62 个包</text>
+  <text x="365" y="143" text-anchor="middle" font-size="11" fill="#1e40af">61 个标准库 + main</text>
+  <text x="365" y="162" text-anchor="middle" font-size="11" fill="#1e40af">61 次 compile</text>
+  <text x="365" y="181" text-anchor="middle" font-size="11" fill="#1e40af">62 次 asm</text>
+
+  <rect x="500" y="96" width="190" height="96" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="595" y="122" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">61 个 .a</text>
+  <text x="595" y="143" text-anchor="middle" font-size="11" fill="#92400e">每个包一个归档</text>
+  <text x="595" y="162" text-anchor="middle" font-size="11" fill="#92400e">合计 32.7 MB</text>
+  <text x="595" y="181" text-anchor="middle" font-size="11" fill="#92400e">内含 36 个 .o</text>
+
+  <rect x="730" y="96" width="200" height="96" rx="6" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="830" y="122" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">hello（二进制）</text>
+  <text x="830" y="143" text-anchor="middle" font-size="11" fill="#166534">2,397,206 字节</text>
+  <text x="830" y="162" text-anchor="middle" font-size="11" fill="#166534">3 个 PT_LOAD</text>
+  <text x="830" y="181" text-anchor="middle" font-size="11" fill="#166534">1 次 link</text>
+
+  <rect x="232" y="132" width="34" height="20" fill="#ffffff"/>
+  <text x="249" y="147" text-anchor="middle" font-size="14" fill="#64748b">→</text>
+  <rect x="462" y="132" width="34" height="20" fill="#ffffff"/>
+  <text x="479" y="147" text-anchor="middle" font-size="14" fill="#64748b">→</text>
+  <rect x="692" y="132" width="34" height="20" fill="#ffffff"/>
+  <text x="709" y="147" text-anchor="middle" font-size="14" fill="#64748b">→</text>
+
+  <rect x="270" y="200" width="190" height="20" fill="#ffffff"/>
+  <text x="365" y="214" text-anchor="middle" font-size="10.5" fill="#64748b">编译发生在每个包上</text>
+  <rect x="500" y="200" width="190" height="20" fill="#ffffff"/>
+  <text x="595" y="214" text-anchor="middle" font-size="10.5" fill="#64748b">导出数据 + 目标代码</text>
+  <rect x="730" y="200" width="200" height="20" fill="#ffffff"/>
+  <text x="830" y="214" text-anchor="middle" font-size="10.5" fill="#64748b">去重 + 丢弃未引用符号</text>
+
+  <rect x="40" y="240" width="890" height="52" rx="6" fill="#f1f5f9"/>
+  <text x="56" y="261" font-size="12" font-weight="700" fill="#0f172a">32,726,000 ÷ 2,397,206 = 13.6 倍</text>
+  <text x="56" y="281" font-size="11.5" fill="#334155">链接器没有「压缩」，它只是不把用不到的成员装进输出；同一个 .a 里被引用的部分也可能只有几 KB</text>
+
+  <rect x="40" y="306" width="890" height="22" fill="#fffbeb"/>
+  <text x="40" y="321" font-size="11.5" fill="#78350f">62 次 asm 不能省：runtime、internal/bytealg、crypto 系都带 .s 文件，纯 Go 代码也要过一遍汇编器</text>
+  <rect x="40" y="336" width="890" height="22" fill="#ffffff"/>
+  <text x="40" y="351" font-size="11.5" fill="#334155">加 -a 才会看到这 61 次 compile：不加时全部命中构建缓存，-work 目录是空的</text>
+  <rect x="40" y="362" width="890" height="22" fill="#ffffff"/>
+  <text x="40" y="377" font-size="11.5" fill="#334155">改函数体不重编下游、改导出签名才重编下游——判断依据是 .a 里 __.PKGDEF 的哈希有没有变</text>
+</svg>

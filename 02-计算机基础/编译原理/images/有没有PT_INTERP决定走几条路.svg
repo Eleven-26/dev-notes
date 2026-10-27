@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="760" height="24" fill="#ffffff"/>
+  <text x="40" y="34" font-size="17" font-weight="700" fill="#0f172a">有没有 PT_INTERP，决定 execve 之后先跑谁</text>
+  <rect x="40" y="40" width="920" height="20" fill="#ffffff"/>
+  <text x="40" y="55" font-size="12.5" fill="#64748b">两条路的终点都是「你的第一条指令」，区别在中间插了几段代码</text>
+
+  <rect x="390" y="78" width="220" height="28" rx="6" fill="#0f172a"/>
+  <text x="500" y="97" font-size="12.5" font-weight="700" fill="#ffffff" text-anchor="middle">execve 装载完成</text>
+
+  <line x1="500" y1="106" x2="500" y2="126" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="500,132 496,124 504,124" fill="#94a3b8"/>
+
+  <rect x="426" y="134" width="148" height="30" rx="15" fill="#fef9c3" stroke="#facc15"/>
+  <text x="500" y="154" font-size="12" font-weight="700" fill="#854d0e" text-anchor="middle">查 PT_INTERP</text>
+
+  <line x1="426" y1="149" x2="286" y2="149" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="286" y1="149" x2="286" y2="196" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="286,202 282,194 290,194" fill="#94a3b8"/>
+  <rect x="196" y="152" width="84" height="20" fill="#ffffff"/>
+  <text x="238" y="167" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">没有（静态）</text>
+
+  <line x1="574" y1="149" x2="714" y2="149" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="714" y1="149" x2="714" y2="196" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="714,202 710,194 718,194" fill="#94a3b8"/>
+  <rect x="630" y="152" width="84" height="20" fill="#ffffff"/>
+  <text x="672" y="167" font-size="11.5" font-weight="700" fill="#1d4ed8" text-anchor="middle">有（动态）</text>
+
+  <rect x="60" y="208" width="452" height="150" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="76" y="222" width="250" height="20" fill="#f8fafc"/>
+  <text x="76" y="237" font-size="13" font-weight="700" fill="#0f172a">一步到位：PC 直接设成 e_entry</text>
+
+  <rect x="76" y="250" width="420" height="44" rx="5" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="92" y="268" font-size="12" font-weight="700" fill="#0f172a">_start（C） ／ _rt0_amd64_linux（Go）</text>
+  <text x="92" y="285" font-size="11.5" fill="#475569">C 的 _start 12 条指令；Go 的入口只有一条 jmp</text>
+
+  <rect x="76" y="304" width="420" height="44" rx="5" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="92" y="322" font-size="12" font-weight="700" fill="#0f172a">AT_BASE = 0 ｜ 无 loader 参与</text>
+  <text x="92" y="339" font-size="11.5" fill="#475569">LD_DEBUG、LD_SHOW_AUXV 全部无效，输出为空</text>
+
+  <rect x="544" y="208" width="396" height="150" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <rect x="560" y="222" width="250" height="20" fill="#eff6ff"/>
+  <text x="560" y="237" font-size="13" font-weight="700" fill="#0f172a">中间插一段：PC 先给解释器</text>
+
+  <rect x="560" y="250" width="364" height="44" rx="5" fill="#ffffff" stroke="#dbeafe"/>
+  <text x="576" y="268" font-size="12" font-weight="700" fill="#1d4ed8">ld-linux 的 _start → 映射依赖 → 重定位</text>
+  <text x="576" y="285" font-size="11.5" fill="#475569">把 libc.so.6 等一并映进同一个地址空间</text>
+
+  <rect x="560" y="304" width="364" height="44" rx="5" fill="#ffffff" stroke="#dbeafe"/>
+  <text x="576" y="322" font-size="12" font-weight="700" fill="#1d4ed8">AT_BASE = loader 的基址 ｜ 才跳回 e_entry</text>
+  <text x="576" y="339" font-size="11.5" fill="#475569">这一段实测 134,951 cycles，占启动时间的大头</text>
+
+  <line x1="286" y1="358" x2="286" y2="380" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="286,386 282,378 290,378" fill="#94a3b8"/>
+  <line x1="714" y1="358" x2="714" y2="380" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="714,386 710,378 718,378" fill="#94a3b8"/>
+
+  <rect x="140" y="388" width="292" height="28" rx="6" fill="#0f172a"/>
+  <text x="286" y="407" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">你的第一条指令开始执行</text>
+  <rect x="568" y="388" width="292" height="28" rx="6" fill="#0f172a"/>
+  <text x="714" y="407" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">你的第一条指令开始执行</text>
+
+  <rect x="40" y="428" width="920" height="30" rx="6" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="56" y="447" font-size="11.5" fill="#9a3412">同样一个 hello：静态 33 条 VMA 里只有 3 条映射文件，动态 22 条里有 15 条（自己的 5 + libc 的 5 + loader 的 5）</text>
+</svg>

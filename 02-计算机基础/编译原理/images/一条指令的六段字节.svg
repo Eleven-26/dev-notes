@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="430" viewBox="0 0 1000 430">
+  <rect x="0" y="0" width="1000" height="430" fill="#ffffff"/>
+  <rect x="40" y="18" width="920" height="56" rx="8" fill="#ffffff"/>
+  <text x="60" y="46" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#0f172a">一条 x86 指令：段在不在，由字段自己声明</text>
+  <text x="60" y="66" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">两个例子都取自同一个 fib 二进制；十六进制是文件里的真实字节</text>
+
+  <rect x="40" y="86" width="920" height="150" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="112" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="700" fill="#0f172a">例一：一条访存指令装下了「基址 + 变址 × 4」</text>
+
+  <rect x="60" y="124" width="90" height="42" rx="5" fill="#dc2626"/>
+  <text x="93" y="151" font-family="Consolas, monospace" font-size="18" font-weight="700" fill="#ffffff">8b</text>
+  <rect x="160" y="124" width="90" height="42" rx="5" fill="#2563eb"/>
+  <text x="193" y="151" font-family="Consolas, monospace" font-size="18" font-weight="700" fill="#ffffff">04</text>
+  <rect x="260" y="124" width="90" height="42" rx="5" fill="#0d9488"/>
+  <text x="293" y="151" font-family="Consolas, monospace" font-size="18" font-weight="700" fill="#ffffff">b7</text>
+
+  <text x="60" y="186" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#dc2626">opcode</text>
+  <text x="60" y="204" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#475569">MOV r32, r/m32</text>
+  <text x="160" y="186" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#2563eb">ModRM</text>
+  <text x="160" y="204" font-family="Consolas, monospace" font-size="11" fill="#475569">00 000 100</text>
+  <text x="260" y="186" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0d9488">SIB</text>
+  <text x="260" y="204" font-family="Consolas, monospace" font-size="11" fill="#475569">10 110 111</text>
+
+  <text x="400" y="151" font-family="Consolas, monospace" font-size="16" fill="#0f172a">= (%rdi + %rsi*4)</text>
+  <text x="400" y="172" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">mod=00 无位移、reg=eax</text>
+  <text x="400" y="190" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">rm=100 表示「下一个字节是 SIB」</text>
+  <text x="400" y="208" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">scale=10 即 ×4、index=rsi、base=rdi</text>
+
+  <rect x="40" y="248" width="920" height="150" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="274" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="700" fill="#0f172a">例二：一条递归调用的位移是负数</text>
+
+  <rect x="60" y="286" width="90" height="42" rx="5" fill="#dc2626"/>
+  <text x="93" y="313" font-family="Consolas, monospace" font-size="18" font-weight="700" fill="#ffffff">e8</text>
+  <rect x="160" y="286" width="330" height="42" rx="5" fill="#ea580c"/>
+  <text x="182" y="313" font-family="Consolas, monospace" font-size="18" font-weight="700" fill="#ffffff">e5 ff ff ff</text>
+
+  <text x="60" y="348" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#dc2626">opcode</text>
+  <text x="60" y="366" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#475569">call rel32</text>
+  <text x="160" y="348" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#ea580c">rel32（小端）</text>
+  <text x="160" y="366" font-family="Consolas, monospace" font-size="11" fill="#475569">0xffffffe5 = -27</text>
+
+  <text x="520" y="313" font-family="Consolas, monospace" font-size="15" fill="#0f172a">0x1186 + 5 - 27 = 0x1170</text>
+  <text x="520" y="334" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">下一条指令的地址 + 位移 = fib 的入口</text>
+  <text x="520" y="352" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">这个 -27 是相对量：二进制一挪位置，</text>
+  <text x="520" y="370" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">这四个字节就必须跟着改（重定位）</text>
+</svg>

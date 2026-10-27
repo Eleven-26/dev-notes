@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460" viewBox="0 0 1000 460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="900" height="26" fill="#ffffff"/>
+  <text x="40" y="35" font-size="17" font-weight="700" fill="#0f172a">master 只管 fork 与信号，worker 只管跑脚本</text>
+  <rect x="40" y="42" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="58" font-size="12.5" fill="#64748b">9000 端口在 master 里 bind，fork 之后每个 worker 继承同一个 listen fd 各自 accept</text>
+
+  <rect x="34" y="92" width="196" height="86" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="132" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">curl / 浏览器</text>
+  <text x="132" y="139" text-anchor="middle" font-size="11" fill="#475569">HTTP 请求</text>
+  <text x="132" y="158" text-anchor="middle" font-size="11" fill="#475569">:8080</text>
+
+  <rect x="270" y="80" width="300" height="230" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <rect x="282" y="92" width="276" height="34" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="420" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">nginx master（1 个）</text>
+
+  <rect x="282" y="140" width="128" height="52" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="346" y="162" text-anchor="middle" font-size="11" fill="#334155">nginx worker</text>
+  <text x="346" y="178" text-anchor="middle" font-size="10.5" fill="#94a3b8">accept :8080</text>
+  <rect x="430" y="140" width="128" height="52" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="494" y="162" text-anchor="middle" font-size="11" fill="#334155">nginx worker</text>
+  <text x="494" y="178" text-anchor="middle" font-size="10.5" fill="#94a3b8">共 4 个</text>
+
+  <rect x="282" y="204" width="276" height="46" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="420" y="223" text-anchor="middle" font-size="11.5" font-weight="700" fill="#92400e">把 .php 转成 FastCGI</text>
+  <text x="420" y="241" text-anchor="middle" font-size="10.5" fill="#92400e">需要 SCRIPT_FILENAME，否则 502</text>
+
+  <rect x="282" y="262" width="276" height="36" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="420" y="285" text-anchor="middle" font-size="11" fill="#334155">user = www-data（降权在这里）</text>
+
+  <rect x="640" y="80" width="320" height="230" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+  <rect x="652" y="92" width="296" height="34" rx="4" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="800" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1e3a8a">php-fpm master（1 个）</text>
+
+  <rect x="652" y="140" width="140" height="52" rx="4" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="722" y="162" text-anchor="middle" font-size="11" fill="#1e40af">pool www</text>
+  <text x="722" y="178" text-anchor="middle" font-size="10.5" fill="#64748b">listen :9000</text>
+  <rect x="808" y="140" width="140" height="52" rx="4" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="878" y="162" text-anchor="middle" font-size="11" fill="#1e40af">pool www</text>
+  <text x="878" y="178" text-anchor="middle" font-size="10.5" fill="#64748b">共 4 个</text>
+
+  <rect x="652" y="204" width="296" height="46" rx="4" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="800" y="223" text-anchor="middle" font-size="11" fill="#1e40af">每个 worker 同时只处理 1 个请求</text>
+  <text x="800" y="241" text-anchor="middle" font-size="10.5" fill="#64748b">pm.max_children 就是并发上限</text>
+
+  <rect x="652" y="262" width="296" height="36" rx="4" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="800" y="285" text-anchor="middle" font-size="11" fill="#1e40af">USR2 平滑重载 / TERM 立即退出</text>
+
+  <rect x="466" y="186" width="34" height="18" fill="#ffffff"/>
+  <text x="483" y="199" text-anchor="middle" font-size="11" fill="#64748b">→</text>
+  <rect x="592" y="186" width="44" height="18" fill="#ffffff"/>
+  <text x="614" y="199" text-anchor="middle" font-size="10.5" fill="#64748b">:9000</text>
+
+  <rect x="640" y="326" width="320" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="800" y="347" text-anchor="middle" font-size="12" font-weight="700" fill="#166534">opcache 共享内存</text>
+  <text x="800" y="366" text-anchor="middle" font-size="10.5" fill="#166534">4 个 worker 共享同一份编译产物</text>
+
+  <rect x="270" y="326" width="300" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="420" y="347" text-anchor="middle" font-size="11.5" fill="#334155">/lab/web/*.php</text>
+  <text x="420" y="366" text-anchor="middle" font-size="10.5" fill="#64748b">被编译的对象，改了它要等 revalidate</text>
+
+  <rect x="40" y="398" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="413" font-size="11.5" fill="#334155">nginx 与 fpm 必须是同一份文件系统视图：容器之间不共享 volume 时，nginx 看得见 .php 而 fpm 看不见，报的是 404 而不是 502</text>
+  <rect x="40" y="424" width="920" height="22" fill="#ffffff"/>
+  <text x="40" y="439" font-size="11.5" fill="#334155">master 以 root 绑定端口后 fork，worker 降权到 www-data；这就是「为什么手动 mkdir 成功、脚本里失败」的全部原因</text>
+</svg>
