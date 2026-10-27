@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400" viewBox="0 0 1000 400" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+
+  <rect x="40" y="18" width="620" height="24" fill="#ffffff"/>
+  <text x="40" y="36" font-size="17" font-weight="700" fill="#0f172a">四种锁的代价，从 1 核到 16 核涨了几倍</text>
+  <rect x="40" y="42" width="760" height="20" fill="#ffffff"/>
+  <text x="40" y="57" font-size="12.5" fill="#64748b">临界区只有一行自增，go test -bench -cpu 1,2,4,8,16，单位 ns/op</text>
+
+  <rect x="40" y="76" width="140" height="22" fill="#ffffff"/>
+  <text x="40" y="92" font-size="12.5" font-weight="700" fill="#334155">实现</text>
+  <rect x="190" y="76" width="300" height="22" fill="#ffffff"/>
+  <text x="190" y="92" font-size="12.5" font-weight="700" fill="#334155">1 核 → 16 核（倍数越长越差）</text>
+  <rect x="700" y="76" width="270" height="22" fill="#ffffff"/>
+  <text x="700" y="92" font-size="12.5" font-weight="700" fill="#334155">1 核 → 16 核（ns/op）</text>
+
+  <rect x="40" y="106" width="130" height="22" fill="#ffffff"/>
+  <text x="40" y="122" font-size="12.5" fill="#0f172a">SpinLock</text>
+  <rect x="190" y="108" width="70" height="18" rx="3" fill="#2563eb"/>
+  <rect x="270" y="106" width="200" height="22" fill="#ffffff"/>
+  <text x="270" y="122" font-size="12.5" fill="#1e40af">1.4 倍</text>
+  <rect x="700" y="106" width="200" height="22" fill="#ffffff"/>
+  <text x="700" y="122" font-size="12.5" fill="#334155">32.8 → 46.6</text>
+
+  <rect x="40" y="156" width="130" height="22" fill="#ffffff"/>
+  <text x="40" y="172" font-size="12.5" fill="#0f172a">sync.Mutex</text>
+  <rect x="190" y="158" width="190" height="18" rx="3" fill="#0f766e"/>
+  <rect x="390" y="156" width="200" height="22" fill="#ffffff"/>
+  <text x="390" y="172" font-size="12.5" fill="#115e59">3.8 倍</text>
+  <rect x="700" y="156" width="200" height="22" fill="#ffffff"/>
+  <text x="700" y="172" font-size="12.5" fill="#334155">30.7 → 115.6</text>
+
+  <rect x="40" y="206" width="130" height="22" fill="#ffffff"/>
+  <text x="40" y="222" font-size="12.5" fill="#0f172a">CondMutex</text>
+  <rect x="190" y="208" width="310" height="18" rx="3" fill="#d97706"/>
+  <rect x="510" y="206" width="200" height="22" fill="#ffffff"/>
+  <text x="510" y="222" font-size="12.5" fill="#b45309">6.2 倍</text>
+  <rect x="700" y="206" width="200" height="22" fill="#ffffff"/>
+  <text x="700" y="222" font-size="12.5" fill="#334155">69.3 → 433.0</text>
+
+  <rect x="40" y="256" width="130" height="22" fill="#ffffff"/>
+  <text x="40" y="272" font-size="12.5" fill="#0f172a">ChanMutex</text>
+  <rect x="190" y="258" width="490" height="18" rx="3" fill="#b91c1c"/>
+  <rect x="690" y="256" width="120" height="22" fill="#ffffff"/>
+  <text x="690" y="272" font-size="12.5" fill="#991b1b">9.8 倍</text>
+  <rect x="800" y="256" width="160" height="22" fill="#ffffff"/>
+  <text x="800" y="272" font-size="12.5" fill="#334155">76.7 → 753.4</text>
+
+  <rect x="40" y="296" width="920" height="86" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <rect x="56" y="306" width="890" height="20" fill="#f1f5f9"/>
+  <text x="56" y="321" font-size="12.5" fill="#334155">自旋锁几乎不随并行度变差，但它的等待是空转烧 CPU，这部分代价不进 ns/op。</text>
+  <rect x="56" y="328" width="890" height="20" fill="#f1f5f9"/>
+  <text x="56" y="343" font-size="12.5" fill="#334155">标准库选择的是混合策略：先自旋几轮赌不用切换，赌输了立刻挂起，两头的好处都要。</text>
+  <rect x="56" y="350" width="890" height="20" fill="#f1f5f9"/>
+  <text x="56" y="365" font-size="12.5" font-weight="700" fill="#0f172a">判据：只有「临界区极短 + 并发者少于核数」才该考虑自旋，其余场景交给 sync.Mutex。</text>
+</svg>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="380" viewBox="0 0 1000 380" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="380" fill="#ffffff"/>
+
+  <rect x="40" y="16" width="620" height="24" fill="#ffffff"/>
+  <text x="40" y="34" font-size="17" font-weight="700" fill="#0f172a">四个坑踩在 channel 生命周期的哪一步</text>
+  <rect x="40" y="40" width="740" height="20" fill="#ffffff"/>
+  <text x="40" y="55" font-size="12.5" fill="#64748b">同一个 deadlock 有两个根因，判据都是「有没有人能把它取走」</text>
+
+  <line x1="80" y1="150" x2="920" y2="150" stroke="#94a3b8" stroke-width="1.5"/>
+  <circle cx="140" cy="150" r="6" fill="#0f172a"/>
+  <circle cx="380" cy="150" r="6" fill="#0f172a"/>
+  <circle cx="620" cy="150" r="6" fill="#0f172a"/>
+  <circle cx="860" cy="150" r="6" fill="#0f172a"/>
+  <rect x="105" y="112" width="70" height="20" fill="#ffffff"/>
+  <text x="140" y="127" font-size="12.5" font-weight="700" fill="#334155" text-anchor="middle">创建</text>
+  <rect x="345" y="112" width="70" height="20" fill="#ffffff"/>
+  <text x="380" y="127" font-size="12.5" font-weight="700" fill="#334155" text-anchor="middle">发送</text>
+  <rect x="585" y="112" width="70" height="20" fill="#ffffff"/>
+  <text x="620" y="127" font-size="12.5" font-weight="700" fill="#334155" text-anchor="middle">关闭</text>
+  <rect x="825" y="112" width="70" height="20" fill="#ffffff"/>
+  <text x="860" y="127" font-size="12.5" font-weight="700" fill="#334155" text-anchor="middle">之后</text>
+
+  <rect x="40" y="176" width="200" height="124" fill="#fef2f2" stroke="#fecaca"/>
+  <rect x="52" y="186" width="176" height="20" fill="#fef2f2"/>
+  <text x="52" y="201" font-size="12.5" font-weight="700" fill="#991b1b">坑四：cap 选小了</text>
+  <rect x="52" y="212" width="176" height="18" fill="#fef2f2"/>
+  <text x="52" y="226" font-size="11.5" fill="#7f1d1d">缓冲满且没人取</text>
+  <rect x="52" y="232" width="176" height="18" fill="#fef2f2"/>
+  <text x="52" y="246" font-size="11.5" fill="#7f1d1d">cap=2 发 3 个就死锁</text>
+  <rect x="52" y="266" width="176" height="18" fill="#fef2f2"/>
+  <text x="52" y="280" font-size="11.5" fill="#b91c1c">goroutine 1 [chan send]</text>
+
+  <rect x="280" y="176" width="200" height="124" fill="#fef2f2" stroke="#fecaca"/>
+  <rect x="292" y="186" width="176" height="20" fill="#fef2f2"/>
+  <text x="292" y="201" font-size="12.5" font-weight="700" fill="#991b1b">坑一：收发不成对</text>
+  <rect x="292" y="212" width="176" height="18" fill="#fef2f2"/>
+  <text x="292" y="226" font-size="11.5" fill="#7f1d1d">无缓冲且没有接收方</text>
+  <rect x="292" y="232" width="176" height="18" fill="#fef2f2"/>
+  <text x="292" y="246" font-size="11.5" fill="#7f1d1d">单协程一发送就死锁</text>
+  <rect x="292" y="266" width="176" height="18" fill="#fef2f2"/>
+  <text x="292" y="280" font-size="11.5" fill="#b91c1c">all goroutines asleep</text>
+
+  <rect x="520" y="176" width="200" height="124" fill="#fff7ed" stroke="#fed7aa"/>
+  <rect x="532" y="186" width="176" height="20" fill="#fff7ed"/>
+  <text x="532" y="201" font-size="12.5" font-weight="700" fill="#9a3412">坑二：发 N 次值当通知</text>
+  <rect x="532" y="212" width="176" height="18" fill="#fff7ed"/>
+  <text x="532" y="226" font-size="11.5" fill="#7c2d12">4 个 worker 发 3 次值</text>
+  <rect x="532" y="232" width="176" height="18" fill="#fff7ed"/>
+  <text x="532" y="246" font-size="11.5" fill="#7c2d12">漏掉的那个永久阻塞</text>
+  <rect x="532" y="266" width="176" height="18" fill="#fff7ed"/>
+  <text x="532" y="280" font-size="11.5" fill="#c2410c">退出 3 个，剩 1 个卡住</text>
+
+  <rect x="760" y="176" width="200" height="124" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <rect x="772" y="186" width="176" height="20" fill="#f0fdf4"/>
+  <text x="772" y="201" font-size="12.5" font-weight="700" fill="#166534">坑三：以为关了就没了</text>
+  <rect x="772" y="212" width="176" height="18" fill="#f0fdf4"/>
+  <text x="772" y="226" font-size="11.5" fill="#14532d">close 只禁写不禁读</text>
+  <rect x="772" y="232" width="176" height="18" fill="#f0fdf4"/>
+  <text x="772" y="246" font-size="11.5" fill="#14532d">缓冲里的会先读完</text>
+  <rect x="772" y="266" width="176" height="18" fill="#f0fdf4"/>
+  <text x="772" y="280" font-size="11.5" fill="#15803d">读完才返回零值 + false</text>
+
+  <rect x="40" y="316" width="920" height="44" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <rect x="56" y="326" width="890" height="20" fill="#f1f5f9"/>
+  <text x="56" y="341" font-size="12.5" fill="#334155">前两个死锁报同样的错，区别只在「缓冲有没有满」；后两个不报错，只会让你以为程序还活着。</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+
+  <rect x="40" y="18" width="640" height="24" fill="#ffffff"/>
+  <text x="40" y="36" font-size="17" font-weight="700" fill="#0f172a">为什么不能靠定时器补令牌</text>
+  <rect x="40" y="42" width="700" height="20" fill="#ffffff"/>
+  <text x="40" y="57" font-size="12.5" fill="#64748b">rate=10000/s，桶掏空后静置 100ms，理论上该补回 1000 个令牌</text>
+
+  <rect x="40" y="74" width="920" height="112" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="56" y="86" width="300" height="22" fill="#f8fafc"/>
+  <text x="56" y="102" font-size="13.5" font-weight="700" fill="#0f172a">懒恢复：只在被问到时算一次</text>
+  <line x1="140" y1="152" x2="880" y2="152" stroke="#94a3b8" stroke-width="1.5"/>
+  <circle cx="140" cy="152" r="5" fill="#0f172a"/>
+  <circle cx="880" cy="152" r="5" fill="#0f172a"/>
+  <rect x="92" y="158" width="110" height="18" fill="#f8fafc"/>
+  <text x="96" y="172" font-size="11.5" fill="#475569">t=0 掏空</text>
+  <rect x="802" y="158" width="132" height="18" fill="#f8fafc"/>
+  <text x="806" y="172" font-size="11.5" fill="#475569">t=100ms 请求到</text>
+  <rect x="330" y="116" width="360" height="22" fill="#f8fafc"/>
+  <text x="330" y="132" font-size="12" fill="#334155">0.1s × 10000 = 1000，一次乘加算完</text>
+  <rect x="700" y="90" width="240" height="34" rx="6" fill="#dcfce7" stroke="#86efac"/>
+  <text x="820" y="112" font-size="14" font-weight="700" fill="#166534" text-anchor="middle">1000 ~ 1003 个</text>
+
+  <rect x="40" y="196" width="920" height="112" fill="#fff7ed" stroke="#fed7aa"/>
+  <rect x="56" y="208" width="300" height="22" fill="#fff7ed"/>
+  <text x="56" y="224" font-size="13.5" font-weight="700" fill="#0f172a">定时器：每 100µs 自己加一个</text>
+  <line x1="140" y1="272" x2="880" y2="272" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="180" y1="264" x2="180" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="260" y1="264" x2="260" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="340" y1="264" x2="340" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="420" y1="264" x2="420" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="500" y1="264" x2="500" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="580" y1="264" x2="580" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="660" y1="264" x2="660" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="740" y1="264" x2="740" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <line x1="820" y1="264" x2="820" y2="280" stroke="#ea580c" stroke-width="1.5"/>
+  <rect x="56" y="286" width="220" height="18" fill="#fff7ed"/>
+  <text x="60" y="300" font-size="11.5" fill="#9a3412">刻点是示意，实际约 210 次</text>
+  <rect x="330" y="236" width="360" height="22" fill="#fff7ed"/>
+  <text x="330" y="252" font-size="12" fill="#9a3412">实际触发 202 ~ 218 次，期望 1000 次</text>
+  <rect x="700" y="212" width="240" height="34" rx="6" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="820" y="234" font-size="14" font-weight="700" fill="#9a3412" text-anchor="middle">202 ~ 218 个</text>
+
+  <rect x="40" y="322" width="920" height="80" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <rect x="56" y="332" width="880" height="20" fill="#f1f5f9"/>
+  <text x="56" y="347" font-size="12.5" fill="#334155">期望间隔 100µs，实测约 476µs：定时器精度不够，每个间隔该补 4.8 个却只补了 1 个。</text>
+  <rect x="56" y="354" width="880" height="20" fill="#f1f5f9"/>
+  <text x="56" y="369" font-size="12.5" fill="#334155">rate 越低差得越少 —— rate=10/s 时两版实测都是 10 个，低频用定时器没问题。</text>
+  <rect x="56" y="376" width="880" height="20" fill="#f1f5f9"/>
+  <text x="56" y="391" font-size="12.5" font-weight="700" fill="#0f172a">判据：rate × 定时器实际精度 &gt; 1，定时器就补不满，用它等于悄悄调低了速率。</text>
+</svg>
