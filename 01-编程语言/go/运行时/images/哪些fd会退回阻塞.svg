@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="arFDa" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">哪些 fd 会进 netpoll，哪些退回阻塞</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">判据是「epoll_ctl(ADD) 成不成」，不是「它是不是文件」：管道与 FIFO 能进，普通磁盘文件不能。</text>
+
+  <rect x="40" y="78" width="230" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="155" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">fd 从哪来</text>
+
+  <rect x="320" y="78" width="330" height="34" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="485" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#9a3412">建出来时是什么状态</text>
+
+  <rect x="700" y="78" width="260" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="830" y="100" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">1.26.8 上的结果</text>
+
+  <rect x="40" y="124" width="230" height="64" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="155" y="152" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">net.Listen / net.Dial</text>
+  <text x="155" y="174" font-size="12" text-anchor="middle" fill="#334155">net/sock_cloexec.go</text>
+
+  <rect x="320" y="124" width="330" height="64" rx="8" fill="#ffffff" stroke="#ea580c"/>
+  <text x="485" y="152" font-size="13" text-anchor="middle" fill="#334155">socket 参数带 SOCK_NONBLOCK</text>
+  <text x="485" y="174" font-size="12" text-anchor="middle" fill="#334155">再 FD.Init("tcp", true) 注册</text>
+
+  <rect x="700" y="124" width="260" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="830" y="152" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">进 epoll</text>
+  <text x="830" y="174" font-size="12" text-anchor="middle" fill="#334155">flags=0x802，ET 触发</text>
+
+  <line x1="270" y1="156" x2="316" y2="156" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+  <line x1="650" y1="156" x2="696" y2="156" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+
+  <rect x="40" y="200" width="230" height="64" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="155" y="228" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">os.Pipe / mkfifo</text>
+  <text x="155" y="250" font-size="12" text-anchor="middle" fill="#334155">管道与命名管道</text>
+
+  <rect x="320" y="200" width="330" height="64" rx="8" fill="#ffffff" stroke="#ea580c"/>
+  <text x="485" y="228" font-size="13" text-anchor="middle" fill="#334155">newFile 先 SetNonblock(true)</text>
+  <text x="485" y="250" font-size="12" text-anchor="middle" fill="#334155">epoll_ctl 接受，不必还原</text>
+
+  <rect x="700" y="200" width="260" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="830" y="228" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">进 epoll</text>
+  <text x="830" y="250" font-size="12" text-anchor="middle" fill="#334155">flags=0x800 / 0x8800</text>
+
+  <line x1="270" y1="232" x2="316" y2="232" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+  <line x1="650" y1="232" x2="696" y2="232" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+
+  <rect x="40" y="276" width="230" height="64" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="155" y="304" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">os.Open 普通文件</text>
+  <text x="155" y="326" font-size="12" text-anchor="middle" fill="#334155">磁盘文件、目录</text>
+
+  <rect x="320" y="276" width="330" height="64" rx="8" fill="#ffffff" stroke="#ea580c"/>
+  <text x="485" y="304" font-size="13" text-anchor="middle" fill="#334155">SetNonblock 成功但 epoll_ctl 报 EPERM</text>
+  <text x="485" y="326" font-size="12" text-anchor="middle" fill="#334155">FD.Init 置 isBlocking=1 并还原非阻塞</text>
+
+  <rect x="700" y="276" width="260" height="64" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="830" y="304" font-size="13" font-weight="bold" text-anchor="middle" fill="#b91c1c">退回阻塞</text>
+  <text x="830" y="326" font-size="12" text-anchor="middle" fill="#334155">flags=0x8000，占住 M</text>
+
+  <line x1="270" y1="308" x2="316" y2="308" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+  <line x1="650" y1="308" x2="696" y2="308" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+
+  <rect x="40" y="352" width="230" height="64" rx="8" fill="#ffffff" stroke="#2563eb"/>
+  <text x="155" y="380" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">裸 syscall.Open / cgo</text>
+  <text x="155" y="402" font-size="12" text-anchor="middle" fill="#334155">不经过 internal/poll</text>
+
+  <rect x="320" y="352" width="330" height="64" rx="8" fill="#ffffff" stroke="#ea580c"/>
+  <text x="485" y="380" font-size="13" text-anchor="middle" fill="#334155">完全没有注册这一步</text>
+  <text x="485" y="402" font-size="12" text-anchor="middle" fill="#334155">阻塞就 entersyscall，交还 P 并补线程</text>
+
+  <rect x="700" y="352" width="260" height="64" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="830" y="380" font-size="13" font-weight="bold" text-anchor="middle" fill="#b91c1c">阻塞并 handoff</text>
+  <text x="830" y="402" font-size="12" text-anchor="middle" fill="#334155">200 个 → threads=202~203</text>
+
+  <line x1="270" y1="384" x2="316" y2="384" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+  <line x1="650" y1="384" x2="696" y2="384" stroke="#64748b" stroke-width="2" marker-end="url(#arFDa)"/>
+
+  <rect x="40" y="440" width="920" height="132" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="58" y="464" font-size="13" font-weight="bold" fill="#0f172a">三条落地结论</text>
+  <text x="58" y="490" font-size="12" fill="#334155">判据看 epoll_ctl 的返回值，不看文件类型：同样是 fd，管道能注册，磁盘文件被 EPERM 拒绝。</text>
+  <text x="58" y="514" font-size="12" fill="#334155">退化的代价是线程：一次真阻塞就占住一条 M，运行时只能补新线程顶上，线程数跟着并发阻塞数走。</text>
+  <text x="58" y="538" font-size="12" fill="#334155">检查用 F_GETFL 看 O_NONBLOCK，但必须走 SyscallConn().Control —— File.Fd() 会顺手把它改回阻塞。</text>
+  <text x="58" y="562" font-size="12" fill="#64748b">注：0x8000 是 O_LARGEFILE，与阻塞无关；只看 0x800 这一位。</text>
+</svg>

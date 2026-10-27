@@ -353,7 +353,7 @@ Go 把 socket 设成非阻塞并交给 **`netpoller`**（Linux epoll / Windows I
 
 ![netpoller 的数据流转闭环：上半环 ① 读 socket（非阻塞）→ ② 读不 ready 就 gopark、M 不被拖住 → ③ _Gwaiting 躺在内存里等信号；下半环 ④ 数据到了 → ⑤ netpoller（Linux epoll / Windows IOCP）poll 到 fd → ⑥ goready 把 _Gwaiting 改成 _Grunnable、进 runnext 等被 M 取走；右下另列三个真占住 M 的例外](images/netpoll网络轮询器数据流转.svg)
 
-读法：上半环是「读 socket 不 ready 就 gopark」，下半环是「epoll 通知后 goready」；两个半环合起来说明网络 IO 为什么不必一个协程守一个线程。
+读法：上半环是「读 socket 不 ready 就 gopark」，下半环是「epoll 通知后 goready」；两个半环合起来说明网络 IO 为什么不必一个协程守一个线程。`pollDesc` 的 `pdNil` / `pdWait` / `pdReady` 三种取值、fd 的注册时机与 `SetReadDeadline` 的打断路径见 [网络IO与netpoll.md](../运行时/网络IO与netpoll.md)。
 
 ---
 
@@ -498,7 +498,7 @@ for _, f := range fns {
 
 - [GMP调度.md](../运行时/GMP调度.md) — goroutine 被谁调度、本地队列与全局队列、抢占式调度
 - [协程泄漏与死锁.md](协程泄漏与死锁.md) — 泄漏的十个现场与排查套路（本篇第八节只留判据）
-- [共享内存与CSP.md](共享内存与CSP.md) — 协程之间怎么通信，两种路线的失败模式
+- [线程安全与CSP.md](线程安全与CSP.md) — 协程之间怎么通信，两种路线的失败模式
 - [并发同步原语.md](并发同步原语.md) — 加锁、原子操作与 WaitGroup
 - [channel原理与底层实现.md](channel原理与底层实现.md) — goroutine 阻塞时挂到哪个队列上
 - [内存分配器.md](../运行时/内存分配器.md) — 栈和 `g` 结构体最终落到哪一级分配器
@@ -506,6 +506,7 @@ for _, f := range fns {
 - [协程与线程成本.md](协程与线程成本.md) — 线程 / 协程的创建成本实测与内核侧对照（概念在 [进程与线程.md](../../../02-计算机基础/linux/进程与线程.md)）
 - [goroutine实战模式.md](goroutine实战模式.md) — **实战篇**：7 个典型案例、项目里的 4 种用法、
   端到端实例（并发导出对账 CSV）与「worker 池 vs 每任务一协程」的对照实测
-- [runtime调试与trace.md](../运行时/runtime调试与trace.md) — g 状态机与阻塞唤醒在此，用 scheddetail / trace 验证状态迁移的取数方法在彼
+- [GODEBUG与运行时观测.md](../运行时/GODEBUG与运行时观测.md) — `scheddetail` 的 P / M / G 三段怎么读出状态迁移（g 状态机与阻塞唤醒的机制见 [goroutine.md](goroutine.md)）
+- [trace与运行时指标.md](../运行时/trace与运行时指标.md) — 用 `runtime/trace` 把状态迁移按时间轴摊开，`-pprof=sched` 看调度延迟
 - [数据导入导出设计.md](../../../04-架构与系统/系统设计/数据导入导出设计.md) — 导入导出的完整设计（形态选择、任务表、进度回报、幂等）
 > 反向引用（本篇被下列文档引到）：[sync.Pool.md](sync.Pool.md)、[垃圾回收机制.md](../运行时/垃圾回收机制.md)、[线程池.md](../../java/并发/线程池.md)、[DFS与BFS遍历.md](../../../02-计算机基础/算法/图论算法/图的遍历/DFS与BFS遍历.md)、[DFS深度优先遍历.md](../../../02-计算机基础/算法/图论算法/图的遍历/DFS深度优先遍历.md)

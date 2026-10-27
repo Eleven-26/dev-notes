@@ -250,7 +250,7 @@
 **一定要先 `go build` 再运行二进制**。
 
 逐字段的读法（每个字段对应什么判据）、`scheddetail=1` 把 P / M / G 摊开后的三段、以及 `gctrace`、
-`runtime/trace`、`MemStats` 那套自省旋钮，已经独立成篇：见 [runtime调试与trace.md](runtime调试与trace.md) 第二、三、四节。
+`GODEBUG` 那套常驻旋钮（`schedtrace` / `scheddetail` / `gctrace`）见 [GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) 第二、三节；`runtime/trace` 与 `MemStats` 见 [trace与运行时指标.md](trace与运行时指标.md) 第二节。
 ⚠️ 那边是**容器 4 P** 的同款实验（全局队列 395~430），本篇是**宿主机 8 P**（355 / 374）——
 **同一份代码、不同 CPU 数，绝对值不可比**，趋势一致（本地队列涨 → 溢出到全局 → 全局长期非零）。
 
@@ -380,6 +380,7 @@ GC 要做 STW 时，需要**所有 goroutine 都到达"安全点"**。老版本�
 - [goroutine.md](../并发编程/goroutine.md) — goroutine 本身有多轻、栈怎么长、怎么排查泄漏
 - [垃圾回收机制.md](垃圾回收机制.md) — 抢占式调度为什么是 STW 能稳定在亚毫秒的前提
 - [协程与线程成本.md](../并发编程/协程与线程成本.md) — 线程与协程的创建成本对照
-- [runtime调试与trace.md](runtime调试与trace.md) — 第四节 `schedtrace` 的逐字段读法、`scheddetail` / `gctrace` / `runtime/trace` 全套自省旋钮（本篇只留结论）
+- [GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) — `schedtrace` 单行与 `scheddetail` 三段的逐字段读法、`gctrace` / `scavtrace`（本篇只留结论）
+- [trace与运行时指标.md](trace与运行时指标.md) — `runtime/trace` 的无头解析与 `runtime/metrics` 里的调度指标
 
-> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[sync.Map.md](../并发编程/sync.Map.md)、[并发同步原语.md](../并发编程/并发同步原语.md)、[pprof性能分析.md](pprof性能分析.md)、[反射与unsafe.md](反射与unsafe.md)、[进程与线程.md](../../../02-计算机基础/linux/进程与线程.md)
+> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[sync.Map.md](../并发编程/sync.Map.md)、[并发同步原语.md](../并发编程/并发同步原语.md)、[pprof性能分析.md](pprof性能分析.md)、[反射.md](反射.md)、[进程与线程.md](../../../02-计算机基础/linux/进程与线程.md)

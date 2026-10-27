@@ -172,7 +172,7 @@ channel 建立边的方式是**成对**的，而且是「**第 k 次**」级别�
 
 ⭐ 最实用的一条推论：**channel 不只是"传数据"，它是"传数据 + 建立边"的打包**。
 把要共享的东西放进 channel 传过去，就不需要再单独考虑可见性 —— 这正是
-[共享内存与CSP.md](共享内存与CSP.md) 里那句话「通过通信来共享内存」的规范依据。
+[线程安全与CSP.md](线程安全与CSP.md) 里那句话「通过通信来共享内存」的规范依据。
 
 ### 3.3 Mutex / RWMutex / Once / WaitGroup
 
@@ -472,7 +472,7 @@ func main() {
 ## 关联
 
 - [atomic操作.md](atomic操作.md) — 本主题的**工具篇**：两套 API、64 位对齐、CAS 与 ABA、伪共享实测、不可变快照发布
-- [共享内存与CSP.md](共享内存与CSP.md) — 「通过通信来共享内存」的规范依据与两条路线的失败模式
+- [线程安全与CSP.md](线程安全与CSP.md) — 「通过通信来共享内存」的规范依据与两条路线的失败模式
 - [并发同步原语.md](并发同步原语.md) — Mutex / RWMutex / Once / WaitGroup 的语义与相容矩阵
 - [goroutine实战模式.md](goroutine实战模式.md) — `main` 返回不等协程、`WaitGroup.Add` 位置、令牌位置的实测
 - [channel原理与底层实现.md](channel原理与底层实现.md) — `hchan` 结构与收发流程（规则 4~6 的实现层）

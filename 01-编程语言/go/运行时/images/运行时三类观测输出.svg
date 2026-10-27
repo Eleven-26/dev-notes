@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+
+<text x="500" y="34" font-size="17" text-anchor="middle" font-weight="700" fill="#0f172a">同一进程 → stderr 上的三类观测输出</text>
+
+<text x="112" y="66" font-size="12" text-anchor="middle" fill="#475569">怎么开</text>
+<text x="410" y="66" font-size="12" text-anchor="middle" fill="#475569">输出长什么样（本篇实测）</text>
+<text x="797" y="66" font-size="12" text-anchor="middle" fill="#475569">它回答什么</text>
+
+<rect x="30" y="76" width="165" height="110" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="112" y="118" font-size="11" text-anchor="middle" fill="#1e3a8a" font-weight="700">GODEBUG=</text>
+<text x="112" y="138" font-size="11" text-anchor="middle" fill="#1e3a8a" font-weight="700">schedtrace=500</text>
+<text x="112" y="162" font-size="11" text-anchor="middle" fill="#1e3a8a">每 500ms 一行</text>
+
+<rect x="215" y="76" width="390" height="110" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+<text x="231" y="112" font-size="11" fill="#0f172a">SCHED 507ms: gomaxprocs=4 idleprocs=0 threads=5</text>
+<text x="231" y="134" font-size="11" fill="#0f172a">runqueue=175 [ 17 5 16 39 ]</text>
+<text x="231" y="156" font-size="11" fill="#0f172a">schedticks=[ 100 128 131 92 ]</text>
+
+<rect x="620" y="76" width="350" height="110" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+<text x="640" y="112" font-size="12" fill="#1e3a8a" font-weight="700">调度面</text>
+<text x="640" y="136" font-size="12" fill="#1e3a8a">idleprocs=0 → 并行度已打满</text>
+<text x="640" y="160" font-size="12" fill="#1e3a8a">runqueue 长期非零 = 队列积压</text>
+
+<rect x="30" y="196" width="165" height="110" rx="8" fill="#fef3c7" stroke="#d97706"/>
+<text x="112" y="238" font-size="11" text-anchor="middle" fill="#78350f" font-weight="700">GODEBUG=</text>
+<text x="112" y="258" font-size="11" text-anchor="middle" fill="#78350f" font-weight="700">gctrace=1</text>
+<text x="112" y="282" font-size="11" text-anchor="middle" fill="#78350f">每次 GC 一行</text>
+
+<rect x="215" y="196" width="390" height="110" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+<text x="231" y="232" font-size="11" fill="#0f172a">gc 3 @0.556s 1%: 0.41+1.8+0.095 ms clock</text>
+<text x="231" y="254" font-size="11" fill="#0f172a">8-&gt;10-&gt;7 MB, 10 MB goal, 4 P</text>
+<text x="231" y="276" font-size="11" fill="#475569">第一段与第三段才是停顿</text>
+
+<rect x="620" y="196" width="350" height="110" rx="8" fill="#fffbeb" stroke="#fbbf24"/>
+<text x="640" y="232" font-size="12" fill="#78350f" font-weight="700">回收面</text>
+<text x="640" y="256" font-size="12" fill="#78350f">STW 两段 + 三段堆 + GC 占比</text>
+<text x="640" y="280" font-size="12" fill="#78350f">存活集决定下一次目标堆</text>
+
+<rect x="30" y="316" width="165" height="110" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="112" y="358" font-size="11" text-anchor="middle" fill="#14532d" font-weight="700">GODEBUG=</text>
+<text x="112" y="378" font-size="11" text-anchor="middle" fill="#14532d" font-weight="700">scavtrace=1</text>
+<text x="112" y="402" font-size="11" text-anchor="middle" fill="#14532d">每次 GC 左右</text>
+
+<rect x="215" y="316" width="390" height="110" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+<text x="231" y="352" font-size="11" fill="#0f172a">scav 0 KiB (bg), 186960 KiB (eager),</text>
+<text x="231" y="374" font-size="11" fill="#0f172a">208712 KiB now, 9% util (forced)</text>
+<text x="231" y="396" font-size="11" fill="#475569">now 对应 MemStats.HeapReleased</text>
+
+<rect x="620" y="316" width="350" height="110" rx="8" fill="#f0fdf4" stroke="#4ade80"/>
+<text x="640" y="352" font-size="12" fill="#14532d" font-weight="700">归还面</text>
+<text x="640" y="376" font-size="12" fill="#14532d">有没有把空闲堆还给 OS</text>
+<text x="640" y="400" font-size="12" fill="#14532d">util 高 = 真存活，不是碎片</text>
+
+<text x="500" y="444" font-size="12" text-anchor="middle" fill="#334155">三者互不替代：调度面看「谁在排队」，回收面看「停了多少」，归还面看「还回去多少」</text>
+</svg>

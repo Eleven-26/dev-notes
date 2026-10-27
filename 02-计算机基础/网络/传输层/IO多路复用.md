@@ -214,6 +214,7 @@ Go runtime 的 netpoller 在 Linux 上使用 epoll：网络 I/O 暂不可完成�
 > ⭐ Go 中可写阻塞式 `Accept/Read/Write`，底层却由非阻塞 fd + 多路复用承接，这降低了并发编程心智负担。
 
 G、M、P 的配合与调度细节见 [Go GMP 调度模型](../../../01-编程语言/go/运行时/GMP调度.md)。
+Go 侧这段的源码级拆解（fd 如何注册进 epoll、`pollDesc` 三态、`SetReadDeadline` 如何打断、哪些 fd 退回阻塞）见 [网络IO与netpoll.md](../../../01-编程语言/go/运行时/网络IO与netpoll.md)。
 ⚠️ 普通文件 I/O、部分系统调用和 cgo 可能真的阻塞线程，并非所有阻塞都由 netpoller 接管。
 
 ---

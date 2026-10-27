@@ -3,7 +3,7 @@
 > 本篇覆盖 Go 的 **`pprof` 工具链**：五种 profile 各测什么、三种采集入口、无头环境（没有浏览器）下怎么读
 > （`-top` / `-list` / `-peek` / `-traces` / `-diff_base`）、`heap` 的 **`alloc_space` 与 `inuse_space` 两种口径**、
 > `block` 与 `mutex` 为什么要先开采样开关，以及一套能落地的优化闭环。
-> ⭐ 与 [runtime调试与trace.md](runtime调试与trace.md) 分工：那篇讲 **`GODEBUG` 旋钮 + `runtime/trace` + 三套内存数**；
+> ⭐ 与 [GODEBUG与运行时观测.md](GODEBUG与运行时观测.md)、[trace与运行时指标.md](trace与运行时指标.md) 分工：前者讲 **`GODEBUG` 旋钮与逐列读法**，后者讲 **`runtime/trace` + 三套内存数**；
 > 本篇只讲 **pprof 这一类「采样 → 归因」工具**。
 >
 > 内容整理自个人学习笔记，实测为容器 `golang:1.26-alpine`（go1.26.8 linux/amd64）；3.3 的火焰图页面另在宿主机补测（go1.26.8 windows/amd64 + 浏览器引擎），素材见 [素材清单.md](../../../素材清单.md)。
@@ -44,9 +44,9 @@ CPU 高         → cpu
 |---|---|---|
 | CPU 花在哪个函数 | **pprof cpu profile** | 本篇 |
 | 谁在分配、还占着多少 | **pprof heap profile** | 本篇 |
-| 一次请求里五个阶段各多久 | **`runtime/trace` + region** | [runtime调试与trace.md](runtime调试与trace.md) |
-| 调度器 / GC 的实时行为 | **`GODEBUG=schedtrace` / `gctrace`** | [runtime调试与trace.md](runtime调试与trace.md) |
-| 给监控系统用的数 | **`runtime/metrics`** | [runtime调试与trace.md](runtime调试与trace.md) |
+| 一次请求里五个阶段各多久 | **`runtime/trace` + region** | [trace与运行时指标.md](trace与运行时指标.md) |
+| 调度器 / GC 的实时行为 | **`GODEBUG=schedtrace` / `gctrace`** | [GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) |
+| 给监控系统用的数 | **`runtime/metrics`** | [trace与运行时指标.md](trace与运行时指标.md) |
 
 ⭐ 一句话区分：**pprof 是"采样 + 归因"（统计学），trace 是"事件 + 时序"（全记录）**。
 问"哪个函数贵"用 pprof；问"这 5 个阶段谁先谁后"用 trace。
@@ -275,7 +275,7 @@ runtime.SetMutexProfileFraction(1) // 1 = 记录每一次抢锁；0 = 关闭；>
 
 ⚠️ **`SetBlockProfileRate(1)` 有真实开销**（每次阻塞都记一次）。
 线上如果要常开，通常用 `SetBlockProfileRate(10000)`（万分之一抽样）之类的折中值，
-或者**只在排查窗口内开**（这也符合「采样成本分档」的口径，见 [runtime调试与trace.md](runtime调试与trace.md)）。
+或者**只在排查窗口内开**（这也符合「采样成本分档」的口径，见 [trace与运行时指标.md](trace与运行时指标.md) 1.2）。
 
 ⭐ 判据：
 
@@ -439,7 +439,7 @@ go tool pprof -top http://127.0.0.1:6060/debug/pprof/goroutine
 
 - **pprof 和 trace 到底什么时候用哪个？** → 问"哪个函数贵"用 pprof（采样归因）；
   问"这几个阶段谁先谁后、一次请求里各花多久"用 `runtime/trace`（事件全记录）。
-  详见 [runtime调试与trace.md](runtime调试与trace.md)。
+  详见 [trace与运行时指标.md](trace与运行时指标.md)。
 - **`flat` 和 `cum` 看哪个？** → 先用 **`cum` 找调用路径**，再用 **`flat` 定位到具体函数**。
   `main.main` 的 cum 常常是 100% 但 flat 是 0 —— 它只是入口，不是热点（4.1 实测）。
 - **为什么我的 `block` profile 是空的？** → **它默认不采样**。要先 `runtime.SetBlockProfileRate(1)`
@@ -458,8 +458,8 @@ go tool pprof -top http://127.0.0.1:6060/debug/pprof/goroutine
 
 ## 关联
 
-- [runtime调试与trace.md](runtime调试与trace.md) — **分工对照篇**：`GODEBUG` 旋钮、`schedtrace` / `gctrace` 逐字段、
-  `runtime/trace` 的无头解析、`MemStats` / `debug.GCStats` / `runtime/metrics` 三套数
+- [GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) — **分工对照篇**：`GODEBUG` 旋钮体系、`schedtrace` / `scheddetail` / `gctrace` / `scavtrace` 逐字段
+- [trace与运行时指标.md](trace与运行时指标.md) — **分工对照篇**：`runtime/trace` 的无头解析、`MemStats` / `debug.GCStats` / `runtime/metrics` 三套数
 - [垃圾回收机制.md](垃圾回收机制.md) — heap profile 里"分配速率"这一维的来龙去脉（GC 压力从哪来）
 - [内存逃逸.md](内存逃逸.md) — 想减少分配时，先看对象为什么逃到堆上
 - [内存分配器.md](内存分配器.md) — size class / mcache 三级分配（解释"小对象"为什么也有代价）
@@ -468,4 +468,4 @@ go tool pprof -top http://127.0.0.1:6060/debug/pprof/goroutine
 - [GMP调度.md](GMP调度.md) — 理解 `block` profile 里"阻塞"到底停在哪一步
 - [README.md](../README.md) — 本目录导读
 - [素材清单.md](../../../素材清单.md) — 素材来源登记
-> 反向引用（本篇被下列文档引到）：[泛型.md](../类型与语法/泛型.md)、[内存指标与文件映射.md](内存指标与文件映射.md)、[线上问题排查.md](../../java/运行时/线上问题排查.md)、[性能排查.md](../../../02-计算机基础/linux/性能排查.md)
+> 反向引用（本篇被下列文档引到）：[泛型.md](../类型与语法/泛型.md)、[线上问题排查.md](../../java/运行时/线上问题排查.md)、[性能排查.md](../../../02-计算机基础/linux/性能排查.md)

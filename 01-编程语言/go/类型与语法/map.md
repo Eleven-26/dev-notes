@@ -596,7 +596,7 @@ internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
 | **`fatal error: concurrent map writes`** | **fatal error** | ❌ **不能**，进程直接退出 |
 
 > ⚠️ 生产上"偶发整个进程挂掉、日志里只有 `fatal error: concurrent map writes`"就是这一条 ——
-> 它不是普通 panic，**`defer + recover` 救不了**。完整机制与替代方案见 [线程安全.md](../并发编程/线程安全.md)。
+> 它不是普通 panic，**`defer + recover` 救不了**。完整机制与替代方案见 [线程安全与CSP.md](../并发编程/线程安全与CSP.md)。
 
 ### 延伸追问
 
@@ -608,7 +608,7 @@ internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
 ## 关联
 
 - [指针与引用.md](指针与引用.md) — map 元素不可寻址导致的「value 是 struct 就改不动」，与另外三种"改不到外面"症状的对照在彼
-- [线程安全.md](../并发编程/线程安全.md) — 并发读写为什么会直接 fatal
+- [线程安全与CSP.md](../并发编程/线程安全与CSP.md) — 并发读写为什么会直接 fatal
 - [并发同步原语.md](../并发编程/并发同步原语.md) — sync.Map 与分段锁方案
 - [切片.md](切片.md) — 另一种引用类型的扩容与共享
 - [散列表.md](../../../02-计算机基础/数据结构/哈希表/散列表.md) — 哈希表的结构、冲突处理与扩容的四道闸门
@@ -619,4 +619,4 @@ internal/runtime/maps.fatal({0x7ff6a1a3f752?, 0x7ff6a1a26b40?})
 - [错误处理.md](错误处理.md) — 哨兵错误表 / 错误码映射用 map 时的并发与零值坑在彼
 - [开放寻址与冲突解决.md](../../../02-计算机基础/数据结构/哈希表/开放寻址与冲突解决.md) — 冲突解决的实现层：Go map 走的「开放寻址 + 溢出桶链」在三种路线里的位置
 
-> 反向引用（本篇被下列文档引到）：[sync.Map.md](../并发编程/sync.Map.md)、[for-range.md](for-range.md)、[反射与unsafe.md](../运行时/反射与unsafe.md)、[数组与链表.md](../../../02-计算机基础/数据结构/线性结构/数组与链表.md)、[哈希查找.md](../../../02-计算机基础/算法/基础算法/查找/哈希查找.md)
+> 反向引用（本篇被下列文档引到）：[sync.Map.md](../并发编程/sync.Map.md)、[for-range.md](for-range.md)、[反射.md](../运行时/反射.md)、[unsafe与内存布局.md](../运行时/unsafe与内存布局.md)、[数组与链表.md](../../../02-计算机基础/数据结构/线性结构/数组与链表.md)、[哈希查找.md](../../../02-计算机基础/算法/基础算法/查找/哈希查找.md)

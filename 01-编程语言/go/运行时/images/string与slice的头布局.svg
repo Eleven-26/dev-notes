@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+<defs>
+<marker id="arH1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">string 与 slice 的头部：16 字节与 24 字节</text>
+<text x="40" y="58" font-size="13" fill="#64748b">两个头都是「数据指针 + 长度（slice 再加容量）」；视图是复制头部，不是复制数据，所以数据指针相同</text>
+
+<text x="60" y="96" font-size="13" font-weight="bold" fill="#1d4ed8">string（amd64：16 字节）</text>
+<rect x="60" y="106" width="180" height="48" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+<text x="150" y="126" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d4ed8">Data *byte</text>
+<text x="150" y="144" font-size="11" text-anchor="middle" fill="#1d4ed8">字节 0..7</text>
+<rect x="240" y="106" width="140" height="48" rx="4" fill="#dbeafe" stroke="#2563eb"/>
+<text x="310" y="126" font-size="12" font-weight="bold" text-anchor="middle" fill="#1d4ed8">Len int</text>
+<text x="310" y="144" font-size="11" text-anchor="middle" fill="#1d4ed8">字节 8..15</text>
+
+<text x="560" y="96" font-size="13" font-weight="bold" fill="#15803d">slice（amd64：24 字节）</text>
+<rect x="560" y="106" width="120" height="48" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+<text x="620" y="126" font-size="12" font-weight="bold" text-anchor="middle" fill="#15803d">Data</text>
+<text x="620" y="144" font-size="11" text-anchor="middle" fill="#15803d">0..7</text>
+<rect x="680" y="106" width="110" height="48" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+<text x="735" y="126" font-size="12" font-weight="bold" text-anchor="middle" fill="#15803d">Len</text>
+<text x="735" y="144" font-size="11" text-anchor="middle" fill="#15803d">8..15</text>
+<rect x="790" y="106" width="110" height="48" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+<text x="845" y="126" font-size="12" font-weight="bold" text-anchor="middle" fill="#15803d">Cap</text>
+<text x="845" y="144" font-size="11" text-anchor="middle" fill="#15803d">16..23</text>
+
+<rect x="300" y="206" width="400" height="52" rx="8" fill="#f1f5f9" stroke="#64748b"/>
+<text x="500" y="228" font-size="13" font-weight="bold" text-anchor="middle" fill="#334155">同一块底层字节数组</text>
+<text x="500" y="247" font-size="11" text-anchor="middle" fill="#334155">unsafe.StringData(s) == unsafe.SliceData(b) 为 true 时就是视图</text>
+
+<line x1="150" y1="154" x2="380" y2="202" stroke="#334155" stroke-width="1.5" marker-end="url(#arH1)"/>
+<line x1="620" y1="154" x2="540" y2="202" stroke="#334155" stroke-width="1.5" marker-end="url(#arH1)"/>
+<text x="60" y="186" font-size="11" fill="#64748b">实测 Sizeof(string)=16、Sizeof([]byte)=24</text>
+
+<rect x="40" y="284" width="920" height="128" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="308" font-size="13" font-weight="bold" fill="#0f172a">头部的三件行为：改了哪一段，决定数据挪不挪</text>
+<text x="60" y="332" font-size="12" fill="#334155">b2 := b[:1]　只改 Len / Cap，Data 不变（实测「Data 相同」= true）——子切片共享同一数组</text>
+<text x="60" y="356" font-size="12" fill="#334155">append 未超 cap　仍用原数组，Data 不变，写入落在 cap 之内的位置</text>
+<text x="60" y="380" font-size="12" fill="#dc2626">append 超出 cap　Data 变了（实测 false），Cap 8 → 16——扩容即搬家，旧视图仍指着老数组</text>
+<text x="60" y="402" font-size="11" fill="#64748b">三条都在 s64 那份实验里同一轮打印，读数见正文 4.2</text>
+
+<rect x="40" y="432" width="920" height="172" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<text x="60" y="456" font-size="13" font-weight="bold" fill="#92400e">32 位下宽度减半，并撞上「非对齐 atomic」</text>
+<text x="60" y="480" font-size="12" fill="#92400e">GOARCH=386 实测：Sizeof(int)=4、Sizeof(int64)=8、Sizeof(S{A uint32; B int64})=12、Offsetof(S.B)=4</text>
+<text x="60" y="504" font-size="12" fill="#92400e">于是 &amp;s.B 只落在 4 字节边界上，而 64 位原子操作要求 8 字节对齐：</text>
+<text x="60" y="528" font-size="12" font-weight="bold" fill="#b91c1c">panic: unaligned 64-bit atomic operation</text>
+<text x="60" y="552" font-size="12" fill="#92400e">出处在 internal/runtime/atomic/unaligned.go，64 位平台上这个函数根本不会被编进来。</text>
+<text x="60" y="576" font-size="12" fill="#92400e">结论：32 位代码里 64 位字段要自己保证对齐（放在结构体开头，或用 uint64 前缀占位）。</text>
+
+<text x="60" y="620" font-size="11" fill="#64748b">头部布局不是 ABI 承诺：go doc unsafe 明说 unsafe 不受 Go 1 兼容性保护，升级版本要重新验证。</text>
+</svg>

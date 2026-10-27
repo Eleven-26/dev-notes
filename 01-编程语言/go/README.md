@@ -28,11 +28,11 @@
 | ⑧ | [并发同步原语.md](并发编程/并发同步原语.md) + [并发控制实战.md](并发编程/并发控制实战.md) | 同步机制 |
 | ⑨ | [sync.Map.md](并发编程/sync.Map.md) + [atomic操作.md](并发编程/atomic操作.md) + [sync.Pool.md](并发编程/sync.Pool.md) | 三个「要不要用」的原语 |
 | ⑩ | [goroutine实战模式.md](并发编程/goroutine实战模式.md) + [channel实战模式.md](并发编程/channel实战模式.md) + [errgroup与pipeline.md](并发编程/errgroup与pipeline.md) | 并发怎么写 |
-| ⑪ | [channel使用陷阱.md](并发编程/channel使用陷阱.md) + [共享内存与CSP.md](并发编程/共享内存与CSP.md) + [线程安全.md](并发编程/线程安全.md) + [Go内存模型.md](并发编程/Go内存模型.md) | 并发哲学与边界 |
+| ⑪ | [channel使用陷阱.md](并发编程/channel使用陷阱.md) + [线程安全与CSP.md](并发编程/线程安全与CSP.md) + [Go内存模型.md](并发编程/Go内存模型.md) | 并发哲学与边界 |
 | ⑫ | [协程泄漏与死锁.md](并发编程/协程泄漏与死锁.md) + [限流器.md](并发编程/限流器.md) | 生产问题 |
-| ⑬ | [GMP调度.md](运行时/GMP调度.md) + [内存分配器.md](运行时/内存分配器.md) + [内存指标与文件映射.md](运行时/内存指标与文件映射.md) | 调度与内存 |
+| ⑬ | [GMP调度.md](运行时/GMP调度.md) + [内存分配器.md](运行时/内存分配器.md) + [trace与运行时指标.md](运行时/trace与运行时指标.md) | 调度与内存 |
 | ⑭ | [垃圾回收机制.md](运行时/垃圾回收机制.md) + [内存逃逸.md](运行时/内存逃逸.md) | GC |
-| ⑮ | [从源码到main.md](运行时/从源码到main.md) + [程序启动流程.md](运行时/程序启动流程.md) + [零拷贝.md](运行时/零拷贝.md) + [反射与unsafe.md](运行时/反射与unsafe.md) + [runtime调试与trace.md](运行时/runtime调试与trace.md) | 从二进制到运行 |
+| ⑮ | [从源码到main.md](运行时/从源码到main.md) + [程序启动流程.md](运行时/程序启动流程.md) + [零拷贝.md](运行时/零拷贝.md) + [反射.md](运行时/反射.md) + [unsafe与内存布局.md](运行时/unsafe与内存布局.md) + [GODEBUG与运行时观测.md](运行时/GODEBUG与运行时观测.md) | 从二进制到运行 |
 | ⑯ | [context.md](工程实践/context.md) + [依赖注入.md](工程实践/依赖注入.md) + [项目结构.md](工程实践/项目结构.md) | 工程基础 |
 | ⑰ | [日志与错误规范.md](工程实践/日志与错误规范.md) + [测试与Mock.md](工程实践/测试与Mock.md) + [子进程与外部命令.md](工程实践/子进程与外部命令.md) | 工程规范与系统交互 |
 | ⑱ | [net包与TCP-UDP编程.md](网络编程/net包与TCP-UDP编程.md) + [HTTP客户端与连接池.md](网络编程/HTTP客户端与连接池.md) + [HTTP服务端与优雅关停.md](网络编程/HTTP服务端与优雅关停.md) + [从零实现HTTP服务端.md](网络编程/从零实现HTTP服务端.md) + [反向代理接入.md](网络编程/反向代理接入.md) + [客户端IP接入.md](网络编程/客户端IP接入.md) + [网关路由匹配.md](网络编程/网关路由匹配.md) + [不使用protoc的gRPC.md](网络编程/不使用protoc的gRPC.md) + [从零实现网关.md](网络编程/从零实现网关.md) | 网络与综合实战 |
@@ -62,7 +62,7 @@
 | [错误处理.md](类型与语法/错误处理.md) | 错误是值不是异常、`%w` 包装链、`Is` / `As` / `Join` 判定、panic 与 recover 的闸门 |
 | [函数调用与栈.md](类型与语法/函数调用与栈.md) | 调用过程、栈帧里有什么、栈扩容时旧指针怎么调整 |
 
-### 2.2 并发编程/（17 篇）
+### 2.2 并发编程/（16 篇）
 
 | 篇 | 讲什么 |
 |---|---|
@@ -78,27 +78,29 @@
 | [sync.Pool.md](并发编程/sync.Pool.md) | 不是缓存而是「减少分配」、victim cache、按 P 分片与偷取、必须重置 |
 | [errgroup与pipeline.md](并发编程/errgroup与pipeline.md) | `errgroup` 的语义与硬约束、pipeline 的 stage 拆分与 channel 收口 |
 | [并发控制实战.md](并发编程/并发控制实战.md) | 打印升序数字、交替打印奇偶数、获取协程返回值 |
-| [共享内存与CSP.md](并发编程/共享内存与CSP.md) | 「不要通过共享内存来通信」到底在说什么、两条路线的边界 |
+| [线程安全与CSP.md](并发编程/线程安全与CSP.md) | ⭐ **并发安全的判据 + 两条路线**：值传递与引用语义（拷贝结构体不等于隔离数据）、两种坏法（`a++` 静默丢更新 975≠1000 / map 并发写 `fatal error` 不可 recover）、三类线程安全类型与「安全」的边界（单方法安全≠复合操作原子）、共享内存 vs CSP 的失败模式（静默出错且退出码 0 vs 当场死锁并指出行号）、代价实测（atomic 4ms / Mutex 31ms / channel 73ms）、选型口诀 |
 | [Go内存模型.md](并发编程/Go内存模型.md) | 三层重排、`happens-before` 边、数据竞争为何是未定义行为、atomic 的顺序一致立场、`-race` 能测什么、与 Java JMM 的逐条对照 |
-| [线程安全.md](并发编程/线程安全.md) | 并发读写 map 的后果、线程安全的定义、三类线程安全类型 |
 | [协程泄漏与死锁.md](并发编程/协程泄漏与死锁.md) | 泄漏四类成因与复现代码、pprof 排查、死锁四条件 |
 | [限流器.md](并发编程/限流器.md) | `x/time/rate` 的三种接入骨架、把读数量出来的实测、三个必踩的坑 |
 
-### 2.3 运行时/（11 篇）
+### 2.3 运行时/（14 篇）
 
 | 篇 | 讲什么 |
 |---|---|
 | [GMP调度.md](运行时/GMP调度.md) | GMP 三元组、work stealing、切换时机、`GOMAXPROCS`、P 内部队列、异步抢占 |
 | [内存分配器.md](运行时/内存分配器.md) | `mspan`、67 级 size class、mcache / mcentral / mheap 三级分配 |
 | [内存逃逸.md](运行时/内存逃逸.md) | 定义与原因、`-gcflags=-m` 分析、五类场景、三条判定规则与代价 |
-| [内存指标与文件映射.md](运行时/内存指标与文件映射.md) | `runtime.MemStats` 与内核视角的 RSS 为什么对不上（RSS 偏大的四种原因）、缓冲写 `Flush` 与 `Sync()` 的落盘边界、`syscall.Mmap` 把文件当 `[]byte` 用 |
+| [trace与运行时指标.md](运行时/trace与运行时指标.md) | `runtime/trace` 的无头解析（`-pprof` 四类等待 / `-d=parsed`）、`MemStats` / `debug.GCStats` / `runtime/metrics` 三套数的分工与代价、⭐ **`MemStats` 与内核 RSS 为什么对不上（三层口径）**、`runtime/debug` 的 `Set*`、`NumGoroutine` / `Stack` / `Gosched` 的陷阱、出问题时按什么顺序看 |
 | [垃圾回收机制.md](运行时/垃圾回收机制.md) | 并发三色标记 + 混合写屏障、目标堆公式、`gctrace` 逐字段、GOGC / GOMEMLIMIT |
 | [程序启动流程.md](运行时/程序启动流程.md) | `_rt0` 入口、栈 / 分配器 / 调度器初始化、启动全景图 |
 | [从源码到main.md](运行时/从源码到main.md) | 构建期怎么产出那个二进制：62 次 asm / 61 次 compile / 1 次 link、61 个 `.a` 共 32.7 MB 如何变成 2.4 MB、⭐ `.gopclntab` 比 `.text` 还大且 `-s -w` 裁不掉、入口三跳与 `runtime.mainPC` 那个间接层 |
 | [零拷贝.md](运行时/零拷贝.md) | Go 侧：`io.Copy` 的自动分发与静默失效、`net/http` 静态服务、`copy_file_range`、`string ↔ []byte` 视图 |
-| [反射与unsafe.md](运行时/反射与unsafe.md) | 三条反射法则与 `CanSet`、tag 遍历、json 背后的反射、`unsafe` 分界、反射慢多少的实测区间 |
+| [网络IO与netpoll.md](运行时/网络IO与netpoll.md) | ⭐ 一次「阻塞 Read」的三段拆解（注册 / 挂起 / 唤醒）、`pollDesc` 四种取值与「存款」语义、边缘触发为什么在 Go 里安全、`SetReadDeadline` 的定时器路径、哪些 fd 退回阻塞（四行 `F_GETFL` 实测与 `Fd()` 坑） |
+| [定时器与超时.md](运行时/定时器与超时.md) | ⭐ 1.26 的每 P 四叉堆与三个状态位（`timerHeaped` / `timerModified` / `timerZombie`）、四个检查点里哪个真跑 `f`、过冲来自「P 忙到下一个检查点」、1.23 起同步 channel 让 `Stop` / `Reset` 返回值反直觉、超时怎么并进 `epoll_wait` 的超时 |
+| [反射.md](运行时/反射.md) | 三条反射法则与 `CanSet`、tag 遍历、json 背后的反射、反射慢多少的实测区间、什么时候不该用反射 |
+| [unsafe与内存布局.md](运行时/unsafe与内存布局.md) | 三种能力与五种合法模式、`Sizeof` / `Alignof` / `Offsetof`、string / slice 头布局、内存视图的指针判据与四类失效、`go vet` 与 `checkptr` 两道闸门、copy 与 view 的实测差价 |
 | [pprof性能分析.md](运行时/pprof性能分析.md) | 五种 profile 各测什么、三种采集入口、⭐ 无头环境（没有浏览器）下怎么读、`heap` 的 `alloc_space` 与 `inuse_space` 两种口径、`block` / `mutex` 要先开采样开关、一套能落地的优化闭环 |
-| [runtime调试与trace.md](运行时/runtime调试与trace.md) | `GODEBUG` 旋钮体系、`schedtrace` / `gctrace` 逐字段、`runtime/trace` 的无头解析、MemStats 与 debug 包 |
+| [GODEBUG与运行时观测.md](运行时/GODEBUG与运行时观测.md) | ⭐ `GODEBUG` 旋钮体系（键名三个来源、写错为什么静默失效、`//go:debug` 白名单与位置坑）、`schedtrace` / `scheddetail` / `gctrace` / `scavtrace` 逐字段读法、抢占类问题怎么用 `asyncpreemptoff` 定位 |
 
 ### 2.4 工程实践/（19 篇直属 + 框架 2 篇 + 定时任务 4 篇）
 

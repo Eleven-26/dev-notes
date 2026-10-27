@@ -444,7 +444,7 @@ func (r *Resolver) Snapshot() map[string]*HostInfo {
 ## 关联
 
 - [并发同步原语.md](并发同步原语.md) — 悲观/乐观锁取舍、分段锁 map，与本篇一、六节互补
-- [线程安全.md](线程安全.md) — map 并发读写为何直接 panic，及"三类线程安全类型"
+- [线程安全与CSP.md](线程安全与CSP.md) — map 并发读写为何直接 panic，及"三类线程安全类型"
 - [map.md](../类型与语法/map.md) — 原生 map 的结构与"为什么不能并发写"
 - [sync.Pool.md](sync.Pool.md) — 同目录另一个"为特定并发模式而生"的组件：按 P 分片对象池
 - [限流器.md](限流器.md) — 令牌桶里的计数 / 时间戳同样要选对同步原语

@@ -359,7 +359,7 @@ shop_queue_depth 42
 | `process_start_time_seconds` | 进程启动时间戳 | 判断「刚才是不是重启过」 |
 | `process_network_*_bytes_total` | Linux 下由 procfs 提供，实跑为 0 | 进程级网络量在本环境不可用 |
 
-`go_memstats_*` 就是 `runtime.MemStats` 那套字段搬进 Prometheus，字段含义与「哪些会骗人」见 [runtime调试与trace.md](../运行时/runtime调试与trace.md)——本篇不重讲。
+`go_memstats_*` 就是 `runtime.MemStats` 那套字段搬进 Prometheus，字段含义与「哪些会骗人」见 [trace与运行时指标.md](../运行时/trace与运行时指标.md)——本篇不重讲。
 
 ### 5.2 裁剪与新增：两套 API 的取舍
 
@@ -913,9 +913,9 @@ lab_sql_connections_idle{db="orders"} 1
 - [与Prometheus生态的关系.md](../../../03-数据与中间件/数据存储/时序数据库/VictoriaMetrics/与Prometheus生态的关系.md) — Prometheus 数据模型、抓取与服务发现、PromQL 与 TSDB 的背景，以及「标签基数就是成本本身」
 - [可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 可观测性总纲：三支柱分工、五层选型与版本坐标；`/metrics` 端点的部署面保护
 - [从零实现网关.md](../网络编程/从零实现网关.md) — 不引 SDK 直接输出 Prometheus 文本格式的一份完整实现，以及中间件里统一记 QPS / 延迟 / 错误率的落点
-- [runtime调试与trace.md](../运行时/runtime调试与trace.md) — `go_memstats_*` 背后的 `runtime.MemStats` 字段含义与「哪些数字会骗人」
+- [trace与运行时指标.md](../运行时/trace与运行时指标.md) — `go_memstats_*` 背后的 `runtime.MemStats` 字段含义与「哪些数字会骗人」
 - [垃圾回收机制.md](../运行时/垃圾回收机制.md) — `go_gc_duration_seconds` 与 GC 暂停、GOGC 的对应关系
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — `go_goroutines` 只涨不落时的排查路径
 - [xxl-job接入.md](../工程实践/定时任务/xxl-job接入.md) — 一次性 / 定时任务的执行结果指标推送场景
 - [素材清单.md](../../../素材清单.md) — 本篇出处登记
-> 反向引用（本篇被下列文档引到）：[数据访问与连接池.md](../工程实践/数据访问与连接池.md)
+> 反向引用（本篇被下列文档引到）：[数据访问与连接池.md](../工程实践/数据访问与连接池.md)、[定位与架构.md](../../../03-数据与中间件/中间件/可观测性/指标/Prometheus/定位与架构.md)、[抓取与目标发现.md](../../../03-数据与中间件/中间件/可观测性/指标/Prometheus/抓取与目标发现.md)、[指标选型对比.md](../../../03-数据与中间件/中间件/可观测性/指标/指标选型对比.md)、[集成与生态.md](../../../03-数据与中间件/中间件/可观测性/链路追踪/Jaeger/集成与生态.md)

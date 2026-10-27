@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="570" viewBox="0 0 1000 570" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="570" fill="#ffffff"/>
+  <defs>
+    <marker id="ar3sA" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="ar3sB" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">netpoll 三段式：一次阻塞读的注册、挂起与唤醒</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">用户代码写成同步阻塞，运行时分三段兑现：建连时注册一次，读不到数据时挂起 G，事件到达后唤醒 G。</text>
+
+  <rect x="40" y="78" width="180" height="34" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="101" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">① 注册（建连时一次）</text>
+
+  <rect x="40" y="122" width="200" height="66" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="140" y="147" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">socket(SOCK_NONBLOCK)</text>
+  <text x="140" y="169" font-size="12" text-anchor="middle" fill="#334155">建出来就是非阻塞</text>
+
+  <rect x="288" y="122" width="210" height="66" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="393" y="147" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">poll.FD.Init</text>
+  <text x="393" y="169" font-size="12" text-anchor="middle" fill="#334155">runtime_pollOpen</text>
+
+  <rect x="546" y="122" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="656" y="147" font-size="13" font-weight="bold" text-anchor="middle" fill="#9a3412">netpollopen</text>
+  <text x="656" y="169" font-size="12" text-anchor="middle" fill="#334155">epoll_ctl ADD + EPOLLET</text>
+
+  <rect x="804" y="122" width="156" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="882" y="147" font-size="13" font-weight="bold" text-anchor="middle" fill="#475569">epfd</text>
+  <text x="882" y="169" font-size="12" text-anchor="middle" fill="#334155">epoll 实例</text>
+
+  <line x1="240" y1="155" x2="284" y2="155" stroke="#64748b" stroke-width="2" marker-end="url(#ar3sA)"/>
+  <line x1="498" y1="155" x2="542" y2="155" stroke="#64748b" stroke-width="2" marker-end="url(#ar3sA)"/>
+  <line x1="766" y1="155" x2="800" y2="155" stroke="#64748b" stroke-width="2" marker-end="url(#ar3sA)"/>
+
+  <rect x="40" y="212" width="180" height="34" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="130" y="235" font-size="13" font-weight="bold" text-anchor="middle" fill="#9a3412">② 挂起（每次读不到）</text>
+
+  <rect x="40" y="256" width="200" height="66" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="140" y="281" font-size="13" font-weight="bold" text-anchor="middle" fill="#1e3a8a">syscall.Read</text>
+  <text x="140" y="303" font-size="12" text-anchor="middle" fill="#334155">返回 EAGAIN</text>
+
+  <rect x="288" y="256" width="210" height="66" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="393" y="281" font-size="13" font-weight="bold" text-anchor="middle" fill="#9a3412">netpollblock</text>
+  <text x="393" y="303" font-size="12" text-anchor="middle" fill="#334155">CAS pdNil → pdWait</text>
+
+  <rect x="546" y="256" width="220" height="66" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="656" y="281" font-size="13" font-weight="bold" text-anchor="middle" fill="#9a3412">gopark</text>
+  <text x="656" y="303" font-size="12" text-anchor="middle" fill="#334155">waitReasonIOWait</text>
+
+  <rect x="804" y="256" width="156" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="882" y="281" font-size="13" font-weight="bold" text-anchor="middle" fill="#475569">M 回调度器</text>
+  <text x="882" y="303" font-size="12" text-anchor="middle" fill="#334155">线程没被占住</text>
+
+  <line x1="240" y1="289" x2="284" y2="289" stroke="#64748b" stroke-width="2" marker-end="url(#ar3sA)"/>
+  <line x1="498" y1="289" x2="542" y2="289" stroke="#64748b" stroke-width="2" marker-end="url(#ar3sA)"/>
+  <line x1="766" y1="289" x2="800" y2="289" stroke="#64748b" stroke-width="2" marker-end="url(#ar3sA)"/>
+
+  <rect x="40" y="346" width="180" height="34" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="130" y="369" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">③ 唤醒（事件到达）</text>
+
+  <rect x="40" y="390" width="200" height="66" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="140" y="415" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">netpoll(delay)</text>
+  <text x="140" y="437" font-size="12" text-anchor="middle" fill="#334155">epoll_wait 取 ≤128 个</text>
+
+  <rect x="288" y="390" width="210" height="66" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="393" y="415" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">netpollready</text>
+  <text x="393" y="437" font-size="12" text-anchor="middle" fill="#334155">netpollunblock 取 G</text>
+
+  <rect x="546" y="390" width="220" height="66" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="656" y="415" font-size="13" font-weight="bold" text-anchor="middle" fill="#14532d">goready</text>
+  <text x="656" y="437" font-size="12" text-anchor="middle" fill="#334155">G 进可运行队列</text>
+
+  <rect x="804" y="390" width="156" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="882" y="415" font-size="13" font-weight="bold" text-anchor="middle" fill="#475569">P 取走执行</text>
+  <text x="882" y="437" font-size="12" text-anchor="middle" fill="#334155">Read 重试成功</text>
+
+  <line x1="240" y1="423" x2="284" y2="423" stroke="#16a34a" stroke-width="2" marker-end="url(#ar3sB)"/>
+  <line x1="498" y1="423" x2="542" y2="423" stroke="#16a34a" stroke-width="2" marker-end="url(#ar3sB)"/>
+  <line x1="766" y1="423" x2="800" y2="423" stroke="#16a34a" stroke-width="2" marker-end="url(#ar3sB)"/>
+
+  <rect x="40" y="478" width="920" height="76" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="502" font-size="13" font-weight="bold" fill="#0f172a">实测（容器内 goroutines 与 /proc/self/status 的 Threads 读数）</text>
+  <text x="60" y="524" font-size="12" fill="#334155">1000 条空闲连接 → goroutines=1002、threads=3~4；200 个 Read 等数据 → goroutines=202、threads=3</text>
+  <text x="60" y="544" font-size="12" fill="#334155">对照：200 个阻塞 open 卡住 → threads=202~203 —— 不走 netpoll，只能一条条补线程</text>
+</svg>

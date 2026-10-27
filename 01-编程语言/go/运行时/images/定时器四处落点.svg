@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <defs>
+    <marker id="t1a" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="t1b" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="36" font-size="20" font-weight="bold" fill="#0f172a">定时器的四处落点：四种写法，最后都挂到同一个堆</text>
+  <text x="40" y="60" font-size="13" fill="#64748b">前面四类只是「谁拥有这颗 timer」不同；进 addHeap 之后，堆结构与检查点完全共用。</text>
+
+  <rect x="32" y="80" width="104" height="20" rx="6" fill="#e2e8f0"/>
+  <text x="40" y="94" font-size="12" fill="#64748b">四种持有者</text>
+
+  <rect x="40" y="104" width="340" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="56" y="128" font-size="13" font-weight="bold" fill="#1e3a8a">G.timer（time.Sleep）</text>
+  <text x="56" y="150" font-size="12" fill="#334155">每个 G 一颗，复用，整条路径零分配</text>
+
+  <rect x="40" y="176" width="340" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="56" y="200" font-size="13" font-weight="bold" fill="#1e3a8a">timeTimer（After / NewTimer）</text>
+  <text x="56" y="222" font-size="12" fill="#334155">runtime 分配，自带一个 hchan</text>
+
+  <rect x="40" y="248" width="340" height="64" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="56" y="272" font-size="13" font-weight="bold" fill="#14532d">time.AfterFunc（WithTimeout）</text>
+  <text x="56" y="294" font-size="12" fill="#334155">普通 timer，到点走 goFunc 建协程</text>
+
+  <rect x="40" y="320" width="340" height="64" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="56" y="344" font-size="13" font-weight="bold" fill="#9a3412">pollDesc.rt / wt（deadline）</text>
+  <text x="56" y="366" font-size="12" fill="#334155">内嵌 timer 值，随 pollDesc 一起分配</text>
+
+  <line x1="380" y1="136" x2="404" y2="136" stroke="#64748b" stroke-width="2"/>
+  <line x1="380" y1="208" x2="404" y2="208" stroke="#64748b" stroke-width="2"/>
+  <line x1="380" y1="280" x2="404" y2="280" stroke="#64748b" stroke-width="2"/>
+  <line x1="380" y1="352" x2="404" y2="352" stroke="#64748b" stroke-width="2"/>
+  <line x1="404" y1="136" x2="404" y2="352" stroke="#64748b" stroke-width="2"/>
+  <line x1="404" y1="244" x2="424" y2="244" stroke="#64748b" stroke-width="2" marker-end="url(#t1a)"/>
+
+  <rect x="428" y="196" width="196" height="96" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="526" y="222" font-size="13" font-weight="bold" text-anchor="middle" fill="#0f172a">addHeap</text>
+  <text x="526" y="248" font-size="12" text-anchor="middle" fill="#334155">挂到当前 P 的 timers</text>
+  <text x="526" y="270" font-size="12" text-anchor="middle" fill="#334155">插堆后比较是否为新的堆顶</text>
+
+  <line x1="624" y1="244" x2="652" y2="244" stroke="#16a34a" stroke-width="2" marker-end="url(#t1b)"/>
+
+  <rect x="656" y="104" width="304" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="672" y="128" font-size="13" font-weight="bold" fill="#0f172a">P.timers：四叉堆 []timerWhen</text>
+
+  <rect x="770" y="146" width="76" height="34" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="808" y="168" font-size="12" text-anchor="middle" fill="#92400e">t3 · when</text>
+
+  <rect x="690" y="212" width="76" height="34" rx="6" fill="#ffffff" stroke="#b45309"/>
+  <text x="728" y="234" font-size="12" text-anchor="middle" fill="#92400e">t1 · when</text>
+  <rect x="776" y="212" width="76" height="34" rx="6" fill="#ffffff" stroke="#b45309"/>
+  <text x="814" y="234" font-size="12" text-anchor="middle" fill="#92400e">t5 · when</text>
+  <rect x="862" y="212" width="76" height="34" rx="6" fill="#ffffff" stroke="#b45309"/>
+  <text x="900" y="234" font-size="12" text-anchor="middle" fill="#92400e">t9 · when</text>
+
+  <line x1="808" y1="180" x2="732" y2="208" stroke="#b45309" stroke-width="2"/>
+  <line x1="808" y1="180" x2="812" y2="208" stroke="#b45309" stroke-width="2"/>
+  <line x1="808" y1="180" x2="896" y2="208" stroke="#b45309" stroke-width="2"/>
+
+  <text x="672" y="278" font-size="12" fill="#475569">堆顶就是最早到期的那颗；节点只存 指针 + when。</text>
+  <text x="672" y="300" font-size="12" fill="#475569">叉数由 timerHeapN = 4 决定，树高 log4 n。</text>
+  <text x="672" y="322" font-size="12" fill="#b45309">被 Stop 的那颗不会立刻摘除，只标 timerZombie。</text>
+  <text x="672" y="344" font-size="12" fill="#b45309">僵尸超过堆大小 1/4 时，堆主人才做一次整理。</text>
+
+  <rect x="656" y="372" width="304" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="672" y="396" font-size="13" font-weight="bold" fill="#0f172a">minWhenHeap / minWhenModified</text>
+  <text x="672" y="418" font-size="12" fill="#334155">两个原子量，让 check 不加锁就能判断「还早」</text>
+
+  <rect x="32" y="456" width="290" height="20" rx="6" fill="#e2e8f0"/>
+  <text x="40" y="470" font-size="12" fill="#64748b">到期之后，由这四个位置之一去检查堆</text>
+
+  <rect x="40" y="480" width="220" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="56" y="504" font-size="13" font-weight="bold" fill="#1e3a8a">schedule</text>
+  <text x="56" y="526" font-size="12" fill="#334155">本地 P：pp.timers.check(0)</text>
+
+  <rect x="280" y="480" width="220" height="64" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="296" y="504" font-size="13" font-weight="bold" fill="#1e3a8a">stealWork</text>
+  <text x="296" y="526" font-size="12" fill="#334155">偷 P 时顺便查对方的堆</text>
+
+  <rect x="520" y="480" width="220" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="536" y="504" font-size="13" font-weight="bold" fill="#475569">findrunnable</text>
+  <text x="536" y="526" font-size="12" fill="#334155">无 P：只算 pollUntil</text>
+
+  <rect x="760" y="480" width="220" height="64" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="776" y="504" font-size="13" font-weight="bold" fill="#475569">sysmon</text>
+  <text x="776" y="526" font-size="12" fill="#334155">只负责叫醒，不执行 f</text>
+
+  <rect x="40" y="560" width="920" height="44" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="60" y="587" font-size="13" fill="#b91c1c">要点：持有方式只影响分配与语义；到期由哪个检查点发现，才决定它准不准。</text>
+</svg>

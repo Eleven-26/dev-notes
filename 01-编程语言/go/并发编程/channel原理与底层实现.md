@@ -503,7 +503,7 @@ default:
 - [channel使用陷阱.md](channel使用陷阱.md) — 用法层面的坑：非阻塞模式、关闭后的读写、死锁判据
 - [channel实战模式.md](channel实战模式.md) — 把这些机制用起来的典型写法
 - [并发同步原语.md](并发同步原语.md) — Mutex / RWMutex / sync.Once 的对照
-- [共享内存与CSP.md](共享内存与CSP.md) — 为什么这条通信路径被 Go 官方推荐
+- [线程安全与CSP.md](线程安全与CSP.md) — 为什么这条通信路径被 Go 官方推荐
 - [GC基础算法.md](../../../02-计算机基础/垃圾回收/GC基础算法.md) — 挂起与唤醒背后的调度与 GC 协作
 - [goroutine.md](goroutine.md) — 阻塞的 goroutine 挂到哪里去了
 

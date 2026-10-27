@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="t2a" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="t2b" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="36" font-size="20" font-weight="bold" fill="#0f172a">一次到期要走完的四步，以及 f 的三条出路</text>
+  <text x="40" y="60" font-size="13" fill="#64748b">到期不是「事件通知」，而是下一次 check 走到堆顶时把到点的取出来执行。</text>
+
+  <rect x="30" y="100" width="200" height="62" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="44" y="124" font-size="13" font-weight="bold" fill="#1e3a8a">timers.check</text>
+  <text x="44" y="146" font-size="12" fill="#334155">先比 now 与 wakeTime()</text>
+
+  <rect x="270" y="100" width="210" height="62" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="284" y="124" font-size="13" font-weight="bold" fill="#0f172a">adjust</text>
+  <text x="284" y="146" font-size="12" fill="#334155">抹平 modified / zombie</text>
+
+  <rect x="520" y="100" width="200" height="62" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+  <text x="534" y="124" font-size="13" font-weight="bold" fill="#0f172a">run</text>
+  <text x="534" y="146" font-size="12" fill="#334155">取堆顶，now ≥ when 才跑</text>
+
+  <rect x="760" y="100" width="210" height="62" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="774" y="124" font-size="13" font-weight="bold" fill="#92400e">unlockAndRun</text>
+  <text x="774" y="146" font-size="12" fill="#334155">放开堆锁，再调用 f</text>
+
+  <line x1="230" y1="131" x2="266" y2="131" stroke="#64748b" stroke-width="2" marker-end="url(#t2a)"/>
+  <line x1="480" y1="131" x2="516" y2="131" stroke="#64748b" stroke-width="2" marker-end="url(#t2a)"/>
+  <line x1="720" y1="131" x2="756" y2="131" stroke="#64748b" stroke-width="2" marker-end="url(#t2a)"/>
+
+  <line x1="865" y1="162" x2="865" y2="196" stroke="#16a34a" stroke-width="2"/>
+  <line x1="180" y1="196" x2="865" y2="196" stroke="#16a34a" stroke-width="2"/>
+  <line x1="180" y1="196" x2="180" y2="228" stroke="#16a34a" stroke-width="2" marker-end="url(#t2b)"/>
+  <line x1="500" y1="196" x2="500" y2="228" stroke="#16a34a" stroke-width="2" marker-end="url(#t2b)"/>
+  <line x1="820" y1="196" x2="820" y2="228" stroke="#16a34a" stroke-width="2" marker-end="url(#t2b)"/>
+
+  <rect x="40" y="236" width="280" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="56" y="262" font-size="13" font-weight="bold" fill="#14532d">goroutineReady</text>
+  <text x="56" y="284" font-size="12" fill="#334155">time.Sleep 挂起的那颗 G</text>
+  <text x="56" y="302" font-size="12" fill="#475569">f 只做 goready，不新建协程</text>
+
+  <rect x="360" y="236" width="280" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="376" y="262" font-size="13" font-weight="bold" fill="#14532d">sendTime</text>
+  <text x="376" y="284" font-size="12" fill="#334155">After / Timer / Ticker</text>
+  <text x="376" y="302" font-size="12" fill="#475569">往 channel 发时间，时间戳减掉 delta</text>
+
+  <rect x="680" y="236" width="280" height="76" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="696" y="262" font-size="13" font-weight="bold" fill="#92400e">goFunc</text>
+  <text x="696" y="284" font-size="12" fill="#334155">AfterFunc 注册的回调</text>
+  <text x="696" y="302" font-size="12" fill="#475569">f 里执行 go f()，每个一颗新协程</text>
+
+  <line x1="180" y1="312" x2="180" y2="344" stroke="#64748b" stroke-width="2" marker-end="url(#t2a)"/>
+  <line x1="500" y1="312" x2="500" y2="344" stroke="#64748b" stroke-width="2" marker-end="url(#t2a)"/>
+  <line x1="820" y1="312" x2="820" y2="344" stroke="#64748b" stroke-width="2" marker-end="url(#t2a)"/>
+
+  <rect x="40" y="352" width="280" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="376" font-size="12" fill="#0f172a">G 从 _Gwaiting 进 runnext</text>
+  <text x="56" y="396" font-size="12" fill="#475569">等待的真正开销只在调度</text>
+
+  <rect x="360" y="352" width="280" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="376" y="376" font-size="12" fill="#0f172a">有接收方时才真正投递</text>
+  <text x="376" y="396" font-size="12" fill="#475569">同步通道：没人收就不发</text>
+
+  <rect x="680" y="352" width="280" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="696" y="376" font-size="12" fill="#0f172a">协程数随到期数量线性涨</text>
+  <text x="696" y="396" font-size="12" fill="#475569">5 万个同时到期即 5 万个协程</text>
+
+  <rect x="40" y="432" width="920" height="96" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="60" y="458" font-size="13" font-weight="bold" fill="#0f172a">三个容易被忽略的点</text>
+  <text x="60" y="482" font-size="12" fill="#334155">其一：周期定时器按原节拍对齐，next = when + period × (1 + delay/period)，迟到就跳过整拍。</text>
+  <text x="60" y="504" font-size="12" fill="#334155">其二：f 执行期间堆锁是放开的，所以回调里可以再创建或 Stop 定时器。</text>
+  <text x="60" y="526" font-size="12" fill="#334155">其三：一次 check 把到点的全部逐个跑完，同一时刻到期的 N 个是串行的。</text>
+</svg>

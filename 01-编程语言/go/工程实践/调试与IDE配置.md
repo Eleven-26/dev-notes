@@ -277,7 +277,8 @@ Breakpoint 1 set at 0x4bcc0e for main.main() ./main.go:13
 
 1. **优先用可观测性而不是调试器** —— 指标、日志、trace 是无侵入的；
    调试器是**侵入式**的（改状态、暂停进程）。顺序应该是
-   **[runtime调试与trace.md](../运行时/runtime调试与trace.md)** →
+   **[GODEBUG与运行时观测.md](../运行时/GODEBUG与运行时观测.md)** /
+   **[trace与运行时指标.md](../运行时/trace与运行时指标.md)** →
    [pprof性能分析.md](../运行时/pprof性能分析.md) → 实在不行才 dlv。
 
 2. **调试器只连"一次性排查实例"** —— 从负载均衡后面摘掉一台，或者起一个专门的副本，
@@ -310,5 +311,6 @@ Breakpoint 1 set at 0x4bcc0e for main.main() ./main.go:13
 - [编译与gcflags.md](编译与gcflags.md) — 断点打不上时先看编译优化开关
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — 卡死现场怎么用 pprof / dlv 抓
 - [性能排查.md](../../../02-计算机基础/linux/性能排查.md) — 线上没有 IDE 时的排查手段
-- [runtime调试与trace.md](../运行时/runtime调试与trace.md) — IDE/dlv 断点之外的运行期自省入口（GODEBUG、runtime/trace、metrics）在彼
+- [GODEBUG与运行时观测.md](../运行时/GODEBUG与运行时观测.md) — `GODEBUG` 常驻旋钮与 `schedtrace` / `gctrace` 逐列读法
+- [trace与运行时指标.md](../运行时/trace与运行时指标.md) — `runtime/trace`（含 `-pprof` / `-d` 无头解析）与 `runtime/metrics`
 > 反向引用（本篇被下列文档引到）：[测试与Mock.md](测试与Mock.md)
