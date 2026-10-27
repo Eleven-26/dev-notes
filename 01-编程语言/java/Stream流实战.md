@@ -240,7 +240,7 @@ public static List<User> removeDuplicatesByNameAndPhone(List<User> userList) {
 ## 关联
 
 - [数据建模.md](../../03-数据与中间件/数据存储/关系型/MySQL/数据建模.md) — `groupingBy` 就是「应用层归并」的 Java 写法
-- [JVM与垃圾回收.md](运行时/JVM与垃圾回收.md) — 流式处理里的临时对象与 GC
+- [GC调优与日志.md](运行时/GC调优与日志.md) — 流式处理里的临时对象怎么变成分配速率（第五节与第八节）
 - [运行时数据区与栈帧.md](运行时/运行时数据区与栈帧.md) — lambda 与虚方法分派
 - [并发容器.md](并发/并发容器.md) — `parallelStream` 与 `Collectors.groupingByConcurrent` 才需要 `ConcurrentHashMap`；串行流**不要**用并发容器（没有并发，只多付开销）
 - [集合容器.md](集合容器.md) — `groupingBy` / `toMap` 落到哪个具体集合、`HashMap` 扩容与 `ArrayList` 扩容的代价

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">4 字节引用怎么换回 64 位地址，以及它的两个天花板</text>
+  <rect x="32" y="50" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="66" font-size="13" fill="#64748b">左侧是寻址公式（对齐 8 时空出低 3 位）；右侧四条分界读数来自 java -XX:+PrintFlagsFinal，只看标志、不分配内存。</text>
+
+  <rect x="32" y="88" width="430" height="320" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="48" y="114" font-size="13" font-weight="bold" fill="#475569">地址 = 堆基址 + (oop &lt;&lt; 3)</text>
+
+  <rect x="48" y="130" width="392" height="40" rx="4" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="156" font-size="13" fill="#0f172a">堆内真实地址 0x…48 = 72</text>
+
+  <text x="248" y="192" font-size="12" fill="#64748b" text-anchor="middle">8 字节对齐，低 3 位恒为 0 → 右移 3 位丢掉</text>
+  <line x1="240" y1="200" x2="240" y2="220" stroke="#94a3b8"/>
+  <path d="M 234 214 L 240 220 L 246 214" fill="none" stroke="#94a3b8"/>
+
+  <rect x="48" y="222" width="392" height="40" rx="4" fill="#fef3c7" stroke="#b45309"/>
+  <text x="60" y="248" font-size="13" font-weight="bold" fill="#b45309">存进字段的 oop = 9（4 字节足够）</text>
+
+  <line x1="240" y1="268" x2="240" y2="288" stroke="#94a3b8"/>
+  <path d="M 234 282 L 240 288 L 246 282" fill="none" stroke="#94a3b8"/>
+  <text x="248" y="284" font-size="12" fill="#64748b">用的时候再左移 3 位（末尾补 000）</text>
+
+  <rect x="48" y="290" width="392" height="40" rx="4" fill="#ccfbf1" stroke="#0d9488"/>
+  <text x="60" y="316" font-size="13" font-weight="bold" fill="#0d9488">9 &lt;&lt; 3 = 72，加基址就是原地址</text>
+
+  <text x="48" y="360" font-size="12" fill="#334155">32 位 oop 能数的最大偏移 = 2³² × 8 = 32 GB</text>
+  <text x="48" y="382" font-size="12" fill="#334155">对齐改成 16 就变成 2³² × 16 = 64 GB，代价是对象变胖</text>
+  <text x="48" y="400" font-size="12" font-weight="bold" fill="#dc2626">这就是「堆超过 32 GB 反而变慢」的物理来源</text>
+
+  <rect x="482" y="88" width="486" height="320" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="498" y="114" font-size="13" font-weight="bold" fill="#475569">失效分界：绿色仍压缩，红色已自动关闭</text>
+
+  <text x="560" y="142" font-size="11" fill="#94a3b8" text-anchor="middle">0</text>
+  <text x="729" y="142" font-size="11" fill="#94a3b8" text-anchor="middle">32g</text>
+  <text x="898" y="142" font-size="11" fill="#94a3b8" text-anchor="middle">64g</text>
+
+  <text x="498" y="176" font-size="12" fill="#334155">对齐 8（默认）</text>
+  <rect x="560" y="162" width="169" height="26" fill="#dcfce7" stroke="#0d9488"/>
+  <rect x="729" y="162" width="201" height="26" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="644" y="180" font-size="12" fill="#0d9488" text-anchor="middle">true（31g 实测）</text>
+  <text x="830" y="180" font-size="12" fill="#dc2626" text-anchor="middle">false（32g 起）</text>
+
+  <text x="498" y="234" font-size="12" fill="#334155">对齐 16</text>
+  <rect x="560" y="220" width="338" height="26" fill="#dcfce7" stroke="#0d9488"/>
+  <rect x="898" y="220" width="32" height="26" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="700" y="238" font-size="12" fill="#0d9488" text-anchor="middle">true（63g 实测）</text>
+
+  <text x="498" y="278" font-size="12" font-weight="bold" fill="#475569">四组读数（只扫标志，不分配内存）</text>
+  <text x="498" y="300" font-size="12" fill="#334155">-Xmx31g → true</text>
+  <text x="700" y="300" font-size="12" fill="#334155">-Xmx32g → false</text>
+  <text x="498" y="322" font-size="12" fill="#334155">-Xmx33g → false</text>
+  <text x="700" y="322" font-size="12" fill="#334155">对齐 16 + 63g → true</text>
+
+  <rect x="498" y="336" width="454" height="64" rx="6" fill="#f8fafc"/>
+  <text x="510" y="354" font-size="12" fill="#475569">UseCompressedOops 标 {ergonomic}：JVM 按堆上限自己算，</text>
+  <text x="510" y="372" font-size="12" fill="#475569">不写参数也会在超界时静默关掉——所以「换机器后突然变慢」</text>
+  <text x="510" y="390" font-size="12" fill="#475569">先查这条标志，别先怀疑代码。</text>
+
+  <rect x="32" y="424" width="936" height="52" rx="6" fill="#f8fafc"/>
+  <text x="48" y="446" font-size="12" fill="#475569">一条判据：同一份堆快照，</text>
+  <text x="236" y="446" font-size="12" font-weight="bold" fill="#0f172a">UseCompressedOops 从 true 变 false，所有引用字段从 4 字节变 8 字节</text>
+  <text x="48" y="466" font-size="12" fill="#475569">实测代价：LinkedList.Node 形态 24 → 40 字节（涨 67%），100 万个节点从 24 MB 变 40 MB。</text>
+</svg>

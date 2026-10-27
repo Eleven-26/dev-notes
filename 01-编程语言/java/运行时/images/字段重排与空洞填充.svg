@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="536" viewBox="0 0 1000 536" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="536" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">同样的四个字段，Java 重排后 32 字节，Go 原样放也是 32 字节</text>
+  <rect x="32" y="50" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="66" font-size="13" fill="#64748b">Java 侧偏移来自 Unsafe.objectFieldOffset(JDK 24)；横轴 1 字节 = 26 px，格内标的是字段名与实际偏移。</text>
+
+  <rect x="32" y="88" width="936" height="188" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="48" y="112" font-size="13" font-weight="bold" fill="#475569">Java：声明 byte b; Object o; int i; long l; —— 内存里变成 i, l, b, o</text>
+
+  <text x="80" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">0</text>
+  <text x="184" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">4</text>
+  <text x="288" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">8</text>
+  <text x="392" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">12</text>
+  <text x="496" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">16</text>
+  <text x="704" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">24</text>
+  <text x="808" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">28</text>
+  <text x="912" y="136" font-size="11" fill="#94a3b8" text-anchor="middle">32</text>
+  <line x1="80" y1="142" x2="912" y2="142" stroke="#e2e8f0"/>
+
+  <rect x="80" y="146" width="312" height="42" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <rect x="392" y="146" width="104" height="42" fill="#dbeafe" stroke="#1d4ed8"/>
+  <rect x="496" y="146" width="208" height="42" fill="#fef3c7" stroke="#b45309"/>
+  <rect x="704" y="146" width="26" height="42" fill="#ccfbf1" stroke="#0d9488"/>
+  <rect x="730" y="146" width="78" height="42" fill="#ffffff" stroke="#cbd5e1" stroke-dasharray="3 3"/>
+  <rect x="808" y="146" width="104" height="42" fill="#ede9fe" stroke="#7c3aed"/>
+  <text x="236" y="172" font-size="12" fill="#64748b" text-anchor="middle">头 12（8 + 4）</text>
+  <text x="444" y="172" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">i</text>
+  <text x="600" y="172" font-size="12" font-weight="bold" fill="#b45309" text-anchor="middle">l</text>
+  <text x="717" y="172" font-size="11" font-weight="bold" fill="#0d9488" text-anchor="middle">b</text>
+  <text x="769" y="172" font-size="10" fill="#94a3b8" text-anchor="middle">填 3</text>
+  <text x="860" y="172" font-size="12" font-weight="bold" fill="#7c3aed" text-anchor="middle">o</text>
+
+  <text x="444" y="208" font-size="11" fill="#1d4ed8" text-anchor="middle">@12</text>
+  <text x="600" y="208" font-size="11" fill="#b45309" text-anchor="middle">@16</text>
+  <text x="717" y="208" font-size="11" fill="#0d9488" text-anchor="middle">@24</text>
+  <text x="860" y="208" font-size="11" fill="#7c3aed" text-anchor="middle">@28</text>
+
+  <text x="48" y="240" font-size="12" fill="#475569">三条规则：按宽度降序放（8 → 4 → 2 → 1）；每个字段按自身宽度对齐；空洞用小字段补。</text>
+  <text x="48" y="260" font-size="12" fill="#475569">l 必须落在 8 的倍数上，所以从 12 跳到 16，空出的 4 字节被 b 占走——尾部正好齐平，无填充。</text>
+
+  <rect x="32" y="290" width="936" height="222" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="48" y="314" font-size="13" font-weight="bold" fill="#475569">Go：不重排，声明顺序就是内存顺序（unsafe.Sizeof 实测）</text>
+  <text x="48" y="340" font-size="12" font-weight="bold" fill="#475569">结构体</text>
+  <text x="330" y="340" font-size="12" font-weight="bold" fill="#475569">字段顺序</text>
+  <text x="640" y="340" font-size="12" font-weight="bold" fill="#475569">体积</text>
+  <text x="740" y="340" font-size="12" font-weight="bold" fill="#475569">偏移</text>
+  <line x1="48" y1="350" x2="952" y2="350" stroke="#cbd5e1"/>
+
+  <text x="48" y="378" font-size="13" fill="#334155">C</text>
+  <text x="330" y="378" font-size="13" fill="#64748b">int32, int64, int32</text>
+  <text x="640" y="378" font-size="13" font-weight="bold" fill="#dc2626">24</text>
+  <text x="740" y="378" font-size="13" fill="#64748b">0, 8, 16（8 后面插 4 字节填充）</text>
+
+  <text x="48" y="410" font-size="13" fill="#334155">D</text>
+  <text x="330" y="410" font-size="13" fill="#64748b">int32, int32, int64</text>
+  <text x="640" y="410" font-size="13" font-weight="bold" fill="#0d9488">16</text>
+  <text x="740" y="410" font-size="13" fill="#64748b">0, 4, 8（无填充）</text>
+
+  <text x="48" y="442" font-size="13" fill="#334155">A（对齐 Java 的写法）</text>
+  <text x="330" y="442" font-size="13" fill="#64748b">byte, *int, int32, int64</text>
+  <text x="640" y="442" font-size="13" font-weight="bold" fill="#0f172a">32</text>
+  <text x="740" y="442" font-size="13" fill="#64748b">0, 8, 16, 24（byte 后填 7）</text>
+
+  <text x="48" y="474" font-size="13" fill="#334155">空结构体</text>
+  <text x="330" y="474" font-size="13" fill="#64748b">struct{}{}</text>
+  <text x="640" y="474" font-size="13" font-weight="bold" fill="#0d9488">0</text>
+  <text x="740" y="474" font-size="13" fill="#64748b">没有「最小对象」这回事</text>
+
+  <rect x="48" y="486" width="904" height="18" rx="4" fill="#f8fafc"/>
+  <text x="56" y="499" font-size="11" fill="#64748b">C 与 D 字段完全相同，只换了顺序：24 vs 16，差 8 字节（1.5 倍）。Java 里同样的手排动作一点不变，因为 JVM 已经替你排过了。</text>
+</svg>

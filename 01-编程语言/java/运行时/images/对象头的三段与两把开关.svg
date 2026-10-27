@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="584" viewBox="0 0 1000 584" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="584" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">对象头的三段，与两把压缩指针开关各管一半</text>
+  <rect x="32" y="50" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="66" font-size="13" fill="#64748b">读数来自 eclipse-temurin:24-jdk 的 Instrumentation.getObjectSize()；1 字节 = 40 px，横条长度与字节数成正比。</text>
+
+  <rect x="32" y="88" width="936" height="214" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="48" y="112" font-size="13" font-weight="bold" fill="#475569">普通对象：12 字节头 + 0 字段 → 对齐到 16</text>
+
+  <text x="240" y="134" font-size="12" font-weight="bold" fill="#b45309" text-anchor="middle">MarkWord 8 B</text>
+  <text x="480" y="134" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Klass 4 B</text>
+  <text x="640" y="134" font-size="12" fill="#94a3b8" text-anchor="middle">对齐填充 4 B</text>
+  <rect x="80" y="142" width="320" height="40" fill="#fef3c7" stroke="#b45309"/>
+  <rect x="400" y="142" width="160" height="40" fill="#dbeafe" stroke="#1d4ed8"/>
+  <rect x="560" y="142" width="160" height="40" fill="#f1f5f9" stroke="#cbd5e1" stroke-dasharray="4 3"/>
+  <text x="240" y="167" font-size="12" fill="#b45309" text-anchor="middle">hash / 年龄 / 锁位</text>
+  <text x="480" y="167" font-size="12" fill="#1d4ed8" text-anchor="middle">指向 InstanceKlass</text>
+  <text x="640" y="167" font-size="12" fill="#94a3b8" text-anchor="middle">0 字段也要 16</text>
+  <text x="748" y="167" font-size="13" font-weight="bold" fill="#0f172a">= 16 B</text>
+
+  <text x="48" y="212" font-size="13" font-weight="bold" fill="#475569">数组对象：多一个 length，头变成 16</text>
+  <text x="240" y="234" font-size="12" font-weight="bold" fill="#b45309" text-anchor="middle">MarkWord 8 B</text>
+  <text x="480" y="234" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">Klass 4 B</text>
+  <text x="640" y="234" font-size="12" font-weight="bold" fill="#0d9488" text-anchor="middle">length 4 B</text>
+  <rect x="80" y="242" width="320" height="40" fill="#fef3c7" stroke="#b45309"/>
+  <rect x="400" y="242" width="160" height="40" fill="#dbeafe" stroke="#1d4ed8"/>
+  <rect x="560" y="242" width="160" height="40" fill="#ccfbf1" stroke="#0d9488"/>
+  <rect x="720" y="242" width="200" height="40" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="240" y="267" font-size="12" fill="#b45309" text-anchor="middle">hash / 年龄 / 锁位</text>
+  <text x="480" y="267" font-size="12" fill="#1d4ed8" text-anchor="middle">指向 InstanceKlass</text>
+  <text x="640" y="267" font-size="12" fill="#0d9488" text-anchor="middle">元素个数</text>
+  <text x="820" y="267" font-size="12" fill="#64748b" text-anchor="middle">元素区从偏移 16 开始</text>
+
+  <rect x="32" y="316" width="936" height="238" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="48" y="340" font-size="12" font-weight="bold" fill="#475569">模式</text>
+  <text x="300" y="340" font-size="12" font-weight="bold" fill="#475569">头宽</text>
+  <text x="380" y="340" font-size="12" font-weight="bold" fill="#475569">引用宽</text>
+  <text x="470" y="340" font-size="12" font-weight="bold" fill="#475569">Object</text>
+  <text x="570" y="340" font-size="12" font-weight="bold" fill="#475569">OneByte</text>
+  <text x="670" y="340" font-size="12" font-weight="bold" fill="#475569">OneRef</text>
+  <text x="770" y="340" font-size="12" font-weight="bold" fill="#475569">Mixed</text>
+  <text x="870" y="340" font-size="12" font-weight="bold" fill="#475569">Node(3 引用)</text>
+  <line x1="48" y1="350" x2="952" y2="350" stroke="#cbd5e1"/>
+
+  <text x="48" y="378" font-size="13" font-weight="bold" fill="#0f172a">默认（两把都开）</text>
+  <text x="300" y="378" font-size="13" fill="#334155">12</text>
+  <text x="380" y="378" font-size="13" fill="#334155">4</text>
+  <text x="470" y="378" font-size="13" fill="#334155">16</text>
+  <text x="570" y="378" font-size="13" fill="#334155">16</text>
+  <text x="670" y="378" font-size="13" fill="#334155">16</text>
+  <text x="770" y="378" font-size="13" fill="#334155">32</text>
+  <text x="870" y="378" font-size="13" fill="#334155">24</text>
+
+  <text x="48" y="410" font-size="13" fill="#0f172a">-XX:-UseCompressedOops</text>
+  <text x="300" y="410" font-size="13" fill="#334155">12</text>
+  <text x="380" y="410" font-size="13" font-weight="bold" fill="#dc2626">8</text>
+  <text x="470" y="410" font-size="13" fill="#334155">16</text>
+  <text x="570" y="410" font-size="13" fill="#334155">16</text>
+  <text x="670" y="410" font-size="13" font-weight="bold" fill="#dc2626">24</text>
+  <text x="770" y="410" font-size="13" font-weight="bold" fill="#dc2626">40</text>
+  <text x="870" y="410" font-size="13" font-weight="bold" fill="#dc2626">40</text>
+
+  <text x="48" y="442" font-size="13" fill="#0f172a">-XX:-UseCompressedClassPointers</text>
+  <text x="300" y="442" font-size="13" font-weight="bold" fill="#dc2626">16</text>
+  <text x="380" y="442" font-size="13" fill="#334155">4</text>
+  <text x="470" y="442" font-size="13" fill="#334155">16</text>
+  <text x="570" y="442" font-size="13" font-weight="bold" fill="#dc2626">24</text>
+  <text x="670" y="442" font-size="13" font-weight="bold" fill="#dc2626">24</text>
+  <text x="770" y="442" font-size="13" font-weight="bold" fill="#dc2626">40</text>
+  <text x="870" y="442" font-size="13" fill="#334155">32</text>
+
+  <rect x="48" y="464" width="900" height="72" rx="6" fill="#f8fafc"/>
+  <text x="62" y="486" font-size="12" fill="#475569">判别技巧：Object 三行都是 16，撞在一起不能用来认模式；用 OneByte 认头宽（16 说明头 12，24 说明头 16），</text>
+  <text x="62" y="506" font-size="12" fill="#475569">用 OneRef 认引用宽（16 说明引用 4，24 说明引用 8）。只关 oops 时类指针仍是 4 字节，头还是 12——两把开关互不影响。</text>
+  <text x="62" y="526" font-size="12" font-weight="bold" fill="#dc2626">Node(3 引用) 在默认下 24，关 oops 后 40，涨 67%：这就是堆超 32 GB 后变慢的物理来源之一。</text>
+</svg>

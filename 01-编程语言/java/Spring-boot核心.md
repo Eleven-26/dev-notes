@@ -8,7 +8,7 @@
 > JDK 24.0.1（字节码按 `--release 17` 编译）；所用 jar 来自本机 `~/.m2/repository`，未联网下载。
 > ⚠️ 本机**没有 `aspectjweaver`**，所以 AOP 部分用的是**编程式 `ProxyFactory`**（Spring AOP 的内核），
 > `@Aspect` 注解风格未实测；`@Transactional` 因无数据源未实测，但它与 AOP 共用同一套代理机制。
-> 本目录其它篇目见 [锁与AQS.md](并发/锁与AQS.md)、[JVM与垃圾回收.md](运行时/JVM与垃圾回收.md)。
+> 本目录其它篇目见 [锁与AQS.md](并发/锁与AQS.md)、[垃圾回收原理与收集器.md](运行时/垃圾回收原理与收集器.md)。
 
 ---
 

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">四种写法，三种下场：越往下越贵</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">长度 4 的 int[]，越界写 index 10 即字节偏移 56；最后一行写的地址是 0x10。</text>
+
+  <rect x="32" y="92" width="936" height="300" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="116" font-size="12" font-weight="bold" fill="#64748b">写法</text>
+  <text x="270" y="116" font-size="12" font-weight="bold" fill="#64748b">结果</text>
+  <text x="560" y="116" font-size="12" font-weight="bold" fill="#64748b">代价</text>
+  <line x1="52" y1="126" x2="948" y2="126" stroke="#e2e8f0"/>
+
+  <text x="52" y="160" font-size="12" font-family="Consolas, monospace" fill="#334155">a[10] = 1</text>
+  <text x="270" y="160" font-size="12" font-family="Consolas, monospace" fill="#15803d">ArrayIndexOutOfBoundsException</text>
+  <text x="560" y="160" font-size="12" fill="#475569">当场抛，栈里有行号</text>
+
+  <text x="52" y="216" font-size="12" font-family="Consolas, monospace" fill="#334155">VarHandle.set(a,10,1)</text>
+  <text x="270" y="216" font-size="12" font-family="Consolas, monospace" fill="#15803d">ArrayIndexOutOfBoundsException</text>
+  <text x="560" y="216" font-size="12" fill="#475569">当场抛，栈里有行号</text>
+
+  <text x="52" y="272" font-size="12" font-family="Consolas, monospace" fill="#334155">Unsafe.putInt(a, 56)</text>
+  <text x="270" y="272" font-size="12" fill="#b45309">不抛，读回 0xDEADBEEF</text>
+  <text x="560" y="272" font-size="12" fill="#475569">无异常，事后才发现字段串了</text>
+
+  <text x="52" y="328" font-size="12" font-family="Consolas, monospace" fill="#334155">Unsafe.putLong(0x10, 1)</text>
+  <text x="270" y="328" font-size="12" fill="#b91c1c">SIGSEGV，进程 exit 134</text>
+  <text x="560" y="328" font-size="12" fill="#475569">无异常，只留 hs_err</text>
+
+  <rect x="32" y="404" width="936" height="52" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="48" y="426" font-size="12" fill="#9a3412">越往下排障成本越高一个数量级：第三种要等别人报错，第四种连 finally 都不执行。</text>
+  <text x="48" y="446" font-size="12" fill="#9a3412">第四种写法的 si_addr 是 0x10、SEGV_MAPERR，崩在 Unsafe_PutLong+0xad（第 7.2 节原文）。</text>
+</svg>

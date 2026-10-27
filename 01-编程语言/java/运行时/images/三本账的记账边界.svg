@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">三本账里只有中间那本有专属上限</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">同一个 256 MiB，三条路的差别不是大小，是谁能拦住你。</text>
+
+  <rect x="32" y="92" width="936" height="272" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="116" font-size="12" font-weight="bold" fill="#64748b">账本</text>
+  <text x="220" y="116" font-size="12" font-weight="bold" fill="#64748b">谁管它</text>
+  <text x="520" y="116" font-size="12" font-weight="bold" fill="#64748b">实测（256 MiB 那条）</text>
+  <line x1="52" y1="126" x2="948" y2="126" stroke="#e2e8f0"/>
+
+  <rect x="52" y="136" width="150" height="26" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="64" y="154" font-size="12" fill="#1e3a8a">Java 堆</text>
+  <text x="220" y="154" font-size="12" font-family="Consolas, monospace" fill="#334155">-Xmx</text>
+  <text x="520" y="154" font-size="12" fill="#475569">-Xmx256m 时 maxMemory 恰为 256 MiB</text>
+
+  <rect x="52" y="216" width="150" height="26" rx="5" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="64" y="234" font-size="12" fill="#92400e">DirectByteBuffer</text>
+  <text x="220" y="234" font-size="12" font-family="Consolas, monospace" fill="#334155">MaxDirectMemorySize</text>
+  <text x="520" y="234" font-size="12" fill="#475569">16m 时直接 OutOfMemoryError</text>
+  <text x="520" y="252" font-size="12" font-family="Consolas, monospace" fill="#475569">limit: 16777216</text>
+
+  <rect x="52" y="296" width="150" height="26" rx="5" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="64" y="314" font-size="12" fill="#991b1b">Unsafe + FFM</text>
+  <text x="220" y="314" font-size="12" fill="#64748b">没有专属上限</text>
+  <text x="520" y="314" font-size="12" fill="#475569">16m 下照样成功，只有 NMT 留记号</text>
+  <text x="520" y="332" font-size="12" font-family="Consolas, monospace" fill="#475569">Other committed=262144KB</text>
+
+  <rect x="32" y="376" width="936" height="34" rx="6" fill="#f1f5f9"/>
+  <text x="48" y="398" font-size="12" fill="#334155">NMT 的 Other 一栏是事后唯一的记号：申请前这一行不存在，申请后 262144 KB（第 6.3 节三档对照）。</text>
+
+  <rect x="32" y="422" width="936" height="34" rx="6" fill="#fee2e2"/>
+  <text x="48" y="444" font-size="12" fill="#991b1b">但 RSS 三本都记在同一个进程头上：容器只认 cgroup 的 memory.max，认不出这笔内存属于哪一本。</text>
+</svg>

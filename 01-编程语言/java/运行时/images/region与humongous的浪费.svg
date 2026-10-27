@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">1 MB 的对象在 1 MB 的 region 里是「巨型」</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">超过 region 一半就是 humongous，必须占连续的整 region——哪怕只多一个字节。</text>
+
+  <rect x="32" y="92" width="448" height="180" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="116" font-size="13" font-weight="bold" fill="#334155">G1HeapRegionSize = 1m（默认）</text>
+  <rect x="52" y="130" width="60" height="34" rx="3" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="66" y="152" font-size="11" fill="#991b1b">1 MB</text>
+  <rect x="116" y="130" width="60" height="34" rx="3" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="130" y="152" font-size="11" fill="#991b1b">1 MB</text>
+  <rect x="180" y="130" width="60" height="34" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="196" y="152" font-size="11" fill="#92400e">Eden</text>
+  <rect x="244" y="130" width="60" height="34" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="260" y="152" font-size="11" fill="#92400e">Eden</text>
+  <rect x="308" y="130" width="60" height="34" rx="3" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="324" y="152" font-size="11" fill="#334155">空闲</text>
+  <rect x="372" y="130" width="60" height="34" rx="3" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="388" y="152" font-size="11" fill="#334155">空闲</text>
+  <text x="52" y="188" font-size="12" fill="#991b1b">↑ 两个 region 才装下这一个对象（红块）</text>
+  <text x="52" y="210" font-size="12" fill="#475569">实测：1 MB 对象 → Humongous regions: 40</text>
+  <text x="52" y="232" font-size="12" fill="#475569">32 MB 存活对象要吃掉 32~64 个 region</text>
+  <text x="52" y="254" font-size="12" fill="#991b1b">而 -Xmx64m 时整堆只有 64 个 region</text>
+
+  <rect x="520" y="92" width="448" height="180" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="540" y="116" font-size="13" font-weight="bold" fill="#334155">G1HeapRegionSize = 4m（手动调大）</text>
+  <rect x="540" y="130" width="90" height="34" rx="3" fill="#dcfce7" stroke="#86efac"/>
+  <text x="556" y="152" font-size="11" fill="#166534">1 MB 普通</text>
+  <rect x="634" y="130" width="90" height="34" rx="3" fill="#dcfce7" stroke="#86efac"/>
+  <text x="650" y="152" font-size="11" fill="#166534">1 MB 普通</text>
+  <rect x="728" y="130" width="90" height="34" rx="3" fill="#dcfce7" stroke="#86efac"/>
+  <text x="744" y="152" font-size="11" fill="#166534">1 MB 普通</text>
+  <rect x="822" y="130" width="126" height="34" rx="3" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="838" y="152" font-size="11" fill="#334155">region 剩余空间</text>
+  <text x="540" y="188" font-size="12" fill="#166534">↑ 四个对象挤在一个 region 里，全部按普通对象走年龄</text>
+  <text x="540" y="210" font-size="12" fill="#475569">实测：同 1 MB 对象 → Humongous regions: 0</text>
+  <text x="540" y="232" font-size="12" fill="#475569">同一份负载下 64m 堆不再 OOM（G1 191 ms 跑完）</text>
+  <text x="540" y="254" font-size="12" fill="#991b1b">代价：region 变大 → 碎片粒度变粗、回收弹性变差</text>
+
+  <rect x="32" y="292" width="936" height="34" rx="6" fill="#fee2e2"/>
+  <text x="48" y="314" font-size="12" fill="#991b1b">-Xmx64m + 1 MB 对象：Serial 203 ms、Parallel 227 ms 都能跑完，G1 与 ZGC 直接 OutOfMemoryError。</text>
+
+  <rect x="32" y="334" width="936" height="34" rx="6" fill="#f1f5f9"/>
+  <text x="48" y="356" font-size="12" fill="#334155">换成 64 KB 的小对象，G1 在同一个 64m 堆上 191 ms 就跑完了——OOM 与堆上限无关，与对象粒度有关。</text>
+
+  <rect x="32" y="384" width="936" height="88" rx="6" fill="#dbeafe"/>
+  <text x="48" y="408" font-size="12" font-weight="bold" fill="#1e3a8a">判据：小堆 + 大对象该选谁</text>
+  <text x="48" y="430" font-size="12" fill="#1e3a8a">对象大小 &gt; region 的一半 → 要么换 Parallel / Serial，要么把 G1HeapRegionSize 调大。</text>
+  <text x="48" y="452" font-size="12" fill="#1e3a8a">region 大小由 ergonomics 定（堆 / 2048 取 2 的幂），实测 256 MB 堆下就是 1 MB。</text>
+</svg>

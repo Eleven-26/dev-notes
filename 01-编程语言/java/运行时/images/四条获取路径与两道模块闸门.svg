@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">四条路只有一个通，因为那道门本来就是开的</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">sun.misc 在 jdk.unsupported 里且已开放；jdk.internal.misc 在 java.base 里，要加参数才开。</text>
+
+  <rect x="32" y="92" width="936" height="268" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="118" font-size="12" font-weight="bold" fill="#64748b">路径</text>
+  <text x="250" y="118" font-size="12" font-weight="bold" fill="#64748b">代码</text>
+  <text x="620" y="118" font-size="12" font-weight="bold" fill="#64748b">结果</text>
+  <line x1="52" y1="128" x2="948" y2="128" stroke="#e2e8f0"/>
+
+  <text x="52" y="158" font-size="13" font-weight="bold" fill="#0f172a">路1 官方入口</text>
+  <text x="250" y="158" font-size="12" font-family="Consolas, monospace" fill="#334155">Unsafe.getUnsafe()</text>
+  <text x="620" y="158" font-size="12" font-family="Consolas, monospace" fill="#b91c1c">SecurityException: Unsafe</text>
+
+  <text x="52" y="212" font-size="13" font-weight="bold" fill="#0f172a">路2 反射私有字段</text>
+  <text x="250" y="212" font-size="12" font-family="Consolas, monospace" fill="#334155">setAccessible(true); get(null)</text>
+  <text x="620" y="212" font-size="12" fill="#15803d">OK，一行参数都不用加</text>
+
+  <text x="52" y="266" font-size="13" font-weight="bold" fill="#0f172a">路3 内部同名类</text>
+  <text x="250" y="266" font-size="12" font-family="Consolas, monospace" fill="#334155">jdk.internal.misc.Unsafe</text>
+  <text x="620" y="266" font-size="12" font-family="Consolas, monospace" fill="#b91c1c">IllegalAccessException</text>
+  <text x="620" y="284" font-size="12" fill="#92400e">加 --add-exports 之后才通</text>
+
+  <text x="52" y="320" font-size="13" font-weight="bold" fill="#0f172a">路4 反射内部字段</text>
+  <text x="250" y="320" font-size="12" font-family="Consolas, monospace" fill="#334155">theUnsafe（内部版）</text>
+  <text x="620" y="320" font-size="12" font-family="Consolas, monospace" fill="#b91c1c">InaccessibleObjectException</text>
+  <text x="620" y="338" font-size="12" fill="#92400e">加 --add-opens 之后才通</text>
+
+  <rect x="32" y="372" width="454" height="112" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="48" y="396" font-size="14" font-weight="bold" fill="#1e3a8a">exports：静态引用</text>
+  <text x="48" y="420" font-size="12" fill="#1e40af">管「能不能 import、能不能调用」，</text>
+  <text x="48" y="440" font-size="12" fill="#1e40af">编译期与运行期都校验。</text>
+  <text x="48" y="466" font-size="12" fill="#1e40af">够了之后路3 通、路4 仍不通。</text>
+
+  <rect x="514" y="372" width="454" height="112" rx="8" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="530" y="396" font-size="14" font-weight="bold" fill="#166534">opens：反射入口</text>
+  <text x="530" y="420" font-size="12" fill="#15803d">管「反射能不能进去写私有字段」，</text>
+  <text x="530" y="440" font-size="12" fill="#15803d">包含 exports 的效果。</text>
+  <text x="530" y="466" font-size="12" fill="#15803d">够了之后路3、路4 都通。</text>
+</svg>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">两条互不相干的取数路径：套接字上的 attach 与文件里的 PerfData</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">上半条路要目标 VM 配合执行命令，下半条路只是读一块共享内存；这就是 jstat 能独立于 jcmd 的原因。</text>
+
+  <rect x="32" y="92" width="936" height="196" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="48" y="118" font-size="15" font-weight="bold" fill="#1e3a8a">attach 路：jstack / jmap / jinfo / jps 全走这条</text>
+  <text x="48" y="138" font-size="12" fill="#64748b">客户端连本机套接字，发一条诊断命令字符串，由目标 VM 里的线程执行后回传文本</text>
+
+  <rect x="52" y="152" width="190" height="76" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="66" y="176" font-size="13" font-weight="bold" fill="#1e3a8a">客户端</text>
+  <text x="66" y="196" font-size="11" fill="#1e40af">jstack / jmap / jinfo</text>
+  <text x="66" y="214" font-size="11" fill="#1e40af">连不上就报 attach 异常</text>
+
+  <path d="M244 190 H256 M250 184 L257 190 L250 196" fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="258" y="152" width="190" height="76" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="272" y="176" font-size="13" font-weight="bold" fill="#1e3a8a">本机套接字</text>
+  <text x="272" y="196" font-size="11" font-family="Consolas, monospace" fill="#1e40af">/tmp/.java_pid&lt;pid&gt;</text>
+  <text x="272" y="214" font-size="11" fill="#1e40af">不经网络端口</text>
+
+  <path d="M450 190 H462 M456 184 L463 190 L456 196" fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="464" y="152" width="230" height="76" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="478" y="176" font-size="13" font-weight="bold" fill="#1e3a8a">目标 VM 的 Attach Listener</text>
+  <text x="478" y="196" font-size="11" fill="#1e40af">有人 attach 才被创建</text>
+  <text x="478" y="214" font-size="11" fill="#1e40af">本机实测 elapsed 明显更短</text>
+
+  <path d="M696 190 H708 M702 184 L709 190 L702 196" fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="710" y="152" width="240" height="76" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="724" y="176" font-size="13" font-weight="bold" fill="#1e3a8a">dcmd 处理器执行</text>
+  <text x="724" y="196" font-size="11" fill="#1e40af">输出与 jstack 正文逐行相同</text>
+  <text x="724" y="214" font-size="11" fill="#1e40af">143 行 vs 144 行，只差 pid 行</text>
+
+  <rect x="52" y="240" width="898" height="34" rx="5" fill="#dbeafe"/>
+  <text x="66" y="262" font-size="12" fill="#1e3a8a">失败时能直接指位置：pid 存在但不是 JVM → AttachNotSupportedException；pid 不存在 → non existent JVM pid</text>
+
+  <rect x="32" y="308" width="936" height="152" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="48" y="334" font-size="15" font-weight="bold" fill="#065f46">PerfData 路：jstat 只走这条</text>
+  <text x="48" y="354" font-size="12" fill="#64748b">JVM 把计数器 mmap 到一块文件里，jstat 读同一个文件即可，不需要目标 VM 干任何事</text>
+
+  <rect x="52" y="368" width="250" height="70" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="66" y="392" font-size="13" font-weight="bold" fill="#065f46">jstat</text>
+  <text x="66" y="412" font-size="11" fill="#047857">-gc / -gcutil / -gccause</text>
+  <text x="66" y="430" font-size="11" fill="#047857">列名写死，不能自定义</text>
+
+  <path d="M310 403 H322 M316 397 L323 403 L316 409" fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="324" y="368" width="330" height="70" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="338" y="392" font-size="13" font-weight="bold" fill="#065f46">/tmp/hsperfdata_root/&lt;pid&gt;</text>
+  <text x="338" y="412" font-size="11" font-family="Consolas, monospace" fill="#047857">32768 字节，一个进程一个文件</text>
+  <text x="338" y="430" font-size="11" fill="#047857">启动时创建并 mmap</text>
+
+  <path d="M662 403 H674 M668 397 L675 403 L668 409" fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="676" y="368" width="274" height="70" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="690" y="392" font-size="13" font-weight="bold" fill="#065f46">JVM 的计数器</text>
+  <text x="690" y="412" font-size="11" fill="#047857">GC 次数、各区占用、类加载数</text>
+  <text x="690" y="430" font-size="11" fill="#047857">写内存，不触发任何 GC</text>
+
+  <rect x="32" y="472" width="936" height="36" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="48" y="496" font-size="13" font-weight="bold" fill="#991b1b">加 -XX:+PerfDisableSharedMem 掐掉下半条：jstat 报 Could not map vmid to user Name，jcmd 与 jstack 毫发无伤</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">热点探测：两个计数器，三条编译路径</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">阈值全部来自 java -XX:+PrintFlagsFinal 实读；计数器跨调用累积，所以带长循环的方法常常在第一次调用内部就编译。</text>
+
+  <rect x="32" y="92" width="300" height="96" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="48" y="118" font-size="14" font-weight="bold" fill="#1e3a8a">方法调用计数器</text>
+  <text x="48" y="142" font-size="12" fill="#475569">每次进入方法时 +1</text>
+  <text x="48" y="170" font-size="13" font-weight="bold" fill="#2563eb">Tier3 = 200　Tier4 = 5000</text>
+
+  <rect x="32" y="204" width="300" height="96" rx="8" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="48" y="230" font-size="14" font-weight="bold" fill="#78350f">回边计数器</text>
+  <text x="48" y="254" font-size="12" fill="#475569">每次跳回循环头时 +1</text>
+  <text x="48" y="282" font-size="13" font-weight="bold" fill="#b45309">Tier3 = 60000　Tier4 = 40000</text>
+
+  <line x1="332" y1="140" x2="372" y2="166" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="332" y1="252" x2="372" y2="226" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <rect x="372" y="150" width="150" height="66" rx="8" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="447" y="176" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">加权 + 衰减</text>
+  <text x="447" y="198" font-size="12" fill="#64748b" text-anchor="middle">进编译队列</text>
+
+  <line x1="522" y1="170" x2="562" y2="126" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="522" y1="183" x2="562" y2="183" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="522" y1="196" x2="562" y2="240" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <rect x="562" y="96" width="406" height="60" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="578" y="118" font-size="13" font-weight="bold" fill="#1e40af">level 3 · C1 带完整 profile</text>
+  <text x="578" y="140" font-size="12" fill="#475569">先编一版能跑的，同时记录每个分支与调用点的真实频率</text>
+
+  <rect x="562" y="164" width="406" height="60" rx="8" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="578" y="186" font-size="13" font-weight="bold" fill="#065f46">level 4 · C2 激进优化</text>
+  <text x="578" y="208" font-size="12" fill="#475569">拿 level 3 的 profile 做单态内联、分支剪枝、去虚化</text>
+
+  <rect x="562" y="232" width="406" height="60" rx="8" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="578" y="254" font-size="13" font-weight="bold" fill="#991b1b">OSR · 栈上替换（日志里带 % ）</text>
+  <text x="578" y="276" font-size="12" fill="#475569">不等下一次调用，直接换掉当前栈帧，从正在跑的 bci 继续</text>
+
+  <rect x="32" y="324" width="936" height="168" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="48" y="350" font-size="13" font-weight="bold" fill="#334155">实测时间线：work(50000) 外部只调用 400 次，第一个到达的是回边</text>
+
+  <line x1="80" y1="400" x2="940" y2="400" stroke="#cbd5e1" stroke-width="1.5"/>
+  <circle cx="140" cy="400" r="5" fill="#dc2626"/>
+  <text x="140" y="386" font-size="12" font-weight="bold" fill="#dc2626" text-anchor="middle">94 ms</text>
+  <text x="140" y="422" font-size="12" fill="#475569" text-anchor="middle">work 已编到 level 4</text>
+  <text x="140" y="440" font-size="12" fill="#94a3b8" text-anchor="middle">（第一次调用内部）</text>
+
+  <circle cx="620" cy="400" r="5" fill="#2563eb"/>
+  <text x="620" y="386" font-size="12" font-weight="bold" fill="#2563eb" text-anchor="middle">121 ms</text>
+  <text x="620" y="422" font-size="12" fill="#475569" text-anchor="middle">才走到第 40 次调用</text>
+  <text x="620" y="440" font-size="12" fill="#94a3b8" text-anchor="middle">（离 200 次的门槛还早）</text>
+
+  <text x="48" y="470" font-size="12" fill="#64748b">结论：带长循环的方法走回边路径，几毫秒就热；没有循环的小方法只能靠调用次数慢慢攒到 200 / 5000。</text>
+</svg>

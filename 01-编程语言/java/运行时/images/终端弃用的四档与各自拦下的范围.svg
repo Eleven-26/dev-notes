@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">四档开关，收紧的是同一道闸门</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">--sun-misc-unsafe-memory-access 是启动器参数，不是 -XX：PrintFlagsFinal 里搜不到它。</text>
+
+  <rect x="32" y="92" width="936" height="300" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="116" font-size="12" font-weight="bold" fill="#64748b">档位</text>
+  <text x="190" y="116" font-size="12" font-weight="bold" fill="#64748b">行为</text>
+  <text x="520" y="116" font-size="12" font-weight="bold" fill="#64748b">实测输出</text>
+  <line x1="52" y1="126" x2="948" y2="126" stroke="#e2e8f0"/>
+
+  <rect x="52" y="136" width="118" height="26" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="64" y="154" font-size="12" font-family="Consolas, monospace" fill="#334155">allow</text>
+  <text x="190" y="154" font-size="12" fill="#0f172a">完全不打扰，和没加参数一样</text>
+  <text x="520" y="154" font-size="12" fill="#475569">无任何 WARNING</text>
+
+  <rect x="52" y="206" width="118" height="26" rx="5" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="64" y="224" font-size="12" font-family="Consolas, monospace" fill="#1e40af">warn</text>
+  <text x="190" y="224" font-size="12" fill="#0f172a">默认档；每进程只打一次，点名第一个被调用的方法</text>
+  <text x="520" y="224" font-size="12" fill="#475569">四行 WARNING</text>
+  <text x="520" y="242" font-size="12" font-family="Consolas, monospace" fill="#475569">Unsafe::allocateMemory ...</text>
+
+  <rect x="52" y="276" width="118" height="26" rx="5" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="64" y="294" font-size="12" font-family="Consolas, monospace" fill="#92400e">debug</text>
+  <text x="190" y="294" font-size="12" fill="#0f172a">每调一次打一行，并附调用栈帧</text>
+  <text x="520" y="294" font-size="12" font-family="Consolas, monospace" fill="#475569">at Warn.main(Warn.java:33)</text>
+
+  <rect x="52" y="346" width="118" height="26" rx="5" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="64" y="364" font-size="12" font-family="Consolas, monospace" fill="#991b1b">deny</text>
+  <text x="190" y="364" font-size="12" fill="#0f172a">直接抛异常，消息就是方法名</text>
+  <text x="520" y="364" font-size="12" font-family="Consolas, monospace" fill="#475569">UnsupportedOperationException</text>
+
+  <rect x="32" y="404" width="454" height="80" rx="8" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="48" y="428" font-size="14" font-weight="bold" fill="#991b1b">deny 拦得住的</text>
+  <text x="48" y="452" font-size="12" fill="#7f1d1d">应用代码经 sun.misc 的一切内存访问：连 objectFieldOffset</text>
+  <text x="48" y="472" font-size="12" fill="#7f1d1d">与堆内 getInt 都拦，所以 VarHandle 不是可选而是必需。</text>
+
+  <rect x="514" y="404" width="454" height="80" rx="8" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="530" y="428" font-size="14" font-weight="bold" fill="#166534">deny 拦不住的</text>
+  <text x="530" y="452" font-size="12" fill="#15803d">JDK 自己的路径：同一档位下 allocateDirect(64 MiB)</text>
+  <text x="530" y="472" font-size="12" fill="#15803d">仍成功，directPool 仍记 64 MiB。</text>
+</svg>

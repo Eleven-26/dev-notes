@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <defs>
+    <marker id="a4" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">invokedynamic 的链接链路：贵在第一次，不在每次调用</text>
+  <rect x="32" y="50" width="930" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="66" font-size="13" fill="#64748b">文件里只有「一项常量池 + 一条引导方法配方」；真正的目标由引导方法在第一次执行时算出。</text>
+
+  <rect x="40" y="130" width="250" height="180" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="56" y="156" font-size="13" font-weight="bold" fill="#15803d">编译期（文件里）</text>
+  <text x="56" y="184" font-size="13" fill="#334155">指令：invokedynamic #7, 0</text>
+  <text x="56" y="210" font-size="12" fill="#475569">#7 = InvokeDynamic</text>
+  <text x="56" y="232" font-size="12" fill="#475569">bsm = 0</text>
+  <text x="56" y="254" font-size="12" fill="#475569">NameAndType = applyAsInt:()L…</text>
+  <text x="56" y="284" font-size="12" fill="#64748b">此时还不知道实现类是谁</text>
+
+  <rect x="370" y="108" width="300" height="130" rx="8" fill="#fef3c7" stroke="#b45309"/>
+  <text x="386" y="134" font-size="13" font-weight="bold" fill="#b45309">BootstrapMethods[0]</text>
+  <text x="386" y="160" font-size="12" fill="#334155">LambdaMetafactory.metafactory</text>
+  <text x="386" y="182" font-size="12" fill="#334155">静态参数：(I)I</text>
+  <text x="386" y="204" font-size="12" fill="#334155">方法句柄：REF_invokeStatic</text>
+  <text x="386" y="224" font-size="12" fill="#334155">→ lambda$main$0</text>
+
+  <rect x="370" y="288" width="300" height="120" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="386" y="314" font-size="13" font-weight="bold" fill="#1e3a8a">CallSite（链接的结果）</text>
+  <text x="386" y="340" font-size="12" fill="#334155">持有目标 MethodHandle</text>
+  <text x="386" y="362" font-size="12" fill="#334155">指向合成的 lambda$main$0</text>
+  <text x="386" y="384" font-size="12" fill="#334155">此后不再调用引导方法</text>
+
+  <rect x="734" y="196" width="226" height="120" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="750" y="222" font-size="13" font-weight="bold" fill="#334155">之后的每一次调用</text>
+  <text x="750" y="248" font-size="12" fill="#334155">直接走 CallSite 里的句柄</text>
+  <text x="750" y="270" font-size="12" fill="#334155">与普通调用同价</text>
+  <text x="750" y="292" font-size="12" fill="#475569">稳定后可被 JIT 内联</text>
+
+  <line x1="290" y1="200" x2="362" y2="170" stroke="#64748b" stroke-width="2" marker-end="url(#a4)"/>
+  <line x1="520" y1="238" x2="520" y2="280" stroke="#64748b" stroke-width="2" marker-end="url(#a4)"/>
+  <line x1="670" y1="348" x2="726" y2="290" stroke="#64748b" stroke-width="2" marker-end="url(#a4)"/>
+
+  <rect x="40" y="432" width="910" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="456" font-size="13" font-weight="bold" fill="#0f172a">对照：invokevirtual 解析出方法引用，invokedynamic 运行一段代码去「造」调用点。</text>
+  <text x="56" y="478" font-size="13" fill="#334155">这也是 Lambda 不产生 $1.class 的机制来源：实现类是运行期由 LambdaMetafactory 生成的。</text>
+
+  <rect x="32" y="498" width="560" height="18" rx="4" fill="#f8fafc"/>
+  <text x="40" y="511" font-size="11" fill="#94a3b8">常量池与 BootstrapMethods 的编号取自 LambdaDemo.class（JDK 24）。</text>
+</svg>

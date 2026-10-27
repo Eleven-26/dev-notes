@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="452" viewBox="0 0 1000 452" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="452" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">四种引用差在「什么时候清」和「清完通知谁」</text>
+  <rect x="32" y="50" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="66" font-size="13" fill="#64748b">右侧实测列来自 java -Xmx64m -XX:+UseSerialGC RefDemo（最大堆 61 MB），每条都是本轮真跑的输出。</text>
+
+  <rect x="32" y="88" width="936" height="296" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="48" y="112" font-size="12" font-weight="bold" fill="#475569">引用</text>
+  <text x="170" y="112" font-size="12" font-weight="bold" fill="#475569">什么时候清</text>
+  <text x="430" y="112" font-size="12" font-weight="bold" fill="#475569">get() 还能拿到吗</text>
+  <text x="600" y="112" font-size="12" font-weight="bold" fill="#475569">队列里收到什么</text>
+  <text x="800" y="112" font-size="12" font-weight="bold" fill="#475569">本机实测</text>
+  <line x1="48" y1="122" x2="952" y2="122" stroke="#cbd5e1"/>
+
+  <text x="48" y="152" font-size="13" font-weight="bold" fill="#dc2626">强引用</text>
+  <text x="170" y="152" font-size="13" fill="#334155">只要可达就不清</text>
+  <text x="430" y="152" font-size="13" fill="#334155">拿到</text>
+  <text x="600" y="152" font-size="13" fill="#94a3b8">无队列</text>
+  <text x="800" y="152" font-size="13" fill="#334155">System.gc() 后仍在</text>
+
+  <text x="48" y="192" font-size="13" font-weight="bold" fill="#b45309">软引用</text>
+  <text x="170" y="192" font-size="13" fill="#334155">内存不够才清</text>
+  <text x="430" y="192" font-size="13" fill="#334155">清之前拿到</text>
+  <text x="600" y="192" font-size="13" fill="#334155">Reference 本身</text>
+  <text x="800" y="192" font-size="13" fill="#334155">吃到第 13 个 4 MB 后被清</text>
+
+  <text x="48" y="232" font-size="13" font-weight="bold" fill="#1d4ed8">弱引用</text>
+  <text x="170" y="232" font-size="13" fill="#334155">下次 GC 就清</text>
+  <text x="430" y="232" font-size="13" fill="#334155">不清之前拿到</text>
+  <text x="600" y="232" font-size="13" fill="#334155">Reference 本身</text>
+  <text x="800" y="232" font-size="13" fill="#334155">get()=null，队列收到 weak</text>
+
+  <text x="48" y="272" font-size="13" font-weight="bold" fill="#7c3aed">虚引用</text>
+  <text x="170" y="272" font-size="13" fill="#334155">回收后才入队</text>
+  <text x="430" y="272" font-size="13" font-weight="bold" fill="#dc2626">永远 null</text>
+  <text x="600" y="272" font-size="13" fill="#334155">Reference 本身</text>
+  <text x="800" y="272" font-size="13" fill="#334155">两次 gc 后收到 phantom</text>
+
+  <text x="48" y="312" font-size="13" font-weight="bold" fill="#0d9488">Cleaner</text>
+  <text x="170" y="312" font-size="13" fill="#334155">GC 后由清理线程跑</text>
+  <text x="430" y="312" font-size="13" fill="#94a3b8">不暴露对象</text>
+  <text x="600" y="312" font-size="13" fill="#334155">内部虚引用</text>
+  <text x="800" y="312" font-size="13" fill="#334155">打印「资源已释放」</text>
+
+  <rect x="48" y="330" width="904" height="42" rx="6" fill="#fef3c7"/>
+  <text x="62" y="348" font-size="12" font-weight="bold" fill="#b45309">最容易记错的一条：队列里收到的是 WeakReference / PhantomReference 对象本身，不是被引用的那个对象。</text>
+  <text x="62" y="366" font-size="12" fill="#b45309">被引用的对象此时已经没了，能提供的唯一信息是「哪个引用失效了」——所以它只能当 key 用来反查你挂的元数据。</text>
+
+  <rect x="32" y="392" width="936" height="44" rx="6" fill="#f8fafc"/>
+  <text x="48" y="412" font-size="12" fill="#475569">确定性：强 &gt; 软（不定） &gt; 弱（下次 GC） &gt; 虚（回收后） &gt; Cleaner（GC 后异步）。</text>
+  <text x="48" y="430" font-size="12" font-weight="bold" fill="#dc2626">要「一定执行」的清理只有 try-with-resources；Cleaner 与 finalize 都只能算「大概率」，别拿它管必须关闭的资源。</text>
+</svg>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460" viewBox="0 0 1000 460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">hs_err_pid 的四段：机器、线程、调用链、信号</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">按从上到下的顺序读，四段各回答一个问题；读完第一段和第三段，复现路径基本就有了。</text>
+
+  <rect x="32" y="96" width="200" height="78" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="48" y="126" font-size="15" font-weight="bold" fill="#1e3a8a">SUMMARY</text>
+  <text x="48" y="150" font-size="11" fill="#1e40af">哪台机器、哪套参数</text>
+  <rect x="248" y="96" width="720" height="78" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="264" y="126" font-size="12" fill="#334155">Command Line 与 Host 两行最有用：复现时照着抄，缺一个参数就是另一个故事。</text>
+  <text x="264" y="150" font-size="12" fill="#64748b">本机那次的 Command Line 是 -XX:NativeMemoryTracking=summary Busy。</text>
+
+  <rect x="32" y="186" width="200" height="78" rx="8" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="48" y="216" font-size="15" font-weight="bold" fill="#9a3412">THREAD</text>
+  <text x="48" y="240" font-size="11" fill="#c2410c">崩在哪条线程</text>
+  <rect x="248" y="186" width="720" height="78" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="264" y="216" font-size="12" fill="#334155">看线程名与状态：Attach Listener 说明是诊断命令惹的，_thread_in_vm 说明正握着 VM 锁。</text>
+  <text x="264" y="240" font-size="12" fill="#64748b">崩在这一态意味着通常没有异常可抓，进程整体退出。</text>
+
+  <rect x="32" y="276" width="200" height="78" rx="8" fill="#f5f3ff" stroke="#ddd6fe"/>
+  <text x="48" y="306" font-size="15" font-weight="bold" fill="#4c1d95">Native frames</text>
+  <text x="48" y="330" font-size="11" fill="#6d28d9">C++ 调用链，从内往外</text>
+  <rect x="248" y="276" width="720" height="78" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="264" y="306" font-size="12" fill="#334155">最内层是崩点，往下逐层是调用者；把这几行连起来读，因果链就出来了。</text>
+  <text x="264" y="330" font-size="12" fill="#64748b">jcmd → DCmd 解析 → JFR.configure → 类初始化 → link_method。</text>
+
+  <rect x="32" y="366" width="200" height="78" rx="8" fill="#fff1f2" stroke="#fecdd3"/>
+  <text x="48" y="396" font-size="15" font-weight="bold" fill="#9f1239">siginfo</text>
+  <text x="48" y="420" font-size="11" fill="#be123c">信号与地址</text>
+  <rect x="248" y="366" width="720" height="78" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="264" y="396" font-size="12" fill="#334155">SEGV_MAPERR 加一个极小的 si_addr（本机 0x28）几乎等于空指针加偏移。</text>
+  <text x="264" y="420" font-size="12" fill="#64748b">换成 SEGV_ACCERR 则是越界写，方向完全不同。</text>
+</svg>
