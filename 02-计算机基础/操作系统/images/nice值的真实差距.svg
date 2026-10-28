@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="408" viewBox="0 0 1000 408" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="408" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">同一核上，nice 0 与 nice 10 的真实差距只有 1.59 倍</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">按 CFS 的权重公式应该差 9.3 倍；实测不到它的六分之一，原因本轮没查清</text>
+
+  <rect x="40" y="76" width="920" height="272" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <!-- 纵轴 0~200ms，1ms = 1px -->
+  <line x1="130" y1="300" x2="900" y2="300" stroke="#cbd5e1"/>
+  <line x1="130" y1="300" x2="130" y2="100" stroke="#cbd5e1"/>
+  <text x="118" y="304" text-anchor="end" font-size="11" fill="#94a3b8">0</text>
+  <text x="118" y="254" text-anchor="end" font-size="11" fill="#94a3b8">50</text>
+  <text x="118" y="204" text-anchor="end" font-size="11" fill="#94a3b8">100</text>
+  <text x="118" y="154" text-anchor="end" font-size="11" fill="#94a3b8">150</text>
+  <text x="118" y="104" text-anchor="end" font-size="11" fill="#94a3b8">200</text>
+  <text x="124" y="92" text-anchor="end" font-size="10" fill="#94a3b8">ms</text>
+  <line x1="130" y1="250" x2="900" y2="250" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <line x1="130" y1="200" x2="900" y2="200" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <line x1="130" y1="150" x2="900" y2="150" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+
+  <!-- 区 1：单跑基线 84.4 -->
+  <rect x="175" y="216" width="70" height="84" rx="3" fill="#cbd5e1"/>
+  <text x="210" y="208" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">84.4</text>
+  <text x="210" y="322" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">单跑</text>
+  <text x="210" y="340" text-anchor="middle" font-size="10" fill="#94a3b8">基线</text>
+
+  <!-- 分隔线 -->
+  <line x1="320" y1="96" x2="320" y2="304" stroke="#e2e8f0" stroke-dasharray="4 3"/>
+
+  <!-- 区 2：两个 nice 0，188.5 / 189.5 -->
+  <rect x="372" y="112" width="70" height="188" rx="3" fill="#0f766e"/>
+  <text x="407" y="104" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">188.5</text>
+  <rect x="452" y="110" width="70" height="190" rx="3" fill="#14b8a6"/>
+  <text x="487" y="102" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">189.5</text>
+  <text x="447" y="322" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">两个 nice 0</text>
+  <text x="447" y="340" text-anchor="middle" font-size="10" font-weight="700" fill="#0f766e">1.00 倍（正好平分）</text>
+
+  <!-- 分隔线 -->
+  <line x1="590" y1="96" x2="590" y2="304" stroke="#e2e8f0" stroke-dasharray="4 3"/>
+
+  <!-- 区 3：nice0 114.9 vs nice10 183.0 -->
+  <rect x="642" y="185" width="70" height="115" rx="3" fill="#0f766e"/>
+  <text x="677" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">114.9</text>
+  <rect x="722" y="117" width="70" height="183" rx="3" fill="#b45309"/>
+  <text x="757" y="109" text-anchor="middle" font-size="12" font-weight="700" fill="#b45309">183.0</text>
+  <text x="717" y="322" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">nice 0 vs nice 10</text>
+  <text x="717" y="340" text-anchor="middle" font-size="10" font-weight="700" fill="#b45309">1.59 倍</text>
+
+  <!-- 理论预期 -->
+  <rect x="822" y="100" width="110" height="200" rx="4" fill="#ffffff" stroke="#b91c1c" stroke-dasharray="5 3"/>
+  <text x="877" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">理论上</text>
+  <text x="877" y="146" text-anchor="middle" font-size="11" fill="#b91c1c">应该差</text>
+  <text x="877" y="170" text-anchor="middle" font-size="15" font-weight="700" fill="#b91c1c">9.3 倍</text>
+  <text x="877" y="190" text-anchor="middle" font-size="10" fill="#b91c1c">1024 : 110</text>
+  <text x="877" y="240" text-anchor="middle" font-size="10" fill="#b91c1c" opacity="0">–</text>
+
+  <rect x="60" y="352" width="880" height="44" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="76" y="372" font-size="13" fill="#92400e">两个 nice 0 竞速时各 188 ms，正好是单跑 84.4 的 2.23 倍 —— 这一组是干净对照，证明绑核后确实在平分。</text>
+  <text x="76" y="390" font-size="12" fill="#a16207">要真正隔离算力，得用 cgroup 的 cpu.max 硬配额；nice 只能在同一个类里挪动相对次序。</text>
+</svg>

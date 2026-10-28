@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="392" viewBox="0 0 1000 392" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="392" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">一次换人：从硬件信号到另一个进程接着跑</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">接缝在「返回用户态之前的那个判断」；前五步是微秒以下的硬件与记账，最后两步才是调度</text>
+
+  <rect x="40" y="76" width="920" height="252" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <!-- 层次标注 -->
+  <text x="190" y="100" text-anchor="middle" font-size="10" fill="#94a3b8">硬件（几十纳秒）</text>
+  <text x="558" y="100" text-anchor="middle" font-size="10" fill="#94a3b8">内核记账（微秒以下）</text>
+  <text x="792" y="100" text-anchor="middle" font-size="10" fill="#b45309">调度（9.4 µs）</text>
+
+  <!-- 节点 1：用户态 A -->
+  <rect x="40" y="112" width="100" height="56" rx="6" fill="#0f766e"/>
+  <text x="90" y="135" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">用户态 A</text>
+  <text x="90" y="153" text-anchor="middle" font-size="10" fill="#a7f3d0">正常跑着</text>
+
+  <!-- 节点 2：定时器 -->
+  <rect x="157" y="112" width="100" height="56" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="207" y="135" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">主板定时器</text>
+  <text x="207" y="153" text-anchor="middle" font-size="10" fill="#64748b">发中断信号</text>
+
+  <!-- 节点 3：CPU 保存现场 -->
+  <rect x="274" y="112" width="100" height="56" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="324" y="135" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">CPU</text>
+  <text x="324" y="153" text-anchor="middle" font-size="10" fill="#64748b">存 RIP、切栈</text>
+
+  <!-- 节点 4：记账 -->
+  <rect x="391" y="112" width="100" height="56" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="441" y="135" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">内核记账</text>
+  <text x="441" y="153" text-anchor="middle" font-size="10" fill="#3b82f6">时间片减一</text>
+
+  <!-- 节点 5：软中断 -->
+  <rect x="508" y="112" width="100" height="56" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="558" y="135" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">跑软中断</text>
+  <text x="558" y="153" text-anchor="middle" font-size="10" fill="#3b82f6">TIMER / RCU</text>
+
+  <!-- 节点 6：判断 -->
+  <rect x="625" y="112" width="100" height="56" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="675" y="135" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">判断要换人</text>
+  <text x="675" y="153" text-anchor="middle" font-size="10" fill="#b45309">回用户态 + 需调度</text>
+
+  <!-- 节点 7：换栈换页表 -->
+  <rect x="742" y="112" width="100" height="56" rx="6" fill="#f59e0b"/>
+  <text x="792" y="135" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">换人</text>
+  <text x="792" y="153" text-anchor="middle" font-size="10" fill="#ffedd5">换栈、换页表</text>
+
+  <!-- 节点 8：用户态 B -->
+  <rect x="859" y="112" width="100" height="56" rx="6" fill="#0f766e"/>
+  <text x="909" y="135" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">用户态 B</text>
+  <text x="909" y="153" text-anchor="middle" font-size="10" fill="#a7f3d0">接着跑</text>
+
+  <!-- 箭头 -->
+  <path d="M 140 140 L 157 140" stroke="#94a3b8" stroke-width="1.6"/><path d="M 153 140 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 257 140 L 274 140" stroke="#94a3b8" stroke-width="1.6"/><path d="M 270 140 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 374 140 L 391 140" stroke="#94a3b8" stroke-width="1.6"/><path d="M 387 140 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 491 140 L 508 140" stroke="#94a3b8" stroke-width="1.6"/><path d="M 504 140 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 608 140 L 625 140" stroke="#cbd5e1" stroke-width="1.6" stroke-dasharray="4 2"/>
+  <path d="M 621 140 l -7 -4 l 0 8 z" fill="#cbd5e1"/>
+  <path d="M 725 140 L 742 140" stroke="#b45309" stroke-width="1.6"/><path d="M 738 140 l -7 -4 l 0 8 z" fill="#b45309"/>
+  <path d="M 842 140 L 859 140" stroke="#b45309" stroke-width="1.6"/><path d="M 855 140 l -7 -4 l 0 8 z" fill="#b45309"/>
+
+  <!-- 接缝 -->
+  <line x1="616" y1="104" x2="616" y2="184" stroke="#b45309" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="616" y="198" text-anchor="middle" font-size="10" font-weight="700" fill="#b45309">接缝</text>
+
+  <!-- 耗时标注 -->
+  <text x="324" y="228" text-anchor="middle" font-size="10" fill="#94a3b8">几十纳秒</text>
+  <text x="558" y="228" text-anchor="middle" font-size="10" fill="#94a3b8">微秒以下</text>
+  <text x="792" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#b45309">9.4 µs</text>
+  <text x="441" y="248" text-anchor="middle" font-size="10" fill="#94a3b8">打 TIF_NEED_RESCHED</text>
+
+  <!-- 关键说明 -->
+  <text x="60" y="274" font-size="11" fill="#475569">⚠️ 中断发生在<tspan font-weight="700">内核态</tspan>时通常只打标记、不换人 —— 内核里可能正握着锁，那种地方换人会死锁。</text>
+
+  <!-- 跨核说明 -->
+  <text x="60" y="298" font-size="11" fill="#64748b">A 与 B 可能在同一核上（时间片轮转），也可能被迁到别的核（负载均衡的 RES 中断），两条路都走这条链条。</text>
+
+  <rect x="60" y="316" width="880" height="52" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="76" y="338" font-size="13" fill="#92400e">「换栈换页表」那一步的 9.4 µs，比前面所有硬件动作加起来还大一到两个数量级 —— 便宜的是「打断」，贵的是「换人」。</text>
+  <text x="76" y="358" font-size="12" fill="#a16207">这也是为什么时间片不能压到 100 µs：切换占 9.4 µs，占比就从 0.45% 升到 9.4%。</text>
+</svg>

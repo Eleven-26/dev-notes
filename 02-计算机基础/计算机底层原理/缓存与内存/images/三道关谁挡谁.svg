@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">三道关：顺序可能被改三次，拦的人各不相同</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">从源码顺序到别的核看见，中间是串联的三道关；漏掉任何一道，最终的可见顺序都不对。</text>
+
+  <rect x="32" y="92" width="290" height="250" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="48" y="126" font-size="14" font-weight="bold" fill="#1e40af">① 编译器重排</text>
+  <text x="48" y="158" font-size="11" font-weight="bold" fill="#64748b">会做什么</text>
+  <text x="48" y="180" font-size="12" fill="#334155">指令调度、常量提升、循环外提</text>
+  <text x="48" y="212" font-size="11" font-weight="bold" fill="#64748b">谁拦</text>
+  <text x="48" y="234" font-size="12" fill="#334155">atomic / 编译器屏障</text>
+  <text x="48" y="266" font-size="11" font-weight="bold" fill="#64748b">代价</text>
+  <text x="48" y="288" font-size="12" fill="#1e40af">0 条指令</text>
+  <text x="48" y="320" font-size="11" fill="#64748b">只锁顺序，不锁硬件</text>
+
+  <line x1="324" y1="217" x2="352" y2="217" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="355" y="92" width="290" height="250" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="371" y="126" font-size="14" font-weight="bold" fill="#9a3412">② 写缓冲</text>
+  <text x="371" y="158" font-size="11" font-weight="bold" fill="#64748b">会做什么</text>
+  <text x="371" y="180" font-size="12" fill="#334155">store 进缓冲就退休</text>
+  <text x="371" y="200" font-size="12" fill="#334155">缓存里仍是旧值</text>
+  <text x="371" y="232" font-size="11" font-weight="bold" fill="#64748b">谁拦</text>
+  <text x="371" y="254" font-size="12" fill="#334155">mfence / lock orq $0</text>
+  <text x="371" y="286" font-size="11" font-weight="bold" fill="#64748b">代价</text>
+  <text x="371" y="308" font-size="12" fill="#9a3412">2.4~16.6 ns</text>
+
+  <line x1="647" y1="217" x2="675" y2="217" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="678" y="92" width="290" height="250" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="694" y="126" font-size="14" font-weight="bold" fill="#991b1b">③ 缓存行所有权</text>
+  <text x="694" y="158" font-size="11" font-weight="bold" fill="#64748b">会做什么</text>
+  <text x="694" y="180" font-size="12" fill="#334155">行在核间转移</text>
+  <text x="694" y="200" font-size="12" fill="#334155">一次只一个核持有</text>
+  <text x="694" y="232" font-size="11" font-weight="bold" fill="#64748b">谁拦</text>
+  <text x="694" y="254" font-size="12" fill="#334155">拦不了（MESI 的物理约束）</text>
+  <text x="694" y="286" font-size="11" font-weight="bold" fill="#64748b">代价</text>
+  <text x="694" y="308" font-size="12" fill="#991b1b">只能少抢 / 分片</text>
+
+  <rect x="32" y="356" width="936" height="52" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="44" y="378" font-size="12" fill="#1e40af">三道关是串联的：先锁住编译器的顺序，再谈硬件屏障。只挡第一关的代码（volatile 级别）在第二关照样读到旧值。</text>
+  <text x="44" y="398" font-size="12" fill="#1e40af">第二关的读数：300 000 轮无屏障违反 29~41 次，加 mfence 或 lock orq $0 后三轮全为 0。</text>
+</svg>

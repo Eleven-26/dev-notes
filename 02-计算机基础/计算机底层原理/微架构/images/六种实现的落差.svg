@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420" viewBox="0 0 1000 420">
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+  <rect x="40" y="16" width="920" height="58" fill="#ffffff"/>
+  <text x="60" y="44" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#0f172a">同一段加法，六种实现在 L1 档的落差</text>
+  <text x="60" y="66" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">c[i] = a[i] + b[i]，24 KB 工作集，ns/元素，越短越快</text>
+
+  <rect x="40" y="84" width="920" height="316" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <text x="60" y="112" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">gcc AVX2</text>
+  <rect x="180" y="98" width="54" height="22" rx="4" fill="#15803d"/>
+  <text x="246" y="114" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#0f172a">0.105</text>
+  <text x="306" y="114" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">32 字节向量，最快</text>
+
+  <text x="60" y="150" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Java（开）</text>
+  <rect x="180" y="136" width="115" height="22" rx="4" fill="#2563eb"/>
+  <text x="307" y="152" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#0f172a">0.224</text>
+  <text x="367" y="152" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">SuperWord 默认开</text>
+
+  <text x="60" y="188" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">gcc SSE2</text>
+  <rect x="180" y="174" width="119" height="22" rx="4" fill="#3b82f6"/>
+  <text x="311" y="190" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#0f172a">0.231</text>
+  <text x="371" y="190" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">与上一行同档，说明 Java 落在 128 位</text>
+
+  <text x="60" y="226" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">gcc 标量</text>
+  <rect x="180" y="212" width="416" height="22" rx="4" fill="#94a3b8"/>
+  <text x="608" y="228" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#0f172a">0.810</text>
+  <text x="668" y="228" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">-O2 的 cost model 否掉向量化</text>
+
+  <text x="60" y="264" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Go 1.26</text>
+  <rect x="180" y="250" width="465" height="22" rx="4" fill="#ea580c"/>
+  <text x="657" y="266" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#0f172a">0.905</text>
+  <text x="717" y="266" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">无向量化，每元素还有 3 次边界检查</text>
+
+  <text x="60" y="302" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Java（关）</text>
+  <rect x="180" y="288" width="600" height="22" rx="4" fill="#b91c1c"/>
+  <text x="792" y="304" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#0f172a">1.17</text>
+  <text x="852" y="304" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">-XX:-UseSuperWord</text>
+
+  <rect x="60" y="326" width="880" height="58" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="76" y="348" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">最快与最慢差 11.1 倍</text>
+  <text x="76" y="368" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">同一台机器、同一份算法。差别只在「谁替你把循环变成向量指令」，以及它默认是开还是关。</text>
+</svg>

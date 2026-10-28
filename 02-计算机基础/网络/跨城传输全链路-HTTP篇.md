@@ -242,7 +242,7 @@ curl -H 'X-Big: aaaa...（8000 字节）' http://127.0.0.1:18080/ok
 /copy  io.Copy(w, *os.File)           →  write(5, ..., 652)  +  sendfile × 2 + sendfile(...,0)
 ```
 
-⚠️ 反直觉的是**两条路都走了 `sendfile`**：Go 1.22 起 `*os.File` 有了 `WriteTo`、`*http.response` 有了 `ReadFrom`，所以 `io.Copy` 到 `ResponseWriter` 也会自动落到 `sendfile` 上，不必非得用 `ServeFile`。四条零拷贝路径各去掉哪一趟，见 [零拷贝.md](../linux/零拷贝.md) 第三节。
+⚠️ 反直觉的是**两条路都走了 `sendfile`**：Go 1.22 起 `*os.File` 有了 `WriteTo`、`*http.response` 有了 `ReadFrom`，所以 `io.Copy` 到 `ResponseWriter` 也会自动落到 `sendfile` 上，不必非得用 `ServeFile`。四条零拷贝路径各去掉哪一趟，见 [零拷贝.md](../操作系统/零拷贝.md) 第三节。
 
 ⚠️ **口径**：上面三组读数（3209 一次、8329 切两次、两条路都走 `sendfile`）是本机实测——`golang:1.26-alpine` 服务端，`strace -f -e trace=write,sendfile`，响应体分别是 3 KB 与 8 KB 的零字节，静态文件 4 MB；响应头 137 与 720 字节由「总量 − 体长」算出。**数据从用户态到网卡那几段的机制不在本篇**：结构见 [用户态内核态与一次IO的内存路径.md](../操作系统/用户态内核态与一次IO的内存路径.md) 2.3，每段耗时见 [跨城传输全链路-TCP篇.md](跨城传输全链路-TCP篇.md) 3.1。
 

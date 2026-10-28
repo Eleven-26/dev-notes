@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="436" viewBox="0 0 1000 436" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="436" fill="#ffffff"/>
+
+  <text x="40" y="38" font-size="19" font-weight="700" fill="#0f172a">一次 pipe 往返的耗时：进程只比线程贵 11%</text>
+  <text x="40" y="61" font-size="12" fill="#64748b">绑核 0,2，各 20,000 轮（= 40,000 次切换），每档 6 轮取最快；一根柱子 = 一轮 = 切走 + 切回</text>
+
+  <rect x="40" y="80" width="920" height="276" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <!-- 纵轴 0~22 µs，每秒 8 px -->
+  <line x1="150" y1="308" x2="890" y2="308" stroke="#cbd5e1"/>
+  <line x1="150" y1="308" x2="150" y2="110" stroke="#cbd5e1"/>
+  <text x="138" y="312" text-anchor="end" font-size="11" fill="#94a3b8">0</text>
+  <text x="138" y="268" text-anchor="end" font-size="11" fill="#94a3b8">5</text>
+  <text x="138" y="228" text-anchor="end" font-size="11" fill="#94a3b8">10</text>
+  <text x="138" y="188" text-anchor="end" font-size="11" fill="#94a3b8">15</text>
+  <text x="138" y="148" text-anchor="end" font-size="11" fill="#94a3b8">20</text>
+  <text x="138" y="112" text-anchor="end" font-size="10" fill="#94a3b8">µs</text>
+  <line x1="150" y1="268" x2="890" y2="268" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <line x1="150" y1="228" x2="890" y2="228" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <line x1="150" y1="188" x2="890" y2="188" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+  <line x1="150" y1="148" x2="890" y2="148" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+
+  <!-- 线程：18.7 µs -> 高 149.6，y = 308-149.6 = 158.4；拆两段各 74.8 -->
+  <rect x="280" y="158" width="120" height="75" rx="3" fill="#0f766e"/>
+  <rect x="280" y="233" width="120" height="75" rx="3" fill="#14b8a6"/>
+  <text x="340" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">切走 9.4</text>
+  <text x="340" y="275" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">切回 9.4</text>
+  <text x="340" y="150" text-anchor="middle" font-size="15" font-weight="700" fill="#0f766e">18.7 µs</text>
+  <text x="340" y="330" text-anchor="middle" font-size="14" font-weight="600" fill="#334155">两个线程</text>
+  <text x="340" y="348" text-anchor="middle" font-size="11" fill="#94a3b8">共享页表</text>
+
+  <!-- 进程：20.8 µs -> 高 166.4，y = 308-166.4 = 141.6；拆两段各 83.2 -->
+  <rect x="620" y="142" width="120" height="83" rx="3" fill="#b45309"/>
+  <rect x="620" y="225" width="120" height="83" rx="3" fill="#f59e0b"/>
+  <text x="680" y="188" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">切走 10.4</text>
+  <text x="680" y="271" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">切回 10.4</text>
+  <text x="680" y="134" text-anchor="middle" font-size="15" font-weight="700" fill="#b45309">20.8 µs</text>
+  <text x="680" y="330" text-anchor="middle" font-size="14" font-weight="600" fill="#334155">两个进程</text>
+  <text x="680" y="348" text-anchor="middle" font-size="11" fill="#94a3b8">各自页表</text>
+
+  <!-- 差值 -->
+  <line x1="400" y1="150" x2="620" y2="134" stroke="#b45309" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="510" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#b45309">多 2.1 µs（+11%）</text>
+
+  <rect x="60" y="368" width="880" height="52" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="76" y="390" font-size="13" fill="#92400e">贵的不是保存寄存器（不到 1 KB），是缓存变冷与地址空间簿记；「切页表就刷 TLB」在本机不成立（PCID）。</text>
+  <text x="76" y="410" font-size="12" fill="#a16207">9.4 µs 占 2.1 ms 时间片的 0.45%；若把时间片压到 100 µs，这个占比会升到 9.4%。</text>
+</svg>

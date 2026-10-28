@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">两个线程各写各的再读对方：两个读都能拿到旧值</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">手写汇编绕过编译器，两个 pthread_barrier 夹住一轮，每轮 300 000 次，三轮独立进程。</text>
+
+  <rect x="32" y="92" width="936" height="210" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <text x="46" y="146" font-size="12" font-weight="bold" fill="#334155">线程 A / CPU0</text>
+  <rect x="160" y="122" width="120" height="38" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="220" y="146" font-size="12" fill="#1e40af" text-anchor="middle">写 X = 1</text>
+  <line x1="282" y1="141" x2="306" y2="141" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="308" y="122" width="190" height="38" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="403" y="146" font-size="12" fill="#92400e" text-anchor="middle">X=1 停在写缓冲</text>
+  <line x1="500" y1="141" x2="524" y2="141" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="526" y="122" width="110" height="38" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="581" y="146" font-size="12" fill="#1e40af" text-anchor="middle">读 Y</text>
+  <line x1="638" y1="141" x2="662" y2="141" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="664" y="122" width="132" height="38" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="730" y="146" font-size="12" fill="#991b1b" text-anchor="middle">r1 = 0（旧值）</text>
+
+  <text x="46" y="226" font-size="12" font-weight="bold" fill="#334155">线程 B / CPU1</text>
+  <rect x="160" y="202" width="120" height="38" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="220" y="226" font-size="12" fill="#1e40af" text-anchor="middle">写 Y = 1</text>
+  <line x1="282" y1="221" x2="306" y2="221" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="308" y="202" width="190" height="38" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="403" y="226" font-size="12" fill="#92400e" text-anchor="middle">Y=1 停在写缓冲</text>
+  <line x1="500" y1="221" x2="524" y2="221" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="526" y="202" width="110" height="38" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="581" y="226" font-size="12" fill="#1e40af" text-anchor="middle">读 X</text>
+  <line x1="638" y1="221" x2="662" y2="221" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="664" y="202" width="132" height="38" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="730" y="226" font-size="12" fill="#991b1b" text-anchor="middle">r2 = 0（旧值）</text>
+
+  <line x1="403" y1="160" x2="403" y2="202" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="440" y="186" font-size="11" fill="#92400e">两条写都还没落到缓存，读越过未完成的写</text>
+
+  <rect x="32" y="318" width="936" height="130" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="48" y="348" font-size="13" font-weight="bold" fill="#0f172a">判定与读数</text>
+  <text x="48" y="374" font-size="12" fill="#334155">两个写都执行过、两个读都拿到旧值 —— 顺序一致模型下不可能出现的结果</text>
+  <text x="48" y="398" font-size="12" fill="#991b1b">无屏障：300 000 轮里 41 / 29 / 31 次违反（0.0137% / 0.0097% / 0.0103%）</text>
+  <text x="48" y="422" font-size="12" fill="#166534">加 mfence 或 lock orq $0,(%rsp)：三轮全为 0</text>
+</svg>

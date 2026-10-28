@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="340" viewBox="0 0 1000 340">
+  <rect x="0" y="0" width="1000" height="340" fill="#ffffff"/>
+  <rect x="40" y="16" width="920" height="58" fill="#ffffff"/>
+  <text x="60" y="44" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#0f172a">成本模型才是 -O2 与 -O3 的分水岭</text>
+  <text x="60" y="66" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">-ftree-loop-vectorize 在 -O2 下同样是 [enabled]，四组只有 cost model 不同</text>
+
+  <rect x="40" y="84" width="920" height="236" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <rect x="60" y="104" width="220" height="42" rx="6" fill="#fee2e2"/>
+  <text x="76" y="122" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#b91c1c">-O2</text>
+  <text x="76" y="139" font-family="Consolas, monospace" font-size="11" fill="#991b1b">very-cheap</text>
+  <text x="296" y="131" font-family="Consolas, monospace" font-size="20" font-weight="700" fill="#b91c1c">0</text>
+  <text x="334" y="131" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">条报告，全部被否</text>
+
+  <rect x="60" y="158" width="220" height="42" rx="6" fill="#dcfce7"/>
+  <text x="76" y="176" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#15803d">-O2</text>
+  <text x="76" y="193" font-family="Consolas, monospace" font-size="11" fill="#166534">-fvect-cost-model=cheap</text>
+  <text x="296" y="185" font-family="Consolas, monospace" font-size="20" font-weight="700" fill="#15803d">10</text>
+  <text x="334" y="185" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">条报告，与 -O3 一致</text>
+
+  <rect x="60" y="212" width="220" height="42" rx="6" fill="#dcfce7"/>
+  <text x="76" y="230" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#15803d">-O2</text>
+  <text x="76" y="247" font-family="Consolas, monospace" font-size="11" fill="#166534">-fvect-cost-model=dynamic</text>
+  <text x="296" y="239" font-family="Consolas, monospace" font-size="20" font-weight="700" fill="#15803d">10</text>
+  <text x="334" y="239" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">条报告，与 -O3 一致</text>
+
+  <rect x="60" y="266" width="220" height="42" rx="6" fill="#dbeafe"/>
+  <text x="76" y="284" font-family="Consolas, monospace" font-size="12" font-weight="700" fill="#1d4ed8">-O3</text>
+  <text x="76" y="301" font-family="Consolas, monospace" font-size="11" fill="#1e40af">dynamic（默认）</text>
+  <text x="296" y="293" font-family="Consolas, monospace" font-size="20" font-weight="700" fill="#1d4ed8">10</text>
+  <text x="334" y="293" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">条报告</text>
+
+  <rect x="500" y="104" width="440" height="204" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="516" y="128" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="700" fill="#0f172a">成本模型在算什么</text>
+  <text x="516" y="152" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#475569">收益：向量化后省下的指令条数</text>
+  <text x="516" y="172" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#475569">成本：拆循环的收尾代码、对齐检查、别名检查</text>
+  <text x="516" y="196" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#0f172a">very-cheap：收益必须远大于成本才动手</text>
+  <text x="516" y="216" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#0f172a">dynamic：按运行时迭代次数动态判断</text>
+  <text x="516" y="244" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">c[i] = a[i] + b[i] 只有两三条指令，</text>
+  <text x="516" y="262" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">收尾部分占比太高，very-cheap 一律否决。</text>
+  <text x="516" y="288" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" font-weight="700" fill="#b91c1c">所以不是「功能没开」，是「判定不划算」。</text>
+</svg>

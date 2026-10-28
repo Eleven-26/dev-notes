@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="356" viewBox="0 0 1000 356" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="356" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">一次硬中断的五步：只有最后一步在做实事</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">前四步都是纯开销；路径越短越好，MSI/MSI-X 就是为了省掉其中的绕行</text>
+
+  <rect x="40" y="76" width="920" height="196" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <!-- 步骤 1 -->
+  <rect x="62" y="100" width="150" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="137" y="122" text-anchor="middle" font-size="10" fill="#64748b">① 设备</text>
+  <text x="137" y="142" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">发一个电信号</text>
+
+  <!-- 步骤 2 -->
+  <rect x="232" y="100" width="150" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="307" y="122" text-anchor="middle" font-size="10" fill="#64748b">② 中断控制器</text>
+  <text x="307" y="142" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">翻译成向量号</text>
+
+  <!-- 步骤 3 -->
+  <rect x="402" y="100" width="150" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="477" y="122" text-anchor="middle" font-size="10" fill="#64748b">③ CPU</text>
+  <text x="477" y="142" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">保存现场、换栈</text>
+
+  <!-- 步骤 4 -->
+  <rect x="572" y="100" width="150" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="647" y="122" text-anchor="middle" font-size="10" fill="#64748b">④ CPU</text>
+  <text x="647" y="142" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">查 IDT 跳转</text>
+
+  <!-- 步骤 5 -->
+  <rect x="742" y="100" width="150" height="58" rx="6" fill="#0f766e"/>
+  <text x="817" y="122" text-anchor="middle" font-size="10" fill="#a7f3d0">⑤ 内核</text>
+  <text x="817" y="142" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">跑处理程序</text>
+
+  <!-- 箭头 -->
+  <path d="M 212 129 L 232 129" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 228 129 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 382 129 L 402 129" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 398 129 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 552 129 L 572 129" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 568 129 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 722 129 L 742 129" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 738 129 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+
+  <!-- 返回箭头 -->
+  <path d="M 817 158 L 817 186 L 137 186 L 137 158" stroke="#b45309" stroke-width="1.4" fill="none" stroke-dasharray="5 3"/>
+  <path d="M 137 162 l -4 7 l 8 0 z" fill="#b45309"/>
+  <text x="477" y="202" text-anchor="middle" font-size="11" fill="#b45309">iret 返回被打断的地方（被打断的任务什么都没做错，只是被临时占了 CPU）</text>
+
+  <!-- 开销说明 -->
+  <text x="137" y="232" text-anchor="middle" font-size="11" fill="#94a3b8">开销：一次总线信号</text>
+  <text x="307" y="232" text-anchor="middle" font-size="11" fill="#94a3b8">开销：查路由表</text>
+  <text x="477" y="232" text-anchor="middle" font-size="11" fill="#94a3b8">开销：约 1 KB 状态</text>
+  <text x="647" y="232" text-anchor="middle" font-size="11" fill="#94a3b8">开销：一次内存读</text>
+  <text x="817" y="232" text-anchor="middle" font-size="11" font-weight="700" fill="#0f766e">只有这里干活</text>
+
+  <!-- 步骤 ⑤ 内部分两半 -->
+  <text x="62" y="266" font-size="11" fill="#0f766e">⑤ 内部再切两半 —— 上半部：取走数据、清中断标志、把活排进队列，几微秒；</text>
+  <text x="62" y="286" font-size="11" fill="#0d9488">下半部：软中断里走协议栈，几十到几百微秒 —— 不在这张图上，见正文第三节。</text>
+
+  <rect x="60" y="312" width="880" height="32" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="76" y="333" font-size="12" fill="#92400e">上半部跑久了会丢包：同一条中断线被屏蔽期间，硬件 FIFO 溢出。这个划分是被 FIFO 深度逼出来的，不是优雅。</text>
+</svg>
