@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="450" viewBox="0 0 1000 450" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">LOCK 锁的是缓存行：跨行就锁不住，代价从 8 ns 跳到 1.4 µs</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">同一条 lock add 指令，只改变量地址，3 轮 × 500 万次取区间。行宽 64 字节，每格 8 字节。</text>
+
+  <text x="60" y="110" font-size="13" font-weight="bold" fill="#334155">① 行内：占 56..63，整条在同一行</text>
+  <text x="120" y="132" font-size="10" fill="#94a3b8">行首</text>
+  <line x1="120" y1="176" x2="120" y2="140" stroke="#cbd5e1"/>
+  <line x1="520" y1="176" x2="520" y2="140" stroke="#cbd5e1"/>
+  <text x="520" y="132" font-size="10" fill="#94a3b8" text-anchor="end">行尾 64 B</text>
+
+  <rect x="120" y="140" width="400" height="36" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <line x1="170" y1="140" x2="170" y2="176" stroke="#e2e8f0"/>
+  <line x1="220" y1="140" x2="220" y2="176" stroke="#e2e8f0"/>
+  <line x1="270" y1="140" x2="270" y2="176" stroke="#e2e8f0"/>
+  <line x1="320" y1="140" x2="320" y2="176" stroke="#e2e8f0"/>
+  <line x1="370" y1="140" x2="370" y2="176" stroke="#e2e8f0"/>
+  <line x1="420" y1="140" x2="420" y2="176" stroke="#e2e8f0"/>
+  <line x1="470" y1="140" x2="470" y2="176" stroke="#e2e8f0"/>
+  <rect x="470" y="140" width="50" height="36" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="495" y="164" font-size="12" fill="#1e40af" text-anchor="middle">v</text>
+
+  <rect x="560" y="140" width="300" height="36" rx="6" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="576" y="164" font-size="13" fill="#15803d">7.64 / 7.93 / 8.06 ns</text>
+  <text x="576" y="200" font-size="11" fill="#15803d">缓存锁：只把这一行的所有权拿过来</text>
+
+  <text x="60" y="252" font-size="13" font-weight="bold" fill="#334155">② 跨行：占 60..67，压在两行的边界上</text>
+
+  <rect x="120" y="282" width="400" height="36" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <line x1="170" y1="282" x2="170" y2="318" stroke="#e2e8f0"/>
+  <line x1="220" y1="282" x2="220" y2="318" stroke="#e2e8f0"/>
+  <line x1="270" y1="282" x2="270" y2="318" stroke="#e2e8f0"/>
+  <line x1="320" y1="282" x2="320" y2="318" stroke="#e2e8f0"/>
+  <line x1="370" y1="282" x2="370" y2="318" stroke="#e2e8f0"/>
+  <line x1="420" y1="282" x2="420" y2="318" stroke="#e2e8f0"/>
+  <line x1="470" y1="282" x2="470" y2="318" stroke="#e2e8f0"/>
+  <rect x="470" y="282" width="50" height="36" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+  <rect x="120" y="282" width="400" height="36" fill="none" stroke="#ef4444" stroke-width="2"/>
+  <text x="495" y="306" font-size="12" fill="#991b1b" text-anchor="middle">v</text>
+
+  <rect x="560" y="282" width="300" height="36" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="576" y="306" font-size="13" fill="#991b1b">1395 / 1554 / 1369 ns</text>
+  <text x="576" y="342" font-size="11" fill="#991b1b">锁不住一条行：退化成锁总线 + 拆锁惩罚</text>
+
+  <rect x="320" y="366" width="440" height="30" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="540" y="386" font-size="13" fill="#9a3412" text-anchor="middle">同样的指令，同样的负载，只差地址对齐：175 倍</text>
+
+  <text x="40" y="424" font-size="11" fill="#64748b">判读：如果 LOCK 一律锁总线，跨不跨行应该一样慢。差 175 倍说明锁的粒度就是一条缓存行。</text>
+</svg>

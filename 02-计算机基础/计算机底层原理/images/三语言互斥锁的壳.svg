@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">三个壳的结构：热路径几乎一样，差别在宽度与冷路径</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">尺寸由 unsafe.Sizeof 与 sizeof 实测；时间是无竞争、单线程、同一个「加一」负载的读数区间。</text>
+
+  <rect x="48" y="100" width="280" height="330" rx="8" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="64" y="126" font-size="15" font-weight="bold" fill="#1e40af">Go　sync.Mutex</text>
+  <text x="64" y="148" font-size="12" fill="#1e40af">8 字节，对齐 4</text>
+  <line x1="64" y1="160" x2="312" y2="160" stroke="#bfdbfe"/>
+  <text x="64" y="182" font-size="11" fill="#1e40af">state int32 一个字段装四样</text>
+  <text x="64" y="202" font-size="11" fill="#1e40af">bit0 已锁 / bit1 已唤醒</text>
+  <text x="64" y="222" font-size="11" fill="#1e40af">bit2 饥饿 / bit3 起是等待数</text>
+  <text x="64" y="242" font-size="11" fill="#1e40af">sema uint32 给内核用</text>
+  <text x="64" y="272" font-size="11" fill="#1e40af">热路径：CMPXCHG + XADD</text>
+  <text x="64" y="292" font-size="11" fill="#1e40af">冷路径：自旋 4 次 → semacquire</text>
+  <text x="64" y="312" font-size="11" fill="#1e40af">超过 1 ms 拿不到 → 饥饿模式</text>
+  <text x="64" y="332" font-size="11" fill="#1e40af">此后新来的不许插队</text>
+  <rect x="64" y="352" width="248" height="34" rx="5" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="188" y="374" font-size="13" fill="#1e40af" text-anchor="middle">22.45 ~ 27.66 ns</text>
+  <text x="64" y="410" font-size="11" fill="#1e40af">2 000 000 次加锁里 124 次系统调用</text>
+
+  <rect x="360" y="100" width="280" height="330" rx="8" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="376" y="126" font-size="15" font-weight="bold" fill="#92400e">Java　ObjectMonitor</text>
+  <text x="376" y="148" font-size="12" fill="#92400e">对象头 12 字节，Mark Word 8</text>
+  <line x1="376" y1="160" x2="624" y2="160" stroke="#fde68a"/>
+  <text x="376" y="182" font-size="11" fill="#92400e">低 2 位标锁状态</text>
+  <text x="376" y="202" font-size="11" fill="#92400e">01 无锁：hash + age</text>
+  <text x="376" y="222" font-size="11" fill="#92400e">00 轻量级：栈上 Lock Record</text>
+  <text x="376" y="242" font-size="11" fill="#92400e">10 重量级：ObjectMonitor</text>
+  <text x="376" y="272" font-size="11" fill="#92400e">膨胀后进 _EntryList 排队</text>
+  <text x="376" y="292" font-size="11" fill="#92400e">wait 的进 _WaitSet</text>
+  <text x="376" y="312" font-size="11" fill="#92400e">底层：pthread_cond_wait</text>
+  <text x="376" y="332" font-size="11" fill="#92400e">JDK 24 已无偏向锁开关</text>
+  <rect x="376" y="352" width="248" height="34" rx="5" fill="#fde68a" stroke="#f59e0b"/>
+  <text x="500" y="374" font-size="13" fill="#92400e" text-anchor="middle">27.46 ~ 36.56 ns</text>
+  <text x="376" y="410" font-size="11" fill="#92400e">轻量级锁阶段全程无系统调用</text>
+
+  <rect x="672" y="100" width="280" height="330" rx="8" fill="#f0fdf4" stroke="#22c55e"/>
+  <text x="688" y="126" font-size="15" font-weight="bold" fill="#15803d">C　pthread_mutex_t</text>
+  <text x="688" y="148" font-size="12" fill="#15803d">40 字节，只有 4 字节热</text>
+  <line x1="688" y1="160" x2="936" y2="160" stroke="#bbf7d0"/>
+  <text x="688" y="182" font-size="11" fill="#15803d">__lock 快速路径只碰它</text>
+  <text x="688" y="202" font-size="11" fill="#15803d">__count 递归锁计数</text>
+  <text x="688" y="222" font-size="11" fill="#15803d">__owner / __nusers 调试用</text>
+  <text x="688" y="242" font-size="11" fill="#15803d">__kind 决定慢路径策略</text>
+  <text x="688" y="272" font-size="11" fill="#15803d">normal 不自旋直接睡</text>
+  <text x="688" y="292" font-size="11" fill="#15803d">recursive 允许重入</text>
+  <text x="688" y="312" font-size="11" fill="#15803d">errorcheck 重入报 EDEADLK</text>
+  <text x="688" y="332" font-size="11" fill="#15803d">adaptive 先自旋再睡</text>
+  <rect x="688" y="352" width="248" height="34" rx="5" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="812" y="374" font-size="13" fill="#15803d" text-anchor="middle">26.81 ~ 37.86 ns</text>
+  <text x="688" y="410" font-size="11" fill="#15803d">2 000 000 次加锁里 248 次系统调用</text>
+
+  <rect x="48" y="452" width="904" height="48" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="472" font-size="12" fill="#334155">三者的热路径是同一件事：一次 CAS 拿锁、一次原子写放锁，所以读数落在 22~38 ns 同一档。</text>
+  <text x="60" y="490" font-size="12" fill="#334155">差别全在「拿不到之后」：Go 自旋 4 次再睡、Java 先膨胀成 Monitor、glibc 按 kind 选策略。</text>
+</svg>

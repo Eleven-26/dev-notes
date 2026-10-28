@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500" viewBox="0 0 1000 500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">futex 的两条路：一次 CAS 就返回，还是进内核睡下去</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">4 线程 × 50 万次加锁实测：2 000 000 次里只有 556 次进内核（0.028%），其中 170 次还是白跑。</text>
+
+  <rect x="120" y="98" width="300" height="40" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="270" y="123" font-size="13" fill="#334155" text-anchor="middle">mu.Lock()</text>
+
+  <line x1="270" y1="138" x2="270" y2="166" stroke="#94a3b8"/>
+  <polygon points="270,172 264,162 276,162" fill="#94a3b8"/>
+
+  <rect x="120" y="172" width="300" height="44" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="136" y="192" font-size="12" fill="#1e40af">CAS(word: 0 → 1)</text>
+  <text x="136" y="209" font-size="11" fill="#1e40af">LOCK CMPXCHGL，成功与否看 ZF</text>
+
+  <line x1="270" y1="216" x2="270" y2="244" stroke="#94a3b8"/>
+  <polygon points="270,250 264,240 276,240" fill="#94a3b8"/>
+
+  <rect x="120" y="250" width="300" height="40" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+  <text x="270" y="275" font-size="13" fill="#334155" text-anchor="middle">成功了吗</text>
+
+  <line x1="420" y1="270" x2="536" y2="270" stroke="#22c55e" stroke-width="1.5"/>
+  <polygon points="544,270 534,265 534,275" fill="#22c55e"/>
+  <text x="470" y="262" font-size="11" fill="#15803d" text-anchor="middle">是</text>
+
+  <rect x="548" y="248" width="380" height="44" rx="6" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="564" y="268" font-size="12" fill="#15803d">拿到锁，直接进临界区</text>
+  <text x="564" y="285" font-size="11" fill="#15803d">0 次系统调用 · 全程 22~38 ns</text>
+
+  <line x1="270" y1="290" x2="270" y2="318" stroke="#ef4444" stroke-width="1.5"/>
+  <polygon points="270,324 264,314 276,314" fill="#ef4444"/>
+  <text x="282" y="310" font-size="11" fill="#991b1b">否</text>
+
+  <rect x="120" y="324" width="300" height="44" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="136" y="344" font-size="12" fill="#92400e">置 word = 2</text>
+  <text x="136" y="361" font-size="11" fill="#92400e">告诉放锁的人「有人在等」</text>
+
+  <line x1="270" y1="368" x2="270" y2="396" stroke="#94a3b8"/>
+  <polygon points="270,402 264,392 276,392" fill="#94a3b8"/>
+
+  <rect x="120" y="402" width="300" height="44" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="136" y="422" font-size="12" fill="#991b1b">futex(WAIT, word, 2)</text>
+  <text x="136" y="439" font-size="11" fill="#991b1b">内核先核一次还是不是 2，不是就 EAGAIN</text>
+
+  <line x1="420" y1="424" x2="936" y2="424" stroke="#ef4444" stroke-dasharray="5 4"/>
+  <line x1="936" y1="424" x2="936" y2="180" stroke="#ef4444" stroke-dasharray="5 4"/>
+  <line x1="936" y1="180" x2="424" y2="180" stroke="#ef4444" stroke-dasharray="5 4"/>
+  <polygon points="416,180 426,175 426,185" fill="#ef4444"/>
+  <text x="560" y="174" font-size="11" fill="#991b1b">被唤醒后重试 CAS</text>
+  <rect x="548" y="380" width="380" height="28" rx="5" fill="#fff1f2" stroke="#fda4af"/>
+  <text x="564" y="399" font-size="11" fill="#9f1239">一次系统调用 1.7 µs，是原子操作的 200 倍</text>
+
+  <rect x="32" y="462" width="936" height="28" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="44" y="481" font-size="12" fill="#1e40af">99.97% 的加锁走左边那条绿线；只有「真等」的那 0.03% 才走红圈。这就是「用锁不一定慢」的由来。</text>
+</svg>

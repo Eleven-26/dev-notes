@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">存储层次的延迟台阶：同一份代码，工作集差 70 倍延迟</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">随机指针追逐（每次地址由上一步决定，预取器无效），每档 3 次取最小、跑 2 轮。</text>
+
+  <rect x="32" y="92" width="936" height="330" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <text x="60" y="120" font-size="11" font-weight="bold" fill="#64748b">工作集</text>
+  <text x="200" y="120" font-size="11" font-weight="bold" fill="#64748b">每次访问耗时（ns）与所在层</text>
+
+  <text x="60" y="152" font-size="12" fill="#334155">16 KB</text>
+  <rect x="200" y="136" width="9" height="22" rx="3" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="219" y="152" font-size="12" fill="#1e40af">1.60 ns · L1d（32 KB/核）</text>
+
+  <text x="60" y="190" font-size="12" fill="#334155">64 KB</text>
+  <rect x="200" y="174" width="22" height="22" rx="3" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="232" y="190" font-size="12" fill="#1e40af">3.84 ns · L1 装不下，漏到 L2</text>
+
+  <text x="60" y="228" font-size="12" fill="#334155">256 KB</text>
+  <rect x="200" y="212" width="22" height="22" rx="3" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="232" y="228" font-size="12" fill="#1e40af">3.90 ns · L2（256 KB/核）刚好装满</text>
+
+  <text x="60" y="266" font-size="12" fill="#334155">1 MB</text>
+  <rect x="200" y="250" width="103" height="22" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="313" y="266" font-size="12" fill="#92400e">18.29 ns · L3（6 MB 共享）</text>
+
+  <text x="60" y="304" font-size="12" fill="#334155">4 MB</text>
+  <rect x="200" y="288" width="232" height="22" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="442" y="304" font-size="12" fill="#92400e">41.21 ns · L3 深处</text>
+
+  <text x="60" y="342" font-size="12" fill="#334155">16 MB</text>
+  <rect x="200" y="326" width="521" height="22" rx="3" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="731" y="342" font-size="12" fill="#991b1b">92.48 ns · 内存</text>
+
+  <text x="60" y="380" font-size="12" fill="#334155">64 MB</text>
+  <rect x="200" y="364" width="640" height="22" rx="3" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="850" y="380" font-size="12" fill="#991b1b">113.63 ns</text>
+
+  <line x1="200" y1="400" x2="840" y2="400" stroke="#cbd5e1" stroke-dasharray="4 3"/>
+  <text x="200" y="416" font-size="11" fill="#64748b">0</text>
+  <text x="800" y="416" font-size="11" fill="#64748b">113.63 ns</text>
+
+  <rect x="32" y="436" width="936" height="24" rx="4" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="40" y="452" font-size="12" fill="#1e40af">台阶的位置比绝对值重要：256 KB 到 1 MB 从 3.90 跳到 18.29（4.7 倍），这条坎就是 L2 边界；16 MB 之后到 92 ns，是内存。</text>
+</svg>

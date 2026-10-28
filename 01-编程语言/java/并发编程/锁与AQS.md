@@ -533,4 +533,6 @@ synchronized void join(Sub s) { /* 造新列表 → snap.set(...) */ }
 - [并发同步原语.md](../../go/并发编程/并发同步原语.md) — 同主题的 Go 侧：`Mutex` 的饥饿模式与 `sync.Map`，与本文的公平锁 / `ConcurrentHashMap` 正好对照
 - [Java实现.md](../../../04-架构与系统/系统设计/弹幕系统/Java实现.md) — 「具体使用」一节的代码出处：`AtomicReference<List<Sub>>` 快照 + `synchronized` 写侧
 - [服务发现的Java实现.md](../工程实践/服务发现的Java实现.md) — 同一手法的另一处落地：不可变快照 + `ConcurrentHashMap` + `AtomicInteger` 轮询
+
+- [原子操作与互斥的实现.md](../../../02-计算机基础/计算机底层原理/原子操作与互斥的实现.md) — Mark Word → ObjectMonitor → futex 这三跳、「JDK 24 已无偏向锁开关」的实测，在它的第 5 节
 > 反向引用（本篇被下列文档引到）：[Spring-boot核心.md](../Spring-boot核心.md)、[写冲突控制的Java落地.md](../写冲突控制的Java落地.md)、[原子类与无锁.md](原子类与无锁.md)、[死锁与并发缺陷诊断.md](死锁与并发缺陷诊断.md)、[线程与进程开销.md](线程与进程开销.md)、[线程基础与生命周期.md](线程基础与生命周期.md)、[线程间协作与并发工具类.md](线程间协作与并发工具类.md)、[JIT与执行引擎.md](../运行时/JIT与执行引擎.md)、[JVM启动与参数体系.md](../运行时/JVM启动与参数体系.md)、[Unsafe与内存布局.md](../运行时/Unsafe与内存布局.md)、[对象布局与引用类型.md](../运行时/对象布局与引用类型.md)

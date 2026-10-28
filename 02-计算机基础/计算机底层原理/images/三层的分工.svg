@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">三层各管一段：硅保单条指令、内核管睡眠、语言壳负责组合</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">越往下越便宜也越没办法控制；越往上越灵活也越贵。中间那层只在慢路径才碰得到。</text>
+
+  <rect x="120" y="96" width="760" height="80" rx="8" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="140" y="122" font-size="14" font-weight="bold" fill="#1e40af">语言壳　22~38 ns（无竞争）</text>
+  <text x="140" y="146" font-size="12" fill="#1e40af">Go sync.Mutex　·　Java ObjectMonitor　·　pthread_mutex_t</text>
+  <text x="140" y="166" font-size="12" fill="#1e40af">把下面两层组合起来，再决定「谁先拿、谁排队、排多久」</text>
+
+  <rect x="260" y="196" width="480" height="80" rx="8" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="280" y="222" font-size="14" font-weight="bold" fill="#92400e">内核　1.7 µs（进一次）</text>
+  <text x="280" y="246" font-size="12" fill="#92400e">futex（Linux）· WaitForSingleObject（Windows）</text>
+  <text x="280" y="266" font-size="12" fill="#92400e">只提供一个能力：让线程睡下、把线程叫醒</text>
+
+  <rect x="120" y="296" width="760" height="80" rx="8" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="140" y="322" font-size="14" font-weight="bold" fill="#991b1b">硅　8 ns（一条带锁指令）</text>
+  <text x="140" y="346" font-size="12" fill="#991b1b">LOCK 前缀 · MESI 四态 · 64 字节缓存行</text>
+  <text x="140" y="366" font-size="12" fill="#991b1b">只保证一件事：一条读-改-写不可分割，且跨行时退化成锁总线（贵 175 倍）</text>
+
+  <line x1="500" y1="176" x2="500" y2="196" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="500" y1="276" x2="500" y2="296" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="512" y="192" font-size="11" fill="#475569">慢路径才调用</text>
+  <text x="512" y="292" font-size="11" fill="#475569">睡与醒落到系统调用</text>
+
+  <rect x="32" y="396" width="936" height="56" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="418" font-size="12" fill="#334155">读这篇的顺序：先看硅（第 2、3 节，一批汇编与跨行实验），再看内核（第 4 节，futex 三态与 556 次系统调用），</text>
+  <text x="44" y="438" font-size="12" fill="#334155">最后看三个语言壳怎么把这两层拼起来（第 5 节）。混在一起谈「锁的底层」，就会得到「加了锁就慢」这种没法用的结论。</text>
+</svg>
