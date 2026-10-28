@@ -1,12 +1,12 @@
 # I/O 多路复用
 
-> 覆盖：五种 I/O 模型、select / poll / epoll 三代演进、LT 与 ET、Reactor、Go 的 netpoller 与 Java NIO 实践、`io_uring` 的提交—完成模型与常见问题。
+> 覆盖：五种 I/O 模型、select / poll / epoll 三代演进、LT 与 ET、惊群与 Reactor、`io_uring` 的提交—完成模型与常见问题。
 >
-> 不覆盖：Go 的网络模型与运行时调度见 [GMP调度.md](../../../01-编程语言/go/运行时/GMP调度.md)；零拷贝是另一层的优化，见 [零拷贝.md](../../操作系统/零拷贝.md)；连接关闭侧的状态见 [TCP四次挥手.md](tcp/TCP四次挥手.md)。
+> 不覆盖：Go 的 netpoller 怎么把 goroutine 挂到 epoll 上，见 [GMP调度.md](../../01-编程语言/go/运行时/GMP调度.md) 与 [网络IO与netpoll.md](../../01-编程语言/go/运行时/网络IO与netpoll.md)；Java 的 NIO 三件套与 `Selector` 服务见 [NIO与Selector.md](../../01-编程语言/java/网络编程/NIO与Selector.md)；零拷贝是另一层的优化，见 [零拷贝.md](零拷贝.md)；连接关闭侧的状态见 [TCP四次挥手.md](../网络/传输层/tcp/TCP四次挥手.md)。
 >
-> 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。
+> 内容整理自个人学习笔记，素材见 [素材清单](../../素材清单.md)。
 >
-> ✅ 实测口径：第七、八节的 Go / Java 代码可编译（Go 侧本机 `gofmt` / `go vet` 通过，Java 侧未编译）；⚠️ **未实测** `io_uring`（本机为 Windows，且容器沙箱常禁用该系统调用）。
+> ✅ 实测口径：3.1 的 `FD_SETSIZE=1024` 在 `golang:1.26-alpine`（`go1.26.8 linux/amd64`）容器内读 Go `syscall` 包常量得到，连跑 4 次读数一致；⚠️ **未实测** `io_uring`（本机为 Windows，且容器沙箱常禁用该系统调用）。本篇**只讲机制**，语言侧的可运行代码已各自归位（见第八节）。
 
 ---
 
@@ -206,16 +206,18 @@ Nginx 更准确地说是“多个 worker 进程各自运行单线程 Reactor”�
 
 ---
 
-## 六、Go 的 netpoller 与 goroutine 是怎么实现的？
+## 六、Go 与 Java 各自怎么落到 epoll 上？
 
-Go runtime 的 netpoller 在 Linux 上使用 epoll：网络 I/O 暂不可完成时挂起 goroutine，
-对应 M 不必等待；fd 就绪后 runtime 再把 goroutine 置为可运行。
+两侧调的是同一套内核接口，差别只在「**谁替你调 `epoll_wait`**」。
 
-> ⭐ Go 中可写阻塞式 `Accept/Read/Write`，底层却由非阻塞 fd + 多路复用承接，这降低了并发编程心智负担。
+| 语言 | 谁跑事件循环 | 编程模型 | 完整内容在哪 |
+|---|---|---|---|
+| Go | runtime 的 netpoller | 写成阻塞式 `Accept` / `Read` / `Write`，fd 未就绪时挂起 goroutine 而非阻塞 M | [网络IO与netpoll.md](../../01-编程语言/go/运行时/网络IO与netpoll.md)、[GMP调度.md](../../01-编程语言/go/运行时/GMP调度.md) |
+| Java | 应用自己管 `Selector`，或交给 Netty | 显式事件循环 + `SelectionKey`；Netty 再包一层主从 Reactor | [NIO与Selector.md](../../01-编程语言/java/网络编程/NIO与Selector.md) |
 
-G、M、P 的配合与调度细节见 [Go GMP 调度模型](../../../01-编程语言/go/运行时/GMP调度.md)。
-Go 侧这段的源码级拆解（fd 如何注册进 epoll、`pollDesc` 三态、`SetReadDeadline` 如何打断、哪些 fd 退回阻塞）见 [网络IO与netpoll.md](../../../01-编程语言/go/运行时/网络IO与netpoll.md)。
-⚠️ 普通文件 I/O、部分系统调用和 cgo 可能真的阻塞线程，并非所有阻塞都由 netpoller 接管。
+> ⭐ Go 里能写阻塞式 `Accept/Read/Write`，底层却由非阻塞 fd + 多路复用承接，这降低了并发编程的心智负担。
+
+⚠️ 「底层是 epoll」不等于「所有阻塞都被接管」：普通文件 I/O、部分系统调用与 cgo 仍可能真的阻塞线程。
 
 ---
 
@@ -225,242 +227,24 @@ Go 侧这段的源码级拆解（fd 如何注册进 epoll、`pollDesc` 三态、
 
 | 场景 | 涉及哪一块 | 为什么值得注意 |
 |---|---|---|
-| 高并发网关 / 代理 | epoll + Reactor | 事件循环与上游连接管理，详见 [反向代理原理.md](../代理与网关/反向代理原理.md) |
+| 高并发网关 / 代理 | epoll + Reactor | 事件循环与上游连接管理，详见 [反向代理原理.md](../网络/代理与网关/反向代理原理.md) |
 | Go 服务 | netpoller + goroutine | 运行时把阻塞包装成协程挂起，详见 本篇第六节 |
-| Java 服务 | NIO `Selector` / Netty | 主从 Reactor 的线程模型，详见 本篇 8.3 |
-| Nginx / Redis | 单线程事件循环 | 用 epoll 换掉「每连接一线程」，详见 [03-事件驱动与epoll.md](../../linux/深入理解Nginx/03-事件驱动与epoll.md) |
-| fd 上限 / 连接数告警 | `ulimit -n` 与 `somaxconn` | 事件循环的性能之外还有资源上限，详见 [性能排查.md](../../linux/性能排查.md) |
-| 连接泄漏 | 半开连接与心跳 | `CLOSE_WAIT` 堆积多半是应用没关，详见 [TCP四次挥手.md](tcp/TCP四次挥手.md) |
+| Java 服务 | NIO `Selector` / Netty | 主从 Reactor 的线程模型，详见 [NIO与Selector.md](../../01-编程语言/java/网络编程/NIO与Selector.md) |
+| Nginx / Redis | 单线程事件循环 | 用 epoll 换掉「每连接一线程」，详见 [03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md) |
+| fd 上限 / 连接数告警 | `ulimit -n` 与 `somaxconn` | 事件循环的性能之外还有资源上限，详见 [性能排查.md](../linux/性能排查.md) |
+| 连接泄漏 | 半开连接与心跳 | `CLOSE_WAIT` 堆积多半是应用没关，详见 [TCP四次挥手.md](../网络/传输层/tcp/TCP四次挥手.md) |
 | 高吞吐本地文件 I/O | `io_uring` | 从「就绪通知」到「提交—完成」，详见 本篇第十节 |
 
-## 八、具体使用
+## 八、两侧的可运行代码在哪？
 
-**本节要点**：Go 侧日常用 `net` 包即可（运行时替你做了事件循环），Java 侧先掌握 NIO 三件套再上 Netty。
+本篇只讲机制，**可运行代码按语言各归其位**。这样改 epoll 的语义只动本篇，改某一侧的写法只动那一篇。
 
-### 8.1 Go
-
-#### 日常优先使用 net 包
-
-```go
-ln, err := net.Listen("tcp", ":8080")
-if err != nil { log.Fatal(err) }
-for {
-    conn, err := ln.Accept()
-    if err != nil { log.Print(err); continue }
-    go handle(conn) // handler 内按阻塞式 Read/Write 编写
-}
-```
-
-`net` 已封装非阻塞 fd、netpoller、deadline 和资源管理；直接操作 epoll 主要用于理解原理或底层库。
-
-#### 直接调用 epoll：最小 ET TCP 读取服务
-
-仅适用于 Linux。监听 fd 与 `Accept4` 返回的 fd 均设置非阻塞；ET 下 accept/read 都循环到 `EAGAIN`。
-
-```go
-package main
-
-import (
-    "errors"
-    "log"
-    "golang.org/x/sys/unix"
-)
-
-const epollET uint32 = 1 << 31
-
-func main() {
-    lfd, err := unix.Socket(unix.AF_INET,
-        unix.SOCK_STREAM|unix.SOCK_NONBLOCK|unix.SOCK_CLOEXEC, 0)
-    must(err)
-    defer unix.Close(lfd)
-    must(unix.SetsockoptInt(lfd, unix.SOL_SOCKET, unix.SO_REUSEADDR, 1))
-    must(unix.Bind(lfd, &unix.SockaddrInet4{Port: 8080}))
-    must(unix.Listen(lfd, 128))
-
-    epfd, err := unix.EpollCreate1(unix.EPOLL_CLOEXEC)
-    must(err)
-    defer unix.Close(epfd)
-    must(unix.EpollCtl(epfd, unix.EPOLL_CTL_ADD, lfd, &unix.EpollEvent{
-        Events: uint32(unix.EPOLLIN) | epollET, Fd: int32(lfd),
-    }))
-
-    clients := map[int]struct{}{}
-    events := make([]unix.EpollEvent, 128)
-    for {
-        n, err := unix.EpollWait(epfd, events, -1)
-        if errors.Is(err, unix.EINTR) { continue }
-        must(err)
-        for _, ev := range events[:n] {
-            fd := int(ev.Fd)
-            if fd == lfd {
-                acceptAll(epfd, lfd, clients)
-                continue
-            }
-            if _, ok := clients[fd]; !ok { continue }
-            if ev.Events&uint32(unix.EPOLLERR) != 0 || !readAll(fd) {
-                closeFD(epfd, fd, clients)
-            }
-        }
-    }
-}
-
-func acceptAll(epfd, lfd int, clients map[int]struct{}) {
-    for {
-        fd, _, err := unix.Accept4(lfd, unix.SOCK_NONBLOCK|unix.SOCK_CLOEXEC)
-        if errors.Is(err, unix.EINTR) { continue }
-        if errors.Is(err, unix.EAGAIN) || errors.Is(err, unix.EWOULDBLOCK) { return }
-        if err != nil { log.Printf("accept: %v", err); return }
-        ev := &unix.EpollEvent{
-            Events: uint32(unix.EPOLLIN|unix.EPOLLRDHUP) | epollET, Fd: int32(fd),
-        }
-        if err := unix.EpollCtl(epfd, unix.EPOLL_CTL_ADD, fd, ev); err != nil {
-            unix.Close(fd)
-            continue
-        }
-        clients[fd] = struct{}{}
-    }
-}
-
-func readAll(fd int) bool {
-    buf := make([]byte, 4096)
-    for {
-        n, err := unix.Read(fd, buf)
-        if n > 0 { log.Printf("fd=%d read=%d", fd, n); continue }
-        if n == 0 && err == nil { return false }
-        if errors.Is(err, unix.EINTR) { continue }
-        if errors.Is(err, unix.EAGAIN) || errors.Is(err, unix.EWOULDBLOCK) { return true }
-        return false
-    }
-}
-
-func closeFD(epfd, fd int, clients map[int]struct{}) {
-    _ = unix.EpollCtl(epfd, unix.EPOLL_CTL_DEL, fd, nil)
-    _ = unix.Close(fd)
-    delete(clients, fd)
-}
-func must(err error) { if err != nil { log.Fatal(err) } }
-```
-
-```bash
-go mod init epoll-demo
-go get golang.org/x/sys/unix
-go run .
-```
-
-#### 为什么优先使用 SetDeadline
-
-`SetDeadline/SetReadDeadline/SetWriteDeadline` 与 runtime 定时器、netpoller 集成，超时会让阻塞式调用返回错误；
-它比自行维护 epoll 超时堆更方便、更跨平台。⚠️ deadline 是绝对时间，空闲超时通常要在成功读写后刷新。
-
----
-### 8.2 Java
-
-#### NIO 三件套
-
-| 组件 | 作用 | 关系 |
+| 语言 | 日常写法 | 直接操作 epoll 的写法 |
 |---|---|---|
-| `Channel` | 双向 I/O 通道 | 非阻塞 Channel 注册到 Selector |
-| `Buffer` | 保存待读写数据 | Channel 从 Buffer 写出或向其读入 |
-| `Selector` | 一个线程等待多个 Channel | 用 `SelectionKey` 管理关注事件和状态 |
+| Go | 用 `net` 包——非阻塞 fd、netpoller、deadline 与资源管理都已封装 | [net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md) 的「使用」节（最小 ET 读取服务） |
+| Java | NIO 三件套 + 完整 `Selector` Echo 服务；Netty 的主从 Reactor 线程模型同见该篇 | [NIO与Selector.md](../../01-编程语言/java/网络编程/NIO与Selector.md) |
 
-写入 Buffer 后用 `flip()` 切到读模式，消费完用 `clear()` 或 `compact()` 回到写模式。
-
-#### 完整可运行的 Selector Echo 服务
-
-```java
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
-import java.util.Iterator;
-
-public class NioEchoServer {
-    public static void main(String[] args) throws IOException {
-        int port = args.length == 0 ? 8080 : Integer.parseInt(args[0]);
-        try (Selector selector = Selector.open();
-             ServerSocketChannel server = ServerSocketChannel.open()) {
-            server.configureBlocking(false);
-            server.bind(new InetSocketAddress(port));
-            server.register(selector, SelectionKey.OP_ACCEPT);
-            while (true) {
-                selector.select();
-                Iterator<SelectionKey> it = selector.selectedKeys().iterator();
-                while (it.hasNext()) {
-                    SelectionKey key = it.next();
-                    it.remove();
-                    if (!key.isValid()) continue;
-                    try {
-                        if (key.isAcceptable()) {
-                            acceptAll(server, selector);
-                            continue;
-                        }
-                        if (key.isReadable()) read(key);
-                        if (key.isValid() && key.isWritable()) write(key);
-                    } catch (IOException e) {
-                        close(key);
-                    }
-                }
-            }
-        }
-    }
-
-    private static void acceptAll(ServerSocketChannel server, Selector selector)
-            throws IOException {
-        SocketChannel channel;
-        while ((channel = server.accept()) != null) {
-            channel.configureBlocking(false);
-            channel.register(selector, SelectionKey.OP_READ, ByteBuffer.allocate(8192));
-        }
-    }
-
-    private static void read(SelectionKey key) throws IOException {
-        SocketChannel channel = (SocketChannel) key.channel();
-        ByteBuffer buffer = (ByteBuffer) key.attachment();
-        int n = channel.read(buffer);
-        if (n == -1) { close(key); return; }
-        if (n > 0) {
-            buffer.flip();
-            key.interestOps(SelectionKey.OP_WRITE);
-        }
-    }
-
-    private static void write(SelectionKey key) throws IOException {
-        SocketChannel channel = (SocketChannel) key.channel();
-        ByteBuffer buffer = (ByteBuffer) key.attachment();
-        channel.write(buffer);
-        if (!buffer.hasRemaining()) {
-            buffer.clear();
-            key.interestOps(SelectionKey.OP_READ);
-        }
-    }
-
-    private static void close(SelectionKey key) {
-        key.cancel();
-        try { key.channel().close(); } catch (IOException ignored) { }
-    }
-}
-```
-
-```bash
-javac NioEchoServer.java
-java NioEchoServer 8080
-```
-
-示例用 `OP_WRITE` 处理部分写，并在输出完成前暂停读取，形成简单背压。
-⚠️ 必须移除已处理的 selected key；真实协议还要处理半包、粘包、解码状态和发送队列上限。
-
-#### Netty：主从 Reactor
-
-| 概念 | 职责 |
-|---|---|
-| `bossGroup` | 接收连接，将 Channel 注册给 worker |
-| `workerGroup` | 管理连接读写，包含多个 `EventLoop` |
-| `EventLoop` | 一个线程管理多个 Channel，串行执行其事件和任务 |
-| `ChannelPipeline` | 让事件依次经过编解码和业务 Handler |
-
-一个 Channel 通常固定绑定一个 EventLoop，因此事件天然有序；阻塞业务必须移出 I/O EventLoop。
-Netty 采用成熟的 Reactor/NIO，也可用 Linux native epoll transport，而非把 AIO 作为主流传输层：
-线程模型、背压和跨平台行为更可控。⚠️ JDK `AsynchronousSocketChannel` 在 Linux 上实际常由线程池承接，使用较少。
+**本节要点**：机制只有一份，代码按语言分家——Go 侧的关键差异是 runtime 替你跑事件循环，Java 侧是应用自己跑。
 
 ---
 
@@ -478,7 +262,7 @@ ss -s
 ```
 
 仅提高 `ulimit -n` 不够；还要估算收发缓冲区、连接对象、epoll 注册项，并检查 `listen(backlog)` 与 `somaxconn`。
-「一个 socket 在进程里占哪几层结构、`backlog` 怎么被 `somaxconn` 截断、打满后客户端为什么只是卡住」见 [Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) 第一、二节。
+「一个 socket 在进程里占哪几层结构、`backlog` 怎么被 `somaxconn` 截断、打满后客户端为什么只是卡住」见 [Socket接口与连接生命周期.md](../网络/传输层/Socket接口与连接生命周期.md) 第一、二节。
 
 ### 9.2 epoll 与普通文件
 
@@ -489,7 +273,7 @@ epoll 无法表示磁盘何时真正完成。文件 I/O 应使用线程池、AIO
 
 断网、NAT 状态丢失或对端崩溃可能形成半开连接；`CLOSE_WAIT` 则表示对端已发 FIN、本地应用尚未 close。
 事件循环这一侧的要点只有两条：**把空闲 deadline 纳入统一的事件循环**，以及**所有退出路径都关闭 fd**。
-心跳周期怎么定、TCP keepalive 探不到什么、连接池旧连接怎么探活，见 [TCP保活与连接存活.md](tcp/TCP保活与连接存活.md)；`CLOSE_WAIT` 的四种成因见 [TCP四次挥手.md](tcp/TCP四次挥手.md) 第三节。
+心跳周期怎么定、TCP keepalive 探不到什么、连接池旧连接怎么探活，见 [TCP保活与连接存活.md](../网络/传输层/tcp/TCP保活与连接存活.md)；`CLOSE_WAIT` 的四种成因见 [TCP四次挥手.md](../网络/传输层/tcp/TCP四次挥手.md) 第三节。
 
 ### 9.4 事件循环规则
 
@@ -570,14 +354,16 @@ epoll 无法表示磁盘何时真正完成。文件 I/O 应使用线程池、AIO
 
 ## 关联
 
-- **上游/总纲**：[网络分层与数据包旅程.md](../网络分层与数据包旅程.md) — 传输层在五层模型里的位置
-- **上游/接口**：[Socket接口与连接生命周期.md](Socket接口与连接生命周期.md) — 本篇等待与操作的那个对象是什么：fd 的三层结构、`read` 的三种返回、关闭的三条出口
-- **对照/互补**：[通信选型.md](../选型/通信选型.md) — 支撑高并发长连接的底层机制在这套选型里的位置
-- **对照/互补**：[反向代理原理.md](../代理与网关/反向代理原理.md) — 事件循环之上的代理实现
-- **对照/互补**：[TCP滑动窗口.md](tcp/TCP滑动窗口.md) — 半开连接与事件循环
-- **对照/互补**：[UDP与数据报传输.md](udp/UDP与数据报传输.md) — UDP 服务端常见的 `SO_REUSEPORT` 多 socket 分摊
-- **下游机制**：[channel原理与底层实现.md](../../../01-编程语言/go/并发编程/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
-- **下游机制**：[零拷贝.md](../../操作系统/零拷贝.md) — 数据搬运的另一半成本（`io_uring` 也不消除拷贝）
-- **运维/配置**：[性能排查.md](../../linux/性能排查.md) — 连接状态分布与 fd 上限的排查
+- **上游/总纲**：[网络分层与数据包旅程.md](../网络/网络分层与数据包旅程.md) — 传输层在五层模型里的位置
+- **上游/接口**：[Socket接口与连接生命周期.md](../网络/传输层/Socket接口与连接生命周期.md) — 本篇等待与操作的那个对象是什么：fd 的三层结构、`read` 的三种返回、关闭的三条出口
+- **对照/互补**：[通信选型.md](../网络/选型/通信选型.md) — 支撑高并发长连接的底层机制在这套选型里的位置
+- **对照/互补**：[反向代理原理.md](../网络/代理与网关/反向代理原理.md) — 事件循环之上的代理实现
+- **对照/互补**：[TCP滑动窗口.md](../网络/传输层/tcp/TCP滑动窗口.md) — 半开连接与事件循环
+- **对照/互补**：[UDP与数据报传输.md](../网络/传输层/udp/UDP与数据报传输.md) — UDP 服务端常见的 `SO_REUSEPORT` 多 socket 分摊
+- **下游机制**：[channel原理与底层实现.md](../../01-编程语言/go/并发编程/channel原理与底层实现.md) — netpoller 与 goroutine 挂起唤醒
+- **下游机制**：[零拷贝.md](零拷贝.md) — 数据搬运的另一半成本（`io_uring` 也不消除拷贝）
+- **下游机制**：[网络IO与netpoll.md](../../01-编程语言/go/运行时/网络IO与netpoll.md) — Go 侧：fd 怎么注册进 epoll、`pollDesc` 三态、`SetReadDeadline` 怎么打断
+- **下游机制**：[NIO与Selector.md](../../01-编程语言/java/网络编程/NIO与Selector.md) — Java 侧：NIO 三件套、`Selector` 服务与 Netty 主从 Reactor
+- **运维/配置**：[性能排查.md](../linux/性能排查.md) — 连接状态分布与 fd 上限的排查
 
-> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../../linux/深入理解Nginx/03-事件驱动与epoll.md)、[TCP四次挥手.md](tcp/TCP四次挥手.md)、[网络通信链路详解.md](../网络通信链路详解.md)、[网络与存储.md](../../../06-工程实践/部署/docker/网络与存储.md)
+> 反向引用（本篇被下列文档引到）：[net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md)、[03-事件驱动与epoll.md](../linux/深入理解Nginx/03-事件驱动与epoll.md)、[TCP四次挥手.md](../网络/传输层/tcp/TCP四次挥手.md)、[网络通信链路详解.md](../网络/网络通信链路详解.md)、[网络与存储.md](../../06-工程实践/部署/docker/网络与存储.md)
