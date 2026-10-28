@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="m1" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="m2" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">六个状态的判据是「谁让它走不了」，不是「它在干什么」</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">同一次 getState() 只给快照；BLOCKED 等的是进门的资格，WAITING 等的是别人叫它。</text>
+
+  <rect x="32" y="92" width="936" height="330" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <rect x="56" y="228" width="120" height="58" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="70" y="252" font-size="14" font-weight="bold" fill="#334155">NEW</text>
+  <text x="70" y="272" font-size="11" fill="#64748b">还没 start()</text>
+
+  <rect x="248" y="220" width="156" height="72" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="262" y="246" font-size="14" font-weight="bold" fill="#1e40af">RUNNABLE</text>
+  <text x="262" y="264" font-size="11" fill="#1e3a8a">等 CPU，或卡在 native</text>
+  <text x="262" y="282" font-size="11" fill="#1e3a8a">（JVM 不知情）</text>
+
+  <rect x="500" y="118" width="184" height="58" rx="6" fill="#fee2e2" stroke="#f87171"/>
+  <text x="514" y="142" font-size="14" font-weight="bold" fill="#991b1b">BLOCKED</text>
+  <text x="514" y="162" font-size="11" fill="#991b1b">等 monitor 入口队列</text>
+
+  <rect x="500" y="228" width="184" height="58" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="514" y="252" font-size="14" font-weight="bold" fill="#92400e">WAITING</text>
+  <text x="514" y="272" font-size="11" fill="#92400e">等没有期限的通知</text>
+
+  <rect x="500" y="338" width="184" height="58" rx="6" fill="#e0e7ff" stroke="#6366f1"/>
+  <text x="514" y="362" font-size="14" font-weight="bold" fill="#3730a3">TIMED_WAITING</text>
+  <text x="514" y="382" font-size="11" fill="#3730a3">等带期限的通知</text>
+
+  <rect x="790" y="228" width="150" height="58" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="804" y="252" font-size="14" font-weight="bold" fill="#334155">TERMINATED</text>
+  <text x="804" y="272" font-size="11" fill="#475569">run() 返回或抛出</text>
+
+  <line x1="178" y1="257" x2="242" y2="257" stroke="#475569" stroke-width="1.4" marker-end="url(#m1)"/>
+  <text x="182" y="248" font-size="11" fill="#475569">start()</text>
+
+  <line x1="406" y1="256" x2="444" y2="256" stroke="#475569" stroke-width="1.4"/>
+  <line x1="444" y1="147" x2="444" y2="367" stroke="#475569" stroke-width="1.4"/>
+  <line x1="444" y1="147" x2="494" y2="147" stroke="#475569" stroke-width="1.4" marker-end="url(#m1)"/>
+  <line x1="444" y1="257" x2="494" y2="257" stroke="#475569" stroke-width="1.4" marker-end="url(#m1)"/>
+  <line x1="444" y1="367" x2="494" y2="367" stroke="#475569" stroke-width="1.4" marker-end="url(#m1)"/>
+
+  <line x1="474" y1="157" x2="474" y2="377" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="474" y1="157" x2="464" y2="157" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="474" y1="377" x2="464" y2="377" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <line x1="474" y1="290" x2="412" y2="290" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m2)"/>
+  <text x="418" y="306" font-size="11" fill="#64748b">重新竞争</text>
+
+  <path d="M326,218 L326,104 L864,104 L864,224" fill="none" stroke="#475569" stroke-width="1.4" marker-end="url(#m1)"/>
+  <text x="560" y="120" font-size="11" fill="#475569">run() 返回 / 异常出栈</text>
+
+  <rect x="32" y="434" width="936" height="32" rx="6" fill="#f1f5f9"/>
+  <text x="48" y="455" font-size="12" fill="#334155">二次 start() 与 start() 之后 setDaemon() 都抛 IllegalThreadStateException，实测 message 为 null，只有类型。</text>
+
+  <rect x="32" y="472" width="936" height="32" rx="6" fill="#f1f5f9"/>
+  <text x="48" y="493" font-size="12" fill="#334155">对从未 start() 的线程，join() 立即返回（isAlive 为 false），interrupt() 只置标志、状态仍是 NEW。</text>
+
+  <rect x="32" y="510" width="936" height="32" rx="6" fill="#fee2e2"/>
+  <text x="48" y="531" font-size="12" fill="#991b1b">对 TERMINATED 的线程 interrupt() 不报错、isInterrupted() 返回 true，所以别拿它判断「还有人要我停」。</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">三档执行流的创建成本：每跨一格就是一个数量级</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">横轴是对数刻度（0.1 微秒到 100 毫秒）；每档取两套实测环境的并集区间</text>
+
+  <rect x="32" y="84" width="936" height="300" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="108" font-size="11" fill="#64748b">执行流</text>
+
+  <line x1="320" y1="118" x2="320" y2="340" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="423" y1="118" x2="423" y2="340" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="526" y1="118" x2="526" y2="340" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="629" y1="118" x2="629" y2="340" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="732" y1="118" x2="732" y2="340" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="835" y1="118" x2="835" y2="340" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="938" y1="118" x2="938" y2="340" stroke="#e2e8f0" stroke-width="1"/>
+
+  <rect x="52" y="140" width="240" height="40" rx="5" fill="#efe7fd" stroke="#7c3aed" stroke-width="1.1"/>
+  <text x="66" y="165" font-size="10.5" fill="#5b21b6">进程（ProcessBuilder）</text>
+  <rect x="803" y="148" width="94" height="24" rx="3" fill="#a78bfa" stroke="#6d28d9" stroke-width="1"/>
+  <text x="903" y="165" font-size="10" fill="#5b21b6">5~40 ms</text>
+
+  <rect x="52" y="210" width="240" height="40" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="66" y="235" font-size="10.5" fill="#1e3a8a">平台线程（new Thread）</text>
+  <rect x="641" y="218" width="64" height="24" rx="3" fill="#60a5fa" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="711" y="235" font-size="10" fill="#1e3a8a">132~546 us</text>
+
+  <rect x="52" y="280" width="240" height="40" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.1"/>
+  <text x="66" y="305" font-size="10.5" fill="#14532d">虚拟线程 / goroutine</text>
+  <rect x="343" y="288" width="178" height="24" rx="3" fill="#4ade80" stroke="#15803d" stroke-width="1"/>
+  <text x="527" y="305" font-size="10" fill="#14532d">0.6~8.9 us</text>
+
+  <line x1="320" y1="340" x2="940" y2="340" stroke="#94a3b8" stroke-width="1"/>
+  <text x="320" y="360" font-size="9.5" text-anchor="middle" fill="#64748b">0.1us</text>
+  <text x="423" y="360" font-size="9.5" text-anchor="middle" fill="#64748b">1us</text>
+  <text x="526" y="360" font-size="9.5" text-anchor="middle" fill="#64748b">10us</text>
+  <text x="629" y="360" font-size="9.5" text-anchor="middle" fill="#64748b">100us</text>
+  <text x="732" y="360" font-size="9.5" text-anchor="middle" fill="#64748b">1ms</text>
+  <text x="835" y="360" font-size="9.5" text-anchor="middle" fill="#64748b">10ms</text>
+  <text x="938" y="360" font-size="9.5" text-anchor="middle" fill="#64748b">100ms</text>
+
+  <rect x="32" y="400" width="936" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="426" font-size="11.5" font-weight="bold" fill="#0f172a">要点：越靠下越便宜，但便宜的不是同一种东西</text>
+  <text x="52" y="450" font-size="10.5" fill="#334155">进程贵在建完整地址空间；平台线程贵在一次 clone 加一个栈；虚拟线程省掉了内核对象，只剩一个堆上的栈</text>
+  <text x="52" y="474" font-size="10.5" fill="#b91c1c">省掉的成本必须有人付：虚拟线程的调度成本转移到载体线程与 ForkJoinPool 上，不会凭空消失</text>
+</svg>

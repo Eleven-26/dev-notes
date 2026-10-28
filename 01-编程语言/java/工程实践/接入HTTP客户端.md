@@ -6,7 +6,7 @@
 >
 > 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。
 >
-> ⚠️ **实测口径**：本篇 Java 代码按 JDK 17 + OkHttp 4.12 书写，**未做编译与运行校验**——本机 `java` 不在 PATH 中、也没有 `mvn`，未搭 Java 编译环境。文中参数取值与结论来自官方文档与源码语义，**不给任何耗时或吞吐读数**；对照表里 Go 侧的读数来自 [HTTP客户端与连接池.md](../../go/网络编程/HTTP客户端与连接池.md) 的容器实测，不是本篇跑的。
+> **实测口径**：本篇代码按 JDK 17 + OkHttp 4.12 书写，在容器 `java-lab`（`eclipse-temurin:24-jdk`，24.0.2）里以 `javac --release 17` **真编译通过并运行**——依赖取本机 Maven 仓库的 `okhttp 4.12.0` / `okio-jvm 3.6.0` / `kotlin-stdlib 1.9.23`，对测服务端是同进程起的 `com.sun.net.httpserver`。运行只验证四件事（请求通、协议按偏好静默退回、连接回池、单例成立），**不给任何耗时或吞吐读数**：首调那 110~121 ms 含类加载与建连，不作性能口径。对照表里 Go 侧的读数来自 [HTTP客户端与连接池.md](../../go/网络编程/HTTP客户端与连接池.md) 的容器实测，不是本篇跑的。逐块说明见第七节。
 
 ---
 
@@ -164,12 +164,29 @@ public class OkHttpSingleton {
 
 ⚠️ 这四条里只有第一条有 Go 侧的等价物且能被同一把量具量出来（见 [HTTP客户端与连接池.md](../../go/网络编程/HTTP客户端与连接池.md) 第三节的实测）；其余三条属 SDK 行为陈述，**本篇未做实测**。
 
-## 延伸追问
+## 六、延伸追问
 
 - **OkHttp 的 `readTimeout` 为什么不等于 Go 的 `ResponseHeaderTimeout`？** → `readTimeout` 覆盖的是「两次读之间的最大间隔」，读 body 时同样生效；Go 的 `ResponseHeaderTimeout` 只等到响应头为止，body 归 `ctx` 管。对慢响应的流式接口，两者的截断点完全不同。
 - **JDK 为什么不暴露连接池参数？** → 设计上把它当"不可调的基础设施"，只留系统属性作为逃生门；这也意味着**需要精细控池的项目基本不会选它**。
 - **`callTimeout` 与 `readTimeout` 同时设，哪个先生效？** → 谁先到算谁：`callTimeout` 管整通调用（含重定向与重试），`readTimeout` 只管单次读；两者不是"取小"关系，而是各自独立的计时器。
 - **Java 侧怎么确认「连接到底复用了没」？** → OkHttp 看 `EventListener.connectionAcquired` 是否带 `Connection` 且 `protocol` 未变；JDK 没有钩子，只能从服务端侧的连接数反推。
+
+## 七、校验口径
+
+> ✅ 本篇代码的校验方式与范围（`eclipse-temurin:24-jdk`，24.0.2，`javac --release 17`）：
+
+- **真编译 + 运行通过**：第二节 `JdkHttp`（`get` / `getAsync`）与第三节 `OkHttpSingleton`（`client()` 与 `traceInterceptor`），源码逐字取自篇内两段代码，工程见 `.workbuddy/tmp/exp/java/httpclient/`。
+- **运行观察**（三次连跑结论一致）：两条 JDK 路径都取回 `hello-from-server`；OkHttp 拦截器打印的 `protocol=` 是 **http/1.1** —— 尽管构造时写了 `protocols(HTTP_2, HTTP_1_1)`，因为对端只讲 1.1，正好印证第一节「偏好不是强制、静默退回」；一次调用后 `connectionPool().idleConnectionCount()` = **1**（连接确实回了池）；`client() == client()` 为 `true`（单例成立）。
+- **未做性能读数**：拦截器打印的 **110 / 121 / 111 ms** 是首调耗时（含类加载与建连），只说明链路通，不作延迟或吞吐口径，也不能与 Go 侧容器读数并排比较。
+- **未实测**：`EventListener` 的阶段分解（需要真实 h2 对端）、`jdk.httpclient.keepalive.timeout` 等系统属性、`retryOnConnectionFailure` 的重放行为、TLS（本篇对测走明文）。
+
+| 依赖 | 实际版本 |
+|---|---|
+| JDK | `eclipse-temurin:24-jdk`（24.0.2+12），`--release 17` |
+| `com.squareup.okhttp3:okhttp` | 4.12.0 |
+| `com.squareup.okio:okio-jvm` | 3.6.0 |
+| `org.jetbrains.kotlin:kotlin-stdlib` | 1.9.23 |
+| 对测服务端 | JDK 自带 `com.sun.net.httpserver`（仅 HTTP/1.1） |
 
 ## 关联
 

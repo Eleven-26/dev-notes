@@ -722,7 +722,9 @@ Heap Configuration:
 
 第三行是 `jcmd <pid> GC.run` 打出来的，`Pause Full (Diagnostic Command)` 这个 cause 本身就是凭证：**这条 Full GC 是诊断命令触发的，不是业务压力**。看到线上日志里出现这个 cause，先查是谁在敲 `jcmd GC.run` 或 `System.gc()`。
 
-## 应用场景
+## 八、应用场景
+
+**本节要点**：四类现场（还活着、要取证、要看趋势、已经崩了）各自该用哪一组工具；先按「进程还在不在」分叉，再选 `jcmd` / `jstat` / JFR / `hs_err`。
 
 | 场景 | 用到的结论 | 具体动作 |
 |---|---|---|
@@ -736,7 +738,9 @@ Heap Configuration:
 | 要给 JVM 提 bug | 第七节 | 收集 `hs_err_pid<N>.log` + `-XX:+HeapDumpOnOutOfMemoryError` 的 hprof；能用 `jhsdb` 就先试 `--cap-add=SYS_PTRACE` |
 | 安全合规不让开诊断端口 | 第二节 | attach 走的是本机套接字，不监听网络端口；跨容器/跨主机一律不行，这是设计上的边界 |
 
-## 具体使用：给一个线上服务配诊断
+## 九、具体使用：给一个线上服务配诊断
+
+**本节要点**：按「能不能重启」分两条路 —— 能重启就在启动参数里带齐三件事，不能重启就只用低开销的 attach 与 JFR 现场取证。
 
 ```text
 ① 能不能重启？能 → 命令行直接带三件事
@@ -806,7 +810,7 @@ Heap Configuration:
 
 ## 关联
 
-- **上游/总纲**：[java/README.md](../README.md) — Java 目录的运行时主线，本篇是「进程在跑」之后的第一环：怎么问它话
+- **上游/总纲**：[README.md](README.md) — 运行时 12 篇的分工表、五组读序与篇间依赖（本篇位次 ⑨，「进程在跑」之后的第一环：怎么问它话）
 - **上游/前置**：[JVM启动与参数体系.md](JVM启动与参数体系.md) — 第一篇用 `VM.flags` / `VM.system_properties` 只是借个入口，那里讲了这 26 条非默认值是怎么来的
 - **下游机制**：[GC调优与日志.md](GC调优与日志.md) — `jstat` 每一列、GC 日志每一段字段的语义在那边，本篇只讲「工具怎么拿到数」
 - **下游机制**：[JIT与执行引擎.md](JIT与执行引擎.md) — `Compiler.queue` / `Compiler.codelist` 查的是那边的 nmethod；本篇 5.3 的采样比例也是同一个执行引擎
@@ -815,4 +819,5 @@ Heap Configuration:
 - **对照/互补**：[pprof性能分析.md](../../go/运行时/pprof性能分析.md) — Go 侧同类工具：`pprof` 的采样份额对应 `hot-methods`，`runtime/metrics` 对应 `jstat` 那层
 - **对照/互补**：[性能排查.md](../../../02-计算机基础/linux/性能排查.md) — Linux 侧 `perf` 的采样与 JFR 的 `ExecutionSample` 是同一思路，一个看机器一个看 VM
 - **对照/互补**：[堆外内存与内存映射.md](堆外内存与内存映射.md) — `System.map` / `VM.native_memory` 看到的正是那篇讲的那块地址空间
-- **应用**：[线程池.md](../并发/线程池.md) — 线程数从 16 涨到 17 那条 `Attach Listener`，是「线程池外还有线程」的最小例子
+- **应用**：[线程池.md](../并发编程/线程池.md) — 线程数从 16 涨到 17 那条 `Attach Listener`，是「线程池外还有线程」的最小例子
+> 反向引用（本篇被下列文档引到）：[死锁与并发缺陷诊断.md](../并发编程/死锁与并发缺陷诊断.md)、[线程基础与生命周期.md](../并发编程/线程基础与生命周期.md)、[Unsafe与内存布局.md](Unsafe与内存布局.md)

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">同一个回调，可能落在四个不同的线程上</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">决定因素是「挂回调时结果有没有就绪」与「有没有 Async」；线程名取自 JDK 24 实测</text>
+
+  <rect x="40" y="84" width="920" height="34" rx="6" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="106" font-size="11.5" font-weight="bold" fill="#0f172a">触发方式</text>
+  <text x="470" y="106" font-size="11.5" font-weight="bold" fill="#0f172a">回调在哪个线程跑</text>
+  <text x="740" y="106" font-size="11.5" font-weight="bold" fill="#0f172a">实测线程名</text>
+
+  <rect x="40" y="124" width="920" height="62" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="150" font-size="10.5" font-weight="bold" fill="#0f172a">已完成 + thenApply</text>
+  <text x="52" y="172" font-size="10" fill="#64748b">回调就地执行，不换线程</text>
+  <text x="470" y="150" font-size="10.5" fill="#334155">调用 thenApply 的那个线程</text>
+  <text x="470" y="172" font-size="10" fill="#64748b">同步调用，没有切换</text>
+  <text x="740" y="150" font-size="9.5" fill="#b91c1c">main</text>
+
+  <rect x="40" y="194" width="920" height="62" rx="6" fill="#eff6ff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="220" font-size="10.5" font-weight="bold" fill="#0f172a">未完成，先挂 thenApply</text>
+  <text x="52" y="242" font-size="10" fill="#64748b">等结果就绪时再跑</text>
+  <text x="470" y="220" font-size="10.5" fill="#334155">把它完成的那个线程</text>
+  <text x="470" y="242" font-size="10" fill="#64748b">谁完成，谁执行回调</text>
+  <text x="740" y="220" font-size="9.5" fill="#b91c1c">biz-1</text>
+
+  <rect x="40" y="264" width="920" height="62" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="290" font-size="10.5" font-weight="bold" fill="#0f172a">thenApplyAsync 不带 executor</text>
+  <text x="52" y="312" font-size="10" fill="#64748b">默认交给公共池</text>
+  <text x="470" y="290" font-size="10.5" fill="#334155">ForkJoinPool 的 worker</text>
+  <text x="470" y="312" font-size="10" fill="#64748b">本机 parallelism = 3</text>
+  <text x="740" y="290" font-size="9.5" fill="#b91c1c">ForkJoinPool.commonPool-worker-1</text>
+
+  <rect x="40" y="334" width="920" height="62" rx="6" fill="#eff6ff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="360" font-size="10.5" font-weight="bold" fill="#0f172a">thenApplyAsync(executor)</text>
+  <text x="52" y="382" font-size="10" fill="#64748b">显式指定池</text>
+  <text x="470" y="360" font-size="10.5" fill="#334155">指定的那个池</text>
+  <text x="470" y="382" font-size="10" fill="#64748b">线程名可预期</text>
+  <text x="740" y="360" font-size="9.5" fill="#b91c1c">biz-2</text>
+
+  <rect x="40" y="416" width="920" height="84" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="442" font-size="11.5" font-weight="bold" fill="#0f172a">要点：非 async 的回调可能跑在「完成者」的线程上——它可能是 IO 线程，也可能是公共池 worker</text>
+  <text x="56" y="468" font-size="10.5" fill="#334155">所以重活一律用 *Async(自己的池)；只有微秒级的字段加工才用非 async 版本</text>
+  <text x="56" y="490" font-size="10.5" fill="#b91c1c">反例：把一次 200 ms 的 HTTP 调用写在 thenApply 里，就把公共池的一个 worker 占住了 200 ms</text>
+</svg>

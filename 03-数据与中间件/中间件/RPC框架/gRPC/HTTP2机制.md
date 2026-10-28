@@ -452,4 +452,4 @@ payload := make([]byte, n)
 - [Protobuf.md](Protobuf.md) — `DATA` 帧里那层载荷的编码规则
 - [README.md](README.md) — 本目录的目录导读（gRPC 知识库总纲）
 - [不使用protoc的gRPC.md](../../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) — 换 codec 换的只是 `DATA` 里那层，帧与流一层都不动
-> 反向引用（本篇被下列文档引到）：[gRPC-Web与Connect.md](gRPC-Web与Connect.md)、[可观测性.md](可观测性.md)、[安全与认证.md](安全与认证.md)、[性能与调优.md](性能与调优.md)、[故障排查与调试.md](故障排查与调试.md)
+> 反向引用（本篇被下列文档引到）：[从零实现HTTP服务端.md](../../../../01-编程语言/go/网络编程/从零实现HTTP服务端.md)、[接入HTTP客户端.md](../../../../01-编程语言/java/工程实践/接入HTTP客户端.md)、[从零实现HTTP服务端.md](../../../../01-编程语言/php/从零实现HTTP服务端.md)、[跨城传输全链路-HTTP篇.md](../../../../02-计算机基础/网络/跨城传输全链路-HTTP篇.md)、[通信协议.md](../Dubbo/通信协议.md)、[gRPC-Web与Connect.md](gRPC-Web与Connect.md)、[可观测性.md](可观测性.md)、[安全与认证.md](安全与认证.md)、[性能与调优.md](性能与调优.md)、[故障排查与调试.md](故障排查与调试.md)

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="450" viewBox="0 0 1000 450" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">四个协调器的分界：等的是事件、人到齐、资源，还是对手</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">先判「等的是一个事件还是一次到齐」，再判「这次等待能不能重复用」；API 长得像，语义完全不同。</text>
+
+  <rect x="32" y="92" width="936" height="340" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <rect x="56" y="112" width="440" height="146" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="72" y="136" font-size="14" font-weight="bold" fill="#1e40af">等事件：CountDownLatch</text>
+  <text x="72" y="160" font-size="12" fill="#1e3a8a">计数减到 0 就永久放行，晚到的 await 立刻返回</text>
+  <text x="72" y="182" font-size="12" fill="#1e3a8a">不能重用：归零后 countDown 不再生效，getCount 恒 0</text>
+  <text x="72" y="204" font-size="12" fill="#1e3a8a">结构：Sync extends AQS，计数就是 state</text>
+  <text x="72" y="230" font-size="11" fill="#1e3a8a">典型：启动预热、等 N 个初始化完成</text>
+  <text x="72" y="248" font-size="11" fill="#1e3a8a">实测第二轮 await(500) 只花 0.197 ms</text>
+
+  <rect x="512" y="112" width="432" height="146" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="528" y="136" font-size="14" font-weight="bold" fill="#15803d">等人到齐：CyclicBarrier</text>
+  <text x="528" y="160" font-size="12" fill="#166534">互相等，全员到齐后同时放行，可一轮一轮重复</text>
+  <text x="528" y="182" font-size="12" fill="#166534">action 由最后到达者执行，占的是它的时间</text>
+  <text x="528" y="204" font-size="12" fill="#166534">结构：ReentrantLock + Condition + Generation</text>
+  <text x="528" y="230" font-size="11" fill="#166534">典型：分片任务对齐、某一方失败要通知全员</text>
+  <text x="528" y="248" font-size="11" fill="#166534">实测 3 线程 × 3 轮全部通过，action 线程 t2/t0/t1</text>
+
+  <rect x="56" y="272" width="440" height="146" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="72" y="296" font-size="14" font-weight="bold" fill="#92400e">等资源：Semaphore</text>
+  <text x="72" y="320" font-size="12" fill="#78350f">许可数够不够，与线程数无关；取还成对</text>
+  <text x="72" y="342" font-size="12" fill="#78350f">许可没有上限：release 写多了直接放大并发度</text>
+  <text x="72" y="364" font-size="12" fill="#78350f">结构：Sync extends AQS + Fair / Nonfair 两个子类</text>
+  <text x="72" y="390" font-size="11" fill="#78350f">典型：限制同时写盘、连接数、外部接口 QPS</text>
+  <text x="72" y="408" font-size="11" fill="#78350f">实测 1 → release×2 → 3，acquire(3) → 0</text>
+
+  <rect x="512" y="272" width="432" height="146" rx="6" fill="#ede9fe" stroke="#8b5cf6"/>
+  <text x="528" y="296" font-size="14" font-weight="bold" fill="#5b21b6">等对手：Exchanger</text>
+  <text x="528" y="320" font-size="12" fill="#4c1d95">严格两两配对，多一个少一个都不行</text>
+  <text x="528" y="342" font-size="12" fill="#4c1d95">没有暂存语义，先到者必须等对方出现</text>
+  <text x="528" y="364" font-size="12" fill="#4c1d95">结构：自建 Slot[] arena + Node 栈，不用 AQS</text>
+  <text x="528" y="390" font-size="11" fill="#4c1d95">典型：两阶段流水线的中间结果交接</text>
+  <text x="528" y="408" font-size="11" fill="#4c1d95">实测单人 exchange 200.3 ms 后 TimeoutException</text>
+</svg>

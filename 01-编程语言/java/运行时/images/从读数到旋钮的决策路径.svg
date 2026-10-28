@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="838" viewBox="0 0 1000 838" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="838" fill="#ffffff"/>
+<defs>
+<marker id="arr" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+</defs>
+
+<text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">从三个读数定位到一根旋钮</text>
+<text x="40" y="58" font-size="13" fill="#64748b">先判断问题落在哪根轴上，再只动对应的那一个参数；括号内是本篇实测的读数</text>
+
+<rect x="70" y="80" width="860" height="54" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="490" y="104" font-size="12" font-weight="bold" text-anchor="middle" fill="#1e3a8a">① 读三个数：单次停顿 5.405 ms ｜ 次数与总停顿 15 次 / 43 ms（-Xmx256m）｜ 老年代 Old regions 2-&gt;2</text>
+<text x="490" y="124" font-size="11" text-anchor="middle" fill="#334155">三个数都正常就到此为止；有异常才往下走判据</text>
+
+<line x1="110" y1="134" x2="110" y2="691" stroke="#334155" stroke-width="1.5"/>
+<line x1="110" y1="201" x2="134" y2="201" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="110" y1="299" x2="134" y2="299" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="110" y1="397" x2="134" y2="397" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="110" y1="495" x2="134" y2="495" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="110" y1="593" x2="134" y2="593" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="110" y1="691" x2="134" y2="691" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+
+<rect x="140" y="158" width="790" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="152" y="170" width="26" height="26" rx="13" fill="#2563eb"/>
+<text x="165" y="188" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">1</text>
+<text x="192" y="182" font-size="12" font-weight="bold" fill="#0f172a">现象：单次 Minor 停顿长、次数不多</text>
+<text x="192" y="206" font-size="12" fill="#334155">指向：新生代太大　｜　旋钮：缩小 -Xmn 或调大 NewRatio　｜　展开：第七节</text>
+<text x="192" y="230" font-size="11" fill="#64748b">停顿随新生代变大而变长，代价是次数变多</text>
+
+<rect x="140" y="256" width="790" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="152" y="268" width="26" height="26" rx="13" fill="#2563eb"/>
+<text x="165" y="286" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">2</text>
+<text x="192" y="280" font-size="12" font-weight="bold" fill="#0f172a">现象：Minor 次数极多、每次都很短</text>
+<text x="192" y="304" font-size="12" fill="#334155">指向：新生代太小，或分配太猛　｜　旋钮：先查分配速率，再放大新生代　｜　第七、九节</text>
+<text x="192" y="328" font-size="11" fill="#64748b">分配速率高时扩新生代只是把问题推后，先改代码</text>
+
+<rect x="140" y="354" width="790" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="152" y="366" width="26" height="26" rx="13" fill="#b45309"/>
+<text x="165" y="384" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">3</text>
+<text x="192" y="378" font-size="12" font-weight="bold" fill="#0f172a">现象：Full GC 变多、老年代回收量约等于 0</text>
+<text x="192" y="402" font-size="12" fill="#334155">指向：存活集顶到堆上限　｜　旋钮：加堆或减对象（调收集器无效）　｜　第八节</text>
+<text x="192" y="426" font-size="11" fill="#64748b">实测 ParOldGen 31468K 到 31460K：收了半天只回收 8 KB</text>
+
+<rect x="140" y="452" width="790" height="86" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<rect x="152" y="464" width="26" height="26" rx="13" fill="#b45309"/>
+<text x="165" y="482" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">4</text>
+<text x="192" y="476" font-size="12" font-weight="bold" fill="#0f172a">现象：G1 在 64 MB 堆上直接 OOM</text>
+<text x="192" y="500" font-size="12" fill="#334155">指向：大对象超过 region 的一半　｜　旋钮：换 Parallel / Serial 或调大 G1HeapRegionSize　｜　6.2</text>
+<text x="192" y="524" font-size="11" fill="#64748b">同一负载 Serial 203 ms、Parallel 227 ms 都能跑完</text>
+
+<rect x="140" y="550" width="790" height="86" rx="8" fill="#fef3c7" stroke="#b45309"/>
+<rect x="152" y="562" width="26" height="26" rx="13" fill="#b45309"/>
+<text x="165" y="580" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">5</text>
+<text x="192" y="574" font-size="12" font-weight="bold" fill="#0f172a">现象：日志里 mixed 一直不执行</text>
+<text x="192" y="598" font-size="12" fill="#334155">指向：老年代没有值得收的 region　｜　旋钮：别动 MaxGCPauseMillis，先降存活率　｜　5.4</text>
+<text x="192" y="622" font-size="11" fill="#64748b">ergo 日志原话：candidate old regions not available</text>
+
+<rect x="140" y="648" width="790" height="86" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<rect x="152" y="660" width="26" height="26" rx="13" fill="#16a34a"/>
+<text x="165" y="678" font-size="12" font-weight="bold" text-anchor="middle" fill="#ffffff">6</text>
+<text x="192" y="672" font-size="12" font-weight="bold" fill="#0f172a">现象：设了 MaxGCPauseMillis 却没用</text>
+<text x="192" y="696" font-size="12" fill="#334155">指向：停顿目标本来就没有被超过　｜　旋钮：先撤掉这个参数，再找真正的瓶颈　｜　7.3</text>
+<text x="192" y="720" font-size="11" fill="#64748b">实测 200 到 20：次数 14 到 16、总停顿 68 到 73 ms，收紧只是变差</text>
+
+<rect x="70" y="754" width="860" height="54" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="500" y="778" font-size="12" font-weight="bold" text-anchor="middle" fill="#14532d">② 只动这一根，跑 3 轮取区间　→　③ 单次最长降、总停顿没涨才算有效　→　④ 落盘前核对生效值</text>
+<text x="500" y="798" font-size="11" text-anchor="middle" fill="#334155">生效值用 -XX:+PrintFlagsFinal 核一遍（8.4）：换收集器会顺带改掉别的默认值</text>
+</svg>

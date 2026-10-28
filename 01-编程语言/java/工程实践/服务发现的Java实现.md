@@ -409,7 +409,7 @@ MSYS_NO_PATHCONV=1 docker run --rm -v D:/www/dev-notes:/w -w /w/.workbuddy/tmp/r
 - [客户端负载均衡的Go实现.md](../../go/工程实践/客户端负载均衡的Go实现.md) — LB 策略在 Go 侧怎么写
 - [K8s部署与生命周期面试题.md](../../../06-工程实践/部署/k8s/K8s部署与生命周期面试题.md) — K8s 那一层的服务发现与 LB
 - [Nacos.md](../../../03-数据与中间件/中间件/注册与配置中心/Nacos.md) — Nacos 作为注册中心的配置与实操
-- [锁与AQS.md](../../../01-编程语言/java/并发/锁与AQS.md) — 不可变快照 + `AtomicInteger` 轮询背后的 CAS、可见性与原子类选择
-- [JMM与内存屏障.md](../../../01-编程语言/java/并发/JMM与内存屏障.md) — 推送回调线程与业务线程之间必须有一条 `happens-before` 链，这就是快照能被安全看到的原因
+- [锁与AQS.md](../../../01-编程语言/java/并发编程/锁与AQS.md) — 不可变快照 + `AtomicInteger` 轮询背后的 CAS、可见性与原子类选择
+- [JMM与内存屏障.md](../../../01-编程语言/java/并发编程/JMM与内存屏障.md) — 推送回调线程与业务线程之间必须有一条 `happens-before` 链，这就是快照能被安全看到的原因
 - [Spring-boot核心.md](../../../01-编程语言/java/Spring-boot核心.md) — `@LoadBalanced` 为什么只能加在 `@Bean` 上、`@Scheduled` 在多副本下为什么会重复执行
-> 反向引用（本篇被下列文档引到）：[接入etcd.md](接入etcd.md)、[负载均衡.md](../../../04-架构与系统/分布式/服务治理/负载均衡.md)
+> 反向引用（本篇被下列文档引到）：[接入Dubbo.md](接入Dubbo.md)、[接入etcd.md](接入etcd.md)、[负载均衡.md](../../../04-架构与系统/分布式/服务治理/负载均衡.md)

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">三个 300 ms 的任务：并行 307 ms，串行 901 ms</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">同样的三段等待，差别只在「三个阶段是重叠还是一段接一段」</text>
+
+  <rect x="40" y="104" width="920" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="128" font-size="12" font-weight="bold" fill="#0f172a">并行：allOf + 3 线程池</text>
+
+  <rect x="180" y="142" width="240" height="24" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="190" y="159" font-size="10.5" fill="#1e3a8a">A 300 ms</text>
+  <rect x="180" y="174" width="240" height="24" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="190" y="191" font-size="10.5" fill="#1e3a8a">B 300 ms</text>
+  <rect x="180" y="206" width="240" height="24" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="190" y="223" font-size="10.5" fill="#1e3a8a">C 300 ms</text>
+
+  <line x1="426" y1="136" x2="426" y2="238" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="436" y="134" font-size="10.5" font-weight="bold" fill="#b91c1c">≈ 307 ms 全部完成</text>
+  <text x="436" y="252" font-size="10" fill="#64748b">起点相同，三段完全重叠</text>
+
+  <rect x="40" y="280" width="920" height="160" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="304" font-size="12" font-weight="bold" fill="#0f172a">串行：三次 join</text>
+
+  <rect x="180" y="318" width="240" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="190" y="335" font-size="10.5" fill="#7c2d12">A 300 ms</text>
+  <rect x="420" y="350" width="240" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="430" y="367" font-size="10.5" fill="#7c2d12">B 300 ms</text>
+  <rect x="660" y="382" width="240" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="670" y="399" font-size="10.5" fill="#7c2d12">C 300 ms</text>
+
+  <line x1="901" y1="312" x2="901" y2="414" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="790" y="308" font-size="10.5" font-weight="bold" fill="#b91c1c">≈ 901 ms 全部完成</text>
+  <text x="180" y="428" font-size="10" fill="#64748b">后一段必须等前一段返回，等待无法重叠</text>
+
+  <rect x="40" y="456" width="920" height="76" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="482" font-size="11" font-weight="bold" fill="#0f172a">并行总耗时 ≈ 最慢的那一段（307 ms）；串行是三段之和（901 ms）</text>
+  <text x="56" y="508" font-size="10.5" fill="#334155">前提是池里真的有 3 个空闲线程；池只有 1 个线程时，allOf 会退化成串行</text>
+  <text x="56" y="524" font-size="10" fill="#b91c1c">allOf 的 join 返回 null，结果要自己从各个 future 上取</text>
+</svg>

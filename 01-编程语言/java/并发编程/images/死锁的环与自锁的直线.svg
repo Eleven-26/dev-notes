@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="668" viewBox="0 0 1000 668" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arDL" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arDLr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="668" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">死锁是两个环，自锁是一条直线</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">JVM 只能识别「环」：monitor 环与 ownable synchronizer 环；单线程池自锁不在其中</text>
+
+  <rect x="32" y="84" width="936" height="220" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="110" font-size="12" font-weight="bold" fill="#0f172a">① 两把 monitor 交叉持有：jstack 会打印 Found one Java-level deadlock</text>
+  <rect x="120" y="126" width="180" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="210" y="152" font-size="11.5" text-anchor="middle" fill="#1e3a8a">T1-A-then-B</text>
+  <rect x="700" y="126" width="180" height="42" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="790" y="152" font-size="11.5" text-anchor="middle" fill="#1e3a8a">T2-B-then-A</text>
+  <rect x="120" y="228" width="180" height="38" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.2"/>
+  <text x="210" y="252" font-size="11.5" text-anchor="middle" fill="#713f12">A（Object）</text>
+  <rect x="700" y="228" width="180" height="38" rx="6" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.2"/>
+  <text x="790" y="252" font-size="11.5" text-anchor="middle" fill="#713f12">B（Object）</text>
+
+  <line x1="210" y1="228" x2="210" y2="172" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+  <text x="222" y="206" font-size="10" fill="#475569">持有</text>
+  <line x1="790" y1="228" x2="790" y2="172" stroke="#334155" stroke-width="1.5" marker-end="url(#arDL)"/>
+  <text x="802" y="206" font-size="10" fill="#475569">持有</text>
+  <line x1="300" y1="160" x2="694" y2="238" stroke="#b91c1c" stroke-width="1.6" marker-end="url(#arDLr)"/>
+  <text x="430" y="184" font-size="10.5" fill="#b91c1c">T1 等 B</text>
+  <line x1="700" y1="160" x2="306" y2="238" stroke="#b91c1c" stroke-width="1.6" marker-end="url(#arDLr)"/>
+  <text x="510" y="216" font-size="10.5" fill="#b91c1c">T2 等 A</text>
+
+  <text x="52" y="290" font-size="10.5" fill="#334155">jstack 原文：waiting to lock monitor 0x…（object 0x…）, which is held by "T2-B-then-A"</text>
+
+  <rect x="32" y="316" width="936" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="342" font-size="12" font-weight="bold" fill="#0f172a">② 两把 ReentrantLock 交叉持有：同样是个环，只是等的东西换成了同步器</text>
+  <rect x="120" y="356" width="180" height="42" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="210" y="382" font-size="11.5" text-anchor="middle" fill="#4c1d95">T1-LA-then-LB</text>
+  <rect x="700" y="356" width="180" height="42" rx="6" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2"/>
+  <text x="790" y="382" font-size="11.5" text-anchor="middle" fill="#4c1d95">T2-LB-then-LA</text>
+  <text x="210" y="424" font-size="10.5" text-anchor="middle" fill="#475569">持有 LA</text>
+  <text x="790" y="424" font-size="10.5" text-anchor="middle" fill="#475569">持有 LB</text>
+  <line x1="300" y1="388" x2="694" y2="404" stroke="#b91c1c" stroke-width="1.6" marker-end="url(#arDLr)"/>
+  <line x1="700" y1="388" x2="306" y2="404" stroke="#b91c1c" stroke-width="1.6" marker-end="url(#arDLr)"/>
+  <text x="430" y="452" font-size="10.5" fill="#b91c1c">T1 等 LB ｜ T2 等 LA；MXBean 一样返回两个线程 id，状态是 WAITING 而不是 BLOCKED</text>
+
+  <rect x="32" y="508" width="936" height="128" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1"/>
+  <text x="52" y="534" font-size="12" font-weight="bold" fill="#9a3412">③ 单线程池自锁不是环，是一条直线：没有任何检测工具会报它</text>
+  <rect x="120" y="550" width="220" height="40" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="230" y="575" font-size="11" text-anchor="middle" fill="#9a3412">solo-worker 等 inner</text>
+  <rect x="470" y="550" width="220" height="40" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="580" y="575" font-size="11" text-anchor="middle" fill="#9a3412">inner 排在队尾</text>
+  <rect x="760" y="550" width="180" height="40" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="850" y="575" font-size="11" text-anchor="middle" fill="#9a3412">池里只有 1 个线程</text>
+  <line x1="340" y1="570" x2="464" y2="570" stroke="#ea580c" stroke-width="1.6" marker-end="url(#arDL)"/>
+  <line x1="690" y1="570" x2="754" y2="570" stroke="#ea580c" stroke-width="1.6" marker-end="url(#arDL)"/>
+  <text x="52" y="616" font-size="10.5" fill="#9a3412">实测 findDeadlockedThreads 返回 null，jstack 里也没有 deadlock 段，只有 WAITING (parking) on FutureTask</text>
+</svg>

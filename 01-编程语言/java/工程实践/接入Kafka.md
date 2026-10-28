@@ -413,3 +413,4 @@ java-lab-group   java-lab   0          3               3               0
 - **下游机制**：[消息可靠性.md](../../../03-数据与中间件/中间件/消息队列/Kafka/消息可靠性.md) — `acks` / 幂等 / 事务的服务端侧语义
 - **下游机制**：[消费者组与重平衡.md](../../../03-数据与中间件/中间件/消息队列/Kafka/消费者组与重平衡.md) — `concurrency` 与分区数的关系
 - **运维/配置**：[Spring-boot核心.md](../Spring-boot核心.md) — `@KafkaListener` 依赖的容器与 Bean 生命周期基础
+> 反向引用（本篇被下列文档引到）：[接入Pulsar.md](接入Pulsar.md)

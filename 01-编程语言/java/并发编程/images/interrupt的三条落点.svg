@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <defs>
+    <marker id="m3" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">interrupt() 落在哪类等待上，决定这次「打招呼」有没有用</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">它只做两件事：置位中断标志；如果目标正卡在可中断的等待上，唤醒它并抛 InterruptedException。</text>
+
+  <rect x="32" y="92" width="936" height="300" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <rect x="56" y="200" width="150" height="64" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="76" y="228" font-size="14" font-weight="bold" fill="#1e40af">interrupt()</text>
+  <text x="76" y="248" font-size="11" fill="#1e3a8a">只是置位 + 唤醒</text>
+
+  <rect x="316" y="116" width="630" height="68" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="332" y="142" font-size="13" font-weight="bold" fill="#15803d">可中断的等待：sleep / wait / join / park</text>
+  <text x="332" y="164" font-size="12" fill="#166534">抛 InterruptedException，且标志已被清掉（实测 false）</text>
+
+  <rect x="316" y="208" width="630" height="68" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="332" y="234" font-size="13" font-weight="bold" fill="#92400e">等 monitor（BLOCKED）与忙循环</text>
+  <text x="332" y="256" font-size="12" fill="#78350f">只置标志，不解除阻塞（实测仍 BLOCKED，等满 1184~1190 ms）</text>
+
+  <rect x="316" y="300" width="630" height="68" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="332" y="326" font-size="13" font-weight="bold" fill="#334155">已 TERMINATED 的线程</text>
+  <text x="332" y="348" font-size="12" fill="#475569">无机会处理，但标志照样置上（实测 isInterrupted=true）</text>
+
+  <line x1="210" y1="228" x2="310" y2="152" stroke="#475569" stroke-width="1.4" marker-end="url(#m3)"/>
+  <line x1="210" y1="232" x2="310" y2="240" stroke="#475569" stroke-width="1.4" marker-end="url(#m3)"/>
+  <line x1="210" y1="238" x2="310" y2="332" stroke="#475569" stroke-width="1.4" marker-end="url(#m3)"/>
+
+  <rect x="32" y="404" width="936" height="32" rx="6" fill="#f1f5f9"/>
+  <text x="48" y="425" font-size="12" fill="#334155">要「等不到就走」的场景，一开始就别用内置锁：ReentrantLock.lockInterruptibly 实测从打断到线程结束 0 ms。</text>
+
+  <rect x="32" y="442" width="936" height="20" rx="4" fill="#f8fafc"/>
+  <text x="48" y="456" font-size="11" fill="#64748b">AQS 系等待在转储里报 WAITING 而不是 BLOCKED，因为走的是 park，没有 monitor 可等。</text>
+</svg>

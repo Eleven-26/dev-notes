@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="arVTS" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一次阻塞调用：挂载 → 卸下 → 重新挂载</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">卸下时栈被搬到堆上，载体立刻空出来；恢复时再挂到任意一个空闲载体</text>
+
+  <rect x="50" y="150" width="200" height="96" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="150" y="178" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#1e3a8a">RUNNABLE</text>
+  <text x="150" y="200" text-anchor="middle" font-size="10.5" fill="#1d4ed8">已挂载在载体上</text>
+  <text x="150" y="222" text-anchor="middle" font-size="9.5" fill="#64748b">载体被占用</text>
+
+  <rect x="290" y="150" width="200" height="96" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="390" y="178" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#7c2d12">WAITING</text>
+  <text x="390" y="200" text-anchor="middle" font-size="10.5" fill="#9a3412">已从载体卸下</text>
+  <text x="390" y="222" text-anchor="middle" font-size="9.5" fill="#64748b">栈搬到堆上，载体空出</text>
+
+  <rect x="530" y="150" width="200" height="96" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.4"/>
+  <text x="630" y="178" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#334155">队列中</text>
+  <text x="630" y="200" text-anchor="middle" font-size="10.5" fill="#475569">事件已经到达</text>
+  <text x="630" y="222" text-anchor="middle" font-size="9.5" fill="#64748b">等一个空闲载体</text>
+
+  <rect x="770" y="150" width="200" height="96" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="870" y="178" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#14532d">RUNNABLE</text>
+  <text x="870" y="200" text-anchor="middle" font-size="10.5" fill="#166534">重新挂载</text>
+  <text x="870" y="222" text-anchor="middle" font-size="9.5" fill="#64748b">可能换了一个载体</text>
+
+  <line x1="250" y1="198" x2="290" y2="198" stroke="#334155" stroke-width="1.5" marker-end="url(#arVTS)"/>
+  <line x1="490" y1="198" x2="530" y2="198" stroke="#334155" stroke-width="1.5" marker-end="url(#arVTS)"/>
+  <line x1="730" y1="198" x2="770" y2="198" stroke="#334155" stroke-width="1.5" marker-end="url(#arVTS)"/>
+
+  <polyline points="870,246 870,330 150,330 150,250" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arVTS)"/>
+  <rect x="250" y="352" width="700" height="40" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="266" y="378" font-size="10.5" fill="#475569">循环：每次阻塞都会走一遍；载体在等待期间跑去执行别的虚拟线程</text>
+
+  <rect x="40" y="410" width="920" height="100" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="438" font-size="11.5" font-weight="bold" fill="#0f172a">JDK 24 起 synchronized 不再钉住载体（JEP 491）：8 个虚拟线程实测 254~273 ms</text>
+  <text x="56" y="462" font-size="11" fill="#334155">JDK 21.0.12 同一份代码：synchronized 440~455 ms、ReentrantLock 232~259 ms，前者正好两轮</text>
+  <text x="56" y="488" font-size="11" fill="#b91c1c">JDK 21 开 -Djdk.tracePinnedThreads=full 会打出 reason:MONITOR；JDK 24 无任何输出</text>
+</svg>

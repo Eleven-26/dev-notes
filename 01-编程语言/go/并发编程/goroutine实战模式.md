@@ -564,6 +564,6 @@ func (s *Service) FinanceExport(ctx context.Context, op Operator, month string, 
 - [GMP调度.md](../运行时/GMP调度.md) — 起了这么多协程，谁在调度它们
 - [数据导入导出设计.md](../../../04-架构与系统/系统设计/数据导入导出设计.md) — 第三节实例的完整设计（异步任务、进度回报、幂等）
 - [稳定性/README.md](../../../04-架构与系统/分布式/稳定性/README.md) — 下游被打穿之后怎么办
-- [线程池.md](../../java/并发/线程池.md) — Java 侧 worker 池的对照：七参数、有界队列与四种拒绝策略
+- [线程池.md](../../java/并发编程/线程池.md) — Java 侧 worker 池的对照：七参数、有界队列与四种拒绝策略
 
-> 反向引用（本篇被下列文档引到）：[测试与Mock.md](../工程实践/测试与Mock.md)、[Go内存模型.md](Go内存模型.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[sync.Pool.md](sync.Pool.md)、[并发限制器.md](../../../04-架构与系统/分布式/稳定性/并发限制器.md)、[负载保护.md](../../../04-架构与系统/分布式/稳定性/负载保护.md)
+> 反向引用（本篇被下列文档引到）：[测试与Mock.md](../工程实践/测试与Mock.md)、[Go内存模型.md](Go内存模型.md)、[errgroup与pipeline.md](errgroup与pipeline.md)、[sync.Pool.md](sync.Pool.md)、[CompletableFuture与异步编排.md](../../java/并发编程/CompletableFuture与异步编排.md)、[虚拟线程.md](../../java/并发编程/虚拟线程.md)、[并发限制器.md](../../../04-架构与系统/分布式/稳定性/并发限制器.md)、[负载保护.md](../../../04-架构与系统/分布式/稳定性/负载保护.md)

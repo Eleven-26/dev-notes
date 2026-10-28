@@ -8,16 +8,85 @@
 > 算法层的通用原理见 [垃圾回收](../../../02-计算机基础/垃圾回收/)；`jcmd` 的命令家族与 JFR 见
 > [JFR与诊断工具.md](JFR与诊断工具.md)；CPU / 死锁的现场流程见 [线上问题排查.md](线上问题排查.md)。
 >
-> 内容整理自个人学习笔记，**结论配套两套实测坐标**：JDK 1.8.0_321（Windows / server class / 8 核）
-> 与 Temurin 24.0.2（Linux 容器 / 4 vCPU / 5.9 GB）。**日志格式两版完全不同**，正文每一节都分别给出写法。
+> 内容整理自个人学习笔记，素材见 [素材清单](../../../素材清单.md)。**结论配套两套实测坐标**：
+> JDK 1.8.0_321（Windows / server class / 8 核）与 Temurin 24.0.2+12（Linux 容器 / 4 vCPU / 5.9 GB）；
+> 第 11.1 节的两套启动参数另在 `eclipse-temurin:24-jdk` 与 `eclipse-temurin:8-jdk`（1.8.0_504）容器里验证。
+> **日志格式两版完全不同**，正文每一节都分别给出写法。
+>
+> 实测口径：JDK 8 侧第 3.1 / 4.1 / 5.4 节的日志原文、第 6.1 / 7.1 节的参数曲线、第 8.1 / 8.2 / 8.4 节的命令输出
+> 为当时真跑的原始输出、未重跑；JDK 24 侧第 2.1 ~ 2.2 / 3.2 / 4.2 ~ 4.3 / 5.2 ~ 5.4 / 6.2 / 7.2 ~ 7.3 节
+> 全部真跑、3 轮取区间。⚠️ **未实测**：K8s 里接日志采集的落盘行为（只验证了 `file=` 能写）、
+> `gc+phases=debug` 在长驻服务上的磁盘占用（只在一份 640 ms 的负载上量到 1495 行）、
+> G1 的 `Pause Full (G1 Compaction Pause)` 原文（`Evacuation Failure` 复现了，Full 没跑出来）。
+> 复现用 `Churn.java`（固定负载）在 `.workbuddy/tmp/exp/java/gc/`。
 
 ---
 
-## 一、先认版本：日志开关换了一整套
+## 一、从零：一份 GC 日志能回答什么？
+
+**本节要点**：GC 调优是一条固定链路 —— **开日志 → 读三个数 → 定位到一根轴 → 只动一个旋钮**；
+这一节先把整条链路走完一遍，后面各节再分别展开其中一环。
+
+### 1.1 一次 P99 抖动，日志能告诉你什么
+
+假设线上服务的 P99 从 40 ms 涨到 300 ms。第一步不是猜参数，而是让 JVM 把每次停顿写下来：
+
+```bash
+# JDK 9+（本文的默认写法）
+java -Xmx2g -Xlog:gc,gc+heap=info:file=/var/log/app/gc.log:time,uptime,level,tags -jar app.jar
+
+# JDK 8：老项目抄来的脚本大概是这个样子
+java -Xmx2g -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/var/log/app/gc.log -jar app.jar
+```
+
+拿到日志后只读三样东西：**这次停顿多长、回收了多少、老年代动没动**。
+
+| 要读的数 | 在日志的哪一段 | 健康的样子 | 异常指向 |
+|---|---|---|---|
+| 停顿 | JDK 8 的 `0.0072831 secs` / JDK 9+ 的 `5.405ms` | 亚毫秒到几毫秒 | 十几毫秒以上先看 5.3 的三段拆解 |
+| 回收量 | `回收前 -> 回收后(容量)` | 新生代差值 ≈ 整堆差值 | 整堆差值远大于新生代差值 = 有对象在晋升 |
+| 老年代 | JDK 8 的 `[ParOldGen: ...]` 直接给；G1 要开 `gc+heap` | `Old regions: 2->2` | 只涨不降 = 存活集在长 |
+
+以本文实测日志的一行为例：
+
+```text
+[0.658s][info][gc] GC(4) Pause Young (Prepare Mixed) (G1 Humongous Allocation) 253M->65M(256M) 5.405ms
+```
+
+`5.405ms` 是停顿（健康），`253M->65M` 看着回收了 188 MB（**可疑**，见 1.3），
+再补一档 `-Xlog:gc+heap=info` 才看到真相：`Old regions: 2->2`（老年代没动）、
+`Humongous regions: 40->40`（那 32 MB 大对象一直占着）。
+
+### 1.2 从「一个数」到「一根旋钮」
+
+读完三个数，下一步不是一次改五个参数，而是**先判断是哪根轴，再只动一根**：
+
+| 读到的现象 | 指向的问题 | 先动的旋钮 | 展开在 |
+|---|---|---|---|
+| 单次 Minor 停顿长、次数不多 | 新生代太大 | 缩小 `-Xmn` 或调大 `NewRatio` | 第七节 |
+| 次数极多、每次都很短 | 新生代太小，或分配太猛 | 先查分配速率，再放大新生代 | 第七节、第九节 |
+| Full GC 变多、老年代回收量≈0 | 存活集顶到堆上限 | 加堆或减对象，**调收集器无效** | 第八节 |
+| G1 在 64 MB 堆上直接 OOM | 大对象超过 region 的一半 | 换 Parallel / Serial 或调大 `G1HeapRegionSize` | 6.2 |
+| 日志里 mixed 一直不执行 | 老年代没有值得收的 region | 别动 `MaxGCPauseMillis`，先降存活率 | 5.4 |
+| 设了停顿目标却没用 | 目标本来就没有被超过 | 先把这个参数撤掉 | 7.3 |
+
+![三个读数分叉成六条判据，每条判据只指向一根旋钮](images/从读数到旋钮的决策路径.svg)
+
+**图怎么读**：顶部先确认三个数是否都落在健康区间，有异常才落到下面六条判据之一；每条判据的第三行就是该动的唯一旋钮，最底一条是「一次只改一个」的收尾动作。
+
+### 1.3 三个反直觉点
+
+- **老开关在新版本上是硬失败、不是警告**：`-XX:+PrintGCDateStamps` 在 JDK 24 上直接 `Could not create the Java Virtual Machine`，而且 JVM **一次只报第一个不认识的参数**（第二节）；
+- **G1 那句 `M->M(M)` 是整堆一个数**，看不出老年代动没动 —— `253M->65M` 里混着「新生代被清空」和「老年代几乎没回收」两种情况（第三节）；
+- **把 `MaxGCPauseMillis` 从 200 收紧到 20，总停顿反而从 68 ms 涨到 73 ms**（三轮 73 / 85 / 74）：目标没被超过时，收紧它只增加次数（第七节）。
+
+---
+
+## 二、先认版本：日志开关换了一整套
 
 **本节要点**：JDK 9 之后 `PrintGCDetails` 这一族参数被**统一日志框架**取代，JDK 24 上拿老参数启动会直接失败 —— 调优第一步永远是确认自己手上是哪个版本的日志。
 
-### 1.1 两套开关的对照
+### 2.1 两套开关的对照
 
 | 想知道什么 | JDK 8 写法 | JDK 9+ 写法 |
 |---|---|---|
@@ -42,7 +111,7 @@ Error: A fatal exception has occurred. Program will exit.
 ⭐ 注意它报的是 `PrintGCDateStamps` 而不是 `PrintGCDetails` —— **JVM 一次只报第一个不认识的参数**，
 所以"改掉这个就能起来"是错觉，得逐个试。从老项目抄启动脚本时，最快的做法是 `java <参数> -version` 跑一遍。
 
-### 1.2 JDK 24 的日志长什么样
+### 2.2 JDK 24 的日志长什么样
 
 `-Xlog:gc`（默认级别 `info`）在 G1 下的完整输出（`-Xmx256m`，512 MB 分配 / 32 MB 存活 / 每块 1 MB）：
 
@@ -69,11 +138,11 @@ Error: A fatal exception has occurred. Program will exit.
 
 ---
 
-## 二、认字段：一次 Minor GC 的每一段
+## 三、认字段：一次 Minor GC 的每一段
 
 **本节要点**：JDK 8 的方括号格式与 JDK 9+ 的标签格式字段不同，但**要看的三个数一样**：这次停顿多长、回收了多少、老年代动没动。
 
-### 2.1 JDK 8 的 Parallel 日志
+### 3.1 JDK 8 的 Parallel 日志
 
 ```text
 2026-09-27T23:07:12.077+0800: 0.175: [GC (Allocation Failure) [PSYoungGen: 64799K->4920K(76288K)] 64799K->4928K(251392K), 0.0072831 secs] [Times: user=0.00 sys=0.00, real=0.01 secs]
@@ -91,7 +160,7 @@ Error: A fatal exception has occurred. Program will exit.
 
 ⭐ **两个数一眼定健康**：① `0.0072831 secs` 就是停顿，亚毫秒到几毫秒都正常；② 对比新生代与整堆的前后差值 —— 这次新生代回收了 59879 KB，整堆只回收 59871 KB，说明**这次几乎全是短命对象，老年代基本没动**。反过来，如果整堆回收量远大于新生代回收量，说明对象在被晋升。
 
-### 2.2 JDK 24 的 G1 日志
+### 3.2 JDK 24 的 G1 日志
 
 同一行在统一日志下的形态：
 
@@ -127,10 +196,10 @@ Error: A fatal exception has occurred. Program will exit.
 
 **图怎么读**：最上面是把日志原文黑底摆出来，下面五条按片段从左到右拆开，最后一列写清"读到这一段能回答什么、不能回答什么"。
 
-### 2.3 一次 Full GC 的日志
+### 3.3 一次 Full GC 的日志
 
 JDK 8 的 Full GC 看 `[ParOldGen: 31468K->31460K(32768K)]` 这一段：**老年代回收前后的差值就是这次 Full GC 的产出**。
-差值接近 0 → 堆不够了（详见 [垃圾回收原理与收集器.md](垃圾回收原理与收集器.md) 1.3）。
+差值接近 0 → 堆不够了（详见 [垃圾回收原理与收集器.md](垃圾回收原理与收集器.md) 2.3）。
 
 G1 在 JDK 24 上的 Full GC 是另一回事：它是**退化后的整堆压缩**，日志长这样（触发往往来自 `System.gc()` 或并发收集跟不上）：
 
@@ -144,11 +213,11 @@ G1 在 JDK 24 上的 Full GC 是另一回事：它是**退化后的整堆压缩*
 
 ---
 
-## 三、认一次并发周期
+## 四、认一次并发周期
 
 **本节要点**：并发收集器的日志是"讲故事"的 —— 要能从一串并发阶段里挑出**哪两条才是 STW**，剩下的都是可以忽略的并发耗时。
 
-### 3.1 CMS 的七个阶段（JDK 8）
+### 4.1 CMS 的七个阶段（JDK 8）
 
 CMS 的日志是"讲故事"最完整的，逐步看（`-XX:+UseConcMarkSweepGC`）：
 
@@ -177,9 +246,9 @@ CMS 的日志是"讲故事"最完整的，逐步看（`-XX:+UseConcMarkSweepGC`�
 
 **图怎么读**：横条按日志时间戳排出七个阶段，只有红色两块（① Initial Mark、⑤ Final Remark）带 `[GC` 前缀、是 STW；下面那块面板把每行日志的实测耗时对齐到对应阶段。
 
-### 3.2 G1 的并发周期（JDK 24）
+### 4.2 G1 的并发周期（JDK 24）
 
-同一件事在 G1 上的形态（取自 1.2 那份日志）：
+同一件事在 G1 上的形态（取自 2.2 那份日志）：
 
 ```text
 [0.273s][info][gc] GC(3) Concurrent Mark Cycle
@@ -192,7 +261,7 @@ CMS 的日志是"讲故事"最完整的，逐步看（`-XX:+UseConcMarkSweepGC`�
 `Pause Remark`（4.98 ms）与 `Pause Cleanup`（0.06 ms）两条带 `Pause` 前缀 = STW。
 **看 G1 的停顿问题，只数带 `Pause` 的行**，其余全是可以和业务并行跑的。
 
-### 3.3 体量：G1 比 Parallel 多打多少
+### 4.3 体量：G1 比 Parallel 多打多少
 
 同一份负载（512 MB 分配 / 32 MB 存活 / `-Xmx256m`）：
 
@@ -210,11 +279,11 @@ CMS 的日志是"讲故事"最完整的，逐步看（`-XX:+UseConcMarkSweepGC`�
 
 ---
 
-## 四、把日志开到什么级别
+## 五、把日志开到什么级别
 
 **本节要点**：统一日志是 `tag=级别` 的组合，**级别决定体量、tag 决定看什么**；四档够用，再高就是给编译器看的。
 
-### 4.1 四档的实际输出
+### 5.1 四档的实际输出
 
 | 命令 | 能回答什么 | 实测体量（同一份 640 ms 负载） |
 |---|---|---|
@@ -227,7 +296,7 @@ CMS 的日志是"讲故事"最完整的，逐步看（`-XX:+UseConcMarkSweepGC`�
 
 **图怎么读**：四行按行数从少到多往下排，底色由绿转红 —— 最下面那档比最上面多出 120 倍的行，只为了回答"这次停顿的三段各花了多久"。
 
-### 4.2 `gc+age=trace`：晋升年龄怎么看
+### 5.2 `gc+age=trace`：晋升年龄怎么看
 
 ```text
 [0.096s][debug][gc,age] GC(0) Desired survivor size 2097152 bytes, new threshold 15 (max threshold 15)
@@ -251,7 +320,7 @@ CMS 的日志是"讲故事"最完整的，逐步看（`-XX:+UseConcMarkSweepGC`�
 [0.218s][debug][gc,age] GC(1) Desired survivor size 1572864 bytes, new threshold 1 (max threshold 2)
 ```
 
-### 4.3 `gc+phases=debug`：停顿的三段
+### 5.3 `gc+phases=debug`：停顿的三段
 
 ```text
 [0.292s][info ][gc,phases] GC(4)   Pre Evacuate Collection Set: 0.56ms
@@ -263,7 +332,7 @@ CMS 的日志是"讲故事"最完整的，逐步看（`-XX:+UseConcMarkSweepGC`�
 ⭐ 判读抓手：**`Pre` 大 → 根扫描慢；`Evacuate` 大 → 存活集大；`Post` 大 → RSet / 卡表 / 引用处理慢**。
 同一份 debug 日志里每个阶段还带 `Min/Avg/Max/Diff/Sum/Workers` 六个统计量，能看出**并行度有没有用满**。
 
-### 4.4 `gc+ergo=trace`：G1 的决策日志
+### 5.4 `gc+ergo=trace`：G1 的决策日志
 
 JDK 8 里用 `-XX:+PrintAdaptiveSizePolicy` 看的两行 CSet 预测：
 
@@ -288,11 +357,11 @@ JDK 24 上对应的开关是 `-Xlog:gc+ergo=trace`，输出的决策种类更多
 
 ---
 
-## 五、只改 `-Xmx`
+## 六、只改 `-Xmx`
 
 **本节要点**：堆越大 → 次数越少、单次越贵；**总停顿可能降，但延迟看的是单次与 P99**。这条趋势跨版本稳定，具体数值不。
 
-### 5.1 JDK 8 / Parallel
+### 6.1 JDK 8 / Parallel
 
 固定 512 MB 分配压力、存活 32 MB，只改最大堆：
 
@@ -311,7 +380,7 @@ JDK 24 上对应的开关是 `-Xlog:gc+ergo=trace`，输出的决策种类更多
 > ⚠️ 这张表是**单次运行**的读数：GC 次数受并发调度影响，重复跑有 ±20% 左右波动（复核实测 38 / 8 / 4 次、单次均摊 4.8 / 8.5 / 9.5 ms）。
 > **稳定的只有两条趋势**：次数随堆增大而减少、单次停顿随堆增大而上升 —— 引用数字时请带上这两条趋势，而不是某个具体值。
 
-### 5.2 JDK 24 / G1
+### 6.2 JDK 24 / G1
 
 同一份负载、只改 `-Xmx`（3 轮）：
 
@@ -323,19 +392,19 @@ JDK 24 上对应的开关是 `-Xlog:gc+ergo=trace`，输出的决策种类更多
 
 ⭐ **`-Xmx64m` 这一格是空的，本身就是结论**：G1 的 region 只有 1 MB，1 MB 的对象是 humongous，
 32 MB 存活对象要吃掉 32~64 个 region，而整堆才 64 个。同样的负载 **Serial 203 ms、Parallel 227 ms 都能跑完**
-（原理见 [垃圾回收原理与收集器.md](垃圾回收原理与收集器.md) 5.2）。这是"**小堆 + 大对象别用 G1**"的硬证据，
+（原理见 [垃圾回收原理与收集器.md](垃圾回收原理与收集器.md) 6.2）。这是"**小堆 + 大对象别用 G1**"的硬证据，
 也是容器里给 64 MB 堆的推荐落点。
 
 1024m 那一列的总停顿（27 / 15 / 15 ms）明显低于 256m（43 / 50 / 38 ms），次数也从 15 掉到 3 ——
-**G1 在大堆上确实更省**，因为每次 only 挑几个 region；而 Parallel 在大堆上单次会更贵（5.1 的结论）。
+**G1 在大堆上确实更省**，因为每次 only 挑几个 region；而 Parallel 在大堆上单次会更贵（6.1 的结论）。
 
 ---
 
-## 六、只改新生代
+## 七、只改新生代
 
 **本节要点**：`NewRatio = N` 表示**新生代 : 老年代 = 1 : N**（不是占比）；而在 G1 下 **`NewRatio` 与 `-Xmn` 仍然生效、`SurvivorRatio` 已失效**。
 
-### 6.1 JDK 8：`NewRatio`（`-Xmx512m`）
+### 7.1 JDK 8：`NewRatio`（`-Xmx512m`）
 
 `NewRatio = N` 表示 **新生代 : 老年代 = 1 : N**（⚠️ 不是"新生代的占比"，这是最容易记反的一个）：
 
@@ -355,7 +424,7 @@ JDK 24 上对应的开关是 `-Xlog:gc+ergo=trace`，输出的决策种类更多
 | 单次 Minor GC 停顿太长 | **缩小新生代**（复制量正比于存活集，但 Eden 大→扫描/复制面大） |
 | 老年代增长快、Full GC 频繁 | 先查**晋升速率**（是不是 Survivor 太小导致过早晋升），再考虑放大老年代 |
 
-### 6.2 JDK 24 / G1：哪些参数还认
+### 7.2 JDK 24 / G1：哪些参数还认
 
 G1 没有"连续的年轻代"，但 `NewRatio` 与 `-Xmn` 被翻译成"young region 的最大数量"。
 实测（`-Xmx256m`，看 Eden 的 region 容量上限）：
@@ -375,7 +444,7 @@ G1 没有"连续的年轻代"，但 `NewRatio` 与 `-Xmn` 被翻译成"young reg
 - **`-Xmn` 比 `NewRatio` 更直接**（47 / 67 是绝对值，不受老年代比例牵动）；
 - **`SurvivorRatio` 确实失效了** —— G1 的 survivor 数量由 `-XX:MaxGCPauseMillis` 与 `G1AdaptiveSurvivorSizePolicy` 决定，不读这个比例。
 
-### 6.3 `MaxGCPauseMillis` 不是越小越好
+### 7.3 `MaxGCPauseMillis` 不是越小越好
 
 `-Xmx512m`、1024 MB 分配 / 64 MB 存活 / 每块 64 KB，只改停顿目标（3 轮）：
 
@@ -391,11 +460,11 @@ G1 没有"连续的年轻代"，但 `NewRatio` 与 `-Xmn` 被翻译成"young reg
 
 ---
 
-## 七、现场诊断三件套
+## 八、现场诊断三件套
 
 **本节要点**：从"是不是 GC 的问题"到"到底谁占着内存"，三步固定动作；**`jstat` 看趋势、`jcmd` 看精确值、`jmap` 看对象**。
 
-### 7.1 先确认「是不是 GC 的问题」
+### 8.1 先确认「是不是 GC 的问题」
 
 ```bash
 # 每 1 秒打一次，共 5 次；看 O（老年代使用率）、FGC 是否在涨
@@ -417,7 +486,7 @@ jstat -gcutil <pid> 1000 5
 - `YGC` 涨得快而 `YGCT` 很小 = **分配太猛**，先改代码；
 - `GCT` 占墙钟的比例（`GCT / 运行秒数`）超过 10% 就该动手了。
 
-### 7.2 要精确数字，用 `jstat -gc` 或 `jcmd`（不要用 JMX）
+### 8.2 要精确数字，用 `jstat -gc` 或 `jcmd`（不要用 JMX）
 
 ```bash
 jstat -gc <pid>          # 各代容量与使用量（单位 KB），比 -gcutil 精确
@@ -438,7 +507,7 @@ Metaspace       used 3614K, capacity 4600K, committed 4864K, reserved 1056768K
 
 ⚠️ **实测踩到的坑**：用 `MemoryPoolMXBean.getUsage()`（JMX）读老年代用量，同一个程序连读三次得到 `0 / 4096 / 8192 KB` 三个不同值 —— **读数明显滞后于实际分配**。要做精确对照（比如验证 `PretenureSizeThreshold`），必须用 `jstat` / `jcmd` / GC 日志，**JMX 的峰值可用、瞬时值不可信**。
 
-### 7.3 看"到底是谁占着内存"
+### 8.3 看"到底是谁占着内存"
 
 ```bash
 jmap -histo <pid> | head -20            # 直方图：按类和对象数排序
@@ -459,7 +528,7 @@ jmap -dump:live,format=b,file=heap.hprof <pid>   # 堆快照，交给 MAT 看支
 
 `[B` = `byte[]`、`[I` = `int[]`、`[C` = `char[]`（JVM 内部类型签名）。⭐ **排第一的 `[B` 占了 12.1 MB**，与"12 个 1 MB 数组进老年代"完全吻合 —— **排查内存问题，先看数组类型，它们往往是大头**。
 
-### 7.4 查"生效参数"，别靠记忆
+### 8.4 查"生效参数"，别靠记忆
 
 ```bash
 java -XX:+PrintFlagsFinal -version | grep <关键字>   # 启动前：看默认值与 ergonomics 的选择
@@ -484,7 +553,7 @@ CommandLine flags: -XX:InitialHeapSize=266412288 -XX:MaxNewSize=89481216 -XX:Max
 
 CMS 那一行多出来的 `-XX:MaxTenuringThreshold=6` **不是你设的** —— 是 ergonomics 为了让 Survivor 装得下而把默认 15 压到了 6。**换收集器前后一定要重新看一遍生效参数**，别拿旧的经验值套。
 
-### 7.5 诊断套路速查
+### 8.5 诊断套路速查
 
 | 症状 | 先看什么 | 常见根因 |
 |---|---|---|
@@ -492,12 +561,12 @@ CMS 那一行多出来的 `-XX:MaxTenuringThreshold=6` **不是你设的** —�
 | **停顿长** | GC 日志的单次 `secs` / `ms`、`O` 使用率、`gc+phases` 三段 | 存活集太大、Full GC、`finalize` 队列、元空间不足 |
 | **内存只涨不降** | `jstat -gcutil` 的 `O` + `jmap -histo` | 泄漏（缓存无上限 / 静态集合 / 长生命周期监听器） |
 | **频繁 Full GC 但回收量小** | Full GC 前后老年代差值 | 存活集顶到堆上限 → **加堆或减对象**，调收集器无效 |
-| **G1 一直 OOM 而堆看着还够** | `-Xlog:gc+heap=info` 的 `Humongous regions` | 大对象撕裂 region，见第五节 64m 那格 |
+| **G1 一直 OOM 而堆看着还够** | `-Xlog:gc+heap=info` 的 `Humongous regions` | 大对象撕裂 region，见第六节 64m 那格 |
 | **G1 的 mixed 一直不执行** | `-Xlog:gc+ergo=trace` 的 `do not continue mixed GCs` | 老年代存活率太高，没有可回收 region，调 `MaxGCPauseMillis` 无用 |
 
 ---
 
-## 八、调优顺序
+## 九、调优顺序
 
 **本节要点**：调参的真正关键是"**先看什么数，再动哪个旋钮**"；顺序错了，所有参数都是在给第 ② 步欠的账付利息。
 
@@ -519,7 +588,7 @@ CMS 那一行多出来的 `-XX:MaxTenuringThreshold=6` **不是你设的** —�
 ⑤ 最后才换收集器：换的收益上限，由第 ② 步欠的账决定
 ```
 
-> ⚠️ **`-Xmx` 不是越大越好**：堆大 → 单次回收更贵（5.1 实测）、且更容易被 Full GC 一次收很长的停顿。容器里还要预留堆外内存（元空间、线程栈、直接内存），别把容器限额全给 `-Xmx`。
+> ⚠️ **`-Xmx` 不是越大越好**：堆大 → 单次回收更贵（6.1 实测）、且更容易被 Full GC 一次收很长的停顿。容器里还要预留堆外内存（元空间、线程栈、直接内存），别把容器限额全给 `-Xmx`。
 
 ![调优五步的串行顺序与两步常见反例](images/调优的五步顺序.svg)
 
@@ -527,28 +596,93 @@ CMS 那一行多出来的 `-XX:MaxTenuringThreshold=6` **不是你设的** —�
 
 ---
 
-## 九、校验口径
+## 十、应用场景
 
-> ✅ 本篇的实测范围与边界：
+**本节要点**：同一套日志在不同场景下**开的档位不一样、看的数也不一样**；这张表按「你现在遇到的是哪类事」索引到前面的小节，避免每次都从第一节读起。
 
-- **JDK 8 侧（1.8.0_321 / Windows / server class / 8 核）**：第五节 5.1 的 `-Xmx` 三档、第六节 6.1 的 `NewRatio` 三档、
-  第二节 2.1 的 Parallel 日志原文、第三节 3.1 的 CMS 完整周期、第四节 4.4 的 CSet 预测日志、第七节 7.1 / 7.2 / 7.4 的输出 ——
-  全部为当时真跑的原始输出，未重跑。
-- **JDK 24 侧（Temurin 24.0.2 / Linux 容器 / 4 vCPU / 5.9 GB）**：第一节 1.1 的参数失败原文、1.2 的 G1 日志、
-  第二节 2.2 的 region 明细、第三节 3.2 / 3.3 的行数统计、第四节 4.2 / 4.3 / 4.4 的 tag 输出、
-  第五节 5.2 的 `-Xmx` 三档、第六节 6.2 / 6.3 的参数扫描 —— 全部真跑，3 轮取区间。
-- **未实测**：
-  - JDK 8 之外的版本在 K8s 里跑 `-Xlog:gc` 接日志采集的落盘行为（只验证了 `file=` 能写）。
-  - `-Xlog:gc+phases=debug` 在长时间常驻服务上的磁盘占用（只在一份 640 ms 的负载上量到 1495 行）。
-  - G1 的 `Pause Full (G1 Compaction Pause)` 原文未在本机复现（`Evacuation Failure` 复现了，Full 没跑出来）。
-- **复现命令**：`Churn.java`（512 MB 分配 / 32 MB 存活 / 每块 1 MB 的固定负载）在
-  `.workbuddy/tmp/exp/java/gc/`，两套坐标下的调用方式见各节代码块。
+| 场景 | 该开的日志 / 该先看的数 | 结论落在哪 |
+|---|---|---|
+| **新服务上线定参数** | 常驻档 `-Xlog:gc,gc+heap=info`，压测一轮拿分配速率与暂停分布 | 第十一节 11.1、第九节 |
+| **老项目从 JDK 8 迁到 17 / 24** | 先 `java <老参数> -version` 逐个试，报错原文只报第一个不认识的 | 第二节 2.1 |
+| **容器被 OOMKilled、RSS 远超 `-Xmx`** | 先分清是堆内还是堆外：堆内看 GC 日志，堆外要 NMT（见 [资源限制与运维.md](../../../06-工程实践/部署/docker/资源限制与运维.md)） | 第八节、6.2 |
+| **P99 抖动，怀疑是 GC** | `jstat -gcutil` 看 `O` 与 `FGC` 是否在涨，再取单次停顿与 P99 的对应关系 | 第八节 8.1 |
+| **批处理吞吐不达标** | 先算 `GCT / 运行秒数`；超过 10% 才值得调，且吞吐优先应选 Parallel | 第九节 |
+| **事故复盘要证据** | 常驻档必须带 `file=` 与滚动；复盘时用 `gc+ergo=trace` 解释「为什么这轮不收」 | 4.3、5.4 |
+| **怀疑内存泄漏** | `jmap -histo` 先看数组类型（`[B` / `[I` / `[C`），再决定要不要 dump | 第八节 8.3 |
 
-| 依赖 | 实际版本 |
-|---|---|
-| JDK（旧坐标） | 1.8.0_321（Windows） |
-| JDK（新坐标） | Temurin 24.0.2+12（容器） |
-| 采集脚本 | `jstat` / `jcmd` / `jmap`（同 JDK 自带） |
+⭐ 两条适用范围提醒：**这张表假设你已经知道是哪一类问题**；如果连「是不是 GC 的问题」都还不确定，
+先按 [线上问题排查.md](线上问题排查.md) 的 CPU / 死锁流程分诊，再回到这里。**下面第十一节只讲怎么开日志与怎么跑对照**，
+具体每根旋钮的实测曲线仍在第六、七节。
+
+---
+
+## 十一、具体使用
+
+**本节要点**：把前文的判据落成两套可直接抄的启动参数，以及一个「一次只改一个旋钮」的回合 —— 一次改五个参数，读数就无法归因，等于白跑。
+
+### 11.1 两套启动参数
+
+常驻档（默认就开、体量可控、带滚动）：
+
+```bash
+# JDK 9+：每次 GC 一行 + region 明细；文件按 50 MB × 5 滚动
+java -Xmx2g \
+     -Xlog:gc,gc+heap=info:file=/var/log/app/gc.log:time,uptime,level,tags:filecount=5,filesize=50M \
+     -jar app.jar
+```
+
+排障档（临时加，定位完就撤）：
+
+```bash
+# JDK 9+：再加 age / phases / ergo 三档；体量涨到百倍量级（见 4.3）
+java -Xmx2g \
+     -Xlog:gc,gc+heap=info,gc+age=trace,gc+phases=debug,gc+ergo=trace:file=/tmp/gc-debug.log:time,uptime:filecount=3,filesize=100M \
+     -jar app.jar
+```
+
+JDK 8 的等价写法（逐项对应 2.1 那张对照表）：
+
+```bash
+java -Xmx2g \
+     -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintHeapAtGC \
+     -XX:+PrintTenuringDistribution -XX:+PrintAdaptiveSizePolicy \
+     -Xloggc:/var/log/app/gc.log -XX:+UseGCLogFileRotation \
+     -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=50M \
+     -jar app.jar
+```
+
+⚠️ **在 `eclipse-temurin:8-jdk`（1.8.0_504）里实测**：上面这条能正常启动并写出 66 行日志，但**文件名不是 `gc.log`**——
+开了 `UseGCLogFileRotation` 之后实际落盘的是 `gc.log.0.current`：
+
+```text
+$ ls /tmp/gc8*
+/tmp/gc8.log.0.current
+```
+
+JDK 9+ 没有这个问题，`-Xlog:gc:file=gc.log:...` 写出来的就是 `gc.log`。
+
+### 11.2 一次调优回合：只改一个旋钮
+
+调优的产出不是「一组好参数」，而是**一张能归因的对照表**。每一轮只动一个变量：
+
+```text
+① 固定负载与观测点
+   - 同一份压测脚本、同一并发、同一时长；JDK 与容器规格一并记下
+   - 观测四项：墙钟、Pause 次数、总停顿、单次最长（只记次数会看反）
+② 基线：参数不动，跑 3 轮取区间
+   - 例：-Xmx256m 下墙钟 374/415/450 ms、15 次、总停顿 43/50/38 ms
+③ 只改一个旋钮，再跑 3 轮
+   - 例：MaxGCPauseMillis 200 → 20，次数 14 → 16、总停顿 68 → 73 ms（见 7.3）
+④ 判断收益
+   - 单次最长降、总停顿没涨 → 改动有效
+   - 两项都变差 → 撤回，换下一根旋钮
+⑤ 落盘
+   - 用 8.4 的 -XX:+PrintFlagsFinal 核一遍生效值，再写进启动脚本
+```
+
+⭐ 为什么必须一次一个：本文两处最典型的反例都是「方向对、力度过头」——
+`MaxGCPauseMillis` 收紧 10 倍后总停顿反升（7.3）；`-Xmx` 从 64 MB 加到 1024 MB 时次数从 37 掉到 4、单次却从 2.9 ms 涨到 10.8 ms（6.1）。
+同时改这两根，分不清是哪个在起作用。
 
 ---
 
@@ -558,7 +692,7 @@ CMS 那一行多出来的 `-XX:MaxTenuringThreshold=6` **不是你设的** —�
 - **G1 的 `253M->65M(256M)` 能看出老年代回收了多少吗？** → 不能，那是整堆一个数。要分代必须加 `-Xlog:gc+heap=info`，看 `Old regions: 2->2`（没动）与 `Humongous regions: 40->40`（一直占着）。
 - **怎么判断"过早晋升"？** → 看 `-Xlog:gc+age=trace` 的 `new threshold`：它远小于 `max threshold` 就是动态年龄判定在提前晋升（实测设 2 后被压到 1）。⚠️ humongous 对象不进 age 表，别拿 age 表里的小数字当"存活很少"。
 - **`-Xmx` 是不是越大越好？** → 不是。JDK 8 实测同压力下 64 MB / 256 MB / 1024 MB 的 Minor GC 次数是 37 / 8 / 4，但**单次停顿从 2.9 ms 涨到 10.8 ms**；总停顿虽降，延迟看的是单次与 P99。且容器里要预留堆外内存。
-- **容器里给 64 MB 堆会发生什么？** → JDK 24 默认 G1 下**直接 OOM**（实测），而 Serial 203 ms / Parallel 227 ms 能跑完。原因是 1 MB region 下 1 MB 对象是 humongous（见 [垃圾回收原理与收集器.md](垃圾回收原理与收集器.md) 5.2）。要么换收集器，要么把 `-XX:G1HeapRegionSize` 调大。
+- **容器里给 64 MB 堆会发生什么？** → JDK 24 默认 G1 下**直接 OOM**（实测），而 Serial 203 ms / Parallel 227 ms 能跑完。原因是 1 MB region 下 1 MB 对象是 humongous（见 [垃圾回收原理与收集器.md](垃圾回收原理与收集器.md) 6.2）。要么换收集器，要么把 `-XX:G1HeapRegionSize` 调大。
 - **`-XX:MaxGCPauseMillis` 设成 20 ms 会更快吗？** → 不会。实测 200 ms → 14 次 / 68 ms 总停顿，20 ms → 16 次 / 73 ms：次数多两次、总停顿反升。**只在该收的收不动时才调它**。
 - **G1 下 `SurvivorRatio` 还有用吗？** → 没有（实测改它 Eden region 数不变）；但 `NewRatio`（24 → 46 / 9）与 `-Xmn`（47 / 67）**仍然生效**。
 - **日志开太细会有什么代价？** → 同一份 640 ms 负载：`-Xlog:gc` 12 行、`gc+heap=info` 约 50 行、**`gc+phases=debug` 1495 行**。线上常驻用前两档，排障时临时加并带 `file=` 与滚动。
@@ -571,7 +705,7 @@ CMS 那一行多出来的 `-XX:MaxTenuringThreshold=6` **不是你设的** —�
 
 ## 关联
 
-- **上游/总纲**：[java/README.md](../README.md) — 运行时线的读序与篇间依赖
+- **上游/总纲**：[README.md](README.md) — 运行时 12 篇的分工表、五组读序与篇间依赖（本篇位次 ⑧）
 - **对照/互补**：[垃圾回收原理与收集器.md](垃圾回收原理与收集器.md) — **同一次拆分的另一半**：分代结构、根集合、收集器演进、G1 region 与 ZGC 机制
 - [GC基础算法.md](../../../02-计算机基础/垃圾回收/GC基础算法.md) — 算法层入口，含通用的调优顺序
 - [JFR与诊断工具.md](JFR与诊断工具.md) — `jcmd` 的命令家族、JFR 事件流、`jstat` 为什么走 PerfData
@@ -582,4 +716,4 @@ CMS 那一行多出来的 `-XX:MaxTenuringThreshold=6` **不是你设的** —�
 - [集合容器.md](../集合容器.md) — `ArrayList` 扩容产生的旧数组、`LinkedList` 的百万级 `Node`，都是分配速率的显著来源
 - [资源限制与运维.md](../../../06-工程实践/部署/docker/资源限制与运维.md) — 容器里 JVM 为什么要感知 cgroup、为什么必须显式 `-Xmx`
 
-> 反向引用（本篇被下列文档引到）：[性能排查.md](../../../02-计算机基础/linux/性能排查.md)、[GC基础算法.md](../../../02-计算机基础/垃圾回收/GC基础算法.md)、[资源限制与运维.md](../../../06-工程实践/部署/docker/资源限制与运维.md)、[目录.md](../../../目录.md)、[README.md](../README.md)、[Stream流实战.md](../Stream流实战.md)、[接入Jaeger.md](../可观测性/接入Jaeger.md)、[子进程与外部命令.md](../工程实践/子进程与外部命令.md)、[并发容器.md](../并发/并发容器.md)、[集合容器.md](../集合容器.md)、[JFR与诊断工具.md](JFR与诊断工具.md)、[JVM启动与参数体系.md](JVM启动与参数体系.md)、[对象布局与引用类型.md](对象布局与引用类型.md)、[线上问题排查.md](线上问题排查.md)
+> 反向引用（本篇被下列文档引到）：[接入Jaeger.md](../可观测性/接入Jaeger.md)、[子进程与外部命令.md](../工程实践/子进程与外部命令.md)、[并发容器.md](../并发编程/并发容器.md)、[类加载机制.md](类加载机制.md)

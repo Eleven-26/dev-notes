@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">进程 RSS 的五个来源：-Xmx 只解释其中一块</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">同一次实测：-Xmx256m 的进程最后 RSS 到 446 MB，堆只占 71 MB</text>
+
+  <rect x="32" y="84" width="936" height="352" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="110" font-size="11" fill="#64748b">内存块与限制参数</text>
+  <text x="330" y="110" font-size="11" fill="#64748b">实测增量（1 px ≈ 1 MB）</text>
+  <text x="860" y="110" font-size="11" fill="#64748b">读数</text>
+
+  <rect x="52" y="124" width="230" height="36" rx="5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="64" y="147" font-size="10.5" fill="#334155">元空间 + 代码缓存 + GC 结构</text>
+  <rect x="330" y="124" width="45" height="36" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+  <text x="860" y="147" font-size="10.5" fill="#334155">含在 45 MB 基线里</text>
+
+  <rect x="52" y="176" width="230" height="36" rx="5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="64" y="199" font-size="10.5" fill="#334155">线程栈（线程数 × -Xss 默认 1 MB）</text>
+  <rect x="330" y="176" width="45" height="36" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+  <text x="860" y="199" font-size="10.5" fill="#334155">启动后 RSS 45 072 kB</text>
+
+  <rect x="52" y="228" width="230" height="36" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="64" y="251" font-size="10.5" font-weight="bold" fill="#1e3a8a">Java 堆（-Xmx）</text>
+  <rect x="330" y="228" width="71" height="36" rx="3" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+  <text x="860" y="251" font-size="10.5" fill="#1e3a8a">+71 MB → 116 216 kB</text>
+
+  <rect x="52" y="280" width="230" height="36" rx="5" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="64" y="303" font-size="10.5" font-weight="bold" fill="#14532d">直接内存（MaxDirectMemorySize）</text>
+  <rect x="330" y="280" width="66" height="36" rx="3" fill="#16a34a" stroke="#15803d" stroke-width="1"/>
+  <text x="860" y="303" font-size="10.5" fill="#14532d">+66 MB → 181 936 kB</text>
+
+  <rect x="52" y="332" width="230" height="36" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="1.2"/>
+  <text x="64" y="355" font-size="10.5" font-weight="bold" fill="#92400e">映射文件页（地址空间 / 文件大小）</text>
+  <rect x="330" y="332" width="264" height="36" rx="3" fill="#d97706" stroke="#92400e" stroke-width="1"/>
+  <text x="860" y="355" font-size="10.5" fill="#92400e">+264 MB → 383 196 kB</text>
+
+  <line x1="330" y1="392" x2="600" y2="392" stroke="#94a3b8" stroke-width="1"/>
+  <text x="330" y="410" font-size="9.5" fill="#64748b">0</text>
+  <text x="425" y="410" font-size="9.5" text-anchor="middle" fill="#64748b">100 MB</text>
+  <text x="520" y="410" font-size="9.5" text-anchor="middle" fill="#64748b">200 MB</text>
+  <text x="600" y="410" font-size="9.5" text-anchor="middle" fill="#64748b">300 MB</text>
+
+  <text x="52" y="424" font-size="10" fill="#b91c1c">堆外三块（直接内存 + 映射页）加起来 330 MB，是 -Xmx 的 1.3 倍</text>
+
+  <rect x="32" y="448" width="936" height="56" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="472" font-size="11" font-weight="bold" fill="#0f172a">要点：容器按 Xmx == limit 规划必炸，堆只占 limit 的六成到七成五</text>
+  <text x="52" y="494" font-size="10" fill="#475569">堆外内存的涨落不受 GC 日志记录，排查要看 RSS 与 BufferPoolMXBean 的 direct / mapped 两个池</text>
+</svg>

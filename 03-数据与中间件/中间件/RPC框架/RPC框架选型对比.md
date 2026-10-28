@@ -350,4 +350,4 @@ resp, err := client.CreateOrder(ctx, req)
 - **对照/互补**：[接入gRPC.md](../../../01-编程语言/java/工程实践/接入gRPC.md) — Java 侧接入分册
 - **对照/互补**：[不使用protoc的gRPC.md](../../../01-编程语言/go/网络编程/不使用protoc的gRPC.md) — Go 侧实证（codec 与 `ServiceDesc`）
 - **上游/总纲**：[素材清单.md](../../../素材清单.md) — 素材来源登记
-> 反向引用（本篇被下列文档引到）：[实战示例.md](gRPC/实战示例.md)、[性能与调优.md](gRPC/性能与调优.md)
+> 反向引用（本篇被下列文档引到）：[接入Dubbo.md](../../../01-编程语言/java/工程实践/接入Dubbo.md)、[服务治理.md](Dubbo/服务治理.md)、[调用链路.md](Dubbo/调用链路.md)、[通信协议.md](Dubbo/通信协议.md)、[实战示例.md](gRPC/实战示例.md)、[性能与调优.md](gRPC/性能与调优.md)

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <defs>
+    <marker id="arTLM" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arTLMR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+    <marker id="arTLMW" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一个 ThreadLocal 的值挂在每个线程自己的 map 上</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">同一个 TL 对象在 T1、T2 里是两条 Entry：key 弱、value 强，key 被回收也放不掉 value</text>
+
+  <rect x="40" y="78" width="540" height="298" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="102" font-size="12.5" font-weight="bold" fill="#0f172a">线程 → ThreadLocalMap：值存在每个线程自己身上</text>
+
+  <rect x="56" y="118" width="140" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="126" y="146" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">线程 T1</text>
+  <text x="126" y="168" text-anchor="middle" font-size="10.5" fill="#1d4ed8">threadLocals</text>
+
+  <rect x="250" y="118" width="314" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="262" y="142" font-size="11.5" font-weight="bold" fill="#14532d">ThreadLocalMap（T1）</text>
+  <text x="262" y="164" font-size="10.5" fill="#166534">Entry[0]：key=TL → value=alice</text>
+
+  <rect x="56" y="232" width="140" height="70" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="126" y="260" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">线程 T2</text>
+  <text x="126" y="282" text-anchor="middle" font-size="10.5" fill="#1d4ed8">threadLocals</text>
+
+  <rect x="250" y="232" width="314" height="70" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="262" y="256" font-size="11.5" font-weight="bold" fill="#14532d">ThreadLocalMap（T2）</text>
+  <text x="262" y="278" font-size="10.5" fill="#166534">Entry[0]：key=TL → value=bob</text>
+
+  <line x1="196" y1="153" x2="250" y2="153" stroke="#334155" stroke-width="1.5" marker-end="url(#arTLM)"/>
+  <text x="204" y="148" font-size="9.5" fill="#475569">字段</text>
+  <line x1="196" y1="267" x2="250" y2="267" stroke="#334155" stroke-width="1.5" marker-end="url(#arTLM)"/>
+  <text x="204" y="262" font-size="9.5" fill="#475569">字段</text>
+
+  <text x="56" y="330" font-size="10.5" fill="#334155">同一个 TL 是两把 key，各自指向各自线程的值；默认初始 16 槽，扩容翻倍</text>
+  <text x="56" y="352" font-size="10.5" fill="#334155">Entry 的 key 是弱引用、value 是强引用，方向见右侧详图</text>
+
+  <rect x="600" y="78" width="360" height="298" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="616" y="102" font-size="12.5" font-weight="bold" fill="#0f172a">一条 Entry 的两个引用方向</text>
+
+  <rect x="616" y="118" width="328" height="62" rx="8" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="628" y="142" font-size="11.5" font-weight="bold" fill="#312e81">ThreadLocal TL（static final）</text>
+  <text x="628" y="164" font-size="10.5" fill="#4338ca">全进程共用一个实例，只当查表的 key</text>
+
+  <rect x="616" y="206" width="328" height="74" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="628" y="230" font-size="11.5" font-weight="bold" fill="#7c2d12">ThreadLocalMap.Entry</text>
+  <text x="628" y="252" font-size="10.5" fill="#9a3412">extends WeakReference&lt;ThreadLocal&lt;?&gt;&gt;</text>
+  <text x="628" y="272" font-size="10.5" fill="#9a3412">Object value（普通字段，强引用）</text>
+
+  <rect x="616" y="320" width="328" height="52" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="628" y="344" font-size="11.5" font-weight="bold" fill="#7f1d1d">业务 value：traceId / 8 MB 数组</text>
+  <text x="628" y="364" font-size="10.5" fill="#b91c1c">只要线程活着，这条强链就断不掉</text>
+
+  <line x1="780" y1="206" x2="780" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arTLMW)"/>
+  <text x="790" y="200" font-size="10" fill="#64748b">key：弱引用</text>
+  <line x1="780" y1="280" x2="780" y2="320" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arTLMR)"/>
+  <text x="790" y="306" font-size="10" fill="#b91c1c">value：强引用</text>
+
+  <rect x="40" y="392" width="920" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="418" font-size="12.5" font-weight="bold" fill="#0f172a">对象开销与结论（Instrumentation.getObjectSize，默认压缩指针）</text>
+
+  <rect x="56" y="432" width="185" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="148" y="456" text-anchor="middle" font-size="10.5" fill="#334155">ThreadLocalMap 本体</text>
+  <text x="148" y="476" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">24 B</text>
+
+  <rect x="253" y="432" width="200" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="353" y="456" text-anchor="middle" font-size="10.5" fill="#334155">Entry[16] 数组</text>
+  <text x="353" y="476" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">80 B</text>
+
+  <rect x="465" y="432" width="185" height="56" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="557" y="456" text-anchor="middle" font-size="10.5" fill="#334155">单个 Entry</text>
+  <text x="557" y="476" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">32 B</text>
+
+  <rect x="662" y="432" width="282" height="56" rx="6" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="803" y="456" text-anchor="middle" font-size="10.5" fill="#7f1d1d">一个只放 1 个 key 的线程</text>
+  <text x="803" y="476" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">≈ 120 B（不含 value）</text>
+
+  <text x="56" y="520" font-size="11" fill="#334155">key 被回收只让槽位「可判定过期」；value 要等下一次 set/get/remove 触发清理才会断开</text>
+  <text x="56" y="546" font-size="11" fill="#b91c1c">所以「key 是弱引用就不会泄漏」只说对了一半：泄漏的是 value，不是 key</text>
+</svg>

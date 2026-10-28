@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460" viewBox="0 0 1000 460" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">notifyAll 的成本随等待人数线性上涨，notify 与人数无关</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">同一份代码只改唤醒方式与等待人数，每个读数 5 次取中位数；单位毫秒，条长按 9 ms 满宽等比。</text>
+
+  <rect x="32" y="92" width="936" height="308" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <text x="56" y="118" font-size="13" font-weight="bold" fill="#991b1b">notifyAll()：叫醒全部，再让绝大多数自己睡回去</text>
+
+  <text x="56" y="147" font-size="12" fill="#334155">1 个等待者</text>
+  <rect x="300" y="131" width="15" height="22" rx="3" fill="#ef4444"/>
+  <text x="324" y="148" font-size="12" fill="#7f1d1d">0.24 ms</text>
+
+  <text x="56" y="183" font-size="12" fill="#334155">10 个等待者</text>
+  <rect x="300" y="167" width="62" height="22" rx="3" fill="#ef4444"/>
+  <text x="371" y="184" font-size="12" fill="#7f1d1d">1.0 ms</text>
+
+  <text x="56" y="219" font-size="12" fill="#334155">100 个等待者</text>
+  <rect x="300" y="203" width="560" height="22" rx="3" fill="#ef4444"/>
+  <text x="700" y="220" font-size="12" font-weight="bold" fill="#ffffff">9.0 ms</text>
+
+  <rect x="56" y="236" width="888" height="26" rx="4" fill="#fee2e2"/>
+  <text x="68" y="254" font-size="11" fill="#991b1b">100 人比 10 人贵 9 倍、比 1 人贵 37 倍；摊到每个等待者约 90 µs，远超唤醒本身的微秒级成本</text>
+
+  <text x="56" y="290" font-size="13" font-weight="bold" fill="#15803d">notify()：只叫一个，成本与总人数无关</text>
+
+  <text x="56" y="317" font-size="12" fill="#334155">1 个等待者</text>
+  <rect x="300" y="301" width="16" height="22" rx="3" fill="#16a34a"/>
+  <text x="325" y="318" font-size="12" fill="#166534">0.25 ms</text>
+
+  <text x="56" y="349" font-size="12" fill="#334155">10 个等待者</text>
+  <rect x="300" y="333" width="14" height="22" rx="3" fill="#16a34a"/>
+  <text x="323" y="350" font-size="12" fill="#166534">0.23 ms</text>
+
+  <text x="56" y="381" font-size="12" fill="#334155">100 个等待者</text>
+  <rect x="300" y="365" width="17" height="22" rx="3" fill="#16a34a"/>
+  <text x="326" y="382" font-size="12" fill="#166534">0.28 ms</text>
+
+  <rect x="32" y="412" width="936" height="36" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="48" y="435" font-size="12" fill="#15803d">优先 notify；但一次信号该放行多个消费者时（队列刚进了 10 个元素），notify 只叫一个反而更慢，要批量 signal 或换协调器。</text>
+</svg>

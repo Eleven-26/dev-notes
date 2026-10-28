@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <defs>
+    <marker id="arLeak" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">池化线程不 remove：8 MB 数组跨任务存活</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">固定 1 线程的池；任务 A 写入后不清理，任务 B 复用的正是同一个线程</text>
+
+  <rect x="40" y="92" width="215" height="170" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="56" y="118" font-size="12" font-weight="bold" fill="#1e3a8a">① 任务 A 写入 8 MB</text>
+  <text x="56" y="146" font-size="10" fill="#1d4ed8">HOLD.set(new byte[8&lt;&lt;20])</text>
+  <text x="56" y="172" font-size="10.5" fill="#1e40af">used = 12 MB</text>
+  <text x="56" y="198" font-size="10.5" fill="#1e40af">任务结束，不 remove</text>
+  <text x="56" y="224" font-size="10.5" fill="#1e40af">Entry.value 仍指向数组</text>
+  <text x="56" y="248" font-size="10.5" fill="#1e40af">线程回到池里待命</text>
+
+  <line x1="255" y1="177" x2="275" y2="177" stroke="#334155" stroke-width="1.5" marker-end="url(#arLeak)"/>
+
+  <rect x="275" y="92" width="215" height="170" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="291" y="118" font-size="12" font-weight="bold" fill="#7c2d12">② 结束 + System.gc()</text>
+  <text x="291" y="146" font-size="10.5" fill="#9a3412">used = 10~11 MB</text>
+  <text x="291" y="172" font-size="10.5" fill="#9a3412">只降 1365~1868 KB</text>
+  <text x="291" y="198" font-size="10.5" fill="#9a3412">8 MB 原封不动</text>
+  <text x="291" y="224" font-size="10.5" fill="#9a3412">连续两轮读数一致</text>
+
+  <line x1="490" y1="177" x2="510" y2="177" stroke="#334155" stroke-width="1.5" marker-end="url(#arLeak)"/>
+
+  <rect x="510" y="92" width="215" height="170" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="526" y="118" font-size="12" font-weight="bold" fill="#7f1d1d">③ 任务 B 复用该线程</text>
+  <text x="526" y="146" font-size="10.5" fill="#b91c1c">HOLD.get().length</text>
+  <text x="526" y="174" font-size="13" font-weight="bold" fill="#b91c1c">= 8388608</text>
+  <text x="526" y="202" font-size="10.5" fill="#b91c1c">读到的是任务 A 的值</text>
+  <text x="526" y="228" font-size="10.5" fill="#b91c1c">上下文已经串了</text>
+
+  <line x1="725" y1="177" x2="745" y2="177" stroke="#334155" stroke-width="1.5" marker-end="url(#arLeak)"/>
+
+  <rect x="745" y="92" width="215" height="170" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="761" y="118" font-size="12" font-weight="bold" fill="#14532d">④ 出口 remove()</text>
+  <text x="761" y="146" font-size="10.5" fill="#166534">used 立刻降 9 MB</text>
+  <text x="761" y="172" font-size="10.5" fill="#166534">数组才真正可回收</text>
+  <text x="761" y="198" font-size="10.5" fill="#166534">这是唯一可靠的放手点</text>
+
+  <rect x="40" y="290" width="920" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="316" font-size="12.5" font-weight="bold" fill="#0f172a">堆占用读数对照（System.gc() 之后，同一个池线程）</text>
+
+  <text x="56" y="358" font-size="10.5" fill="#7f1d1d">不 remove</text>
+  <rect x="150" y="340" width="525" height="26" rx="4" fill="#fecaca" stroke="#dc2626" stroke-width="1"/>
+  <text x="690" y="358" font-size="10.5" fill="#b91c1c">10~11 MB（8 MB 数组仍在 map 里）</text>
+
+  <text x="56" y="404" font-size="10.5" fill="#14532d">remove 后</text>
+  <rect x="150" y="386" width="150" height="26" rx="4" fill="#bbf7d0" stroke="#16a34a" stroke-width="1"/>
+  <text x="315" y="404" font-size="10.5" fill="#166534">降 9 MB（数组可回收）</text>
+
+  <text x="56" y="428" font-size="11" fill="#7f1d1d">泄漏点不在分配时，而在「任务结束后没人放手」</text>
+</svg>

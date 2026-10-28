@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arOff" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="arOffR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+    <marker id="arOffG" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#15803d"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">直接内存的三条释放路径：引用没了不等于内存回来了</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">同一份 64 MB 直接内存，实测 RSS 在三个阶段分别是 181 936 / 182 040 / 118 500 kB</text>
+
+  <rect x="32" y="84" width="936" height="330" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="60" y="120" width="180" height="64" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="150" y="148" font-size="11.5" text-anchor="middle" fill="#1e3a8a">allocateDirect(64MB)</text>
+  <text x="150" y="170" font-size="10.5" text-anchor="middle" fill="#1e40af">逐页写 → RSS 181 936 kB</text>
+
+  <rect x="300" y="120" width="180" height="64" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="390" y="148" font-size="11.5" text-anchor="middle" fill="#1e3a8a">引用置空</text>
+  <text x="390" y="170" font-size="10.5" text-anchor="middle" fill="#1e40af">500 ms 后仍 182 040 kB</text>
+
+  <rect x="540" y="120" width="180" height="64" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="630" y="148" font-size="11.5" text-anchor="middle" fill="#92400e">对象不可达</text>
+  <text x="630" y="170" font-size="10.5" text-anchor="middle" fill="#92400e">等待 GC 发现它</text>
+
+  <rect x="780" y="120" width="160" height="64" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+  <text x="860" y="148" font-size="11.5" text-anchor="middle" fill="#14532d">Cleaner 归还</text>
+  <text x="860" y="170" font-size="10.5" text-anchor="middle" fill="#15803d">RSS 118 500 kB</text>
+
+  <line x1="240" y1="152" x2="296" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#arOff)"/>
+  <line x1="480" y1="152" x2="536" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#arOff)"/>
+  <text x="492" y="142" font-size="9.5" fill="#b91c1c">不自动</text>
+  <line x1="720" y1="152" x2="776" y2="152" stroke="#334155" stroke-width="1.5" marker-end="url(#arOff)"/>
+  <text x="730" y="142" font-size="9.5" fill="#b91c1c">靠运气</text>
+
+  <rect x="60" y="230" width="420" height="70" rx="8" fill="#ffffff" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="80" y="256" font-size="11" font-weight="bold" fill="#14532d">旁路一：Unsafe.invokeCleaner(buf)</text>
+  <text x="80" y="280" font-size="10.5" fill="#334155">同一时刻归还：实测 184 068 → 118 812 kB，不必等 GC</text>
+
+  <rect x="520" y="230" width="420" height="70" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="540" y="256" font-size="11" font-weight="bold" fill="#1e3a8a">旁路二：池化，压根不归还</text>
+  <text x="540" y="280" font-size="10.5" fill="#334155">块在池里复用，RSS 稳定在「池容量」，不依赖 GC 时机</text>
+
+  <text x="60" y="336" font-size="10.5" fill="#b91c1c">⚠️ 从「引用置空」到「真正归还」之间隔着一个「GC 恰好跑到」的条件</text>
+  <text x="60" y="358" font-size="10.5" fill="#475569">这段时间内存既不在堆里（堆 dump 看不到），也没还给系统（RSS 一直高）——</text>
+  <text x="60" y="380" font-size="10.5" fill="#475569">线上「堆很稳、进程却被 OOM 杀掉」多半就卡在这一段。所以池化 + 设上限才是常规做法。</text>
+
+  <rect x="32" y="428" width="936" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="454" font-size="11.5" font-weight="bold" fill="#0f172a">要点：直接内存没有 free()，归还时机由 GC 决定</text>
+  <text x="52" y="478" font-size="10.5" fill="#334155">要确定性就手动清理或池化；要简单就用堆内，先量出拷贝成本再换堆外</text>
+</svg>

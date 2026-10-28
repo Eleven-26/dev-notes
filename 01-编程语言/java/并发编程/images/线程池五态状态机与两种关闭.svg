@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="666" viewBox="0 0 1000 666">
+  <rect x="0" y="0" width="1000" height="666" fill="#ffffff"/>
+
+  <rect x="40" y="24" width="920" height="48" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="55" font-family="sans-serif" font-size="22" font-weight="bold" fill="#0f172a">线程池的五态状态机：两个关闭动作落在不同入口</text>
+
+  <rect x="340" y="110" width="260" height="58" fill="#dbeafe" stroke="#1e3a8a"/>
+  <text x="470" y="135" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1e3a8a" text-anchor="middle">RUNNING</text>
+  <text x="470" y="156" font-family="sans-serif" font-size="12" fill="#1e3a8a" text-anchor="middle">接受新任务，按七参数判定</text>
+
+  <rect x="340" y="216" width="260" height="58" fill="#fef3c7" stroke="#92400e"/>
+  <text x="470" y="241" font-family="sans-serif" font-size="15" font-weight="bold" fill="#92400e" text-anchor="middle">SHUTDOWN</text>
+  <text x="470" y="262" font-family="sans-serif" font-size="12" fill="#92400e" text-anchor="middle">拒绝新任务，队列继续跑完</text>
+
+  <rect x="340" y="322" width="260" height="58" fill="#fee2e2" stroke="#991b1b"/>
+  <text x="470" y="347" font-family="sans-serif" font-size="15" font-weight="bold" fill="#991b1b" text-anchor="middle">STOP</text>
+  <text x="470" y="368" font-family="sans-serif" font-size="12" fill="#991b1b" text-anchor="middle">不处理队列，中断正在跑的线程</text>
+
+  <rect x="340" y="428" width="260" height="58" fill="#e0e7ff" stroke="#3730a3"/>
+  <text x="470" y="453" font-family="sans-serif" font-size="15" font-weight="bold" fill="#3730a3" text-anchor="middle">TIDYING</text>
+  <text x="470" y="474" font-family="sans-serif" font-size="12" fill="#3730a3" text-anchor="middle">任务清空，跑 terminated() 钩子</text>
+
+  <rect x="340" y="534" width="260" height="58" fill="#dcfce7" stroke="#166534"/>
+  <text x="470" y="559" font-family="sans-serif" font-size="15" font-weight="bold" fill="#166534" text-anchor="middle">TERMINATED</text>
+  <text x="470" y="580" font-family="sans-serif" font-size="12" fill="#166534" text-anchor="middle">isTerminated() 返回 true</text>
+
+  <line x1="470" y1="168" x2="470" y2="210" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="470" y1="274" x2="470" y2="316" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="470" y1="380" x2="470" y2="422" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <line x1="470" y1="486" x2="470" y2="528" stroke="#475569" stroke-width="2" marker-end="url(#ar)"/>
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <rect x="120" y="176" width="200" height="32" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="220" y="197" font-family="sans-serif" font-size="13" fill="#475569" text-anchor="middle">shutdown()</text>
+
+  <rect x="120" y="282" width="200" height="32" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="220" y="303" font-family="sans-serif" font-size="13" fill="#475569" text-anchor="middle">shutdownNow()</text>
+
+  <rect x="120" y="388" width="200" height="32" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="220" y="409" font-family="sans-serif" font-size="13" fill="#475569" text-anchor="middle">队列空且线程全退出</text>
+
+  <rect x="120" y="494" width="200" height="32" fill="#ffffff" stroke="#94a3b8" stroke-dasharray="4 3"/>
+  <text x="220" y="515" font-family="sans-serif" font-size="13" fill="#475569" text-anchor="middle">TIDYING 结束</text>
+
+  <rect x="620" y="110" width="340" height="58" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="640" y="135" font-family="sans-serif" font-size="13" fill="#334155">过载判定在这里发生：</text>
+  <text x="640" y="155" font-family="sans-serif" font-size="13" fill="#334155">核心 → 队列 → 扩到 max → 拒绝</text>
+
+  <rect x="620" y="216" width="340" height="58" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="640" y="241" font-family="sans-serif" font-size="13" fill="#334155">温和停机：队列里的任务</text>
+  <text x="640" y="261" font-family="sans-serif" font-size="13" fill="#334155">一条不丢，适合发布前的优雅退出</text>
+
+  <rect x="620" y="322" width="340" height="58" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="640" y="347" font-family="sans-serif" font-size="13" fill="#334155">粗暴停机：队列里排队的全丢</text>
+  <text x="640" y="367" font-family="sans-serif" font-size="13" fill="#334155">返回的就是被丢的那批任务</text>
+
+  <rect x="620" y="428" width="340" height="58" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="640" y="453" font-family="sans-serif" font-size="13" fill="#334155">只剩线程数为 0 这一个条件</text>
+  <text x="640" y="473" font-family="sans-serif" font-size="13" fill="#334155">两条路最终都汇到这里</text>
+
+  <rect x="620" y="534" width="340" height="58" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="640" y="559" font-family="sans-serif" font-size="13" fill="#334155">awaitTermination 等的是这个状态</text>
+  <text x="640" y="579" font-family="sans-serif" font-size="13" fill="#334155">等到它才继续下一步</text>
+
+  <rect x="40" y="614" width="920" height="36" fill="#dcfce7" stroke="#166534"/>
+  <text x="60" y="637" font-family="sans-serif" font-size="13" fill="#166534">实测（7.2）：shutdown() 已执行 5 个、丢弃 0；shutdownNow() 已执行 0 个、丢弃 4 —— 差别就在 SHUTDOWN 与 STOP 这一跳</text>
+</svg>

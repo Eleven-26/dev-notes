@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <defs>
+    <marker id="m5" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="m6" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">一个 Java 线程一条 task，但 task 总数不等于 Java 线程数</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">8 个 worker 线程下配对测量：26 = 19 + 7，一条不多一条不少。</text>
+
+  <rect x="32" y="92" width="430" height="240" rx="8" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="52" y="118" font-size="13" font-weight="bold" fill="#1e40af">Java 侧：Thread 对象 19 条</text>
+  <text x="52" y="146" font-size="12" font-family="Consolas, monospace" fill="#1e3a8a">main ｜ Attach Listener</text>
+  <text x="52" y="168" font-size="12" font-family="Consolas, monospace" fill="#1e3a8a">Reference Handler ｜ Finalizer</text>
+  <text x="52" y="190" font-size="12" font-family="Consolas, monospace" fill="#1e3a8a">Signal Dispatcher ｜ Service Thread</text>
+  <text x="52" y="212" font-size="12" font-family="Consolas, monospace" fill="#1e3a8a">Monitor Deflation ｜ Notification</text>
+  <text x="52" y="234" font-size="12" font-family="Consolas, monospace" fill="#1e3a8a">Common-Cleaner ｜ C1 / C2 Compiler</text>
+  <text x="52" y="256" font-size="12" font-family="Consolas, monospace" fill="#1e3a8a">worker-0 … worker-7</text>
+  <text x="52" y="286" font-size="12" fill="#1e3a8a">Attach Listener 是本次 jcmd 自己建出来的</text>
+  <text x="52" y="308" font-size="12" fill="#1e3a8a">每条都有 Java 栈，转储里带 "名字" #id</text>
+
+  <rect x="538" y="92" width="430" height="240" rx="8" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="558" y="118" font-size="13" font-weight="bold" fill="#92400e">内核侧：/proc/pid/task 26 条</text>
+  <text x="558" y="146" font-size="12" fill="#78350f">每个 Java 线程一条同名 comm</text>
+  <text x="558" y="168" font-size="12" fill="#78350f">comm 字段 16 字节，超 15 字符被截断</text>
+  <text x="558" y="190" font-size="12" font-family="Consolas, monospace" fill="#78350f">C1 CompilerThre</text>
+  <text x="558" y="210" font-size="12" font-family="Consolas, monospace" fill="#78350f">Monitor Deflati</text>
+  <text x="558" y="230" font-size="12" font-family="Consolas, monospace" fill="#78350f">Reference Handl</text>
+  <text x="558" y="250" font-size="12" font-family="Consolas, monospace" fill="#78350f">VM Periodic Tas</text>
+  <text x="558" y="278" font-size="12" fill="#78350f">另有两条 comm 是 java：主线程与一个</text>
+  <text x="558" y="298" font-size="12" fill="#78350f">未命名的 VM 线程，排在最后才对得上</text>
+
+  <line x1="470" y1="200" x2="530" y2="200" stroke="#475569" stroke-width="1.4" marker-end="url(#m5)"/>
+  <rect x="468" y="176" width="40" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="476" y="191" font-size="12" font-weight="bold" fill="#475569">1:1</text>
+
+  <rect x="32" y="352" width="430" height="70" rx="8" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="52" y="376" font-size="12" font-weight="bold" fill="#334155">VM 内部原生线程 7 条（没有 Java 对象）</text>
+  <text x="52" y="398" font-size="11" font-family="Consolas, monospace" fill="#475569">VM Thread ｜ VM Periodic Task ｜ G1 Service</text>
+  <text x="52" y="414" font-size="11" font-family="Consolas, monospace" fill="#475569">G1 Refine#0 ｜ G1 Conc#0 ｜ G1 Main Marker ｜ GC Thread#0</text>
+
+  <line x1="466" y1="380" x2="530" y2="300" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#m6)"/>
+  <rect x="428" y="322" width="112" height="20" rx="4" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="436" y="337" font-size="11" fill="#64748b">也在 task 里</text>
+
+  <rect x="32" y="434" width="936" height="30" rx="6" fill="#fee2e2"/>
+  <text x="48" y="454" font-size="12" fill="#991b1b">Java priority 10 与 1 的线程，/proc/pid/task/tid/stat 第 19 字段的 nice 都是 0 —— 优先级不落内核。</text>
+</svg>

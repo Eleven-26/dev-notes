@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">1 万个「睡 10 ms」的任务，三种跑法的墙钟时间</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">JDK 24 连跑五轮取区间，-Xmx1g、4 核；收益来自「阻塞时让出载体」，不是「线程更便宜」</text>
+
+  <rect x="32" y="84" width="936" height="68" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1"/>
+  <text x="52" y="110" font-size="11.5" font-weight="bold" fill="#0f172a">每任务一个虚拟线程</text>
+  <text x="52" y="132" font-size="10" fill="#64748b">10000 个虚拟线程 / 4 个载体，首轮 318 ms 含预热</text>
+  <rect x="300" y="104" width="127" height="28" rx="3" fill="#22c55e"/>
+  <text x="437" y="123" font-size="11" font-weight="bold" fill="#15803d">67~318 ms</text>
+
+  <rect x="32" y="164" width="936" height="68" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="52" y="190" font-size="11.5" font-weight="bold" fill="#0f172a">固定池 500 线程</text>
+  <text x="52" y="212" font-size="10" fill="#64748b">500 个平台线程，排队跑</text>
+  <rect x="300" y="184" width="362" height="28" rx="3" fill="#3b82f6"/>
+  <line x1="380" y1="180" x2="380" y2="216" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="672" y="203" font-size="11" font-weight="bold" fill="#1d4ed8">635~906 ms</text>
+
+  <rect x="32" y="244" width="936" height="68" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="52" y="270" font-size="11.5" font-weight="bold" fill="#0f172a">固定池 100 线程</text>
+  <text x="52" y="292" font-size="10" fill="#64748b">100 个平台线程，排队跑</text>
+  <rect x="300" y="264" width="528" height="28" rx="3" fill="#ef4444"/>
+  <line x1="700" y1="260" x2="700" y2="296" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="838" y="283" font-size="11" font-weight="bold" fill="#b91c1c">1086~1319 ms</text>
+
+  <rect x="32" y="326" width="936" height="92" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="350" font-size="11.5" font-weight="bold" fill="#0f172a">要点：固定池的墙钟 ≈ 任务数 ÷ 并发数 × 单任务阻塞时长；虚线就是这条理论下限</text>
+  <text x="52" y="374" font-size="10.5" fill="#334155">虚拟线程没有这道除法：阻塞时载体被让出来，10000 个 sleep 几乎同时在睡，下限只有 10 ms</text>
+  <text x="52" y="398" font-size="10.5" fill="#b91c1c">池 500 反而离下限最远（635~906 ms 对 200 ms）：500 个平台线程在 4 核上互抢，创建与切换本身就是开销</text>
+</svg>

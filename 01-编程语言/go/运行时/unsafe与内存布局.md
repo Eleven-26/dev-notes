@@ -739,7 +739,7 @@ func main() {
 
 ## 关联
 
-- **上游/总纲**：[README.md](../README.md) — Go 分区的阅读顺序与「运行时」这一层的分工
+- **上游/总纲**：[README.md](README.md) — 运行时 14 篇的分工表、五条读线与篇间依赖（六个二级目录的顺序见 [go/README.md](../README.md)）
 - **对照/互补**：[反射.md](反射.md) — 反射侧：`Type` / `Value`、`CanSet` 的 flag 位、`encoding/json` 背后的反射流程；本篇 1.3 的分界在彼展开
 - **机制前置**：[指针与引用.md](../类型与语法/指针与引用.md) — `uintptr` 不保活的 GC 实测（6.3）、`unsafe.Add` 的指针侧用法（3.3）、`reflect.Value.Pointer` 的规则（6.2）
 - **机制前置**：[struct与tag.md](../类型与语法/struct与tag.md) — 字段对齐与 padding 的完整规则，本篇 3.2 只给两条判据
@@ -750,3 +750,4 @@ func main() {
 - **对照/互补**：[零拷贝.md](零拷贝.md) — 省的是内核态与用户态之间的拷贝；本篇 5.2 省的是用户态内部的一次分配
 - **运维/配置**：[编译与gcflags.md](../工程实践/编译与gcflags.md) — `-d=checkptr` 三档与 `-race` 的开关用法
 - **并发侧**：[atomic操作.md](../并发编程/atomic操作.md) — 64 位对齐与 386 上的 `panicUnaligned`
+> 反向引用（本篇被下列文档引到）：[Unsafe与内存布局.md](../../java/运行时/Unsafe与内存布局.md)

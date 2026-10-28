@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">并行度与阈值：一个买到核数，一个买到「每块算得够久」</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">同一份 10 000 000 个 int 的求和，纵轴是对数刻度，一轮一格就是 10 倍</text>
+
+  <rect x="32" y="84" width="460" height="430" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="108" font-size="12" font-weight="bold" fill="#0f172a">并行度：池 1 最差，2 路之后基本平</text>
+
+  <line x1="145" y1="126" x2="145" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="250" y1="126" x2="250" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="355" y1="126" x2="355" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="137" y="158" font-size="10.5" text-anchor="end" fill="#334155">串行 for</text>
+  <rect x="145" y="140" width="132" height="26" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1"/>
+  <text x="283" y="158" font-size="10" fill="#1e3a8a">11~18 ms</text>
+
+  <text x="137" y="200" font-size="10.5" text-anchor="end" fill="#334155">池 1</text>
+  <rect x="145" y="182" width="179" height="26" rx="3" fill="#fca5a5" stroke="#b91c1c" stroke-width="1"/>
+  <text x="330" y="200" font-size="10" fill="#b91c1c">26~51 ms</text>
+
+  <text x="137" y="242" font-size="10.5" text-anchor="end" fill="#334155">池 2</text>
+  <rect x="145" y="224" width="120" height="26" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1"/>
+  <text x="271" y="242" font-size="10" fill="#1e3a8a">6~14 ms</text>
+
+  <text x="137" y="284" font-size="10.5" text-anchor="end" fill="#334155">池 4</text>
+  <rect x="145" y="266" width="95" height="26" rx="3" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+  <text x="246" y="284" font-size="10" fill="#1e3a8a">7~8 ms</text>
+
+  <text x="137" y="326" font-size="10.5" text-anchor="end" fill="#334155">commonPool</text>
+  <rect x="145" y="308" width="124" height="26" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1"/>
+  <text x="275" y="326" font-size="10" fill="#1e3a8a">10~15 ms</text>
+
+  <line x1="145" y1="430" x2="400" y2="430" stroke="#94a3b8" stroke-width="1"/>
+  <text x="145" y="448" font-size="9.5" text-anchor="middle" fill="#64748b">1 ms</text>
+  <text x="250" y="448" font-size="9.5" text-anchor="middle" fill="#64748b">10 ms</text>
+  <text x="355" y="448" font-size="9.5" text-anchor="middle" fill="#64748b">100 ms</text>
+
+  <text x="52" y="476" font-size="10" fill="#b91c1c">池 1 比串行还慢，多出来的是切分与调度的固定开销，还没人分担</text>
+  <text x="52" y="496" font-size="10" fill="#475569">commonPool 并行度是 3（核数减 1）；池 2 与池 4 的差落在噪声里</text>
+
+  <rect x="508" y="84" width="460" height="430" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="528" y="108" font-size="12" font-weight="bold" fill="#0f172a">阈值：切得太碎才是灾难</text>
+
+  <line x1="620" y1="126" x2="620" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="725" y1="126" x2="725" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="830" y1="126" x2="830" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="935" y1="126" x2="935" y2="430" stroke="#e2e8f0" stroke-width="1"/>
+
+  <text x="612" y="168" font-size="10.5" text-anchor="end" fill="#334155">阈值 10</text>
+  <rect x="620" y="150" width="262" height="30" rx="3" fill="#fca5a5" stroke="#b91c1c" stroke-width="1"/>
+  <text x="888" y="170" font-size="10" fill="#b91c1c">182~315 ms</text>
+
+  <text x="612" y="218" font-size="10.5" text-anchor="end" fill="#334155">阈值 1000</text>
+  <rect x="620" y="200" width="113" height="30" rx="3" fill="#2563eb" stroke="#1e40af" stroke-width="1"/>
+  <text x="739" y="220" font-size="10" fill="#1e3a8a">6~12 ms</text>
+
+  <text x="612" y="268" font-size="10.5" text-anchor="end" fill="#334155">阈值 100000</text>
+  <rect x="620" y="250" width="150" height="30" rx="3" fill="#93c5fd" stroke="#2563eb" stroke-width="1"/>
+  <text x="776" y="270" font-size="10" fill="#1e3a8a">4~27 ms</text>
+
+  <text x="528" y="316" font-size="10" fill="#b91c1c">阈值 10：切出上百万个子任务，每个只加 10 个数</text>
+  <text x="528" y="338" font-size="10" fill="#475569">阈值 1000 与 100000：4~12 ms 与 4~27 ms，差别在噪声里</text>
+  <text x="528" y="360" font-size="10" fill="#475569">这份求和本身只有 10 ms 量级，块再大也省不出东西</text>
+  <text x="528" y="382" font-size="10" fill="#475569">三条都在 ForkJoinPool(4) 上跑，只有阈值在变</text>
+
+  <line x1="620" y1="430" x2="940" y2="430" stroke="#94a3b8" stroke-width="1"/>
+  <text x="620" y="448" font-size="9.5" text-anchor="middle" fill="#64748b">1 ms</text>
+  <text x="725" y="448" font-size="9.5" text-anchor="middle" fill="#64748b">10 ms</text>
+  <text x="830" y="448" font-size="9.5" text-anchor="middle" fill="#64748b">100 ms</text>
+  <text x="935" y="448" font-size="9.5" text-anchor="middle" fill="#64748b">1000 ms</text>
+
+  <text x="528" y="476" font-size="10" fill="#475569">阈值的判据是「一块算多久」：算不到几十微秒就不值得切</text>
+  <text x="528" y="496" font-size="10" fill="#475569">按「目标块数 = 并行度 × 4~8」反推，比凭感觉写数字稳</text>
+
+  <rect x="32" y="528" width="936" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="554" font-size="11.5" font-weight="bold" fill="#0f172a">要点：并行度买到核数，阈值买到「每块算得够久」，但都不是越大越好</text>
+  <text x="52" y="580" font-size="10.5" fill="#334155">10 000 000 个 int 求和是带宽受限的活：串行 11~18 ms，池 4 也只到 7~8 ms</text>
+  <text x="52" y="604" font-size="10.5" fill="#b91c1c">缩到 4 倍并行只省一半时间，说明瓶颈不在线程数，加线程解决不了这类任务</text>
+</svg>

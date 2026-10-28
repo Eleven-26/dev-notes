@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arDiag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#b91c1c"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">一个线程的三处标识：TID、# 序号、nid 各是什么</text>
+  <text x="40" y="56" font-size="13" fill="#64748b">实测 JDK 24：ps 的 TID、jstack 的 nid、/proc 的目录名三者同为 76993，#23 只是 JVM 内部序号</text>
+
+  <rect x="32" y="84" width="936" height="96" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="110" font-size="11" font-weight="bold" fill="#0f172a">① 操作系统视角：ps -L（或 top -Hp）</text>
+  <text x="52" y="136" font-size="11" font-family="Consolas, Menlo, monospace" fill="#1e3a8a">76972  76993  96.2  Sl  java</text>
+  <text x="52" y="162" font-size="10.5" fill="#b91c1c">第二列是 TID，十进制；这在后面 grep 栈时要用</text>
+
+  <rect x="32" y="192" width="936" height="126" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="218" font-size="11" font-weight="bold" fill="#0f172a">② JVM 视角：jstack 的首行</text>
+  <text x="52" y="246" font-size="11" font-family="Consolas, Menlo, monospace" fill="#1e40af">"biz-hot-loop" #23 [76993] daemon cpu=19374.71ms elapsed=20.13s</text>
+  <text x="52" y="270" font-size="11" font-family="Consolas, Menlo, monospace" fill="#1e40af">    tid=0x000073a4b016c430 nid=76993 runnable</text>
+  <text x="640" y="246" font-size="10.5" fill="#b91c1c">#23 = JVM 内部线程序号，与 TID 无关</text>
+  <text x="640" y="268" font-size="10.5" fill="#15803d">[76993] 与 nid=76993 才是操作系统 TID</text>
+  <text x="52" y="300" font-size="10.5" fill="#475569">cpu 19374.71ms 对 elapsed 20.13s ≈ 96% 整核，这是判定热点的读数</text>
+
+  <rect x="32" y="330" width="936" height="86" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="356" font-size="11" font-weight="bold" fill="#0f172a">③ 内核视角：/proc/&lt;pid&gt;/task/&lt;tid&gt;</text>
+  <text x="52" y="382" font-size="11" font-family="Consolas, Menlo, monospace" fill="#14532d">/proc/76972/task/76993/stat   →  第 14 + 15 字段 = 累计 CPU tick</text>
+  <text x="52" y="404" font-size="10.5" fill="#475569">目录名就是 TID，不需要任何转换；脚本里按 tick 排序即可拿到热点线程</text>
+
+  <polyline points="120,180 120,192" fill="none" stroke="#b91c1c" stroke-width="1.4" marker-end="url(#arDiag)"/>
+  <polyline points="120,318 120,330" fill="none" stroke="#b91c1c" stroke-width="1.4" marker-end="url(#arDiag)"/>
+
+  <rect x="32" y="432" width="936" height="88" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="52" y="458" font-size="11.5" font-weight="bold" fill="#0f172a">要点：排查链唯一会断的地方，是「十进制 TID 和栈里的 nid 对不上」</text>
+  <text x="52" y="482" font-size="10.5" fill="#b91c1c">JDK 8 / 11 的 nid 是十六进制（nid=0x303e），必须先 printf '%x' 转一次；JDK 24 已是十进制</text>
+  <text x="52" y="504" font-size="10.5" fill="#334155">进场先 grep -o 'nid=[^ ]*' 看有没有 0x，再决定转不转，比背版本号可靠</text>
+</svg>

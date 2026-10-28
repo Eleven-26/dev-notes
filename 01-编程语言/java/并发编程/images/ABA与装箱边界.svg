@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="40" y="38" font-size="20" font-weight="bold" fill="#0f172a">ABA 不是理论：两个闸门就能复现，而装箱让它更隐蔽</text>
+  <rect x="32" y="50" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="66" font-size="13" fill="#64748b">上半是确定性编排的结果（连跑 3 轮逐字一致），下半是 Integer 缓存边界的七个实测点。</text>
+
+  <rect x="32" y="88" width="936" height="146" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="113" font-size="13" font-weight="bold" fill="#0f172a">纯值 CAS 被骗过的四步</text>
+
+  <rect x="56" y="126" width="196" height="72" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="68" y="146" font-size="12" font-weight="bold" fill="#1e40af">① t1 读到快照 100</text>
+  <text x="68" y="166" font-size="11" fill="#1e40af">记下 old=100，准备扣 50</text>
+  <text x="68" y="184" font-size="11" fill="#1e40af">然后 t1 停住</text>
+
+  <rect x="276" y="126" width="196" height="72" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="288" y="146" font-size="12" font-weight="bold" fill="#92400e">② t2 改成 200</text>
+  <text x="288" y="166" font-size="11" fill="#92400e">额度被别的线程取走</text>
+  <text x="288" y="184" font-size="11" fill="#92400e">t1 对此一无所知</text>
+
+  <rect x="496" y="126" width="196" height="72" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="508" y="146" font-size="12" font-weight="bold" fill="#92400e">③ t2 改回 100</text>
+  <text x="508" y="166" font-size="11" fill="#92400e">值回到了原点</text>
+  <text x="508" y="184" font-size="11" fill="#92400e">但中间态已经发生过</text>
+
+  <rect x="716" y="126" width="228" height="72" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="728" y="146" font-size="12" font-weight="bold" fill="#991b1b">④ t1 的 CAS 返回 true</text>
+  <text x="728" y="166" font-size="11" fill="#991b1b">余额 50，中间那次 200 被吞掉</text>
+  <text x="728" y="184" font-size="11" fill="#991b1b">带版本号时同一步返回 false</text>
+
+  <line x1="252" y1="162" x2="270" y2="162" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="472" y1="162" x2="490" y2="162" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="692" y1="162" x2="710" y2="162" stroke="#94a3b8" stroke-width="2"/>
+
+  <text x="56" y="220" font-size="11" fill="#475569">带版本号的同一编排：「100」→「200」→「100」，版本 0 → 2，期望版本 0 的 CAS 失败</text>
+
+  <rect x="32" y="248" width="936" height="152" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="56" y="273" font-size="13" font-weight="bold" fill="#0f172a">AtomicStampedReference&lt;Integer&gt; 的 == 陷阱：边界正好在缓存的 127</text>
+
+  <rect x="56" y="286" width="112" height="26" rx="4" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="70" y="303" font-size="11" fill="#991b1b">-129 → false</text>
+  <rect x="176" y="286" width="112" height="26" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="190" y="303" font-size="11" fill="#15803d">-128 → true</text>
+  <rect x="296" y="286" width="112" height="26" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="310" y="303" font-size="11" fill="#15803d">100 → true</text>
+  <rect x="416" y="286" width="112" height="26" rx="4" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="430" y="303" font-size="11" fill="#15803d">127 → true</text>
+  <rect x="536" y="286" width="112" height="26" rx="4" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="550" y="303" font-size="11" fill="#991b1b">128 → false</text>
+  <rect x="656" y="286" width="112" height="26" rx="4" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="670" y="303" font-size="11" fill="#991b1b">200 → false</text>
+  <rect x="764" y="286" width="122" height="26" rx="4" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="778" y="303" font-size="11" fill="#991b1b">1000 → false</text>
+
+  <line x1="532" y1="280" x2="532" y2="318" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="200" y="336" font-size="11" fill="#475569">缓存内：字面量 == 同一对象</text>
+  <text x="596" y="336" font-size="11" fill="#475569">缓存外：每次装箱都是新对象</text>
+  <text x="56" y="336" font-size="11" fill="#991b1b">下界之外</text>
+
+  <text x="56" y="362" font-size="11" fill="#475569">同一张表换成 get(int[]) 拿到的引用去做期望值，七个点全部 true</text>
+  <text x="56" y="382" font-size="11" fill="#991b1b">症状是「CAS 有时成功有时失败」，看着像竞争，其实是值在 127 附近变化</text>
+
+  <rect x="32" y="412" width="936" height="42" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="48" y="430" font-size="12" fill="#92400e">ABA 的可怕之处不是算错，而是忠实执行了一个过期的决定；装箱陷阱则让它连「执行了没有」都看不出来。</text>
+  <text x="48" y="448" font-size="12" fill="#92400e">修法只有两条：期望值用 get(int[]) 拿到的那个引用，或换成不会装箱的类型。</text>
+</svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <defs>
+    <marker id="arEX" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+    <marker id="arEXR" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
+  </defs>
+  <text x="40" y="34" font-size="20" font-weight="bold" fill="#0f172a">异常在链上怎么走：跳过中间节点，直传末端处理点</text>
+  <text x="40" y="58" font-size="13" fill="#64748b">exceptionally 恢复、handle 同时看值和异常、whenComplete 只观察——三者都在链的末端</text>
+
+  <rect x="40" y="84" width="920" height="150" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="106" font-size="12" font-weight="bold" fill="#0f172a">异常一旦发生，链上后续的 thenApply 全部跳过</text>
+
+  <rect x="56" y="118" width="170" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="66" y="142" font-size="11" font-weight="bold" fill="#7f1d1d">A：supplyAsync</text>
+  <text x="66" y="164" font-size="9.5" fill="#b91c1c">1 / 0 抛 ArithmeticException</text>
+
+  <rect x="270" y="118" width="170" height="60" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="280" y="142" font-size="11" font-weight="bold" fill="#334155">B：thenApply</text>
+  <text x="280" y="164" font-size="9.5" fill="#64748b">跳过，不执行</text>
+
+  <rect x="484" y="118" width="170" height="60" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="494" y="142" font-size="11" font-weight="bold" fill="#334155">C：thenApply</text>
+  <text x="494" y="164" font-size="9.5" fill="#64748b">跳过，不执行</text>
+
+  <rect x="698" y="118" width="246" height="60" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="708" y="142" font-size="11" font-weight="bold" fill="#1e3a8a">末端处理点</text>
+  <text x="708" y="164" font-size="9.5" fill="#1d4ed8">三选一：见下方三张卡</text>
+
+  <line x1="226" y1="148" x2="270" y2="148" stroke="#334155" stroke-width="1.5" marker-end="url(#arEX)"/>
+  <line x1="440" y1="148" x2="484" y2="148" stroke="#334155" stroke-width="1.5" marker-end="url(#arEX)"/>
+  <line x1="654" y1="148" x2="698" y2="148" stroke="#334155" stroke-width="1.5" marker-end="url(#arEX)"/>
+
+  <line x1="141" y1="178" x2="141" y2="204" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="141" y1="204" x2="821" y2="204" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="821" y1="204" x2="821" y2="182" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arEXR)"/>
+  <text x="430" y="222" font-size="10" fill="#b91c1c">异常沿链直传，中间节点不执行</text>
+
+  <rect x="56" y="258" width="280" height="186" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="70" y="284" font-size="12.5" font-weight="bold" fill="#1e3a8a">exceptionally</text>
+  <text x="70" y="312" font-size="10.5" fill="#334155">只看异常，返回兜底值</text>
+  <text x="70" y="340" font-size="10.5" fill="#334155">实测收到 CompletionException</text>
+  <text x="70" y="368" font-size="10.5" fill="#334155">兜底之后 join = -1</text>
+  <text x="70" y="404" font-size="10" fill="#64748b">用：链路末端的降级出口</text>
+
+  <rect x="372" y="258" width="280" height="186" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.4"/>
+  <text x="386" y="284" font-size="12.5" font-weight="bold" fill="#14532d">handle</text>
+  <text x="386" y="312" font-size="10.5" fill="#334155">同时看值和异常</text>
+  <text x="386" y="340" font-size="10.5" fill="#334155">实测 v=null e=CompletionException</text>
+  <text x="386" y="368" font-size="10.5" fill="#334155">处理后 join = 7</text>
+  <text x="386" y="404" font-size="10" fill="#64748b">用：成功与失败汇到一个出口</text>
+
+  <rect x="688" y="258" width="280" height="186" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="702" y="284" font-size="12.5" font-weight="bold" fill="#7c2d12">whenComplete</text>
+  <text x="702" y="312" font-size="10.5" fill="#334155">只观察，不改结果</text>
+  <text x="702" y="340" font-size="10.5" fill="#334155">实测 e=CompletionException</text>
+  <text x="702" y="368" font-size="10.5" fill="#334155">join 仍抛（cause=IllegalStateException）</text>
+  <text x="702" y="404" font-size="10" fill="#64748b">用：记日志、埋点、释放资源</text>
+
+  <rect x="40" y="464" width="920" height="80" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="56" y="490" font-size="11" font-weight="bold" fill="#0f172a">join 抛非受检的 CompletionException，get 抛受检的 ExecutionException</text>
+  <text x="56" y="516" font-size="10.5" fill="#334155">两者都把真实原因放在 getCause() 里；没人处理的异常既不打印也不上报，等于静默丢失</text>
+  <text x="56" y="536" font-size="10.5" fill="#b91c1c">所以每条异步链的末端都要有 exceptionally 或 handle，否则失败只会表现为「结果没来」</text>
+</svg>

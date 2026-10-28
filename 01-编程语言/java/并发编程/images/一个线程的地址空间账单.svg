@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="480" viewBox="0 0 1000 480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="480" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">一个线程的地址空间账单：三块里只有一块是真花掉的</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">Xss 是你要的栈，arena 是 glibc 顺手开的、JVM 不知情，RSS 才是提交了的物理页。</text>
+
+  <rect x="32" y="92" width="936" height="132" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="116" font-size="12" font-weight="bold" fill="#64748b">每线程 VmSize 1942 kB（-Xss1m 开 1000 线程实测）</text>
+  <text x="200" y="140" font-size="12" fill="#1e3a8a">Xss 1024 kB</text>
+  <text x="620" y="140" font-size="12" fill="#92400e">arena 摊到 918 kB</text>
+  <rect x="64" y="148" width="450" height="44" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
+  <rect x="514" y="148" width="404" height="44" rx="4" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="180" y="176" font-size="13" font-weight="bold" fill="#1e40af">JVM 向内核要的栈</text>
+  <text x="606" y="176" font-size="13" font-weight="bold" fill="#92400e">按 64 MB 整段跳</text>
+  <text x="52" y="212" font-size="12" fill="#475569">五档 -Xss 逐档验证：256k 1174、512k 1430、1m 1942、2m 2966、4m 5014 kB，减掉 Xss 后都是 918 kB。</text>
+
+  <rect x="32" y="236" width="936" height="112" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="258" font-size="12" font-weight="bold" fill="#64748b">arena 是「段」不是「每线程」：200 线程时 65404 kB 的 ---p 段从 14 段涨到 27~28 段</text>
+  <rect x="64" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="89" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="114" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="139" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="164" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="189" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="214" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="239" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="264" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="289" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="314" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="339" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="364" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="389" y="270" width="20" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <rect x="424" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="449" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="474" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="499" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="524" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="549" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="574" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="599" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="624" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="649" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="674" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="699" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="724" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <rect x="749" y="270" width="20" height="20" rx="3" fill="#fde68a" stroke="#d97706"/>
+  <text x="64" y="310" font-size="12" fill="#92400e">基线 14 段</text>
+  <text x="430" y="310" font-size="12" fill="#b45309">200 线程后新增 13~14 段，合计 +914 736 kB</text>
+  <text x="780" y="310" font-size="12" fill="#475569">---p 是 PROT_NONE</text>
+
+  <rect x="32" y="358" width="936" height="72" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="52" y="382" font-size="12" font-weight="bold" fill="#15803d">真花掉的只有 RSS：5000 个 -Xss256k 线程 +151 556 kB（30 kB/线程）</text>
+  <text x="52" y="404" font-size="12" fill="#166534">栈页碰到才提交，只 sleep 的线程一辈子只碰栈顶几十页。3000 个 -Xss1m 线程的 RSS 也只有 108 776 kB。</text>
+  <text x="52" y="424" font-size="12" fill="#166534">容器 pids.max=max、threads-max=47352，5000 线程一路建到底，没有一个 OOM。</text>
+</svg>

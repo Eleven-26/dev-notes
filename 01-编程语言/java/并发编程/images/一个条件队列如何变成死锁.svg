@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <defs>
+    <marker id="m5" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <marker id="m5r" viewBox="0 0 7 6" refX="7" refY="3" markerWidth="7" markerHeight="6" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#ef4444"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">两个角色共用一个条件队列：signal 叫醒的可能就是同类</text>
+  <rect x="32" y="52" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="68" font-size="13" fill="#64748b">生产 8 个、消费 8 个、容量 2：拆成两个队列时零空转，共用一个队列时三轮全部挂死。</text>
+
+  <rect x="32" y="92" width="936" height="212" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <rect x="56" y="112" width="250" height="88" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="72" y="136" font-size="13" font-weight="bold" fill="#1e40af">生产者 prod</text>
+  <text x="72" y="158" font-size="12" fill="#1e3a8a">队列满 → 需要「不满」</text>
+  <text x="72" y="178" font-size="11" fill="#1e3a8a">却等在 notEmpty 队列上</text>
+
+  <rect x="366" y="112" width="268" height="88" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="382" y="136" font-size="13" font-weight="bold" fill="#991b1b">唯一的一个 ConditionObject</text>
+  <text x="382" y="158" font-size="11" fill="#7f1d1d">0x00000000a9119110</text>
+  <text x="382" y="178" font-size="11" fill="#7f1d1d">两个角色的等待节点挤在同一条链上</text>
+
+  <rect x="694" y="112" width="250" height="88" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="710" y="136" font-size="13" font-weight="bold" fill="#1e40af">消费者 cons</text>
+  <text x="710" y="158" font-size="12" fill="#1e3a8a">队列空 → 需要「不空」</text>
+  <text x="710" y="178" font-size="11" fill="#1e3a8a">同样等在 notEmpty 队列上</text>
+
+  <line x1="306" y1="156" x2="358" y2="156" stroke="#ef4444" stroke-width="1.6" marker-end="url(#m5r)"/>
+  <line x1="694" y1="156" x2="642" y2="156" stroke="#ef4444" stroke-width="1.6" marker-end="url(#m5r)"/>
+
+  <rect x="56" y="216" width="888" height="70" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="72" y="240" font-size="13" font-weight="bold" fill="#92400e">signal() 只搬走这条链的头节点，不知道它属于哪个角色</text>
+  <text x="72" y="262" font-size="12" fill="#78350f">生产者放出信号，醒来的是另一个生产者，它看队列仍满、又睡回去；真正该醒的消费者始终没被叫到</text>
+  <text x="72" y="278" font-size="11" fill="#78350f">两边就此互等对方的信号，锁却是空闲的</text>
+
+  <rect x="32" y="316" width="936" height="122" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <rect x="56" y="332" width="888" height="46" rx="6" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="70" y="352" font-size="11" fill="#334155" font-family="Consolas, monospace">"prod" WAITING (parking)   parking to wait for &lt;0x…9110&gt; (a ConditionObject)</text>
+  <text x="70" y="370" font-size="11" fill="#334155" font-family="Consolas, monospace">"cons" WAITING (parking)   parking to wait for &lt;0x…9110&gt; (a ConditionObject)</text>
+
+  <rect x="56" y="388" width="888" height="36" rx="6" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="70" y="411" font-size="12" font-weight="bold" fill="#991b1b">转储里没有 Found one Java-level deadlock —— 死锁检测只认锁的持有环，不认条件队列的等待环</text>
+</svg>

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+
+  <text x="40" y="38" font-size="20" font-weight="bold" fill="#0f172a">@Contended 默认不生效，生效后是把字段搬走而不是原地加填充</text>
+  <rect x="32" y="50" width="936" height="24" rx="4" fill="#f8fafc"/>
+  <text x="40" y="66" font-size="13" fill="#64748b">同一份代码只换 JVM 参数，用 Unsafe.objectFieldOffset 读出的字面偏移。</text>
+
+  <rect x="32" y="88" width="300" height="256" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="112" font-size="13" font-weight="bold" fill="#991b1b">默认档（+RestrictContended）</text>
+  <text x="52" y="132" font-size="11" fill="#475569">注解被完全忽略</text>
+
+  <rect x="52" y="146" width="140" height="20" rx="3" fill="#94a3b8"/>
+  <text x="62" y="160" font-size="10" fill="#ffffff">对象头 12 B</text>
+
+  <rect x="52" y="174" width="56" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="62" y="188" font-size="10" fill="#1e40af">a @12</text>
+  <rect x="112" y="174" width="56" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="122" y="188" font-size="10" fill="#1e40af">b @16</text>
+  <rect x="172" y="174" width="56" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="182" y="188" font-size="10" fill="#1e40af">c @20</text>
+
+  <text x="52" y="216" font-size="11" fill="#475569">PaddedOne 与 PaddedAll 的读数</text>
+  <text x="52" y="234" font-size="11" fill="#475569">与 Plain 完全相同</text>
+
+  <text x="52" y="264" font-size="11" fill="#991b1b">三个类都是 a@12 b@16 c@20</text>
+  <text x="52" y="284" font-size="11" fill="#991b1b">这就是「照抄 LongAdder 却测不出效果」</text>
+  <text x="52" y="304" font-size="11" fill="#475569">注解在运行期可见，但布局没动</text>
+
+  <rect x="52" y="316" width="260" height="18" rx="3" fill="#fee2e2"/>
+  <text x="60" y="329" font-size="10" fill="#991b1b">只改注解不改参数 = 一行没用的代码</text>
+
+  <rect x="350" y="88" width="300" height="256" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="370" y="112" font-size="13" font-weight="bold" fill="#15803d">字段级（-XX:-RestrictContended）</text>
+  <text x="370" y="132" font-size="11" fill="#475569">只给 b 加注解</text>
+
+  <rect x="370" y="146" width="140" height="20" rx="3" fill="#94a3b8"/>
+  <text x="380" y="160" font-size="10" fill="#ffffff">对象头 12 B</text>
+
+  <rect x="370" y="174" width="56" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="380" y="188" font-size="10" fill="#1e40af">a @12</text>
+  <rect x="430" y="174" width="56" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="440" y="188" font-size="10" fill="#1e40af">c @16</text>
+  <rect x="490" y="174" width="56" height="20" rx="3" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="500" y="188" font-size="10" fill="#15803d">b @148</text>
+
+  <text x="370" y="216" font-size="11" fill="#475569">b 被搬到对象末尾，c 补上了 16 位</text>
+  <text x="370" y="234" font-size="11" fill="#475569">所以 b→c 的偏移差是 -132</text>
+
+  <text x="370" y="264" font-size="11" fill="#15803d">a@12 b@148 c@16</text>
+  <text x="370" y="284" font-size="11" fill="#475569">b 前后各留一段填充，独占缓存行</text>
+  <text x="370" y="304" font-size="11" fill="#475569">Striped64$Cell 的 value 在 144</text>
+
+  <rect x="370" y="316" width="260" height="18" rx="3" fill="#dcfce7"/>
+  <text x="378" y="329" font-size="10" fill="#15803d">字段顺序被重排，别拿偏移差当 bug</text>
+
+  <rect x="668" y="88" width="300" height="256" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="688" y="112" font-size="13" font-weight="bold" fill="#1d4ed8">类级（-XX:-RestrictContended）</text>
+  <text x="688" y="132" font-size="11" fill="#475569">整个类加注解</text>
+
+  <rect x="688" y="146" width="88" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="696" y="160" font-size="10" fill="#92400e">前置填充</text>
+  <rect x="780" y="146" width="88" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="790" y="160" font-size="10" fill="#1e40af">a @140</text>
+  <rect x="872" y="146" width="88" height="20" rx="3" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="880" y="160" font-size="10" fill="#92400e">后置填充</text>
+
+  <rect x="688" y="174" width="88" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="698" y="188" font-size="10" fill="#1e40af">b @144</text>
+  <rect x="780" y="174" width="88" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="790" y="188" font-size="10" fill="#1e40af">c @148</text>
+
+  <text x="688" y="216" font-size="11" fill="#475569">三个字段整体后移 128 字节</text>
+  <text x="688" y="234" font-size="11" fill="#475569">字段之间的间隔不变（仍是 4）</text>
+
+  <text x="688" y="264" font-size="11" fill="#1d4ed8">a@140 b@144 c@148</text>
+  <text x="688" y="284" font-size="11" fill="#475569">解决的是「整个对象独占缓存行」</text>
+  <text x="688" y="304" font-size="11" fill="#475569">与字段级解决的不是同一个问题</text>
+
+  <rect x="688" y="316" width="260" height="18" rx="3" fill="#dbeafe"/>
+  <text x="696" y="329" font-size="10" fill="#1d4ed8">类级：对象不与他人共享；字段级：字段独占</text>
+
+  <rect x="32" y="358" width="936" height="30" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="48" y="378" font-size="12" fill="#92400e">JDK 内部类（如 Striped64$Cell）不受 RestrictContended 限制，所以 LongAdder 的分段在任何参数下都能独占缓存行。</text>
+
+  <rect x="32" y="396" width="936" height="30" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="48" y="416" font-size="12" fill="#475569">实测口径：字段偏移用 Unsafe.objectFieldOffset 读，未用 Instrumentation.getObjectSize 测实例大小。</text>
+</svg>

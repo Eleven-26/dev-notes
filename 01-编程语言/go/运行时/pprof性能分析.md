@@ -466,6 +466,6 @@ go tool pprof -top http://127.0.0.1:6060/debug/pprof/goroutine
 - [协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — `goroutine` profile 排查泄漏的完整流程（4.4 的机制篇）
 - [测试与Mock.md](../工程实践/测试与Mock.md) — `-bench` / `-benchmem` / fuzz 与微基准的两个陷阱
 - [GMP调度.md](GMP调度.md) — 理解 `block` profile 里"阻塞"到底停在哪一步
-- [README.md](../README.md) — 本目录导读
+- [README.md](README.md) — 本目录导读（运行时 14 篇的分工表、五条读线与观测篇的字段来源）
 - [素材清单.md](../../../素材清单.md) — 素材来源登记
-> 反向引用（本篇被下列文档引到）：[泛型.md](../类型与语法/泛型.md)、[线上问题排查.md](../../java/运行时/线上问题排查.md)、[性能排查.md](../../../02-计算机基础/linux/性能排查.md)
+> 反向引用（本篇被下列文档引到）：[泛型.md](../类型与语法/泛型.md)、[网络IO与netpoll.md](网络IO与netpoll.md)、[JFR与诊断工具.md](../../java/运行时/JFR与诊断工具.md)、[线上问题排查.md](../../java/运行时/线上问题排查.md)、[性能排查.md](../../../02-计算机基础/linux/性能排查.md)
