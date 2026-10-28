@@ -154,7 +154,7 @@ Go 代码感知不到半连接（握手与 backlog 的协议原理见
 
 阻塞的 `Accept` / `Read` **不占用操作系统线程**：连接注册进 netpoll（epoll/kqueue/IOCP），
 协程 park，数据到达时由 netpoll 唤醒——内核侧的机制见
-[IO多路复用.md](../../../02-计算机基础/网络/传输层/IO多路复用.md)，`net.Listener` 的挂起点与 fd 注册细节见
+[IO多路复用.md](../../../02-计算机基础/操作系统/IO多路复用.md)，`net.Listener` 的挂起点与 fd 注册细节见
 [网络IO与netpoll.md](../运行时/网络IO与netpoll.md)。所以一机数万条连接的常规写法就是
 一连接两协程（读协程 + 写协程，或一读循环一发送队列），连接数、读写超时、优雅退出的完整协程
 组织方式见 [goroutine实战模式.md](../并发编程/goroutine实战模式.md)。
@@ -404,7 +404,7 @@ max 的下注——**上限要和连接数一起算**，按行喂数据的来源
 ```
 
 趋势断言：**逐字节裸 `Read` 比其余读法慢约两个数量级**（每字节一次接口调用 + 一次 netpoll
-往返，见 [IO多路复用.md](../../../02-计算机基础/网络/传输层/IO多路复用.md)）；`bufio` 把「一次一字节」
+往返，见 [IO多路复用.md](../../../02-计算机基础/操作系统/IO多路复用.md)）；`bufio` 把「一次一字节」
 摊薄成「一次一屏」。判据：
 
 - **按字节 / 按行 / 按分隔符消费流**（自定义文本协议、RESP、HTTP 头解析）→ 必须 `bufio.Reader`；
@@ -852,6 +852,128 @@ func main() {
 那行就永远打不出来）。这属于输出时序，不是错误；断言只看「每行内容」与
 `Accept 退出` 的报错原文。
 
+## 使用：绕过 net 包，直接用 epoll 写一个 ET 读取服务
+
+日常写 Go 服务不用碰这一层——`net` 已经封装了非阻塞 fd、netpoller、deadline 与资源管理。
+但要看清「阻塞式 `Read` 底下到底是谁在等」，最直接的办法是**自己调一次 `epoll` 系统调用**：
+
+⚠️ 下面这个程序**只收不发**：`readAll` 读完只打一行日志，从不写回。
+它的用途是演示**读取路径**（`accept` 与 `read` 在 ET 下如何循环到 `EAGAIN`），不是 echo 服务。
+
+```go
+package main
+
+import (
+    "errors"
+    "log"
+    "golang.org/x/sys/unix"
+)
+
+const epollET uint32 = 1 << 31
+
+func main() {
+    lfd, err := unix.Socket(unix.AF_INET,
+        unix.SOCK_STREAM|unix.SOCK_NONBLOCK|unix.SOCK_CLOEXEC, 0)
+    must(err)
+    defer unix.Close(lfd)
+    must(unix.SetsockoptInt(lfd, unix.SOL_SOCKET, unix.SO_REUSEADDR, 1))
+    must(unix.Bind(lfd, &unix.SockaddrInet4{Port: 8080}))
+    must(unix.Listen(lfd, 128))
+
+    epfd, err := unix.EpollCreate1(unix.EPOLL_CLOEXEC)
+    must(err)
+    defer unix.Close(epfd)
+    must(unix.EpollCtl(epfd, unix.EPOLL_CTL_ADD, lfd, &unix.EpollEvent{
+        Events: uint32(unix.EPOLLIN) | epollET, Fd: int32(lfd),
+    }))
+
+    clients := map[int]struct{}{}
+    events := make([]unix.EpollEvent, 128)
+    for {
+        n, err := unix.EpollWait(epfd, events, -1)
+        if errors.Is(err, unix.EINTR) { continue }
+        must(err)
+        for _, ev := range events[:n] {
+            fd := int(ev.Fd)
+            if fd == lfd {
+                acceptAll(epfd, lfd, clients)
+                continue
+            }
+            if _, ok := clients[fd]; !ok { continue }
+            if ev.Events&uint32(unix.EPOLLERR) != 0 || !readAll(fd) {
+                closeFD(epfd, fd, clients)
+            }
+        }
+    }
+}
+
+func acceptAll(epfd, lfd int, clients map[int]struct{}) {
+    for {
+        fd, _, err := unix.Accept4(lfd, unix.SOCK_NONBLOCK|unix.SOCK_CLOEXEC)
+        if errors.Is(err, unix.EINTR) { continue }
+        if errors.Is(err, unix.EAGAIN) || errors.Is(err, unix.EWOULDBLOCK) { return }
+        if err != nil { log.Printf("accept: %v", err); return }
+        ev := &unix.EpollEvent{
+            Events: uint32(unix.EPOLLIN|unix.EPOLLRDHUP) | epollET, Fd: int32(fd),
+        }
+        if err := unix.EpollCtl(epfd, unix.EPOLL_CTL_ADD, fd, ev); err != nil {
+            unix.Close(fd)
+            continue
+        }
+        clients[fd] = struct{}{}
+    }
+}
+
+func readAll(fd int) bool {
+    buf := make([]byte, 4096)
+    for {
+        n, err := unix.Read(fd, buf)
+        if n > 0 { log.Printf("fd=%d read=%d", fd, n); continue }
+        if n == 0 && err == nil { return false }
+        if errors.Is(err, unix.EINTR) { continue }
+        if errors.Is(err, unix.EAGAIN) || errors.Is(err, unix.EWOULDBLOCK) { return true }
+        return false
+    }
+}
+
+func closeFD(epfd, fd int, clients map[int]struct{}) {
+    _ = unix.EpollCtl(epfd, unix.EPOLL_CTL_DEL, fd, nil)
+    _ = unix.Close(fd)
+    delete(clients, fd)
+}
+func must(err error) { if err != nil { log.Fatal(err) } }
+```
+
+```bash
+go mod init epoll-demo
+go get golang.org/x/sys/unix
+go run .
+```
+
+⚠️ 仅适用于 Linux：监听 fd 与 `Accept4` 返回的 fd 均设非阻塞；ET 下 `accept` / `read` 都要循环到 `EAGAIN`。
+`epollET` 就是 `EPOLLET` 的那一位（`1 << 31`），手写是为了不依赖额外的常量封装。
+
+**为什么日常反而该用 `SetDeadline`**：`SetDeadline` / `SetReadDeadline` / `SetWriteDeadline`
+与 runtime 定时器、netpoller 集成，超时会让阻塞式调用返回错误；它比自行维护 epoll 超时堆更方便、更跨平台。
+⚠️ deadline 是**绝对时间**，空闲超时通常要在成功读写后刷新（见第六节 6.3）。
+
+### 实测：它真的接住了连接，但不会回包
+
+`golang:1.26-alpine`（`go1.26.8 linux/amd64`，`golang.org/x/sys v0.49.0`）容器内 `go build` 通过，
+启动后用另一条连接发 `hello`：
+
+```text
+CLIENT sent=hello bytes=0 recv="" err=read tcp 127.0.0.1:57760->127.0.0.1:8080: i/o timeout
+--- 服务端日志 ---
+2026/10/28 16:41:04 fd=6 read=5
+```
+
+⭐ 两边合起来读才完整：**服务端侧 `fd=6 read=5`** 说明 `epoll_wait` → `accept` → `read` 这条 ET 链路真的通了；
+而客户端 `bytes=0` + `i/o timeout` 恰恰证明它**没有回写**——这正是上面那句「只收不发」的实证。
+⚠️ 拿它当 echo 服务测，必然得到超时；不是程序出错，是它本来就没写回包那一段。
+
+---
+
 ## 延伸追问
 
 - **一次 `Read` 返回 `n < len(buf)` 意味着什么？** → 只意味着「内核此刻手里有 n 个字节」，
@@ -870,7 +992,7 @@ func main() {
 - **`ReadFrom` 返回 `n` 正好等于缓冲区长度时为什么要警惕？** → 报文可能被静默截断，
   超出部分已丢且 `err = nil`（8.1 实测 `n=64`），要按协议最大报文配缓冲。
 - **阻塞在 `Accept`/`Read` 的协程是不是在占线程？** → 不是，注册进 netpoll 后协程 park，
-  线程去跑别的 goroutine（机制见 [IO多路复用.md](../../../02-计算机基础/网络/传输层/IO多路复用.md)）。
+  线程去跑别的 goroutine（机制见 [IO多路复用.md](../../../02-计算机基础/操作系统/IO多路复用.md)）。
 - **想「只收 IPv4」和「双栈」分别怎么写？** → `Listen("tcp4", ...)` 强制 v4；
   `network` 传 `tcp` 的通配监听默认双栈，`tcp6` 会设 `V6ONLY` 拒收 v4（7.4 实测）。
 
@@ -886,7 +1008,7 @@ func main() {
 - [TCP四次挥手.md](../../../02-计算机基础/网络/传输层/tcp/TCP四次挥手.md) — Close / CloseWrite / EOF 背后的状态机
 - [TCP的Nagle与延迟确认.md](../../../02-计算机基础/网络/传输层/tcp/TCP的Nagle与延迟确认.md) — 7.1 默认值背后的机制
 - [TCP协议基础与报文结构.md](../../../02-计算机基础/网络/传输层/tcp/TCP协议基础与报文结构.md) — 协议头开销，「每字节都省」时才去对
-- [IO多路复用.md](../../../02-计算机基础/网络/传输层/IO多路复用.md) — netpoll 为什么让阻塞 Read 不占线程
+- [IO多路复用.md](../../../02-计算机基础/操作系统/IO多路复用.md) — netpoll 为什么让阻塞 Read 不占线程
 - [网络IO与netpoll.md](../运行时/网络IO与netpoll.md) — 本篇 2.2 只给结论：非阻塞 fd 怎么注册、`pollDesc` 三态、deadline 如何打断、哪些 fd 退回阻塞全在彼
 - [通信选型.md](../../../02-计算机基础/网络/选型/通信选型.md) — TCP/UDP 可靠性差异的协议层视角
 - [QUIC与HTTP3.md](../../../02-计算机基础/网络/应用层/QUIC与HTTP3.md) — 8.4 最后一行：在 UDP 上重建可靠层

@@ -8,8 +8,10 @@
 > 实测口径见本目录 [README.md](README.md) 第四节，容器为 `nginx:mainline-alpine`（**1.31.6**，4 worker）。
 >
 > ⚠️ **本篇不重复讲 epoll 本身**：`epoll_create` / `epoll_ctl` / `epoll_wait` 三个系统调用、
-> LT 与 ET 的语义差异、Reactor 模式、以及 Go / Java 侧的完整实现，全在
-> [IO多路复用.md](../../网络/传输层/IO多路复用.md)。本文只回答「**nginx 怎么把它用起来**」。
+> LT 与 ET 的语义差异、Reactor 模式见
+> [IO多路复用.md](../../操作系统/IO多路复用.md)；Go / Java 侧的完整实现已随之分家，分别见
+> [网络IO与netpoll.md](../../../01-编程语言/go/运行时/网络IO与netpoll.md) 与
+> [NIO与Selector.md](../../../01-编程语言/java/网络编程/NIO与Selector.md)。本文只回答「**nginx 怎么把它用起来**」。
 
 ---
 
@@ -228,7 +230,7 @@ accept_mutex off 之前先想清楚                  关掉它省了锁，但惊
 主动放进就绪链表，`epoll_wait` 只取就绪的那部分 —— **复杂度从 O(总 fd) 降到 O(就绪 fd)**。
 ⭐ nginx 侧的呼应：正因为 `epoll` 需要「事先注册」，才有第三节那张
 `ngx_connection_t` 表（`epoll_event.data.ptr` 必须能指回连接状态）。
-完整对比与 LT/ET 的实测见 [IO多路复用.md](../../网络/传输层/IO多路复用.md)。
+完整对比与 LT/ET 的实测见 [IO多路复用.md](../../操作系统/IO多路复用.md)。
 
 ### 2. ET 模式下如何保证数据读完？
 
@@ -257,7 +259,8 @@ accept_mutex off 之前先想清楚                  关掉它省了锁，但惊
 ## 关联
 
 - [README.md](README.md) — 版本坐标与实测口径
-- [IO多路复用.md](../../网络/传输层/IO多路复用.md) — `epoll` 三个系统调用、LT/ET、Reactor 与 Go/Java 实现（本篇的前置知识）
+- [IO多路复用.md](../../操作系统/IO多路复用.md) — `epoll` 三个系统调用、LT/ET、Reactor（本篇的前置知识；机制宿主，2026-10-29 从 `网络/传输层/` 迁入 `操作系统/`）
+- [NIO与Selector.md](../../../01-编程语言/java/网络编程/NIO与Selector.md) — Java 侧的 NIO 三件套与 `Selector` 服务；Go 侧对应 [网络IO与netpoll.md](../../../01-编程语言/go/运行时/网络IO与netpoll.md)
 - [02-进程模型与基础架构.md](02-进程模型与基础架构.md) — worker 进程与 master 的分工
 - [04-HTTP框架执行流程.md](04-HTTP框架执行流程.md) — 事件就绪之后，请求如何走完 11 个阶段
 - [05-内存管理与数据结构.md](05-内存管理与数据结构.md) — 定时器为什么用红黑树、连接为什么从池里取

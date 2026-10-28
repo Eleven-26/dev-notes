@@ -81,7 +81,7 @@
 | [程序启动流程.md](程序启动流程.md) | 从源码到main（`rt0_go` 的七步时间序） | [GMP调度.md](GMP调度.md)（`schedinit`）、[内存分配器.md](内存分配器.md)（`mallocinit`）、[类加载机制.md](../../java/运行时/类加载机制.md)（另一种语言的初始化顺序） |
 | [GMP调度.md](GMP调度.md) | [goroutine.md](../并发编程/goroutine.md)（被排的那个 `g`） | [内存分配器.md](内存分配器.md)（P 上的 mcache）、[垃圾回收机制.md](垃圾回收机制.md)（抢占与 STW 的前提）、[协程与线程成本.md](../并发编程/协程与线程成本.md) |
 | [定时器与超时.md](定时器与超时.md) | GMP调度（`schedule` / `findrunnable` / `sysmon` 三个检查点） | [网络IO与netpoll.md](网络IO与netpoll.md)（`pollUntil` 与 `epoll_wait` 共用一条 M）、[context.md](../工程实践/context.md)、[堆与优先队列.md](../../../02-计算机基础/数据结构/堆/堆与优先队列.md) |
-| [网络IO与netpoll.md](网络IO与netpoll.md) | GMP调度（`gopark` / `goready`、M 的 handoff） | [IO多路复用.md](../../../02-计算机基础/网络/传输层/IO多路复用.md)（内核侧）、[定时器与超时.md](定时器与超时.md)、[net包与TCP-UDP编程.md](../网络编程/net包与TCP-UDP编程.md)、[零拷贝.md](零拷贝.md) |
+| [网络IO与netpoll.md](网络IO与netpoll.md) | GMP调度（`gopark` / `goready`、M 的 handoff） | [IO多路复用.md](../../../02-计算机基础/操作系统/IO多路复用.md)（内核侧）、[定时器与超时.md](定时器与超时.md)、[net包与TCP-UDP编程.md](../网络编程/net包与TCP-UDP编程.md)、[零拷贝.md](零拷贝.md) |
 | [内存逃逸.md](内存逃逸.md) | [指针与引用.md](../类型与语法/指针与引用.md)、[编译与gcflags.md](../工程实践/编译与gcflags.md)（`-m` 的判读） | [内存分配器.md](内存分配器.md)、[垃圾回收机制.md](垃圾回收机制.md)、[反射.md](反射.md)（反射装箱的逃逸）、[接口.md](../类型与语法/接口.md) |
 | [内存分配器.md](内存分配器.md) | 内存逃逸（谁决定走堆） | [垃圾回收机制.md](垃圾回收机制.md)、[trace与运行时指标.md](trace与运行时指标.md)（`XSys` 字段背后）、[内存管理.md](../../../02-计算机基础/linux/内存管理.md)、[GODEBUG与运行时观测.md](GODEBUG与运行时观测.md)（`scavtrace`） |
 | [垃圾回收机制.md](垃圾回收机制.md) | 内存分配器、内存逃逸 | [GC基础算法.md](../../../02-计算机基础/垃圾回收/GC基础算法.md)、[并发标记与写屏障.md](../../../02-计算机基础/垃圾回收/并发标记与写屏障.md)、[sync.Pool.md](../并发编程/sync.Pool.md)、[垃圾回收原理与收集器.md](../../java/运行时/垃圾回收原理与收集器.md) |

@@ -418,7 +418,7 @@ public class FrameInitializer extends ChannelInitializer<SocketChannel> {
 ```
 
 > **Netty 与 Go 的一个方向性差异**：Netty 显式区分 EventLoop / 工作线程（见
-> [IO多路复用.md](../IO多路复用.md) 的 Reactor 一节），**Handler 里绝对不能做阻塞调用**；
+> [IO多路复用.md](../../../操作系统/IO多路复用.md) 的 Reactor 一节），**Handler 里绝对不能做阻塞调用**；
 > Go 用「每连接一个 goroutine」把这件事交给了调度器，所以 Go 侧的坑是
 > **忘记 `SetReadDeadline`**（ goroutine 挂死），Netty 侧的坑是 **EventLoop 被阻塞**（一批连接全部卡住）。
 

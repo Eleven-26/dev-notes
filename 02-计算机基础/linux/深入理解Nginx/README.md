@@ -166,7 +166,8 @@
 - 协议原理（HTTP、TCP、TLS、QUIC 的机制）→ [网络/](../../网络/README.md)；
   其中 [QUIC与HTTP3.md](../../网络/应用层/QUIC与HTTP3.md) 讲**协议本身**（流级重传、0-RTT 代价、
   连接迁移、浏览器怎么发现 h3），而本目录第三部分那篇只讲 **Nginx 侧怎么编译与怎么配**；
-- `epoll` 的三个系统调用、LT/ET、Reactor 与 Go/Java 实现 → [IO多路复用.md](../../网络/传输层/IO多路复用.md)；
+- `epoll` 的三个系统调用、LT/ET、Reactor → [IO多路复用.md](../../操作系统/IO多路复用.md)（机制宿主，2026-10-29 从 `网络/传输层/` 迁入）；
+- Go / Java 侧的完整实现 → [网络IO与netpoll.md](../../../01-编程语言/go/运行时/网络IO与netpoll.md)、[NIO与Selector.md](../../../01-编程语言/java/网络编程/NIO与Selector.md)；
   本目录 [03-事件驱动与epoll.md](03-事件驱动与epoll.md) 只讲 **ngx_epoll_module 的实现**；
 - 反向代理的**头部治理**（`X-Forwarded-For` / `X-Real-IP` / 剥内部头）→
   [反向代理原理.md](../../网络/代理与网关/反向代理原理.md)；
