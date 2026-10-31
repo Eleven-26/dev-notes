@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="524" viewBox="0 0 1000 524" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="524" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">标准信号合并、实时信号排队：同一次「连发 5 次」的两种结局</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">代码路径完全相同，只把信号编号从 SIGUSR1 换成 SIGRTMIN+1</text>
+
+  <text x="130" y="88" font-size="12" font-weight="700" fill="#475569" text-anchor="middle">连发 5 次</text>
+  <text x="396" y="88" font-size="12" font-weight="700" fill="#475569" text-anchor="middle">pending 里存成什么</text>
+  <text x="660" y="88" font-size="12" font-weight="700" fill="#475569" text-anchor="middle">解除阻塞后</text>
+  <text x="880" y="88" font-size="12" font-weight="700" fill="#475569" text-anchor="middle">handler 执行</text>
+
+  <!-- 第一行：标准信号 -->
+  <rect x="40" y="104" width="180" height="96" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="130" y="134" font-size="11" fill="#334155" text-anchor="middle">kill(pid, SIGUSR1)</text>
+  <text x="130" y="158" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">连发 5 次</text>
+  <text x="130" y="180" font-size="10" fill="#64748b" text-anchor="middle">1–31 号标准信号</text>
+
+  <line x1="222" y1="152" x2="258" y2="152" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="258,147 266,152 258,157" fill="#94a3b8"/>
+
+  <rect x="266" y="104" width="260" height="96" rx="6" fill="#fffbeb" stroke="#f59e0b"/>
+  <rect x="286" y="126" width="40" height="40" rx="4" fill="#fef3c7" stroke="#b45309"/>
+  <text x="306" y="153" font-size="16" font-weight="700" fill="#b45309" text-anchor="middle">1</text>
+  <text x="340" y="140" font-size="11" font-weight="700" fill="#92400e">位图只有 1 位</text>
+  <text x="340" y="160" font-size="10" fill="#92400e">后 4 次只是重复置位</text>
+  <text x="286" y="188" font-size="10" fill="#64748b">信息在第一次之后就被覆盖了</text>
+
+  <line x1="528" y1="152" x2="552" y2="152" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="552,147 560,152 552,157" fill="#94a3b8"/>
+
+  <rect x="560" y="104" width="200" height="96" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="574" y="136" font-size="11" fill="#334155">do_signal 取到 1 个</text>
+  <text x="574" y="158" font-size="11" fill="#334155">递送 1 次</text>
+  <text x="574" y="180" font-size="10" fill="#64748b">其余 4 次已合并</text>
+
+  <line x1="762" y1="152" x2="792" y2="152" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="792,147 800,152 792,157" fill="#94a3b8"/>
+
+  <rect x="800" y="104" width="160" height="96" rx="6" fill="#ecfdf5" stroke="#0f766e"/>
+  <text x="880" y="148" font-size="18" font-weight="700" fill="#0f766e" text-anchor="middle">handler ×1</text>
+  <text x="880" y="176" font-size="11" fill="#0f766e" text-anchor="middle">执行 1 次</text>
+
+  <!-- 第二行：实时信号 -->
+  <rect x="40" y="234" width="180" height="96" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="130" y="264" font-size="11" fill="#334155" text-anchor="middle">kill(pid, SIGRTMIN+1)</text>
+  <text x="130" y="288" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">连发 5 次</text>
+  <text x="130" y="310" font-size="10" fill="#64748b" text-anchor="middle">实时信号（glibc 下为 35）</text>
+
+  <line x1="222" y1="282" x2="258" y2="282" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="258,277 266,282 258,287" fill="#94a3b8"/>
+
+  <rect x="266" y="234" width="260" height="96" rx="6" fill="#f0fdfa" stroke="#0f766e"/>
+  <rect x="286" y="252" width="36" height="36" rx="4" fill="#d1fae5" stroke="#0f766e"/>
+  <text x="304" y="276" font-size="11" font-weight="700" fill="#0f766e" text-anchor="middle">1</text>
+  <rect x="326" y="252" width="36" height="36" rx="4" fill="#d1fae5" stroke="#0f766e"/>
+  <text x="344" y="276" font-size="11" font-weight="700" fill="#0f766e" text-anchor="middle">2</text>
+  <rect x="366" y="252" width="36" height="36" rx="4" fill="#d1fae5" stroke="#0f766e"/>
+  <text x="384" y="276" font-size="11" font-weight="700" fill="#0f766e" text-anchor="middle">3</text>
+  <rect x="406" y="252" width="36" height="36" rx="4" fill="#d1fae5" stroke="#0f766e"/>
+  <text x="424" y="276" font-size="11" font-weight="700" fill="#0f766e" text-anchor="middle">4</text>
+  <rect x="446" y="252" width="36" height="36" rx="4" fill="#d1fae5" stroke="#0f766e"/>
+  <text x="464" y="276" font-size="11" font-weight="700" fill="#0f766e" text-anchor="middle">5</text>
+  <text x="286" y="310" font-size="10" fill="#64748b">按产生顺序排队，一条不少</text>
+
+  <line x1="528" y1="282" x2="552" y2="282" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="552,277 560,282 552,287" fill="#94a3b8"/>
+
+  <rect x="560" y="234" width="200" height="96" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="574" y="266" font-size="11" fill="#334155">sigwaitinfo 逐条取</text>
+  <text x="574" y="288" font-size="11" fill="#334155">5 条都要递送</text>
+  <text x="574" y="310" font-size="10" fill="#64748b">一条都不合并</text>
+
+  <line x1="762" y1="282" x2="792" y2="282" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="792,277 800,282 792,287" fill="#94a3b8"/>
+
+  <rect x="800" y="234" width="160" height="96" rx="6" fill="#ecfdf5" stroke="#0f766e"/>
+  <text x="880" y="278" font-size="18" font-weight="700" fill="#0f766e" text-anchor="middle">handler ×5</text>
+  <text x="880" y="306" font-size="11" fill="#0f766e" text-anchor="middle">执行 5 次</text>
+
+  <!-- 说明面板 -->
+  <rect x="40" y="358" width="920" height="80" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="62" y="386" font-size="12" fill="#334155">实测：SIGUSR1 连发 5 次 → handler 1 次；SIGRTMIN+1 连发 5 次 → handler 5 次。</text>
+  <text x="62" y="412" font-size="12" fill="#334155">两次的 pending 位都是 1：sigpending 只回答「有没有挂」，不回答「挂了几条」。</text>
+
+  <rect x="40" y="452" width="920" height="48" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="62" y="482" font-size="12" fill="#92400e">结论：标准信号只适合通知「发生过」。要计数、要携带参数，就用实时信号、signalfd 或一个普通 fd。</text>
+</svg>

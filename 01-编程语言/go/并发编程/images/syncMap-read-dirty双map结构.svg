@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
     <defs>
         <marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+        <marker id="m2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker>
+        <marker id="m3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker>
     </defs>
     <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
     <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">sync.Map 经典结构（Go 1.9 – 1.25）：read / dirty 双 map</text>
@@ -11,43 +13,48 @@
     <text x="500" y="122" text-anchor="middle" font-size="11.5" fill="#334155">mu Mutex · read · dirty · miss</text>
     <text x="500" y="138" text-anchor="middle" font-size="11.5" fill="#334155">read = atomic.Pointer[readOnly]</text>
 
-    <line x1="420" y1="146" x2="250" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
-    <line x1="580" y1="146" x2="750" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+    <line x1="420" y1="146" x2="200" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
+    <line x1="580" y1="146" x2="800" y2="196" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
 
-    <rect x="70" y="200" width="360" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
-    <text x="250" y="228" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">read（只读快照）</text>
-    <text x="250" y="252" text-anchor="middle" font-size="11.5" fill="#14532d">readOnly{ m map[any]*Entry,</text>
-    <text x="250" y="272" text-anchor="middle" font-size="11.5" fill="#14532d">amended bool }</text>
-    <text x="250" y="298" text-anchor="middle" font-size="11" fill="#334155">Load 命中这里 → 原子读，</text>
-    <text x="250" y="316" text-anchor="middle" font-size="11" fill="#334155">全程不加锁（读快的来源）</text>
-    <text x="250" y="340" text-anchor="middle" font-size="11" fill="#7f1d1d">amended：dirty 有 read 里没有的新键</text>
+    <rect x="30" y="200" width="300" height="150" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="1.6"/>
+    <text x="180" y="228" text-anchor="middle" font-size="14" font-weight="bold" fill="#14532d">read（只读快照）</text>
+    <text x="180" y="252" text-anchor="middle" font-size="11.5" fill="#14532d">readOnly{ m map[any]*Entry,</text>
+    <text x="180" y="272" text-anchor="middle" font-size="11.5" fill="#14532d">amended bool }</text>
+    <text x="180" y="298" text-anchor="middle" font-size="11" fill="#334155">Load 命中这里 → 原子读，</text>
+    <text x="180" y="316" text-anchor="middle" font-size="11" fill="#334155">全程不加锁（读快的来源）</text>
+    <text x="180" y="340" text-anchor="middle" font-size="11" fill="#7f1d1d">amended：dirty 有 read 里没有的新键</text>
 
-    <rect x="570" y="200" width="360" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
-    <text x="750" y="228" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">dirty（可写副本）</text>
-    <text x="750" y="252" text-anchor="middle" font-size="11.5" fill="#1e3a8a">dirty map[any]*Entry</text>
-    <text x="750" y="278" text-anchor="middle" font-size="11" fill="#334155">Store / Delete 未命中 read 时</text>
-    <text x="750" y="296" text-anchor="middle" font-size="11" fill="#334155">写它，需持 mu</text>
-    <text x="750" y="320" text-anchor="middle" font-size="11" fill="#7f1d1d">Entry 值为 nil = 「键已被删」墓碑</text>
-    <text x="750" y="338" text-anchor="middle" font-size="11" fill="#7f1d1d">dirty=nil（提升后置空）走 expunged</text>
+    <rect x="670" y="200" width="300" height="150" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.6"/>
+    <text x="820" y="228" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e3a8a">dirty（可写副本）</text>
+    <text x="820" y="252" text-anchor="middle" font-size="11.5" fill="#1e3a8a">dirty map[any]*Entry</text>
+    <text x="820" y="278" text-anchor="middle" font-size="11" fill="#334155">Store / Delete 未命中 read 时</text>
+    <text x="820" y="296" text-anchor="middle" font-size="11" fill="#334155">写它，需持 mu</text>
+    <text x="820" y="320" text-anchor="middle" font-size="11" fill="#7f1d1d">Entry 值为 nil = 「键已被删」墓碑</text>
+    <text x="820" y="338" text-anchor="middle" font-size="11" fill="#7f1d1d">dirty=nil（提升后置空）走 expunged</text>
 
-    <rect x="360" y="250" width="280" height="52" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
-    <text x="500" y="272" text-anchor="middle" font-size="12" fill="#854d0e">miss 计数</text>
+    <rect x="360" y="246" width="280" height="58" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="500" y="270" text-anchor="middle" font-size="12" fill="#854d0e">miss 计数</text>
     <text x="500" y="290" text-anchor="middle" font-size="11" fill="#854d0e">read 未命中次数，攒满就提升</text>
 
-    <line x1="410" y1="276" x2="300" y2="276" stroke="#b45309" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#m1)"/>
-    <line x1="590" y1="276" x2="670" y2="276" stroke="#b45309" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#m1)"/>
+    <line x1="360" y1="275" x2="336" y2="275" stroke="#b45309" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#m1)"/>
+    <line x1="640" y1="275" x2="664" y2="275" stroke="#b45309" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#m1)"/>
 
     <line x1="750" y1="350" x2="750" y2="392" stroke="#334155" stroke-width="1.6" marker-end="url(#m1)"/>
-    <!--  <rect x="770" y="362" width="200" height="24" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>-->
-    <text x="820" y="378" text-anchor="middle" font-size="10.5" fill="#334155">miss ≥ len(dirty) 则提升</text>
+    <text x="612" y="379" font-size="10.5" fill="#334155">miss ≥ len(dirty) 则提升</text>
 
     <rect x="440" y="396" width="320" height="64" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6"/>
     <text x="600" y="424" text-anchor="middle" font-size="13" font-weight="bold" fill="#7f1d1d">提升（promote）</text>
     <text x="600" y="446" text-anchor="middle" font-size="11" fill="#7f1d1d">dirty 变新 read · miss=0 · dirty=nil</text>
 
-    <line x1="440" y1="428" x2="250" y2="428" stroke="#dc2626" stroke-width="1.4" marker-end="url(#m1)"/>
-    <!--  <rect x="380" y="470" width="440" height="26" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>-->
-    <text x="600" y="487" text-anchor="middle" font-size="10.5" fill="#7f1d1d">下次 Store 发现 dirty=nil → 从 read 整表重建 dirty（补写墓碑键）</text>
+    <line x1="440" y1="428" x2="180" y2="428" stroke="#dc2626" stroke-width="1.4"/>
+    <line x1="180" y1="428" x2="180" y2="356" stroke="#dc2626" stroke-width="1.4" marker-end="url(#m3)"/>
+
+    <line x1="90" y1="350" x2="90" y2="487" stroke="#2563eb" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <line x1="90" y1="487" x2="370" y2="487" stroke="#2563eb" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <line x1="830" y1="487" x2="890" y2="487" stroke="#2563eb" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <line x1="890" y1="487" x2="890" y2="356" stroke="#2563eb" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#m2)"/>
+    <rect x="370" y="474" width="460" height="26" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="600" y="491" text-anchor="middle" font-size="10.5" fill="#7f1d1d">下次 Store 发现 dirty=nil → 从 read 整表重建 dirty（补写墓碑键）</text>
 
     <rect x="30" y="510" width="940" height="130" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
     <text x="48" y="536" font-size="12" fill="#0f172a">· 读：Load 先看 read；命中且 Entry 非 nil → 直接返回（无锁）。未命中 → miss++，加锁再看 dirty。</text>

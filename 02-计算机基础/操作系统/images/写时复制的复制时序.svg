@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="628" viewBox="0 0 1000 628" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="628" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">写时复制：只有「写」才真的复制那一页</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">读共享页不分配新内存；写才触发缺页，粒度是整页 4 KB</text>
+
+  <!-- 列标题 -->
+  <text x="180" y="92" font-size="12" font-weight="700" fill="#475569">父进程的 PTE</text>
+  <text x="430" y="92" font-size="12" font-weight="700" fill="#475569">子进程的 PTE</text>
+  <text x="690" y="92" font-size="12" font-weight="700" fill="#475569">物理页帧</text>
+
+  <!-- 第 1 行：fork 刚返回 -->
+  <circle cx="56" cy="143" r="14" fill="#0f766e"/>
+  <text x="56" y="148" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="80" y="138" font-size="11" font-weight="700" fill="#334155">fork 刚返回</text>
+  <text x="80" y="156" font-size="10" fill="#64748b">两侧写位清零</text>
+
+  <rect x="180" y="114" width="220" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="194" y="137" font-size="11" fill="#334155">写位 = 0</text>
+  <text x="194" y="157" font-size="11" font-weight="600" fill="#0f766e">指向 页帧 A</text>
+
+  <rect x="430" y="114" width="220" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="444" y="137" font-size="11" fill="#334155">写位 = 0</text>
+  <text x="444" y="157" font-size="11" font-weight="600" fill="#0f766e">指向 页帧 A</text>
+
+  <rect x="690" y="114" width="270" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="825" y="137" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">页帧 A（引用计数 = 2）</text>
+  <text x="825" y="157" font-size="10" fill="#64748b" text-anchor="middle">里面是同一份 4 KB 数据</text>
+
+  <!-- 第 2 行：子进程只读 -->
+  <circle cx="56" cy="243" r="14" fill="#0d9488"/>
+  <text x="56" y="248" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="80" y="238" font-size="11" font-weight="700" fill="#334155">子进程读</text>
+  <text x="80" y="256" font-size="10" fill="#64748b">不触发复制</text>
+
+  <rect x="180" y="214" width="220" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="194" y="237" font-size="11" fill="#334155">写位 = 0</text>
+  <text x="194" y="257" font-size="11" font-weight="600" fill="#0f766e">指向 页帧 A</text>
+
+  <rect x="430" y="214" width="220" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="444" y="237" font-size="11" fill="#334155">写位 = 0</text>
+  <text x="444" y="257" font-size="11" font-weight="600" fill="#0f766e">指向 页帧 A</text>
+
+  <rect x="690" y="214" width="270" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="825" y="237" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">页帧 A（引用计数 = 2）</text>
+  <text x="825" y="257" font-size="10" fill="#0d9488" text-anchor="middle">一页都没多</text>
+
+  <!-- 第 3 行：子进程写 -->
+  <circle cx="56" cy="343" r="14" fill="#b45309"/>
+  <text x="56" y="348" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="80" y="338" font-size="11" font-weight="700" fill="#334155">子进程写 1 字节</text>
+  <text x="80" y="356" font-size="10" fill="#b45309">写保护 → 缺页</text>
+
+  <rect x="180" y="314" width="220" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="194" y="337" font-size="11" fill="#334155">写位 = 0</text>
+  <text x="194" y="357" font-size="11" font-weight="600" fill="#0f766e">仍指向 页帧 A</text>
+
+  <rect x="430" y="314" width="220" height="58" rx="6" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="444" y="337" font-size="11" fill="#92400e">写位 = 0（写保护）</text>
+  <text x="444" y="357" font-size="11" font-weight="700" fill="#b45309">写 → 保护错误 → 缺页</text>
+
+  <rect x="690" y="314" width="270" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="825" y="337" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">页帧 A（引用计数 = 2）</text>
+  <text x="825" y="357" font-size="10" fill="#b45309" text-anchor="middle">内核在缺页处理里复制这张页</text>
+
+  <!-- 第 4 行：写完之后 -->
+  <circle cx="56" cy="443" r="14" fill="#0f766e"/>
+  <text x="56" y="448" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+  <text x="80" y="438" font-size="11" font-weight="700" fill="#334155">写完之后</text>
+  <text x="80" y="456" font-size="10" fill="#64748b">父子各持一帧</text>
+
+  <rect x="180" y="414" width="220" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="194" y="437" font-size="11" fill="#334155">写位 = 0</text>
+  <text x="194" y="457" font-size="11" font-weight="600" fill="#0f766e">指向 页帧 A</text>
+
+  <rect x="430" y="414" width="220" height="58" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="444" y="437" font-size="11" fill="#334155">写位 = 1</text>
+  <text x="444" y="457" font-size="11" font-weight="600" fill="#0f766e">指向 页帧 A'</text>
+
+  <rect x="690" y="414" width="130" height="58" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="755" y="437" font-size="11" font-weight="700" fill="#334155" text-anchor="middle">页帧 A</text>
+  <text x="755" y="457" font-size="10" fill="#64748b" text-anchor="middle">父进程的旧数据</text>
+
+  <rect x="830" y="414" width="130" height="58" rx="6" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="895" y="437" font-size="11" font-weight="700" fill="#92400e" text-anchor="middle">页帧 A'</text>
+  <text x="895" y="457" font-size="10" fill="#92400e" text-anchor="middle">子进程的新数据</text>
+
+  <!-- 说明面板 -->
+  <rect x="40" y="494" width="920" height="60" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="62" y="518" font-size="12" fill="#334155">实测（32768 页）：只读 13.02 / 15.42 / 16.31 ms，折合 0.40 ~ 0.50 µs 每页；</text>
+  <text x="62" y="540" font-size="12" fill="#334155">写 238.56 / 208.64 ms，折合 6.4 ~ 7.3 µs 每页 —— 每页一次缺页、一次 4 KB 复制、一次 TLB 失效。</text>
+
+  <rect x="40" y="566" width="920" height="44" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="62" y="594" font-size="12" fill="#92400e">注意：粒度是整页 —— 只写 1 个字节，也照样复制 4 KB，写放大 4096 倍。写多读少的场景不该靠 fork 分家。</text>
+</svg>

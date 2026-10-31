@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="566" viewBox="0 0 1000 566" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="566" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">信号的四道关：产生、挂起、查屏蔽字、递送</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">前三道只记账，第四道才结算；结算时刻固定在「返回用户态之前」</text>
+
+  <!-- ① 产生 -->
+  <rect x="40" y="96" width="206" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="54" y="126" font-size="13" font-weight="700" fill="#0f172a">① 产生</text>
+  <text x="54" y="152" font-size="11" fill="#334155">kill / tgkill / raise</text>
+  <text x="54" y="174" font-size="11" fill="#334155">硬件异常 SIGSEGV</text>
+  <text x="54" y="196" font-size="11" fill="#334155">终端 Ctrl+C / Ctrl+Z</text>
+  <text x="54" y="218" font-size="11" fill="#334155">内核事件 SIGCHLD</text>
+  <text x="54" y="240" font-size="11" fill="#334155">定时器 SIGALRM</text>
+
+  <line x1="248" y1="176" x2="266" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="266,171 274,176 266,181" fill="#94a3b8"/>
+
+  <!-- ② pending -->
+  <rect x="276" y="96" width="206" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="290" y="126" font-size="13" font-weight="700" fill="#0f172a">② 挂起 pending</text>
+  <text x="290" y="152" font-size="11" fill="#334155">线程级 SigPnd</text>
+  <text x="290" y="174" font-size="11" fill="#334155">进程级 ShdPnd</text>
+  <text x="290" y="196" font-size="11" fill="#334155">标准信号：1 位</text>
+  <text x="290" y="218" font-size="11" fill="#334155">实时信号：队列</text>
+  <text x="290" y="240" font-size="11" fill="#0f766e">此刻不改控制流</text>
+
+  <line x1="484" y1="176" x2="502" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="502,171 510,176 502,181" fill="#94a3b8"/>
+
+  <!-- ③ 屏蔽字 -->
+  <rect x="512" y="96" width="206" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="526" y="126" font-size="13" font-weight="700" fill="#0f172a">③ 查屏蔽字</text>
+  <text x="526" y="152" font-size="11" fill="#334155">sigprocmask</text>
+  <text x="526" y="174" font-size="11" fill="#334155">pthread_sigmask</text>
+  <text x="526" y="196" font-size="11" fill="#b45309">被屏蔽：留在 pending</text>
+  <text x="526" y="218" font-size="11" fill="#334155">不屏蔽：放行</text>
+  <text x="526" y="240" font-size="11" fill="#64748b">屏蔽字是线程属性</text>
+
+  <line x1="720" y1="176" x2="738" y2="176" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="738,171 746,176 738,181" fill="#94a3b8"/>
+
+  <!-- ④ 递送 -->
+  <rect x="748" y="96" width="212" height="160" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="762" y="126" font-size="13" font-weight="700" fill="#0f172a">④ 递送</text>
+  <text x="762" y="152" font-size="11" fill="#0f766e">用户 handler</text>
+  <text x="762" y="174" font-size="11" fill="#334155">默认动作：终止 / 停止</text>
+  <text x="762" y="196" font-size="11" fill="#334155">SIG_IGN 显式忽略</text>
+  <text x="762" y="218" font-size="11" fill="#b45309">KILL / STOP 不可接管</text>
+  <text x="762" y="240" font-size="11" fill="#64748b">三选一，没有第四种</text>
+
+  <!-- 说明面板 -->
+  <rect x="40" y="300" width="920" height="170" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="62" y="330" font-size="12" fill="#334155">递送不是打断：内核只在 exit_to_user_mode() 即将返回用户态时检查 TIF_SIGPENDING，有信号才调 do_signal()。</text>
+  <text x="62" y="356" font-size="12" fill="#334155">前三道关都不改代码执行流；被屏蔽的信号停在 ②，既不执行也不丢弃，解除屏蔽后重新走 ③ 与 ④。</text>
+  <text x="62" y="382" font-size="12" fill="#334155">推论一：进程不回到用户态就递送不了 —— D 状态等 I/O 时，kill -9 也只能干等（见第六节）。</text>
+  <text x="62" y="408" font-size="12" fill="#334155">推论二：既然只在返回用户态时批量结算，短时间内连发的同一个标准信号必然合并（见下一张图）。</text>
+  <text x="62" y="446" font-size="12" fill="#64748b">SIGPnd 与 ShdPnd 是两份 pending：前者属于读 /proc 的那条线程，后者属于整个进程。</text>
+
+  <rect x="40" y="486" width="920" height="56" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="62" y="510" font-size="12" fill="#92400e">实测：SIGUSR1 阻塞期间连发 5 次 → pending 位仍只有 1，解除阻塞后 handler 只执行 1 次。</text>
+  <text x="62" y="532" font-size="12" fill="#92400e">标准信号是位图，不是计数器。</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="590" viewBox="0 0 1000 590" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="590" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">handler 跑在哪条栈上：被打断线程的栈，或一块独立备用栈</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">默认共用主栈；加了 sigaltstack 与 SA_ONSTACK 才会换栈</text>
+
+  <!-- 左：主栈 -->
+  <text x="60" y="92" font-size="12" font-weight="700" fill="#334155">主栈（线程 A 的用户栈，0x7fff 段）</text>
+  <rect x="60" y="104" width="380" height="290" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+
+  <rect x="76" y="120" width="348" height="54" rx="5" fill="#fef3c7" stroke="#f59e0b"/>
+  <text x="92" y="142" font-size="11" font-weight="700" fill="#92400e">handler 帧（局部变量在这里）</text>
+  <text x="92" y="162" font-size="10" fill="#b45309">0x7fff09eb3b77</text>
+
+  <rect x="76" y="182" width="348" height="54" rx="5" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="92" y="204" font-size="11" fill="#334155">信号帧：保存被打断的寄存器现场</text>
+  <text x="92" y="224" font-size="10" fill="#64748b">返回时由 rt_sigreturn 恢复</text>
+
+  <rect x="76" y="244" width="348" height="54" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="92" y="266" font-size="11" fill="#334155">被打断的栈帧（PC 停在这一层）</text>
+  <text x="92" y="286" font-size="10" fill="#64748b">handler 返回后从这里继续</text>
+
+  <rect x="76" y="306" width="348" height="72" rx="5" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="92" y="332" font-size="11" fill="#334155">main 的栈帧</text>
+  <text x="92" y="354" font-size="10" fill="#64748b">局部变量 0x7fff09eb413c</text>
+
+  <text x="60" y="416" font-size="11" fill="#64748b">同一段栈上的两层帧，相差 +1477 字节</text>
+
+  <!-- 右：备用栈 -->
+  <text x="560" y="92" font-size="12" font-weight="700" fill="#0f766e">备用栈（sigaltstack 登记的 16 KB）</text>
+  <rect x="560" y="104" width="380" height="290" rx="8" fill="#f0fdfa" stroke="#99f6e4"/>
+
+  <rect x="576" y="120" width="348" height="86" rx="5" fill="#d1fae5" stroke="#0f766e"/>
+  <text x="592" y="146" font-size="11" font-weight="700" fill="#0f766e">SA_ONSTACK 的 handler 帧</text>
+  <text x="592" y="168" font-size="10" fill="#0f766e">0x6236eab4fd77</text>
+  <text x="592" y="188" font-size="10" fill="#0f766e">落在 altstack 区间内</text>
+
+  <rect x="576" y="218" width="348" height="160" rx="5" fill="#ffffff" stroke="#cbd5e1" stroke-dasharray="5 4"/>
+  <text x="750" y="302" font-size="11" fill="#94a3b8" text-anchor="middle">未使用：handler 返回即释放</text>
+
+  <text x="560" y="416" font-size="11" fill="#64748b">备用栈就是 malloc 出来的 16 KB 匿名内存</text>
+
+  <!-- 换栈箭头 -->
+  <rect x="452" y="96" width="100" height="22" rx="4" fill="#ecfdf5" stroke="#99f6e4"/>
+  <text x="502" y="112" font-size="10" fill="#0f766e" text-anchor="middle">SA_ONSTACK</text>
+  <path d="M 444 150 C 478 128, 522 128, 556 146" fill="none" stroke="#0f766e" stroke-width="1.5"/>
+  <polygon points="548,140 558,146 549,152" fill="#0f766e"/>
+
+  <!-- 说明面板 -->
+  <rect x="40" y="440" width="920" height="72" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="62" y="466" font-size="12" fill="#334155">handler 不是一条独立线程：它借用被打断线程的栈，所以 handler 里不能阻塞，也不能做大递归。</text>
+  <text x="62" y="490" font-size="12" fill="#334155">栈溢出（SIGSEGV）时主栈已经压爆，handler 必须换到备用栈，否则连崩溃现场都留不下来。</text>
+
+  <rect x="40" y="524" width="920" height="48" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="62" y="554" font-size="12" fill="#92400e">实测：默认 handler 与 main 的局部变量同区段、相差 +1477 字节；16 KB 备用栈下 handler 地址落在 altstack 区间内。</text>
+</svg>

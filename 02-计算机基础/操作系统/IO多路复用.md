@@ -6,7 +6,7 @@
 >
 > 内容整理自个人学习笔记，素材见 [素材清单](../../素材清单.md)。
 >
-> ✅ 实测口径：3.1 的 `FD_SETSIZE=1024` 在 `golang:1.26-alpine`（`go1.26.8 linux/amd64`）容器内读 Go `syscall` 包常量得到，连跑 4 次读数一致；⚠️ **未实测** `io_uring`（本机为 Windows，且容器沙箱常禁用该系统调用）。本篇**只讲机制**，语言侧的可运行代码已各自归位（见第八节）。
+> ✅ 实测口径：3.1 的 `FD_SETSIZE=1024` 在 `golang:1.26-alpine`（`go1.26.8 linux/amd64`）容器内读 Go `syscall` 包常量得到，连跑 4 次读数一致；3.5 与 4.3 的 eventfd / signalfd / timerfd / `EPOLLONESHOT` 读数在 `golang:1.26-bookworm`（gcc 12、glibc 2.36）容器内新跑，程序 `eventfd_demo.c`；⚠️ **未实测** `io_uring`（本机为 Windows，且容器沙箱常禁用该系统调用）。本篇**只讲机制**，语言侧的可运行代码已各自归位（见第八节）。
 
 ---
 
@@ -134,6 +134,35 @@ int n = epoll_wait(epfd, events, maxevents, -1);  // 返回就绪事件
 
 图注：epoll 实例的两块结构：兴趣列表红黑树与就绪链表，以及驱动回调、epoll_ctl 与 epoll_wait 各自接触哪一块。
 
+### 3.5 除了 socket，epoll 还能等什么：eventfd、signalfd、timerfd
+
+epoll 等的是「fd 上的状态变化」，不是「socket 上的字节」。任何能变成 fd 的事件源都能挂进来，这是把各路异步通知收进同一个循环的关键。
+
+| fd 类型 | 把什么变成可读事件 | 读出来是什么 | 典型用途 |
+|---|---|---|---|
+| `eventfd` | 一个 64 位计数器非零 | 8 字节计数（读后归零，`EFD_SEMAPHORE` 时每次减一） | 线程间唤醒、「有活」通知 |
+| `signalfd` | 被阻塞的信号到达 | `signalfd_siginfo`（信号号、`si_pid` 等） | 把信号处理搬进事件循环，绕开 handler 限制 |
+| `timerfd` | 定时器到期 | 8 字节到期次数 | 毫秒级定时任务，与其它 fd 共用一套等待 |
+
+实测一次循环里同时等这三个 fd（timerfd 50 ms 到期、eventfd 写一次、给自己发 `SIGUSR1`）：
+
+```text
+add eventfd    fd=4
+add timerfd    fd=5
+add signalfd   fd=6
+第 1 次 epoll_wait 返回 2 个就绪 fd：4, 6
+  eventfd 读到计数=1
+  signalfd 读到信号=10
+第 2 次 epoll_wait 返回 1 个就绪 fd：5
+  timerfd 读到到期次数=1
+```
+
+两轮读数说明两件事：**第一，三种完全不同的事件源可以挂在同一个实例上**，应用只写一套 `epoll_wait + 按 fd 分派`；**第二，一次 `epoll_wait` 只交付此刻就绪的那批**（4 和 6），timerfd 还没到期就不在返回数组里——这不是 LT/ET 的差别，是 `epoll_wait` 本身的语义。
+
+代价有两条：多一个 fd 就多一次 `read` 与一次内核到用户的拷贝；`signalfd` 还要求先用 `sigprocmask` 把所有线程的信号屏蔽住，否则信号会先被某个线程的信号处理函数领走。
+
+⚠️ 什么时候别用：只有一个定时器、不和任何 I/O 共存时，`epoll_wait` 的超时参数就够了，多开一个 timerfd 是净增开销。
+
 ---
 
 ## 四、epoll 的两种触发模式怎么选？⭐
@@ -169,6 +198,29 @@ for (;;) {
 写操作也要循环到发送缓冲区满；剩余数据放用户态队列并订阅 `EPOLLOUT`，写完立即取消订阅。
 
 > ⚠️ ET 最典型事故：只读一次便返回，缓冲区仍有旧数据，却没有新的边沿，连接像“卡死”。
+
+### 4.3 EPOLLONESHOT：一次性关注，配合线程池
+
+LT/ET 管的是「同一个 fd 通知几次」，`EPOLLONESHOT` 管的是「这一次由谁处理」。加上它之后，fd 上报一次事件就**自动从兴趣集合里摘掉**，除非用 `epoll_ctl(EPOLL_CTL_MOD)` 重新 arm。
+
+实测（eventfd + `EPOLLIN | EPOLLONESHOT`）：
+
+```text
+第 1 次 wait 返回 1 个
+未重新 arm，第 2 次 wait 返回 0 个（计数仍在 fd 里，但事件不再上报）
+epoll_ctl(MOD) 重新 arm 之后
+第 3 次 wait 返回 1 个
+```
+
+第二行是重点：**数据还在 fd 里，只是不再上报**。它的语义是「摘掉关注」，不是「消费数据」，与 LT「有数据就一直报」正好相反。
+
+它解决的是多线程争抢同一连接：多个 worker 同时 `epoll_wait` 同一个实例时，一个可读事件可能唤醒多个线程，然后它们争同一把读锁、甚至把同一批数据读乱。`EPOLLONESHOT` 保证同一时刻只有一个线程持有这个连接，处理完再把关注交回去。
+
+三个使用要点：
+
+- **必须重新 arm**，否则这条连接永久静默——这是它最经典的事故；
+- 重新 arm 要由**处理完的那个线程**做，不能提前，否则会立刻唤醒另一个线程；
+- 可与 ET 叠加：`EPOLLIN | EPOLLET | EPOLLONESHOT` 既只在边沿通知，也只通知一次。
 
 ---
 

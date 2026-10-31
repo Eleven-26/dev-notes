@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="510" viewBox="0 0 1000 510" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="510" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">进程的两种身后事：僵尸与孤儿</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">同一对进程、两种结局 —— 关键看「谁先退出」：父先收尸是僵尸，父先走是孤儿</text>
+
+  <!-- 路径一 -->
+  <text x="40" y="92" font-size="12" font-weight="700" fill="#0f766e">路径一：父进程活着 —— 子进程死后先变僵尸，等父进程收尸</text>
+
+  <rect x="40" y="104" width="207" height="76" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="143" y="132" font-size="11" font-weight="600" fill="#334155" text-anchor="middle">父进程 4029</text>
+  <text x="143" y="153" font-size="10" fill="#64748b" text-anchor="middle">在 wait 或还在干活</text>
+  <text x="143" y="170" font-size="10" fill="#64748b" text-anchor="middle">子进程 4030 运行中</text>
+
+  <rect x="277" y="104" width="207" height="76" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="380" y="132" font-size="11" font-weight="600" fill="#334155" text-anchor="middle">子进程 _exit(7)</text>
+  <text x="380" y="153" font-size="10" fill="#64748b" text-anchor="middle">线程全部退出</text>
+  <text x="380" y="170" font-size="10" fill="#64748b" text-anchor="middle">地址空间已释放</text>
+
+  <rect x="514" y="104" width="207" height="76" rx="6" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="617" y="132" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">僵尸 Z</text>
+  <text x="617" y="153" font-size="10" fill="#92400e" text-anchor="middle">state=Z, Threads=1</text>
+  <text x="617" y="170" font-size="10" fill="#92400e" text-anchor="middle">占着 pid 与内核内存</text>
+
+  <rect x="751" y="104" width="207" height="76" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="854" y="132" font-size="11" font-weight="700" fill="#15803d" text-anchor="middle">waitpid 回收</text>
+  <text x="854" y="153" font-size="10" fill="#166534" text-anchor="middle">/proc 项整条消失</text>
+  <text x="854" y="170" font-size="10" fill="#166534" text-anchor="middle">退出码 7 仍能读出</text>
+
+  <path d="M 247 142 L 271 142" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 267 142 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 484 142 L 508 142" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 504 142 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 721 142 L 745 142" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 741 142 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+
+  <!-- 路径二 -->
+  <text x="40" y="218" font-size="12" font-weight="700" fill="#b45309">路径二：父进程先退出 —— 子进程被最近的收养者接管，最终由它回收</text>
+
+  <rect x="40" y="230" width="207" height="76" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="143" y="258" font-size="11" font-weight="600" fill="#334155" text-anchor="middle">父进程 4029 退出</text>
+  <text x="143" y="279" font-size="10" fill="#64748b" text-anchor="middle">没有等到子进程结束</text>
+  <text x="143" y="296" font-size="10" fill="#64748b" text-anchor="middle">它的 pid 被归还</text>
+
+  <rect x="277" y="230" width="207" height="76" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="380" y="258" font-size="11" font-weight="600" fill="#334155" text-anchor="middle">子进程继续运行</text>
+  <text x="380" y="279" font-size="10" fill="#64748b" text-anchor="middle">成了孤儿</text>
+  <text x="380" y="296" font-size="10" fill="#64748b" text-anchor="middle">PPid 指向已消失的进程</text>
+
+  <rect x="514" y="230" width="207" height="76" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="617" y="258" font-size="11" font-weight="700" fill="#1d4ed8" text-anchor="middle">被 init 收养</text>
+  <text x="617" y="279" font-size="10" fill="#1e40af" text-anchor="middle">ppid 从 4029 变成 1</text>
+  <text x="617" y="296" font-size="10" fill="#1e40af" text-anchor="middle">1 秒内完成</text>
+
+  <rect x="751" y="230" width="207" height="76" rx="6" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="854" y="258" font-size="11" font-weight="700" fill="#15803d" text-anchor="middle">由收养者回收</text>
+  <text x="854" y="279" font-size="10" fill="#166534" text-anchor="middle">容器里 PID 1 是应用本身</text>
+  <text x="854" y="296" font-size="10" fill="#166534" text-anchor="middle">它不 wait 就没人收</text>
+
+  <path d="M 247 268 L 271 268" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 267 268 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 484 268 L 508 268" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 504 268 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 721 268 L 745 268" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 741 268 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+
+  <!-- 说明面板 -->
+  <rect x="40" y="332" width="920" height="158" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="62" y="358" font-size="12" font-weight="700" fill="#0f766e">实测（同一容器）</text>
+  <text x="62" y="382" font-size="12" fill="#334155">不 wait 的子进程 4027：state=Z、Threads=1；waitpid 之后 /proc 项整条消失，退出码 7 仍能读出。</text>
+  <text x="62" y="406" font-size="12" fill="#334155">父进程退出 1 秒后：孙进程 4030 的 ppid 从 4029 变成 1。</text>
+  <text x="62" y="430" font-size="12" font-weight="700" fill="#b45309">两个「忽略」不是一回事</text>
+  <text x="62" y="454" font-size="12" fill="#334155">SIGCHLD 默认处置就是「忽略」，但子进程照样变僵尸；只有显式 SIG_IGN 才让内核直接回收（实测再 waitpid 得 ECHILD）。</text>
+  <text x="62" y="476" font-size="12" fill="#64748b">容器里 PID 1 不 reaper，孙进程的僵尸就会堆到 pid 上限 —— tini、dumb-init、docker run --init 都是为这一件事存在的。</text>
+</svg>

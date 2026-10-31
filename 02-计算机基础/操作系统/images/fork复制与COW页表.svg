@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="624" viewBox="0 0 1000 624" font-family="Microsoft YaHei, PingFang SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="624" fill="#ffffff"/>
+
+  <text x="40" y="36" font-size="19" font-weight="700" fill="#0f172a">fork 之后：两套页表，一批物理页</text>
+  <text x="40" y="58" font-size="12" fill="#64748b">左右两侧的虚拟地址完全相同，中间的物理页只有一份；真正多出来的是 task_struct 与页表</text>
+
+  <!-- 列标题 -->
+  <text x="60" y="92" font-size="13" font-weight="700" fill="#475569">父进程虚拟页（PTE 写位已清）</text>
+  <text x="440" y="92" font-size="13" font-weight="700" fill="#475569" text-anchor="middle">物理页帧</text>
+  <text x="700" y="92" font-size="13" font-weight="700" fill="#475569">子进程虚拟页（PTE 写位已清）</text>
+
+  <!-- 第 1 行：代码段 -->
+  <rect x="60" y="108" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="74" y="130" font-size="12" font-weight="600" fill="#334155">代码段</text>
+  <text x="74" y="149" font-size="10" fill="#64748b">vaddr 0x400000　只读</text>
+
+  <rect x="430" y="108" width="150" height="52" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="505" y="130" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">页帧 A</text>
+  <text x="505" y="149" font-size="10" fill="#64748b" text-anchor="middle">ref = 2</text>
+
+  <rect x="700" y="108" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="714" y="130" font-size="12" font-weight="600" fill="#334155">代码段</text>
+  <text x="714" y="149" font-size="10" fill="#64748b">vaddr 0x400000　只读</text>
+
+  <path d="M 310 134 L 424 134" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 420 134 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 580 134 L 694 134" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 690 134 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+
+  <!-- 第 2 行：数据段 -->
+  <rect x="60" y="182" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="74" y="204" font-size="12" font-weight="600" fill="#334155">数据段</text>
+  <text x="74" y="223" font-size="10" fill="#64748b">vaddr 0x602000　只读</text>
+
+  <rect x="430" y="182" width="150" height="52" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="505" y="204" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">页帧 B</text>
+  <text x="505" y="223" font-size="10" fill="#64748b" text-anchor="middle">ref = 2</text>
+
+  <rect x="700" y="182" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="714" y="204" font-size="12" font-weight="600" fill="#334155">数据段</text>
+  <text x="714" y="223" font-size="10" fill="#64748b">vaddr 0x602000　只读</text>
+
+  <path d="M 310 208 L 424 208" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 420 208 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 580 208 L 694 208" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 690 208 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+
+  <!-- 第 3 行：堆 -->
+  <rect x="60" y="256" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="74" y="278" font-size="12" font-weight="600" fill="#334155">堆</text>
+  <text x="74" y="297" font-size="10" fill="#64748b">vaddr 0x1a2b000　只读</text>
+
+  <rect x="430" y="256" width="150" height="52" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="505" y="278" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">页帧 C</text>
+  <text x="505" y="297" font-size="10" fill="#64748b" text-anchor="middle">ref = 2</text>
+
+  <rect x="700" y="256" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="714" y="278" font-size="12" font-weight="600" fill="#334155">堆</text>
+  <text x="714" y="297" font-size="10" fill="#64748b">vaddr 0x1a2b000　只读</text>
+
+  <path d="M 310 282 L 424 282" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 420 282 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 580 282 L 694 282" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 690 282 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+
+  <!-- 第 4 行：栈 -->
+  <rect x="60" y="330" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="74" y="352" font-size="12" font-weight="600" fill="#334155">栈</text>
+  <text x="74" y="371" font-size="10" fill="#64748b">vaddr 0x7ffd…　只读</text>
+
+  <rect x="430" y="330" width="150" height="52" rx="6" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="505" y="352" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">页帧 D</text>
+  <text x="505" y="371" font-size="10" fill="#64748b" text-anchor="middle">ref = 2</text>
+
+  <rect x="700" y="330" width="250" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="714" y="352" font-size="12" font-weight="600" fill="#334155">栈</text>
+  <text x="714" y="371" font-size="10" fill="#64748b">vaddr 0x7ffd…　只读</text>
+
+  <path d="M 310 356 L 424 356" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 420 356 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+  <path d="M 580 356 L 694 356" stroke="#94a3b8" stroke-width="1.6"/>
+  <path d="M 690 356 l -7 -4 l 0 8 z" fill="#94a3b8"/>
+
+  <!-- 说明面板 -->
+  <rect x="40" y="406" width="920" height="130" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="62" y="432" font-size="12" font-weight="700" fill="#0f766e">fork 复制的是簿记</text>
+  <text x="62" y="454" font-size="12" fill="#334155">task_struct、页表、fd 表、信号处置表 —— 各一份，值相同</text>
+  <text x="62" y="478" font-size="12" font-weight="700" fill="#b45309">fork 不复制的是物理页</text>
+  <text x="62" y="500" font-size="12" fill="#334155">128 MB 的数据一页都没动；两侧 PTE 的写位被清零，谁先写谁触发缺页</text>
+  <text x="62" y="524" font-size="12" fill="#64748b">实测：子进程读完 32768 页后 Private_Dirty 只有 48 kB，写完跳到 131124 kB</text>
+
+  <rect x="40" y="550" width="920" height="54" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+  <text x="62" y="572" font-size="12" fill="#92400e">注意：别用 VmRSS 判断有没有复制 —— 子进程读前读后都是约 132 MB，从 RSS 上完全看不出差别。</text>
+  <text x="62" y="592" font-size="12" fill="#92400e">smaps 的私有/共享计数在父子两侧并不对称，只看子进程自己那一侧的跳变。</text>
+</svg>
