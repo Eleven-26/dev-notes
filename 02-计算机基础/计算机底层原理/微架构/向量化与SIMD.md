@@ -2,7 +2,7 @@
 
 > 同一段 `c[i] = a[i] + b[i]`，同一台机器，只换编译选项：**0.810 ns / 元素 → 0.231 → 0.105**，差 7.7 倍。差别不在算法，不在语言，只在于「一条指令一次处理几个元素」。
 >
-> 本篇从这组读数出发，回答四个问题：`-O2` 为什么一条都不向量化、16 字节换 32 字节为什么只快一倍、哪些写法挡住了向量化、以及 Go 与 Java 各自的向量化落在哪一档。所有读数在本机容器里真跑，未实测的部分在文末标出。
+> 本篇从这组读数出发，回答五个问题：`-O2` 为什么一条都不向量化、16 字节换 32 字节为什么只快一倍、哪些写法挡住了向量化、Go 与 Java 各自的向量化落在哪一档、以及服务端真正在用的 SIMD 落在哪些库函数上。所有读数在本机容器里真跑，未实测的部分在文末标出。
 >
 > 内容整理自个人学习笔记。
 
@@ -420,6 +420,39 @@ void add_avx2(int *restrict c, const int *restrict a, const int *restrict b, lon
 
 所以手写的适用面比想象中窄：**计算受限 + 编译器确实没做 + 编译器那套优化你也自己补上了**，三者缺一不可。真正值得手写的是标准库（`memcpy`、`strlen`、矩阵乘微内核），那里上面三条全满足且被反复调优。
 
+### 7.3 服务端真正在用的 SIMD 在哪
+
+**本节要点**：7.1 / 7.2 的结论是「手写只值在标准库」，这一节把标准库里那几处拆开测：CRC-32、字节查找、AES-GCM 都靠 SIMD 撑着，**关掉对应的指令扩展后掉 8~51 倍**。同一个二进制，只换 `GODEBUG=cpu.xxx=off`，就能把「有没有 SIMD」变成一次 A/B。
+
+`hash/crc32`、`bytes`、`crypto/aes` 都不接受「关掉 SIMD」的参数，但 Go 运行时认一组 `GODEBUG` 开关：把某个指令扩展标成不可用，库里查表的那段汇编就会回退到纯 Go 实现。读数（`golang:1.26-bookworm`，`go1.26.8 linux/amd64`，每档 `testing.Benchmark` 三轮取最快）：
+
+| 负载 | 默认 GB/s | 关掉的扩展 | 关掉后 GB/s | 倍数 |
+|---|---|---|---|---|
+| CRC-32 / IEEE（64 KB） | 12.2~12.5 | `cpu.pclmulqdq=off` | 1.52~1.55 | **8** |
+| CRC-32 / Castagnoli（64 KB） | 16.4~16.5 | `cpu.sse42=off` | 1.38 | **12** |
+| `bytes.IndexByte`（64 KB） | 26.1~26.3 | `cpu.avx2=off` | 17.2 | 1.5 |
+| `bytes.IndexByte`（1 MB） | 21.4~21.9 | `cpu.avx2=off` | 13.1 | 1.6 |
+| AES-128-GCM（16 KB） | 2.6~3.1 | `cpu.aes=off` | 0.060 | **43~51** |
+| AES-128-GCM（16 KB） | 2.6~3.1 | `cpu.pclmulqdq=off` | 0.126 | **21~24** |
+| 对照：纯 Go 表驱动 CRC（64 KB） | 0.28~0.29 | — | — | — |
+| 对照：逐字节查找（64 KB） | 1.6~2.2 | — | — | — |
+
+![服务端常用库的吞吐：SIMD 路径比纯 Go 实现快一到两个数量级](images/服务端SIMD的三条路径.svg)
+
+图把六种实现放在同一根对数轴上：纯 Go 表驱动 CRC 只有 0.28 GB/s，逐字节查找 1.6~2.2，而标准库的 CRC 12.2~16.5、IndexByte 26、AES-GCM 2.8 —— 同一台机器上差两个数量级，差别只在有没有用上 SIMD 指令。
+
+三条从表里能读出的事：
+
+**① 同一个库，两种多项式走两条不同的指令路径。** IEEE 靠 PCLMULQDQ（关掉掉 8 倍），Castagnoli 靠 SSE4.2 的 `CRC32` 指令（关掉掉 12 倍）；而 Castagnoli 本身更快（16.4 vs 12.2）。这正是 Kafka 选 CRC32C（Castagnoli）而不是 IEEE 的一个原因：在 x86 上它有一条单指令实现。
+
+**② 向量化的价值要跟「标量实现」比，不是跟自己的上一版比。** `bytes.IndexByte` 关掉 AVX2 只慢 1.5 倍，因为 1 MB 档已经撞到缓存/内存带宽；但它比逐字节循环快 **12~16 倍**。同理，CRC 的 12~16 GB/s 比表驱动快 **42~57 倍**。只测「AVX2 开与关」会得出「向量化只值 1.5 倍」的错误结论。
+
+**③ AES-GCM 的加速来自两段，缺一不可。** AES 轮用 AES-NI（关掉掉到 0.060 GB/s），GHASH 用 PCLMULQDQ（关掉掉到 0.126 GB/s）。两段都是 SIMD，关哪一段都塌。
+
+⭐ 所以「Go 不做向量化」这句话要说全：**不做的是你的循环，标准库自己的热点函数早就手写了向量版本**（6.1 的 `memmove`、这里的 CRC 与 `IndexByte`）。业务代码里真正吃到 SIMD 的方式，就是调用这些库函数、或者依赖数据库 / 消息队列内部的实现，而不是自己在 Go 里拼 intrinsics。
+
+⚠️ 口径：AES-GCM 的 16 KB 加密包含 Go 侧的分组与缓冲开销，所以绝对值低于裸 AES-NI 的峰值；表中比的是同一份代码在开关前后的比值。`GODEBUG=cpu.*=off` 只影响运行时的特性探测，不改变二进制里的指令，是标准的 A/B 手段。
+
 ---
 
 ## 八、三组结论
@@ -448,6 +481,8 @@ void add_avx2(int *restrict c, const int *restrict a, const int *restrict b, lon
 - `restrict` 说谎时的错值（`i=2` 给 2，正确 3）与 `no-restrict` 降级后仍正确
 - Go 汇编（`main.addBasic` 全函数，确认无 `PADDD`/`VPADDD`）
 - Java 的 `UseSuperWord` / `UseAVX=2` / `MaxVectorSize=32` 三个默认值
+- 7.3 节六种实现的吞吐（`crc32/IEEE`、`crc32/Castagnoli`、`bytes.IndexByte` 两档、AES-128-GCM，另加纯 Go 表驱动 CRC 与逐字节查找两个对照；每档 `testing.Benchmark` 三轮取最快）
+- 7.3 节的开关对照（同一二进制分别以 `GODEBUG=cpu.pclmulqdq=off`、`cpu.sse42=off`、`cpu.avx2=off`、`cpu.aes=off` 各重跑一遍）
 
 **只编译未实测**：
 
@@ -460,6 +495,7 @@ void add_avx2(int *restrict c, const int *restrict a, const int *restrict b, lon
 - `perf stat` 的 IPC/指令数（WSL2 下 `perf` 不可用，只有 wall clock）
 - arm64 的 NEON / SVE 宽度与指令（只有 x86-64 实验台）
 - 真机（非 WSL2）上的绝对读数——虚拟化会放大系统调用与内存延迟，本篇全部是 ns/元素 的比值，不跨机器引用
+- 7.3 节各库函数的**实际汇编**（没有逐函数反汇编确认走的是哪条路径，只用 `GODEBUG=cpu.*=off` 的前后差异定位）；AES-GCM 的绝对值含 Go 侧分组与缓冲开销，不是裸 AES-NI 峰值
 
 **测量坑**（写进代码注释，也是本篇的负结果）：
 
@@ -481,6 +517,10 @@ void add_avx2(int *restrict c, const int *restrict a, const int *restrict b, lon
 **手写 intrinsics 在什么负载上真能赢？**
 
 要同时满足「计算远多于访存」与「自动向量化确实没做」。典型的是小尺寸矩阵乘的微内核（一次 load 反复用）、CRC、以及 `memcpy` 这种可被反复调优的库函数。反例就是本篇第 7.2 节的数组加法——访存受限，手写拿不到好处。
+
+**为什么 Kafka 的记录校验用 CRC32C 而不是常见的 CRC32？**
+
+因为 Castagnoli 多项式在 x86 上有一条单指令实现（SSE4.2 的 `CRC32`），而 IEEE 多项式只能靠 PCLMULQDQ 的查表拆解。7.3 节同一份 Go 代码实测：Castagnoli 16.4 GB/s、IEEE 12.2 GB/s。消息队列每条记录都要算一遍校验，这个差距直接换算成 broker 的 CPU 占用。
 
 **AVX-512 会不会让情况变好？**
 

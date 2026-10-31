@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <rect x="40" y="40" width="430" height="210" rx="8" fill="#f5f7fa" stroke="#d0d7de"/>
+  <text x="60" y="80" font-family="sans-serif" font-size="17" font-weight="bold" fill="#333333">一次依赖加载（指针追逐）</text>
+  <text x="60" y="144" font-family="sans-serif" font-size="40" font-weight="bold" fill="#2f6fba">110 ns</text>
+  <text x="60" y="182" font-family="sans-serif" font-size="15" fill="#444444">下一次地址依赖上一次的结果</text>
+  <text x="60" y="208" font-family="sans-serif" font-size="15" fill="#444444">一次只有一个请求在飞；搬 64 B，用到 4 B</text>
+
+  <rect x="530" y="40" width="430" height="210" rx="8" fill="#f5f7fa" stroke="#d0d7de"/>
+  <text x="550" y="80" font-family="sans-serif" font-size="17" font-weight="bold" fill="#333333">顺序读（8 个累加器）</text>
+  <text x="550" y="144" font-family="sans-serif" font-size="40" font-weight="bold" fill="#2f6fba">10.6 GB/s</text>
+  <text x="550" y="182" font-family="sans-serif" font-size="15" fill="#444444">8 个加载同时在飞，预取器再补约 10 个</text>
+  <text x="550" y="208" font-family="sans-serif" font-size="15" fill="#444444">计费口径：每个字节都用到了</text>
+
+  <rect x="40" y="280" width="920" height="110" rx="8" fill="#eef4fb" stroke="#9dc3e6"/>
+  <text x="60" y="316" font-family="sans-serif" font-size="20" font-weight="bold" fill="#1f4e79">在飞请求数 = 带宽 × 延迟</text>
+  <text x="60" y="348" font-family="sans-serif" font-size="15" fill="#333333">顺序读：10.6 GB/s × 110 ns ≈ 1.17 KB ≈ 18.3 条缓存行（8 条软件 + 约 10 条预取）</text>
+  <text x="60" y="374" font-family="sans-serif" font-size="15" fill="#333333">随机 8 链：103.6 ÷ 15.1 ≈ 6.9 条在飞，差的那 1.1 条是硬件队列到顶</text>
+
+  <rect x="40" y="410" width="920" height="45" rx="8" fill="#fff8e6" stroke="#e6c26a"/>
+  <text x="60" y="438" font-family="sans-serif" font-size="15" fill="#5a4a1f">要点：延迟是一问一答，带宽是很多人同时在问；把两者接起来的只有「同时在飞多少个」。</text>
+</svg>
