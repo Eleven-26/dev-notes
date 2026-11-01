@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">Meilisearch 进程内的四条通道：写走队列，读走直连</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">写入先返回 202，任务成功才可搜；查询不排队，直接读 LMDB</text>
+
+  <rect x="30" y="78" width="940" height="182" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3" rx="10"/>
+  <text x="46" y="102" font-size="13" font-weight="bold" fill="#1e3a8a">写路径：HTTP → 任务队列 → 索引器 → LMDB（202 之后异步执行）</text>
+
+  <rect x="46" y="116" width="96" height="64" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="94" y="142" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">客户端</text>
+  <text x="94" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">写请求</text>
+
+  <rect x="162" y="116" width="140" height="64" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="232" y="142" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">API + 密钥</text>
+  <text x="232" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">校验与参数</text>
+
+  <rect x="322" y="116" width="120" height="64" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="382" y="142" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">202 + taskUid</text>
+  <text x="382" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">立即返回</text>
+
+  <rect x="462" y="116" width="150" height="64" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="537" y="142" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">任务队列</text>
+  <text x="537" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">同索引同类型合批</text>
+
+  <rect x="632" y="116" width="120" height="64" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="692" y="142" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">索引器</text>
+  <text x="692" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">分词 / 邻近 / 分面</text>
+
+  <rect x="772" y="116" width="150" height="64" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="8"/>
+  <text x="847" y="142" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">LMDB</text>
+  <text x="847" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">单写多读</text>
+
+  <line x1="142" y1="148" x2="162" y2="148" stroke="#2563eb" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="302" y1="148" x2="322" y2="148" stroke="#2563eb" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="442" y1="148" x2="462" y2="148" stroke="#2563eb" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="612" y1="148" x2="632" y2="148" stroke="#2563eb" stroke-width="1.6" marker-end="url(#b1)"/>
+  <line x1="752" y1="148" x2="772" y2="148" stroke="#2563eb" stroke-width="1.6" marker-end="url(#b1)"/>
+
+  <text x="46" y="212" font-size="11.5" fill="#1e3a8a">实测：6 请求 × 200 条 → 2 批（63.52 ms + 174.64 ms）</text>
+  <text x="46" y="234" font-size="11.5" fill="#1e3a8a">实测：10 请求 × 1000 条 → 2 批（586.35 ms + 1.88 s）</text>
+  <text x="600" y="234" font-size="11.5" font-weight="bold" fill="#b91c1c">202 只代表入队，任务成功才可搜</text>
+
+  <rect x="30" y="278" width="650" height="152" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.3" rx="10"/>
+  <text x="46" y="302" font-size="13" font-weight="bold" fill="#14532d">读路径：不经过任务队列，直接读 LMDB</text>
+
+  <rect x="46" y="318" width="100" height="60" fill="#ffffff" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="96" y="343" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">查询客户端</text>
+  <text x="96" y="362" font-size="11" fill="#14532d" text-anchor="middle">搜索请求</text>
+
+  <rect x="166" y="318" width="140" height="60" fill="#ffffff" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="236" y="343" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">API + 密钥</text>
+  <text x="236" y="362" font-size="11" fill="#14532d" text-anchor="middle">鉴权与参数</text>
+
+  <rect x="326" y="318" width="110" height="60" fill="#ffffff" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="381" y="343" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">LMDB 读</text>
+  <text x="381" y="362" font-size="11" fill="#14532d" text-anchor="middle">倒排 / 正排</text>
+
+  <rect x="456" y="318" width="200" height="60" fill="#ffffff" stroke="#16a34a" stroke-width="1" rx="8"/>
+  <text x="556" y="343" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">排序 / 分页 / 高亮</text>
+  <text x="556" y="362" font-size="11" fill="#14532d" text-anchor="middle">返回 hits</text>
+
+  <line x1="146" y1="348" x2="166" y2="348" stroke="#16a34a" stroke-width="1.6" marker-end="url(#b2)"/>
+  <line x1="306" y1="348" x2="326" y2="348" stroke="#16a34a" stroke-width="1.6" marker-end="url(#b2)"/>
+  <line x1="436" y1="348" x2="456" y2="348" stroke="#16a34a" stroke-width="1.6" marker-end="url(#b2)"/>
+
+  <text x="46" y="408" font-size="11.5" fill="#14532d">实测：11,208 条、q=搜索，服务端平均 1.07 ms、P95 2 ms，客户端墙钟 5.74 ms</text>
+
+  <rect x="700" y="278" width="270" height="152" fill="#fff7ed" stroke="#ea580c" stroke-width="1.3" rx="10"/>
+  <text x="716" y="302" font-size="13" font-weight="bold" fill="#7c2d12">备份通道</text>
+  <text x="716" y="328" font-size="11.5" fill="#7c2d12">dump：逻辑导出，可跨版本</text>
+  <text x="716" y="350" font-size="11.5" fill="#7c2d12">11,208 条 → 390,842 B</text>
+  <text x="716" y="372" font-size="11.5" fill="#7c2d12">snapshot：物理复制，恢复快</text>
+  <text x="716" y="394" font-size="11.5" fill="#7c2d12">恢复流程本册未实测</text>
+  <text x="716" y="416" font-size="11.5" fill="#7c2d12">GET /dumps 在 v1.56.0 回 405</text>
+
+  <rect x="30" y="448" width="940" height="122" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="472" font-size="12" font-weight="bold" fill="#0f172a">三条硬事实</text>
+  <text x="46" y="496" font-size="11.5" fill="#334155">① LMDB 单写多读：写入串行，查询可并发——这解释了它为什么不需要分片也能读得快</text>
+  <text x="46" y="518" font-size="11.5" fill="#334155">② 任务队列持久化：任务与数据同库；本册验证了重启后已完成数据与任务仍在</text>
+  <text x="46" y="540" font-size="11.5" fill="#334155">③ 没有集群模式：不提供分片 / 副本 / 选主；高可用要在容器外自己做</text>
+
+  <defs>
+    <marker id="b1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="b2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+</svg>

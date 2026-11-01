@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">任务队列与自动合批：202 只是入场券，succeeded 才是可搜</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">同索引、同类型、相邻入队的写请求会被合成一批；batchUid 是排障钥匙</text>
+
+  <rect x="30" y="80" width="430" height="420" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="106" font-size="14" font-weight="bold" fill="#0f172a">状态机：一张任务单的四个终态</text>
+
+  <rect x="60" y="126" width="160" height="52" fill="#eff6ff" stroke="#2563eb" stroke-width="1.2" rx="8"/>
+  <text x="140" y="149" font-size="12" font-weight="bold" fill="#1e3a8a" text-anchor="middle">enqueued</text>
+  <text x="140" y="168" font-size="11" fill="#1e3a8a" text-anchor="middle">已入队，未执行</text>
+
+  <rect x="60" y="222" width="160" height="52" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.2" rx="8"/>
+  <text x="140" y="245" font-size="12" font-weight="bold" fill="#713f12" text-anchor="middle">processing</text>
+  <text x="140" y="264" font-size="11" fill="#713f12" text-anchor="middle">正在索引</text>
+
+  <rect x="270" y="180" width="170" height="52" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="355" y="203" font-size="12" font-weight="bold" fill="#14532d" text-anchor="middle">succeeded</text>
+  <text x="355" y="222" font-size="11" fill="#14532d" text-anchor="middle">数据可搜</text>
+
+  <rect x="270" y="250" width="170" height="52" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2" rx="8"/>
+  <text x="355" y="273" font-size="12" font-weight="bold" fill="#7f1d1d" text-anchor="middle">failed</text>
+  <text x="355" y="292" font-size="11" fill="#7f1d1d" text-anchor="middle">error.code 给出原因</text>
+
+  <rect x="270" y="320" width="170" height="52" fill="#fff7ed" stroke="#ea580c" stroke-width="1.2" rx="8"/>
+  <text x="355" y="343" font-size="12" font-weight="bold" fill="#7c2d12" text-anchor="middle">canceled</text>
+  <text x="355" y="362" font-size="11" fill="#7c2d12" text-anchor="middle">canceledBy 指向取消任务</text>
+
+  <line x1="140" y1="178" x2="140" y2="222" stroke="#64748b" stroke-width="1.8" marker-end="url(#c1)"/>
+  <line x1="220" y1="235" x2="270" y2="210" stroke="#16a34a" stroke-width="1.8" marker-end="url(#c2)"/>
+  <line x1="220" y1="250" x2="270" y2="270" stroke="#dc2626" stroke-width="1.8" marker-end="url(#c3)"/>
+  <line x1="220" y1="264" x2="270" y2="340" stroke="#ea580c" stroke-width="1.8" marker-end="url(#c4)"/>
+
+  <text x="60" y="410" font-size="11.5" fill="#334155">202 回答只代表 enqueued，不代表写入完成</text>
+  <text x="60" y="432" font-size="11.5" fill="#334155">客户端要么轮询到 succeeded，要么接受短暂不可见</text>
+  <text x="60" y="454" font-size="11.5" fill="#334155">失败任务不会回滚已成功的前一批</text>
+  <text x="60" y="476" font-size="11.5" font-weight="bold" fill="#b91c1c">只检查 202，异步失败会被完全吞掉</text>
+
+  <rect x="480" y="80" width="490" height="222" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3" rx="10"/>
+  <text x="496" y="106" font-size="14" font-weight="bold" fill="#1e3a8a">自动合批：同索引 + 同类型 + 相邻入队</text>
+  <text x="496" y="132" font-size="11.5" fill="#1e3a8a">6 个请求 × 200 条 → 实测 2 批</text>
+  <rect x="496" y="144" width="215" height="46" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="7"/>
+  <text x="603" y="164" font-size="11.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">批 3：200 条</text>
+  <text x="603" y="182" font-size="11" fill="#1e3a8a" text-anchor="middle">63.52 ms</text>
+  <rect x="722" y="144" width="232" height="46" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="7"/>
+  <text x="838" y="164" font-size="11.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">批 4：1000 条（5 任务）</text>
+  <text x="838" y="182" font-size="11" fill="#1e3a8a" text-anchor="middle">174.64 ms</text>
+
+  <text x="496" y="218" font-size="11.5" fill="#1e3a8a">10 个请求 × 1000 条 → 实测 2 批</text>
+  <rect x="496" y="230" width="215" height="46" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="7"/>
+  <text x="603" y="250" font-size="11.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">批 21：1000 条</text>
+  <text x="603" y="268" font-size="11" fill="#1e3a8a" text-anchor="middle">586.35 ms</text>
+  <rect x="722" y="230" width="232" height="46" fill="#ffffff" stroke="#2563eb" stroke-width="1" rx="7"/>
+  <text x="838" y="250" font-size="11.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle">批 22：9000 条（9 任务）</text>
+  <text x="838" y="268" font-size="11" fill="#1e3a8a" text-anchor="middle">1.88 s</text>
+  <text x="496" y="292" font-size="11" fill="#1e3a8a">批越大，固定开销越摊薄；但单次任务反馈越晚</text>
+
+  <rect x="480" y="320" width="490" height="180" fill="#fff7ed" stroke="#ea580c" stroke-width="1.3" rx="10"/>
+  <text x="496" y="346" font-size="14" font-weight="bold" fill="#7c2d12">取消任务：过滤条件走 query 参数</text>
+  <text x="496" y="374" font-size="11.5" fill="#7c2d12">POST /tasks/{uid}/cancel → 404（路径不存在）</text>
+  <text x="496" y="396" font-size="11.5" fill="#7c2d12">POST /tasks/cancel?uids=45 → 200 taskCancelation</text>
+  <text x="496" y="418" font-size="11.5" fill="#7c2d12">取消任务 1.01 ms；目标任务 indexedDocuments=0</text>
+  <text x="496" y="440" font-size="11.5" fill="#7c2d12">9,000 条任务最终 canceled，索引 0 条文档</text>
+  <text x="496" y="466" font-size="11.5" font-weight="bold" fill="#b91c1c">不带 query 参数 → 400 missing_task_filters</text>
+  <text x="496" y="488" font-size="11" fill="#7c2d12">可用参数：uids / indexUids / statuses / types 等</text>
+
+  <rect x="30" y="530" width="940" height="70" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="554" font-size="11.5" font-weight="bold" fill="#0f172a">batchUid 是排障钥匙：整批共享耗时与 progressTrace，单个任务只看到自己的结果</text>
+  <text x="46" y="578" font-size="11.5" fill="#334155">details.receivedDocuments 与 indexedDocuments 不等，就说明有文档没进去；差多少要回批里查</text>
+
+  <defs>
+    <marker id="c1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/>
+    </marker>
+    <marker id="c2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/>
+    </marker>
+    <marker id="c3" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="c4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#ea580c"/>
+    </marker>
+  </defs>
+</svg>

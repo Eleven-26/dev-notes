@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" width="1000" height="580" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="580" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">分页上限与静默截断：越界不是报错，是 200 + 空数组</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">maxTotalHits 限制「能翻多深」，不限制单页大小；estimatedTotalHits 仍报真实总数</text>
+
+  <rect x="30" y="80" width="940" height="176" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3" rx="10"/>
+  <text x="46" y="106" font-size="14" font-weight="bold" fill="#1e3a8a">可翻窗口：offset 只能落在 [0, maxTotalHits) 内</text>
+
+  <line x1="80" y1="168" x2="920" y2="168" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="80" y="150" width="340" height="18" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="80" y="142" font-size="11" fill="#1e3a8a">offset=0</text>
+  <text x="420" y="142" font-size="11" font-weight="bold" fill="#b91c1c" text-anchor="middle">offset=2000 边界</text>
+  <text x="920" y="142" font-size="11" fill="#1e3a8a" text-anchor="end">estimatedTotalHits=11,208</text>
+  <text x="250" y="164" font-size="11" fill="#1e3a8a" text-anchor="middle">可返回窗口</text>
+
+  <text x="46" y="204" font-size="11.5" fill="#1e3a8a">limit=2001 → 实回 2000 条（被夹到上限）</text>
+  <text x="420" y="204" font-size="11.5" fill="#1e3a8a">offset=2000 → 200 + 0 条</text>
+  <text x="720" y="204" font-size="11.5" fill="#1e3a8a">offset=1999 → 1 条（id 10791）</text>
+  <text x="46" y="230" font-size="11.5" font-weight="bold" fill="#b91c1c">estimatedTotalHits 始终报 11,208，不会跟着窗口截断</text>
+  <text x="46" y="248" font-size="11" fill="#1e3a8a">默认 maxTotalHits=1000；本册复测时设为 2000，改设置本身是异步任务</text>
+
+  <rect x="30" y="274" width="450" height="146" fill="#fff7ed" stroke="#ea580c" stroke-width="1.3" rx="10"/>
+  <text x="46" y="300" font-size="14" font-weight="bold" fill="#7c2d12">调大上限：窗口平移，不是无限翻页</text>
+  <text x="46" y="328" font-size="11.5" fill="#7c2d12">maxTotalHits=3000 后 offset=2000 → 5 条</text>
+  <text x="46" y="350" font-size="11.5" fill="#7c2d12">（id 10792–10796）</text>
+  <text x="46" y="376" font-size="11.5" fill="#7c2d12">深 offset 的候选集更大，延迟与内存更贵</text>
+  <text x="46" y="400" font-size="11.5" font-weight="bold" fill="#b91c1c">要导出全量，别靠翻页</text>
+
+  <rect x="500" y="274" width="470" height="146" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.3" rx="10"/>
+  <text x="516" y="300" font-size="14" font-weight="bold" fill="#14532d">distinct 的估算陷阱</text>
+  <text x="516" y="328" font-size="11.5" fill="#14532d">limit=3 → estimatedTotalHits=7,007</text>
+  <text x="516" y="350" font-size="11.5" fill="#14532d">limit=20 → estimatedTotalHits=8</text>
+  <text x="516" y="372" font-size="11.5" fill="#14532d">3,000 条索引同样：1,877 vs 8</text>
+  <text x="516" y="398" font-size="11.5" font-weight="bold" fill="#14532d">以 hits 的去重结果为准</text>
+
+  <rect x="30" y="438" width="940" height="112" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="462" font-size="12" font-weight="bold" fill="#0f172a">两条出口，别混用</text>
+  <text x="46" y="486" font-size="11.5" fill="#334155">搜索接口：受 maxTotalHits 约束，适合交互翻页；越界是 200 + 空数组，不是错误</text>
+  <text x="46" y="508" font-size="11.5" fill="#334155">文档接口：POST /indexes/{uid}/documents/fetch 分批导出，不受 maxTotalHits 约束</text>
+  <text x="46" y="530" font-size="11.5" fill="#334155">要页码：读 estimatedTotalHits，但页码按可翻窗口截断；不要拿它去算「还能翻几页」</text>
+
+</svg>
