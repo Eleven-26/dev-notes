@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">预签名直传：业务服务只签发 URL，字节不经过它</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">签名时固定 key、方法与有效期；过期后服务端拒绝，客户端拿不到第二次机会</text>
+
+  <rect x="80" y="86" width="200" height="42" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3" rx="8"/>
+  <text x="180" y="113" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">浏览器 / 客户端</text>
+  <rect x="400" y="86" width="200" height="42" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.3" rx="8"/>
+  <text x="500" y="113" font-size="13" font-weight="bold" fill="#14532d" text-anchor="middle">业务服务</text>
+  <rect x="720" y="86" width="200" height="42" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.3" rx="8"/>
+  <text x="820" y="113" font-size="13" font-weight="bold" fill="#713f12" text-anchor="middle">MinIO</text>
+
+  <line x1="180" y1="128" x2="180" y2="452" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <line x1="500" y1="128" x2="500" y2="452" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="6 5"/>
+  <line x1="820" y1="128" x2="820" y2="452" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="6 5"/>
+
+  <line x1="180" y1="170" x2="496" y2="170" stroke="#2563eb" stroke-width="1.6" marker-end="url(#seqBlue)"/>
+  <text x="338" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">① 请求上传凭证：文件名、业务 token</text>
+
+  <rect x="420" y="192" width="380" height="40" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+  <text x="434" y="217" font-size="11" fill="#14532d">② 用 AK/SK 签 PUT URL：expires=2s</text>
+
+  <line x1="500" y1="266" x2="184" y2="266" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#seqGreen)"/>
+  <text x="342" y="258" font-size="11" fill="#14532d" text-anchor="middle">③ 返回 URL：306 字节，AWS4-HMAC-SHA256</text>
+
+  <line x1="180" y1="318" x2="816" y2="318" stroke="#2563eb" stroke-width="1.8" marker-end="url(#seqBlue)"/>
+  <text x="500" y="310" font-size="11" fill="#1e3a8a" text-anchor="middle">④ PUT 字节直传（不经过业务服务）</text>
+
+  <line x1="820" y1="366" x2="184" y2="366" stroke="#ca8a04" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#seqAmber)"/>
+  <text x="500" y="358" font-size="11" fill="#713f12" text-anchor="middle">⑤ 200（过期后是 403 AccessDenied）</text>
+
+  <line x1="180" y1="414" x2="496" y2="414" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#seqBlue)"/>
+  <text x="338" y="406" font-size="11" fill="#1e3a8a" text-anchor="middle">⑥ 回调 / 记账：key + ETag</text>
+
+  <rect x="30" y="474" width="940" height="100" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="500" font-size="12" font-weight="bold" fill="#0f172a">实测：2 秒有效期，时间到之前 200、之后 403；XML 里 Code=AccessDenied、Message=Request has expired</text>
+  <text x="46" y="526" font-size="11.5" fill="#334155">签名只绑 host 一个头：改 query 不影响校验，反向代理改写 Host 则全部 403</text>
+  <text x="46" y="552" font-size="11.5" fill="#334155">业务服务全程不转发字节——带宽不经过它，它只负责鉴权、决定 key、事后记账</text>
+
+  <defs>
+    <marker id="seqBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="seqGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/>
+    </marker>
+    <marker id="seqAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#ca8a04"/>
+    </marker>
+  </defs>
+</svg>

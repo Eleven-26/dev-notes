@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">分片上传的状态机：只有完成与中止两个终态</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">中间态会真实占盘；对象在桶里查不到，分片却还在，必须显式 abort</text>
+
+  <rect x="40" y="140" width="190" height="76" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3" rx="8"/>
+  <text x="54" y="164" font-size="12.5" font-weight="bold" fill="#1e3a8a">① Initiated</text>
+  <text x="54" y="186" font-size="10.5" fill="#1e3a8a">创建上传拿到 uploadID</text>
+  <text x="54" y="204" font-size="10.5" fill="#1e3a8a">此时还没有任何分片</text>
+
+  <rect x="300" y="140" width="200" height="76" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3" rx="8"/>
+  <text x="314" y="164" font-size="12.5" font-weight="bold" fill="#1e3a8a">② Uploading</text>
+  <text x="314" y="186" font-size="10.5" fill="#1e3a8a">逐片 PutObjectPart</text>
+  <text x="314" y="204" font-size="10.5" fill="#1e3a8a">ListObjectParts 可见</text>
+
+  <rect x="580" y="88" width="230" height="96" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3" rx="8"/>
+  <text x="594" y="112" font-size="12.5" font-weight="bold" fill="#14532d">③ Completed</text>
+  <text x="594" y="134" font-size="10.5" fill="#14532d">对象出现，可 GET</text>
+  <text x="594" y="152" font-size="10.5" fill="#14532d">ETag = md5(各片 MD5)-N</text>
+  <text x="594" y="170" font-size="10.5" fill="#14532d">≠ 整文件 MD5</text>
+
+  <rect x="580" y="270" width="230" height="96" fill="#fee2e2" stroke="#dc2626" stroke-width="1.3" rx="8"/>
+  <text x="594" y="294" font-size="12.5" font-weight="bold" fill="#7f1d1d">④ Aborted</text>
+  <text x="594" y="316" font-size="10.5" fill="#7f1d1d">ListObjectParts 报 NoSuchUpload</text>
+  <text x="594" y="334" font-size="10.5" fill="#7f1d1d">盘上分片被回收</text>
+  <text x="594" y="352" font-size="10.5" fill="#7f1d1d">对象从未存在</text>
+
+  <rect x="300" y="300" width="200" height="96" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.3" rx="8"/>
+  <text x="314" y="324" font-size="12.5" font-weight="bold" fill="#713f12">悬挂（客户端崩溃）</text>
+  <text x="314" y="346" font-size="10.5" fill="#713f12">对象 404 NoSuchKey</text>
+  <text x="314" y="364" font-size="10.5" fill="#713f12">分片仍在盘上占空间</text>
+  <text x="314" y="382" font-size="10.5" fill="#713f12">实测 3 文件 / 2.64 MB</text>
+
+  <line x1="230" y1="178" x2="294" y2="178" stroke="#2563eb" stroke-width="1.6" marker-end="url(#stBlue)"/>
+  <text x="262" y="170" font-size="10" fill="#2563eb" text-anchor="middle">分片</text>
+
+  <line x1="500" y1="158" x2="574" y2="138" stroke="#16a34a" stroke-width="1.6" marker-end="url(#stGreen)"/>
+  <text x="540" y="130" font-size="10" fill="#16a34a" text-anchor="middle">Complete</text>
+
+  <line x1="500" y1="198" x2="574" y2="296" stroke="#dc2626" stroke-width="1.6" marker-end="url(#stRed)"/>
+  <text x="540" y="252" font-size="10" fill="#dc2626" text-anchor="middle">Abort</text>
+
+  <line x1="400" y1="216" x2="400" y2="294" stroke="#ca8a04" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#stAmber)"/>
+  <text x="410" y="258" font-size="10" fill="#713f12">崩溃 / 断网</text>
+
+  <line x1="500" y1="342" x2="574" y2="328" stroke="#ca8a04" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#stAmber)"/>
+  <text x="536" y="362" font-size="10" fill="#713f12" text-anchor="middle">补 abort</text>
+
+  <rect x="30" y="430" width="940" height="140" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="456" font-size="12" font-weight="bold" fill="#0f172a">实测坑：带前缀的 ListMultipartUploads 列不出悬挂上传</text>
+  <text x="46" y="482" font-size="11.5" fill="#334155">空前缀返回 2 条；z、zzz、abort/ 全为 0 条；只有完整 key 才返回 1 条，原始 XML 同样为空</text>
+  <text x="46" y="508" font-size="11.5" fill="#334155">结论：清理脚本先空前缀全量列，再在客户端按 Key 过滤；信前缀查询会以为「没有残留」</text>
+  <text x="46" y="534" font-size="11.5" fill="#334155">abort 之后盘上 .minio.sys/multipart 从 3 个文件 / 2.64 MB 归零——中止会真的释放空间</text>
+  <text x="46" y="560" font-size="11.5" fill="#334155">对象本身始终不可见：Complete 之前 StatObject 一律 404 NoSuchKey</text>
+
+  <defs>
+    <marker id="stBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="stGreen" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#16a34a"/>
+    </marker>
+    <marker id="stRed" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#dc2626"/>
+    </marker>
+    <marker id="stAmber" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#ca8a04"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="1000" height="620" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">MinIO 单机部署：一个进程、四个目录，纠删码把每个对象切成两半</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">4 个目录 = 1 个池 / 1 个 set / 4 个 drive，默认 2 数据 + 2 校验</text>
+
+  <rect x="30" y="88" width="200" height="130" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3" rx="10"/>
+  <text x="46" y="112" font-size="13" font-weight="bold" fill="#1e3a8a">客户端 / SDK</text>
+  <text x="46" y="138" font-size="11" fill="#1e3a8a">只走 HTTP：PUT / GET</text>
+  <text x="46" y="160" font-size="11" fill="#1e3a8a">SigV4 或预签名 URL</text>
+  <text x="46" y="182" font-size="11" fill="#1e3a8a">不挂载目录、无文件句柄</text>
+  <text x="46" y="204" font-size="11" fill="#1e3a8a">看不到盘，只看到桶与 key</text>
+
+  <line x1="230" y1="153" x2="296" y2="153" stroke="#2563eb" stroke-width="1.6" marker-end="url(#arrowBlue)"/>
+  <text x="263" y="144" font-size="10.5" fill="#2563eb" text-anchor="middle">:9000</text>
+
+  <rect x="300" y="88" width="270" height="250" fill="#f1f5f9" stroke="#475569" stroke-width="1.3" rx="10"/>
+  <text x="316" y="112" font-size="13" font-weight="bold" fill="#0f172a">MinIO 进程（单个二进制）</text>
+  <rect x="314" y="124" width="242" height="46" fill="#e0e7ff" stroke="#4f46e5" stroke-width="1" rx="6"/>
+  <text x="326" y="143" font-size="11" font-weight="bold" fill="#312e81">S3 API 前端</text>
+  <text x="326" y="161" font-size="10.5" fill="#312e81">SigV4 校验、路由、预签名</text>
+  <rect x="314" y="180" width="242" height="62" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+  <text x="326" y="199" font-size="11" font-weight="bold" fill="#1e3a8a">对象层</text>
+  <text x="326" y="217" font-size="10.5" fill="#1e3a8a">纠删码切分、xl.meta、fsync</text>
+  <text x="326" y="234" font-size="10.5" fill="#1e3a8a">小对象数据内联进元数据</text>
+  <rect x="314" y="252" width="242" height="46" fill="#e2e8f0" stroke="#64748b" stroke-width="1" rx="6"/>
+  <text x="326" y="271" font-size="11" font-weight="bold" fill="#334155">后台任务</text>
+  <text x="326" y="289" font-size="10.5" fill="#334155">扫描器、残留分片清理、生命周期</text>
+  <text x="316" y="322" font-size="10.5" fill="#475569">没有外部元数据服务，不依赖 ZooKeeper</text>
+
+  <line x1="435" y1="338" x2="435" y2="360" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="375" y1="360" x2="855" y2="360" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="375" y1="360" x2="375" y2="392" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <line x1="535" y1="360" x2="535" y2="392" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <line x1="695" y1="360" x2="695" y2="392" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <line x1="855" y1="360" x2="855" y2="392" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+  <text x="450" y="376" font-size="10.5" fill="#64748b">每个 drive 写自己那一份分片</text>
+
+  <rect x="300" y="400" width="150" height="104" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="314" y="422" font-size="12" font-weight="bold" fill="#14532d">drive data1</text>
+  <text x="314" y="444" font-size="10.5" fill="#14532d">xl.meta 元数据</text>
+  <text x="314" y="464" font-size="10.5" fill="#14532d">part.1 半个载荷</text>
+  <text x="314" y="488" font-size="10.5" fill="#166534">64 MB → 33,556,480 B</text>
+
+  <rect x="460" y="400" width="150" height="104" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="474" y="422" font-size="12" font-weight="bold" fill="#14532d">drive data2</text>
+  <text x="474" y="444" font-size="10.5" fill="#14532d">数据分片</text>
+  <text x="474" y="464" font-size="10.5" fill="#14532d">写入后 fsync</text>
+
+  <rect x="620" y="400" width="150" height="104" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.2" rx="8"/>
+  <text x="634" y="422" font-size="12" font-weight="bold" fill="#713f12">drive data3</text>
+  <text x="634" y="444" font-size="10.5" fill="#713f12">校验分片</text>
+  <text x="634" y="464" font-size="10.5" fill="#713f12">读时不参与</text>
+
+  <rect x="780" y="400" width="150" height="104" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.2" rx="8"/>
+  <text x="794" y="422" font-size="12" font-weight="bold" fill="#713f12">drive data4</text>
+  <text x="794" y="444" font-size="10.5" fill="#713f12">校验分片</text>
+  <text x="794" y="464" font-size="10.5" fill="#713f12">坏盘时重建</text>
+
+  <rect x="30" y="524" width="940" height="76" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="46" y="548" font-size="12" font-weight="bold" fill="#0f172a">实测：四盘合计 = 载荷 × 2.000（68,620,288 B 载荷 → 139,097,032 B 原始占用），单盘正好一半</text>
+  <text x="46" y="574" font-size="11.5" fill="#334155">载荷不超过 256 KB 时每盘分片只有 128 KiB，直接内联进 xl.meta，不生成 part.1；超过才落独立分片文件</text>
+
+  <defs>
+    <marker id="arrowBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>
