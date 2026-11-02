@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+<rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+<defs>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#334155"/></marker>
+<marker id="arO" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker>
+</defs>
+
+<text x="60" y="40" font-size="18" font-weight="700" fill="#0f172a">goroutine 的八个状态与迁移</text>
+<text x="60" y="62" font-size="12" fill="#64748b">实线是正常路径，橙色虚线是 GC 专用的短暂旁路；状态名与取值取自 Go 1.26.5 的 runtime2.go</text>
+
+<rect x="60" y="100" width="150" height="54" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="135" y="124" font-size="13" font-weight="700" text-anchor="middle" fill="#334155">_Gidle</text>
+<text x="135" y="144" font-size="11" text-anchor="middle" fill="#64748b">刚分配，未初始化</text>
+
+<rect x="60" y="240" width="150" height="54" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="135" y="264" font-size="13" font-weight="700" text-anchor="middle" fill="#334155">_Gdead</text>
+<text x="135" y="284" font-size="11" text-anchor="middle" fill="#64748b">已退出，挂在 gFree</text>
+
+<rect x="300" y="100" width="190" height="54" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+<text x="395" y="124" font-size="13" font-weight="700" text-anchor="middle" fill="#14532d">_Grunnable</text>
+<text x="395" y="144" font-size="11" text-anchor="middle" fill="#166534">在队列里等调度</text>
+
+<rect x="300" y="240" width="190" height="54" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+<text x="395" y="264" font-size="13" font-weight="700" text-anchor="middle" fill="#1e3a8a">_Grunning</text>
+<text x="395" y="284" font-size="11" text-anchor="middle" fill="#1d4ed8">正在 M 上执行 Go 代码</text>
+
+<rect x="620" y="100" width="320" height="54" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="780" y="124" font-size="13" font-weight="700" text-anchor="middle" fill="#7c2d12">_Gwaiting</text>
+<text x="780" y="144" font-size="11" text-anchor="middle" fill="#9a3412">channel / 锁 / netpoll / timer</text>
+
+<rect x="620" y="200" width="320" height="54" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="780" y="224" font-size="13" font-weight="700" text-anchor="middle" fill="#7c2d12">_Gsyscall</text>
+<text x="780" y="244" font-size="11" text-anchor="middle" fill="#9a3412">已进内核，不在 Go 代码里</text>
+
+<rect x="620" y="300" width="320" height="54" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+<text x="780" y="324" font-size="13" font-weight="700" text-anchor="middle" fill="#334155">_Gcopystack</text>
+<text x="780" y="344" font-size="11" text-anchor="middle" fill="#64748b">栈扩容搬移中（短暂）</text>
+
+<rect x="620" y="400" width="320" height="54" rx="8" fill="#ffedd5" stroke="#ea580c"/>
+<text x="780" y="424" font-size="13" font-weight="700" text-anchor="middle" fill="#7c2d12">_Gpreempted</text>
+<text x="780" y="444" font-size="11" text-anchor="middle" fill="#9a3412">suspendG 暂停（GC 扫栈）</text>
+
+<line x1="210" y1="127" x2="292" y2="127" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="251" y="118" font-size="11" text-anchor="middle" fill="#64748b">newproc</text>
+
+<line x1="135" y1="154" x2="135" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="145" y="198" font-size="11" fill="#64748b">初始化</text>
+
+<polyline points="210,280 275,280 275,145 292,145" fill="none" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="282" y="215" font-size="11" fill="#64748b">gFree 复用</text>
+
+<line x1="395" y1="154" x2="395" y2="232" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="405" y="195" font-size="11" fill="#64748b">schedule</text>
+
+<line x1="300" y1="255" x2="218" y2="255" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="255" y="247" font-size="11" text-anchor="middle" fill="#64748b">goexit</text>
+
+<line x1="490" y1="120" x2="612" y2="120" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="620" y1="134" x2="498" y2="134" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="555" y="110" font-size="11" text-anchor="middle" fill="#64748b">gopark / goready</text>
+
+<line x1="490" y1="255" x2="612" y2="228" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="555" y="190" font-size="10" text-anchor="middle" fill="#64748b">entersyscall / exitsyscall</text>
+
+<line x1="490" y1="270" x2="612" y2="312" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="620" y1="322" x2="498" y2="280" stroke="#334155" stroke-width="1.5" marker-end="url(#ar)"/>
+<text x="555" y="292" font-size="11" text-anchor="middle" fill="#64748b">栈扩容 / 完成</text>
+
+<line x1="490" y1="285" x2="612" y2="414" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arO)"/>
+<text x="545" y="435" font-size="10" text-anchor="middle" fill="#9a3412">suspendG（GC 扫栈）</text>
+
+<rect x="40" y="330" width="540" height="110" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+<text x="60" y="356" font-size="13" font-weight="700" fill="#0f172a">三条容易混的边界</text>
+<text x="60" y="380" font-size="11" fill="#334155">一是 Gosched 与异步抢占都回 _Grunnable，不经过 _Gpreempted。</text>
+<text x="60" y="402" font-size="11" fill="#334155">二是 _Gpreempted 只给 GC 的 suspendG 用，之后转 _Gwaiting。</text>
+<text x="60" y="424" font-size="11" fill="#334155">三是只有 _Grunning 占着 M，其余状态都不在 CPU 上。</text>
+
+<rect x="40" y="470" width="920" height="56" rx="8" fill="#eff6ff" stroke="#bfdbfe"/>
+<text x="60" y="494" font-size="12" fill="#1e40af">G 的值 5、7、10 是历史空位；_Gscan 是 GC 叠加在状态上的高位标记，不是普通状态。</text>
+<text x="60" y="514" font-size="12" fill="#475569">可运行与运行之间是调度主循环；等待、系统调用、栈扩容、GC 暂停是四条旁路。</text>
+</svg>

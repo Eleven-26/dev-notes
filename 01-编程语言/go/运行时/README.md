@@ -30,7 +30,7 @@
 
 | 篇 | 讲什么 |
 |---|---|
-| [GMP调度.md](GMP调度.md) | GMP 三元组、work stealing、切换时机、`GOMAXPROCS`、P 内部队列、异步抢占 |
+| [GMP调度.md](GMP调度.md) | 从零讲清 G / M / P 三层分工、goroutine 八状态与迁移、`runnext` + 256 格本地队列 + 全局队列批量 + `netpoll` + work stealing、四种让出点（`time.Sleep(0)` **不让出**）、系统调用时的 P 交接与 sysmon `retake`、1.14 异步抢占（实测 21.7 ms vs 1.001 s）、`GOMAXPROCS` 的 1.25 容器感知与语言版本规则 |
 | [内存分配器.md](内存分配器.md) | `mspan`、67 级 size class、mcache / mcentral / mheap 三级分配 |
 | [内存逃逸.md](内存逃逸.md) | 定义与原因、`-gcflags=-m` 分析、五类场景、三条判定规则与代价 |
 | [trace与运行时指标.md](trace与运行时指标.md) | `runtime/trace` 的无头解析（`-pprof` 四类等待 / `-d=parsed`）、`MemStats` / `debug.GCStats` / `runtime/metrics` 三套数的分工与代价、⭐ **`MemStats` 与内核 RSS 为什么对不上（三层口径）**、`runtime/debug` 的 `Set*`、`NumGoroutine` / `Stack` / `Gosched` 的陷阱、出问题时按什么顺序看 |
@@ -102,7 +102,7 @@
   [反射.md](反射.md)、[unsafe与内存布局.md](unsafe与内存布局.md)、[trace与运行时指标.md](trace与运行时指标.md)、[定时器与超时.md](定时器与超时.md)、[网络IO与netpoll.md](网络IO与netpoll.md)、[GODEBUG与运行时观测.md](GODEBUG与运行时观测.md)、[pprof性能分析.md](pprof性能分析.md) 与 [从源码到main.md](从源码到main.md)（构建计数走 `golang:1.26-bookworm`）的读数取这里。
 - **本机宿主机**：`go1.26.5 windows/amd64`，`GOMAXPROCS=8`。
   [GMP调度.md](GMP调度.md) 的 `schedtrace` 8 P 读数、[垃圾回收机制.md](垃圾回收机制.md) 第四节 GOGC / GOMEMLIMIT 实测（堆峰值 39842 KB）取这里；pprof 的火焰图页面另在宿主机浏览器补测。
-- ⚠️ **跨口径的两条硬规矩**：同一结论不能拿容器 4 P 的数去证宿主机 8 P 的话（[GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) 的 `schedtrace` 段专门写了这条）；`GOMAXPROCS` 在容器里的「感知 cgroup 限额」是 **Go 1.25 起**的行为，本机非容器环境**未做实测**（[GMP调度.md](GMP调度.md) 3.2）。
+- ⚠️ **跨口径的两条硬规矩**：同一结论不能拿容器 4 P 的数去证宿主机 8 P 的话（[GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) 的 `schedtrace` 段专门写了这条）；`GOMAXPROCS` 在容器里的「感知 cgroup 限额」是 **Go 1.25 起、且模块 `go` 指令 ≥ 1.25** 时的行为，语言版本 ≤ 1.24 仍按 `NumCPU` 走，本机非容器环境**未做实测**（[GMP调度.md](GMP调度.md) 7.2）。
 
 ---
 
