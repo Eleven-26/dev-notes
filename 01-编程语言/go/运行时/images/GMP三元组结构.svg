@@ -17,7 +17,7 @@
 <rect x="90" y="208" width="160" height="44" rx="6" fill="#ffedd5" stroke="#ea580c"/>
 <text x="170" y="236" font-size="12" text-anchor="middle" fill="#7c2d12">runnext（1 个）</text>
 <rect x="270" y="208" width="330" height="44" rx="6" fill="#dcfce7" stroke="#16a34a"/>
-<text x="435" y="236" font-size="12" text-anchor="middle" fill="#14532d">runq [256] 环形队列（无锁）</text>
+<text x="435" y="236" font-size="12" text-anchor="middle" fill="#14532d">runq [256] 环形数组队列（无锁）</text>
 <rect x="90" y="262" width="250" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
 <text x="215" y="290" font-size="12" text-anchor="middle" fill="#334155">gFree：空闲 G 链表</text>
 <rect x="360" y="262" width="240" height="44" rx="6" fill="#f1f5f9" stroke="#94a3b8"/>
@@ -37,11 +37,13 @@
 <rect x="680" y="142" width="280" height="100" rx="8" fill="#fee2e2" stroke="#dc2626"/>
 <text x="820" y="172" font-size="13" text-anchor="middle" fill="#7f1d1d">全局队列 GRQ</text>
 <text x="820" y="196" font-size="12" text-anchor="middle" fill="#7f1d1d">所有 M 都要访问 → 必须加锁</text>
-<text x="696" y="222" font-size="12" fill="#7f1d1d">本地队列满 256 时，一半溢出到这里</text>
+<text x="696" y="222" font-size="12" fill="#7f1d1d">本地队列满 256 时，一半（即128）溢出到这里</text>
 
 <rect x="680" y="262" width="280" height="100" rx="8" fill="#ffedd5" stroke="#ea580c"/>
-<text x="820" y="292" font-size="13" text-anchor="middle" fill="#7c2d12">work stealing</text>
-<text x="820" y="316" font-size="12" text-anchor="middle" fill="#7c2d12">从其他 P 的本地队列偷走一半（1/2）</text>
+<text x="820" y="289" font-size="13" text-anchor="middle" fill="#7c2d12">work stealing</text>
+<text x="820" y="313" font-size="12" text-anchor="middle" fill="#7c2d12">从其他 P 的本地队列偷走一半（1/2）</text>
+<text x="820" y="333" font-size="12" text-anchor="middle" fill="#7c2d12">通过首端取任务、原子锁、内存屏障保证取数</text>
+<text x="820" y="356" font-size="12" text-anchor="middle" fill="#7c2d12">超过4次取不到就失败</text>
 <line x1="676" y1="312" x2="624" y2="312" stroke="#334155" stroke-width="1.5" marker-end="url(#ar1)"/>
 
 <text x="500" y="424" font-size="13" text-anchor="middle" fill="#0f172a">GOMAXPROCS 决定 P 的数量；G 是任务、P 是调度器、M 才是真正干活的线程</text>

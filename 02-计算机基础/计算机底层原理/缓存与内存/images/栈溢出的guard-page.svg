@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="40" y="42" font-size="20" font-weight="bold" fill="#0f172a">栈是固定的一块，下边界外有一页踩不得的 guard page</text>
+  <rect x="32" y="54" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="72" font-size="13" fill="#64748b">C 与 Java 的线程栈都是这种结构；Go 的 goroutine 栈不是——它靠翻倍增长，撞的是 1 GB 硬顶。</text>
+
+  <line x1="80" y1="100" x2="80" y2="470" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arw4)"/>
+  <text x="52" y="112" font-size="11" fill="#64748b" text-anchor="middle">高</text>
+  <text x="52" y="452" font-size="11" fill="#64748b" text-anchor="middle">低</text>
+
+  <rect x="104" y="100" width="300" height="34" rx="5" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="254" y="122" font-size="12" fill="#475569" text-anchor="middle">第 n 层栈帧</text>
+  <rect x="104" y="140" width="300" height="34" rx="5" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="254" y="162" font-size="12" fill="#475569" text-anchor="middle">第 n−1 层</text>
+  <rect x="104" y="180" width="300" height="34" rx="5" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="254" y="202" font-size="12" fill="#475569" text-anchor="middle">……</text>
+  <rect x="104" y="220" width="300" height="34" rx="5" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="254" y="242" font-size="12" fill="#475569" text-anchor="middle">第 2 层</text>
+  <rect x="104" y="260" width="300" height="34" rx="5" fill="#e2e8f0" stroke="#cbd5e1"/>
+  <text x="254" y="282" font-size="12" fill="#475569" text-anchor="middle">第 1 层（main）</text>
+
+  <line x1="254" y1="296" x2="254" y2="318" stroke="#dc2626" stroke-width="2" marker-end="url(#arw5)"/>
+  <text x="266" y="312" font-size="11.5" fill="#dc2626">继续递归</text>
+
+  <rect x="104" y="322" width="300" height="46" rx="5" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5"/>
+  <text x="254" y="342" font-size="12.5" font-weight="bold" fill="#b91c1c" text-anchor="middle">guard page（一页，不可访问）</text>
+  <text x="254" y="360" font-size="11" fill="#dc2626" text-anchor="middle">第一次写到这里就触发缺页异常</text>
+
+  <rect x="104" y="376" width="300" height="60" rx="5" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="254" y="400" font-size="12" fill="#64748b" text-anchor="middle">更低地址：其他映射 / 未映射</text>
+  <text x="254" y="420" font-size="11" fill="#94a3b8" text-anchor="middle">栈与堆从两头往中间长，撞上就是另一种死法</text>
+
+  <rect x="440" y="100" width="524" height="92" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+  <text x="460" y="124" font-size="13.5" font-weight="bold" fill="#b91c1c">C：撞 guard page → SIGSEGV</text>
+  <text x="460" y="148" font-size="12" fill="#7f1d1d">报错只有一行 Segmentation fault (core dumped)，没有栈回溯。</text>
+  <text x="460" y="168" font-size="12" fill="#7f1d1d">栈是固定大小（默认 8 MB），靠 ulimit -s 调整；进程无法自救。</text>
+  <text x="460" y="186" font-size="11.5" font-family="Consolas, monospace" fill="#dc2626">退出码 139 = 128 + 11 (SIGSEGV)</text>
+
+  <rect x="440" y="204" width="524" height="108" rx="10" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5"/>
+  <text x="460" y="228" font-size="13.5" font-weight="bold" fill="#c2410c">Go：不是撞 guard page，是撞 1 GB 硬顶</text>
+  <text x="460" y="252" font-size="12" fill="#7c2d12">goroutine 栈从 2 KB 起步，不够就翻倍搬家，所以能撑很久。</text>
+  <text x="460" y="272" font-size="12" fill="#7c2d12">翻倍后超过 1 GB 就由运行时主动 throw，recover 接不住。</text>
+  <text x="460" y="294" font-size="11.5" font-family="Consolas, monospace" fill="#c2410c">fatal error: stack overflow</text>
+
+  <rect x="440" y="324" width="524" height="92" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text x="460" y="348" font-size="13.5" font-weight="bold" fill="#1d4ed8">Java：撞 -Xss → 抛异常</text>
+  <text x="460" y="372" font-size="12" fill="#1e3a8a">每个线程一份栈，默认 1 MB（Linux x64），由 -Xss 调整。</text>
+  <text x="460" y="392" font-size="12" fill="#1e3a8a">抛 StackOverflowError——三种里唯一能被 catch 住的。</text>
+  <text x="460" y="410" font-size="11.5" font-family="Consolas, monospace" fill="#1d4ed8">Exception in thread "main" java.lang.StackOverflowError</text>
+
+  <rect x="104" y="452" width="300" height="34" rx="5" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="254" y="473" font-size="11.5" fill="#15803d" text-anchor="middle">实测：上限 ÷ 帧大小 = 可递归深度</text>
+
+  <rect x="440" y="440" width="524" height="60" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="460" y="462" font-size="12.5" font-weight="bold" fill="#0f172a">本篇 7.1 的四档实测：8192 / 4096 / 2048 / 1024 KB</text>
+  <text x="460" y="482" font-size="12" fill="#475569">对应最大深度 104580 / 52339 / 25975 / 12793，与「上限 ÷ 80 字节」偏差都在 1% 内。</text>
+
+  <defs>
+    <marker id="arw4" markerWidth="9" markerHeight="9" refX="4" refY="8" orient="auto">
+      <path d="M0,0 L8,0 L4,9 z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arw5" markerWidth="9" markerHeight="9" refX="4" refY="8" orient="auto">
+      <path d="M0,0 L8,0 L4,9 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+</svg>

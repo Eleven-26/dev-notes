@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+
+  <text x="40" y="42" font-size="20" font-weight="bold" fill="#0f172a">栈帧是倒着长出来的：高地址放参数，低地址放局部变量</text>
+  <rect x="32" y="54" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="72" font-size="13" fill="#64748b">rsp 指向当前栈顶，每次 push 或 sub 都让它变小；rbp 是给局部变量用的固定参照，可以省略。</text>
+
+  <line x1="86" y1="104" x2="86" y2="486" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#arw)"/>
+  <text x="60" y="118" font-size="11" fill="#64748b" text-anchor="middle">高</text>
+  <text x="60" y="132" font-size="11" fill="#64748b" text-anchor="middle">地址</text>
+  <text x="60" y="470" font-size="11" fill="#64748b" text-anchor="middle">低</text>
+  <text x="60" y="484" font-size="11" fill="#64748b" text-anchor="middle">地址</text>
+
+  <rect x="110" y="100" width="330" height="48" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="275" y="130" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">调用者的栈帧</text>
+
+  <rect x="110" y="156" width="330" height="56" rx="6" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="275" y="180" font-size="13" font-weight="bold" fill="#92400e" text-anchor="middle">第 7 个及以后的参数</text>
+  <text x="275" y="200" font-size="11.5" font-family="Consolas, monospace" fill="#a16207" text-anchor="middle">rbp+16, rbp+24, …</text>
+
+  <rect x="110" y="220" width="330" height="44" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="275" y="247" font-size="13" font-weight="bold" fill="#1e40af" text-anchor="middle">返回地址</text>
+
+  <rect x="110" y="272" width="330" height="44" rx="6" fill="#ede9fe" stroke="#c4b5fd"/>
+  <text x="275" y="299" font-size="13" font-weight="bold" fill="#5b21b6" text-anchor="middle">保存的旧 rbp</text>
+
+  <rect x="110" y="324" width="330" height="60" rx="6" fill="#dcfce7" stroke="#86efac"/>
+  <text x="275" y="348" font-size="13" font-weight="bold" fill="#15803d" text-anchor="middle">局部变量 / 溢出槽</text>
+  <text x="275" y="368" font-size="11.5" font-family="Consolas, monospace" fill="#166534" text-anchor="middle">rbp-8, rbp-16, …</text>
+
+  <rect x="110" y="392" width="330" height="52" rx="6" fill="#ffedd5" stroke="#fdba74"/>
+  <text x="275" y="414" font-size="13" font-weight="bold" fill="#c2410c" text-anchor="middle">红区 128 字节</text>
+  <text x="275" y="433" font-size="11.5" fill="#9a3412" text-anchor="middle">叶函数可直接用，不必动 rsp</text>
+
+  <line x1="96" y1="316" x2="196" y2="316" stroke="#7c3aed" stroke-width="2"/>
+  <text x="102" y="310" font-size="11" font-weight="bold" fill="#6d28d9">rbp →</text>
+
+  <line x1="96" y1="384" x2="196" y2="384" stroke="#15803d" stroke-width="2"/>
+  <text x="102" y="378" font-size="11" font-weight="bold" fill="#15803d">rsp →</text>
+
+  <rect x="474" y="100" width="490" height="48" rx="6" fill="#f8fafc"/>
+  <text x="490" y="120" font-size="12" fill="#475569">已经在更高地址，属于「谁调用我」那一层。</text>
+  <text x="490" y="139" font-size="12" fill="#475569">-O2 版没有 push rbp，参数改从 8(%rsp) 读。</text>
+
+  <rect x="474" y="156" width="490" height="56" rx="6" fill="#fffbeb"/>
+  <text x="490" y="176" font-size="12" fill="#92400e">调用者从右往左压栈，第 7 个在最低地址。</text>
+  <text x="490" y="196" font-size="12" fill="#92400e">第 7 个起每个参数都要一次访存，约 5 周期。</text>
+
+  <rect x="474" y="220" width="490" height="44" rx="6" fill="#eff6ff"/>
+  <text x="490" y="247" font-size="12" fill="#1e40af">call 指令自动压入 8 字节，ret 自动弹出——不需要代码写。</text>
+
+  <rect x="474" y="272" width="490" height="44" rx="6" fill="#f5f3ff"/>
+  <text x="490" y="299" font-size="12" fill="#5b21b6">由 pushq %rbp 压入，rbp 之后指向这里，用来回溯调用栈。</text>
+
+  <rect x="474" y="324" width="490" height="60" rx="6" fill="#f0fdf4"/>
+  <text x="490" y="344" font-size="12" fill="#15803d">subq $N, %rsp 分配；寄存器不够时多出来的值就落在这里。</text>
+  <text x="490" y="364" font-size="12" fill="#15803d">本篇 6.1 的 16 路展开，有 5 个累加器落在 -8 ~ -40(%rsp)。</text>
+
+  <rect x="474" y="392" width="490" height="52" rx="6" fill="#fff7ed"/>
+  <text x="490" y="412" font-size="12" fill="#c2410c">ABI 规定 rsp 以下 128 字节不被打断踩到，信号处理会跳过。</text>
+  <text x="490" y="431" font-size="12" fill="#c2410c">所以小函数可以一条 sub 都不写。</text>
+
+  <rect x="110" y="466" width="854" height="62" rx="8" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="128" y="488" font-size="13" font-weight="bold" fill="#b91c1c">16 字节对齐是硬要求，不是优化建议</text>
+  <text x="128" y="510" font-size="12" fill="#7f1d1d">call 前 rsp 必须是 16 的倍数；不对齐时 movaps 触发 #GP，实测直接 Segmentation fault，退出码 139。</text>
+
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="4" refY="8" orient="auto">
+      <path d="M0,0 L8,0 L4,9 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>
