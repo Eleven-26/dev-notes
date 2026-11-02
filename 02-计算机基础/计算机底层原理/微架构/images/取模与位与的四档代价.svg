@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="40" y="42" font-size="20" font-weight="bold" fill="#0f172a">同一个 % 1024，四份机器码四档价</text>
+  <rect x="32" y="54" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="72" font-size="13" fill="#64748b">除数是常量还是变量、有无符号，决定编译器给你 and 还是 div。</text>
+
+  <text x="40" y="112" font-size="11.5" fill="#64748b">ns/次（2000 万次 × 7 轮取中位，gcc 12.2.0 -O2）</text>
+
+  <text x="40" y="150" font-size="12.5" font-family="Consolas, monospace" fill="#334155">x % 1024</text>
+  <text x="150" y="150" font-size="11.5" fill="#64748b">uint64 常量</text>
+  <rect x="252" y="134" width="60" height="22" rx="3" fill="#34d399"/>
+  <text x="322" y="150" font-size="12" font-family="Consolas, monospace" fill="#065f46">1.05</text>
+  <text x="392" y="150" font-size="11" fill="#94a3b8">andl $1023</text>
+
+  <text x="40" y="196" font-size="12.5" font-family="Consolas, monospace" fill="#334155">x &amp; 1023</text>
+  <text x="150" y="196" font-size="11.5" fill="#64748b">uint64</text>
+  <rect x="252" y="180" width="60" height="22" rx="3" fill="#34d399"/>
+  <text x="322" y="196" font-size="12" font-family="Consolas, monospace" fill="#065f46">1.05</text>
+  <text x="392" y="196" font-size="11" fill="#94a3b8">andl $1023（同款）</text>
+
+  <text x="40" y="242" font-size="12.5" font-family="Consolas, monospace" fill="#334155">x % n</text>
+  <text x="150" y="242" font-size="11.5" fill="#64748b">uint32 变量</text>
+  <rect x="252" y="226" width="240" height="22" rx="3" fill="#fbbf24"/>
+  <text x="502" y="242" font-size="12" font-family="Consolas, monospace" fill="#92400e">4.22</text>
+  <text x="546" y="242" font-size="11" fill="#94a3b8">divl</text>
+
+  <text x="40" y="288" font-size="12.5" font-family="Consolas, monospace" fill="#334155">x % n</text>
+  <text x="150" y="288" font-size="11.5" fill="#64748b">uint64 变量</text>
+  <rect x="252" y="272" width="663" height="22" rx="3" fill="#ef4444"/>
+  <text x="901" y="288" font-size="12" font-family="Consolas, monospace" fill="#ffffff" text-anchor="end">11.68</text>
+  <text x="560" y="288" font-size="11" fill="#fee2e2">divq</text>
+
+  <line x1="252" y1="312" x2="252" y2="318" stroke="#cbd5e1"/>
+  <text x="252" y="336" font-size="11.5" fill="#64748b" text-anchor="middle">0</text>
+  <text x="470" y="336" font-size="11.5" fill="#64748b" text-anchor="middle">4</text>
+  <text x="690" y="336" font-size="11.5" fill="#64748b" text-anchor="middle">8</text>
+  <text x="933" y="336" font-size="11.5" fill="#64748b" text-anchor="middle">12</text>
+  <line x1="252" y1="318" x2="933" y2="318" stroke="#e2e8f0"/>
+
+  <rect x="36" y="356" width="452" height="46" rx="8" fill="#fef2f2" stroke="#fecaca"/>
+  <text x="52" y="376" font-size="12.5" fill="#b91c1c">64 位变量除法 11.68 ns，是位与的 11.1 倍；</text>
+  <text x="52" y="394" font-size="12.5" fill="#b91c1c">32 位 4.22 ns，比 64 位快 2.77 倍（只引比值）。</text>
+
+  <rect x="512" y="356" width="452" height="46" rx="8" fill="#ecfdf5" stroke="#a7f3d0"/>
+  <text x="528" y="376" font-size="12.5" fill="#047857">前两行「与」与「%」编出同一条 andl：</text>
+  <text x="528" y="394" font-size="12.5" fill="#047857">常量 + 无符号时，编译器早就替你换了。</text>
+
+  <rect x="36" y="412" width="928" height="42" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="52" y="439" font-size="12.5" fill="#334155">⚠️ Go 侧有符号版本是 11 条指令（SARQ $63 / SHRQ $54 / ANDQ $-1024）：因为 -5000000 % 1024 = -832，而 -5000000 &amp; 1023 = 192，两者不等价。</text>
+</svg>
