@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="540" fill="#ffffff"/>
+
+  <text x="40" y="42" font-size="20" font-weight="bold" fill="#0f172a">检测器怎么算「有没有边」：拿当前向量比影子记录</text>
+  <rect x="32" y="54" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="72" font-size="13" fill="#64748b">左边是当前线程的向量，中间是某个地址的影子记录，右边是一次比较——落后说明当前线程还不知道那次写，也就是没有边。</text>
+
+  <rect x="44" y="100" width="252" height="212" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="58" y="122" font-size="13" font-weight="bold" fill="#1e40af">当前线程的向量 V_now</text>
+  <text x="58" y="142" font-size="11" fill="#3b82f6">每一位 = 它已知该线程走到的时刻</text>
+  <rect x="66" y="158" width="64" height="44" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="98" y="176" font-size="10.5" fill="#64748b" text-anchor="middle">线程 0</text>
+  <text x="98" y="194" font-size="14" font-weight="bold" font-family="Consolas, monospace" fill="#1e40af" text-anchor="middle">5</text>
+  <rect x="138" y="158" width="64" height="44" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="170" y="176" font-size="10.5" fill="#64748b" text-anchor="middle">线程 1</text>
+  <text x="170" y="194" font-size="14" font-weight="bold" font-family="Consolas, monospace" fill="#1e40af" text-anchor="middle">2</text>
+  <rect x="210" y="158" width="64" height="44" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="242" y="176" font-size="10.5" fill="#64748b" text-anchor="middle">线程 2</text>
+  <text x="242" y="194" font-size="14" font-weight="bold" font-family="Consolas, monospace" fill="#1e40af" text-anchor="middle">0</text>
+  <text x="58" y="228" font-size="11.5" fill="#334155">同步时只做一件事：与对方向量</text>
+  <text x="58" y="246" font-size="11.5" fill="#334155">逐位取最大（合并）。</text>
+  <text x="58" y="274" font-size="11.5" fill="#1e40af">合并就是把「对方的已知」</text>
+  <text x="58" y="292" font-size="11.5" fill="#1e40af">变成「我的已知」，也就是建边。</text>
+
+  <rect x="316" y="100" width="300" height="212" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="330" y="122" font-size="13" font-weight="bold" fill="#0f172a">影子记录（每个地址一份）</text>
+  <rect x="330" y="136" width="272" height="30" rx="3" fill="#e2e8f0"/>
+  <text x="342" y="156" font-size="11" font-weight="bold" fill="#334155">地址</text>
+  <text x="426" y="156" font-size="11" font-weight="bold" fill="#334155">上次写者</text>
+  <text x="516" y="156" font-size="11" font-weight="bold" fill="#334155">写时刻</text>
+  <rect x="330" y="170" width="272" height="32" rx="3" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="342" y="191" font-size="12" font-family="Consolas, monospace" fill="#0f172a">x</text>
+  <text x="426" y="191" font-size="12" font-family="Consolas, monospace" fill="#0f172a">线程 1</text>
+  <text x="516" y="191" font-size="12" font-family="Consolas, monospace" fill="#dc2626">4</text>
+  <rect x="330" y="206" width="272" height="32" rx="3" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="342" y="227" font-size="12" font-family="Consolas, monospace" fill="#0f172a">z</text>
+  <text x="426" y="227" font-size="12" font-family="Consolas, monospace" fill="#0f172a">线程 0</text>
+  <text x="516" y="227" font-size="12" font-family="Consolas, monospace" fill="#0f172a">5</text>
+  <text x="330" y="262" font-size="11.5" fill="#334155">每一份记录还带最近几次读者的集合；</text>
+  <text x="330" y="280" font-size="11.5" fill="#334155">这就是它吃内存的原因（官方口径</text>
+  <text x="330" y="298" font-size="11.5" fill="#334155">5~10 倍，本机未实测）。</text>
+
+  <rect x="640" y="100" width="316" height="212" rx="6" fill="#fef2f2" stroke="#f87171"/>
+  <text x="654" y="122" font-size="13" font-weight="bold" fill="#991b1b">比较：V_now[1] = 2 与写时刻 4</text>
+  <text x="654" y="148" font-size="12.5" fill="#b91c1c">2 &lt; 4 → 当前线程落后两拍</text>
+  <text x="654" y="172" font-size="12.5" font-weight="bold" fill="#991b1b">→ 它还不知道那次写 → 没有边</text>
+  <text x="654" y="196" font-size="12.5" fill="#991b1b">→ 报数据竞争</text>
+  <line x1="654" y1="210" x2="942" y2="210" stroke="#fca5a5"/>
+  <text x="654" y="234" font-size="12" fill="#166534">若 V_now = [5, 7, 0]：7 ≥ 4</text>
+  <text x="654" y="256" font-size="12" fill="#166534">→ 已知那次写 → 有边 → 合法</text>
+  <text x="654" y="282" font-size="11.5" fill="#64748b">判定只需要一次逐位比较，</text>
+  <text x="654" y="300" font-size="11.5" fill="#64748b">不需要任何全局时钟。</text>
+
+  <rect x="44" y="332" width="912" height="86" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="58" y="356" font-size="13" font-weight="bold" fill="#1e40af">判据一行写完</text>
+  <text x="58" y="382" font-size="13" font-family="Consolas, monospace" fill="#1e293b">a hb b　⟺　V_a 的每一位 ≤ V_b 的对应位（且至少一位严格小于）</text>
+  <text x="58" y="406" font-size="11.5" fill="#334155">逐位全小或相等才叫「可比」；任意一位大，两者就是并发——这正是偏序与全序的区别所在。</text>
+
+  <rect x="44" y="430" width="912" height="76" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="58" y="454" font-size="13" font-weight="bold" fill="#92400e">两档代价的来源也在这里</text>
+  <text x="58" y="478" font-size="12.5" fill="#a16207">合并向量是每次同步都要做的事，所以同步越密集越贵：纯计算只慢 3.94 倍，30 万次加解锁慢到 19.55 倍（单次 23.8 → 465.5 ns）。</text>
+  <text x="58" y="498" font-size="12.5" fill="#a16207">而判定是「这次执行有没有踩到」，所以它报了就必信、没报不能当没有——第 6.4 节的 0/0/0 就是证据。</text>
+</svg>

@@ -87,6 +87,8 @@ A happens-before B，B happens-before C   ⇒   A happens-before C
 
 这条把零散的规则串成了可推理的链：你只要在"写"和"读"之间找到一条由规范规则连起来的路径，就安全。
 
+⭐ 「偏序 + 传递闭包」这个构造本身是个独立话题：它为什么必须取闭包、闭包的补集为什么正好是数据竞争、工具又是怎么执行这套判据的——见 [内存重排、Happens-Before与数据竞争.md](../../../02-计算机基础/计算机底层原理/底层同步/内存重排、Happens-Before与数据竞争.md) 第二、三、六节。本节只给规则清单与实测，不重讲构造。
+
 ### 2.2 spec 给的边，一共就这么几类
 
 Go 内存模型列出的 happens-before 来源（go1.26 口径，逐条对应 [go.dev/ref/mem](https://go.dev/ref/mem)）：
