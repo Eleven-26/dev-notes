@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" font-family="'Segoe UI', 'Microsoft YaHei', sans-serif">
+  <rect x="0" y="0" width="1000" height="620" fill="#ffffff"/>
+
+  <text x="60" y="34" font-size="17" font-weight="bold" fill="#0f172a">一条 happens-before 边落到硅上的三道闸</text>
+  <text x="60" y="54" font-size="12" fill="#64748b">每道闸只做一件事：编译器查表、ISA 补格、硬件把「等」做出来</text>
+
+  <!-- ========== 层 1 规范 ========== -->
+  <rect x="60" y="72" width="760" height="88" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <rect x="76" y="86" width="60" height="24" rx="4" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="106" y="103" font-size="12.5" font-weight="bold" fill="#1e40af" text-anchor="middle">规范</text>
+  <text x="152" y="104" font-size="13.5" fill="#1e3a8a">一条边：A happens-before B</text>
+  <text x="152" y="128" font-size="12" fill="#334155">只规定「B 不许观察到 A 之前的状态」，不规定怎么实现</text>
+  <text x="152" y="148" font-size="11.5" fill="#64748b">边的来源：语言规则表取传递闭包（本篇第二、三节）</text>
+
+  <line x1="440" y1="160" x2="440" y2="194" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="452" y="182" font-size="11.5" fill="#475569">编译器拿到边</text>
+
+  <!-- ========== 层 2 编译器 ========== -->
+  <rect x="60" y="198" width="760" height="106" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.4"/>
+  <rect x="76" y="212" width="60" height="24" rx="4" fill="#ede9fe" stroke="#a78bfa"/>
+  <text x="106" y="229" font-size="12.5" font-weight="bold" fill="#5b21b6" text-anchor="middle">编译器</text>
+  <text x="152" y="230" font-size="13.5" fill="#3b0764">查表：这一格硬件本来就保吗？</text>
+
+  <rect x="176" y="248" width="300" height="42" rx="5" fill="#ecfdf5" stroke="#34d399"/>
+  <text x="192" y="266" font-size="12" font-weight="bold" fill="#065f46">保 → 一条指令都不插</text>
+  <text x="192" y="282" font-size="11" fill="#047857">三个 fence 都只剩 ret，0 条指令</text>
+
+  <rect x="496" y="248" width="300" height="42" rx="5" fill="#fef2f2" stroke="#f87171"/>
+  <text x="512" y="266" font-size="12" font-weight="bold" fill="#991b1b">不保 → 插一条真的指令</text>
+  <text x="512" y="282" font-size="11" fill="#b91c1c">StoreLoad 是 x86 唯一的洞 → lock orq</text>
+
+  <line x1="440" y1="304" x2="440" y2="336" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="452" y="324" font-size="11.5" fill="#475569">要求变成指令</text>
+
+  <!-- ========== 层 3 ISA ========== -->
+  <rect x="60" y="340" width="760" height="132" rx="8" fill="#ecfdf5" stroke="#34d399" stroke-width="1.4"/>
+  <rect x="76" y="354" width="60" height="24" rx="4" fill="#d1fae5" stroke="#34d399"/>
+  <text x="106" y="371" font-size="12.5" font-weight="bold" fill="#065f46" text-anchor="middle">ISA</text>
+  <text x="152" y="371" font-size="13.5" fill="#064e3b">同一个语义，两套落地</text>
+
+  <rect x="176" y="388" width="300" height="70" rx="5" fill="#ffffff" stroke="#a7f3d0"/>
+  <text x="190" y="406" font-size="11.5" font-weight="bold" fill="#0f766e">x86-64（TSO，预售了三种序）</text>
+  <text x="190" y="424" font-size="11" font-family="Consolas, monospace" fill="#334155">store: XCHGQ　load: MOVQ（免费）</text>
+  <text x="190" y="442" font-size="11" font-family="Consolas, monospace" fill="#334155">fence: lock orq　add: LOCK XADDQ</text>
+
+  <rect x="496" y="388" width="300" height="70" rx="5" fill="#ffffff" stroke="#a7f3d0"/>
+  <text x="510" y="406" font-size="11.5" font-weight="bold" fill="#0f766e">arm64（弱序，没有预支）</text>
+  <text x="510" y="424" font-size="11" font-family="Consolas, monospace" fill="#334155">store: STLR　load: LDAR（都要钱）</text>
+  <text x="510" y="442" font-size="11" font-family="Consolas, monospace" fill="#334155">add: LDADDALD　cas: CASALD</text>
+
+  <line x1="440" y1="472" x2="440" y2="504" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <text x="452" y="492" font-size="11.5" fill="#475569">指令进流水线</text>
+
+  <!-- ========== 层 4 硬件 ========== -->
+  <rect x="60" y="508" width="760" height="88" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.4"/>
+  <rect x="76" y="522" width="60" height="24" rx="4" fill="#ffedd5" stroke="#fb923c"/>
+  <text x="106" y="539" font-size="12.5" font-weight="bold" fill="#9a3412" text-anchor="middle">硬件</text>
+  <text x="152" y="540" font-size="13.5" fill="#7c2d12">唯一要做的动作：让某个东西「等」</text>
+  <text x="152" y="562" font-size="12" fill="#334155">等 store buffer 排空（挡 StoreLoad），或抢缓存行独占（xchg 顺带付的原子性）</text>
+  <text x="152" y="582" font-size="11.5" fill="#9a3412">本核转发 3 周期 ≠ 别的核可见 31 周期——这是「跑对了」与「有保证」在物理上的分界</text>
+
+  <!-- ========== 右侧价格轴 ========== -->
+  <text x="850" y="86" font-size="12.5" font-weight="bold" fill="#0f172a">价格</text>
+  <rect x="838" y="96" width="132" height="308" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+
+  <rect x="852" y="112" width="104" height="70" rx="5" fill="#ecfdf5" stroke="#34d399"/>
+  <text x="904" y="132" font-size="11.5" font-weight="bold" fill="#065f46" text-anchor="middle">三种序</text>
+  <text x="904" y="154" font-size="19" font-weight="bold" fill="#047857" text-anchor="middle">0</text>
+  <text x="904" y="172" font-size="10.5" fill="#047857" text-anchor="middle">周期</text>
+
+  <rect x="852" y="196" width="104" height="70" rx="5" fill="#fef2f2" stroke="#f87171"/>
+  <text x="904" y="216" font-size="11.5" font-weight="bold" fill="#991b1b" text-anchor="middle">StoreLoad</text>
+  <text x="904" y="238" font-size="19" font-weight="bold" fill="#b91c1c" text-anchor="middle">18</text>
+  <text x="904" y="256" font-size="10.5" fill="#b91c1c" text-anchor="middle">周期</text>
+
+  <rect x="852" y="280" width="104" height="108" rx="5" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="904" y="298" font-size="10.5" fill="#475569" text-anchor="middle">实测 20M 次</text>
+  <text x="904" y="316" font-size="10.5" fill="#475569" text-anchor="middle">普通写 0.90 ns</text>
+  <text x="904" y="334" font-size="10.5" fill="#475569" text-anchor="middle">seq_cst 写 7.55</text>
+  <text x="904" y="352" font-size="10.5" fill="#475569" text-anchor="middle">写后读 1.25</text>
+  <text x="904" y="370" font-size="10.5" fill="#475569" text-anchor="middle">加屏障 7.82</text>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>
