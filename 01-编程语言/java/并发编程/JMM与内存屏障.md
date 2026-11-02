@@ -190,10 +190,12 @@ static boolean stopPlain = false;          // 没有 volatile
 |---|---|---|
 | `LoadLoad` | 前面的读先于后面的读 | `volatile` 读之后 |
 | `StoreStore` | 前面的写先于后面的写 | `volatile` 写之前 |
-| `LoadStore` | 前面的读先于后面的写 | — |
+| `LoadStore` | 前面的读先于后面的写 | `volatile` 读之后（x86 上无需指令） |
 | **`StoreLoad`** | 前面的写先于后面的读 | `volatile` 写之后 |
 
 ⭐ **`StoreLoad` 是最贵的一种**（x86 上用 `lock addl` 实现，会清空 Store Buffer）。「`volatile` 写比 `volatile` 读更贵」的原因就在这里。x86 本身是**强内存模型**（只允许 StoreLoad 重排），ARM 是弱内存模型（四种都可能重排）—— 所以同一份代码在 ARM 上往往需要更多屏障，这也是为什么 `volatile` 在 ARM 上的开销比 x86 明显。
+
+「最贵」贵到什么程度是能称出来的：`lock` 系列 7.4~8.5 ns、`mfence` 14.7~16.6 ns；而 `volatile` 读因为 acquire 语义在 x86 上由 load 天然满足，只编成一条 `mov`（0.4~0.7 ns）—— 同一份 `volatile` 的读与写差一个数量级。**这四种类型是硬件原语，acquire / release 只是它们两两组合后的名字**；指令原文见 [原子操作.md](../../../02-计算机基础/计算机底层原理/底层同步/原子操作.md) 4.1，定义、2×2 命名法、「类型 ↔ 指令」对照、单价与「哪条 HB 边付哪一档钱」见 [内存屏障与内存序的代价.md](../../../02-计算机基础/计算机底层原理/缓存与内存/内存屏障与内存序的代价.md) 2.1、2.3、3.1、6.4。
 
 ### 5.2 实测：伪共享（False Sharing）
 
