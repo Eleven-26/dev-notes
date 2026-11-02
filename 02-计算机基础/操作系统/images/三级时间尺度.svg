@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="450" viewBox="0 0 1000 450">
+  <rect x="0" y="0" width="1000" height="450" fill="#ffffff"/>
+  <rect x="40" y="16" width="920" height="56" fill="#ffffff"/>
+  <text x="60" y="42" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#0f172a">时间片只是中间那一级：上到 tick，下到时钟周期</text>
+  <text x="60" y="64" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">四级从上到下按长度递减；右边标的是相邻两级相差多少倍，不是同一把尺上的刻度</text>
+
+  <rect x="40" y="88" width="920" height="300" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <line x1="500" y1="118" x2="500" y2="334" stroke="#cbd5e1"/>
+
+  <!-- tick -->
+  <circle cx="500" cy="135" r="7" fill="#64748b"/>
+  <text x="470" y="133" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="700" fill="#0f172a">tick（内核节拍）</text>
+  <text x="470" y="151" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">1~4 ms · 245 万~980 万周期</text>
+  <text x="530" y="139" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">CONFIG_HZ 决定；本机未读到</text>
+
+  <!-- 时间片 -->
+  <circle cx="500" cy="195" r="7" fill="#7c3aed"/>
+  <text x="470" y="193" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="700" fill="#0f172a">时间片（time slice）</text>
+  <text x="470" y="211" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">2.1 ms · 5,145,000 周期</text>
+  <text x="530" y="199" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">EEVDF 的 se.slice = 2100000 ns</text>
+
+  <!-- 线程切换 -->
+  <circle cx="500" cy="255" r="7" fill="#ea580c"/>
+  <text x="470" y="253" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="700" fill="#0f172a">线程切换</text>
+  <text x="470" y="271" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">9.4 µs · 23,030 周期</text>
+  <text x="530" y="259" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">保存现场 + 缓存变冷（实测）</text>
+
+  <!-- 时钟周期 -->
+  <circle cx="500" cy="315" r="7" fill="#2563eb"/>
+  <text x="470" y="313" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="700" fill="#0f172a">时钟周期</text>
+  <text x="470" y="331" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">0.408 ns · 1 周期</text>
+  <text x="530" y="319" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">晶振经 PLL 倍频（2.45 GHz）</text>
+
+  <!-- 倍率 -->
+  <line x1="870" y1="147" x2="870" y2="183" stroke="#cbd5e1"/>
+  <text x="884" y="169" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="600" fill="#475569">约 2 倍</text>
+  <line x1="870" y1="207" x2="870" y2="243" stroke="#cbd5e1"/>
+  <text x="884" y="229" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="600" fill="#475569">223 倍</text>
+  <line x1="870" y1="267" x2="870" y2="303" stroke="#cbd5e1"/>
+  <text x="884" y="289" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" font-weight="600" fill="#475569">23,030 倍</text>
+
+  <rect x="40" y="396" width="920" height="44" rx="6" fill="#eff6ff"/>
+  <text x="60" y="416" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#1e40af">tick 与时间片由内核决定，时钟周期由硅决定：只有最后一级能直接对应一条指令</text>
+  <text x="60" y="434" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">2.1 ms ÷ 9.4 µs = 223：一个时间片装得下 223 次切换，切换开销 1 ÷ 223 ≈ 0.45%</text>
+</svg>

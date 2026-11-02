@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460" viewBox="0 0 1000 460">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+  <rect x="40" y="16" width="920" height="56" fill="#ffffff"/>
+  <text x="60" y="42" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#0f172a">四个频率读数：只有最后两个是核心真正走的周期</text>
+  <text x="60" y="64" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">标签、/proc/cpuinfo、TSC 都不是「当前频率」；核心频率只能用 perf 的 cycles ÷ task-clock 反推</text>
+
+  <rect x="40" y="80" width="920" height="300" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <!-- 网格与刻度：2.0 ~ 2.7 GHz，x 300 起，857 px/GHz -->
+  <line x1="300" y1="120" x2="300" y2="356" stroke="#e2e8f0"/>
+  <line x1="471" y1="120" x2="471" y2="356" stroke="#e2e8f0" stroke-dasharray="3 4"/>
+  <line x1="643" y1="120" x2="643" y2="356" stroke="#e2e8f0" stroke-dasharray="3 4"/>
+  <line x1="814" y1="120" x2="814" y2="356" stroke="#e2e8f0" stroke-dasharray="3 4"/>
+  <text x="300" y="374" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#94a3b8">2.0 GHz</text>
+  <text x="471" y="374" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#94a3b8">2.2</text>
+  <text x="643" y="374" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#94a3b8">2.4</text>
+  <text x="814" y="374" text-anchor="middle" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#94a3b8">2.6</text>
+
+  <!-- 1 标称 -->
+  <text x="60" y="140" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="600" fill="#0f172a">标称（SKU）</text>
+  <text x="60" y="158" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">lscpu 的 Model name</text>
+  <rect x="300" y="124" width="514" height="28" rx="4" fill="#cbd5e1"/>
+  <text x="826" y="143" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="700" fill="#475569">2.60 GHz</text>
+
+  <!-- 2 TSC -->
+  <text x="60" y="200" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="600" fill="#0f172a">TSC（参考钟）</text>
+  <text x="60" y="218" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">rdtsc 增量 ÷ 墙钟</text>
+  <rect x="300" y="184" width="508" height="28" rx="4" fill="#16a34a"/>
+  <text x="820" y="203" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="700" fill="#15803d">2.592 GHz</text>
+
+  <!-- 3 单线程 -->
+  <text x="60" y="260" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="600" fill="#0f172a">核心 · 单线程</text>
+  <text x="60" y="278" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">cycles ÷ task-clock，3 轮</text>
+  <rect x="300" y="244" width="393" height="28" rx="4" fill="#2563eb"/>
+  <text x="705" y="263" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="700" fill="#1e40af">2.446~2.459 GHz</text>
+  <text x="930" y="263" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#dc2626">-5.4%</text>
+
+  <!-- 4 四线程 -->
+  <text x="60" y="320" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="14" font-weight="600" fill="#0f172a">核心 · 四线程</text>
+  <text x="60" y="338" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11" fill="#64748b">4 个进程各占一个 vCPU</text>
+  <rect x="300" y="304" width="353" height="28" rx="4" fill="#1d4ed8"/>
+  <text x="665" y="323" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" font-weight="700" fill="#1e3a8a">2.397~2.412 GHz</text>
+  <text x="930" y="323" text-anchor="end" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#dc2626">-7.2%</text>
+
+  <rect x="40" y="392" width="920" height="52" rx="6" fill="#eff6ff"/>
+  <text x="60" y="414" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#1e40af">/proc/cpuinfo 的 2591.998 MHz 与 TSC 同值：它量的是标称，不随负载变化</text>
+  <text x="60" y="434" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#475569">四线程档的 -7.2% 是「按标签算周期」会引入的误差上限；单线程档 3 轮之间也差 0.5%</text>
+</svg>

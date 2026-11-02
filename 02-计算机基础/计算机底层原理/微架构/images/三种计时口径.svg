@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+  <rect x="40" y="16" width="920" height="56" fill="#ffffff"/>
+  <text x="60" y="42" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="20" font-weight="700" fill="#0f172a">同一段 500M 次循环，三只钟给出三个读数</text>
+  <text x="60" y="64" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">代码与机器都没变，变的是「这只钟量的是什么」——只有第三张卡片数的是核心周期</text>
+
+  <!-- 卡片 1 墙钟 -->
+  <rect x="40" y="88" width="296" height="216" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="60" y="120" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" font-weight="700" fill="#0f172a">墙钟</text>
+  <text x="60" y="158" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="26" font-weight="700" fill="#475569">211.16 ms</text>
+  <text x="60" y="184" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">clock_gettime · 31 ns/次</text>
+  <line x1="60" y1="198" x2="316" y2="198" stroke="#e2e8f0"/>
+  <text x="60" y="222" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">量的是端到端耗时</text>
+  <text x="60" y="244" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">含调度、缺页、中断</text>
+  <text x="60" y="266" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">适合：一次请求花了多久</text>
+  <text x="60" y="288" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#94a3b8">不能拿来数周期</text>
+
+  <!-- 卡片 2 TSC -->
+  <rect x="352" y="88" width="296" height="216" rx="10" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="372" y="120" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" font-weight="700" fill="#0f172a">TSC</text>
+  <text x="372" y="158" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="26" font-weight="700" fill="#15803d">547,230,281</text>
+  <text x="372" y="184" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">rdtsc · 恒定 2.592 GHz</text>
+  <line x1="372" y1="198" x2="628" y2="198" stroke="#e2e8f0"/>
+  <text x="372" y="222" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">量的是固定参考钟滴答</text>
+  <text x="372" y="244" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">不随核心频率变化</text>
+  <text x="372" y="266" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">适合：廉价时间戳</text>
+  <text x="372" y="288" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#94a3b8">比核心周期多算 5.0%</text>
+
+  <!-- 卡片 3 核心周期 -->
+  <rect x="664" y="88" width="296" height="216" rx="10" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="684" y="120" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" font-weight="700" fill="#0f172a">核心周期</text>
+  <text x="684" y="158" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="26" font-weight="700" fill="#1d4ed8">521,015,226</text>
+  <text x="684" y="184" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#64748b">perf cycles ÷ task-clock</text>
+  <line x1="684" y1="198" x2="940" y2="198" stroke="#bfdbfe"/>
+  <text x="684" y="222" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">量的是核心自己的时钟</text>
+  <text x="684" y="244" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">2.459 GHz（单线程）</text>
+  <text x="684" y="266" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#334155">适合：CPI、IPC、微基准</text>
+  <text x="684" y="288" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#1e40af">只有它数的是周期</text>
+
+  <rect x="40" y="320" width="920" height="96" rx="6" fill="#fef3c7"/>
+  <text x="60" y="348" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#92400e">TSC 的 547.2M ÷ 核心的 521.0M = 1.050：同一段循环，TSC 多算 5.0%</text>
+  <text x="60" y="372" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#a16207">两者差的不是抖动，是钟速：2.592 GHz（TSC）对 2.459 GHz（核心）</text>
+  <text x="60" y="396" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#a16207">判据：要周期只能用第三张卡片；墙钟与 TSC 只能当时间，不能当周期</text>
+</svg>
