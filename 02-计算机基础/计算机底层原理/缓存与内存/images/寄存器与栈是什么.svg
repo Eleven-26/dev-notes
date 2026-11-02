@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="rs1" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#2563eb"/>
+    </marker>
+    <marker id="rs2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#b45309"/>
+    </marker>
+    <marker id="rs3" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#0f766e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+
+  <text x="40" y="40" font-size="20" font-weight="bold" fill="#0f172a">寄存器在 CPU 里靠编号选中，栈在内存里靠地址找到</text>
+  <rect x="32" y="52" width="936" height="26" rx="4" fill="#f8fafc"/>
+  <text x="40" y="70" font-size="13" fill="#64748b">两者不是同一种东西的两个档次：一个没有地址（编号编在指令里），一个有地址（要算出来再访存）；而「栈」只是内存里的一段加一个指针。</text>
+
+  <!-- 左：CPU -->
+  <rect x="36" y="94" width="428" height="268" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="56" y="118" font-size="14" font-weight="bold" fill="#1e40af">CPU 内部：16 个通用寄存器</text>
+
+  <rect x="56" y="132" width="96" height="76" rx="6" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="104" y="166" font-size="15" font-weight="bold" fill="#1e40af" text-anchor="middle">ALU</text>
+  <text x="104" y="188" font-size="10.5" fill="#1e40af" text-anchor="middle">收操作数、出结果</text>
+
+  <text x="176" y="146" font-size="11.5" fill="#1e40af">寄存器堆（编号 0~15，每个 64 位）</text>
+  <rect x="176" y="156" width="54" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="203" y="173" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">rax</text>
+  <rect x="236" y="156" width="54" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="263" y="173" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">rcx</text>
+  <rect x="296" y="156" width="54" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="323" y="173" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">rdx</text>
+  <rect x="356" y="156" width="54" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="383" y="173" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">rbx</text>
+
+  <rect x="176" y="190" width="54" height="26" rx="4" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.4"/>
+  <text x="203" y="207" font-size="10.5" font-family="Consolas, monospace" fill="#92400e" text-anchor="middle">rsp</text>
+  <rect x="236" y="190" width="54" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="263" y="207" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">rbp</text>
+  <rect x="296" y="190" width="54" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="323" y="207" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">rsi</text>
+  <rect x="356" y="190" width="54" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="383" y="207" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">rdi</text>
+
+  <rect x="176" y="224" width="234" height="26" rx="4" fill="#ffffff" stroke="#93c5fd"/>
+  <text x="293" y="241" font-size="10.5" font-family="Consolas, monospace" fill="#1e3a8a" text-anchor="middle">r8 ~ r15</text>
+
+  <text x="56" y="272" font-size="11.5" fill="#1e40af">没有地址，也没有「第 i 个」：编号是 4 个 bit</text>
+  <text x="56" y="292" font-size="11.5" fill="#1e40af">所以索引访问、取地址，在寄存器上都无编码可用</text>
+
+  <line x1="152" y1="170" x2="172" y2="170" stroke="#2563eb" stroke-width="1.6" marker-end="url(#rs1)"/>
+  <line x1="172" y1="180" x2="152" y2="180" stroke="#2563eb" stroke-width="1.6" marker-end="url(#rs1)"/>
+
+  <rect x="56" y="310" width="388" height="38" rx="6" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="250" y="334" font-size="11.5" fill="#1e40af" text-anchor="middle">mov %rdi,%rax = 48 89 f8 ，mod=11 直接挑格子</text>
+
+  <!-- 右：内存 -->
+  <rect x="524" y="94" width="440" height="268" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="544" y="118" font-size="14" font-weight="bold" fill="#065f46">内存：按地址访问，栈只是其中一段</text>
+
+  <text x="544" y="140" font-size="10.5" fill="#047857">高地址</text>
+  <rect x="612" y="132" width="330" height="42" rx="4" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.4"/>
+  <text x="624" y="150" font-size="11.5" font-weight="bold" fill="#92400e">栈（向下长）</text>
+  <text x="624" y="166" font-size="10.5" font-family="Consolas, monospace" fill="#92400e">push 减 8 ／ pop 加 8</text>
+  <text x="800" y="158" font-size="10.5" font-family="Consolas, monospace" fill="#92400e">← rsp 指这里</text>
+
+  <rect x="612" y="180" width="330" height="34" rx="4" fill="#ffffff" stroke="#86efac"/>
+  <text x="624" y="202" font-size="11.5" fill="#065f46">堆（向上长）</text>
+
+  <rect x="612" y="220" width="330" height="34" rx="4" fill="#ffffff" stroke="#86efac"/>
+  <text x="624" y="242" font-size="11.5" fill="#065f46">全局数据</text>
+
+  <rect x="612" y="260" width="330" height="34" rx="4" fill="#ffffff" stroke="#86efac"/>
+  <text x="624" y="282" font-size="11.5" fill="#065f46">代码</text>
+
+  <text x="544" y="302" font-size="10.5" fill="#047857">低地址</text>
+
+  <rect x="544" y="310" width="400" height="38" rx="6" fill="#dcfce7" stroke="#4ade80"/>
+  <text x="744" y="334" font-size="11.5" fill="#065f46" text-anchor="middle">mov %rax,(%rsp) = 48 89 04 24 ，mod=00 要先算地址</text>
+
+  <!-- 中间两条通路 -->
+  <line x1="464" y1="150" x2="520" y2="150" stroke="#2563eb" stroke-width="1.8" marker-end="url(#rs1)"/>
+  <text x="492" y="142" font-size="10" fill="#2563eb" text-anchor="middle">load</text>
+  <line x1="520" y1="196" x2="464" y2="196" stroke="#b45309" stroke-width="1.8" marker-end="url(#rs2)"/>
+  <text x="492" y="188" font-size="10" fill="#b45309" text-anchor="middle">store</text>
+  <text x="492" y="224" font-size="10.5" fill="#64748b" text-anchor="middle">唯一通路</text>
+
+  <!-- 底部三块 -->
+  <rect x="36" y="386" width="300" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="56" y="412" font-size="13" font-weight="bold" fill="#0f172a">① 寄存器：三要素</text>
+  <rect x="56" y="424" width="56" height="22" rx="3" fill="#e0e7ff"/>
+  <text x="84" y="440" font-size="10.5" fill="#3730a3" text-anchor="middle">定宽 64 位</text>
+  <rect x="120" y="424" width="56" height="22" rx="3" fill="#e0e7ff"/>
+  <text x="148" y="440" font-size="10.5" fill="#3730a3" text-anchor="middle">有编号</text>
+  <rect x="184" y="424" width="56" height="22" rx="3" fill="#e0e7ff"/>
+  <text x="212" y="440" font-size="10.5" fill="#3730a3" text-anchor="middle">没地址</text>
+  <text x="56" y="472" font-size="11.5" fill="#475569">三条缺一不可：位宽定操作数大小，编号让指令能指名，</text>
+  <text x="56" y="492" font-size="11.5" fill="#475569">没有地址才不需要算有效地址，才谈得上「0 延迟」。</text>
+  <text x="56" y="520" font-size="11.5" fill="#b91c1c">它不是「更快的缓存」：缓存仍要「给地址、等数据」。</text>
+  <text x="56" y="546" font-size="11.5" fill="#475569">上限 16 与编号写死是同一件事：4 bit 只有 16 种。</text>
+
+  <rect x="352" y="386" width="300" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="372" y="412" font-size="13" font-weight="bold" fill="#0f172a">② 栈：三件套</text>
+  <rect x="372" y="424" width="80" height="22" rx="3" fill="#fef9c3"/>
+  <text x="412" y="440" font-size="10.5" fill="#854d0e" text-anchor="middle">一段内存</text>
+  <text x="460" y="440" font-size="12" fill="#64748b">+</text>
+  <rect x="476" y="424" width="56" height="22" rx="3" fill="#fef9c3"/>
+  <text x="504" y="440" font-size="10.5" fill="#854d0e" text-anchor="middle">rsp</text>
+  <text x="540" y="440" font-size="12" fill="#64748b">+</text>
+  <rect x="556" y="424" width="76" height="22" rx="3" fill="#fef9c3"/>
+  <text x="594" y="440" font-size="10.5" fill="#854d0e" text-anchor="middle">一条约定</text>
+  <text x="372" y="472" font-size="11.5" fill="#475569">没有栈对象、没有栈结构体、没有硬件栈。</text>
+  <text x="372" y="492" font-size="11.5" fill="#475569">「栈」就是这三样东西合起来的名字。</text>
+  <text x="372" y="520" font-size="11.5" fill="#0f766e">push 就是 rsp 减 8 再写一次（实测差值 = 8）。</text>
+  <text x="372" y="546" font-size="11.5" fill="#0f766e">普通 mov 写栈顶，pop 读到的就是新值（0x1234）。</text>
+
+  <rect x="668" y="386" width="296" height="180" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="688" y="412" font-size="13" font-weight="bold" fill="#0f172a">③ push 省的是什么</text>
+  <rect x="688" y="424" width="126" height="24" rx="3" fill="#e0f2fe"/>
+  <text x="751" y="441" font-size="10.5" font-family="Consolas, monospace" fill="#075985" text-anchor="middle">push/pop 2 B</text>
+  <rect x="822" y="424" width="126" height="24" rx="3" fill="#fee2e2"/>
+  <text x="885" y="441" font-size="10.5" font-family="Consolas, monospace" fill="#991b1b" text-anchor="middle">展开 16 B</text>
+  <text x="688" y="472" font-size="11.5" fill="#475569">字节数差 8 倍，耗时只差 1.59 倍</text>
+  <text x="688" y="492" font-size="11.5" fill="#475569">（0.586 vs 0.932 ns/次，各 7 轮）。</text>
+  <text x="688" y="520" font-size="11.5" fill="#991b1b">省的是取指与译码，不是访存。</text>
+  <text x="688" y="546" font-size="11.5" fill="#475569">微架构内部照样写一次内存。</text>
+
+  <!-- 底部结论 -->
+  <rect x="36" y="576" width="928" height="1" fill="#e2e8f0"/>
+</svg>
