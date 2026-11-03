@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="38" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="22" font-weight="bold" fill="#222222" text-anchor="middle">两条路线的失败模式对照</text>
+  <text x="500" y="64" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#666666" text-anchor="middle">共享内存错在值，消息传递错在时；错误的暴露时机完全不同</text>
+
+  <rect x="40" y="90" width="440" height="390" rx="10" fill="#fdf4f3" stroke="#d9a7a2"/>
+  <text x="260" y="126" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" font-weight="bold" fill="#c0392b" text-anchor="middle">共享内存路线</text>
+  <text x="70" y="166" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">错在：数据的值</text>
+  <text x="70" y="206" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">表现：结果偏小 / 中间态 / 旧值</text>
+  <text x="70" y="246" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">暴露：往往延迟，靠对账发现</text>
+  <text x="70" y="286" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">崩溃：通常不崩，退出码为 0</text>
+  <text x="70" y="326" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">证据：Go 145745 ≠ 200000</text>
+  <text x="95" y="350" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#555555">Java 丢 73.6%；PHP 49/160000</text>
+  <text x="70" y="392" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">排查：race detector、不变量断言</text>
+  <text x="70" y="432" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">难点：低频路径，测试覆盖不到</text>
+
+  <rect x="520" y="90" width="440" height="390" rx="10" fill="#eef7f2" stroke="#a9cfb8"/>
+  <text x="740" y="126" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="17" font-weight="bold" fill="#2e8b57" text-anchor="middle">消息传递路线</text>
+  <text x="550" y="166" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">错在：事件的时序</text>
+  <text x="550" y="206" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">表现：死锁 / 积压 / 重复 / 乱序</text>
+  <text x="550" y="246" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">暴露：死锁当场；积压与重复延迟</text>
+  <text x="550" y="286" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">崩溃：死锁崩；积压不崩，只是变慢</text>
+  <text x="550" y="326" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">证据：goroutine 1 [chan send]</text>
+  <text x="575" y="350" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12" fill="#555555">队列深度与最老消息年龄上升</text>
+  <text x="550" y="392" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">排查：协程栈、队列深度、trace</text>
+  <text x="550" y="432" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13" fill="#222222">难点：高峰期积压与重试风暴</text>
+
+  <rect x="40" y="502" width="920" height="66" rx="10" fill="#f5f7fa" stroke="#d7e0ea"/>
+  <text x="500" y="530" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="13.5" fill="#222222" text-anchor="middle">共享内存错在值，消息传递错在时；前者更难发现，后者更难恢复。</text>
+  <text x="500" y="552" font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="12.5" fill="#555555" text-anchor="middle">两者都可能在「跑一遍是对的」时通过 —— 单次运行不算证据。</text>
+</svg>
