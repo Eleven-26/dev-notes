@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">Put 是交出所有权，不是「还回仓库」</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">借出、交接、弃手：三条边界里最容易漏的是第三条</text>
+  <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker><marker id="arwg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#15803d"/></marker></defs>
+  <text x="30" y="114" font-size="14" fill="#dc2626" text-anchor="start" font-weight="bold">旧主人</text>
+  <text x="30" y="134" font-size="10.5" fill="#64748b" text-anchor="start">Get 到 Put 的那一方</text>
+  <text x="30" y="240" font-size="14" fill="#15803d" text-anchor="start" font-weight="bold">新主人</text>
+  <text x="30" y="260" font-size="10.5" fill="#64748b" text-anchor="start">下一个 Get 的那一方</text>
+  <rect x="168" y="76" width="430" height="222" rx="10" fill="#dbeafe" stroke="#bfdbfe" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <rect x="626" y="76" width="344" height="222" rx="10" fill="#fee2e2" stroke="#fecaca" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="383" y="96" font-size="11.5" fill="#2563eb" text-anchor="middle" font-weight="bold">① Put 之前</text>
+  <text x="798" y="96" font-size="11.5" fill="#dc2626" text-anchor="middle" font-weight="bold">② Put 之后</text>
+  <rect x="180" y="110" width="406" height="62" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="196" y="134" font-size="12.5" fill="#0f172a" text-anchor="start" font-weight="bold">Get → 写数据 → Reset() → Put(buf)</text>
+  <text x="196" y="156" font-size="11" fill="#64748b" text-anchor="start">前两步是「用」，后两步是「交还」</text>
+  <rect x="638" y="110" width="320" height="62" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="4 4"/>
+  <text x="656" y="138" font-size="13" fill="#dc2626" text-anchor="start" font-weight="bold">✕  不得再访问 buf</text>
+  <text x="656" y="158" font-size="11" fill="#dc2626" text-anchor="start">再写一个字节，就是在写别人的数据</text>
+  <rect x="180" y="236" width="406" height="62" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <text x="196" y="262" font-size="12" fill="#64748b" text-anchor="start">（还没拿到，池里没货）</text>
+  <text x="196" y="282" font-size="10.5" fill="#64748b" text-anchor="start">调用 Get 会走 New() 新建一个</text>
+  <rect x="638" y="236" width="320" height="62" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.2"/>
+  <text x="656" y="262" font-size="12.5" fill="#15803d" text-anchor="start" font-weight="bold">Get() 拿到的就是同一个对象</text>
+  <text x="656" y="282" font-size="10.5" fill="#0f172a" text-anchor="start">实测 c == b 为 true，它接着写自己的数据</text>
+  <line x1="616" y1="70" x2="616" y2="306" stroke="#b45309" stroke-width="1.8" stroke-dasharray="7 5"/>
+  <text x="616" y="326" font-size="11.5" fill="#b45309" text-anchor="middle" font-weight="bold">所有权在这一刻转移</text>
+  <line x1="616" y1="180" x2="616" y2="230" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <rect x="24" y="338" width="952" height="50" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="360" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="bold">pool.go 的 doc 注释只承诺一件事：</text>
+  <text x="268" y="360" font-size="11.5" fill="#0f172a" text-anchor="start">Put(x) “synchronizes before” 一次返回同一个 x 的 Get —— 也就是说 Put 之前的写，对下一位可见。</text>
+  <text x="40" y="380" font-size="11.5" fill="#64748b" text-anchor="start">它没有承诺 Put 之后的任何访问是安全的。所以 Reset 与 Put 必须在同一个「还回去」动作里完成，之后这个变量就不该再出现在代码里。</text>
+  <rect x="24" y="400" width="952" height="38" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="40" y="424" font-size="11.5" fill="#b45309" text-anchor="start" font-weight="bold">实测：旧主人在 Put 之后写 'B'，新主人写进去的 'C' 被覆盖 —— 并发执行时 -race 直接给出 DATA RACE。</text>
+</svg>

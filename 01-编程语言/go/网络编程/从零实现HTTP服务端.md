@@ -677,6 +677,10 @@ Connection: keep-alive\r\n
 
 **本节要点**：同一个请求同时打给两个实现，八项里有六项一致、**四项选了不同的边**。这些分歧不是「谁对谁错」，而是标准库在**兼容性、安全性、内存**三者之间替你做了取舍——知道它选了哪边，才知道什么时候需要覆盖它。
 
+⚠️ 先补一条把两头连起来的事实：`net/http` 的**请求解析与响应解析是同一段代码**——`http.ReadRequest` 与 `http.ReadResponse` 都先 `textproto.NewReader(...)` 再 `ReadMIMEHeader()`（`request.go:1044` / `:1133`，`response.go:155` / `:188`）。所以本篇在第三节手写的「首部循环 + 两道闸门」，与你作为**客户端**读上游响应时踩到的规则，是同一套：同名首部必须 append、折行必须处理、单行有上限。这不是巧合，是同一个 `textproto`。
+
+反过来说，这也解释了为什么本篇故意不用它们：`http.ReadRequest(bufio.NewReader(conn))` 一行就能拿到 `*http.Request`，`textproto.Reader` 也把「读到空行 + 折行 + 同名合并」做完了——但那正是本篇要看的那一层，用了就没得看了。
+
 ### 7.1 八项对照（同一条请求打两个服务）
 
 | # | 场景 | minihttp | net/http | 说明 |

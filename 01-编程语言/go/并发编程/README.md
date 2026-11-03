@@ -38,7 +38,7 @@
 | [并发同步原语.md](并发同步原语.md) | Mutex 与饥饿模式、RWMutex 相容矩阵、`sync.Once`、分段锁、WaitGroup 误用（⭐ `sync.Map` 与 atomic 已各成一篇） |
 | [sync.Map.md](sync.Map.md) | 不是「更快的 map」：read/dirty 双 map（1.9–1.25）与哈希前缀树（**1.26 起**）两代结构、三场景实测、选型判据 |
 | [atomic操作.md](atomic操作.md) | atomic 与锁的取舍、老函数族与 1.19 类型族、64 位对齐、伪共享实测、顺序一致语义 |
-| [sync.Pool.md](sync.Pool.md) | 不是缓存而是「减少分配」、victim cache、按 P 分片与偷取、必须重置 |
+| [sync.Pool.md](sync.Pool.md) | 不是缓存而是「减少分配」、victim cache、⭐ **省的是 GC 次数与暂停**（实测 200 万次分配：2127 次 GC / 896 ms vs 0 次）、按 P 分片与偷取、必须重置、⭐ **`Put` 即交出所有权**（`-race` 复现）、四种「池」不是一回事 |
 | [errgroup与pipeline.md](errgroup与pipeline.md) | `errgroup` 的语义与硬约束、pipeline 的 stage 拆分与 channel 收口 |
 | [并发控制实战.md](并发控制实战.md) | 打印升序数字、交替打印奇偶数、获取协程返回值 |
 | [线程安全与CSP.md](线程安全与CSP.md) | ⭐ **并发安全的判据 + 两条路线**：值传递与引用语义（拷贝结构体不等于隔离数据）、两种坏法（`a++` 静默丢更新 975≠1000 / map 并发写 `fatal error` 不可 recover）、三类线程安全类型与「安全」的边界（单方法安全≠复合操作原子）、共享内存 vs CSP 的失败模式（静默出错且退出码 0 vs 当场死锁并指出行号）、代价实测（atomic 4ms / Mutex 31ms / channel 73ms）、选型口诀 |

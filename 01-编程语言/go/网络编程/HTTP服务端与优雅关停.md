@@ -79,6 +79,19 @@ var _ http.Handler = &mux // ✅
 ⭐ 第 ③ 点是 `net/http` 组合能力的来源：**`ServeMux` 是 Handler，所以它也能被中间件包起来**，
 也能被挂到另一个 `ServeMux` 的子路径下。
 
+客户端侧有一个**完全对称**的接口，两边合起来才是这个包的全貌：
+
+| 侧 | 接口 | 唯一的方法 | 标准库里的实现 |
+|---|---|---|---|
+| 服务端 | `http.Handler`（`server.go:88`） | `ServeHTTP(ResponseWriter, *Request)` | `ServeMux`、`serverHandler`、各种中间件 |
+| 客户端 | `http.RoundTripper`（`client.go:116`） | `RoundTrip(*Request) (*Response, error)` | `Transport`、`http2Transport`、各种「客户端中间件」 |
+
+两个都是单方法接口，签名互为反向：一个「吃进一个请求、写出响应」，一个「送出一个请求、拿回响应」。这一条能解释三件事：
+
+1. **为什么生态里所有框架长得都一样**——可替换的只有这两个方法，其余（连接池、超时、编解码、keep-alive）都在接口后面不许换；
+2. **为什么 `httptest.Server` 能凭空造一个服务端**——它把两侧接起来：`srv.Client()` 返回的 `*http.Client` 直接打到内存里的连接，不经过 TCP；
+3. **为什么「客户端中间件」和「服务端中间件」写法一致**——包 `Handler` 和包 `RoundTripper` 都是「收一个、返回一个」。
+
 ### 2.2 中间件就是装饰器
 
 ```go
@@ -109,6 +122,30 @@ func wrap(name string) func(http.Handler) http.Handler {
 
 ⚠️ 一个高频事故：**`ResponseWriter` 被中间件包一层后，`http.Flusher` / `http.Hijacker` 这些可选接口会丢失** ——
 除非你的包装类型显式转发它们。SSE / WebSocket 场景要特别注意。
+
+### 2.3 一次请求进来，包里走过哪几层
+
+`ServeHTTP` 被谁调用？调用时 `*Request` 和 `ResponseWriter` 是谁造出来的？这一节把链条补上——理解了这五层，前面那些「为什么必须这样」才有落点。
+
+![一次请求在 net/http 里走过的五层：Serve 的 Accept 循环、每连接一个 conn.serve、readRequest 解析、serverHandler 选 handler，最后才是你的 ServeHTTP](images/net-http服务端一次请求的五层.svg)
+
+图怎么读：左侧一列是「这一层是谁在做」，右侧标出源码位置。要读出的是**第 ④ 层那个转弯**：`srv.Handler` 为 nil 时不是直接报错，而是**换成 `DefaultServeMux`**——这就是「零值 Server 也能用」的实现位置，也是测试之间互相污染全局路由的根因。
+
+| # | 这一层 | 干什么 | 位置 |
+|---|---|---|---|
+| ① | `(*Server).Serve(l)` | `Accept` 循环；临时错误退避重试（`tempDelay` 上限 1 s）；每条连接 `go c.serve(connCtx)` | `server.go:3404` |
+| ② | `(*conn).serve(ctx)` | 一条连接一个 goroutine；**keep-alive 的循环就在这一层**；读写各 4 KB `bufio` | `server.go:1887` |
+| ③ | `(*conn).readRequest(ctx)` | 解析请求行与首部，产出 `*http.Request` 与 `*response`（`ResponseWriter` 的实现） | `server.go:976` |
+| ④ | `serverHandler.ServeHTTP` | 选 handler：`srv.Handler` 为 nil 就换成 `DefaultServeMux` | `server.go:3302` |
+| ⑤ | 你的 `ServeHTTP` | 中间件洋葱 → `ServeMux` 匹配 → 业务 | 你的代码 |
+
+三条能直接拿去做判断的推论：
+
+1. **`ResponseWriter` 是每请求新建的，不是复用的**——它在 ③ 里随 `readRequest` 一起产出。所以「上一轮设置的头会不会残留」这个担心可以放下；反过来，「这一轮的 `Header()` 是空的」是正常现象。
+2. **一条连接只有一个 goroutine，慢请求占的是连接不是线程池**——② 那层的 `for` 循环串行处理同一条连接上的请求。HTTP/1.1 下同一个客户端复用连接发两个请求，第二个必须等第一个响应写完（这就是队头阻塞，不是 bug）。
+3. **`BaseContext` / `ConnContext` 注入的位置在 ① 与 ② 之间**：`connCtx` 由 `s.ConnContext` 加工后传给 `c.serve`，所以它是**每连接**一份，不是每请求一份。要每请求一份得用中间件。
+
+⚠️ 这五层没有配置项可改。要换掉其中任何一层（比如自己管 `bufio` 大小、自己决定何时读到下一个请求），只能绕开 `net/http` 直接读 `net.Conn`——那是 [从零实现HTTP服务端.md](从零实现HTTP服务端.md) 做的事。
 
 ---
 
@@ -427,6 +464,12 @@ func main() {
 - **`http.Error` 能用来返回 JSON 错误吗？** → 不推荐。它固定 `text/plain` 且**末尾补换行**（6.1 实测）。
 - **中间件包了 `ResponseWriter` 后 SSE 为什么用不了？** → 可选的 `http.Flusher` / `http.Hijacker` 接口在包装类型上丢失了，
   需要显式实现并转发（2.2）。
+- **客户端侧的扩展点是哪个接口？** → `http.RoundTripper`，只有一个方法 `RoundTrip(*Request) (*Response, error)`，
+  与服务端的 `Handler` 签名互为反向；「客户端中间件」就是包它（2.1）。
+- **同一条连接上能同时处理两个请求吗？** → HTTP/1.1 不能。`(*conn).serve` 里是一个 `for` 循环串行读请求、串行写响应（2.3），
+  第二个请求必须等第一个响应写完——这就是队头阻塞。HTTP/2 靠多路复用才绕开它。
+- **`BaseContext` 是每个请求一份还是每条连接一份？** → **每连接一份**。`ConnContext` 在 `Serve` 的循环里加工完再传给 `c.serve`（2.3），
+  要每请求一份得自己写中间件。
 
 ## 关联
 
