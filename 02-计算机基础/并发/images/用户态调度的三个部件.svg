@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 466" width="1000" height="466" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="466" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">用户态调度器必须自己解决的三件事，而且它们互相牵制</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">内核原来免费提供的运行队列、栈与阻塞处理，搬出内核之后都得自己实现</text>
+  <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#15803d"/></marker><marker id="arwo" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker><marker id="arwb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker></defs>
+  <rect x="330" y="78" width="320" height="118" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="490" y="108" font-size="14" fill="#2563eb" text-anchor="middle" font-weight="bold">① 运行队列</text>
+  <text x="490" y="134" font-size="11" fill="#64748b" text-anchor="middle">谁下一个跑</text>
+  <text x="490" y="160" font-size="11.5" fill="#0f172a" text-anchor="middle">分片还是共享，决定每次切换的成本</text>
+  <rect x="44" y="286" width="320" height="118" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.2"/>
+  <text x="204" y="316" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">② 栈</text>
+  <text x="204" y="342" font-size="11" fill="#64748b" text-anchor="middle">执行体的私有内存从哪来</text>
+  <text x="204" y="368" font-size="11.5" fill="#0f172a" text-anchor="middle">能不能搬动，决定阻塞时能否摘走执行体</text>
+  <rect x="636" y="286" width="320" height="118" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="796" y="316" font-size="14" fill="#ea580c" text-anchor="middle" font-weight="bold">③ 阻塞交接</text>
+  <text x="796" y="342" font-size="11" fill="#64748b" text-anchor="middle">执行体阻塞时线程怎么办</text>
+  <text x="796" y="368" font-size="11.5" fill="#0f172a" text-anchor="middle">补线程还是搬执行体，决定并发上限</text>
+  <line x1="350" y1="200" x2="250" y2="284" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <line x1="250" y1="284" x2="350" y2="200" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <text x="268" y="250" font-size="10" fill="#64748b" text-anchor="end">栈要能搬</text>
+  <text x="268" y="268" font-size="9.5" fill="#64748b" text-anchor="end">指针不能长期指向栈</text>
+  <line x1="650" y1="200" x2="750" y2="284" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <line x1="750" y1="284" x2="650" y2="200" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <text x="732" y="250" font-size="10" fill="#64748b" text-anchor="start">要能摘下执行体</text>
+  <text x="732" y="268" font-size="9.5" fill="#64748b" text-anchor="start">就得先能保存它的状态</text>
+  <line x1="372" y1="346" x2="628" y2="346" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <line x1="628" y1="346" x2="372" y2="346" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <text x="500" y="332" font-size="10" fill="#64748b" text-anchor="middle">栈可搬 ⇄ 才能搬走执行体</text>
+  <rect x="366" y="210" width="268" height="56" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.4"/>
+  <text x="500" y="234" font-size="12" fill="#0f172a" text-anchor="middle" font-weight="bold">三者不能分别设计</text>
+  <text x="500" y="254" font-size="10" fill="#64748b" text-anchor="middle">一个关于栈的决定会锁死阻塞策略</text>
+  <rect x="24" y="414" width="952" height="38" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="40" y="438" font-size="12" fill="#b45309" text-anchor="start" font-weight="bold">看到任何一个运行时的栈策略，基本就能推断出它的阻塞交接能做到多强——这两件从来不是独立的选择。</text>
+</svg>

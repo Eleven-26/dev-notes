@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 442" width="1000" height="442" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="442" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">强杀会在任意位置切断：三处补不回来的烂摊子</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">红线是「它在这一刻被杀」的位置——只要存在不能被打断的区间，就必然有概率切在里面</text>
+  <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#15803d"/></marker><marker id="arwr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker><marker id="arwo" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker></defs>
+  <rect x="24" y="74" width="576" height="44" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="312" y="102" font-size="13" fill="#2563eb" text-anchor="middle" font-weight="bold">一个正在干活的执行体</text>
+  <text x="24" y="154" font-size="11.5" fill="#dc2626" text-anchor="start" font-weight="bold">持有锁</text>
+  <rect x="96" y="136" width="504" height="34" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="116" y="158" font-size="11" fill="#0f172a" text-anchor="start">加锁 ———————————————— 放锁</text>
+  <text x="116" y="196" font-size="10.5" fill="#dc2626" text-anchor="start" font-weight="bold">锁没放 → 等它的人永久卡住</text>
+  <text x="24" y="238" font-size="11.5" fill="#ea580c" text-anchor="start" font-weight="bold">改结构</text>
+  <rect x="96" y="220" width="504" height="34" rx="6" fill="#ffffff" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="116" y="242" font-size="11" fill="#0f172a" text-anchor="start">改第 1 步 —— 改第 2 步 —— 改第 3 步</text>
+  <text x="116" y="280" font-size="10.5" fill="#ea580c" text-anchor="start" font-weight="bold">停在改了一半 → 读者看到坏数据</text>
+  <text x="24" y="322" font-size="11.5" fill="#7e22ce" text-anchor="start" font-weight="bold">调下游</text>
+  <rect x="96" y="304" width="504" height="34" rx="6" fill="#ffffff" stroke="#7e22ce" stroke-width="1.2"/>
+  <text x="116" y="326" font-size="11" fill="#0f172a" text-anchor="start">发请求 —————————— 收到响应</text>
+  <text x="116" y="364" font-size="10.5" fill="#7e22ce" text-anchor="start" font-weight="bold">请求已发出 → 撤不回，本地没记录</text>
+  <line x1="372" y1="70" x2="372" y2="358" stroke="#dc2626" stroke-width="2.6" stroke-dasharray="7 5"/>
+  <text x="382" y="356" font-size="11.5" fill="#dc2626" text-anchor="start" font-weight="bold">在这里被杀</text>
+  <rect x="616" y="74" width="360" height="78" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="630" y="100" font-size="12.5" fill="#dc2626" text-anchor="start" font-weight="bold">① 锁没释放</text>
+  <text x="630" y="122" font-size="11" fill="#0f172a" text-anchor="start">没人知道持有者已经不在了</text>
+  <text x="630" y="142" font-size="11" fill="#dc2626" text-anchor="start">等它的人全部永久阻塞</text>
+  <rect x="616" y="164" width="360" height="78" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="630" y="190" font-size="12.5" fill="#ea580c" text-anchor="start" font-weight="bold">② 停在中间态</text>
+  <text x="630" y="212" font-size="11" fill="#0f172a" text-anchor="start">没有「回滚到一致点」的信息</text>
+  <text x="630" y="232" font-size="11" fill="#ea580c" text-anchor="start">后续读者读到损坏的数据</text>
+  <rect x="616" y="254" width="360" height="78" rx="8" fill="#f3e8ff" stroke="#7e22ce" stroke-width="1.2"/>
+  <text x="630" y="280" font-size="12.5" fill="#7e22ce" text-anchor="start" font-weight="bold">③ 副作用已发出</text>
+  <text x="630" y="302" font-size="11" fill="#0f172a" text-anchor="start">请求已经发了，本地记录没了</text>
+  <text x="630" y="322" font-size="11" fill="#7e22ce" text-anchor="start">对账时对不上，且无法重放</text>
+  <rect x="24" y="384" width="952" height="44" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="40" y="404" font-size="11.5" fill="#b45309" text-anchor="start" font-weight="bold">第一条正好是「不是环的卡死」的一种成因：一批人排在同一把锁上，持有者再也不会返回。</text>
+  <text x="40" y="422" font-size="11.5" fill="#92400e" text-anchor="start">第二种与第三种补不回来，因为它们都丢掉了「回滚到一致点」所需的信息。</text>
+</svg>

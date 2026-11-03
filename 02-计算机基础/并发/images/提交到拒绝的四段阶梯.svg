@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 466" width="1000" height="466" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="466" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">一次提交要走过四段：核心 → 队列 → 扩容 → 拒绝</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">队列排在扩容之前，所以「线程上限」在无界队列下永远用不上</text>
+  <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker><marker id="arwo" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker><marker id="arwg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#15803d"/></marker><marker id="arwr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker></defs>
+  <rect x="24" y="286" width="230" height="132" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.2"/>
+  <text x="39" y="314" font-size="13" fill="#15803d" text-anchor="start" font-weight="bold">① 核心线程有空位</text>
+  <text x="39" y="340" font-size="11" fill="#0f172a" text-anchor="start">判定：线程数 &lt; 核心数</text>
+  <text x="39" y="364" font-size="11" fill="#0f172a" text-anchor="start">动作：起一条核心线程</text>
+  <line x1="39" y1="378" x2="239" y2="378" stroke="#15803d" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="39" y="400" font-size="11.5" fill="#15803d" text-anchor="start" font-weight="bold">并发度 ↑</text>
+  <line x1="256" y1="352" x2="286" y2="310" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <text x="270" y="342" font-size="10" fill="#64748b" text-anchor="middle">否</text>
+  <rect x="264" y="244" width="230" height="132" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="279" y="272" font-size="13" fill="#ea580c" text-anchor="start" font-weight="bold">② 队列没满</text>
+  <text x="279" y="298" font-size="11" fill="#0f172a" text-anchor="start">判定：队列长度 &lt; 容量</text>
+  <text x="279" y="322" font-size="11" fill="#0f172a" text-anchor="start">动作：任务入队等待</text>
+  <line x1="279" y1="336" x2="479" y2="336" stroke="#ea580c" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="279" y="358" font-size="11.5" fill="#ea580c" text-anchor="start" font-weight="bold">并发度不变，延迟 ↑</text>
+  <line x1="496" y1="310" x2="526" y2="268" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <text x="510" y="300" font-size="10" fill="#64748b" text-anchor="middle">否</text>
+  <rect x="504" y="202" width="230" height="132" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="519" y="230" font-size="13" fill="#2563eb" text-anchor="start" font-weight="bold">③ 线程数没到上限</text>
+  <text x="519" y="256" font-size="11" fill="#0f172a" text-anchor="start">判定：线程数 &lt; 上限</text>
+  <text x="519" y="280" font-size="11" fill="#0f172a" text-anchor="start">动作：起一条临时线程</text>
+  <line x1="519" y1="294" x2="719" y2="294" stroke="#2563eb" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="519" y="316" font-size="11.5" fill="#2563eb" text-anchor="start" font-weight="bold">并发度 ↑</text>
+  <line x1="736" y1="268" x2="766" y2="226" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <text x="750" y="258" font-size="10" fill="#64748b" text-anchor="middle">否</text>
+  <rect x="744" y="160" width="230" height="132" rx="10" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+  <text x="759" y="188" font-size="13" fill="#dc2626" text-anchor="start" font-weight="bold">④ 以上都不成立</text>
+  <text x="759" y="214" font-size="11" fill="#0f172a" text-anchor="start">判定：队列满 且 线程到顶</text>
+  <text x="759" y="238" font-size="11" fill="#0f172a" text-anchor="start">动作：交给拒绝策略</text>
+  <line x1="759" y1="252" x2="959" y2="252" stroke="#dc2626" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="759" y="274" font-size="11.5" fill="#dc2626" text-anchor="start" font-weight="bold">任务被拒 / 被丢</text>
+  <rect x="24" y="432" width="952" height="26" rx="6" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="40" y="450" font-size="11.5" fill="#b45309" text-anchor="start" font-weight="bold">无界队列永远不满 → 永远走不到第 ③ 段 → 配置里的线程上限形同虚设，线程数永久停在核心数。</text>
+</svg>

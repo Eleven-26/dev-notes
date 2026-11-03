@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 556" width="1000" height="556" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="556" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">等待图里成环的和不成环的</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">自动检测只认形状：有环才报。生产上最常见的卡死，图上根本没有环</text>
+  <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwb" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker><marker id="arwo" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#ea580c"/></marker><marker id="arwr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker></defs>
+  <rect x="24" y="76" width="312" height="396" rx="10" fill="#fdf4f3" stroke="#d9a7a2" stroke-width="1.2"/>
+  <text x="180" y="104" font-size="14" fill="#dc2626" text-anchor="middle" font-weight="bold">① 环：唯一能被自动检出</text>
+  <text x="180" y="126" font-size="11.5" fill="#64748b" text-anchor="middle">两个线程互相持有对方要的锁</text>
+  <rect x="60" y="208" width="96" height="42" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="108.0" y="233.68" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">线程 T1</text>
+  <rect x="208" y="208" width="96" height="42" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.4"/>
+  <text x="256.0" y="233.68" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">线程 T2</text>
+  <path d="M 108 208 C 132 152, 232 152, 256 208" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arwr)"/>
+  <text x="182" y="148" font-size="11.5" fill="#dc2626" text-anchor="middle" font-weight="bold">等 B</text>
+  <path d="M 256 250 C 232 306, 132 306, 108 250" fill="none" stroke="#dc2626" stroke-width="1.8" marker-end="url(#arwr)"/>
+  <text x="182" y="330" font-size="11.5" fill="#dc2626" text-anchor="middle" font-weight="bold">等 A</text>
+  <text x="180" y="358" font-size="12" fill="#0f172a" text-anchor="middle">T1 持 A 等 B，T2 持 B 等 A</text>
+  <text x="180" y="380" font-size="12" fill="#0f172a" text-anchor="middle">两条边首尾相接 → 有环 → 工具会报</text>
+  <rect x="44" y="396" width="272" height="62" rx="6" fill="#ffffff" stroke="#d9a7a2" stroke-width="1.2"/>
+  <text x="58" y="418" font-size="11.5" fill="#dc2626" text-anchor="start" font-weight="bold">恢复：只能外部打断</text>
+  <text x="58" y="440" font-size="11" fill="#0f172a" text-anchor="start">回滚一方 / 杀进程 / 等业务超时自己松手</text>
+  <rect x="348" y="76" width="628" height="396" rx="10" fill="#f5f7fa" stroke="#d7e0ea" stroke-width="1.2"/>
+  <text x="662" y="104" font-size="14" fill="#0f172a" text-anchor="middle" font-weight="bold">② 不是环：工具不会报，但确实卡住了</text>
+  <text x="662" y="126" font-size="11.5" fill="#64748b" text-anchor="middle">形状是回头边、射线、悬空边——都不是闭合回路</text>
+  <rect x="368" y="146" width="200" height="306" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="468" y="172" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">自等</text>
+  <text x="468" y="192" font-size="11" fill="#64748b" text-anchor="middle">一条回头边</text>
+  <rect x="582" y="146" width="200" height="306" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="682" y="172" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">等外部事件</text>
+  <text x="682" y="192" font-size="11" fill="#64748b" text-anchor="middle">一条朝外的射线</text>
+  <rect x="796" y="146" width="200" height="306" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="896" y="172" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">等已消失的目标</text>
+  <text x="896" y="192" font-size="11" fill="#64748b" text-anchor="middle">一条悬空边</text>
+  <rect x="418" y="236" width="100" height="40" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="468.0" y="260.68" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">任务 A</text>
+  <path d="M 518 246 C 546 246, 546 290, 522 290 L 518 290" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwb)"/>
+  <text x="468" y="316" font-size="11" fill="#0f172a" text-anchor="middle">等自己排进去的任务</text>
+  <text x="468" y="336" font-size="10.5" fill="#64748b" text-anchor="middle">（单线程池自锁）</text>
+  <text x="468" y="380" font-size="11.5" fill="#0f172a" text-anchor="middle">边在任务之间</text>
+  <text x="468" y="400" font-size="11.5" fill="#ea580c" text-anchor="middle" font-weight="bold">工具画的是线程图</text>
+  <rect x="612" y="226" width="110" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="667.0" y="249.68" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">线程</text>
+  <rect x="612" y="320" width="110" height="38" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="667" y="344" font-size="11.5" fill="#64748b" text-anchor="middle">外部事件</text>
+  <line x1="667" y1="266" x2="667" y2="318" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <text x="682" y="296" font-size="11" fill="#64748b" text-anchor="start">等</text>
+  <text x="682" y="384" font-size="11" fill="#ea580c" text-anchor="middle" font-weight="bold">不会来</text>
+  <text x="682" y="406" font-size="10.5" fill="#64748b" text-anchor="middle">没有第二个节点</text>
+  <text x="682" y="426" font-size="10.5" fill="#64748b" text-anchor="middle">谈不上环</text>
+  <rect x="826" y="226" width="110" height="38" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="881.0" y="249.68" font-size="13" fill="#0f172a" text-anchor="middle" font-weight="bold">等待方</text>
+  <rect x="826" y="320" width="110" height="38" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="881" y="344" font-size="11.5" fill="#64748b" text-anchor="middle">已退出</text>
+  <path d="M 866 300 L 866 318" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arw)"/>
+  <text x="910" y="384" font-size="11" fill="#0f172a" text-anchor="middle">被等的一方</text>
+  <text x="910" y="404" font-size="10.5" fill="#ea580c" text-anchor="middle" font-weight="bold">抛错被吞 / 已结束</text>
+  <text x="910" y="426" font-size="10.5" fill="#64748b" text-anchor="middle">终点上没有节点</text>
+  <rect x="24" y="484" width="952" height="56" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="40" y="508" font-size="12.5" fill="#b45309" text-anchor="start" font-weight="bold">判据：转储里没有 deadlock 段，只说明等待图上没有环，不说明没人卡住。</text>
+  <text x="40" y="528" font-size="12" fill="#92400e" text-anchor="start">「它在等什么」能靠状态字段读；「它等的东西还会不会来」只能靠读代码与多次采样。</text>
+</svg>
