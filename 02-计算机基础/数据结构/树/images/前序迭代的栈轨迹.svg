@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="700" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">前序迭代：先压右、再压左，弹出时才是左先出</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左：栈的逐步演化（同一棵树 1/2/4/5/3/6）；右：2.1 双压法与 2.3 单栈 + 指针的对照（含本机实测）</text>
+
+  <g transform="translate(20,70)">
+    <rect x="0" y="0" width="460" height="610" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="16" font-weight="bold" fill="#0f172a">栈演化：方框从左到右 = 栈底到栈顶</text>
+
+    <text x="16" y="70" font-size="12.5" font-weight="bold" fill="#0f172a">① 初始：根 1 入栈</text>
+    <rect x="16" y="82" width="40" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="36" y="97" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">1</text>
+    <text x="66" y="97" font-size="11.5" fill="#2563eb">← 栈顶</text>
+    <text x="16" y="132" font-size="12" fill="#334155">输出：—（还没访问任何节点，root 为 nil 时直接返回空）</text>
+
+    <text x="16" y="186" font-size="12.5" font-weight="bold" fill="#0f172a">② 弹 1 并输出；先压右 3、再压左 2</text>
+    <rect x="16" y="198" width="40" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="36" y="213" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">3</text>
+    <rect x="56" y="198" width="40" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="76" y="213" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#92400e">2</text>
+    <text x="106" y="213" font-size="11.5" fill="#2563eb">← 栈顶</text>
+    <text x="16" y="248" font-size="12" fill="#14532d">输出：1（前序「根最先」，弹出即输出，不等孩子）</text>
+
+    <text x="16" y="302" font-size="12.5" font-weight="bold" fill="#0f172a">③ 弹 2 并输出；先压右 5、再压左 4</text>
+    <rect x="16" y="314" width="40" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="36" y="329" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">3</text>
+    <rect x="56" y="314" width="40" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="76" y="329" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">5</text>
+    <rect x="96" y="314" width="40" height="30" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+    <text x="116" y="329" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#92400e">4</text>
+    <text x="146" y="329" font-size="11.5" fill="#2563eb">← 栈顶（本树峰值 3）</text>
+    <text x="16" y="364" font-size="12" fill="#14532d">输出：1 2（右孩子 3 一直垫在栈底，等左子树全出来）</text>
+
+    <text x="16" y="418" font-size="12.5" font-weight="bold" fill="#0f172a">④ 弹 4 输出、弹 5 输出（都没有孩子）</text>
+    <rect x="16" y="430" width="40" height="30" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="36" y="445" text-anchor="middle" dominant-baseline="central" font-size="13" fill="#1e40af">3</text>
+    <text x="66" y="445" font-size="11.5" fill="#2563eb">← 栈顶</text>
+    <text x="16" y="480" font-size="12" fill="#14532d">输出：1 2 4 5（2 的左右子树清空，才轮到 1 的右孩子）</text>
+
+    <text x="16" y="534" font-size="12.5" font-weight="bold" fill="#0f172a">⑤ 弹 3 输出；压右 6（3 无左孩子）后再弹出 6</text>
+    <rect x="16" y="546" width="120" height="30" fill="none" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text x="76" y="561" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#94a3b8">空（遍历结束）</text>
+    <text x="16" y="596" font-size="12" fill="#14532d">输出：1 2 4 5 3 6 —— 与递归版逐位相同（本机实测 true）</text>
+  </g>
+
+  <g transform="translate(520,70)">
+    <rect x="0" y="0" width="460" height="610" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="16" y="28" font-size="16" font-weight="bold" fill="#0f172a">前序两种迭代：压两个孩子 vs 只压右孩子</text>
+    <text x="16" y="50" font-size="12" fill="#64748b">时间都是 O(n)，差别全在「栈里放什么、峰值多大、有没有额外的坑」</text>
+
+    <rect x="16" y="66" width="428" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="30" y="90" font-size="13" font-weight="bold" fill="#1e40af">2.1 先压右再压左（两个孩子都压）</text>
+    <text x="30" y="112" font-size="12" fill="#334155">弹出即输出；循环条件本身就是「栈空即止」，不会越界</text>
+    <text x="30" y="134" font-size="12" fill="#334155">样本树栈峰值 3（3、5、4 同时压在栈里）</text>
+
+    <rect x="16" y="162" width="428" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="30" y="186" font-size="13" font-weight="bold" fill="#1e40af">2.3 单栈 + 指针（只压右孩子）</text>
+    <text x="30" y="208" font-size="12" fill="#334155">左链靠 cur 一路走、边走边输出，栈里只剩「待回来的右孩子」</text>
+    <text x="30" y="230" font-size="12" fill="#334155">同一棵样本树栈峰值 2 —— 比 2.1 少压一半</text>
+
+    <rect x="16" y="258" width="428" height="86" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+    <text x="30" y="282" font-size="13" font-weight="bold" fill="#7f1d1d">注意：2.3 比 2.1 多一个坑</text>
+    <text x="30" y="304" font-size="12" fill="#7f1d1d">内层「一路向左」结束时 cur 已是 nil，此时若栈也空要 break</text>
+    <text x="30" y="326" font-size="12" fill="#7f1d1d">少了它，st[len(st)-1] 直接 panic：index out of range [-1]</text>
+
+    <text x="16" y="374" font-size="13" font-weight="bold" fill="#0f172a">本机容器实测（Go 1.26.8 linux/amd64，逐位比对）</text>
+    <rect x="16" y="386" width="428" height="112" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.4"/>
+    <text x="32" y="412" font-size="12.5" fill="#1e40af">[自检] 样本树 6 节点 / 满二叉树 h=10 共 1023 节点</text>
+    <text x="32" y="436" font-size="12.5" fill="#1e40af">前序 递归==先压右后压左 : true</text>
+    <text x="32" y="460" font-size="12.5" fill="#1e40af">      递归==单栈指针(只压右孩子) : true</text>
+    <text x="32" y="484" font-size="12" fill="#334155">注意：压栈顺序写反不报错，只会静默给出另一种顺序</text>
+
+    <text x="16" y="526" font-size="12" fill="#334155">前序是「写出去」的标准顺序：序列化 / 深拷贝 / 目录列举都先处理父，</text>
+    <text x="16" y="546" font-size="12" fill="#334155">序列第一个一定是根，重建时能立刻切分左右子树（见 1.2 与第五节）。</text>
+    <text x="16" y="576" font-size="12.5" fill="#1e40af">判据：要最短 → 2.1；要少压一半 → 2.3；栈深不可控 → 别用递</text>
+    <text x="16" y="596" font-size="12.5" fill="#1e40af">归（2.6）；两种写法的输出必须与递归逐位相同才算写对。</text>
+  </g>
+</svg>
