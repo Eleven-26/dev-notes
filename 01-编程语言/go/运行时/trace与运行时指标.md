@@ -337,7 +337,7 @@ RSS 比 `HeapAlloc` 大很多的四种原因：
 | ⭐ **mmap** | ⚠️ `>32KB` 大对象、cgo、`syscall.Mmap` **直接走 mmap**，**完全不计入 MemStats 的堆** | 用 `/proc/<pid>/smaps` 看匿名映射段 |
 | **GC 元数据 / mspan / cgo** | `bitmap`、`mspan` 结构；C 侧 malloc 的内存 Go 完全看不见 | 小头或需单独排查 |
 
-⭐ 一句话：**MemStats 只描述 Go 堆，RSS 才是内核视角的全部**。`syscall.Mmap` 自己的用法与落盘边界见 [零拷贝.md](零拷贝.md) 3.5，内核侧的虚拟内存与回收见 [内存管理.md](../../../02-计算机基础/linux/内存管理.md)。
+⭐ 一句话：**MemStats 只描述 Go 堆，RSS 才是内核视角的全部**。`syscall.Mmap` 自己的用法与落盘边界见 [零拷贝.md](零拷贝.md) 3.5，内核侧的虚拟内存与回收见 [虚拟内存与页缓存.md](../../../02-计算机基础/操作系统/虚拟内存与页缓存.md)。
 
 ---
 
@@ -631,7 +631,7 @@ goroutine profile: total 3
 - **`HeapSys` 为什么不随 `FreeOSMemory` 下降？** → 它的定义是"堆申请过的地址空间、估计的历史峰值"（`go doc runtime.MemStats` 原话：HeapSys estimates the largest size the heap has had）；归还看 `HeapReleased` 或 `scavtrace` 的 `now`。
 - **`MemStats.Sys` 就等于 RSS 吗？** → 不。`Sys` 仍是**虚拟内存口径**（含预留未触达的 arena），只是六大指标里最接近 RSS 的一个；真实物理占用要看 `ps -o rss` 或 `/proc/<pid>/status` 的 `VmRSS`。
 - **为什么 GC 跑完 RSS 不下降？** → GC 只把 span 标成 `HeapIdle`，**默认不立刻归还 OS**；要主动归还可调 `debug.FreeOSMemory()`，或靠 `GODEBUG=madvdontneed=1` 改变 `madvise` 行为。
-- **容器里应该看哪个指标做限额？** → 看 **RSS**（对应 cgroup 的 `memory.current`），不是 `HeapAlloc`，更不是 `HeapSys`；判定口径见 [内存管理.md](../../../02-计算机基础/linux/内存管理.md)。
+- **容器里应该看哪个指标做限额？** → 看 **RSS**（对应 cgroup 的 `memory.current`），不是 `HeapAlloc`，更不是 `HeapSys`；判定口径见 [虚拟内存与页缓存.md](../../../02-计算机基础/操作系统/虚拟内存与页缓存.md)。
 - **`NumGoroutine()` 能对上 pprof 的数字吗？** → 对不上。它 `= gcount(false)`，**减掉了跑系统栈的 runtime 协程与各级 G 空闲表**；实测同一时刻 `scheddetail` 列 10 个 G、`NumGoroutine` 报 1；服务里 `NumGoroutine=3` 而 `/sched/goroutines=13`。
 - **`runtime/metrics` 能替代 `ReadMemStats` 吗？** → 线上常驻可以，**离线诊断不行**：`BySize`（每个 size class 的分配量）只有 `MemStats` 有；且 `metrics.Value` 里直方图要走 `Float64Histogram()`，写错字段编译就报（3.3）。
 - **`NumGoroutine` 一直涨，怎么区分"业务泄漏"与"runtime 协程"？** → 先看趋势（业务泄漏是单调上涨且不回落），再拿 `scheddetail` 的 `status=4(原因)` 对一遍 runtime 那批常驻协程（[GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) 2.3 的"底牌清单"），剩下的才是你的。
@@ -651,6 +651,6 @@ goroutine profile: total 3
 - **对照/互补**：[零拷贝.md](零拷贝.md) — `syscall.Mmap` 与 `bufio` 缓冲写的落盘边界：这部分内容从本篇的内存口径里分出去
 - **下游应用**：[协程泄漏与死锁.md](../并发编程/协程泄漏与死锁.md) — pprof 侧的泄漏聚类定位；本篇只补 `NumGoroutine` 与 metrics 的口径差
 - **下游应用**：[手写Prometheus导出器.md](../可观测性/手写Prometheus导出器.md) — `go_memstats_*` 就是本篇 3.1 那套字段搬进 Prometheus
-- **外部口径**：[内存管理.md](../../../02-计算机基础/linux/内存管理.md) — 虚拟内存、Page Cache 与容器限额的内核侧视角
+- **外部口径**：[虚拟内存与页缓存.md](../../../02-计算机基础/操作系统/虚拟内存与页缓存.md) — 虚拟内存、Page Cache 与容器限额的内核侧视角
 - **外部口径**：[可观测性选型对比.md](../../../03-数据与中间件/中间件/可观测性/可观测性选型对比.md) — 指标 / 追踪 / 日志三类信号的选型；本篇全在"指标 + 现场采样"这一侧
 > 反向引用（本篇被下列文档引到）：[调试与IDE配置.md](../工程实践/调试与IDE配置.md)、[goroutine.md](../并发编程/goroutine.md)、[协程与线程成本.md](../并发编程/协程与线程成本.md)、[堆外内存与内存映射.md](../../java/运行时/堆外内存与内存映射.md)

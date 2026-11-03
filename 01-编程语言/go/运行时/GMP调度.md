@@ -775,4 +775,4 @@ GOMAXPROCS=1 GODEBUG=asyncpreemptoff=1 ./spin.exe
 - [GODEBUG与运行时观测.md](GODEBUG与运行时观测.md) — `schedtrace` 单行与 `scheddetail` 三段的逐字段读法、`gctrace` / `scavtrace`（本篇只留结论）
 - [trace与运行时指标.md](trace与运行时指标.md) — `runtime/trace` 的无头解析与 `runtime/metrics` 里的调度指标
 
-> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[sync.Map.md](../并发编程/sync.Map.md)、[并发同步原语.md](../并发编程/并发同步原语.md)、[pprof性能分析.md](pprof性能分析.md)、[反射.md](反射.md)、[进程与线程.md](../../../02-计算机基础/linux/进程与线程.md)
+> 反向引用（本篇被下列文档引到）：[goroutine实战模式.md](../并发编程/goroutine实战模式.md)、[sync.Map.md](../并发编程/sync.Map.md)、[并发同步原语.md](../并发编程/并发同步原语.md)、[pprof性能分析.md](pprof性能分析.md)、[反射.md](反射.md)、[进程与线程模型.md](../../../02-计算机基础/操作系统/进程与线程模型.md)

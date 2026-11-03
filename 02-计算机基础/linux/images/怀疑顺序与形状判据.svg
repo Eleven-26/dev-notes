@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">数字自相矛盾时的怀疑顺序：先排除测量侧，再看形状，最后才动被测系统</text>
+  <text x="500" y="55" text-anchor="middle" font-size="12.5" fill="#64748b">真实拐点是单调的；出现 V 形 / 倒 V 形或三次重跑差一倍，先怀疑测量方法</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/></marker></defs>
+  <rect x="24" y="84" width="300" height="250" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1"/>
+  <text x="40" y="108" font-size="13" fill="#b45309" text-anchor="start" font-weight="bold">① 排除测量侧</text>
+  <text x="40" y="136" font-size="11.5" fill="#0f172a" text-anchor="start">· 连接不复用 / 端口耗尽</text>
+  <text x="40" y="168" font-size="11.5" fill="#0f172a" text-anchor="start">· 压测机与被压服务同机</text>
+  <text x="40" y="200" font-size="11.5" fill="#0f172a" text-anchor="start">· 没有 warmup</text>
+  <text x="40" y="232" font-size="11.5" fill="#0f172a" text-anchor="start">· 计时器量化（µs 被吃掉）</text>
+  <text x="40" y="264" font-size="11.5" fill="#0f172a" text-anchor="start">· 缓存与预热（第二轮快 10 倍）</text>
+  <text x="40" y="296" font-size="11.5" fill="#0f172a" text-anchor="start">· 采样口径：sleep 冒充时刻</text>
+  <rect x="344" y="84" width="300" height="250" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="360" y="108" font-size="13" fill="#1d4ed8" text-anchor="start" font-weight="bold">② 看形状</text>
+  <text x="360" y="138" font-size="11.5" fill="#0f172a" text-anchor="start">吞吐先升后平</text>
+  <text x="360" y="158" font-size="11.5" fill="#0f172a" text-anchor="start">延迟随并发单调上升</text>
+  <text x="360" y="186" font-size="11.5" fill="#047857" text-anchor="start" font-weight="bold">→ 单调且可复现：往下走</text>
+  <text x="360" y="216" font-size="11.5" fill="#dc2626" text-anchor="start" font-weight="bold">→ 非单调（V 形 / 倒 V 形）：回 ①</text>
+  <text x="360" y="246" font-size="11.5" fill="#dc2626" text-anchor="start" font-weight="bold">→ 三次重跑差一倍：回 ①</text>
+  <text x="360" y="276" font-size="11.5" fill="#64748b" text-anchor="start">→ 差异小于波动：写「测不出差异」</text>
+  <text x="360" y="306" font-size="11" fill="#64748b" text-anchor="start">别挑一个方向下结论</text>
+  <rect x="664" y="84" width="312" height="250" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="680" y="108" font-size="13" fill="#047857" text-anchor="start" font-weight="bold">③ 怀疑被测系统</text>
+  <text x="680" y="138" font-size="11.5" fill="#0f172a" text-anchor="start">此时才看服务端指标：</text>
+  <text x="680" y="164" font-size="11.5" fill="#0f172a" text-anchor="start">· CPU：us / sy / 单核打满</text>
+  <text x="680" y="192" font-size="11.5" fill="#0f172a" text-anchor="start">· 内存：available / si-so</text>
+  <text x="680" y="220" font-size="11.5" fill="#0f172a" text-anchor="start">· 磁盘：await / aqu-sz</text>
+  <text x="680" y="248" font-size="11.5" fill="#0f172a" text-anchor="start">· 网络：重传率 / CLOSE_WAIT</text>
+  <text x="680" y="276" font-size="11.5" fill="#0f172a" text-anchor="start">· 运行时：GC / 锁 / goroutine</text>
+  <text x="680" y="306" font-size="11" fill="#dc2626" text-anchor="start" font-weight="bold">顺序反了 = 拿假拐点改代码</text>
+  <line x1="326" y1="208" x2="340" y2="208" stroke="#64748b" stroke-width="1.3" marker-end="url(#arw)"/>
+  <line x1="646" y1="208" x2="660" y2="208" stroke="#64748b" stroke-width="1.3" marker-end="url(#arw)"/>
+  <rect x="24" y="356" width="952" height="44" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1"/>
+  <text x="40" y="378" font-size="12" fill="#b45309" text-anchor="start">读法：三段是串行闸门，不是并行清单——第 ① 段没过，第 ② 段看到的形状本来就没有意义。</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="480" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">fsync 的代价构成：单条刷盘是 N 次设备往返，组提交摊成 1 次</text>
+  <text x="500" y="55" text-anchor="middle" font-size="12.5" fill="#64748b">一次 fsync = 一次设备确认 + 一次日志提交，成本与批量大小几乎无关（本机 4KB 与 1MB 的增量都在毫秒级）</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1d4ed8"/></marker></defs>
+  <text x="24" y="92" font-size="13" fill="#dc2626" text-anchor="start" font-weight="bold">① 每条记录一次 fsync</text>
+  <rect x="30" y="104" width="100" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="80" y="126" font-size="11.5" fill="#0f172a" text-anchor="middle">写 1</text>
+  <text x="80" y="146" font-size="11" fill="#dc2626" text-anchor="middle">等设备</text>
+  <line x1="132" y1="132" x2="146" y2="132" stroke="#dc2626" stroke-width="1.3" marker-end="url(#arwb)"/>
+  <rect x="148" y="104" width="100" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="198" y="126" font-size="11.5" fill="#0f172a" text-anchor="middle">写 2</text>
+  <text x="198" y="146" font-size="11" fill="#dc2626" text-anchor="middle">等设备</text>
+  <line x1="250" y1="132" x2="264" y2="132" stroke="#dc2626" stroke-width="1.3" marker-end="url(#arwb)"/>
+  <rect x="266" y="104" width="100" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="316" y="126" font-size="11.5" fill="#0f172a" text-anchor="middle">写 3</text>
+  <text x="316" y="146" font-size="11" fill="#dc2626" text-anchor="middle">等设备</text>
+  <line x1="368" y1="132" x2="382" y2="132" stroke="#dc2626" stroke-width="1.3" marker-end="url(#arwb)"/>
+  <rect x="384" y="104" width="100" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="434" y="126" font-size="11.5" fill="#0f172a" text-anchor="middle">写 4</text>
+  <text x="434" y="146" font-size="11" fill="#dc2626" text-anchor="middle">等设备</text>
+  <line x1="486" y1="132" x2="500" y2="132" stroke="#dc2626" stroke-width="1.3" marker-end="url(#arwb)"/>
+  <rect x="502" y="104" width="100" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1"/>
+  <text x="552" y="126" font-size="11.5" fill="#0f172a" text-anchor="middle">写 5</text>
+  <text x="552" y="146" font-size="11" fill="#dc2626" text-anchor="middle">等设备</text>
+  <rect x="630" y="104" width="346" height="56" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="646" y="126" font-size="12" fill="#0f172a" text-anchor="start">5 条 = 5 次设备往返 ≈ 5 × 1.8~2.1 ms</text>
+  <text x="646" y="148" font-size="11.5" fill="#64748b" text-anchor="start">吞吐上限 = 设备每秒能确认多少次</text>
+  <text x="24" y="210" font-size="13" fill="#047857" text-anchor="start" font-weight="bold">② 组提交：攒一批，一次 fsync</text>
+  <rect x="30" y="222" width="268" height="92" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="44" y="244" font-size="12" fill="#1d4ed8" text-anchor="start" font-weight="bold">页缓存（N 条脏页）</text>
+  <text x="44" y="270" font-size="10.5" fill="#0f172a" text-anchor="start">记录1</text>
+  <text x="106" y="270" font-size="10.5" fill="#0f172a" text-anchor="start">记录2</text>
+  <text x="168" y="270" font-size="10.5" fill="#0f172a" text-anchor="start">记录3</text>
+  <text x="230" y="270" font-size="10.5" fill="#0f172a" text-anchor="start">记录4</text>
+  <text x="44" y="296" font-size="11" fill="#64748b" text-anchor="start">……全部先进内存，不碰设备</text>
+  <line x1="302" y1="268" x2="356" y2="268" stroke="#047857" stroke-width="1.3" marker-end="url(#arwb)"/>
+  <rect x="362" y="232" width="150" height="72" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="437" y="258" font-size="12" fill="#047857" text-anchor="middle" font-weight="bold">一次 fsync</text>
+  <text x="437" y="282" font-size="11" fill="#0f172a" text-anchor="middle">一次设备往返</text>
+  <line x1="516" y1="268" x2="570" y2="268" stroke="#047857" stroke-width="1.3" marker-end="url(#arwb)"/>
+  <rect x="576" y="232" width="400" height="72" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="592" y="256" font-size="12" fill="#0f172a" text-anchor="start" font-weight="bold">N 条记录只付 1 次往返</text>
+  <text x="592" y="278" font-size="11" fill="#64748b" text-anchor="start">实测 1MB 刷完 5.2~6.2 ms（4KB 单条 1.8~2.1 ms）</text>
+  <text x="592" y="296" font-size="11" fill="#64748b" text-anchor="start">单次成本几乎与批量大小无关 → 量大才划算</text>
+  <rect x="24" y="336" width="952" height="68" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1"/>
+  <text x="40" y="358" font-size="12" fill="#b45309" text-anchor="start" font-weight="bold">组提交换来的是一个窗口期：这一批没刷完就断电，整批全丢。</text>
+  <text x="40" y="380" font-size="11.5" fill="#0f172a" text-anchor="start">所以「多久刷一次」不是性能参数，是业务可容忍的丢数据量——要写进设计文档，不是「嫌慢就调」的旋钮。</text>
+  <rect x="24" y="414" width="952" height="46" rx="8" fill="#fffbeb" stroke="#fcd34d" stroke-width="1"/>
+  <text x="40" y="436" font-size="12" fill="#b45309" text-anchor="start">读法：上下两行的差别只在「几次设备往返」，数据量不是关键变量；这也是数据库、ES translog、Redis AOF 都在做组提交的原因。</text>
+</svg>

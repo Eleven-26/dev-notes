@@ -4,7 +4,7 @@
 > fsck / xfs_repair 的边界；第四版重点新增 XFS 实操。
 >
 > 内容整理自个人学习笔记。**基础框架**参考《鸟哥的 Linux 私房菜：基础学习篇（第四版）》
-> 相关章节（Linux 文件系统与目录、磁盘配额与进阶文件系统管理）的读后整理；inode / Page Cache 原理见 [文件系统与IO.md](../文件系统与IO.md)。
+> 相关章节（Linux 文件系统与目录、磁盘配额与进阶文件系统管理）的读后整理；inode 与目录项的原理见 [文件系统与VFS.md](../文件系统与VFS.md)，Page Cache 与写回见 [落盘路径与fsync代价.md](../落盘路径与fsync代价.md)。
 
 ---
 
@@ -171,9 +171,9 @@ sudo lsof +L1 | head
 
 ## 关联
 
-- [文件系统与IO.md](../文件系统与IO.md) — VFS、inode、从 write 到落盘的 I/O 栈（原理层）
+- [文件系统与VFS.md](../文件系统与VFS.md) — VFS 四层对象与 inode / dentry（原理层）；从 write 到落盘见 [落盘路径与fsync代价.md](../落盘路径与fsync代价.md)
 - [01-安装与磁盘分区.md](01-安装与磁盘分区.md) — LVM 扩容与 fstab（本节的上一环）
 - [09-备份与恢复.md](09-备份与恢复.md) — xfsdump 与 tar / rsync 的取舍全景
-- [内存管理.md](../内存管理.md) — Page Cache 与「删了不还空间」的另一半原因
+- [虚拟内存与页缓存.md](../../操作系统/虚拟内存与页缓存.md) — Page Cache 与「删了不还空间」的另一半原因
 - [README.md](README.md) — 本目录导读：版本坐标与阅读顺序
 > 反向引用（本篇被下列文档引到）：[08-软件包管理.md](08-软件包管理.md)
