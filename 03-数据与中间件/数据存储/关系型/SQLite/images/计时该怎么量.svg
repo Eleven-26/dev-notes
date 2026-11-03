@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 451" width="1000" height="451" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="451" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">微基准的坑：Windows 上 time.Now 有毫秒级量化</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测同一条查询连跑五次，读数在 0 / 52 µs / 544 µs 之间跳</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="80" width="464" height="34" rx="6" fill="#1d4ed8"/>
+  <text x="36" y="103" font-size="13" font-weight="bold" fill="#ffffff">不可信的做法</text>
+  <rect x="24" y="124" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="144" font-size="11.5" fill="#0f172a">单次 time.Now() 前后取差</text>
+  <rect x="24" y="160" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="180" font-size="11.5" fill="#0f172a">代码里 sleep 校准</text>
+  <rect x="24" y="196" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="216" font-size="11.5" fill="#0f172a">把 0 ns 当成「快到测不出」</text>
+  <rect x="24" y="232" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="252" font-size="11.5" fill="#0f172a">用 QueryRow 单发测吞吐</text>
+  <rect x="24" y="268" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="288" font-size="11.5" fill="#0f172a">跨进程比较单次读数</text>
+  <rect x="24" y="304" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="324" font-size="11.5" fill="#0f172a">结论：µs 级差异全是噪声</text>
+  <rect x="512" y="80" width="464" height="34" rx="6" fill="#047857"/>
+  <text x="524" y="103" font-size="13" font-weight="bold" fill="#ffffff">可信的做法</text>
+  <rect x="512" y="124" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="144" font-size="11.5" fill="#0f172a">同一操作跑 2000 次再除</text>
+  <rect x="512" y="160" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="180" font-size="11.5" fill="#0f172a">取中位数，剔除首尾毛刺</text>
+  <rect x="512" y="196" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="216" font-size="11.5" fill="#0f172a">µs 级结论必须跨过计时粒度</text>
+  <rect x="512" y="232" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="252" font-size="11.5" fill="#0f172a">量级差异（ms vs µs）才写倍数</text>
+  <rect x="512" y="268" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="288" font-size="11.5" fill="#0f172a">同进程、同连接、同数据</text>
+  <rect x="512" y="304" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="324" font-size="11.5" fill="#0f172a">结论：108.7 vs 188.4 µs 可信</text>
+  <text x="24" y="422" font-size="11.5" fill="#b45309">⭐ 本机的实测口径：凡是 µs 级数字，一律是「N 次累计 ÷ N」；毫秒级（插入、VACUUM、备份）用单次读数，因为它们远大于计时粒度。</text>
+</svg>

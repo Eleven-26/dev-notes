@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 457" width="1000" height="457" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="457" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">并发控制的实现是文件锁，不是一个锁管理器</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">rollback journal 模式下，一个连接在任一时刻处于这五态之一</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="76" width="952" height="56" rx="8" fill="#64748b" stroke="#64748b" stroke-width="1.2"/>
+  <rect x="24" y="76" width="188" height="56" rx="8" fill="#64748b" fill-opacity="0.10"/>
+  <text x="40" y="100" font-size="13" font-weight="bold" fill="#64748b">UNLOCKED</text>
+  <text x="232" y="100" font-size="12.5" fill="#0f172a">没有锁，可以随便读</text>
+  <text x="232" y="120" font-size="11.5" fill="#64748b">默认状态</text>
+  <rect x="24" y="142" width="952" height="56" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="142" width="188" height="56" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="40" y="166" font-size="13" font-weight="bold" fill="#047857">SHARED</text>
+  <text x="232" y="166" font-size="12.5" fill="#0f172a">可读不可写；多个连接可同时持有</text>
+  <text x="232" y="186" font-size="11.5" fill="#64748b">读事务停在这里</text>
+  <rect x="24" y="208" width="952" height="56" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="208" width="188" height="56" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="40" y="232" font-size="13" font-weight="bold" fill="#b45309">RESERVED</text>
+  <text x="232" y="232" font-size="12.5" fill="#0f172a">打算写：写进内存/日志，别人仍可读</text>
+  <text x="232" y="252" font-size="11.5" fill="#64748b">同一时刻只能有一个</text>
+  <rect x="24" y="274" width="952" height="56" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="274" width="188" height="56" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="40" y="298" font-size="13" font-weight="bold" fill="#b45309">PENDING</text>
+  <text x="232" y="298" font-size="12.5" fill="#0f172a">要提交了：挡住新的 SHARED，等老读者退场</text>
+  <text x="232" y="318" font-size="11.5" fill="#64748b">写者独占的前一步</text>
+  <rect x="24" y="340" width="952" height="56" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <rect x="24" y="340" width="188" height="56" rx="8" fill="#dc2626" fill-opacity="0.10"/>
+  <text x="40" y="364" font-size="13" font-weight="bold" fill="#dc2626">EXCLUSIVE</text>
+  <text x="232" y="364" font-size="12.5" fill="#0f172a">独占：改库文件本体</text>
+  <text x="232" y="384" font-size="11.5" fill="#64748b">提交的最后一步</text>
+  <text x="24" y="428" font-size="11.5" fill="#b45309">⚠️ 关键推论：写者要拿 EXCLUSIVE 必须等所有读者释放 SHARED —— 所以 rollback journal 下「长时间读事务」会直接堵住写者，跟 MySQL 的 MVCC 完全不是一回事。</text>
+</svg>

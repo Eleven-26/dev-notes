@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 443" width="1000" height="443" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="443" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">同一条件，覆盖索引与回表差 1.73 倍</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测：2000 次累计，排除 Windows 计时粒度的影响</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="78" width="640" height="54" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="78" width="150" height="54" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#1d4ed8">建索引</text>
+  <text x="38" y="120" font-size="11" fill="#64748b">step 1</text>
+  <text x="190" y="110" font-size="12.5" fill="#0f172a">CREATE INDEX idx_a ON t(a)</text>
+  <text x="684" y="102" font-size="11.5" fill="#1d4ed8">一次 B 树下降</text>
+  <text x="684" y="122" font-size="11" fill="#64748b">键里带 rowid</text>
+  <line x1="344" y1="132" x2="344" y2="152" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="158" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="158" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="180" font-size="12" font-weight="bold" fill="#047857">覆盖</text>
+  <text x="38" y="200" font-size="11" fill="#64748b">step 2</text>
+  <text x="190" y="190" font-size="12.5" fill="#0f172a">SELECT id WHERE a=1234 → 只读 idx_a</text>
+  <text x="684" y="182" font-size="11.5" fill="#047857">40 行全在索引里</text>
+  <text x="684" y="202" font-size="11" fill="#64748b">零回表</text>
+  <line x1="344" y1="212" x2="344" y2="232" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="238" width="640" height="54" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="238" width="150" height="54" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="38" y="260" font-size="12" font-weight="bold" fill="#b45309">回表</text>
+  <text x="38" y="280" font-size="11" fill="#64748b">step 3</text>
+  <text x="190" y="270" font-size="12.5" fill="#0f172a">SELECT b WHERE a=1234 → 拿 rowid 再查表</text>
+  <text x="684" y="262" font-size="11.5" fill="#b45309">40 次额外页访问</text>
+  <text x="684" y="282" font-size="11" fill="#64748b">每行一次</text>
+  <line x1="344" y1="292" x2="344" y2="312" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="318" width="640" height="54" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <rect x="24" y="318" width="150" height="54" rx="8" fill="#7c3aed" fill-opacity="0.10"/>
+  <text x="38" y="340" font-size="12" font-weight="bold" fill="#7c3aed">读数</text>
+  <text x="38" y="360" font-size="11" fill="#64748b">step 4</text>
+  <text x="190" y="350" font-size="12.5" fill="#0f172a">108.7 µs/次 vs 188.4 µs/次</text>
+  <text x="684" y="342" font-size="11.5" fill="#7c3aed">差值来自页访问</text>
+  <text x="684" y="362" font-size="11" fill="#64748b">不是解析开销</text>
+  <text x="24" y="414" font-size="11.5" fill="#b45309">⭐ 所以「把要查的列放进索引」在 SQLite 里收益明确：一次索引下降 vs 一次索引下降 + N 次表页访问。</text>
+</svg>

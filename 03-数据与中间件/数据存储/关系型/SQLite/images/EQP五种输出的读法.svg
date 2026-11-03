@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 356" width="1000" height="356" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="356" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">EXPLAIN QUERY PLAN 只告诉你五件事</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">没有 MySQL 那样的 type / key / rows 列，只有一句自然语言</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="84" width="952" height="32" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">输出</text>
+  <text x="364" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">含义</text>
+  <text x="694" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">本机实测（20 万行）</text>
+  <rect x="24" y="116" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="137" font-size="11.5" fill="#dc2626" font-weight="bold">SCAN t</text>
+  <text x="364" y="137" font-size="11.5" fill="#0f172a">全表扫，逐页读</text>
+  <text x="694" y="137" font-size="11.5" fill="#0f172a">WHERE a=1234 且无索引：66.4 ms</text>
+  <rect x="24" y="148" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="169" font-size="11.5" fill="#047857" font-weight="bold">SEARCH t USING INDEX</text>
+  <text x="364" y="169" font-size="11.5" fill="#0f172a">走索引定位</text>
+  <text x="694" y="169" font-size="11.5" fill="#0f172a">同查询加索引后：108.7 µs/次</text>
+  <rect x="24" y="180" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="201" font-size="11.5" fill="#047857" font-weight="bold">USING COVERING INDEX</text>
+  <text x="364" y="201" font-size="11.5" fill="#0f172a">索引里就有全部列，不回表</text>
+  <text x="694" y="201" font-size="11.5" fill="#0f172a">SELECT id WHERE a=：不回表</text>
+  <rect x="24" y="212" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="233" font-size="11.5" fill="#b45309" font-weight="bold">USE TEMP B-TREE FOR ORDER BY</text>
+  <text x="364" y="233" font-size="11.5" fill="#0f172a">排序没有索引可用，建临时树</text>
+  <text x="694" y="233" font-size="11.5" fill="#0f172a">ORDER BY b：出现该行</text>
+  <rect x="24" y="244" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="265" font-size="11.5" fill="#b45309" font-weight="bold">SCAN t USING COVERING INDEX</text>
+  <text x="364" y="265" font-size="11.5" fill="#0f172a">扫索引而不是扫表（列都在索引里）</text>
+  <text x="694" y="265" font-size="11.5" fill="#0f172a">WHERE a+0=1234：表达式使索引失效</text>
+  <text x="24" y="300" font-size="11.5" fill="#b45309">⚠️ 最后一行是最容易看错的：它写着 USING COVERING INDEX，但不是 SEARCH —— 仍然是全索引扫描，只是扫的东西从表换成了索引。</text>
+</svg>

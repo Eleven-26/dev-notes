@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 457" width="1000" height="457" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="457" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">FTS5 不是 B 树：它建了五张影子表</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">CREATE VIRTUAL TABLE 之后，库里多出来的不是一张表，是一组</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="76" width="952" height="56" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="76" width="188" height="56" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="40" y="100" font-size="13" font-weight="bold" fill="#1d4ed8">%_data</text>
+  <text x="232" y="100" font-size="12.5" fill="#0f172a">倒排索引本体：词 → 文档号与位置，分段存放</text>
+  <text x="232" y="120" font-size="11.5" fill="#64748b">查询先打这里</text>
+  <rect x="24" y="142" width="952" height="56" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <rect x="24" y="142" width="188" height="56" rx="8" fill="#7c3aed" fill-opacity="0.10"/>
+  <text x="40" y="166" font-size="13" font-weight="bold" fill="#7c3aed">%_idx</text>
+  <text x="232" y="166" font-size="12.5" fill="#0f172a">段的索引：定位到该去哪个段找词</text>
+  <text x="232" y="186" font-size="11.5" fill="#64748b">段多了才需要</text>
+  <rect x="24" y="208" width="952" height="56" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="208" width="188" height="56" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="40" y="232" font-size="13" font-weight="bold" fill="#047857">%_content</text>
+  <text x="232" y="232" font-size="12.5" fill="#0f172a">原文（或用 content= 指向外部表）</text>
+  <text x="232" y="252" font-size="11.5" fill="#64748b">取值与高亮从这里来</text>
+  <rect x="24" y="274" width="952" height="56" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="274" width="188" height="56" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="40" y="298" font-size="13" font-weight="bold" fill="#047857">%_docsize</text>
+  <text x="232" y="298" font-size="12.5" fill="#0f172a">每篇文档的词数与长度，算 bm25 要用</text>
+  <text x="232" y="318" font-size="11.5" fill="#64748b">排序依据</text>
+  <rect x="24" y="340" width="952" height="56" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="340" width="188" height="56" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="40" y="364" font-size="13" font-weight="bold" fill="#b45309">%_config</text>
+  <text x="232" y="364" font-size="12.5" fill="#0f172a">分词器与版本等配置</text>
+  <text x="232" y="384" font-size="11.5" fill="#64748b">换分词器要重建</text>
+  <text x="24" y="428" font-size="11.5" fill="#b45309">⭐ 所以 FTS5 的表会「凭空多出几个」：dbstat 里能看到它们的页。用 content= 指向已有表时，只有倒排占空间，原文不重复存。</text>
+</svg>

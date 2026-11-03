@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 316" width="1000" height="316" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="316" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">checkpoint 的三种模式：搬不搬、等不等、缩不缩</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测（autocheckpoint 关闭，写 1 万行后 -wal 3.25 MB）</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="84" width="952" height="32" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">模式</text>
+  <text x="214" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">做什么</text>
+  <text x="594" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">实测结果</text>
+  <rect x="24" y="116" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="137" font-size="11.5" fill="#1d4ed8" font-weight="bold">PASSIVE</text>
+  <text x="214" y="137" font-size="11.5" fill="#0f172a">能搬多少搬多少，不等读者</text>
+  <text x="594" y="137" font-size="11.5" fill="#0f172a">log=790 checkpointed=790，-wal 仍 3 254 832 B</text>
+  <rect x="24" y="148" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="169" font-size="11.5" fill="#7c3aed" font-weight="bold">FULL</text>
+  <text x="214" y="169" font-size="11.5" fill="#0f172a">等所有读者，把所有帧搬完</text>
+  <text x="594" y="169" font-size="11.5" fill="#0f172a">log=796 checkpointed=796，-wal 3 279 552 B</text>
+  <rect x="24" y="180" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="201" font-size="11.5" fill="#047857" font-weight="bold">TRUNCATE</text>
+  <text x="214" y="201" font-size="11.5" fill="#0f172a">搬完后把 -wal 截断到 0</text>
+  <text x="594" y="201" font-size="11.5" fill="#0f172a">log=0，-wal 变成 0 B</text>
+  <rect x="24" y="212" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="233" font-size="11.5" fill="#b45309" font-weight="bold">RESTART</text>
+  <text x="214" y="233" font-size="11.5" fill="#0f172a">搬完后让下一个写者从头写</text>
+  <text x="594" y="233" font-size="11.5" fill="#0f172a">本机未单独测（需并发写者配合）</text>
+  <text x="24" y="268" font-size="11.5" fill="#b45309">⚠️ 三种模式都不改变「主库在搬完前不含新数据」这一点；TRUNCATE 只是把文件长度归零，代价是下一次写入要重建 WAL 头。</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 523" width="1000" height="523" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="523" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">WAL：读的人看旧快照，写的人往后追加</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测：写事务未提交时，另一连接仍能读到旧数据（1 行），但写会 BUSY</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="78" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="78" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#047857">读者</text>
+  <text x="38" y="120" font-size="11" fill="#64748b">step 1</text>
+  <text x="190" y="110" font-size="12.5" fill="#0f172a">记住当前 WAL 末尾位置作为快照</text>
+  <text x="684" y="102" font-size="11.5" fill="#047857">不阻塞任何人</text>
+  <text x="684" y="122" font-size="11" fill="#64748b">只写自己的读标记</text>
+  <line x1="344" y1="132" x2="344" y2="152" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="158" width="640" height="54" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="158" width="150" height="54" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="38" y="180" font-size="12" font-weight="bold" fill="#1d4ed8">写者</text>
+  <text x="38" y="200" font-size="11" fill="#64748b">step 2</text>
+  <text x="190" y="190" font-size="12.5" fill="#0f172a">BEGIN IMMEDIATE，往 -wal 追加新帧</text>
+  <text x="684" y="182" font-size="11.5" fill="#1d4ed8">不阻塞读者</text>
+  <text x="684" y="202" font-size="11" fill="#64748b">只追加不改页</text>
+  <line x1="344" y1="212" x2="344" y2="232" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="238" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="238" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="260" font-size="12" font-weight="bold" fill="#047857">读者继续</text>
+  <text x="38" y="280" font-size="11" fill="#64748b">step 3</text>
+  <text x="190" y="270" font-size="12.5" fill="#0f172a">只读到自己快照之前的帧，看不到未提交数据</text>
+  <text x="684" y="262" font-size="11.5" fill="#047857">仍是 SERIALIZABLE</text>
+  <text x="684" y="282" font-size="11" fill="#64748b">看不到脏数据</text>
+  <line x1="344" y1="292" x2="344" y2="312" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="318" width="640" height="54" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <rect x="24" y="318" width="150" height="54" rx="8" fill="#7c3aed" fill-opacity="0.10"/>
+  <text x="38" y="340" font-size="12" font-weight="bold" fill="#7c3aed">写者提交</text>
+  <text x="38" y="360" font-size="11" fill="#64748b">step 4</text>
+  <text x="190" y="350" font-size="12.5" fill="#0f172a">追加 commit 帧，快照位置前移</text>
+  <text x="684" y="342" font-size="11.5" fill="#7c3aed">读者下次才看到</text>
+  <text x="684" y="362" font-size="11" fill="#64748b">读己之写在自己事务内成立</text>
+  <line x1="344" y1="372" x2="344" y2="392" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="398" width="640" height="54" rx="8" fill="#fef2f2" stroke="#dc2626" stroke-width="1.2"/>
+  <rect x="24" y="398" width="150" height="54" rx="8" fill="#dc2626" fill-opacity="0.10"/>
+  <text x="38" y="420" font-size="12" font-weight="bold" fill="#dc2626">另一个写者</text>
+  <text x="38" y="440" font-size="11" fill="#64748b">step 5</text>
+  <text x="190" y="430" font-size="12.5" fill="#0f172a">同一时刻只能有一个写者 → SQLITE_BUSY</text>
+  <text x="684" y="422" font-size="11.5" fill="#dc2626">本机 err=5</text>
+  <text x="684" y="442" font-size="11" fill="#64748b">database is locked</text>
+  <text x="24" y="494" font-size="11.5" fill="#b45309">⚠️ 本机还测到 517（SQLITE_BUSY_SNAPSHOT）：读快照建立后，别人推进了 WAL，此时这个读事务想升级写，会拿到 517 而不是 5。</text>
+</svg>

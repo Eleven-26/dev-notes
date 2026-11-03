@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 372" width="1000" height="372" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="372" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三个错误码覆盖了绝大多数线上故障</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测拿到的是 5、517、3091，另有 11 与 26 在考盘与考文件时出现</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="84" width="952" height="32" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">码</text>
+  <text x="124" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">名字</text>
+  <text x="364" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">通常意味着</text>
+  <text x="684" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">先做什么</text>
+  <rect x="24" y="116" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="137" font-size="11.5" fill="#dc2626" font-weight="bold">5</text>
+  <text x="124" y="137" font-size="11.5" fill="#0f172a">SQLITE_BUSY</text>
+  <text x="364" y="137" font-size="11.5" fill="#0f172a">另一个连接正持有写锁</text>
+  <text x="684" y="137" font-size="11.5" fill="#0f172a">改 BEGIN IMMEDIATE + 设 busy_timeout</text>
+  <rect x="24" y="148" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="169" font-size="11.5" fill="#b45309" font-weight="bold">517</text>
+  <text x="124" y="169" font-size="11.5" fill="#0f172a">SQLITE_BUSY_SNAPSHOT</text>
+  <text x="364" y="169" font-size="11.5" fill="#0f172a">读快照过期后想升级写</text>
+  <text x="684" y="169" font-size="11.5" fill="#0f172a">读事务不要跨越别人的写</text>
+  <rect x="24" y="180" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="201" font-size="11.5" fill="#b45309" font-weight="bold">6</text>
+  <text x="124" y="201" font-size="11.5" fill="#0f172a">SQLITE_LOCKED</text>
+  <text x="364" y="201" font-size="11.5" fill="#0f172a">同一连接内表被占用</text>
+  <text x="684" y="201" font-size="11.5" fill="#0f172a">别在遍历游标时改同一张表</text>
+  <rect x="24" y="212" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="233" font-size="11.5" fill="#0f172a" font-weight="bold">11</text>
+  <text x="124" y="233" font-size="11.5" fill="#0f172a">SQLITE_CORRUPT</text>
+  <text x="364" y="233" font-size="11.5" fill="#0f172a">页校验不过</text>
+  <text x="684" y="233" font-size="11.5" fill="#0f172a">integrity_check 定位，从备份恢复</text>
+  <rect x="24" y="244" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="265" font-size="11.5" fill="#0f172a" font-weight="bold">26</text>
+  <text x="124" y="265" font-size="11.5" fill="#0f172a">SQLITE_NOTADB</text>
+  <text x="364" y="265" font-size="11.5" fill="#0f172a">文件不是库 / 头被覆盖</text>
+  <text x="684" y="265" font-size="11.5" fill="#0f172a">核对路径与文件头前 16 字节</text>
+  <rect x="24" y="276" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="297" font-size="11.5" fill="#047857" font-weight="bold">3091</text>
+  <text x="124" y="297" font-size="11.5" fill="#0f172a">约束失败（扩展码）</text>
+  <text x="364" y="297" font-size="11.5" fill="#0f172a">STRICT 表类型不匹配</text>
+  <text x="684" y="297" font-size="11.5" fill="#0f172a">改写入值或放宽 schema</text>
+  <text x="24" y="332" font-size="11.5" fill="#b45309">⚠️ 3018 与 3091 这类是扩展错误码：低 8 位是主码，高位来自 sqlite3_extended_result_codes。判断时先看低字节，再看全码。</text>
+</svg>

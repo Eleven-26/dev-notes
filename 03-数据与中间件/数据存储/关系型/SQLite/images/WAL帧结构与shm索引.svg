@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 457" width="1000" height="457" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="457" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">-wal 是「页的新版本」追加日志，-shm 是它的内存索引</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">32 字节 WAL 头 + 若干帧（每帧 24 字节帧头 + 一页内容）</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="76" width="952" height="56" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="76" width="188" height="56" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="40" y="100" font-size="13" font-weight="bold" fill="#1d4ed8">WAL 头 32 B</text>
+  <text x="232" y="100" font-size="12.5" fill="#0f172a">magic + 格式版本 + 页大小 + checkpoint 序号 + salt + 校验和</text>
+  <text x="232" y="120" font-size="11.5" fill="#64748b">换页大小时整条 WAL 作废</text>
+  <rect x="24" y="142" width="952" height="56" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <rect x="24" y="142" width="188" height="56" rx="8" fill="#7c3aed" fill-opacity="0.10"/>
+  <text x="40" y="166" font-size="13" font-weight="bold" fill="#7c3aed">帧头 24 B</text>
+  <text x="232" y="166" font-size="12.5" fill="#0f172a">页号 + 提交后的库页数 + salt + 帧校验和</text>
+  <text x="232" y="186" font-size="11.5" fill="#64748b">页号相同即「这一页的新版本」</text>
+  <rect x="24" y="208" width="952" height="56" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="208" width="188" height="56" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="40" y="232" font-size="13" font-weight="bold" fill="#047857">帧体 = 一页</text>
+  <text x="232" y="232" font-size="12.5" fill="#0f172a">默认 4 KiB，就是被改的那一页的完整内容</text>
+  <text x="232" y="252" font-size="11.5" fill="#64748b">不是增量，是整页快照</text>
+  <rect x="24" y="274" width="952" height="56" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="274" width="188" height="56" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="40" y="298" font-size="13" font-weight="bold" fill="#047857">commit 帧</text>
+  <text x="232" y="298" font-size="12.5" fill="#0f172a">提交点：读到它才算这个事务可见</text>
+  <text x="232" y="318" font-size="11.5" fill="#64748b">没有 commit 帧的尾部会被忽略</text>
+  <rect x="24" y="340" width="952" height="56" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="340" width="188" height="56" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="40" y="364" font-size="13" font-weight="bold" fill="#b45309">-shm 32 KiB</text>
+  <text x="232" y="364" font-size="12.5" fill="#0f172a">WAL 索引：页号 → 最新帧号的哈希表 + 读者标记</text>
+  <text x="232" y="384" font-size="11.5" fill="#64748b">本机实测恒为 32768 字节</text>
+  <text x="24" y="428" font-size="11.5" fill="#b45309">⭐ 所以 WAL 不是「日志」，是「页的副本堆」。文件会一直长，直到 checkpoint 把帧写回主库。</text>
+</svg>

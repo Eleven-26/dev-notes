@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 441" width="1000" height="441" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="441" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">表也是 B 树，索引也是 B 树</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">差别只在「cell 里装什么」：表装整行，索引装键 + rowid</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="80" width="464" height="34" rx="6" fill="#1d4ed8"/>
+  <text x="36" y="103" font-size="13" font-weight="bold" fill="#ffffff">表（rowid 表）</text>
+  <rect x="24" y="124" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="144" font-size="11.5" fill="#0f172a">B 树按 rowid 排序，叶子存整行</text>
+  <rect x="24" y="160" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="180" font-size="11.5" fill="#0f172a">INTEGER PRIMARY KEY 就是 rowid 的别名</text>
+  <rect x="24" y="196" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="216" font-size="11.5" fill="#0f172a">点查 rowid → 一次 B 树下降</text>
+  <rect x="24" y="232" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="252" font-size="11.5" fill="#0f172a">没有主键时内部自增一个 rowid</text>
+  <rect x="24" y="268" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="288" font-size="11.5" fill="#0f172a">本机实测：点查编出 12 条 opcode</text>
+  <rect x="512" y="80" width="464" height="34" rx="6" fill="#047857"/>
+  <text x="524" y="103" font-size="13" font-weight="bold" fill="#ffffff">WITHOUT ROWID 表</text>
+  <rect x="512" y="124" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="144" font-size="11.5" fill="#0f172a">B 树按主键排序，叶子存整行</text>
+  <rect x="512" y="160" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="180" font-size="11.5" fill="#0f172a">省掉「索引 → rowid → 表」的第二次下降</text>
+  <rect x="512" y="196" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="216" font-size="11.5" fill="#0f172a">主键必须显式声明，且不能是 rowid 别名</text>
+  <rect x="512" y="232" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="252" font-size="11.5" fill="#0f172a">主键很长时反而更费空间（键在每层都存一份）</text>
+  <rect x="512" y="268" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="288" font-size="11.5" fill="#0f172a">本机实测：点查编出 10 条 opcode</text>
+  <text x="24" y="412" font-size="11.5" fill="#b45309">⭐ 本机实测的另一个数：同 10 万行数据，WITHOUT ROWID 用 2861 页 / 11 718 656 字节，普通表 3084 页 / 12 632 064 字节 —— 省 7.2%，因为省掉了主键索引那棵树。</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 523" width="1000" height="523" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="523" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">四层：一条 SQL 从文本到页的路径</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">SQLite 没有「连接层 + 服务进程」，四层全在同一个地址空间里</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="78" width="640" height="54" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="78" width="150" height="54" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#1d4ed8">接口层</text>
+  <text x="38" y="120" font-size="11" fill="#64748b">step 1</text>
+  <text x="190" y="110" font-size="12.5" fill="#0f172a">sqlite3_prepare_v2 / sqlite3_step / sqlite3_finalize</text>
+  <text x="684" y="102" font-size="11.5" fill="#1d4ed8">入口</text>
+  <text x="684" y="122" font-size="11" fill="#64748b">一个函数拿到 SQL</text>
+  <line x1="344" y1="132" x2="344" y2="152" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="158" width="640" height="54" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="158" width="150" height="54" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="38" y="180" font-size="12" font-weight="bold" fill="#1d4ed8">编译器</text>
+  <text x="38" y="200" font-size="11" fill="#64748b">step 2</text>
+  <text x="190" y="190" font-size="12.5" fill="#0f172a">分词、语法树、代码生成，产出 VDBE 字节码程序</text>
+  <text x="684" y="182" font-size="11.5" fill="#1d4ed8">只编译不执行</text>
+  <text x="684" y="202" font-size="11" fill="#64748b">可复用 Stmt</text>
+  <line x1="344" y1="212" x2="344" y2="232" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="238" width="640" height="54" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <rect x="24" y="238" width="150" height="54" rx="8" fill="#7c3aed" fill-opacity="0.10"/>
+  <text x="38" y="260" font-size="12" font-weight="bold" fill="#7c3aed">虚拟机</text>
+  <text x="38" y="280" font-size="11" fill="#64748b">step 3</text>
+  <text x="190" y="270" font-size="12.5" fill="#0f172a">VDBE 逐条执行 opcode，寄存器式，不是栈式</text>
+  <text x="684" y="262" font-size="11.5" fill="#7c3aed">一条 opcode 一步</text>
+  <text x="684" y="282" font-size="11" fill="#64748b">可中断、可回滚</text>
+  <line x1="344" y1="292" x2="344" y2="312" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="318" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="318" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="340" font-size="12" font-weight="bold" fill="#047857">B 树 / Pager</text>
+  <text x="38" y="360" font-size="11" fill="#64748b">step 4</text>
+  <text x="190" y="350" font-size="12.5" fill="#0f172a">把游标操作翻译成页读写，管事务与日志</text>
+  <text x="684" y="342" font-size="11.5" fill="#047857">页是唯一 I/O 单位</text>
+  <text x="684" y="362" font-size="11" fill="#64748b">默认 4 KiB</text>
+  <line x1="344" y1="372" x2="344" y2="392" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="398" width="640" height="54" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="398" width="150" height="54" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="38" y="420" font-size="12" font-weight="bold" fill="#b45309">OS 接口</text>
+  <text x="38" y="440" font-size="11" fill="#64748b">step 5</text>
+  <text x="190" y="430" font-size="12.5" fill="#0f172a">VFS：文件、锁、fsync 的可替换抽象</text>
+  <text x="684" y="422" font-size="11.5" fill="#b45309">换 VFS = 换存储</text>
+  <text x="684" y="442" font-size="11" fill="#64748b">内存 / 加密 / 自定义</text>
+  <text x="24" y="494" font-size="11.5" fill="#b45309">⭐ 与 MySQL 的分水岭：MySQL 的「连接层」在网络另一头，SQLite 的第一层是同一个进程里的函数调用，所以没有网络往返，也没有连接池收益。</text>
+</svg>

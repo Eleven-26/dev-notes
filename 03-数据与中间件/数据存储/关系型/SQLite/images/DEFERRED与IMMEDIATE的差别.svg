@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 451" width="1000" height="451" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="451" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">BEGIN 加不加 IMMEDIATE，决定 BUSY 什么时候出现</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测：对方持有写锁时，两种事务的表现不同</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="80" width="464" height="34" rx="6" fill="#1d4ed8"/>
+  <text x="36" y="103" font-size="13" font-weight="bold" fill="#ffffff">BEGIN（DEFERRED，默认）</text>
+  <rect x="24" y="124" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="144" font-size="11.5" fill="#0f172a">先拿 SHARED，只读时最省</text>
+  <rect x="24" y="160" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="180" font-size="11.5" fill="#0f172a">读着读着想写，要升级到 RESERVED</text>
+  <rect x="24" y="196" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="216" font-size="11.5" fill="#0f172a">升级失败 → 立刻 database is locked (5)</text>
+  <rect x="24" y="232" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="252" font-size="11.5" fill="#0f172a">本机实测：升级写返回 SQLITE_BUSY</text>
+  <rect x="24" y="268" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="288" font-size="11.5" fill="#0f172a">失败时事务里已有的读全白做</text>
+  <rect x="24" y="304" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="324" font-size="11.5" fill="#0f172a">适合：确定只读的事务</text>
+  <rect x="512" y="80" width="464" height="34" rx="6" fill="#047857"/>
+  <text x="524" y="103" font-size="13" font-weight="bold" fill="#ffffff">BEGIN IMMEDIATE</text>
+  <rect x="512" y="124" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="144" font-size="11.5" fill="#0f172a">一开始就拿 RESERVED，写锁提前到手</text>
+  <rect x="512" y="160" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="180" font-size="11.5" fill="#0f172a">拿不到就在 BEGIN 处等 busy_timeout</text>
+  <rect x="512" y="196" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="216" font-size="11.5" fill="#0f172a">拿到之后写不会中途失败</text>
+  <rect x="512" y="232" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="252" font-size="11.5" fill="#0f172a">本机实测：对方 600 ms 后提交，等待 644 ms 后成功</text>
+  <rect x="512" y="268" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="288" font-size="11.5" fill="#0f172a">适合：所有会写的事务</text>
+  <rect x="512" y="304" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="324" font-size="11.5" fill="#0f172a">代价：提前占写锁，降低并发</text>
+  <text x="24" y="422" font-size="11.5" fill="#b45309">⭐ 结论：SQLite 里凡是「先读再决定写」的事务，一律 BEGIN IMMEDIATE。默认的 DEFERRED 会把 BUSY 推迟到最难受的位置 —— 事务中段。</text>
+</svg>

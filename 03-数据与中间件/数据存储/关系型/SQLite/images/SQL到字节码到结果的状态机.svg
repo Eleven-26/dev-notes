@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 451" width="1000" height="451" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="451" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">prepare 只编译，step 才执行</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">同一条 SQL 可以编译一次、执行多次；行是被 opcode 一条条吐出来的</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="80" width="464" height="34" rx="6" fill="#1d4ed8"/>
+  <text x="36" y="103" font-size="13" font-weight="bold" fill="#ffffff">compile：sqlite3_prepare_v2</text>
+  <rect x="24" y="124" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="144" font-size="11.5" fill="#0f172a">把 SQL 文本变成 VDBE 程序（opcode 数组）</text>
+  <rect x="24" y="160" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="180" font-size="11.5" fill="#0f172a">同时解析出参数个数与结果列数</text>
+  <rect x="24" y="196" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="216" font-size="11.5" fill="#0f172a">本机实测：SELECT 常量 5 条 opcode</text>
+  <rect x="24" y="232" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="252" font-size="11.5" fill="#0f172a">单行主键点查 9 条 / 索引点查 11 条</text>
+  <rect x="24" y="268" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="288" font-size="11.5" fill="#0f172a">两表 JOIN 17 条 / ORDER BY+LIMIT 28 条</text>
+  <rect x="24" y="304" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="324" font-size="11.5" fill="#0f172a">聚合 GROUP BY 38 条（最长的那个）</text>
+  <rect x="512" y="80" width="464" height="34" rx="6" fill="#047857"/>
+  <text x="524" y="103" font-size="13" font-weight="bold" fill="#ffffff">execute：sqlite3_step</text>
+  <rect x="512" y="124" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="144" font-size="11.5" fill="#0f172a">每次 step 推进到下一个 ResultRow</text>
+  <rect x="512" y="160" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="180" font-size="11.5" fill="#0f172a">返回 SQLITE_ROW 表示有一行可取</text>
+  <rect x="512" y="196" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="216" font-size="11.5" fill="#0f172a">返回 SQLITE_DONE 表示执行结束</text>
+  <rect x="512" y="232" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="252" font-size="11.5" fill="#0f172a">中途出错返回错误码，事务由调用方决定回滚</text>
+  <rect x="512" y="268" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="288" font-size="11.5" fill="#0f172a">同一个 Stmt 重置后可再跑（sqlite3_reset）</text>
+  <rect x="512" y="304" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="324" font-size="11.5" fill="#0f172a">参数用 bind 传入，不拼字符串</text>
+  <text x="24" y="422" font-size="11.5" fill="#b45309">⭐ 这就是为什么 SQLite 的「预编译」比 MySQL 的服务端预编译便宜得多：它不跨网络，编译产物就是个字节码数组，存在进程内存里。</text>
+</svg>

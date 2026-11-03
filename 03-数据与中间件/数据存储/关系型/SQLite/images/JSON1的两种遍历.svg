@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 523" width="1000" height="523" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="523" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">JSON 不是字符串：两种遍历，各有用途</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">json_each 逐元素展开，json_tree 递归展开，配合表达式索引才快</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="78" width="640" height="54" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="78" width="150" height="54" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#1d4ed8">存</text>
+  <text x="38" y="120" font-size="11" fill="#64748b">step 1</text>
+  <text x="190" y="110" font-size="12.5" fill="#0f172a">列类型随便，内容必须是合法 JSON 文本</text>
+  <text x="684" y="102" font-size="11.5" fill="#1d4ed8">TEXT 即可</text>
+  <text x="684" y="122" font-size="11" fill="#64748b">无需 BLOB</text>
+  <line x1="344" y1="132" x2="344" y2="152" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="158" width="640" height="54" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <rect x="24" y="158" width="150" height="54" rx="8" fill="#7c3aed" fill-opacity="0.10"/>
+  <text x="38" y="180" font-size="12" font-weight="bold" fill="#7c3aed">取字段</text>
+  <text x="38" y="200" font-size="11" fill="#64748b">step 2</text>
+  <text x="190" y="190" font-size="12.5" fill="#0f172a">json_extract(doc,'$.a.b') 或 doc -&gt;&gt; '$.a.b'</text>
+  <text x="684" y="182" font-size="11.5" fill="#7c3aed">-&gt;&gt; 返回文本</text>
+  <text x="684" y="202" font-size="11" fill="#64748b">-&gt; 返回 JSON</text>
+  <line x1="344" y1="212" x2="344" y2="232" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="238" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="238" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="260" font-size="12" font-weight="bold" fill="#047857">展开一层</text>
+  <text x="38" y="280" font-size="11" fill="#64748b">step 3</text>
+  <text x="190" y="270" font-size="12.5" fill="#0f172a">json_each(doc) → 每个数组元素一行</text>
+  <text x="684" y="262" font-size="11.5" fill="#047857">可与 JOIN 连用</text>
+  <text x="684" y="282" font-size="11" fill="#64748b">变行</text>
+  <line x1="344" y1="292" x2="344" y2="312" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="318" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="318" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="340" font-size="12" font-weight="bold" fill="#047857">递归展开</text>
+  <text x="38" y="360" font-size="11" fill="#64748b">step 4</text>
+  <text x="190" y="350" font-size="12.5" fill="#0f172a">json_tree(doc) → 所有层级一行一个节点</text>
+  <text x="684" y="342" font-size="11.5" fill="#047857">注意深度</text>
+  <text x="684" y="362" font-size="11" fill="#64748b">路径要写对</text>
+  <line x1="344" y1="372" x2="344" y2="392" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="398" width="640" height="54" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="398" width="150" height="54" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="38" y="420" font-size="12" font-weight="bold" fill="#b45309">建索引</text>
+  <text x="38" y="440" font-size="11" fill="#64748b">step 5</text>
+  <text x="190" y="430" font-size="12.5" fill="#0f172a">CREATE INDEX ON t(json_extract(doc,'$.id'))</text>
+  <text x="684" y="422" font-size="11.5" fill="#b45309">表达式索引</text>
+  <text x="684" y="442" font-size="11" fill="#64748b">查询写法必须一模一样</text>
+  <text x="24" y="494" font-size="11.5" fill="#b45309">⭐ 表达式索引只在「查询里的表达式与索引定义逐字一致」时生效；写成 json_extract(doc, '$.id') 与 '$.id ' 差一个空格都会退回全表扫。</text>
+</svg>

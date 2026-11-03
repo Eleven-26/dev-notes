@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 287" width="1000" height="287" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="287" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一行装不下时：负载分两段，第二段挂溢出页</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">阈值由页大小与「可用空间」算出，不是固定字节数</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="76" width="306" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="24" y="76" width="306" height="34" rx="10" fill="#e2e8f0"/>
+  <text x="36" y="98" font-size="12" font-weight="bold" fill="#0f172a">A 可用空间</text>
+  <text x="36" y="134" font-size="11.5" fill="#64748b">usable = 页大小 − 保留字节</text>
+  <rect x="346" y="76" width="306" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="346" y="76" width="306" height="34" rx="10" fill="#e2e8f0"/>
+  <text x="358" y="98" font-size="12" font-weight="bold" fill="#0f172a">B 表叶子阈值</text>
+  <rect x="356" y="118" width="286" height="22" rx="4" fill="#eef2ff"/>
+  <text x="362" y="134" font-size="11.5" fill="#1d4ed8">X = usable − 35</text>
+  <rect x="668" y="76" width="306" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="668" y="76" width="306" height="34" rx="10" fill="#e2e8f0"/>
+  <text x="680" y="98" font-size="12" font-weight="bold" fill="#0f172a">C 装得下</text>
+  <rect x="678" y="118" width="286" height="22" rx="4" fill="#ecfdf5"/>
+  <text x="684" y="134" font-size="11.5" fill="#047857">整行留在页内，无溢出</text>
+  <rect x="24" y="164" width="306" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="24" y="164" width="306" height="34" rx="10" fill="#e2e8f0"/>
+  <text x="36" y="186" font-size="12" font-weight="bold" fill="#0f172a">D 装不下</text>
+  <rect x="34" y="206" width="286" height="22" rx="4" fill="#fffbeb"/>
+  <text x="40" y="222" font-size="11.5" fill="#b45309">页内留一段 + 溢出页链</text>
+  <rect x="346" y="164" width="306" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <rect x="346" y="164" width="306" height="34" rx="10" fill="#e2e8f0"/>
+  <text x="358" y="186" font-size="12" font-weight="bold" fill="#0f172a">E 代价</text>
+  <rect x="356" y="206" width="286" height="22" rx="4" fill="#fef2f2"/>
+  <text x="362" y="222" font-size="11.5" fill="#dc2626">每多一页 = 多一次 I/O</text>
+  <text x="24" y="258" font-size="11.5" fill="#b45309">⭐ 判据：长 TEXT / BLOB 不是「大字段慢」，是「跨页了才慢」。用 length() 与 dbstat 一起看，能算出有多少页是溢出页。</text>
+</svg>

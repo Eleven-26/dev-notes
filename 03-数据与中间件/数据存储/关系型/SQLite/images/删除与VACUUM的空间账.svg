@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" width="1000" height="300" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="300" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">删掉一半，文件一字节都不少</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测：10 万行 → 删 5 万行 → VACUUM，三步的页数变化</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="84" width="952" height="32" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">时点</text>
+  <text x="334" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">page_count</text>
+  <text x="534" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">freelist_count</text>
+  <text x="734" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">文件大小</text>
+  <rect x="24" y="116" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="137" font-size="11.5" fill="#0f172a">插入 10 万行</text>
+  <text x="334" y="137" font-size="11.5" fill="#0f172a" font-weight="bold">2159</text>
+  <text x="534" y="137" font-size="11.5" fill="#64748b">0</text>
+  <text x="734" y="137" font-size="11.5" fill="#0f172a" font-weight="bold">8 843 264</text>
+  <rect x="24" y="148" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="169" font-size="11.5" fill="#0f172a">删掉奇数 id（5 万行）</text>
+  <text x="334" y="169" font-size="11.5" fill="#dc2626" font-weight="bold">2159</text>
+  <text x="534" y="169" font-size="11.5" fill="#64748b">1</text>
+  <text x="734" y="169" font-size="11.5" fill="#dc2626" font-weight="bold">8 843 264</text>
+  <rect x="24" y="180" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="201" font-size="11.5" fill="#0f172a">VACUUM 之后</text>
+  <text x="334" y="201" font-size="11.5" fill="#047857" font-weight="bold">1113</text>
+  <text x="534" y="201" font-size="11.5" fill="#64748b">0</text>
+  <text x="734" y="201" font-size="11.5" fill="#047857" font-weight="bold">4 558 848</text>
+  <text x="24" y="236" font-size="11.5" fill="#b45309">⚠️ 删除只把页标成可复用（freelist 只涨 1 页），空间并没有还给文件系统；VACUUM 重建整库，本机耗时 113 ms，代价是要一份等大的临时空间。</text>
+</svg>

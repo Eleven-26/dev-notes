@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 404" width="1000" height="404" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="404" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">从 MySQL 迁进来：类型与语义的七处不一致</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">SQL 语法大半兼容，语义差别集中在类型、自增、大小写与并发</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="84" width="952" height="32" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">MySQL</text>
+  <text x="324" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">SQLite 里怎么写</text>
+  <text x="684" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">要注意</text>
+  <rect x="24" y="116" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="137" font-size="11.5" fill="#0f172a">AUTO_INCREMENT</text>
+  <text x="324" y="137" font-size="11.5" fill="#0f172a">INTEGER PRIMARY KEY</text>
+  <text x="684" y="137" font-size="11.5" fill="#0f172a">只有这种写法才是 rowid 别名</text>
+  <rect x="24" y="148" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="169" font-size="11.5" fill="#0f172a">DECIMAL(10,2)</text>
+  <text x="324" y="169" font-size="11.5" fill="#0f172a">INTEGER（存分）或 TEXT</text>
+  <text x="684" y="169" font-size="11.5" fill="#0f172a">没有定点类型，别用 REAL</text>
+  <rect x="24" y="180" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="201" font-size="11.5" fill="#0f172a">DATETIME / TIMESTAMP</text>
+  <text x="324" y="201" font-size="11.5" fill="#0f172a">TEXT（ISO-8601）或 INTEGER（秒）</text>
+  <text x="684" y="201" font-size="11.5" fill="#0f172a">没有时区类型，存 UTC</text>
+  <rect x="24" y="212" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="233" font-size="11.5" fill="#0f172a">TINYINT(1) 当布尔</text>
+  <text x="324" y="233" font-size="11.5" fill="#0f172a">INTEGER 0/1</text>
+  <text x="684" y="233" font-size="11.5" fill="#0f172a">没有 BOOL 类型</text>
+  <rect x="24" y="244" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="265" font-size="11.5" fill="#0f172a">ENGINE=InnoDB</text>
+  <text x="324" y="265" font-size="11.5" fill="#0f172a">删掉</text>
+  <text x="684" y="265" font-size="11.5" fill="#0f172a">没有引擎可选，也没有表空间</text>
+  <rect x="24" y="276" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="297" font-size="11.5" fill="#0f172a">ON DUPLICATE KEY UPDATE</text>
+  <text x="324" y="297" font-size="11.5" fill="#0f172a">ON CONFLICT(...) DO UPDATE SET</text>
+  <text x="684" y="297" font-size="11.5" fill="#0f172a">语法不同，语义一致</text>
+  <rect x="24" y="308" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="329" font-size="11.5" fill="#0f172a">默认大小写不敏感</text>
+  <text x="324" y="329" font-size="11.5" fill="#0f172a">LIKE 默认不敏感、= 敏感</text>
+  <text x="684" y="329" font-size="11.5" fill="#0f172a">取决于列的 COLLATE</text>
+  <text x="24" y="364" font-size="11.5" fill="#b45309">⚠️ 反过来迁（SQLite → MySQL）更容易踩：动态类型养出来的脏数据，到 MySQL 严格模式会整批导入失败。迁移前先 SELECT typeof() 全表扫一遍。</text>
+</svg>

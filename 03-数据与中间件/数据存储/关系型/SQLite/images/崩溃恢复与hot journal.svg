@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 523" width="1000" height="523" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="523" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">掉电之后：下次打开库时，谁先说话</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">SQLite 没有独立的恢复进程，恢复发生在第一次打开文件的瞬间</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="78" width="640" height="54" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <rect x="24" y="78" width="150" height="54" rx="8" fill="#1d4ed8" fill-opacity="0.10"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#1d4ed8">发现残留</text>
+  <text x="38" y="120" font-size="11" fill="#64748b">step 1</text>
+  <text x="190" y="110" font-size="12.5" fill="#0f172a">同目录下有 -journal 且带有效头</text>
+  <text x="684" y="102" font-size="11.5" fill="#1d4ed8">hot journal</text>
+  <text x="684" y="122" font-size="11" fill="#64748b">不是普通残留</text>
+  <line x1="344" y1="132" x2="344" y2="152" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="158" width="640" height="54" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <rect x="24" y="158" width="150" height="54" rx="8" fill="#b45309" fill-opacity="0.10"/>
+  <text x="38" y="180" font-size="12" font-weight="bold" fill="#b45309">判定</text>
+  <text x="38" y="200" font-size="11" fill="#64748b">step 2</text>
+  <text x="190" y="190" font-size="12.5" fill="#0f172a">这个 journal 是「hot」的：对应事务未提交完</text>
+  <text x="684" y="182" font-size="11.5" fill="#b45309">要写回</text>
+  <text x="684" y="202" font-size="11" fill="#64748b">需要写权限</text>
+  <line x1="344" y1="212" x2="344" y2="232" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="238" width="640" height="54" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.2"/>
+  <rect x="24" y="238" width="150" height="54" rx="8" fill="#7c3aed" fill-opacity="0.10"/>
+  <text x="38" y="260" font-size="12" font-weight="bold" fill="#7c3aed">回滚</text>
+  <text x="38" y="280" font-size="11" fill="#64748b">step 3</text>
+  <text x="190" y="270" font-size="12.5" fill="#0f172a">用它把被改过的页写回旧值</text>
+  <text x="684" y="262" font-size="11.5" fill="#7c3aed">幂等</text>
+  <text x="684" y="282" font-size="11" fill="#64748b">再崩也能重来</text>
+  <line x1="344" y1="292" x2="344" y2="312" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="318" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="318" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="340" font-size="12" font-weight="bold" fill="#047857">清理</text>
+  <text x="38" y="360" font-size="11" fill="#64748b">step 4</text>
+  <text x="190" y="350" font-size="12.5" fill="#0f172a">删掉 -journal，库回到一致状态</text>
+  <text x="684" y="342" font-size="11.5" fill="#047857">一致性</text>
+  <text x="684" y="362" font-size="11" fill="#64748b">不是完整性</text>
+  <line x1="344" y1="372" x2="344" y2="392" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="24" y="398" width="640" height="54" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <rect x="24" y="398" width="150" height="54" rx="8" fill="#047857" fill-opacity="0.10"/>
+  <text x="38" y="420" font-size="12" font-weight="bold" fill="#047857">校验</text>
+  <text x="38" y="440" font-size="11" fill="#64748b">step 5</text>
+  <text x="190" y="430" font-size="12.5" fill="#0f172a">PRAGMA integrity_check（本机返回 ok）</text>
+  <text x="684" y="422" font-size="11.5" fill="#047857">完整性另查</text>
+  <text x="684" y="442" font-size="11" fill="#64748b">FULL 才全扫</text>
+  <text x="24" y="494" font-size="11.5" fill="#b45309">⭐ WAL 模式的恢复路径不同：已提交帧在 -wal 里，重放即可；但 -wal 若被删，那些事务就没了 —— 备份必须把 -wal 一起带走。</text>
+</svg>

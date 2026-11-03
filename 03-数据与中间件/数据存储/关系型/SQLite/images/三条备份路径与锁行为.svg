@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 372" width="1000" height="372" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="372" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三条备份路径：一致性、耗时、要不要停写，各不同</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">本机实测：同一 10 万行库（10 727 424 字节）</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="84" width="952" height="32" rx="4" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="34" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">做法</text>
+  <text x="234" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">一致性</text>
+  <text x="534" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">本机耗时</text>
+  <text x="734" y="105" font-size="11.5" font-weight="bold" fill="#0f172a">产物</text>
+  <rect x="24" y="116" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="137" font-size="11.5" fill="#047857" font-weight="bold">backup API</text>
+  <text x="234" y="137" font-size="11.5" fill="#0f172a">在线一致，源库可继续写</text>
+  <text x="534" y="137" font-size="11.5" fill="#64748b">未实测（需 C API）</text>
+  <text x="734" y="137" font-size="11.5" fill="#0f172a">另一个库文件</text>
+  <rect x="24" y="148" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="169" font-size="11.5" fill="#047857" font-weight="bold">VACUUM INTO</text>
+  <text x="234" y="169" font-size="11.5" fill="#0f172a">一致快照，压缩碎片</text>
+  <text x="534" y="169" font-size="11.5" fill="#047857" font-weight="bold">103.4 ms</text>
+  <text x="734" y="169" font-size="11.5" fill="#0f172a">10 727 424 B</text>
+  <rect x="24" y="180" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="201" font-size="11.5" fill="#0f172a" font-weight="bold">原地 VACUUM</text>
+  <text x="234" y="201" font-size="11.5" fill="#0f172a">独占，期间不可写</text>
+  <text x="534" y="201" font-size="11.5" fill="#0f172a" font-weight="bold">199.9 ms</text>
+  <text x="734" y="201" font-size="11.5" fill="#0f172a">原地重写</text>
+  <rect x="24" y="212" width="952" height="32" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="233" font-size="11.5" fill="#b45309" font-weight="bold">SELECT 拼 SQL</text>
+  <text x="234" y="233" font-size="11.5" fill="#0f172a">取决于是否同事务读</text>
+  <text x="534" y="233" font-size="11.5" fill="#b45309" font-weight="bold">576.0 ms</text>
+  <text x="734" y="233" font-size="11.5" fill="#0f172a">12 877 785 B 文本</text>
+  <rect x="24" y="244" width="952" height="32" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.8"/>
+  <text x="34" y="265" font-size="11.5" fill="#dc2626" font-weight="bold">直接拷文件</text>
+  <text x="234" y="265" font-size="11.5" fill="#0f172a">不安全：可能拷到写一半的页</text>
+  <text x="534" y="265" font-size="11.5" fill="#64748b">未实测</text>
+  <text x="734" y="265" font-size="11.5" fill="#0f172a">含 -wal 才完整</text>
+  <text x="24" y="300" font-size="11.5" fill="#b45309">⚠️ 直接 cp 只在对端已停写且 -wal 一起拷时才对。有 -wal 却漏拷，等于丢掉最近若干次已提交事务 —— 这是最常见的「备份恢复了但少数据」。</text>
+</svg>

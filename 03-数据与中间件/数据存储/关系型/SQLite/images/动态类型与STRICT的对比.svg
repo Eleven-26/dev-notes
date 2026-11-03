@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 451" width="1000" height="451" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="451" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">3.37 起可以关掉这套动态类型</text>
+  <text x="500" y="54" text-anchor="middle" font-size="13" fill="#64748b">STRICT 表把「列类型」从提示变成约束</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <rect x="24" y="80" width="464" height="34" rx="6" fill="#1d4ed8"/>
+  <text x="36" y="103" font-size="13" font-weight="bold" fill="#ffffff">普通表（默认）</text>
+  <rect x="24" y="124" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="144" font-size="11.5" fill="#0f172a">同一列可以存 text / integer / real / blob</text>
+  <rect x="24" y="160" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="180" font-size="11.5" fill="#0f172a">任何值都能塞进任何列</text>
+  <rect x="24" y="196" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="216" font-size="11.5" fill="#0f172a">'abc' 进 INTEGER 列不报错</text>
+  <rect x="24" y="232" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="252" font-size="11.5" fill="#0f172a">好处：适合不规则的外部数据</text>
+  <rect x="24" y="268" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="288" font-size="11.5" fill="#0f172a">坏处：约束只能靠 CHECK 自己写</text>
+  <rect x="24" y="304" width="464" height="30" rx="5" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1"/>
+  <text x="36" y="324" font-size="11.5" fill="#0f172a">本机实测：INSERT 成功，typeof=text</text>
+  <rect x="512" y="80" width="464" height="34" rx="6" fill="#047857"/>
+  <text x="524" y="103" font-size="13" font-weight="bold" fill="#ffffff">STRICT 表（3.37+）</text>
+  <rect x="512" y="124" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="144" font-size="11.5" fill="#0f172a">只允许 INT / INTEGER / REAL / TEXT / BLOB / ANY</text>
+  <rect x="512" y="160" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="180" font-size="11.5" fill="#0f172a">插入不匹配的类型直接报错</text>
+  <rect x="512" y="196" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="216" font-size="11.5" fill="#0f172a">本机实测：'abc' 进 INTEGER 列报错 3091</text>
+  <rect x="512" y="232" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="252" font-size="11.5" fill="#0f172a">报错文案：cannot store TEXT value in INTEGER column</text>
+  <rect x="512" y="268" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="288" font-size="11.5" fill="#0f172a">PRIMARY KEY 隐含 NOT NULL</text>
+  <rect x="512" y="304" width="464" height="30" rx="5" fill="#ecfdf5" stroke="#047857" stroke-width="1"/>
+  <text x="524" y="324" font-size="11.5" fill="#0f172a">好处：schema 真的能约束住</text>
+  <text x="24" y="422" font-size="11.5" fill="#b45309">⭐ 判据：数据来自外部（导入、用户输入、JSON 落表）→ 普通表 + 应用层校验；数据是自己写的业务表 → 上 STRICT，把错误挡在写入处。</text>
+</svg>
