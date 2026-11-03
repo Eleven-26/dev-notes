@@ -494,23 +494,139 @@ fmt.Printf("A@%d  B@%d  间隔 %d  行偏移 %d/%d\n",
 
 ---
 
-## 八、三组结论
+## 八、应用场景：缓存行落在哪些真实系统里？
+
+**本节要点**：填充与分片不是 Go 的专利——并发库、消息队列、内核、分配器都在同一件事上做同一件事：**把高频写的地址拉到一条行之外**。判断一处代码有没有做过这件事，只看运行时地址间隔。
+
+### 8.1 八个落点
+
+| 场景 / 系统 | 用到哪一块 | 为什么值得注意 |
+|---|---|---|
+| Go `sync.Pool` 的 `poolLocal` | `pad [128 - unsafe.Sizeof(...)%128]byte` | 补到 **128** 的整数倍，为的是 `[]poolLocal` 里每个元素的起点都落在同一条行上（5.4） |
+| Go `runtime.p` | `_ cpu.CacheLinePad` 按功能隔开字段 | P 会被不同 M 抢，几十个字段挤在一行就是核间乒乓 |
+| Go 分片计数 | `[56]byte` 手工填充 + `unsafe.Offsetof` 断言 | 填充量是算出来的：`64 - 8 = 56`（5.2），不是抄来的魔数 |
+| Java `LongAdder` / `Striped64.Cell` | `Cell[]` 分片 + `@Contended` | 先分片再填充；`sum()` 才汇总，写路径完全无争用 |
+| Disruptor 的 `Sequence` | 7 个 `long` 填充（`p1`~`p7`） | 生产与消费序号被两个线程各写一个，把 56 字节写死进结构体 |
+| Netty 的 MPSC 队列（padded 变体） | 队头、队尾各占一行 | 生产者写 tail、消费者写 head，两指针相邻就是每次入队都抢行 |
+| Linux 内核 `struct rq`、`net_device` | `____cacheline_aligned_in_smp` | 每 CPU 的调度队列必须独占行，否则多核调度器自己先打起来 |
+| C++ `std::hardware_destructive_interference_size` | `alignas(64)` | C++17 起把「破坏性干扰」写进类型系统，取值通常就是 64 |
+
+### 8.2 三条共性
+
+1. **只给「高频写」的地方填充**。只读数据没人 pad：多核可同时持有 S 态，不需要独占（5.5）。
+2. **手段只有三种**：独立分配（分片）、补到行宽整数倍（填充）、声明对齐（`alignas`）。三者做的都是同一件事——把地址间隔推过 64。
+3. **代价按「行易主次数」算，不按「改了几个字节」算**。两个核各改同一行的 1 个字节，与各自改 64 个字节，硬件成本一样（4.2）。
+
+⚠️ 反向提醒：**先排除预取失败与同 set 冲突，再加 pad**（第七节）。这两类慢法都发生在单核内，加填充一点用没有，还白占内存——`[56]byte` 用错地方就是给每个对象多付 12.5% 的堆。
+
+## 九、具体使用：三语言怎么把两个热点地址拉开
+
+**本节要点**：Go 靠手工填充加编译期断言，Java 优先用 `LongAdder` 而不是自己 pad，C 用 `alignas`。三者都要配一条「单核对照」才算测完。
+
+### 9.1 Go：三档写法与一条断言
+
+```go
+// ① 反面：两个热点在同一个结构体里相邻
+type Bad struct {
+	a atomic.Int64
+	b atomic.Int64 // offset 8，与 a 同行
+}
+
+// ② 分片了还是错：切片的两个元素间隔只有 16 字节
+var shard [2]struct {
+	a atomic.Int64
+	b atomic.Int64
+} // shard[0].a 与 shard[1].a 相隔 16，仍在同一行
+
+// ③ 正确：把 b 顶到下一行行首
+type Good struct {
+	a atomic.Int64
+	_ [56]byte // 64 - 8 = 56，让 b 的 offset 恰好是 64
+	b atomic.Int64
+}
+
+// 对齐是编译期能查的：写一条测试，字段顺序一改就红
+func TestGoodLayout(t *testing.T) {
+	if off := unsafe.Offsetof(Good{}.b); off%64 != 0 {
+		t.Fatalf("b 未落在行首：offset=%d", off)
+	}
+}
+```
+
+⚠️ `[56]byte` 只对「前面的字段占 8 字节」成立。换成 `int32` 填充量就是 60，换成带 16 字节对齐的类型编译器还会再插空隙——**永远用 `unsafe.Offsetof` 验，不要用眼睛算**。
+
+### 9.2 Java：先找标准库，再考虑自己 pad
+
+```java
+// 首选：LongAdder 内部就是 Cell[] 分片 + @Contended，不用自己算填充
+LongAdder adder = new LongAdder();
+adder.increment();        // 写路径落到某个 Cell，不与其他线程抢同一行
+long total = adder.sum(); // 只在读的时候汇总一次
+```
+
+```java
+// 确实要自定义时：@Contended 让 JVM 在字段两侧补到行宽
+// JDK 8：直接用 @sun.misc.Contended，需 -XX:-RestrictContended
+// JDK 9+：该类迁到 jdk.unsupported 模块（仍可引用）；若用 jdk.internal.vm.annotation.Contended
+//         需 --add-exports java.base/jdk.internal.vm.annotation=ALL-UNNAMED
+@sun.misc.Contended
+static final class Counter {
+    volatile long a;
+    volatile long b;
+}
+```
+
+⚠️ `@Contended` 不是无条件的：JDK 9+ 对用户类默认限制，不加 `-XX:-RestrictContended` 时**静默无效**——注解在、填充不在，代码看着对、读数没变化。
+
+### 9.3 C：`alignas` 是标准写法
+
+```c
+#include <stdalign.h>
+
+struct counters {
+    alignas(64) _Atomic long a;   /* 各占一行 */
+    alignas(64) _Atomic long b;
+};
+
+/* C11 的 _Alignas(64) 与 alignas 等价，后者需 <stdalign.h> */
+/* GCC/Clang 老写法：__attribute__((aligned(64))) */
+```
+
+### 9.4 现场四条命令
+
+| 要确认的事 | 怎么敲 | 读法 |
+|---|---|---|
+| 两个热点真的隔开了吗 | Go：`fmt.Printf("%p %p\n", &a, &b)`；C：取 `&a`、`&b` | 两地址之差 ≥ 64 且两个地址 `% 64` 都为 0 |
+| 差异真来自跨核吗 | `GOMAXPROCS=1 ./bench`（Go）/ `taskset -c 0 ./bench`（C） | 单核下差异消失，才说明是核间一致性 |
+| 线程有没有漂 | `taskset -c 0,1 ./bench` | 不绑核时两个线程可能被排到同一核，把伪共享藏起来 |
+| 硬件计数器怎么说 | `perf stat -e cache-misses,LLC-load-misses ./bench` | 改前改后 miss 数应显著下降（本机 Windows 无 perf，此条未实测） |
+
+### 9.5 症状对照表
+
+| 现象 | 指向 | 下一步 |
+|---|---|---|
+| 核数加、总吞吐不涨，各核都接近 100% | 共享行反复易主 | 量运行时地址间隔（7.2） |
+| 单核与多核一样慢 | 不是伪共享 | 查预取失败（2.4）与同 set 冲突（3.5） |
+| 加了 pad 毫无变化 | `@Contended` 未生效 / 填充量算错 / 字段被重排 | `unsafe.Offsetof` 或 `javap -p` 验布局 |
+| `-race` 不报但确实慢 | 正常——伪共享不是数据竞争 | 本条本身就是判据 |
+
+## 十、三组结论
 
 **本节要点**：三句话可以带走——粒度是行、判据是间隔、测法是控变量。
 
-### 8.1 一致性以行为单位
+### 10.1 一致性以行为单位
 
 两个核改同一行的不同字节，硬件照样串行化。M/E/S/I 四态里，**写操作只有在 M/E 下才不花代价**，S/I 都要先拿独占。这一条决定了后面所有结论。
 
 ⚠️ 同一核内还有两种慢法，别和伪共享混起来：**预取器接不住**（2.4，随机访问比顺序慢 29~132 倍）与**同 set 冲突**（3.5，16 条行挤 8 路时慢 2.5~4.1 倍）。两者都不涉及跨核，`-race` 也不报。
 
-### 8.2 判据是物理间隔，不是类型或分片
+### 10.2 判据是物理间隔，不是类型或分片
 
 - 间隔 8 / 32 / 56 → 37~49 ns；间隔 64 及以上 → 8~12 ns（第 3 节）。
 - `[2]struct{a,b}` 各用一个元素，间隔只有 16，**分片了仍然慢**（第 5.1 节）。
 - `cpu.CacheLinePad` 换过去会让偏移从 64 变 72，多占 8 字节，不值得（第 5.3 节）。
 
-### 8.3 测之前先排除四类假阴性
+### 10.3 测之前先排除四类假阴性
 
 单核、标量替换、常量折叠、循环被提出 —— 四个都会让结论反着写。最省事的自查是**加一档单核对照**：单核下差异消失，才说明差异真的来自核间一致性。
 
@@ -531,6 +647,8 @@ fmt.Printf("A@%d  B@%d  间隔 %d  行偏移 %d/%d\n",
 | Go（容器） | go1.26.8 linux/amd64，`golang:1.26-bookworm`，`nproc=4`（2.4、3.5 节） |
 | golang.org/x/sys | v0.48.0（仅用于对照 `CacheLinePad` 的尺寸） |
 | CPU | Intel Core i7-6700HQ（L1d 32 KB/核、L2 256 KB/核、L3 6 MB 共享） |
+
+- **只作写法对照**：第 9 节的三语言代码与四条命令为写法对照，未在本轮编译运行；本篇所有读数仍来自第 1、2、3、5、6 节。
 
 ## 延伸追问
 

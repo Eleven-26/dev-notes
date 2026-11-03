@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 596" width="1000" height="596" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="d" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#475569"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="596" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">底层同步：一份合同、一条指令、一个线程</text>
+  <text x="500" y="56" text-anchor="middle" font-size="12" fill="#64748b">三篇各管一层；自上而下是「正确」被逐层兑现的顺序，右侧是该层由谁定义、拿什么观测</text>
+  <rect x="20" y="78" width="118" height="108" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="79" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#2563eb">层 1</text>
+  <text x="79" y="132" text-anchor="middle" font-size="12" fill="#2563eb">规范</text>
+  <text x="79" y="156" text-anchor="middle" font-size="10.5" fill="#475569">先定义</text>
+  <rect x="150" y="78" width="612" height="108" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="166" y="102" font-size="13" font-weight="bold" fill="#0f172a">内存重排、Happens-Before 与数据竞争</text>
+  <text x="166" y="126" font-size="11.5" fill="#334155">回答：什么叫「错」—— hb 由两组边取传递闭包造出，数据竞争是它的补集</text>
+  <text x="166" y="148" font-size="11.5" fill="#334155">证据：无 hb 的读写 200/200 读完；断链版 2000/2000 全对，只有 -race 分得开</text>
+  <text x="166" y="170" font-size="11.5" fill="#64748b">一条边过三道闸：编译器查表 → ISA 补格 → 硬件把「等」做出来</text>
+  <rect x="776" y="78" width="204" height="108" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="790" y="108" font-size="11" fill="#475569">定义者：语言规范</text>
+  <text x="790" y="128" font-size="11" fill="#475569">（Go 九条 / Java 八条）</text>
+  <text x="790" y="152" font-size="11" fill="#475569">观测：查表 + race 检测器</text>
+  <rect x="20" y="206" width="118" height="108" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="79" y="236" text-anchor="middle" font-size="14" font-weight="bold" fill="#ea580c">层 2</text>
+  <text x="79" y="260" text-anchor="middle" font-size="12" fill="#ea580c">硅</text>
+  <text x="79" y="284" text-anchor="middle" font-size="10.5" fill="#475569">再计价</text>
+  <rect x="150" y="206" width="612" height="108" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="166" y="230" font-size="13" font-weight="bold" fill="#0f172a">原子操作</text>
+  <text x="166" y="254" font-size="11.5" fill="#334155">回答：一条读-改-写怎么变成不可分割 —— LOCK 锁的是缓存行，不是总线</text>
+  <text x="166" y="276" font-size="11.5" fill="#334155">证据：行内 8 ns vs 跨行 1395 ns（175 倍）；CAS 15.44 → 96.48 ns</text>
+  <text x="166" y="298" font-size="11.5" fill="#64748b">内存序大半白送：load(acquire) 与 release store 都只是一条 mov</text>
+  <rect x="776" y="206" width="204" height="108" rx="10" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="790" y="236" font-size="11" fill="#475569">定义者：Intel SDM / ARM ARM</text>
+  <text x="790" y="256" font-size="11" fill="#475569">（relaxed 与 seq_cst 同一条）</text>
+  <text x="790" y="280" font-size="11" fill="#475569">观测：反汇编 + 计时</text>
+  <rect x="20" y="334" width="118" height="108" rx="10" fill="#d1fae5" stroke="#059669" stroke-width="1.4"/>
+  <text x="79" y="364" text-anchor="middle" font-size="14" font-weight="bold" fill="#059669">层 3</text>
+  <text x="79" y="388" text-anchor="middle" font-size="12" fill="#059669">内核 + 语言壳</text>
+  <text x="79" y="412" text-anchor="middle" font-size="10.5" fill="#475569">最后组合</text>
+  <rect x="150" y="334" width="612" height="108" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.4"/>
+  <text x="166" y="358" font-size="13" font-weight="bold" fill="#0f172a">互斥的实现</text>
+  <text x="166" y="382" font-size="11.5" fill="#334155">回答：线程怎么睡、怎么醒 —— futex 三态 + 三个壳的慢路径落点</text>
+  <text x="166" y="404" font-size="11.5" fill="#334155">证据：200 万次加锁只有 124~556 次进内核；一次系统调用 1.7 µs</text>
+  <text x="166" y="426" font-size="11.5" fill="#64748b">三个壳热路径一样（一次 CAS 拿锁、一次原子写放锁），只差慢路径厚度</text>
+  <rect x="776" y="334" width="204" height="108" rx="10" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.2"/>
+  <text x="790" y="364" font-size="11" fill="#475569">定义者：Linux / 语言运行时</text>
+  <text x="790" y="384" font-size="11" fill="#475569">（futex + 三个壳）</text>
+  <text x="790" y="408" font-size="11" fill="#475569">观测：strace -c 数 futex</text>
+  <line x1="456" y1="187" x2="456" y2="205" stroke="#475569" stroke-width="1.6" marker-end="url(#d)"/>
+  <rect x="470" y="187" width="196" height="19" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="568" y="201" text-anchor="middle" font-size="10.5" fill="#334155">判据收窄成一条指令</text>
+  <line x1="456" y1="315" x2="456" y2="333" stroke="#475569" stroke-width="1.6" marker-end="url(#d)"/>
+  <rect x="470" y="315" width="196" height="19" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="568" y="329" text-anchor="middle" font-size="10.5" fill="#334155">不进内核走上面，非要睡才走这里</text>
+  <rect x="20" y="456" width="960" height="86" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="36" y="478" font-size="12" font-weight="bold" fill="#0f172a">代价阶梯：所有设计都往最左边挤，越过一次系统调用就贵两个数量级</text>
+  <rect x="36" y="488" width="224" height="42" rx="7" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="148" y="506" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">普通写 2.3 ns</text>
+  <text x="148" y="523" text-anchor="middle" font-size="10.5" fill="#475569">只是 store</text>
+  <rect x="268" y="488" width="224" height="42" rx="7" fill="#ffedd5" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="380" y="506" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">一次 LOCK 8 ns</text>
+  <text x="380" y="523" text-anchor="middle" font-size="10.5" fill="#475569">抢行独占</text>
+  <rect x="500" y="488" width="224" height="42" rx="7" fill="#ffedd5" stroke="#fdba74" stroke-width="1.2"/>
+  <text x="612" y="506" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">无竞争互斥 25 ns</text>
+  <text x="612" y="523" text-anchor="middle" font-size="10.5" fill="#475569">两条原子指令</text>
+  <rect x="732" y="488" width="224" height="42" rx="7" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="844" y="506" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#0f172a">一次系统调用 1.7 µs</text>
+  <text x="844" y="523" text-anchor="middle" font-size="10.5" fill="#475569">本机 WSL2，裸机 20~30 倍</text>
+  <text x="36" y="558" font-size="10.5" fill="#64748b">坐标：Go 在 Windows 原生跑（sema 走 WaitForSingleObject），C / Java 在 WSL2 容器跑（走 futex）；两层绝对值不可相减，只可比量级。</text>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">缓存与内存四篇：结构、代价、吞吐，再加一条第 0 层</text>
+  <text x="500" y="57" text-anchor="middle" font-size="12" fill="#64748b">前三篇是「一条访存」→「跨核顺序」→「整条内存」的逐级放大，第四篇挂在最上面，是所有访存的起点</text>
+  <rect x="32" y="82" width="296" height="196" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.4"/>
+  <rect x="32" y="82" width="296" height="34" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="1.4"/>
+  <text x="46" y="105" font-size="12" font-weight="bold" fill="#2563eb">① 结构</text>
+  <text x="46" y="138" font-size="12.5" font-weight="bold" fill="#0f172a">CPU 缓存与缓存行</text>
+  <text x="46" y="162" font-size="10.5" fill="#334155">一次访存落在哪一层</text>
+  <text x="46" y="184" font-size="10.5" fill="#334155">16 KB 1.60 ns → 64 MB 113.63 ns</text>
+  <text x="46" y="206" font-size="10.5" fill="#334155">一致性单位是行，不是字节</text>
+  <text x="46" y="228" font-size="10.5" fill="#334155">间隔 56 慢、64 快：行宽 ∈ (56,64]</text>
+  <text x="46" y="250" font-size="10.5" fill="#334155">判据是两个热点地址的物理间隔</text>
+  <rect x="352" y="82" width="296" height="196" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4"/>
+  <rect x="352" y="82" width="296" height="34" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="1.4"/>
+  <text x="366" y="105" font-size="12" font-weight="bold" fill="#ea580c">② 代价</text>
+  <text x="366" y="138" font-size="12.5" font-weight="bold" fill="#0f172a">内存屏障与内存序的代价</text>
+  <text x="366" y="162" font-size="10.5" fill="#334155">四种重排，x86 只漏 StoreLoad</text>
+  <text x="366" y="184" font-size="10.5" fill="#334155">无屏障 30 万轮违反 29~41 次</text>
+  <text x="366" y="206" font-size="10.5" fill="#334155">加一条 mfence 或 lock or，全为 0</text>
+  <text x="366" y="228" font-size="10.5" fill="#334155">单价 0.46 / 2.46 / 15.21 ns</text>
+  <text x="366" y="250" font-size="10.5" fill="#334155">写便宜是因为欠账，屏障贵是还账</text>
+  <rect x="672" y="82" width="296" height="196" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.4"/>
+  <rect x="672" y="82" width="296" height="34" rx="10" fill="#d1fae5" stroke="#059669" stroke-width="1.4"/>
+  <text x="686" y="105" font-size="12" font-weight="bold" fill="#059669">③ 吞吐</text>
+  <text x="686" y="138" font-size="12.5" font-weight="bold" fill="#0f172a">内存带宽与访存并行度</text>
+  <text x="686" y="162" font-size="10.5" fill="#334155">延迟 110 ns 与 10.6 GB/s 不矛盾</text>
+  <text x="686" y="184" font-size="10.5" fill="#334155">两个数由「约 18 条在飞」连起来</text>
+  <text x="686" y="206" font-size="10.5" fill="#334155">8 条独立链：103.6 → 15.1 ns</text>
+  <text x="686" y="228" font-size="10.5" fill="#334155">五档统一到 DRAM 口径后收敛</text>
+  <text x="686" y="250" font-size="10.5" fill="#334155">17~19.6 GB/s 是同一条上限</text>
+  <rect x="32" y="300" width="640" height="150" rx="10" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.4"/>
+  <text x="48" y="326" font-size="12.5" font-weight="bold" fill="#5b21b6">第 0 层（不在这条链上）：寄存器与栈</text>
+  <text x="48" y="352" font-size="10.5" fill="#334155">寄存器不进内存，是延迟台阶的第 0 层；栈是内存里的一段，靠 rsp 与一条约定。</text>
+  <text x="48" y="376" font-size="10.5" fill="#334155">寄存器累加 0.432 ns vs 栈 2.198 ns（5.09 倍）；push 2 字节 vs 展开 16 字节</text>
+  <text x="48" y="400" font-size="10.5" fill="#334155">&amp;x 一出现，变量就必须离开寄存器 —— 判据是「有没有人要它的地址」</text>
+  <text x="48" y="424" font-size="10.5" fill="#64748b">栈帧倒着长：参数区在高地址，局部变量在低地址，最下面还有 128 字节红区</text>
+  <rect x="688" y="300" width="280" height="150" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.4"/>
+  <text x="702" y="326" font-size="11.5" font-weight="bold" fill="#1e40af">三条判据（按这个顺序问）</text>
+  <text x="702" y="352" font-size="10.5" fill="#334155">① 数据现在在哪一层</text>
+  <text x="702" y="376" font-size="10.5" fill="#334155">② 有几个核在碰同一行</text>
+  <text x="702" y="400" font-size="10.5" fill="#334155">③ 最后才问总线能搬多快</text>
+  <text x="702" y="426" font-size="10" fill="#64748b">顺序颠倒就会去优化不该优化的地方</text>
+  <rect x="32" y="468" width="936" height="64" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="48" y="492" font-size="11" font-weight="bold" fill="#334155">一条访存的时间刻度：</text>
+  <text x="48" y="516" font-size="10.5" fill="#475569">L1 1.60 ns  →  L2  →  L3  →  DRAM 113.63 ns  →  稳态带宽 10.6 GB/s（单线程读，计费字节口径）</text>
+  <rect x="32" y="542" width="936" height="40" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="48" y="567" font-size="10.5" fill="#64748b">两端的接口：上游是微架构（写缓冲、在飞窗口），下游是底层同步（LOCK 的粒度就是这一行）与操作系统的 TLB / 缺页</text>
+</svg>

@@ -6,7 +6,7 @@
 >
 > 内容整理自个人学习笔记，素材见 [素材清单](../../素材清单.md)。
 >
-> ✅ 实测口径：3.1 的 `FD_SETSIZE=1024` 在 `golang:1.26-alpine`（`go1.26.8 linux/amd64`）容器内读 Go `syscall` 包常量得到，连跑 4 次读数一致；3.5 与 4.3 的 eventfd / signalfd / timerfd / `EPOLLONESHOT` 读数在 `golang:1.26-bookworm`（gcc 12、glibc 2.36）容器内新跑，程序 `eventfd_demo.c`；⚠️ **未实测** `io_uring`（本机为 Windows，且容器沙箱常禁用该系统调用）。本篇**只讲机制**，语言侧的可运行代码已各自归位（见第八节）。
+> ✅ 实测口径：3.1 的 `FD_SETSIZE=1024` 在 `golang:1.26-alpine`（`go1.26.8 linux/amd64`）容器内读 Go `syscall` 包常量得到，连跑 4 次读数一致；3.5 与 4.3 的 eventfd / signalfd / timerfd / `EPOLLONESHOT` 读数在 `golang:1.26-bookworm`（gcc 12、glibc 2.36）容器内新跑，程序 `eventfd_demo.c`；⚠️ **未实测** `io_uring`（本机为 Windows，且容器沙箱常禁用该系统调用）。本篇**只讲机制**，语言侧的可运行代码已各自归位（见第八节）；⚠️ 第八节新增的命令与症状对照表是现场用法，未在本轮重跑。
 
 ---
 
@@ -287,16 +287,42 @@ Nginx 更准确地说是“多个 worker 进程各自运行单线程 Reactor”�
 | 连接泄漏 | 半开连接与心跳 | `CLOSE_WAIT` 堆积多半是应用没关，详见 [TCP四次挥手.md](../网络/传输层/tcp/TCP四次挥手.md) |
 | 高吞吐本地文件 I/O | `io_uring` | 从「就绪通知」到「提交—完成」，详见 本篇第十节 |
 
-## 八、两侧的可运行代码在哪？
+## 八、具体使用：代码在哪、命令怎么敲
 
-本篇只讲机制，**可运行代码按语言各归其位**。这样改 epoll 的语义只动本篇，改某一侧的写法只动那一篇。
+**本节要点**：本篇只讲机制，**可运行代码按语言各归其位**；留在这里的是三样东西——去哪找代码、现场敲哪几条命令、以及每条读数该往哪一节对。
+
+### 8.1 两侧的代码各在哪
+
+这样改 epoll 的语义只动本篇，改某一侧的写法只动那一篇。
 
 | 语言 | 日常写法 | 直接操作 epoll 的写法 |
 |---|---|---|
 | Go | 用 `net` 包——非阻塞 fd、netpoller、deadline 与资源管理都已封装 | [net包与TCP-UDP编程.md](../../01-编程语言/go/网络编程/net包与TCP-UDP编程.md) 的「使用」节（最小 ET 读取服务） |
 | Java | NIO 三件套 + 完整 `Selector` Echo 服务；Netty 的主从 Reactor 线程模型同见该篇 | [NIO与Selector.md](../../01-编程语言/java/网络编程/NIO与Selector.md) |
 
-**本节要点**：机制只有一份，代码按语言分家——Go 侧的关键差异是 runtime 替你跑事件循环，Java 侧是应用自己跑。
+关键差异一句：**Go 侧是 runtime 替你跑事件循环，Java 侧是应用自己跑**（第六节）。
+
+### 8.2 现场六条命令
+
+```bash
+ss -s                                   # 全局 socket 与各状态连接数
+ss -ltnp                                # 监听队列：Send-Q 是 backlog 当前排队数
+ss -tan state close-wait | wc -l        # CLOSE_WAIT 堆积量（应用没 close 的证据）
+cat /proc/$PID/limits | grep "open files"   # 进程级 fd 上限
+ls /proc/$PID/fd | wc -l                # 已用 fd 数，逼近上限就是「连不上」的根因
+strace -f -c -e trace=epoll_wait,epoll_ctl,accept4 -p $PID   # 事件循环的调用次数与耗时
+```
+
+### 8.3 症状往哪一节对
+
+| 症状 | 先看什么 | 指向 |
+|---|---|---|
+| 新连接连不上、客户端只卡住不报错 | `ss -ltnp` 的 Send-Q 是否接近 backlog | `listen()`/`somaxconn` 截断，不是 epoll 的问题（9.1） |
+| CPU 打满而 QPS 不涨 | `strace -c` 里 `epoll_wait` 的 `calls` | 事件循环空转：LT 没读干净或反复被唤醒（4.1） |
+| 某条连接「永久卡死」、fd 仍可读 | 是否只读了一次就返回 | ET 漏排空，没有新边沿就再也不报（4.2） |
+| 一个 fd 上报一次后再无动静 | 是否用了 `EPOLLONESHOT` 却没重新 arm | 关注被摘掉了，数据还在（4.3） |
+| `CLOSE_WAIT` 持续上涨 | `ss -tan state close-wait` | 对端已 FIN，本地应用没 `close`（9.3） |
+| 连接数上不去、`EMFILE` 报错 | 已用 fd 数与 `limits` 里的上限 | fd 上限，与事件循环无关（9.1） |
 
 ---
 
