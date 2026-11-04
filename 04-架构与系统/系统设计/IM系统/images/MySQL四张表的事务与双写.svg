@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 528" width="1000" height="528" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="528" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">一次发消息写四张表：三张同步在权威源，一张异步做索引</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">分片键不能两全，所以「同一份成员状态」必须存两份——这是本节唯一需要记住的判断</text>
+  <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker><marker id="arwR" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#dc2626"/></marker><marker id="arwB" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2563eb"/></marker></defs>
+  <rect x="24" y="70" width="952" height="176" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.4" stroke-dasharray="7 5"/>
+  <text x="40" y="92" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">① 同一个事务（权威源，按 convID 分片）</text>
+  <rect x="100" y="102" width="270" height="74" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="114" y="124" font-size="12.5" fill="#2563eb" text-anchor="start" font-weight="bold">im_conversation</text>
+  <text x="114" y="144" font-size="11" fill="#0f172a" text-anchor="start">PK (conv_id)</text>
+  <text x="114" y="164" font-size="10.5" fill="#64748b" text-anchor="start">last_seq 就是 seq 分配器</text>
+  <rect x="386" y="102" width="270" height="74" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="400" y="124" font-size="12.5" fill="#2563eb" text-anchor="start" font-weight="bold">im_message_00…15</text>
+  <text x="400" y="144" font-size="11" fill="#0f172a" text-anchor="start">PK (conv_id, seq)</text>
+  <text x="400" y="164" font-size="10.5" fill="#64748b" text-anchor="start">游标分页直接走聚簇索引</text>
+  <rect x="672" y="102" width="270" height="74" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="686" y="124" font-size="12.5" fill="#2563eb" text-anchor="start" font-weight="bold">im_member_00…15</text>
+  <text x="686" y="144" font-size="11" fill="#0f172a" text-anchor="start">PK (conv_id, uid)</text>
+  <text x="686" y="164" font-size="10.5" fill="#64748b" text-anchor="start">两个位点 + 入群位点 join_seq</text>
+  <text x="40" y="200" font-size="11" fill="#0f172a" text-anchor="start">三条 UPDATE / INSERT 必须同进同退：消息写进去而 last_seq 没进，seq 会重号；last_seq 进了而消息没进，会话会留空洞。</text>
+  <text x="40" y="224" font-size="11" fill="#64748b" text-anchor="start">代价：同一会话的写被 conv 行锁串行 —— 单会话的写入上限就在这里，号段预分配才换来吞吐（见 §四）。</text>
+  <line x1="500" y1="250" x2="500" y2="292" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arwR)"/>
+  <text x="516" y="268" font-size="11" fill="#dc2626" text-anchor="start" font-weight="bold">异步双写：可重放、可丢、可重建</text>
+  <text x="516" y="286" font-size="10.5" fill="#64748b" text-anchor="start">重放顺序错了也不影响正确性，只影响列表排序的短暂新鲜度</text>
+  <rect x="24" y="296" width="952" height="116" rx="10" fill="#ffffff" stroke="#ea580c" stroke-width="1.4" stroke-dasharray="7 5"/>
+  <text x="40" y="318" font-size="12" fill="#ea580c" text-anchor="start" font-weight="bold">② 按 uid 分片的派生表（会话列表的唯一来源）</text>
+  <rect x="40" y="330" width="920" height="70" rx="8" fill="#ffedd5" stroke="#ea580c" stroke-width="1.2"/>
+  <text x="54" y="350" font-size="12" fill="#ea580c" text-anchor="start" font-weight="bold">im_user_conv_00…15</text>
+  <text x="226" y="350" font-size="11" fill="#0f172a" text-anchor="start" font-weight="bold">PK (uid, conv_id)</text>
+  <text x="54" y="370" font-size="11" fill="#0f172a" text-anchor="start">KEY idx_list (uid, pinned, last_msg_seq)  ← 会话列表那条查询的唯一索引</text>
+  <text x="54" y="390" font-size="10.8" fill="#64748b" text-anchor="start">会话列表排序、未读计数、置顶免打扰都在这张表上；它整体可从 im_message + im_member 重算出来</text>
+  <rect x="24" y="424" width="952" height="78" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="446" font-size="11.5" fill="#0f172a" text-anchor="start" font-weight="bold">判据：同步那侧是权威源，异步那侧是索引。</text>
+  <text x="330" y="446" font-size="11.5" fill="#0f172a" text-anchor="start">同一份数据只能用「谁丢了会出事实错误」来分，不能用「谁访问多」来分。</text>
+  <text x="40" y="468" font-size="11" fill="#64748b" text-anchor="start">为什么不直接在 im_member 上按 (uid, last_msg_seq) 建索引？因为它按 conv_id 分片，查「我的会话列表」要广播到所有分片。</text>
+  <text x="40" y="490" font-size="11" fill="#64748b" text-anchor="start">为什么不让 im_user_conv 当权威源？因为它可以被重算 —— 而重算的前提正是权威源还在。</text>
+</svg>
