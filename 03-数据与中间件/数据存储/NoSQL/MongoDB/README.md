@@ -157,7 +157,7 @@ MongoDB通过副本集（replication set）来实现数据库的高可用，这�
 | 篇目 | 一句话 |
 | --- | --- |
 | [数据建模.md](数据建模.md) | 内嵌还是引用、16MB 与写放大、attribute / subset / buckets 三种扩展模式——先把文档形状定下来 |
-| [索引原理.md](索引原理.md) | B 树条目与最左前缀、ESR 顺序实测、覆盖索引、多键 / 部分 / TTL / 地理空间索引、planner 选索引、`explain` 完整读法 |
+| [索引原理.md](索引原理.md) | B+ 树条目与最左前缀（含与 InnoDB 的指向对照）、ESR 顺序实测、覆盖索引、多键 / 部分 / TTL / 地理空间索引、planner 选索引、`explain` 完整读法 |
 | [聚合管道.md](聚合管道.md) | stage 顺序与内存约束，`$lookup` / `$unwind` / `$facet` 的代价与替代路径 |
 | [副本集与选举.md](副本集与选举.md) | 选主与故障转移、oplog 存结果不存操作、写关注 / 读关注 / 读偏好、因果一致性 |
 | [分片基础.md](分片基础.md) | mongos / 配置服务器 / 分片三个角色、chunk 与 balancer、片键的三个目标、range vs hashed |
