@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 528" width="1000" height="528" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="528" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="19" font-weight="bold" fill="#0f172a">「消息会丢」这一波：一步补一个洞，洞是上一步漏出来的</text>
+  <text x="500" y="54" text-anchor="middle" font-size="12.5" fill="#64748b">四步装完，投递才从「单跳尽力」变成端到端语义</text>
+  <defs><marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748b"/></marker></defs>
+  <text x="26" y="88" font-size="11" fill="#64748b" text-anchor="start" font-weight="bold">用户看到的现象</text>
+  <text x="336" y="88" font-size="11" fill="#64748b" text-anchor="start" font-weight="bold">解法</text>
+  <text x="694" y="88" font-size="11" fill="#64748b" text-anchor="start" font-weight="bold">代价 / 引出的下一个问题</text>
+  <rect x="24" y="100" width="288" height="84" rx="9" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="40" y="132" font-size="11" fill="#dc2626" text-anchor="start">网关一重启，</text>
+  <text x="40" y="152" font-size="11" fill="#dc2626" text-anchor="start">在途消息全没了</text>
+  <line x1="316" y1="142" x2="330" y2="142" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="334" y="100" width="344" height="84" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="350" y="132" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">先落库，再回 SendAck</text>
+  <line x1="682" y1="142" x2="696" y2="142" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="700" y="100" width="276" height="84" rx="9" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="714" y="126" font-size="10.3" fill="#b45309" text-anchor="start">慢：每条消息多一次磁盘写</text>
+  <text x="714" y="150" font-size="10.3" fill="#0f172a" text-anchor="start">→ 对端到底收到没有？SendAck 只证明落了库</text>
+  <rect x="24" y="194" width="288" height="84" rx="9" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="40" y="226" font-size="11" fill="#dc2626" text-anchor="start">发送方显示「已发送」，</text>
+  <text x="40" y="246" font-size="11" fill="#dc2626" text-anchor="start">对端一直没反应</text>
+  <line x1="316" y1="236" x2="330" y2="236" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="334" y="194" width="344" height="84" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="350" y="226" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">收件箱 + PushAck；</text>
+  <text x="350" y="246" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">上线按 lastSeq 补拉</text>
+  <line x1="682" y1="236" x2="696" y2="236" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="700" y="194" width="276" height="84" rx="9" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="714" y="220" font-size="10.3" fill="#b45309" text-anchor="start">多一份收件箱存储与留存上限</text>
+  <text x="714" y="244" font-size="10.3" fill="#0f172a" text-anchor="start">→ 补拉会和重传重叠，补出重复</text>
+  <rect x="24" y="288" width="288" height="84" rx="9" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="40" y="320" font-size="11" fill="#dc2626" text-anchor="start">同一条消息</text>
+  <text x="40" y="340" font-size="11" fill="#dc2626" text-anchor="start">出现两次</text>
+  <line x1="316" y1="330" x2="330" y2="330" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="334" y="288" width="344" height="84" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="350" y="320" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">客户端生成 msgID，</text>
+  <text x="350" y="340" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">服务端按 msgID 幂等</text>
+  <line x1="682" y1="330" x2="696" y2="330" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="700" y="288" width="276" height="84" rx="9" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="714" y="314" font-size="10.3" fill="#b45309" text-anchor="start">去重键要留满一个重传窗口</text>
+  <text x="714" y="338" font-size="10.3" fill="#0f172a" text-anchor="start">→ 重传的消息排到了新消息后面</text>
+  <rect x="24" y="382" width="288" height="84" rx="9" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.2"/>
+  <text x="40" y="414" font-size="11" fill="#dc2626" text-anchor="start">顺序乱了，</text>
+  <text x="40" y="434" font-size="11" fill="#dc2626" text-anchor="start">旧消息压在新消息上</text>
+  <line x1="316" y1="424" x2="330" y2="424" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="334" y="382" width="344" height="84" rx="9" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="350" y="414" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">会话 seq 由服务端</text>
+  <text x="350" y="434" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">单点分配、单调递增</text>
+  <line x1="682" y1="424" x2="696" y2="424" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <rect x="700" y="382" width="276" height="84" rx="9" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.2"/>
+  <text x="714" y="408" font-size="10.3" fill="#b45309" text-anchor="start">同会话写入串行：吞吐上限 = 一次分配的时间</text>
+  <text x="714" y="432" font-size="10.3" fill="#0f172a" text-anchor="start">→ 大群的这个上限撑不住（进第五波）</text>
+  <rect x="24" y="480" width="952" height="34" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="502" font-size="10.8" fill="#0f172a" text-anchor="start">判据：这四步不是四个可选方案，是一条链。少装任何一步，前一步的洞就没人补 —— 而洞的位置由上一层的失败模式决定，不是由架构图决定。</text>
+</svg>
