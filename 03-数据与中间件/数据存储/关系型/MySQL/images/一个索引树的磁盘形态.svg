@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 522" width="1000" height="522" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="522" fill="#ffffff"/>
+  <text x="500" y="30" font-size="19" fill="#0f172a" text-anchor="middle" font-weight="bold">一个索引 = 一棵树，但「一棵」不等于「一块」</text>
+  <text x="500" y="52" font-size="12.2" fill="#64748b" text-anchor="middle">逻辑上从 1 个根页往下分叉；物理上是 2 个段、若干 1 MB 的区、靠页号串起来的一堆 16 KB 页</text>
+  <text x="30" y="84" font-size="12" fill="#2563eb" text-anchor="start" font-weight="bold">① 逻辑上：一棵从根页分叉的树</text>
+  <rect x="195" y="94" width="120" height="32" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.2"/>
+  <text x="255" y="115" font-size="11" fill="#2563eb" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">root  #4</text>
+  <text x="325" y="108" font-size="9.4" fill="#64748b" text-anchor="start">根页号记在数据字典里</text>
+  <text x="325" y="121" font-size="9.4" fill="#64748b" text-anchor="start">（不是文件路径）</text>
+  <rect x="120" y="152" width="100" height="28" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1"/>
+  <text x="170" y="171" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">分支  #7</text>
+  <rect x="285" y="152" width="100" height="28" rx="6" fill="#ffffff" stroke="#2563eb" stroke-width="1"/>
+  <text x="335" y="171" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">分支  #9</text>
+  <line x1="245" y1="126" x2="175" y2="150" stroke="#2563eb" stroke-width="1.3" marker-end="url(#arw)"/>
+  <line x1="265" y1="126" x2="330" y2="150" stroke="#2563eb" stroke-width="1.3" marker-end="url(#arw)"/>
+  <rect x="50" y="212" width="88" height="32" rx="6" fill="#f8fafc" stroke="#2563eb" stroke-width="1"/>
+  <text x="94" y="232" font-size="10.2" fill="#0f172a" text-anchor="middle" font-family="Consolas, Menlo, monospace">叶子 #31</text>
+  <rect x="152" y="212" width="88" height="32" rx="6" fill="#f8fafc" stroke="#2563eb" stroke-width="1"/>
+  <text x="196" y="232" font-size="10.2" fill="#0f172a" text-anchor="middle" font-family="Consolas, Menlo, monospace">叶子 #52</text>
+  <rect x="262" y="212" width="88" height="32" rx="6" fill="#f8fafc" stroke="#2563eb" stroke-width="1"/>
+  <text x="306" y="232" font-size="10.2" fill="#0f172a" text-anchor="middle" font-family="Consolas, Menlo, monospace">叶子 #77</text>
+  <rect x="364" y="212" width="88" height="32" rx="6" fill="#f8fafc" stroke="#2563eb" stroke-width="1"/>
+  <text x="408" y="232" font-size="10.2" fill="#0f172a" text-anchor="middle" font-family="Consolas, Menlo, monospace">叶子 #108</text>
+  <line x1="150" y1="180" x2="100" y2="210" stroke="#2563eb" stroke-width="1.3" marker-end="url(#arw)"/>
+  <line x1="190" y1="180" x2="190" y2="210" stroke="#2563eb" stroke-width="1.3" marker-end="url(#arw)"/>
+  <line x1="315" y1="180" x2="310" y2="210" stroke="#2563eb" stroke-width="1.3" marker-end="url(#arw)"/>
+  <line x1="355" y1="180" x2="400" y2="210" stroke="#2563eb" stroke-width="1.3" marker-end="url(#arw)"/>
+  <line x1="94" y1="252" x2="408" y2="252" stroke="#ea580c" stroke-width="1.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="94" y1="244" x2="94" y2="252" stroke="#ea580c" stroke-width="1.1"/>
+  <line x1="196" y1="244" x2="196" y2="252" stroke="#ea580c" stroke-width="1.1"/>
+  <line x1="306" y1="244" x2="306" y2="252" stroke="#ea580c" stroke-width="1.1"/>
+  <line x1="408" y1="244" x2="408" y2="252" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="255" y="268" font-size="9.6" fill="#ea580c" text-anchor="middle">叶子层双向链表（PREV / NEXT 页号）：范围扫描顺着它走，不回头根</text>
+  <text x="255" y="284" font-size="9.4" fill="#64748b" text-anchor="middle">（只画 4 片叶子；实际成百上千，页号在右边都能找到）</text>
+  <text x="30" y="308" font-size="9.6" fill="#64748b" text-anchor="start">树高 = 根到叶经过的页数；根页几乎总在内存里 → 一次查询 2~3 次 IO（1.2）</text>
+  <text x="520" y="84" font-size="12" fill="#ea580c" text-anchor="start" font-weight="bold">② 物理上：散落在表空间里的一堆页</text>
+  <rect x="520" y="94" width="450" height="216" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="536" y="114" font-size="9.6" fill="#64748b" text-anchor="start">一个 .ibd 文件（或系统表空间）—— 所有索引都住在这里</text>
+  <rect x="536" y="128" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="566" y="144" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="604" y="128" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="634" y="144" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="672" y="128" width="60" height="24" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="702" y="144" font-size="9" fill="#2563eb" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#4</text>
+  <rect x="740" y="128" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="770" y="144" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="808" y="128" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="838" y="144" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="876" y="128" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="906" y="144" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="536" y="160" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="566" y="176" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="604" y="160" width="60" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="634" y="176" font-size="9" fill="#ea580c" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#31</text>
+  <rect x="672" y="160" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="702" y="176" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="740" y="160" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="770" y="176" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="808" y="160" width="60" height="24" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="838" y="176" font-size="9" fill="#2563eb" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#7</text>
+  <rect x="876" y="160" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="906" y="176" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="536" y="192" width="60" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="566" y="208" font-size="9" fill="#ea580c" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#52</text>
+  <rect x="604" y="192" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="634" y="208" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="672" y="192" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="702" y="208" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="740" y="192" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="770" y="208" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="808" y="192" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="838" y="208" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="876" y="192" width="60" height="24" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="906" y="208" font-size="9" fill="#2563eb" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#9</text>
+  <rect x="536" y="224" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="566" y="240" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="604" y="224" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="634" y="240" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="672" y="224" width="60" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="702" y="240" font-size="9" fill="#ea580c" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#77</text>
+  <rect x="740" y="224" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="770" y="240" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="808" y="224" width="60" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="838" y="240" font-size="9" fill="#ea580c" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#108</text>
+  <rect x="876" y="224" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="906" y="240" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="536" y="256" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="566" y="272" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="604" y="256" width="60" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="634" y="272" font-size="9" fill="#ea580c" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#129</text>
+  <rect x="672" y="256" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="702" y="272" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="740" y="256" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="770" y="272" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="808" y="256" width="60" height="24" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="838" y="272" font-size="9" fill="#cbd5e1" text-anchor="middle">…</text>
+  <rect x="876" y="256" width="60" height="24" rx="4" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="906" y="272" font-size="9" fill="#ea580c" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">#201</text>
+  <rect x="520" y="326" width="12" height="10" rx="2" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="538" y="335" font-size="9.6" fill="#64748b" text-anchor="start">非叶段的页</text>
+  <rect x="646" y="326" width="12" height="10" rx="2" fill="#ffedd5" stroke="#ea580c" stroke-width="1"/>
+  <text x="664" y="335" font-size="9.6" fill="#64748b" text-anchor="start">叶段的页</text>
+  <rect x="772" y="326" width="12" height="10" rx="2" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="790" y="335" font-size="9.6" fill="#64748b" text-anchor="start">别的索引 / 别的表占的页</text>
+  <text x="520" y="356" font-size="9.6" fill="#64748b" text-anchor="start">区（extent）= 1 MB = 64 个 16 KB 页；段按区扩容，区与区不保证相邻</text>
+  <text x="520" y="374" font-size="9.6" fill="#ea580c" text-anchor="start">→ 同一个段的两页，可能隔着半个文件，全靠页号串着</text>
+  <text x="30" y="398" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">所以多一棵索引树，同时多付这几笔账：</text>
+  <rect x="30" y="408" width="224" height="66" rx="7" fill="#dbeafe" stroke="#2563eb" stroke-width="1.1"/>
+  <text x="44" y="428" font-size="11" fill="#2563eb" text-anchor="start" font-weight="bold">写放大</text>
+  <text x="44" y="448" font-size="9.4" fill="#0f172a" text-anchor="start">INSERT 一行要写 N+1 棵树</text>
+  <text x="44" y="465" font-size="9.4" fill="#64748b" text-anchor="start">改索引列＝标记删＋插新</text>
+  <rect x="266" y="408" width="224" height="66" rx="7" fill="#ffedd5" stroke="#ea580c" stroke-width="1.1"/>
+  <text x="280" y="428" font-size="11" fill="#ea580c" text-anchor="start" font-weight="bold">空间</text>
+  <text x="280" y="448" font-size="9.4" fill="#0f172a" text-anchor="start">每棵树两个段起步</text>
+  <text x="280" y="465" font-size="9.4" fill="#64748b" text-anchor="start">叶子还塞主键，主键越长越胖</text>
+  <rect x="502" y="408" width="224" height="66" rx="7" fill="#f3e8ff" stroke="#7e22ce" stroke-width="1.1"/>
+  <text x="516" y="428" font-size="11" fill="#7e22ce" text-anchor="start" font-weight="bold">缓冲池</text>
+  <text x="516" y="448" font-size="9.4" fill="#0f172a" text-anchor="start">所有索引页抢一块 buffer pool</text>
+  <text x="516" y="465" font-size="9.4" fill="#64748b" text-anchor="start">多一棵树＝少一份热数据</text>
+  <rect x="738" y="408" width="224" height="66" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.1"/>
+  <text x="752" y="428" font-size="11" fill="#dc2626" text-anchor="start" font-weight="bold">DDL 与锁</text>
+  <text x="752" y="448" font-size="9.4" fill="#0f172a" text-anchor="start">加索引＝扫全表建一棵新树</text>
+  <text x="752" y="465" font-size="9.4" fill="#64748b" text-anchor="start">改索引列，新老索引项都要锁</text>
+  <rect x="24" y="480" width="952" height="36" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="40" y="496" font-size="10.4" fill="#0f172a" text-anchor="start">每建一个索引，是在问「这条查询值不值得一棵树」——树要跟着每次写入一起长、一起锁、一起抢缓冲池。</text>
+  <text x="40" y="511" font-size="10.4" fill="#64748b" text-anchor="start">「先建上，说不定以后用得上」是纯负债：空间、写放大、缓冲池全在付，收益为零。</text>
+</svg>
