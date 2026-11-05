@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">MongoDB：集合一个文件，索引各一个文件，靠 RecordId 相连</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">mongo:7.0.40 · WiredTiger · 2 条文档 + 4 个普通索引 + 1 个 text 索引</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+
+  <rect x="24" y="82" width="430" height="410" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="1.2"/>
+  <text x="38" y="106" font-size="12.5" font-weight="bold" fill="#334155">collection-7.wt · key_format=q · snappy</text>
+  <line x1="38" y1="114" x2="440" y2="114" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="38" y="126" width="402" height="152" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="50" y="148" font-size="12" font-weight="bold" fill="#4338ca">RecordId R1（内部编号，不是 _id）</text>
+  <text x="50" y="174" font-size="12" fill="#0f172a">_id: 1 · 张三 · 18 · 13700000000</text>
+  <text x="50" y="200" font-size="12" fill="#0f172a">广东省深圳 · hobby: [打游戏, 爬山]</text>
+  <text x="50" y="226" font-size="12" fill="#0f172a">remark: 这是张三备注</text>
+  <text x="50" y="256" font-size="11.5" fill="#64748b">值就是 BSON 原文（value_format=u）</text>
+
+  <rect x="38" y="292" width="402" height="152" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="50" y="314" font-size="12" font-weight="bold" fill="#334155">RecordId R2（内部编号，不是 _id）</text>
+  <text x="50" y="340" font-size="12" fill="#0f172a">_id: 2 · 李四 · 19 · 13800000000</text>
+  <text x="50" y="366" font-size="12" fill="#0f172a">广东省深圳 · hobby: [唱, 跳, rap, 打蓝球]</text>
+  <text x="50" y="392" font-size="12" fill="#0f172a">remark: 这是李四备注</text>
+  <text x="50" y="422" font-size="11.5" fill="#64748b">storageSize 20480 B（WT 最小分配）</text>
+
+  <line x1="458" y1="200" x2="514" y2="200" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <line x1="514" y1="360" x2="458" y2="360" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <text x="462" y="190" font-size="10.5" fill="#64748b">FETCH</text>
+  <text x="462" y="380" font-size="10.5" fill="#64748b">IXSCAN</text>
+
+  <rect x="520" y="82" width="456" height="410" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="534" y="106" font-size="12.5" font-weight="bold" fill="#1d4ed8">五个索引文件：键是字段值，值是 RecordId</text>
+  <line x1="534" y1="114" x2="962" y2="114" stroke="#c7d2fe" stroke-width="1"/>
+
+  <text x="534" y="140" font-size="12" font-weight="bold" fill="#1d4ed8">index-8.wt · _id_</text>
+  <text x="534" y="162" font-size="12" fill="#0f172a">1 → R1　　2 → R2</text>
+  <line x1="534" y1="176" x2="962" y2="176" stroke="#c7d2fe" stroke-width="0.8"/>
+
+  <text x="534" y="200" font-size="12" font-weight="bold" fill="#1d4ed8">index-9.wt · phone_1</text>
+  <text x="534" y="222" font-size="12" fill="#0f172a">13700000000 → R1</text>
+  <text x="534" y="244" font-size="12" fill="#0f172a">13800000000 → R2</text>
+  <line x1="534" y1="258" x2="962" y2="258" stroke="#c7d2fe" stroke-width="0.8"/>
+
+  <text x="534" y="282" font-size="12" font-weight="bold" fill="#047857">index-11.wt · hobby_1（多键）</text>
+  <text x="534" y="304" font-size="12" fill="#0f172a">打游戏 → R1　　爬山 → R1</text>
+  <text x="534" y="326" font-size="12" fill="#0f172a">唱 → R2　　跳 → R2　　rap → R2　　…</text>
+  <text x="534" y="348" font-size="11.5" fill="#047857">2 条文档共 6 个元素，就有 6 条索引项</text>
+  <line x1="534" y1="362" x2="962" y2="362" stroke="#c7d2fe" stroke-width="0.8"/>
+
+  <text x="534" y="386" font-size="12" font-weight="bold" fill="#b45309">index-13.wt · remark_1</text>
+  <text x="534" y="408" font-size="12" fill="#0f172a">这是张三备注 → R1　　这是李四备注 → R2</text>
+  <line x1="534" y1="422" x2="962" y2="422" stroke="#c7d2fe" stroke-width="0.8"/>
+
+  <text x="534" y="446" font-size="12" font-weight="bold" fill="#7c3aed">index-15.wt · remark_text</text>
+  <text x="534" y="468" font-size="11.5" fill="#0f172a">按分词结果建词元，中文整句无分隔符时只有一个词元</text>
+
+  <rect x="24" y="506" width="952" height="98" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="38" y="530" font-size="12" font-weight="bold" fill="#b91c1c">两个容易读错的点</text>
+  <text x="38" y="556" font-size="11.5" fill="#0f172a">索引项只存「被索引字段 + RecordId」：投影里带 _id 就必须回表，docsExamined 从 0 变 1。</text>
+  <text x="38" y="580" font-size="11.5" fill="#0f172a">数组字段按元素展开：hobby 的 2 + 4 个元素变成 6 条索引项，不是 2 条。</text>
+  <text x="38" y="600" font-size="11.5" fill="#0f172a">同一个值会在集合文件与索引文件各存一份：grep「爬山」在 collection-7 与 index-11 各 1 处。</text>
+
+  <text x="24" y="632" font-size="12" fill="#b45309">判据：RecordId 是唯一的连接键；FETCH = 拿 RecordId 回集合文件取 BSON。</text>
+</svg>

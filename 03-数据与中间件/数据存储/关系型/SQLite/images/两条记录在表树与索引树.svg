@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">一个 .db 文件：表树装整行，三棵索引树只装键加 rowid</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">SQLite 3.54.1，page_size 4096，两条记录共占 5 个页</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+
+  <text x="24" y="92" font-size="13" font-weight="bold" fill="#1d4ed8">三棵索引 B 树：叶子页只装「键 + rowid」</text>
+
+  <rect x="24" y="102" width="430" height="124" rx="8" fill="#eef2ff" stroke="#1d4ed8" stroke-width="1.2"/>
+  <text x="38" y="124" font-size="12.5" font-weight="bold" fill="#1d4ed8">第 3 页 · idx_phone · 索引叶子 0x0A</text>
+  <line x1="38" y1="132" x2="440" y2="132" stroke="#c7d2fe" stroke-width="1"/>
+  <text x="38" y="154" font-size="12" fill="#0f172a">13700000000</text>
+  <text x="200" y="154" font-size="11.5" fill="#64748b">rowid 1 · payload 14 B</text>
+  <text x="38" y="180" font-size="12" fill="#0f172a">13800000000</text>
+  <text x="200" y="180" font-size="11.5" fill="#64748b">rowid 2 · payload 15 B</text>
+  <text x="38" y="208" font-size="11" fill="#64748b">键排好序，rowid 跟在每条记录末尾</text>
+
+  <rect x="24" y="238" width="430" height="124" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <text x="38" y="260" font-size="12.5" font-weight="bold" fill="#047857">第 4 页 · idx_hobby · 索引叶子 0x0A</text>
+  <line x1="38" y1="268" x2="440" y2="268" stroke="#a7f3d0" stroke-width="1"/>
+  <text x="38" y="290" font-size="12" fill="#0f172a">唱、跳、rap、打蓝球</text>
+  <text x="200" y="290" font-size="11.5" fill="#64748b">rowid 2 · 31 B</text>
+  <text x="38" y="316" font-size="12" fill="#0f172a">打游戏，爬山</text>
+  <text x="200" y="316" font-size="11.5" fill="#64748b">rowid 1 · 21 B</text>
+  <text x="38" y="344" font-size="11" fill="#64748b">整串当一个键：逗号不会被拆成两个值</text>
+
+  <rect x="24" y="374" width="430" height="120" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.2"/>
+  <text x="38" y="396" font-size="12.5" font-weight="bold" fill="#b45309">第 5 页 · idx_remark · 索引叶子 0x0A</text>
+  <line x1="38" y1="404" x2="440" y2="404" stroke="#fde68a" stroke-width="1"/>
+  <text x="38" y="426" font-size="12" fill="#0f172a">这是张三备注</text>
+  <text x="200" y="426" font-size="11.5" fill="#64748b">rowid 1 · 21 B</text>
+  <text x="38" y="452" font-size="12" fill="#0f172a">这是李四备注</text>
+  <text x="200" y="452" font-size="11.5" fill="#64748b">rowid 2 · 22 B</text>
+  <text x="38" y="478" font-size="11" fill="#64748b">同一段文字在表页和索引页各存了一份</text>
+
+  <line x1="458" y1="164" x2="552" y2="164" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <line x1="458" y1="300" x2="552" y2="300" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <line x1="458" y1="434" x2="552" y2="434" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <text x="462" y="154" font-size="10.5" fill="#64748b">回表</text>
+  <text x="462" y="290" font-size="10.5" fill="#64748b">回表</text>
+  <text x="462" y="424" font-size="10.5" fill="#64748b">回表</text>
+
+  <rect x="560" y="102" width="416" height="392" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="1.2"/>
+  <text x="574" y="124" font-size="12.5" font-weight="bold" fill="#334155">第 2 页 · user_demo 表 B 树叶子 0x0D · 2 个 cell</text>
+  <line x1="574" y1="132" x2="962" y2="132" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="574" y="146" width="388" height="158" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="586" y="168" font-size="12" font-weight="bold" fill="#4338ca">rowid = 1（id = 1，行记录里存 NULL）</text>
+  <text x="586" y="192" font-size="12" fill="#0f172a">张三 · 18 · 13700000000</text>
+  <text x="586" y="220" font-size="12" fill="#0f172a">广东省深圳 · 打游戏，爬山</text>
+  <text x="586" y="248" font-size="12" fill="#0f172a">这是张三备注</text>
+  <text x="586" y="276" font-size="11.5" fill="#64748b">cell payload 77 B = 8 B 头 + 69 B 体</text>
+  <text x="586" y="296" font-size="11.5" fill="#64748b">在页内的起点：第 4017 字节</text>
+
+  <rect x="574" y="316" width="388" height="162" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="586" y="338" font-size="12" font-weight="bold" fill="#334155">rowid = 2（id = 2，行记录里存 NULL）</text>
+  <text x="586" y="362" font-size="12" fill="#0f172a">李四 · 19 · 13800000000</text>
+  <text x="586" y="390" font-size="12" fill="#0f172a">广东省深圳 · 唱、跳、rap、打蓝球</text>
+  <text x="586" y="418" font-size="12" fill="#0f172a">这是李四备注</text>
+  <text x="586" y="446" font-size="11.5" fill="#64748b">cell payload 86 B = 8 B 头 + 78 B 体</text>
+  <text x="586" y="466" font-size="11.5" fill="#64748b">在页内的起点：第 3929 字节</text>
+
+  <rect x="24" y="506" width="952" height="104" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="38" y="530" font-size="12" font-weight="bold" fill="#b91c1c">注意：rowid 1 的索引 cell 比 rowid 2 少 1 字节，不是少了字段</text>
+  <text x="38" y="556" font-size="11.5" fill="#0f172a">serial type 9 表示「常数 1」，它占 0 字节；rowid 2 只能用 serial type 1 存 1 字节。</text>
+  <text x="38" y="580" font-size="11.5" fill="#0f172a">这也是 SQLite 的 rowid 只有 1~9 字节的原因：它是整数 varint，不是可变长主键值。</text>
+  <text x="38" y="600" font-size="11" fill="#64748b">MySQL 的二级索引叶子带的是主键值本身，varchar 主键会让三棵二级树一起变胖。</text>
+
+  <text x="24" y="632" font-size="12" fill="#b45309">判据：索引 cell 末尾的 rowid 是唯一的连接键；回表 = 拿这个整数再下降一次表 B 树。</text>
+</svg>

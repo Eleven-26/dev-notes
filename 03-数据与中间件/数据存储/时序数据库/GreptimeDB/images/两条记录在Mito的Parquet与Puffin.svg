@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 690" width="1000" height="690" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="690" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">两条记录在 Mito 里：Parquet 存列、Puffin 存索引、manifest 成对登记</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">一次 flush = 1 个数据文件 + 1 个索引文件 + 1 条 manifest 记录</text>
+
+  <rect x="20" y="82" width="300" height="470" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="32" y="106" font-size="13" font-weight="bold" fill="#0f172a">原始数据 · parquet 6933 B</text>
+  <text x="32" y="128" font-size="10.5" fill="#334155">2 行 × 8 列 · 1 个 row group</text>
+
+  <rect x="32" y="142" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">ts · 0</text>
+  <rect x="172" y="142" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="237" y="162" font-size="11" fill="#1e3a8a" text-anchor="middle">id · 1</text>
+
+  <rect x="32" y="178" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="198" font-size="11" fill="#1e3a8a" text-anchor="middle">name · 2</text>
+  <rect x="172" y="178" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="237" y="198" font-size="11" fill="#1e3a8a" text-anchor="middle">age · 3</text>
+
+  <rect x="32" y="214" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="234" font-size="11" fill="#1e3a8a" text-anchor="middle">phone · 4</text>
+  <rect x="172" y="214" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="237" y="234" font-size="11" fill="#1e3a8a" text-anchor="middle">addr · 5</text>
+
+  <rect x="32" y="250" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="270" font-size="11" fill="#1e3a8a" text-anchor="middle">hobby · 6</text>
+  <rect x="172" y="250" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="237" y="270" font-size="11" fill="#1e3a8a" text-anchor="middle">remark · 7</text>
+
+  <text x="32" y="306" font-size="10.5" fill="#334155">16 个值按列切开；行在磁盘上不存在</text>
+  <text x="32" y="330" font-size="10.5" fill="#334155">未压缩 610 B；其余约 6.3 KB 是元数据</text>
+  <text x="32" y="354" font-size="10.5" fill="#334155">每个列块自带 min / max / null 计数</text>
+  <text x="32" y="378" font-size="10.5" fill="#b45309">这两项就是②row group 统计的来源</text>
+  <text x="32" y="414" font-size="10.5" fill="#334155">column_id 与建表顺序一致：</text>
+  <text x="32" y="438" font-size="10.5" fill="#334155">ts 0 · id 1 · name 2 · age 3</text>
+  <text x="32" y="462" font-size="10.5" fill="#334155">phone 4 · addr 5 · hobby 6 · remark 7</text>
+  <text x="32" y="494" font-size="10.5" fill="#334155">manifest primary_key = [1]，即 id</text>
+  <text x="32" y="526" font-size="10.5" fill="#334155">时间索引 ts 单独走文件级时间范围</text>
+
+  <rect x="340" y="82" width="320" height="470" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="352" y="106" font-size="13" font-weight="bold" fill="#0f172a">索引数据 · puffin 856 B</text>
+  <text x="352" y="128" font-size="10.5" fill="#334155">fafced4d….puffin，与数据文件同名</text>
+
+  <rect x="352" y="142" width="296" height="104" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2" rx="8"/>
+  <text x="364" y="164" font-size="11.5" font-weight="bold" fill="#4c1d95">倒排 blob　offset 4 · 426 B</text>
+  <text x="364" y="186" font-size="10.5" fill="#4c1d95">phone 107 B：Roaring bitmap + FST 63</text>
+  <text x="364" y="208" font-size="10.5" fill="#4c1d95">hobby 183 B：FST 139，base_offset 107</text>
+  <text x="364" y="230" font-size="10.5" fill="#4c1d95">segment_row_count 1024 · 2 行 = 1 段</text>
+
+  <rect x="352" y="258" width="296" height="86" fill="#fce7f3" stroke="#db2777" stroke-width="1.2" rx="8"/>
+  <text x="364" y="280" font-size="11.5" font-weight="bold" fill="#831843">全文 bloom　offset 430 · 86 B</text>
+  <text x="364" y="302" font-size="10.5" fill="#831843">bloom 64 B；rows_per_segment 10240</text>
+  <text x="364" y="324" font-size="10.5" fill="#831843">analyzer English · segment_count 1</text>
+
+  <rect x="352" y="356" width="296" height="132" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="364" y="378" font-size="11.5" font-weight="bold" fill="#14532d">manifest 000…01.json</text>
+  <text x="364" y="400" font-size="10.5" fill="#14532d">file_id 同名 → 数据与索引成对</text>
+  <text x="364" y="422" font-size="10.5" fill="#14532d">time_range 10:00:00–10:00:01</text>
+  <text x="364" y="444" font-size="10.5" fill="#14532d">primary_key_min / max = 1 / 2</text>
+  <text x="364" y="466" font-size="10.5" fill="#14532d">index_file_size 856 = Puffin 大小</text>
+
+  <text x="352" y="512" font-size="10.5" fill="#334155">三个列索引共用一个 Puffin：107 + 183 + 86</text>
+  <text x="352" y="534" font-size="10.5" fill="#334155">计划里 index_size 与 size 分开记账</text>
+
+  <rect x="675" y="82" width="305" height="470" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="687" y="106" font-size="13" font-weight="bold" fill="#0f172a">查询：谓词决定走哪条路</text>
+
+  <rect x="687" y="120" width="281" height="62" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.1" rx="7"/>
+  <text x="699" y="142" font-size="11.5" font-weight="bold" fill="#4c1d95">phone = '13700000000'</text>
+  <text x="699" y="162" font-size="10.5" fill="#4c1d95">倒排命中 · num_sst_rows 1/2</text>
+  <text x="699" y="178" font-size="10" fill="#4c1d95">apply 2.196786ms · blob 426 B</text>
+
+  <rect x="687" y="190" width="281" height="62" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.1" rx="7"/>
+  <text x="699" y="212" font-size="11.5" font-weight="bold" fill="#4c1d95">hobby = '打游戏，爬山'</text>
+  <text x="699" y="232" font-size="10.5" fill="#4c1d95">倒排命中 · apply 74.906µs</text>
+  <text x="699" y="248" font-size="10" fill="#4c1d95">blob 426 B · total_ranges 2</text>
+
+  <rect x="687" y="260" width="281" height="62" fill="#fce7f3" stroke="#db2777" stroke-width="1.1" rx="7"/>
+  <text x="699" y="282" font-size="11.5" font-weight="bold" fill="#831843">matches_term(remark, 整串)</text>
+  <text x="699" y="302" font-size="10.5" fill="#831843">bloom 放行 · 扫 2 行，输出 1</text>
+  <text x="699" y="318" font-size="10" fill="#831843">fulltext_index_cache_hit 1</text>
+
+  <rect x="687" y="330" width="281" height="62" fill="#fff7ed" stroke="#ea580c" stroke-width="1.1" rx="7"/>
+  <text x="699" y="352" font-size="11.5" font-weight="bold" fill="#7c2d12">matches_term(remark, '张三')</text>
+  <text x="699" y="372" font-size="10.5" fill="#7c2d12">bloom 判无 · num_sst_rows 0</text>
+  <text x="699" y="388" font-size="10" fill="#7c2d12">rows_fulltext_filtered 2 · 输出 0</text>
+
+  <rect x="687" y="400" width="281" height="62" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1" rx="7"/>
+  <text x="699" y="422" font-size="11.5" font-weight="bold" fill="#334155">remark LIKE '%张三%'</text>
+  <text x="699" y="442" font-size="10.5" fill="#334155">无索引指标 · 扫 2 行，输出 1</text>
+  <text x="699" y="458" font-size="10" fill="#334155">前缀 LIKE 同样不剪枝</text>
+
+  <text x="687" y="492" font-size="10.5" fill="#b91c1c">num_sst_rows 不能当索引证据：</text>
+  <text x="687" y="514" font-size="10.5" fill="#334155">age = 18 没索引也压到 1 行</text>
+  <text x="687" y="536" font-size="10.5" fill="#334155">判断看 inverted_ / fulltext_ 指标</text>
+
+  <rect x="20" y="566" width="960" height="104" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="36" y="592" font-size="11.5" font-weight="bold" fill="#0f172a">写一条 = 追加一对文件：3 个 SST 共 4 行物理数据，一个都没删</text>
+  <text x="36" y="618" font-size="11.5" fill="#334155">同 (id, ts) 由 sequence 覆盖（2 → 3 → 4）；旧值留在旧 SST，等 compaction 才消失</text>
+  <text x="36" y="644" font-size="11.5" fill="#334155">查旧手机号返回 0 行，dedup num_unselected_rows = 1；查新手机号返回 1 行</text>
+</svg>

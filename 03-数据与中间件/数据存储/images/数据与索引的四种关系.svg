@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="650" viewBox="0 0 1000 650">
+  <rect x="0" y="0" width="1000" height="650" fill="#ffffff"/>
+
+  <rect x="30" y="14" width="940" height="56" rx="8" fill="#f4f6f9" stroke="#d5dbe3"/>
+  <text x="50" y="41" font-family="sans-serif" font-size="21" font-weight="bold" fill="#1f2937">数据与索引的四种关系形态</text>
+  <text x="50" y="62" font-family="sans-serif" font-size="13" fill="#5b6472">同一个问题：按 phone 找到 id=2 这行，要经过几次读取？</text>
+
+  <rect x="30" y="86" width="460" height="228" rx="10" fill="#fbfcfd" stroke="#d5dbe3"/>
+  <text x="50" y="114" font-family="sans-serif" font-size="16" font-weight="bold" fill="#1f2937">① 同一棵树 · MySQL 聚簇索引</text>
+  <text x="50" y="134" font-family="sans-serif" font-size="12" fill="#6b7280">索引就是数据本身，按主键只下降一次</text>
+
+  <rect x="55" y="146" width="190" height="34" rx="6" fill="#e8f1fb" stroke="#2f6fb2"/>
+  <text x="65" y="168" font-family="sans-serif" font-size="12" fill="#1f2937">根页 / 内部页（只存键）</text>
+  <line x1="150" y1="180" x2="150" y2="198" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="150,206 145,196 155,196" fill="#444444"/>
+  <rect x="55" y="206" width="330" height="58" rx="6" fill="#e8f1fb" stroke="#2f6fb2"/>
+  <text x="65" y="226" font-family="sans-serif" font-size="12" fill="#1f2937">叶子页 = 整行（索引即数据）</text>
+  <text x="65" y="248" font-family="monospace" font-size="11" fill="#334155">id=1 张三 18 13700000000 打游戏，爬山</text>
+  <text x="55" y="286" font-family="sans-serif" font-size="12" fill="#1f2937">按 id 查：下降 1 次就拿到整行</text>
+  <text x="55" y="306" font-family="sans-serif" font-size="12" fill="#6b7280">按 phone 查：另有一棵二级树，共 2 跳</text>
+
+  <rect x="510" y="86" width="460" height="228" rx="10" fill="#fbfcfd" stroke="#d5dbe3"/>
+  <text x="530" y="114" font-family="sans-serif" font-size="16" font-weight="bold" fill="#1f2937">② 两棵树 + 回表 · SQLite / MongoDB</text>
+  <text x="530" y="134" font-family="sans-serif" font-size="12" fill="#6b7280">索引叶子存主键，行在另一棵树</text>
+
+  <rect x="535" y="146" width="180" height="62" rx="6" fill="#e8f1fb" stroke="#2f6fb2"/>
+  <text x="545" y="168" font-family="sans-serif" font-size="12" fill="#1f2937">索引树叶子</text>
+  <text x="545" y="190" font-family="monospace" font-size="11" fill="#334155">phone=138… → 2</text>
+  <line x1="715" y1="177" x2="755" y2="177" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="763,177 753,172 753,182" fill="#444444"/>
+  <text x="716" y="168" font-family="sans-serif" font-size="11" fill="#6b7280">主键</text>
+  <rect x="763" y="146" width="182" height="62" rx="6" fill="#fdf1e3" stroke="#c07a2d"/>
+  <text x="773" y="168" font-family="sans-serif" font-size="12" fill="#1f2937">表树叶子（整行）</text>
+  <text x="773" y="190" font-family="monospace" font-size="11" fill="#334155">id=2 李四 19 138…</text>
+  <text x="530" y="238" font-family="sans-serif" font-size="12" fill="#1f2937">索引只存「键 + 指向主键」，行在另一棵树</text>
+  <text x="530" y="260" font-family="sans-serif" font-size="12" fill="#1f2937">移动行不用改索引，点查固定多一跳</text>
+  <text x="530" y="286" font-family="sans-serif" font-size="12" fill="#1f2937">覆盖索引可以把这一跳省掉</text>
+  <text x="530" y="306" font-family="sans-serif" font-size="12" fill="#6b7280">这就是各产品「回表」的来源</text>
+
+  <rect x="30" y="326" width="460" height="228" rx="10" fill="#fbfcfd" stroke="#d5dbe3"/>
+  <text x="50" y="354" font-family="sans-serif" font-size="16" font-weight="bold" fill="#1f2937">③ 索引与载荷分离 · ES / ClickHouse</text>
+  <text x="50" y="374" font-family="sans-serif" font-size="12" fill="#6b7280">索引只回答「是谁」，内容另存一份</text>
+
+  <rect x="55" y="386" width="170" height="62" rx="6" fill="#e8f1fb" stroke="#2f6fb2"/>
+  <text x="65" y="408" font-family="sans-serif" font-size="12" fill="#1f2937">倒排 / 稀疏索引</text>
+  <text x="65" y="430" font-family="monospace" font-size="11" fill="#334155">爬山 → doc 2 / granule 7</text>
+  <line x1="225" y1="417" x2="275" y2="417" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="283,417 273,412 273,422" fill="#444444"/>
+  <text x="226" y="408" font-family="sans-serif" font-size="11" fill="#6b7280">doc id</text>
+  <rect x="283" y="386" width="182" height="62" rx="6" fill="#fdf1e3" stroke="#c07a2d"/>
+  <text x="293" y="408" font-family="sans-serif" font-size="12" fill="#1f2937">_source / 列文件</text>
+  <text x="293" y="430" font-family="sans-serif" font-size="11" fill="#334155">整条文档 / 整块列数据</text>
+  <text x="50" y="478" font-family="sans-serif" font-size="12" fill="#1f2937">索引可以很小，检索能力也强</text>
+  <text x="50" y="500" font-family="sans-serif" font-size="12" fill="#1f2937">但取完整内容必然多一次读取</text>
+  <text x="50" y="526" font-family="sans-serif" font-size="12" fill="#1f2937">ES 的 fetch 阶段、列式的扫块都是这一跳</text>
+  <text x="50" y="546" font-family="sans-serif" font-size="12" fill="#6b7280">载荷另存，也让「更新 = 重写载荷」</text>
+
+  <rect x="510" y="326" width="460" height="228" rx="10" fill="#fbfcfd" stroke="#d5dbe3"/>
+  <text x="530" y="354" font-family="sans-serif" font-size="16" font-weight="bold" fill="#1f2937">④ 索引即全部 · Redis</text>
+  <text x="530" y="374" font-family="sans-serif" font-size="12" fill="#6b7280">只有主字典这一个入口，没有二级索引</text>
+
+  <rect x="535" y="386" width="150" height="62" rx="6" fill="#e8f1fb" stroke="#2f6fb2"/>
+  <text x="545" y="408" font-family="sans-serif" font-size="12" fill="#1f2937">主字典</text>
+  <text x="545" y="430" font-family="monospace" font-size="11" fill="#334155">user:2 → robj</text>
+  <line x1="685" y1="417" x2="725" y2="417" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="733,417 723,412 723,422" fill="#444444"/>
+  <text x="686" y="408" font-family="sans-serif" font-size="11" fill="#6b7280">指针</text>
+  <rect x="733" y="386" width="212" height="62" rx="6" fill="#fdf1e3" stroke="#c07a2d"/>
+  <text x="743" y="408" font-family="sans-serif" font-size="12" fill="#1f2937">robj（value）</text>
+  <text x="743" y="430" font-family="monospace" font-size="11" fill="#334155">phone/hobby/remark 在值里</text>
+  <text x="530" y="478" font-family="sans-serif" font-size="12" fill="#1f2937">按 key 查：1 跳，亚毫秒</text>
+  <text x="530" y="500" font-family="sans-serif" font-size="12" fill="#1f2937">按 phone 查：没有索引可走</text>
+  <rect x="530" y="514" width="400" height="34" rx="6" fill="#fdecea" stroke="#e0a29a"/>
+  <text x="540" y="536" font-family="sans-serif" font-size="12" fill="#a33a2f">要查 phone：只能自己维护 phone:137… → 2 的 Set</text>
+
+  <rect x="30" y="574" width="940" height="56" rx="8" fill="#eef4fb" stroke="#c9d9ea"/>
+  <text x="50" y="598" font-family="sans-serif" font-size="14" fill="#1f2937">跳数不是性能指标：内存 1 跳、B+Tree 2 跳、列式扫块，每一跳的 IO 形态都不同；</text>
+  <text x="50" y="620" font-family="sans-serif" font-size="14" fill="#1f2937">能横向比较的只有同一族内部的相对代价。</text>
+</svg>

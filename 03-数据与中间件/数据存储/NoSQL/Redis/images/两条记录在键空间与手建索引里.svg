@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="1000" height="640" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="640" fill="#ffffff"/>
+  <text x="500" y="32" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">Redis：键空间一个 dict 既是索引也是数据，二级索引要自己建</text>
+  <text x="500" y="56" text-anchor="middle" font-size="13" fill="#64748b">redis:7-alpine 7.4.11 · 2 条 HASH + 4 个手建索引 key</text>
+  <defs><marker id="arw" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#64748b"/></marker></defs>
+
+  <rect x="24" y="82" width="440" height="386" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="1.2"/>
+  <text x="38" y="106" font-size="12.5" font-weight="bold" fill="#334155">键空间 dict（redisDb.dict）</text>
+  <line x1="38" y1="114" x2="450" y2="114" stroke="#cbd5e1" stroke-width="1"/>
+
+  <rect x="38" y="126" width="412" height="150" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1"/>
+  <text x="50" y="148" font-size="12" font-weight="bold" fill="#4338ca">dictEntry：key = sds “user:1”</text>
+  <text x="50" y="172" font-size="11.5" fill="#0f172a">value = robj → hash 的 listpack</text>
+  <text x="50" y="196" font-size="11.5" fill="#0f172a">张三 · 18 · 13700000000 · 广东省深圳</text>
+  <text x="50" y="220" font-size="11.5" fill="#0f172a">打游戏，爬山 · 这是张三备注</text>
+  <text x="50" y="248" font-size="11.5" fill="#64748b">MEMORY USAGE 176 B · HGETALL 按写入序返回</text>
+  <text x="50" y="266" font-size="11.5" fill="#64748b">值就在 dictEntry 指向的对象里，没有第二份</text>
+
+  <rect x="38" y="292" width="412" height="150" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+  <text x="50" y="314" font-size="12" font-weight="bold" fill="#334155">dictEntry：key = sds “user:2”</text>
+  <text x="50" y="338" font-size="11.5" fill="#0f172a">value = robj → hash 的 listpack</text>
+  <text x="50" y="362" font-size="11.5" fill="#0f172a">李四 · 19 · 13800000000 · 广东省深圳</text>
+  <text x="50" y="386" font-size="11.5" fill="#0f172a">唱、跳、rap、打蓝球 · 这是李四备注</text>
+  <text x="50" y="414" font-size="11.5" fill="#64748b">MEMORY USAGE 208 B</text>
+  <text x="50" y="432" font-size="11.5" fill="#64748b">字段值变长只会换编码，不会多一个索引</text>
+
+  <line x1="540" y1="196" x2="472" y2="196" stroke="#64748b" stroke-width="1.4" marker-end="url(#arw)"/>
+  <text x="478" y="186" font-size="10.5" fill="#64748b">拼 key</text>
+  <text x="478" y="216" font-size="10.5" fill="#64748b">user:1</text>
+
+  <rect x="540" y="82" width="436" height="386" rx="8" fill="#ecfdf5" stroke="#047857" stroke-width="1.2"/>
+  <text x="554" y="106" font-size="12.5" font-weight="bold" fill="#047857">手建索引 key：也是 dict 里的普通 key</text>
+  <line x1="554" y1="114" x2="962" y2="114" stroke="#a7f3d0" stroke-width="1"/>
+
+  <rect x="554" y="126" width="408" height="54" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1"/>
+  <text x="566" y="148" font-size="12" fill="#0f172a">idx:phone:13700000000</text>
+  <text x="566" y="169" font-size="12" fill="#047857">SET { “1” }</text>
+
+  <rect x="554" y="190" width="408" height="54" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1"/>
+  <text x="566" y="212" font-size="12" fill="#0f172a">idx:phone:13800000000</text>
+  <text x="566" y="233" font-size="12" fill="#047857">SET { “2” }</text>
+
+  <rect x="554" y="254" width="408" height="54" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1"/>
+  <text x="566" y="276" font-size="12" fill="#0f172a">idx:hobby:打游戏</text>
+  <text x="566" y="297" font-size="12" fill="#047857">SET { “1” }</text>
+
+  <rect x="554" y="318" width="408" height="54" rx="6" fill="#ffffff" stroke="#047857" stroke-width="1"/>
+  <text x="566" y="340" font-size="12" fill="#0f172a">idx:hobby:爬山</text>
+  <text x="566" y="361" font-size="12" fill="#047857">SET { “1” }</text>
+
+  <text x="554" y="404" font-size="11.5" fill="#047857">DBSIZE = 6：2 个数据 key + 4 个索引 key，同一个命名空间</text>
+  <text x="554" y="430" font-size="11.5" fill="#64748b">索引 key 也是普通 key，RDB / AOF / 主从都自动带上</text>
+  <text x="554" y="452" font-size="11.5" fill="#64748b">但没有引擎维护它：member 写错、忘记更新都是脏数据</text>
+
+  <rect x="24" y="482" width="952" height="106" rx="8" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="38" y="506" font-size="12" font-weight="bold" fill="#b91c1c">三条实测结论</text>
+  <text x="38" y="532" font-size="11.5" fill="#0f172a">点查 1 跳：HGETALL user:1 直接命中 dictEntry，值在同一个对象里，没有回表这一步。</text>
+  <text x="38" y="556" font-size="11.5" fill="#0f172a">改 phone 后忘了改索引：SMEMBERS 旧 key 仍返回 “1”，HGET 已是 13900000000 —— 双写不一致的最小复现。</text>
+  <text x="38" y="580" font-size="11.5" fill="#0f172a">listpack 的 64 字节边界：字段 64 B 时 240 B，65 B 时 555 B，同一个 key 多 1 字节数据多 315 B 内存。</text>
+
+  <text x="24" y="630" font-size="12" fill="#b45309">判据：dictEntry 是唯一的连接点；二级字段没有入口，索引是一组要你自己维护的 key。</text>
+</svg>

@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="sans-serif">
+  <rect x="0" y="0" width="1000" height="660" fill="#ffffff"/>
+  <text x="500" y="32" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">一个 part 里：列数据、标记、一级索引各是独立文件</text>
+  <text x="500" y="56" font-size="13" fill="#64748b" text-anchor="middle">行在磁盘上不存在；查询先用索引定位 granule，再按列解压那一小段</text>
+
+  <rect x="20" y="82" width="300" height="448" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="32" y="106" font-size="14" font-weight="bold" fill="#0f172a">原始数据：按列拆开</text>
+
+  <rect x="32" y="124" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="144" font-size="11" fill="#1e3a8a" text-anchor="middle">id.bin</text>
+  <rect x="172" y="124" width="134" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="239" y="144" font-size="11" fill="#1e3a8a" text-anchor="middle">name.bin</text>
+
+  <rect x="32" y="164" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="184" font-size="11" fill="#1e3a8a" text-anchor="middle">age.bin</text>
+  <rect x="172" y="164" width="134" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="239" y="184" font-size="11" fill="#1e3a8a" text-anchor="middle">phone.bin</text>
+
+  <rect x="32" y="204" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="224" font-size="11" fill="#1e3a8a" text-anchor="middle">addr.bin</text>
+  <rect x="172" y="204" width="134" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="239" y="224" font-size="11" fill="#1e3a8a" text-anchor="middle">hobby.bin</text>
+
+  <rect x="32" y="244" width="130" height="30" fill="#eff6ff" stroke="#2563eb" stroke-width="1.1" rx="6"/>
+  <text x="97" y="264" font-size="11" fill="#1e3a8a" text-anchor="middle">remark.bin</text>
+  <rect x="172" y="244" width="134" height="30" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.1" rx="6"/>
+  <text x="239" y="264" font-size="10" fill="#334155" text-anchor="middle">+ .size.bin</text>
+
+  <text x="32" y="302" font-size="10.5" fill="#334155">每列一个 .bin；String 列另配 .size.bin</text>
+  <text x="32" y="322" font-size="10.5" fill="#334155">每列再配一个 .cmrk2 标记</text>
+
+  <text x="32" y="356" font-size="10.5" fill="#b91c1c">Compact part 里全部列挤进一个 data.bin</text>
+  <text x="32" y="386" font-size="10.5" fill="#334155">addr 155 B ← 18,000 B（116×）</text>
+  <text x="32" y="406" font-size="10.5" fill="#334155">hobby 216 B ← 26,993 B（125×）</text>
+  <text x="32" y="426" font-size="10.5" fill="#334155">phone 4,119 B ← 19,000 B（4.6×）</text>
+
+  <text x="32" y="462" font-size="10.5" font-weight="bold" fill="#0f172a">行在磁盘上不存在：</text>
+  <text x="32" y="482" font-size="10.5" fill="#334155">同一行的 7 个值分散在 7 个列文件里</text>
+  <text x="32" y="506" font-size="10.5" fill="#334155">体积按列统计，不按行</text>
+
+  <line x1="322" y1="256" x2="337" y2="256" stroke="#64748b" stroke-width="1.8" marker-end="url(#a1)"/>
+
+  <rect x="340" y="82" width="330" height="448" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="354" y="106" font-size="14" font-weight="bold" fill="#0f172a">part all_1_1_0（Compact，2 行）</text>
+
+  <rect x="354" y="124" width="302" height="72" fill="#dcfce7" stroke="#16a34a" stroke-width="1.3" rx="8"/>
+  <text x="366" y="146" font-size="12" font-weight="bold" fill="#14532d">primary.cidx　46 B</text>
+  <text x="366" y="168" font-size="10.5" fill="#14532d">一级索引：每个 granule 记一条主键值</text>
+  <text x="366" y="186" font-size="10.5" fill="#14532d">2 行切 2 个 granule，常驻内存 12 B</text>
+
+  <rect x="354" y="210" width="302" height="72" fill="#eff6ff" stroke="#2563eb" stroke-width="1.3" rx="8"/>
+  <text x="366" y="232" font-size="12" font-weight="bold" fill="#1e3a8a">data.bin　575 B</text>
+  <text x="366" y="254" font-size="10.5" fill="#1e3a8a">全部 7 列的数据，列式压缩后拼在一起</text>
+  <text x="366" y="272" font-size="10.5" fill="#1e3a8a">Wide part 时拆成每列一个 .bin</text>
+
+  <rect x="354" y="296" width="302" height="72" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.3" rx="8"/>
+  <text x="366" y="318" font-size="12" font-weight="bold" fill="#713f12">data.cmrk4　142 B</text>
+  <text x="366" y="340" font-size="10.5" fill="#713f12">标记：每个 granule 在压缩块里的偏移</text>
+  <text x="366" y="358" font-size="10.5" fill="#713f12">marks=3 = 2 个 granule + 1 条收尾标记</text>
+
+  <rect x="354" y="382" width="302" height="72" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.3" rx="8"/>
+  <text x="366" y="404" font-size="12" font-weight="bold" fill="#4c1d95">skp_idx_*.idx　四个跳数索引</text>
+  <text x="366" y="426" font-size="10.5" fill="#4c1d95">phone 32 B / hobby 164 B</text>
+  <text x="366" y="444" font-size="10.5" fill="#4c1d95">remark 68 B / age 30 B（各配 .cmrk4）</text>
+
+  <text x="354" y="482" font-size="10.5" fill="#334155">part 不可变：新写入只追加新 part</text>
+  <text x="354" y="502" font-size="10.5" fill="#334155">合并由后台异步做，OPTIMIZE 只是催一次</text>
+
+  <line x1="672" y1="256" x2="687" y2="256" stroke="#64748b" stroke-width="1.8" marker-end="url(#a1)"/>
+
+  <rect x="690" y="82" width="290" height="448" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="704" y="106" font-size="14" font-weight="bold" fill="#0f172a">查询：先定位 granule</text>
+
+  <rect x="704" y="124" width="262" height="78" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2" rx="8"/>
+  <text x="716" y="146" font-size="11.5" font-weight="bold" fill="#14532d">id = 2</text>
+  <text x="716" y="168" font-size="10.5" fill="#14532d">PrimaryKey 二分查找</text>
+  <text x="716" y="188" font-size="10.5" fill="#14532d">Granules 2/2（2 行表没得剪）</text>
+
+  <rect x="704" y="214" width="262" height="78" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2" rx="8"/>
+  <text x="716" y="236" font-size="11.5" font-weight="bold" fill="#4c1d95">phone = '137…'</text>
+  <text x="716" y="258" font-size="10.5" fill="#4c1d95">bloom_filter 跳数索引</text>
+  <text x="716" y="278" font-size="10.5" fill="#4c1d95">Granules 1/2，剪掉一半</text>
+
+  <rect x="704" y="304" width="262" height="78" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.2" rx="8"/>
+  <text x="716" y="326" font-size="11.5" font-weight="bold" fill="#4c1d95">hobby LIKE '%打游戏%'</text>
+  <text x="716" y="348" font-size="10.5" fill="#4c1d95">ngrambf_v1(n=3)</text>
+  <text x="716" y="368" font-size="10.5" fill="#4c1d95">Granules 1/2，剪掉一半</text>
+
+  <rect x="704" y="394" width="262" height="78" fill="#fff7ed" stroke="#ea580c" stroke-width="1.2" rx="8"/>
+  <text x="716" y="416" font-size="11.5" font-weight="bold" fill="#7c2d12">hobby LIKE '%爬山%'</text>
+  <text x="716" y="438" font-size="10.5" fill="#7c2d12">同样的索引，查询只有 2 个字</text>
+  <text x="716" y="458" font-size="10.5" fill="#7c2d12">Granules 2/2，一个都剪不掉</text>
+
+  <text x="704" y="500" font-size="10.5" fill="#b91c1c">tokenbf 遇中文中间子串同样剪不动</text>
+
+  <rect x="20" y="552" width="960" height="70" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" rx="10"/>
+  <text x="36" y="578" font-size="11.5" font-weight="bold" fill="#0f172a">查询路径：一级索引给出 granule 号 → 标记给出压缩块偏移 → 解压 → 取第 j 行</text>
+  <text x="36" y="602" font-size="11.5" fill="#334155">索引不指向行，只指向段；跳数索引只在 granule 级别回答「这一段可能没有」，命中后仍要逐行判断</text>
+
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/>
+    </marker>
+  </defs>
+</svg>

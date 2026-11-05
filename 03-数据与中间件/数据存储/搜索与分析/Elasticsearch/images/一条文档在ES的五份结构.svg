@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="680" viewBox="0 0 1000 680">
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+
+  <text x="30" y="36" font-family="sans-serif" font-size="20" font-weight="bold" fill="#1f2d3d">一条文档在 ES 里被展开成五份结构，各答一类查询</text>
+  <text x="30" y="60" font-family="sans-serif" font-size="13" fill="#4a5b70">实测：elasticsearch 8.19.0，单分片单段，2 条文档，store 6682 B</text>
+
+  <rect x="30" y="80" width="210" height="510" rx="6" fill="#f7f9fc" stroke="#c9d4e3"/>
+  <rect x="30" y="80" width="210" height="34" rx="6" fill="#e8eef8" stroke="#c9d4e3"/>
+  <text x="44" y="102" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">一条文档（_id=1）</text>
+
+  <text x="44" y="142" font-family="monospace" font-size="12" fill="#1f2d3d">id     = 1</text>
+  <text x="44" y="166" font-family="monospace" font-size="12" fill="#1f2d3d">name   = 张三</text>
+  <text x="44" y="190" font-family="monospace" font-size="12" fill="#1f2d3d">age    = 18</text>
+  <text x="44" y="214" font-family="monospace" font-size="12" fill="#1f2d3d">phone  = 13700000000</text>
+  <text x="44" y="238" font-family="monospace" font-size="12" fill="#1f2d3d">addr   = 广东省深圳</text>
+  <text x="44" y="262" font-family="monospace" font-size="12" fill="#1f2d3d">hobby  = 打游戏，爬山</text>
+  <text x="44" y="286" font-family="monospace" font-size="12" fill="#1f2d3d">remark = 这是张三备注</text>
+
+  <text x="44" y="326" font-family="sans-serif" font-size="12" fill="#4a5b70">原文只此一份，按段内</text>
+  <text x="44" y="346" font-family="sans-serif" font-size="12" fill="#4a5b70">docid 存放；另外四份</text>
+  <text x="44" y="366" font-family="sans-serif" font-size="12" fill="#4a5b70">都是写入时从它展开。</text>
+
+  <rect x="42" y="440" width="186" height="76" rx="5" fill="#ffffff" stroke="#7ea6d8"/>
+  <text x="54" y="466" font-family="sans-serif" font-size="12" font-weight="bold" fill="#1f2d3d">_source 306 B</text>
+  <text x="54" y="488" font-family="sans-serif" font-size="12" fill="#4a5b70">2 条共 306 B，</text>
+  <text x="54" y="506" font-family="sans-serif" font-size="12" fill="#4a5b70">原文 JSON 合计 287 B。</text>
+
+  <rect x="290" y="80" width="330" height="510" rx="6" fill="#f7f9fc" stroke="#c9d4e3"/>
+  <rect x="290" y="80" width="330" height="34" rx="6" fill="#e8eef8" stroke="#c9d4e3"/>
+  <text x="304" y="102" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">段 _1.cfs：一条记录的五份表示</text>
+
+  <rect x="300" y="124" width="310" height="80" rx="5" fill="#eaf2fd" stroke="#7ea6d8"/>
+  <text x="310" y="146" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">倒排索引 268 B</text>
+  <text x="310" y="168" font-family="sans-serif" font-size="12" fill="#1f2d3d">词 → 文档号 + 词频 / 位置</text>
+  <text x="310" y="190" font-family="monospace" font-size="12" fill="#1f2d3d">爬→[0] 山→[0] 打→[0,1]</text>
+
+  <rect x="300" y="218" width="310" height="80" rx="5" fill="#eaf7ee" stroke="#7fbf95"/>
+  <text x="310" y="240" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">doc_values 44 B</text>
+  <text x="310" y="262" font-family="sans-serif" font-size="12" fill="#1f2d3d">文档号 → 字段值，按列存</text>
+  <text x="310" y="284" font-family="sans-serif" font-size="12" fill="#1f2d3d">phone 25 B、addr 16 B、age 1 B</text>
+
+  <rect x="300" y="312" width="310" height="80" rx="5" fill="#eaf7ee" stroke="#7fbf95"/>
+  <text x="310" y="334" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">points（BKD 树）47 B</text>
+  <text x="310" y="356" font-family="sans-serif" font-size="12" fill="#1f2d3d">数值字段的多维索引</text>
+  <text x="310" y="378" font-family="sans-serif" font-size="12" fill="#1f2d3d">id 17 B、age 13 B、_seq_no 17 B</text>
+
+  <rect x="300" y="406" width="310" height="80" rx="5" fill="#f2f2f2" stroke="#b9b9b9"/>
+  <text x="310" y="428" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">norms 2 B</text>
+  <text x="310" y="450" font-family="sans-serif" font-size="12" fill="#1f2d3d">每文档的字段长度归一值</text>
+  <text x="310" y="472" font-family="sans-serif" font-size="12" fill="#1f2d3d">BM25 的 dl 就是从这里读的</text>
+
+  <rect x="300" y="500" width="310" height="80" rx="5" fill="#eaf2fd" stroke="#7ea6d8"/>
+  <text x="310" y="522" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">stored fields 334 B</text>
+  <text x="310" y="544" font-family="sans-serif" font-size="12" fill="#1f2d3d">_source 306 B + _id 28 B</text>
+  <text x="310" y="566" font-family="sans-serif" font-size="12" fill="#1f2d3d">原样 JSON，返回结果时读它</text>
+
+  <rect x="750" y="80" width="220" height="510" rx="6" fill="#f7f9fc" stroke="#c9d4e3"/>
+  <rect x="750" y="80" width="220" height="34" rx="6" fill="#e8eef8" stroke="#c9d4e3"/>
+  <text x="764" y="102" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1f2d3d">查询走哪一份</text>
+
+  <rect x="758" y="137" width="204" height="54" rx="5" fill="#fff8e6" stroke="#e0c07a"/>
+  <text x="768" y="158" font-family="monospace" font-size="12" fill="#1f2d3d">term phone</text>
+  <text x="768" y="178" font-family="sans-serif" font-size="12" fill="#4a5b70">_doc/2 也走 _id 倒排</text>
+
+  <rect x="758" y="231" width="204" height="54" rx="5" fill="#fff8e6" stroke="#e0c07a"/>
+  <text x="768" y="252" font-family="monospace" font-size="12" fill="#1f2d3d">sort phone</text>
+  <text x="768" y="272" font-family="sans-serif" font-size="12" fill="#4a5b70">terms 聚合同理</text>
+
+  <rect x="758" y="325" width="204" height="54" rx="5" fill="#fff8e6" stroke="#e0c07a"/>
+  <text x="768" y="346" font-family="monospace" font-size="12" fill="#1f2d3d">range age</text>
+  <text x="768" y="366" font-family="sans-serif" font-size="12" fill="#4a5b70">数值范围查询</text>
+
+  <rect x="758" y="419" width="204" height="54" rx="5" fill="#fff8e6" stroke="#e0c07a"/>
+  <text x="768" y="440" font-family="monospace" font-size="12" fill="#1f2d3d">match hobby</text>
+  <text x="768" y="460" font-family="sans-serif" font-size="12" fill="#4a5b70">打分时才读 norms</text>
+
+  <rect x="758" y="513" width="204" height="54" rx="5" fill="#fff8e6" stroke="#e0c07a"/>
+  <text x="768" y="534" font-family="monospace" font-size="12" fill="#1f2d3d">返回 _source</text>
+  <text x="768" y="554" font-family="sans-serif" font-size="12" fill="#4a5b70">命中后才读原文</text>
+
+  <line x1="748" y1="164" x2="628" y2="164" stroke="#7ea6d8" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="632" y="156" font-family="sans-serif" font-size="12" fill="#4a5b70">按词定位</text>
+
+  <line x1="748" y1="258" x2="628" y2="258" stroke="#7fbf95" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="632" y="250" font-family="sans-serif" font-size="12" fill="#4a5b70">读列存</text>
+
+  <line x1="748" y1="352" x2="628" y2="352" stroke="#7fbf95" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="632" y="344" font-family="sans-serif" font-size="12" fill="#4a5b70">查数值树</text>
+
+  <line x1="748" y1="446" x2="628" y2="446" stroke="#b9b9b9" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="632" y="438" font-family="sans-serif" font-size="12" fill="#4a5b70">打分归一</text>
+
+  <line x1="748" y1="540" x2="628" y2="540" stroke="#7ea6d8" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="632" y="532" font-family="sans-serif" font-size="12" fill="#4a5b70">取原文</text>
+
+  <line x1="246" y1="100" x2="284" y2="100" stroke="#8a8a8a" stroke-width="2" marker-end="url(#ar2)"/>
+  <text x="246" y="90" font-family="sans-serif" font-size="12" fill="#4a5b70">写入</text>
+
+  <rect x="30" y="606" width="940" height="48" rx="6" fill="#f4f6fa" stroke="#c9d4e3"/>
+  <text x="42" y="626" font-family="sans-serif" font-size="13" fill="#1f2d3d">要点：五份表示不是五份副本，而是同一次写入展开出的不同投影——倒排答「哪些文档含此词」，doc_values 答「按值排」，</text>
+  <text x="42" y="646" font-family="sans-serif" font-size="13" fill="#1f2d3d">points 答「值落在哪段」，norms 只影响分数，stored fields 只负责把原文还给你；它们共用同一个段内 docid 对齐。</text>
+
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="#5a6b80"/>
+    </marker>
+    <marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="#8a8a8a"/>
+    </marker>
+  </defs>
+</svg>
