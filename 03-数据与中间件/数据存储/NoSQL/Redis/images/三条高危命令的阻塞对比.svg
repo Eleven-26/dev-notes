@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="1000" height="500" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">三条高危命令：命令耗时几乎等于别人的停顿</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">Redis 8.10.2 单机容器；PING 探针在独立连接上每 2 ms 一次，空闲基线 2.5 ms</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="960" height="170" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 一次性命令：命令跑多久，别人就等多久</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">满格 1500 ms；蓝条是命令耗时，红段是同一时间段里别的客户端被卡住的时长</text>
+
+    <text x="170" y="66" font-size="9.5" fill="#94a3b8">命令耗时（蓝）＋ PING 尖峰（红）</text>
+    <text x="800" y="66" font-size="9.5" fill="#94a3b8">耗时 / 尖峰</text>
+
+    <text x="14" y="89" font-size="11.5" font-weight="bold" fill="#0f172a">HGETALL 100万字段</text>
+    <rect x="170" y="78" width="604.6" height="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="2"/>
+    <rect x="170" y="78" width="151.5" height="12" fill="#dc2626" stroke="#dc2626" stroke-width="1" rx="2"/>
+    <text x="800" y="89" font-size="10.5" fill="#334155">1462.6 / 366.6 ms</text>
+
+    <text x="14" y="123" font-size="11.5" font-weight="bold" fill="#0f172a">KEYS * 100万 key</text>
+    <rect x="170" y="112" width="293.7" height="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="2"/>
+    <rect x="170" y="112" width="130.2" height="12" fill="#dc2626" stroke="#dc2626" stroke-width="1" rx="2"/>
+    <text x="800" y="123" font-size="10.5" fill="#334155">710.5 / 315.0 ms</text>
+
+    <text x="14" y="157" font-size="11.5" font-weight="bold" fill="#0f172a">DEL 100万成员</text>
+    <rect x="170" y="146" width="81.9" height="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="2"/>
+    <rect x="170" y="146" width="80.4" height="12" fill="#dc2626" stroke="#dc2626" stroke-width="1" rx="2"/>
+    <text x="800" y="157" font-size="10.5" fill="#334155">198.1 / 194.5 ms</text>
+  </g>
+
+  <g transform="translate(20,264)">
+    <rect x="0" y="0" width="960" height="170" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 分批与异步：单次停顿低一到三个数量级</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">满格只有 36 ms（注意与 A 的刻度差 42 倍）；同样蓝条＝单批耗时，红段＝期间 PING 尖峰</text>
+
+    <text x="170" y="66" font-size="9.5" fill="#94a3b8">单批耗时（蓝）＋ PING 尖峰（红）</text>
+    <text x="800" y="66" font-size="9.5" fill="#94a3b8">耗时 / 尖峰</text>
+
+    <text x="14" y="89" font-size="11.5" font-weight="bold" fill="#0f172a">SCAN 单轮最慢</text>
+    <rect x="170" y="78" width="468.4" height="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="2"/>
+    <rect x="170" y="78" width="592.4" height="12" fill="#dc2626" stroke="#dc2626" stroke-width="1" rx="2"/>
+    <text x="800" y="89" font-size="10.5" fill="#334155">27.2 / 34.4 ms</text>
+
+    <text x="14" y="123" font-size="11.5" font-weight="bold" fill="#0f172a">HSCAN 单批 100</text>
+    <rect x="170" y="112" width="139.5" height="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="2"/>
+    <rect x="170" y="112" width="9.4" height="12" fill="#dc2626" stroke="#dc2626" stroke-width="1" rx="2"/>
+    <text x="800" y="123" font-size="10.5" fill="#334155">8.1 / 0.5 ms</text>
+
+    <text x="14" y="157" font-size="11.5" font-weight="bold" fill="#0f172a">UNLINK 100万成员</text>
+    <rect x="170" y="146" width="13.1" height="12" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="2"/>
+    <rect x="170" y="146" width="9.4" height="12" fill="#dc2626" stroke="#dc2626" stroke-width="1" rx="2"/>
+    <text x="800" y="157" font-size="10.5" fill="#334155">0.8 / 0.5 ms</text>
+  </g>
+
+  <rect x="20" y="446" width="960" height="48" fill="#ffffff" stroke="none"/>
+  <text x="20" y="466" font-size="11" fill="#475569">SCAN 遍历 100 万 key 总共要 9163.5 ms（是 KEYS 的约 13 倍），但最大停顿只有它的约 1/9 —— 换来的是尖峰，不是总时间。</text>
+  <text x="20" y="486" font-size="10.5" fill="#94a3b8">DEL 那根条形几乎全红：198.1 ms 里 194.5 ms 别人都在等，同步释放内存一点都躲不掉。</text>
+</svg>

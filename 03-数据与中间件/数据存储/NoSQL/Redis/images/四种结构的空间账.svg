@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <rect x="0" y="0" width="1000" height="420" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">四种补充结构的空间账与取回能力</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">左边按 100 万基数统一口径（对数刻度，每格 10 倍）；右边问的是「还能不能把明细拿回来」</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="560" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. 同样 100 万基数，各占多少内存</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">MEMORY USAGE 实测；横轴对数刻度，同样是「一格 10 倍」</text>
+
+    <text x="14" y="90" font-size="11.5" font-weight="bold" fill="#0f172a">Set 100万成员</text>
+    <rect x="120" y="78" width="347.4" height="16" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="3"/>
+    <text x="475" y="90" font-size="10.5" fill="#991b1b">35.55 MB</text>
+
+    <text x="14" y="140" font-size="11.5" font-weight="bold" fill="#0f172a">Bitmap 100万位</text>
+    <rect x="120" y="128" width="162.2" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="3"/>
+    <text x="290" y="140" font-size="10.5" fill="#14532d">0.13 MB</text>
+
+    <text x="14" y="190" font-size="11.5" font-weight="bold" fill="#0f172a">HLL 100万基数</text>
+    <rect x="120" y="178" width="88" height="16" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="3"/>
+    <text x="216" y="190" font-size="10.5" fill="#14532d">14.0 KB（误差 0.40%）</text>
+
+    <line x1="120" y1="212" x2="500" y2="212" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="120" y1="212" x2="120" y2="217" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="196" y1="212" x2="196" y2="217" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="272" y1="212" x2="272" y2="217" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="348" y1="212" x2="348" y2="217" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="424" y1="212" x2="424" y2="217" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="500" y1="212" x2="500" y2="217" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="120" y="232" text-anchor="middle" font-size="9" fill="#94a3b8">1 KB</text>
+    <text x="196" y="232" text-anchor="middle" font-size="9" fill="#94a3b8">10 KB</text>
+    <text x="272" y="232" text-anchor="middle" font-size="9" fill="#94a3b8">100 KB</text>
+    <text x="348" y="232" text-anchor="middle" font-size="9" fill="#94a3b8">1 MB</text>
+    <text x="424" y="232" text-anchor="middle" font-size="9" fill="#94a3b8">10 MB</text>
+    <text x="500" y="232" text-anchor="middle" font-size="9" fill="#94a3b8">100 MB</text>
+
+    <text x="14" y="264" font-size="10.5" fill="#475569">HLL 只占 Set 的 0.0385%：三个数量级的差距，换的是「拿不回明细」。</text>
+    <text x="14" y="284" font-size="10.5" fill="#475569">GEO 没有自己的结构，它就是 ZSet，内存按 ZSet 的编码与成员数算。</text>
+  </g>
+
+  <g transform="translate(600,74)">
+    <rect x="0" y="0" width="380" height="300" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. 能不能取回明细</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">「省内存」的代价几乎都落在这里</text>
+
+    <rect x="14" y="60" width="46" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="4"/>
+    <text x="37" y="74" text-anchor="middle" font-size="10.5" fill="#14532d">能</text>
+    <text x="70" y="74" font-size="11" font-weight="bold" fill="#0f172a">Bitmap：按位读</text>
+    <text x="70" y="92" font-size="10" fill="#475569">GETBIT 查单个、BITCOUNT 数总数</text>
+
+    <rect x="14" y="110" width="46" height="20" fill="#fee2e2" stroke="#dc2626" stroke-width="1" rx="4"/>
+    <text x="37" y="124" text-anchor="middle" font-size="10.5" fill="#991b1b">不能</text>
+    <text x="70" y="124" font-size="11" font-weight="bold" fill="#0f172a">HyperLogLog：只有计数</text>
+    <text x="70" y="142" font-size="10" fill="#475569">没有「取出元素」的命令，只能 PFMERGE</text>
+
+    <rect x="14" y="160" width="46" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="4"/>
+    <text x="37" y="174" text-anchor="middle" font-size="10.5" fill="#14532d">能</text>
+    <text x="70" y="174" font-size="11" font-weight="bold" fill="#0f172a">GEO：按成员名</text>
+    <text x="70" y="192" font-size="10" fill="#475569">成员是地点 ID，ZRANGE / ZSCORE 直接可用</text>
+
+    <rect x="14" y="210" width="46" height="20" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="4"/>
+    <text x="37" y="224" text-anchor="middle" font-size="10.5" fill="#14532d">能</text>
+    <text x="70" y="224" font-size="11" font-weight="bold" fill="#0f172a">Stream：按 ID 范围</text>
+    <text x="70" y="242" font-size="10" fill="#475569">XRANGE 拉区间，XPENDING 查未确认</text>
+
+    <text x="14" y="272" font-size="10.5" fill="#475569">四种结构的共同点：把「明细」换成「位 / 估算 / 坐标 / 日志」，</text>
+    <text x="14" y="288" font-size="10.5" fill="#475569">换来的就是左边那张空间账。</text>
+  </g>
+
+  <rect x="20" y="378" width="960" height="32" fill="#ffffff" stroke="none"/>
+  <text x="20" y="396" font-size="10.5" fill="#94a3b8">注：Bitmap 的 0.13 MB 是 100 万个「已存在的 ID」建成的位图实测；同样基数下用 Set 存是 35.55 MB，两者差 270 倍。</text>
+</svg>
