@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/></marker></defs>
+  <rect x="0" y="0" width="1000" height="520" fill="#ffffff"/>
+  <text x="500" y="34" font-size="18.5" fill="#0f172a" text-anchor="middle" font-weight="bold">同一段流量，TLS 在哪一跳被解开：四档落点</text>
+  <text x="500" y="58" font-size="12.2" fill="#64748b" text-anchor="middle">紫色是密文、绿色是明文；四行的差别不在带宽，在「谁持有私钥、谁看见明文」</text>
+  <text x="100" y="86" font-size="10.5" fill="#64748b" text-anchor="middle" font-weight="bold">客户端</text>
+  <text x="405" y="86" font-size="10.5" fill="#64748b" text-anchor="middle" font-weight="bold">这一跳做什么</text>
+  <text x="710" y="86" font-size="10.5" fill="#64748b" text-anchor="middle" font-weight="bold">后端</text>
+  <text x="875" y="86" font-size="10.5" fill="#64748b" text-anchor="middle" font-weight="bold">两端的证据</text>
+  <rect x="40" y="106" width="920" height="88" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="56" y="126" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">① 透传（L4 默认 / nginx `stream`）</text>
+  <text x="56" y="144" font-size="9.8" fill="#64748b" text-anchor="start">证书一路到底，中间人是透明管道</text>
+  <rect x="60" y="152" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="105" y="173" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">客户端</text>
+  <rect x="330" y="148" width="150" height="40" rx="6" fill="#f8fafc" stroke="#7e22ce" stroke-width="1.2"/>
+  <text x="405" y="167" font-size="9.6" fill="#7e22ce" text-anchor="middle">不解密，字节原样搬</text>
+  <text x="405" y="181" font-size="8.6" fill="#64748b" text-anchor="middle">（这一跳的形态）</text>
+  <rect x="655" y="152" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="173" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">后端</text>
+  <path d="M 152 168 L 326 168" fill="none" stroke="#7e22ce" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="239" y="160" font-size="9.4" fill="#7e22ce" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">TLS</text>
+  <path d="M 482 168 L 651 168" fill="none" stroke="#7e22ce" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="566" y="160" font-size="9.4" fill="#7e22ce" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">TLS</text>
+  <text x="775" y="164" font-size="9.2" fill="#0f172a" text-anchor="start" font-family="Consolas, Menlo, monospace">客户端见 CN=backend</text>
+  <text x="775" y="180" font-size="9.2" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">后端 tls=true</text>
+  <rect x="40" y="202" width="920" height="88" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="56" y="222" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">② 只看 SNI（L4 + `ssl_preread`）</text>
+  <text x="56" y="240" font-size="9.8" fill="#64748b" text-anchor="start">同一 TCP 端口按域名分流，仍不持私钥</text>
+  <rect x="60" y="248" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="105" y="269" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">客户端</text>
+  <rect x="330" y="244" width="150" height="40" rx="6" fill="#f8fafc" stroke="#7e22ce" stroke-width="1.2"/>
+  <text x="405" y="263" font-size="9.6" fill="#7e22ce" text-anchor="middle">只读明文 ClientHello，仍不解密</text>
+  <text x="405" y="277" font-size="8.6" fill="#64748b" text-anchor="middle">（这一跳的形态）</text>
+  <rect x="655" y="248" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="269" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">后端</text>
+  <path d="M 152 264 L 326 264" fill="none" stroke="#7e22ce" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="239" y="256" font-size="9.4" fill="#7e22ce" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">TLS</text>
+  <path d="M 482 264 L 651 264" fill="none" stroke="#7e22ce" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="566" y="256" font-size="9.4" fill="#7e22ce" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">TLS</text>
+  <text x="775" y="260" font-size="9.2" fill="#0f172a" text-anchor="start" font-family="Consolas, Menlo, monospace">客户端见 CN=目标站</text>
+  <text x="775" y="276" font-size="9.2" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">后端 tls=true</text>
+  <rect x="40" y="298" width="920" height="88" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="56" y="318" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">③ 卸载（L7 / nginx `ssl`）</text>
+  <text x="56" y="336" font-size="9.8" fill="#64748b" text-anchor="start">证书装在代理上，后端只看见明文</text>
+  <rect x="60" y="344" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="105" y="365" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">客户端</text>
+  <rect x="330" y="340" width="150" height="40" rx="6" fill="#f8fafc" stroke="#15803d" stroke-width="1.2"/>
+  <text x="405" y="359" font-size="9.6" fill="#15803d" text-anchor="middle">解密，再用明文发给后端</text>
+  <text x="405" y="373" font-size="8.6" fill="#64748b" text-anchor="middle">（这一跳的形态）</text>
+  <rect x="655" y="344" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="365" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">后端</text>
+  <path d="M 152 360 L 326 360" fill="none" stroke="#7e22ce" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="239" y="352" font-size="9.4" fill="#7e22ce" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">TLS</text>
+  <path d="M 482 360 L 651 360" fill="none" stroke="#15803d" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="566" y="352" font-size="9.4" fill="#15803d" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">明文</text>
+  <text x="775" y="356" font-size="9.2" fill="#0f172a" text-anchor="start" font-family="Consolas, Menlo, monospace">客户端见 CN=lb</text>
+  <text x="775" y="372" font-size="9.2" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">后端 tls=false</text>
+  <rect x="40" y="394" width="920" height="88" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.1"/>
+  <text x="56" y="414" font-size="11.8" fill="#0f172a" text-anchor="start" font-weight="bold">④ 卸载后再加密（mTLS 到后端）</text>
+  <text x="56" y="432" font-size="9.8" fill="#64748b" text-anchor="start">第二跳的客户端身份是代理，不是用户</text>
+  <rect x="60" y="440" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="105" y="461" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">客户端</text>
+  <rect x="330" y="436" width="150" height="40" rx="6" fill="#f8fafc" stroke="#7e22ce" stroke-width="1.2"/>
+  <text x="405" y="455" font-size="9.6" fill="#7e22ce" text-anchor="middle">解密，再用自己的证书重连后端</text>
+  <text x="405" y="469" font-size="8.6" fill="#64748b" text-anchor="middle">（这一跳的形态）</text>
+  <rect x="655" y="440" width="90" height="32" rx="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1"/>
+  <text x="700" y="461" font-size="10.5" fill="#2563eb" text-anchor="middle" font-weight="bold">后端</text>
+  <path d="M 152 456 L 326 456" fill="none" stroke="#7e22ce" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="239" y="448" font-size="9.4" fill="#7e22ce" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">TLS</text>
+  <path d="M 482 456 L 651 456" fill="none" stroke="#7e22ce" stroke-width="2.0" marker-end="url(#arw)"/>
+  <text x="566" y="448" font-size="9.4" fill="#7e22ce" text-anchor="middle" font-weight="bold" font-family="Consolas, Menlo, monospace">TLS</text>
+  <text x="775" y="452" font-size="9.2" fill="#0f172a" text-anchor="start" font-family="Consolas, Menlo, monospace">客户端见 CN=lb</text>
+  <text x="775" y="468" font-size="9.2" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">后端 peerCN=lb-client</text>
+  <text x="40" y="500" font-size="10.2" fill="#64748b" text-anchor="start">⚠️ 第 ③ 档之后，后端拿到的 X-Forwarded-Proto 才有意义；第 ④ 档里后端如果按客户端证书做鉴权，看到的是代理的身份。</text>
+</svg>
