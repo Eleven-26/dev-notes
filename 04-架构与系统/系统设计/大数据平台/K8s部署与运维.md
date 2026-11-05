@@ -320,7 +320,7 @@ ensure CRDs are installed first
 
 ## 关联
 
-- **上游/总纲**：[README.md](README.md) — 本册的分层架构与篇目分工
+- **上游/总纲**：[架构与选型.md](架构与选型.md) — 本册的分层架构与篇目分工
 - **容量**：[容量规划与成本.md](容量规划与成本.md) — 30 slot / 120 GB / 46 GB checkpoint 的来源
 - **流作业**：[Flink实时链路.md](Flink实时链路.md) — checkpoint、savepoint 与资源不足的表现
 - **批作业**：[Spark批处理与调度.md](Spark批处理与调度.md) — spark-submit 与回填任务的提交
@@ -328,3 +328,4 @@ ensure CRDs are installed first
 - **出口**：[OLAP查询服务.md](OLAP查询服务.md) — OLAP 集群的部署与重建
 - **治理**：[元数据血缘与权限治理.md](元数据血缘与权限治理.md) — 元数据的备份与权限审计
 - **组件原理**：[部署/k8s](../../../06-工程实践/部署/k8s/) — K8s 基础对象与调度机制
+- **落点**：[存储全景.md](存储全景.md) 2.1 — 四个 bucket 的划分，以及 checkpoint / savepoint 该落在哪个前缀

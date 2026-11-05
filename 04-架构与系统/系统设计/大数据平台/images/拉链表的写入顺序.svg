@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/></marker>
+    <marker id="rd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="34" font-size="19" fill="#0f172a" text-anchor="middle" font-weight="bold">拉链表：同一行会被关掉，但新版本必须先进来</text>
+  <text x="500" y="58" font-size="12.2" fill="#64748b" text-anchor="middle">两段式写入的顺序反了，新版本永远进不来 —— 不报错，只是行数不动</text>
+  <line x1="90" y1="196" x2="912" y2="196" stroke="#cbd5e1" stroke-width="1.4" marker-end="url(#ax)"/>
+  <line x1="150" y1="191" x2="150" y2="201" stroke="#64748b" stroke-width="1.2"/>
+  <text x="150" y="218" font-size="10" fill="#64748b" text-anchor="middle" font-family="Consolas, Menlo, monospace">2026-01-01</text>
+  <line x1="560" y1="191" x2="560" y2="201" stroke="#64748b" stroke-width="1.2"/>
+  <text x="560" y="218" font-size="10" fill="#64748b" text-anchor="middle" font-family="Consolas, Menlo, monospace">2026-11-02 10:00</text>
+  <line x1="858" y1="191" x2="858" y2="201" stroke="#64748b" stroke-width="1.2"/>
+  <text x="858" y="218" font-size="10" fill="#64748b" text-anchor="middle" font-family="Consolas, Menlo, monospace">9999-12-31</text>
+  <rect x="150" y="128" width="410" height="30" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="160" y="147" font-size="10.6" fill="#0f172a" text-anchor="start" font-weight="bold" font-family="Consolas, Menlo, monospace">version = 1</text>
+  <text x="262" y="147" font-size="10.6" fill="#64748b" text-anchor="start">level = v1</text>
+  <text x="470" y="147" font-size="10" fill="#dc2626" text-anchor="end" font-family="Consolas, Menlo, monospace">is_current = false</text>
+  <rect x="560" y="162" width="298" height="30" rx="4" fill="#dcfce7" stroke="#15803d" stroke-width="1.2"/>
+  <text x="570" y="181" font-size="10.6" fill="#0f172a" text-anchor="start" font-weight="bold" font-family="Consolas, Menlo, monospace">version = 2</text>
+  <text x="672" y="181" font-size="10.6" fill="#15803d" text-anchor="start">level = v2</text>
+  <text x="848" y="181" font-size="10" fill="#15803d" text-anchor="end" font-family="Consolas, Menlo, monospace">is_current = true</text>
+  <text x="150" y="118" font-size="10.4" fill="#64748b" text-anchor="start">旧版本：valid_to 被改写成变更时刻</text>
+  <text x="560" y="240" font-size="10.4" fill="#15803d" text-anchor="start">新版本：valid_from 就是变更时刻，valid_to 仍是哨兵值</text>
+  <rect x="40" y="268" width="440" height="224" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.4"/>
+  <rect x="40" y="268" width="440" height="34" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1"/>
+  <rect x="40" y="292" width="440" height="10" fill="#dcfce7"/>
+  <text x="56" y="290" font-size="12.5" fill="#15803d" text-anchor="start" font-weight="bold">正确：先插新行，再关旧行</text>
+  <text x="56" y="320" font-size="12" fill="#15803d" text-anchor="start" font-weight="bold">①</text>
+  <text x="76" y="320" font-size="11.4" fill="#0f172a" text-anchor="start" font-weight="bold">INSERT 新版本</text>
+  <text x="76" y="338" font-size="9.8" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">条件 is_current = true AND level &lt;&gt; 'v2'</text>
+  <text x="76" y="354" font-size="10" fill="#64748b" text-anchor="start">此时旧行还开着，能读到</text>
+  <text x="56" y="376" font-size="12" fill="#15803d" text-anchor="start" font-weight="bold">②</text>
+  <text x="76" y="376" font-size="11.4" fill="#0f172a" text-anchor="start" font-weight="bold">UPDATE 关旧行</text>
+  <text x="76" y="394" font-size="9.8" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">valid_to = 变更时刻, is_current = false</text>
+  <text x="76" y="410" font-size="10" fill="#64748b" text-anchor="start">加 valid_from &lt; ts，把刚插入的行排除</text>
+  <text x="56" y="454" font-size="10.8" fill="#0f172a" text-anchor="start" font-weight="bold">实测：3 行 → 变更后 4 行 → 同一变更再跑一次仍是 4 行</text>
+  <rect x="520" y="268" width="440" height="224" rx="8" fill="#ffffff" stroke="#dc2626" stroke-width="1.4"/>
+  <rect x="520" y="268" width="440" height="34" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1"/>
+  <rect x="520" y="292" width="440" height="10" fill="#fee2e2"/>
+  <text x="536" y="290" font-size="12.5" fill="#dc2626" text-anchor="start" font-weight="bold">错误：先关旧行，再插新行</text>
+  <text x="536" y="320" font-size="12" fill="#dc2626" text-anchor="start" font-weight="bold">①</text>
+  <text x="556" y="320" font-size="11.4" fill="#0f172a" text-anchor="start" font-weight="bold">UPDATE 关旧行</text>
+  <text x="556" y="338" font-size="9.8" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">is_current 全被置成 false</text>
+  <text x="556" y="354" font-size="10" fill="#dc2626" text-anchor="start">表里没有「当前版本」了</text>
+  <text x="536" y="376" font-size="12" fill="#dc2626" text-anchor="start" font-weight="bold">②</text>
+  <text x="556" y="376" font-size="11.4" fill="#0f172a" text-anchor="start" font-weight="bold">INSERT 新版本</text>
+  <text x="556" y="394" font-size="9.8" fill="#64748b" text-anchor="start" font-family="Consolas, Menlo, monospace">WHERE is_current = true</text>
+  <text x="556" y="410" font-size="10" fill="#dc2626" text-anchor="start">匹配 0 行，新版本插不进去</text>
+  <text x="536" y="454" font-size="10.8" fill="#dc2626" text-anchor="start" font-weight="bold">实测：3 行 → 3 行，没有任何报错</text>
+  <text x="40" y="520" font-size="11" fill="#64748b" text-anchor="start">两段都带 level &lt;&gt; 新值 的条件，所以重复执行是幂等的；漏掉这个条件，同一变更跑两次会插出两个版本。</text>
+  <text x="40" y="540" font-size="11" fill="#64748b" text-anchor="start">回看任一时刻：WHERE valid_from &lt;= t AND valid_to &gt; t —— 每人每时刻恰好一行。</text>
+</svg>
