@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">四刀裁剪：越靠前的刀越便宜，省得也越多</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">条带宽度表示剩下的扫描量（示意，非实测比例）</text>
+
+  <rect x="40" y="88" width="520" height="44" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="6"/>
+  <text x="56" y="115" font-size="12" font-weight="bold" fill="#334155">全表数据</text>
+  <rect x="570" y="86" width="420" height="322" fill="#ffffff" stroke="none"/>
+  <text x="580" y="106" font-size="11" fill="#334155">起点：一条 SQL 落到这张表</text>
+  <text x="580" y="124" font-size="10" fill="#64748b">下面每一刀都在它之上继续缩小范围</text>
+
+  <rect x="40" y="156" width="400" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+  <text x="56" y="183" font-size="12" font-weight="bold" fill="#14532d">第 1 刀：只剩相关分区</text>
+  <text x="580" y="174" font-size="10.5" fill="#14532d">条件：WHERE 里有分区列，且没被函数包住</text>
+  <text x="580" y="192" font-size="10" fill="#64748b">省的是整段数据 —— 不相关的分区连 tablet 都不调度</text>
+
+  <rect x="40" y="224" width="280" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+  <text x="56" y="251" font-size="12" font-weight="bold" fill="#14532d">第 2 刀：只剩命中桶</text>
+  <text x="580" y="242" font-size="10.5" fill="#14532d">条件：哈希分桶 + 分桶键做等值过滤</text>
+  <text x="580" y="260" font-size="10" fill="#64748b">省的是 (1 − 1/N) 的桶；随机分桶吃不到这一刀</text>
+
+  <rect x="40" y="292" width="180" height="44" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="6"/>
+  <text x="56" y="319" font-size="12" font-weight="bold" fill="#14532d">第 3 刀：跳到数据块</text>
+  <text x="580" y="310" font-size="10.5" fill="#14532d">条件：过滤列落在排序键的前缀上（≤3 列、≤36 字节）</text>
+  <text x="580" y="328" font-size="10" fill="#64748b">省的是块内的行；生没生效看 Profile 的 ShortKeyFilterRows</text>
+
+  <rect x="40" y="360" width="100" height="44" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="6"/>
+  <text x="56" y="387" font-size="12" font-weight="bold" fill="#1e40af">块内再筛</text>
+  <text x="580" y="378" font-size="10.5" fill="#1e40af">ZoneMap 对所有列自动生效，不用建</text>
+  <text x="580" y="396" font-size="10" fill="#64748b">Bitmap / Bloom / N-Gram 是给不在排序键上的列补课</text>
+
+  <line x1="600" y1="140" x2="600" y2="146" stroke="#16a34a" stroke-width="1.2" marker-end="url(#arwG)"/>
+  <rect x="20" y="415" width="960" height="48" fill="#ffffff" stroke="none"/>
+  <text x="40" y="430" font-size="10.5" fill="#334155">一个查询慢，先查第 1、2 刀落没落下：这两刀没生效，后面调索引的收益都很有限</text>
+  <text x="40" y="452" font-size="9.5" fill="#991b1b">前三刀靠元数据与索引直接排除数据，最后一刀才是「读进来再过滤」</text>
+</svg>

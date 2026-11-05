@@ -83,7 +83,7 @@ dev-notes/
 │   ├── NoSQL/               Redis/、MongoDB/ + NoSQL选型对比.md
 │   ├── 缓存/                README + 架构与模式 / 应用场景 / 一致性 / 问题与方案 / 淘汰算法 / 容量与治理 / 运维与排查 / 选型对比
 │   ├── 搜索与分析/          Elasticsearch/、Meilisearch/ + 搜索与分析选型对比.md
-│   ├── 列式数据库/          ClickHouse/ + 列式数据库选型对比.md
+│   ├── 列式数据库/          ClickHouse/、StarRocks/ + 列式数据库选型对比.md
 │   ├── 时序数据库/          GreptimeDB/、VictoriaMetrics/ + 时序数据库选型对比.md
 │   ├── 图数据库/            Neo4j/ + 图数据库选型对比.md
 │   ├── 向量数据库/          占位目录（空壳）

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="1000" height="400" font-family="Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arwB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#2563eb"/></marker>
+    <marker id="arwG" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#16a34a"/></marker>
+    <marker id="arwR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 6,3 0,6 z" fill="#dc2626"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="400" fill="#ffffff"/>
+
+  <text x="500" y="34" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a">两类组件、三种 FE 角色：谁写元数据，谁只读</text>
+  <text x="500" y="58" text-anchor="middle" font-size="13" fill="#64748b">元数据写要过半 Follower 确认；Observer 扩并发但不参与选主</text>
+
+  <g transform="translate(20,74)">
+    <rect x="0" y="0" width="520" height="290" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">A. FE：元数据与执行计划</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">每个 FE 的内存里都有一份完整元数据（BDB JE）</text>
+
+    <rect x="14" y="60" width="492" height="58" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="80" font-size="11.5" font-weight="bold" fill="#1e40af">Leader FE</text>
+    <text x="28" y="98" font-size="10" fill="#1e40af">读写元数据、生成逻辑与物理执行计划</text>
+    <text x="28" y="112" font-size="10" fill="#1e40af">调度导入作业与查询，从 Follower 中选出</text>
+
+    <line x1="260" y1="118" x2="260" y2="134" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arwB)"/>
+    <text x="272" y="130" font-size="9.5" fill="#2563eb">Raft 复制，过半数确认才算写成功</text>
+
+    <rect x="14" y="140" width="236" height="64" fill="#dcfce7" stroke="#16a34a" stroke-width="1" rx="8"/>
+    <text x="28" y="160" font-size="11.5" font-weight="bold" fill="#14532d">Follower × N</text>
+    <text x="28" y="178" font-size="10" fill="#14532d">只读元数据，写请求转给 Leader</text>
+    <text x="28" y="194" font-size="10" fill="#14532d">参与选主：过半存活才选得出</text>
+
+    <rect x="270" y="140" width="236" height="64" fill="#fef3c7" stroke="#b45309" stroke-width="1" rx="8"/>
+    <text x="284" y="160" font-size="11.5" font-weight="bold" fill="#92400e">Observer × N</text>
+    <text x="284" y="178" font-size="10" fill="#92400e">只读同步重放，不参与选主</text>
+    <text x="284" y="194" font-size="10" fill="#92400e">加它只提并发，不改容灾等级</text>
+
+    <text x="14" y="232" font-size="10" fill="#334155">容错：1 个 Follower = 0 容错；2 个也是 0 容错（挂 1 个就不过半）</text>
+    <text x="14" y="252" font-size="10" font-weight="bold" fill="#991b1b">生产最小配置是 3 个 Follower，不是 2 个</text>
+    <text x="14" y="274" font-size="9.5" fill="#64748b">元数据全量在内存：分区数与 tablet 数是 FE 堆的两个主因</text>
+  </g>
+
+  <g transform="translate(560,74)">
+    <rect x="0" y="0" width="420" height="290" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="10"/>
+    <text x="14" y="24" font-size="15" font-weight="bold" fill="#0f172a">B. BE 与 CN：数据放在哪</text>
+    <text x="14" y="44" font-size="10.5" fill="#64748b">同一个版本里，两种部署形态只能选一种</text>
+
+    <rect x="14" y="58" width="392" height="86" fill="#dbeafe" stroke="#2563eb" stroke-width="1" rx="8"/>
+    <text x="28" y="78" font-size="11.5" font-weight="bold" fill="#1e40af">BE（存算一体）</text>
+    <text x="28" y="96" font-size="10" fill="#1e40af">存 tablet 与 segment，落在本地盘</text>
+    <text x="28" y="113" font-size="10" fill="#1e40af">执行查询片段的物理算子</text>
+    <text x="28" y="132" font-size="10" font-weight="bold" fill="#1e40af">数据本地，延迟低；扩容要搬数据</text>
+
+    <rect x="14" y="158" width="392" height="86" fill="#f1f5f9" stroke="#64748b" stroke-width="1" rx="8"/>
+    <text x="28" y="178" font-size="11.5" font-weight="bold" fill="#334155">CN（存算分离）</text>
+    <text x="28" y="196" font-size="10" fill="#334155">无状态：只算，并缓存热数据</text>
+    <text x="28" y="213" font-size="10" fill="#334155">数据在对象存储或 HDFS</text>
+    <text x="28" y="232" font-size="10" font-weight="bold" fill="#334155">扩容秒级不搬数据；冷读走远端</text>
+
+    <text x="14" y="268" font-size="9.5" fill="#991b1b">代价：备份恢复、跨集群迁移、在线改分桶在存算分离上不适用</text>
+  </g>
+</svg>
